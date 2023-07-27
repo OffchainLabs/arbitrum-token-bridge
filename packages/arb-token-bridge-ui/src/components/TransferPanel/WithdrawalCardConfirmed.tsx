@@ -4,16 +4,18 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { getNetworkName } from '../../util/networks'
 
 export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { switchNetwork } = useSwitchNetworkWithConfig()
 
   const isClaimButtonDisabled = useMemo(
     () =>
@@ -31,6 +33,14 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
       }),
     [tx, l2]
   )
+
+  function handleClaimClick() {
+    if (isConnectedToArbitrum) {
+      switchNetwork?.(l1.network.id)
+    } else {
+      claim(tx)
+    }
+  }
 
   return (
     <WithdrawalCardContainer tx={tx}>
@@ -53,32 +63,39 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip
-          wrapperClassName=""
-          show={isClaimButtonDisabled}
-          content={
-            <span>
-              Please connect to the L1 network to claim your withdrawal.
-            </span>
-          }
+        {isConnectedToArbitrum && (
+          <div className="absolute -bottom-4 left-0 text-xs text-brick-dark sm:left-auto sm:right-2 sm:top-0">
+            <b>Ready to claim.</b> Switch to {getNetworkName(l1.network.id)} to
+            claim.
+          </div>
+        )}
+
+        <Button
+          variant="primary"
+          loading={isClaiming}
+          onClick={handleClaimClick}
+          className="absolute bottom-3 right-0 flex flex-nowrap text-sm lg:bottom-0 lg:my-4 lg:text-lg"
         >
-          <Button
-            variant="primary"
-            loading={isClaiming}
-            disabled={isClaimButtonDisabled}
-            onClick={() => claim(tx)}
-            className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
-          >
-            <div className="flex flex-nowrap whitespace-pre">
-              Claim{' '}
-              <span className="hidden lg:flex">
-                {formatAmount(Number(tx.value), {
-                  symbol: tokenSymbol
-                })}
-              </span>
-            </div>
-          </Button>
-        </Tooltip>
+          <div className="flex flex-nowrap whitespace-pre">
+            {isConnectedToArbitrum ? (
+              <>
+                <span className="sm:hidden">Switch</span>
+                <span className="hidden sm:inline">
+                  Switch network to claim
+                </span>
+              </>
+            ) : (
+              <>
+                Claim{' '}
+                <span className="hidden lg:flex">
+                  {formatAmount(Number(tx.value), {
+                    symbol: tokenSymbol
+                  })}
+                </span>
+              </>
+            )}
+          </div>
+        </Button>
       </div>
     </WithdrawalCardContainer>
   )
