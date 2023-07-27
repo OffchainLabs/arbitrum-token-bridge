@@ -17,14 +17,6 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { switchNetwork } = useSwitchNetworkWithConfig()
 
-  const isClaimButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
-
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
