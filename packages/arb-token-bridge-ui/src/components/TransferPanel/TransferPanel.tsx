@@ -521,6 +521,7 @@ export function TransferPanel() {
                 provider: l1Provider,
                 signer: l1Signer,
                 selectedToken,
+                destinationAddress,
                 async onAllowanceTooLow() {
                   const waitForInput = openTokenApprovalDialog()
                   const [confirmed] = await waitForInput()
@@ -677,6 +678,7 @@ export function TransferPanel() {
               provider: l2Provider,
               signer: l2Signer,
               selectedToken,
+              destinationAddress,
               onSubmit: () => {
                 setTransferring(false)
                 clearAmountInput()
