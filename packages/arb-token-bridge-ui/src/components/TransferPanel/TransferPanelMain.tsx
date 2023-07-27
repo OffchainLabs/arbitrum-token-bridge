@@ -37,7 +37,7 @@ import {
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -329,7 +329,7 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
-  const { walletAddress } = arbTokenBridge
+  const { walletAddress, token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -363,19 +363,6 @@ export function TransferPanelMain({
       updateErc20L1Balances([selectedToken.address])
       if (selectedToken.l2Address) {
         updateErc20L2Balances([selectedToken.l2Address])
-      }
-      if (isTokenMainnetUSDC(selectedToken.address)) {
-        updateErc20L2Balances([CommonAddress.ArbitrumOne.USDC])
-      }
-      if (isTokenGoerliUSDC(selectedToken.address)) {
-        updateErc20L2Balances([CommonAddress.ArbitrumGoerli.USDC])
-      }
-
-      if (isTokenArbitrumGoerliNativeUSDC(selectedToken.address)) {
-        updateErc20L1Balances([CommonAddress.Goerli.USDC])
-      }
-      if (isTokenArbitrumOneNativeUSDC(selectedToken.address)) {
-        updateErc20L1Balances([CommonAddress.Mainnet.USDC])
       }
     }
   }, [
@@ -650,7 +637,42 @@ export function TransferPanelMain({
     setTo(newTo)
 
     actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [actions.app, app.isDepositMode, from, to])
+  }, [actions.app, app.isDepositMode, from, to, selectedToken])
+
+  useEffect(() => {
+    const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
+    const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
+      selectedToken?.address
+    )
+    // If user select native USDC on L2, when switching to deposit mode,
+    // we need to default to set the corresponding USDC on L1
+    if (!isDepositMode) {
+      return
+    }
+
+    const commonUSDC = {
+      name: 'USD Coin',
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      decimals: 6,
+      listIds: new Set<number>()
+    }
+    if (isArbOneUSDC) {
+      token.updateTokenData(CommonAddress.Mainnet.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.Mainnet.USDC,
+        l2Address: CommonAddress.ArbitrumOne['USDC.e']
+      })
+    } else if (isArbGoerliUSDC) {
+      token.updateTokenData(CommonAddress.Goerli.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.Goerli.USDC,
+        l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
+      })
+    }
+  }, [isDepositMode, selectedToken])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>

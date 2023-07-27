@@ -60,8 +60,6 @@ import {
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { useCCTP } from '../../hooks/useCCTP'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { isUserRejectedError } from '../../util/isUserRejectedError'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -161,7 +159,6 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
-  const { isArbitrumOne } = isNetwork(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -172,11 +169,10 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { deposit, tokenMessengerContractAddress, USDCContractAddress } =
-    useCCTP({
-      chainId: isDepositMode ? l1Network.id : l2Network.id,
-      walletAddress: account
-    })
+  const { approveAndDeposit } = useCCTP({
+    chainId: isDepositMode ? l1Network.id : l2Network.id,
+    walletAddress: account
+  })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -511,52 +507,6 @@ export function TransferPanel() {
             }
           }
 
-          async function checkAllowance(
-            selectedToken: ERC20BridgeToken,
-            l1Signer: Signer,
-            spender?: string
-          ) {
-            // Check token allowance & show modal if needed
-            const allowance = spender
-              ? await getTokenAllowanceForSpender({
-                  account: walletAddress,
-                  erc20Address: selectedToken.address,
-                  provider: l1Provider,
-                  spender
-                })
-              : await getL1TokenAllowance({
-                  account: walletAddress,
-                  erc20L1Address: selectedToken.address,
-                  l1Provider: l1Provider,
-                  l2Provider: l2Provider
-                })
-
-            if (!allowance.gte(amountRaw)) {
-              setAllowance(allowance)
-              const waitForInput = openTokenApprovalDialog()
-              const [confirmed] = await waitForInput()
-
-              if (!confirmed) {
-                return false
-              }
-
-              if (spender) {
-                const contract = ERC20__factory.connect(
-                  USDCContractAddress,
-                  l1Signer
-                )
-                const tx = await contract.functions.approve(spender, amountRaw)
-                await tx.wait()
-              } else {
-                await latestToken.current.approve({
-                  erc20L1Address: selectedToken.address,
-                  l1Signer
-                })
-              }
-            }
-            return true
-          }
-
           if (
             isTokenMainnetUSDC(selectedToken.address) ||
             isTokenGoerliUSDC(selectedToken.address)
@@ -566,22 +516,22 @@ export function TransferPanel() {
             const [confirmed, primaryButtonClicked] = result
 
             if (confirmed && primaryButtonClicked === 'cctp') {
-              try {
-                const allowanceConfirmation = await checkAllowance(
-                  selectedToken,
-                  l1Signer,
-                  tokenMessengerContractAddress
-                )
-                if (!allowanceConfirmation) {
-                  return
+              await approveAndDeposit({
+                amount,
+                provider: l1Provider,
+                signer: l1Signer,
+                selectedToken,
+                async onAllowanceTooLow() {
+                  const waitForInput = openTokenApprovalDialog()
+                  const [confirmed] = await waitForInput()
+
+                  return confirmed
+                },
+                onSubmit() {
+                  clearAmountInput()
+                  setTransferring(false)
                 }
-                await deposit(amountRaw)
-                clearAmountInput()
-              } catch (error: any) {
-                if (!isUserRejectedError(error)) {
-                  Sentry.captureException(error)
-                }
-              }
+              })
               return
             }
 
@@ -590,8 +540,25 @@ export function TransferPanel() {
             }
           }
 
-          if (!checkAllowance(selectedToken, l1Signer)) {
-            return false
+          const allowance = await getL1TokenAllowance({
+            account: walletAddress,
+            erc20L1Address: selectedToken.address,
+            l1Provider: l1Provider,
+            l2Provider: l2Provider
+          })
+
+          if (!allowance.gte(amountRaw)) {
+            setAllowance(allowance)
+            const waitForInput = openTokenApprovalDialog()
+            const [confirmed] = await waitForInput()
+
+            if (!confirmed) {
+              return false
+            }
+            await latestToken.current.approve({
+              erc20L1Address: selectedToken.address,
+              l1Signer
+            })
           }
 
           if (isSmartContractWallet) {
@@ -705,39 +672,16 @@ export function TransferPanel() {
               return
             }
 
-            const { decimals } = selectedToken
-
-            const amountRaw = utils.parseUnits(amount, decimals)
-
-            const allowance = await getTokenAllowanceForSpender({
-              account: walletAddress,
-              erc20Address: selectedToken.address,
+            await approveAndDeposit({
+              amount,
               provider: l2Provider,
-              spender: tokenMessengerContractAddress
+              signer: l2Signer,
+              selectedToken,
+              onSubmit: () => {
+                setTransferring(false)
+                clearAmountInput()
+              }
             })
-
-            try {
-              if (allowance.lte(amountRaw)) {
-                setAllowance(allowance)
-                // TODO: extract to approveUSDC for deposit/withdraw
-                const contract = ERC20__factory.connect(
-                  USDCContractAddress,
-                  l2Signer
-                )
-                const tx = await contract.functions.approve(
-                  tokenMessengerContractAddress,
-                  amountRaw
-                )
-                await tx.wait()
-              }
-              await deposit(amountRaw)
-              setTransferring(false)
-              clearAmountInput()
-            } catch (error: any) {
-              if (!isUserRejectedError(error)) {
-                Sentry.captureException(error)
-              }
-            }
             return
           }
 

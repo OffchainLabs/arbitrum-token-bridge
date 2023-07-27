@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
-import { Chain } from 'wagmi'
+import { Chain, useChainId } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -45,6 +45,7 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
+import { useCCTP } from './useCCTP'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -121,6 +122,12 @@ export const useArbTokenBridge = (
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
+
+  const chainId = useChainId()
+  const { updateUSDCBalances } = useCCTP({
+    chainId,
+    walletAddress
+  })
 
   const [executedMessagesCache, setExecutedMessagesCache] =
     useLocalStorage<ExecutedMessagesCache>(
@@ -820,6 +827,8 @@ export const useArbTokenBridge = (
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
+      updateUSDCBalances(l1Address)
+
       if (typeof bridgeTokens === 'undefined') {
         return
       }
@@ -834,8 +843,9 @@ export const useArbTokenBridge = (
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
-      const { l2Address } = bridgeToken
+
       updateErc20L1Balance([l1AddressLowerCased])
+      const { l2Address } = bridgeToken
       if (l2Address) {
         updateErc20L2Balance([l2Address])
       }

@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import Image from 'next/image'
+import { useChainId } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -38,6 +39,7 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
+import { useCCTP } from '../../hooks/useCCTP'
 
 enum Panel {
   TOKENS,
@@ -449,6 +451,11 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
+  const chainId = useChainId()
+  const { updateUSDCBalances } = useCCTP({
+    chainId,
+    walletAddress
+  })
   const { l1, l2 } = useNetworksAndSigners()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
@@ -473,10 +480,11 @@ export function TokenSearch({
 
     try {
       // Native USDC on L2 won't have a corresponding L1 address
-      if (
-        isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumGoerliNativeUSDC(_token.address)
-      ) {
+      const isArbOneNativeUSDC = isTokenArbitrumOneNativeUSDC(_token.address)
+      const isArbGoerliNativeUSDC = isTokenArbitrumGoerliNativeUSDC(
+        _token.address
+      )
+      if (isArbOneNativeUSDC || isArbGoerliNativeUSDC) {
         const { contract } = await getL2TokenData({
           account: walletAddress,
           erc20L2Address: _token.address,
@@ -488,6 +496,8 @@ export function TokenSearch({
           contract.symbol(),
           contract.name()
         ])
+
+        updateUSDCBalances(_token.address)
         setSelectedToken({
           name,
           type: TokenType.ERC20,
