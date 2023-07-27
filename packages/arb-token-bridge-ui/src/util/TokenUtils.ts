@@ -303,7 +303,7 @@ export function sanitizeTokenSymbol(
     isTokenMainnetUSDC(options.erc20L1Address) ||
     isTokenGoerliUSDC(options.erc20L1Address)
   ) {
-    // It should be `USDC` on all chains except Arbitrum One/Goerli
+    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Goerli
     if (isArbitrumOne || isArbitrumGoerli) return 'USDC.e'
     return 'USDC'
   }
@@ -326,7 +326,7 @@ export function sanitizeTokenName(
     isTokenMainnetUSDC(options.erc20L1Address) ||
     isTokenGoerliUSDC(options.erc20L1Address)
   ) {
-    // It should be `USDC` on all chains except Arbitrum One/Goerli
+    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Goerli
     if (isArbitrumOne || isArbitrumGoerli) return 'Bridged USDC'
     return 'USD Coin'
   }
