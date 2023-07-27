@@ -1,15 +1,19 @@
 import { ChainId } from '../networks'
 import { getAPIBaseUrl, sanitizeQueryParams } from '..'
+import { Response } from '../../pages/api/cctp/[type]'
 
 export type FetchParams = {
   walletAddress: string
   l1ChainId: ChainId
 }
 
-export const fetchCCTPDeposits = async ({
+async function fetchCCTP({
   walletAddress,
-  l1ChainId
-}: FetchParams): Promise<[]> => {
+  l1ChainId,
+  type
+}: FetchParams & {
+  type: 'deposits' | 'withdrawals'
+}) {
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       walletAddress,
@@ -18,36 +22,25 @@ export const fetchCCTPDeposits = async ({
   )
 
   const response = await fetch(
-    `${getAPIBaseUrl()}/api/cctp/deposits?${urlParams}`,
+    `${getAPIBaseUrl()}/api/cctp/${type}?${urlParams}`,
     {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     }
   )
 
-  const deposits = (await response.json()).data
-  return deposits
+  const parsedResponse: Response = await response.json()
+  return parsedResponse
 }
 
-export const fetchCCTPWithdrawals = async ({
-  walletAddress,
-  l1ChainId
-}: FetchParams): Promise<[]> => {
-  const urlParams = new URLSearchParams(
-    sanitizeQueryParams({
-      walletAddress,
-      l1ChainId
-    })
-  )
+export async function fetchCCTPDeposits(
+  params: FetchParams
+): Promise<Response> {
+  return fetchCCTP({ ...params, type: 'deposits' })
+}
 
-  const response = await fetch(
-    `${getAPIBaseUrl()}/api/cctp/withdrawals?${urlParams}`,
-    {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
-
-  const withdrawals = (await response.json()).data
-  return withdrawals
+export async function fetchCCTPWithdrawals(
+  params: FetchParams
+): Promise<Response> {
+  return fetchCCTP({ ...params, type: 'withdrawals' })
 }

@@ -1,8 +1,22 @@
-import { utils, BigNumber } from 'ethers'
+import { utils, BigNumber, Signer } from 'ethers'
 import { useCallback, useMemo } from 'react'
-import { useContractWrite, useSwitchNetwork } from 'wagmi'
+import { useContractWrite } from 'wagmi'
+import * as Sentry from '@sentry/react'
+
 import { ChainId } from '../util/networks'
 import { messengerTransmitterAbi, tokenMessengerAbi } from '../util/cctp/abi'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { useBalance } from './useBalance'
+import { useNetworksAndSigners } from './useNetworksAndSigners'
+import {
+  getTokenAllowanceForSpender,
+  isTokenGoerliUSDC,
+  isTokenMainnetUSDC
+} from '../util/TokenUtils'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
+import { Provider } from '@ethersproject/providers'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 type ChainIdKeys =
   | ChainId.Mainnet
@@ -34,7 +48,7 @@ const contracts: Record<ChainIdKeys, Contracts> = {
     tokenMessengerContractAddress: '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
     targetChainDomain: 3,
     targetChainId: ChainId.ArbitrumGoerli,
-    USDCContractAddress: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
+    USDCContractAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
     messengerTransmitterContractAddress:
       '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
     attestation_API_URL: 'https://iris-api-sandbox.circle.com'
@@ -56,6 +70,21 @@ const contracts: Record<ChainIdKeys, Contracts> = {
     messengerTransmitterContractAddress:
       '0x26413e8157cd32011e726065a5462e97dd4d03d9',
     attestation_API_URL: 'https://iris-api-sandbox.circle.com'
+  }
+}
+
+function getL1AddressFromAddress(address: string) {
+  switch (address) {
+    case CommonAddress.ArbitrumGoerli.USDC:
+      return CommonAddress.Goerli.USDC
+    case CommonAddress.ArbitrumGoerli['USDC.e']:
+      return CommonAddress.Goerli.USDC
+    case CommonAddress.ArbitrumOne.USDC:
+      return CommonAddress.Mainnet.USDC
+    case CommonAddress.ArbitrumOne['USDC.e']:
+      return CommonAddress.Mainnet.USDC
+    default:
+      return CommonAddress.Mainnet.USDC
   }
 }
 
@@ -81,7 +110,7 @@ export function useCCTP({
   walletAddress
 }: {
   chainId?: ChainIdKeys
-  walletAddress?: `0x${string}`
+  walletAddress?: `0x${string}` | string
 }) {
   const {
     tokenMessengerContractAddress,
@@ -91,6 +120,19 @@ export function useCCTP({
     USDCContractAddress,
     messengerTransmitterContractAddress
   } = getContracts(chainId)
+  const { l1, l2 } = useNetworksAndSigners()
+  const {
+    erc20: [, updateErc20L1Balance]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress
+  })
+  const {
+    erc20: [, updateErc20L2Balance]
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress
+  })
 
   const destinationAddress = useMemo(() => {
     if (!walletAddress) return
@@ -116,10 +158,9 @@ export function useCCTP({
 
   const deposit = useCallback(
     async (amount: BigNumber) => {
-      const tokenAmount = amount.mul(BigNumber.from(10).pow(6))
       const depositTx = await depositForBurn({
         recklesslySetUnpreparedArgs: [
-          tokenAmount,
+          amount,
           targetChainDomain,
           destinationAddress as `0x${string}`,
           USDCContractAddress
@@ -195,9 +236,89 @@ export function useCCTP({
     [receiveMessage]
   )
 
+  const updateUSDCBalances = useCallback((address: `0x${string}` | string) => {
+    const l1Address = getL1AddressFromAddress(address)
+
+    updateErc20L1Balance([l1Address.toLocaleLowerCase()])
+
+    if (isTokenMainnetUSDC(l1Address)) {
+      updateErc20L2Balance([
+        CommonAddress.ArbitrumOne.USDC,
+        CommonAddress.ArbitrumOne['USDC.e']
+      ])
+    } else if (isTokenGoerliUSDC(l1Address)) {
+      updateErc20L2Balance([
+        CommonAddress.ArbitrumGoerli.USDC,
+        CommonAddress.ArbitrumGoerli['USDC.e']
+      ])
+    }
+  }, [])
+
+  const approveUSDC = useCallback(
+    async (signer: Signer, amount: BigNumber) => {
+      const contract = ERC20__factory.connect(USDCContractAddress, signer)
+      const tx = await contract.functions.approve(
+        tokenMessengerContractAddress,
+        amount
+      )
+      await tx.wait()
+      updateUSDCBalances(USDCContractAddress)
+    },
+    [USDCContractAddress, tokenMessengerContractAddress, updateUSDCBalances]
+  )
+
+  const approveAndDeposit = useCallback(
+    async ({
+      selectedToken,
+      amount,
+      provider,
+      signer,
+      onSubmit,
+      onAllowanceTooLow
+    }: {
+      selectedToken: ERC20BridgeToken
+      amount: string
+      provider: Provider
+      signer: Signer
+      onAllowanceTooLow?: () => Promise<boolean>
+      onSubmit: () => void
+    }) => {
+      if (!walletAddress) {
+        return false
+      }
+
+      const { decimals } = selectedToken
+      const amountRaw = utils.parseUnits(amount, decimals)
+      const allowance = await getTokenAllowanceForSpender({
+        account: walletAddress,
+        erc20Address: selectedToken.address,
+        provider,
+        spender: tokenMessengerContractAddress
+      })
+
+      try {
+        if (allowance.lte(amountRaw)) {
+          const shouldContinue = await onAllowanceTooLow?.()
+          if (!shouldContinue) {
+            return
+          }
+          await approveUSDC(signer, amountRaw)
+        }
+        await deposit(amountRaw)
+        onSubmit()
+      } catch (error: any) {
+        if (!isUserRejectedError(error)) {
+          Sentry.captureException(error)
+        }
+      }
+    },
+    [tokenMessengerContractAddress]
+  )
+
   return {
-    deposit,
+    approveAndDeposit,
     fetchAttestation,
-    redeem
+    redeem,
+    updateUSDCBalances
   }
 }
