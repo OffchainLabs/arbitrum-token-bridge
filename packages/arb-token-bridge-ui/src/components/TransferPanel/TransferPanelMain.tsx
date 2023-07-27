@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import { Chain, useAccount } from 'wagmi'
+import { Chain, useAccount, useChainId } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -55,6 +55,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
+import { useCCTP } from '../../hooks/useCCTP'
 
 enum NetworkType {
   l1 = 'l1',
@@ -319,6 +320,7 @@ export function TransferPanelMain({
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
+  const chainId = useChainId()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -358,8 +360,23 @@ export function TransferPanelMain({
     walletAddress: l2WalletAddress
   })
 
+  const { updateUSDCBalances } = useCCTP({
+    walletAddress: destinationAddressOrWalletAddress,
+    chainId
+  })
+
   useEffect(() => {
     if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
+      if (
+        isTokenMainnetUSDC(selectedToken.address) ||
+        isTokenGoerliUSDC(selectedToken.address) ||
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+        isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      ) {
+        updateUSDCBalances(selectedToken.address)
+        return
+      }
+
       updateErc20L1Balances([selectedToken.address])
       if (selectedToken.l2Address) {
         updateErc20L2Balances([selectedToken.l2Address])
@@ -647,6 +664,11 @@ export function TransferPanelMain({
     // If user select native USDC on L2, when switching to deposit mode,
     // we need to default to set the corresponding USDC on L1
     if (!isDepositMode) {
+      return
+    }
+
+    // When switching network, token might be undefined
+    if (!token) {
       return
     }
 
