@@ -29,7 +29,10 @@ export type FetchWithdrawalsFromSubgraphResult = {
  * @param query.searchString Searches records through the l2TxHash
  */
 export async function fetchWithdrawalsFromSubgraph({
-  address,
+  sender,
+  senderNot,
+  receiver,
+  receiverNot,
   fromBlock,
   toBlock,
   l2ChainId,
@@ -38,7 +41,10 @@ export async function fetchWithdrawalsFromSubgraph({
   pageNumber = 0,
   searchString = ''
 }: {
-  address: string
+  sender?: string
+  senderNot?: string
+  receiver?: string
+  receiverNot?: string
   fromBlock: number
   toBlock: number
   l2ChainId: number
@@ -54,7 +60,10 @@ export async function fetchWithdrawalsFromSubgraph({
 
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
-      address,
+      sender,
+      senderNot,
+      receiver,
+      receiverNot,
       fromBlock,
       toBlock,
       l2ChainId,

@@ -14,7 +14,7 @@ import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
-  isCustomAddressTx,
+  isCustomDestinationAddressTx,
   isDepositReadyToRedeem,
   isPending
 } from '../../../state/app/utils'
@@ -231,7 +231,7 @@ export function TransactionsTableDepositRow({
   )
 
   const customAddressTxPadding = useMemo(
-    () => (isCustomAddressTx(tx) ? 'pb-11' : ''),
+    () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
     [tx]
   )
 

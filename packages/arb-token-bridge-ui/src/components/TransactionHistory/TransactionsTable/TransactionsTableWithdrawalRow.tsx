@@ -23,7 +23,7 @@ import {
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import {
-  isCustomAddressTx,
+  isCustomDestinationAddressTx,
   findMatchingL1TxForWithdrawal,
   isPending
 } from '../../../state/app/utils'
@@ -375,7 +375,7 @@ export function TransactionsTableWithdrawalRow({
   )
 
   const customAddressTxPadding = useMemo(
-    () => (isCustomAddressTx(tx) ? 'pb-11' : ''),
+    () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
     [tx]
   )
 

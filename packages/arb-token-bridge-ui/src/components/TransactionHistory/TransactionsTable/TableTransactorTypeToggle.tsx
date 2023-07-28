@@ -10,7 +10,8 @@ export const TableTransactorTypeToggle = ({
   const {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
-  const { setShowSentTransactions } = useAppContextActions()
+  const { showSentTransactions, showReceivedTransactions } =
+    useAppContextActions()
 
   const buttonActiveClassName = 'pointer-events-none border-b-4 border-black'
   const buttonInactiveClassName = 'arb-hover border-b-2 pb-[1px] border-gray'
@@ -23,7 +24,7 @@ export const TableTransactorTypeToggle = ({
       )}
     >
       <button
-        onClick={() => setShowSentTransactions(true)}
+        onClick={showSentTransactions}
         className={
           isTransactionHistoryShowingSentTx
             ? buttonActiveClassName
@@ -34,7 +35,7 @@ export const TableTransactorTypeToggle = ({
       </button>
 
       <button
-        onClick={() => setShowSentTransactions(false)}
+        onClick={showReceivedTransactions}
         className={
           isTransactionHistoryShowingSentTx
             ? buttonInactiveClassName

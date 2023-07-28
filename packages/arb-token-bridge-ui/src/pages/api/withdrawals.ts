@@ -7,9 +7,11 @@ import { getL2SubgraphClient } from '../../util/SubgraphUtils'
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
   query: {
     l2ChainId: string
-    address: string
     search?: string
-    fetchSentTx?: string
+    sender?: string
+    senderNot?: string
+    receiver?: string
+    receiverNot?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -28,10 +30,12 @@ export default async function handler(
 ) {
   try {
     const {
-      address,
       search = '',
       l2ChainId,
-      fetchSentTx = 'true',
+      sender,
+      senderNot,
+      receiver,
+      receiverNot,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -49,7 +53,8 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-    if (!address) errorMessage.push('<address> is required')
+    if (!sender && !receiver)
+      errorMessage.push('<sender> or <receiver> is required')
 
     if (errorMessage.length) {
       res.status(400).json({
@@ -58,21 +63,14 @@ export default async function handler(
       })
     }
 
-    const addressQuery =
-      fetchSentTx === 'true'
-        ? `
-      sender: "${address}",
-    `
-        : `
-      sender_not: "${address}",
-      receiver: "${address}",
-    `
-
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
             withdrawals(
                 where: {
-                ${addressQuery}
+                ${sender ? `sender: "${sender}",` : ''}
+                ${senderNot ? `sender_not: "${senderNot}",` : ''}
+                ${receiver ? `receiver: "${receiver}",` : ''}
+                ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}
                 ${
                   typeof fromBlock !== 'undefined'
                     ? `l2BlockNum_gte: ${Number(fromBlock)}`

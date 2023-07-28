@@ -11,6 +11,10 @@ import {
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
+import {
+  getQueryParamsForFetchingReceivedFunds,
+  getQueryParamsForFetchingSentFunds
+} from '../util/SubgraphUtils'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -49,7 +53,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const {
-    layout: { isTransactionHistoryShowingSentTx: fetchSentTx }
+    layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
 
   const {
@@ -58,6 +62,10 @@ export const useDeposits = (depositPageParams: PageParams) => {
     }
   } = useAppState()
 
+  const additionalQueryParams = isTransactionHistoryShowingSentTx
+    ? getQueryParamsForFetchingSentFunds(walletAddress)
+    : getQueryParamsForFetchingReceivedFunds(walletAddress)
+
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
     [
@@ -65,7 +73,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       walletAddress,
       l1Provider,
       l2Provider,
-      fetchSentTx,
+      isTransactionHistoryShowingSentTx,
       depositPageParams.pageNumber,
       depositPageParams.pageSize,
       depositPageParams.searchString
@@ -75,19 +83,18 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
-      _fetchSentTx,
+      _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteDepositData({
-        walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
-        fetchSentTx: _fetchSentTx,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        searchString: _searchString
+        searchString: _searchString,
+        ...additionalQueryParams
       })
   )
 }

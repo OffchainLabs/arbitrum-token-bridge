@@ -1,5 +1,5 @@
 import { MergedTransaction } from '../../../state/app/state'
-import { isCustomAddressTx } from '../../../state/app/utils'
+import { isCustomDestinationAddressTx } from '../../../state/app/utils'
 import { CustomAddressTxExplorer } from './TransactionsTable'
 
 export const TransactionsTableCustomAddressLabel = ({
@@ -7,7 +7,7 @@ export const TransactionsTableCustomAddressLabel = ({
 }: {
   tx: MergedTransaction
 }) => {
-  if (!isCustomAddressTx(tx)) {
+  if (!isCustomDestinationAddressTx(tx)) {
     return null
   }
 

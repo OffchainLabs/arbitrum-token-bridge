@@ -1,5 +1,7 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
+import { FetchDepositParams } from './deposits/fetchDeposits'
+import { FetchWithdrawalsParams } from './withdrawals/fetchWithdrawals'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -116,5 +118,27 @@ export const tryFetchLatestSubgraphBlockNumber = async (
   } catch (error) {
     // In case the subgraph is not supported or down, fall back to fetching everything through event logs
     return 0
+  }
+}
+
+type AdditionalSubgraphQueryParams = Pick<
+  FetchDepositParams | FetchWithdrawalsParams,
+  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
+>
+
+export function getQueryParamsForFetchingSentFunds(
+  walletAddress: string
+): AdditionalSubgraphQueryParams {
+  return {
+    sender: walletAddress
+  }
+}
+
+export function getQueryParamsForFetchingReceivedFunds(
+  walletAddress: string
+): AdditionalSubgraphQueryParams {
+  return {
+    senderNot: walletAddress,
+    receiver: walletAddress
   }
 }

@@ -10,10 +10,12 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 
 export type FetchDepositParams = {
-  walletAddress: string
+  sender?: string
+  senderNot?: string
+  receiver?: string
+  receiverNot?: string
   fromBlock?: number
   toBlock?: number
-  fetchSentTx?: boolean
   l1Provider: Provider
   l2Provider: Provider
   pageSize?: number
@@ -25,17 +27,20 @@ export type FetchDepositParams = {
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
 export const fetchDeposits = async ({
-  walletAddress,
+  sender,
+  senderNot,
+  receiver,
+  receiverNot,
   fromBlock,
   toBlock,
-  fetchSentTx,
   l1Provider,
   l2Provider,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
 }: FetchDepositParams): Promise<Transaction[]> => {
-  if (!walletAddress || !l1Provider || !l2Provider) return []
+  if (!sender && !receiver) return []
+  if (!l1Provider || !l2Provider) return []
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
@@ -62,11 +67,13 @@ export const fetchDeposits = async ({
   }
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
-    address: walletAddress,
+    sender,
+    senderNot,
+    receiver,
+    receiverNot,
     fromBlock,
     toBlock,
     l2ChainId,
-    fetchSentTx,
     pageSize,
     pageNumber,
     searchString

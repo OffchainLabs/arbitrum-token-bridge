@@ -111,8 +111,12 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
-  const setShowSentTransactions = (payload: boolean) => {
-    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload })
+  const showSentTransactions = () => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
+  }
+
+  const showReceivedTransactions = () => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: false })
   }
 
   const closeTransactionHistoryPanel = () => {
@@ -131,7 +135,8 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     setTransferring,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
-    setShowSentTransactions,
+    showSentTransactions,
+    showReceivedTransactions,
     openPreferences,
     closePreferences
   }

@@ -45,7 +45,8 @@ export const TransactionHistory = ({
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
   const { isSmartContractWallet } = useAccountType()
-  const { setShowSentTransactions } = useAppContextActions()
+  const { showSentTransactions, showReceivedTransactions } =
+    useAppContextActions()
   const {
     app: { mergedTransactions }
   } = useAppState()
@@ -65,19 +66,27 @@ export const TransactionHistory = ({
     if (!isSmartContractWallet || !chain) {
       return
     }
-    const isDeposit = index === 0
+    const isDepositsTab = index === 0
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
     // SCW address is tied to a specific network, so we must ensure that:
-    if (isDeposit) {
+    if (isDepositsTab) {
       // if showing deposits, we always show:
-      // - sent txs if connected to L1
-      // - received txs if connected to L2
-      setShowSentTransactions(!isConnectedToArbitrum)
+      if (isConnectedToArbitrum) {
+        // - received txs if connected to L2
+        showReceivedTransactions()
+      } else {
+        // - sent txs if connected to L1
+        showSentTransactions()
+      }
     } else {
       // if showing withdrawals, we always show:
-      // - sent txs if connected to L2
-      // - received txs if connected to L1
-      setShowSentTransactions(isConnectedToArbitrum)
+      if (isConnectedToArbitrum) {
+        // - sent txs if connected to L2
+        showSentTransactions()
+      } else {
+        // - received txs if connected to L1
+        showReceivedTransactions()
+      }
     }
   }
 

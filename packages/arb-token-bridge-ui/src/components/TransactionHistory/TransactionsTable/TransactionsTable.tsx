@@ -7,7 +7,7 @@ import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow
 import {
   getStandardizedDate,
   getStandardizedTime,
-  isCustomAddressTx,
+  isCustomDestinationAddressTx,
   isDeposit,
   isWithdrawal
 } from '../../../state/app/utils'
@@ -110,7 +110,7 @@ export const CustomAddressTxExplorer = ({
     return l2.network.id
   }, [isCustomSenderTx, isCustomDestinationTx, l1, l2])
 
-  if (!explorerChainId || !isCustomAddressTx(tx)) {
+  if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null
   }
 

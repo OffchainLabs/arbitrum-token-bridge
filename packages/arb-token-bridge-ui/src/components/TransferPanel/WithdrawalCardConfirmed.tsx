@@ -8,7 +8,7 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { isCustomAddressTx } from '../../state/app/utils'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
@@ -52,7 +52,7 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L1 transaction: Will show after claiming
             </span>
-            {isCustomAddressTx(tx) && (
+            {isCustomDestinationAddressTx(tx) && (
               <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
                 <CustomAddressTxExplorer
                   tx={tx}
