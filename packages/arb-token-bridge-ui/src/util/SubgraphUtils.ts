@@ -127,18 +127,18 @@ type AdditionalSubgraphQueryParams = Pick<
 >
 
 export function getQueryParamsForFetchingSentFunds(
-  walletAddress: string
+  address: string
 ): AdditionalSubgraphQueryParams {
   return {
-    sender: walletAddress
+    sender: address
   }
 }
 
 export function getQueryParamsForFetchingReceivedFunds(
-  walletAddress: string
+  address: string
 ): AdditionalSubgraphQueryParams {
   return {
-    senderNot: walletAddress,
-    receiver: walletAddress
+    senderNot: address,
+    receiver: address
   }
 }
