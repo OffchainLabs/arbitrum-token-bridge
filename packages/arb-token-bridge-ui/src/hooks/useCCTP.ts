@@ -18,7 +18,7 @@ import { ERC20BridgeToken } from './arbTokenBridge.types'
 import { Provider } from '@ethersproject/providers'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 
-type ChainIdKeys =
+type CCTPSupportedChainId =
   | ChainId.Mainnet
   | ChainId.Goerli
   | ChainId.ArbitrumOne
