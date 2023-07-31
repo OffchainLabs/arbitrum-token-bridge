@@ -2,7 +2,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
 
-export const TableTransactorTypeToggle = ({
+export const TableSentOrReceivedFundsSwitch = ({
   className
 }: {
   className: string

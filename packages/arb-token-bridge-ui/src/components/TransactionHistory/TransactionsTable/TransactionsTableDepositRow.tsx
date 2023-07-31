@@ -316,7 +316,9 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
-      <TransactionsTableCustomAddressLabel tx={tx} />
+      {isCustomDestinationAddressTx(tx) && (
+        <TransactionsTableCustomAddressLabel tx={tx} />
+      )}
     </tr>
   )
 }

@@ -16,7 +16,7 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
-import { TableTransactorTypeToggle } from './TableTransactorTypeToggle'
+import { TableSentOrReceivedFundsSwitch } from './TableSentOrReceivedFundsSwitch'
 import { useAppState } from '../../../state'
 import { useAppContextState } from '../../App/AppContext'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
@@ -80,7 +80,7 @@ export const CustomAddressTxExplorer = ({
   const { address } = useAccount()
   const { l1, l2 } = useNetworksAndSigners()
 
-  const isCustomSenderTx = useMemo(() => {
+  const isDifferentSenderTx = useMemo(() => {
     if (!tx.sender || !address) {
       return false
     }
@@ -95,20 +95,22 @@ export const CustomAddressTxExplorer = ({
   }, [tx.destination, address])
 
   const explorerChainId = useMemo(() => {
-    if (!isCustomSenderTx && !isCustomDestinationTx) {
+    if (!isDifferentSenderTx && !isCustomDestinationTx) {
       return null
     }
+
     if (tx.isWithdrawal) {
-      if (isCustomSenderTx) {
-        return l2.network.id
-      }
-      return l1.network.id
+      // this is a withdrawal, so
+      // if it's a different sender, show their L2 address (where the withdrawal originated)
+      // otherwise it's a custom destination, show their L1 address (where the funds will land)
+      return isDifferentSenderTx ? l2.network.id : l1.network.id
     }
-    if (isCustomSenderTx) {
-      return l1.network.id
-    }
-    return l2.network.id
-  }, [isCustomSenderTx, isCustomDestinationTx, l1, l2])
+    
+    // this is a deposit, so
+    // if it's a different sender, show their L1 address (where the deposit originated)
+    // otherwise it's a custom destination, show their L2 address (where the funds will land)
+    return isDifferentSenderTx ? l1.network.id : l2.network.id
+  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null
@@ -120,7 +122,7 @@ export const CustomAddressTxExplorer = ({
 
   return (
     <>
-      {isCustomSenderTx ? (
+      {isDifferentSenderTx ? (
         <span>Funds received from: </span>
       ) : (
         <span>Funds sent to: </span>
@@ -128,10 +130,10 @@ export const CustomAddressTxExplorer = ({
       <ExternalLink
         className={explorerClassName}
         href={`${getExplorerUrl(explorerChainId)}/address/${
-          isCustomSenderTx ? tx.sender : tx.destination
+          isDifferentSenderTx ? tx.sender : tx.destination
         }`}
       >
-        {shortenAddress(isCustomSenderTx ? tx.sender : tx.destination)}
+        {shortenAddress(isDifferentSenderTx ? tx.sender : tx.destination)}
       </ExternalLink>
     </>
   )
@@ -223,15 +225,9 @@ export function TransactionsTable({
     // here we make sure we display a correct tx (sent or received)
     return _transactions.filter(tx => {
       if (isTransactionHistoryShowingSentTx) {
-        if (tx.sender?.toLowerCase() !== address.toLowerCase()) {
-          return false
-        }
-      } else {
-        if (tx.sender?.toLowerCase() === address.toLowerCase()) {
-          return false
-        }
+        return tx.sender?.toLowerCase() === address.toLowerCase()
       }
-      return true
+      return tx.sender?.toLowerCase() !== address.toLowerCase()
     })
   }, [_transactions, address])
 
@@ -260,7 +256,7 @@ export function TransactionsTable({
   return (
     <>
       {!isSmartContractWallet && (
-        <TableTransactorTypeToggle
+        <TableSentOrReceivedFundsSwitch
           className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
         />
       )}
@@ -270,7 +266,7 @@ export function TransactionsTable({
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
-        transactions={transactions}
+        transactions={transactionsByTransactorType}
         isSmartContractWallet={isSmartContractWallet}
         loading={loading}
       />

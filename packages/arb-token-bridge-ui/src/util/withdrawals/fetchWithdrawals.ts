@@ -44,7 +44,9 @@ export const fetchWithdrawals = async ({
   fromBlock,
   toBlock
 }: FetchWithdrawalsParams) => {
-  if (!sender && !receiver) return []
+  const address = sender ?? receiver
+
+  if (typeof address === 'undefined') return []
   if (!l1Provider || !l2Provider) return []
 
   const l2ChainID = (await l2Provider.getNetwork()).chainId
@@ -82,13 +84,13 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address: sender ?? receiver!,
+      address,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address: sender ?? receiver!,
+      address,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -120,7 +122,7 @@ export const fetchWithdrawals = async ({
           l1Provider,
           l2Provider,
           l2ChainID,
-          sender ?? receiver!
+          address
         )
       )
     ])

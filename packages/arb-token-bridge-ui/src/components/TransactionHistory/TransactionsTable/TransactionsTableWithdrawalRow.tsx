@@ -423,7 +423,9 @@ export function TransactionsTableWithdrawalRow({
       >
         <WithdrawalRowAction tx={tx} isError={isError} />
       </td>
-      <TransactionsTableCustomAddressLabel tx={tx} />
+      {isCustomDestinationAddressTx(tx) && (
+        <TransactionsTableCustomAddressLabel tx={tx} />
+      )}
     </tr>
   )
 }
