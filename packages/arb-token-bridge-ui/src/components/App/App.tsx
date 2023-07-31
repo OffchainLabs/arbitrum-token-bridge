@@ -179,6 +179,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const { l1, l2 } = networksAndSigners
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+    const isConnectedToL3 = isNetwork(chain.id).isL3
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
@@ -186,14 +187,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
-    if (!isConnectedToArbitrum) {
-      console.info('Deposit mode detected:')
-      actions.app.setIsDepositMode(true)
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
+    if (
+      (isConnectedToArbitrum && !isNetwork(l2.network.id).isL3) ||
+      isConnectedToL3
+    ) {
       console.info('Withdrawal mode detected:')
       actions.app.setIsDepositMode(false)
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+    } else {
+      console.info('Deposit mode detected:')
+      actions.app.setIsDepositMode(true)
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     }
 
     initBridge(networksAndSigners)

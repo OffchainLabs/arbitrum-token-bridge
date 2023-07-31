@@ -17,6 +17,7 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -255,6 +256,10 @@ export function TransferPanelSummary({
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
+  const isL3Selected = isNetwork(l2.network.id).isL3
+
+  const parentChainLayer = isL3Selected ? 'L2' : 'L1'
+  const chainLayer = isL3Selected ? 'L3' : 'L2'
 
   const { isMainnet } = isNetwork(l1.network.id)
 
@@ -335,8 +340,12 @@ export function TransferPanelSummary({
       <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light">L1 gas</span>
-            <Tooltip content="L1 fees go to Ethereum Validators.">
+            <span className="pl-4 font-light">{parentChainLayer} gas</span>
+            <Tooltip
+              content={`${parentChainLayer} fees go to ${
+                parentChainLayer === 'L1' ? 'Ethereum' : parentChainLayer
+              } validators.`}
+            >
               <InformationCircleIcon className="h-4 w-4" />
             </Tooltip>
           </div>
@@ -355,8 +364,10 @@ export function TransferPanelSummary({
         </div>
         <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light ">L2 gas</span>
-            <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
+            <span className="pl-4 font-light ">{chainLayer} gas</span>
+            <Tooltip
+              content={`${chainLayer} fees go to ${chainLayer} validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.`}
+            >
               <InformationCircleIcon className="h-4 w-4 " />
             </Tooltip>
           </div>

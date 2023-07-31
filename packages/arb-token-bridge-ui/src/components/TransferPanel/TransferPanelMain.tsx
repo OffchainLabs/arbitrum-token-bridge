@@ -53,6 +53,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
+import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
 
 enum NetworkType {
   l1 = 'l1',
@@ -145,7 +146,14 @@ function NetworkContainer({
 }) {
   const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+    const { isArbitrum, isArbitrumNova, isXai } = isNetwork(network.id)
+
+    if (isXai) {
+      return {
+        backgroundImage: `url('/images/XaiLogo.svg')`,
+        backgroundClassName: 'bg-xai-dark'
+      }
+    }
 
     if (!isArbitrum) {
       return {
@@ -315,6 +323,8 @@ export function TransferPanelMain({
 
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const isConnectedToL3 = useIsConnectedToL3()
+
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
 
@@ -355,7 +365,6 @@ export function TransferPanelMain({
     provider: l2.provider,
     walletAddress: l2WalletAddress
   })
-
   useEffect(() => {
     if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
       updateErc20L1Balances([selectedToken.address])
@@ -400,10 +409,33 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [erc20L1Balances, erc20L2Balances, selectedToken, l1, l2])
 
-  const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
-  const externalTo = isConnectedToArbitrum ? l1.network : l2.network
+  const externalFrom = useMemo(() => {
+    if (isConnectedToArbitrum) {
+      if (isNetwork(l2.network.id).isArbitrum) {
+        return l2.network
+      }
+      return l1.network
+    }
+    if (isConnectedToL3) {
+      return l2.network
+    }
+    return l1.network
+  }, [l1, l2, isConnectedToArbitrum, isConnectedToL3])
+
+  const externalTo = useMemo(() => {
+    if (isConnectedToArbitrum) {
+      if (isNetwork(l2.network.id).isArbitrum) {
+        return l1.network
+      }
+      return l2.network
+    }
+    if (isConnectedToL3) {
+      return l1.network
+    }
+    return l2.network
+  }, [l1, l2, isConnectedToArbitrum, isConnectedToL3])
 
   const [from, setFrom] = useState<Chain>(externalFrom)
   const [to, setTo] = useState<Chain>(externalTo)
@@ -424,20 +456,12 @@ export function TransferPanelMain({
   const [, setQueryParams] = useArbQueryParams()
 
   useEffect(() => {
-    const l2ChainId = isConnectedToArbitrum ? externalFrom.id : externalTo.id
-
     setFrom(externalFrom)
     setTo(externalTo)
-
-    // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
-    setQueryParams({ l2ChainId })
   }, [
-    isConnectedToArbitrum,
     externalFrom,
     externalTo,
-    setQueryParams,
-    l1.provider,
-    l2.provider
+    setQueryParams
   ])
 
   const estimateGas = useCallback(
@@ -660,6 +684,19 @@ export function TransferPanelMain({
       )
     }
 
+    function getSelectedArbitrumChainId() {
+      if (isNetwork(l1.network.id).isArbitrum) {
+        return l1.network.id
+      }
+      if (isNetwork(l2.network.id).isArbitrum) {
+        return l2.network.id
+      }
+      if (isNetwork(l1.network.id).isTestnet) {
+        return ChainId.ArbitrumGoerli
+      }
+      return ChainId.ArbitrumOne
+    }
+
     if (isDepositMode) {
       return {
         from: {
@@ -670,27 +707,24 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
+            if (network.id === from.id) {
+              switchNetworksOnTransferPanel()
+              return
+            }
+
             if (shouldOpenOneNovaDialog([network.id, to.id])) {
               setOneNovaTransferDestinationNetworkId(to.id)
               openOneNovaTransferDialog()
               return
             }
 
-            const { isEthereum } = isNetwork(network.id)
-
-            // Selecting the same chain or L1 network
-            if (from.id === network.id || isEthereum) {
-              return
-            }
-
             try {
               await switchNetworkAsync?.(network.id)
+              if (isNetwork(network.id).isEthereum) {
+                updatePreferredL2Chain(getSelectedArbitrumChainId())
+                return
+              }
               updatePreferredL2Chain(network.id)
-
-              // If L2 selected, change to withdraw mode and set new selections
-              switchNetworksOnTransferPanel()
-              setFrom(network)
-              setTo(l1.network)
             } catch (error: any) {
               if (!isUserRejectedError(error)) {
                 Sentry.captureException(error)
@@ -703,8 +737,8 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            // Selecting the same chain
-            if (to.id === network.id) {
+            if (network.id === from.id) {
+              switchNetworksOnTransferPanel()
               return
             }
 
@@ -714,30 +748,31 @@ export function TransferPanelMain({
               return
             }
 
-            const { isEthereum } = isNetwork(network.id)
+            const { isEthereum, isL3, isTestnet } = isNetwork(network.id)
 
-            // Switch networks if selecting L1 network
-            if (isEthereum) {
-              return switchNetworksOnTransferPanel()
-            }
-
-            if (isConnectedToArbitrum) {
-              // In deposit mode, if we are connected to a different L2 network
-              //
-              // 1) Switch to the L1 network (to be able to initiate a deposit)
-              // 2) Select the preferred L2 network
+            if (isL3) {
               try {
-                await switchNetworkAsync?.(l1.network.id)
-                updatePreferredL2Chain(network.id)
+                // If the destination is L3, we need to connect to Arbitrum One.
+                // That's the only option for Xai for now.
+                const arbitrumOneChainId = isTestnet
+                  ? ChainId.ArbitrumGoerli
+                  : ChainId.ArbitrumOne
+                await switchNetworkAsync?.(arbitrumOneChainId)
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
                   Sentry.captureException(error)
                 }
+                return
               }
-            } else {
-              // If we are connected to an L1 network, we can just select the preferred L2 network
-              updatePreferredL2Chain(network.id)
             }
+
+            if (isEthereum) {
+              updatePreferredL2Chain(getSelectedArbitrumChainId())
+              return
+            }
+
+            updatePreferredL2Chain(network.id)
+            setTo(network)
           }
         }
       }
@@ -752,8 +787,8 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          // Selecting the same chain
-          if (from.id === network.id) {
+          if (network.id === from.id) {
+            switchNetworksOnTransferPanel()
             return
           }
 
@@ -763,16 +798,12 @@ export function TransferPanelMain({
             return
           }
 
-          const { isEthereum } = isNetwork(network.id)
-
-          // Switch networks if selecting L1 network
-          if (isEthereum) {
-            return switchNetworksOnTransferPanel()
-          }
-
-          // In withdraw mode we always switch to the L2 network
           try {
             await switchNetworkAsync?.(network.id)
+            if (isNetwork(network.id).isEthereum) {
+              updatePreferredL2Chain(getSelectedArbitrumChainId())
+              return
+            }
             updatePreferredL2Chain(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -786,10 +817,8 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network.id)
-
-          // Selecting the same chain or L1 network
-          if (to.id === network.id || isEthereum) {
+          if (network.id === from.id) {
+            switchNetworksOnTransferPanel()
             return
           }
 
@@ -799,25 +828,40 @@ export function TransferPanelMain({
             return
           }
 
-          // Destination network is L2, connect to L1
-          try {
-            await switchNetworkAsync?.(l1.network.id)
-            updatePreferredL2Chain(network.id)
+          const { isEthereum, isL3, isTestnet } = isNetwork(network.id)
 
-            // Change to withdraw mode and set new selections
-            switchNetworksOnTransferPanel()
-            setFrom(l1.network)
-            setTo(network)
-          } catch (error: any) {
-            if (!isUserRejectedError(error)) {
-              Sentry.captureException(error)
+          if (isEthereum) {
+            // If connected to L3, we need to change to L2.
+            // We can't withdraw from L3 to L1.
+            if (isConnectedToL3) {
+              try {
+                const arbitrumOneChainId = isTestnet
+                  ? ChainId.ArbitrumGoerli
+                  : ChainId.ArbitrumOne
+                await switchNetworkAsync?.(arbitrumOneChainId)
+                return
+              } catch (error: any) {
+                if (!isUserRejectedError(error)) {
+                  Sentry.captureException(error)
+                }
+                return
+              }
             }
+            // Connected to L2.
+            updatePreferredL2Chain(getSelectedArbitrumChainId())
           }
+
+          if (isL3) {
+            updatePreferredL2Chain(network.id)
+          }
+
+          setTo(network)
         }
       }
     }
   }, [
     l1.network,
+    l2.network,
     from,
     to,
     isSmartContractWallet,
@@ -825,7 +869,8 @@ export function TransferPanelMain({
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
-    isConnectedToArbitrum
+    isConnectedToArbitrum,
+    isConnectedToL3
   ])
 
   return (

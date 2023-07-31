@@ -61,3 +61,21 @@ export const localL2Network: Chain = {
     default: { name: 'Blockscout', url: '' }
   }
 }
+
+export const localL3Network: Chain = {
+  id: ChainId.XaiGoerli,
+  name: "Xai Goerli",
+  network: 'xai-goerli',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.XaiGoerli]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.XaiGoerli]!]
+    }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: '' }
+  }
+}

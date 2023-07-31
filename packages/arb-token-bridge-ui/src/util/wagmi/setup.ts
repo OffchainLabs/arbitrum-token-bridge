@@ -7,7 +7,8 @@ import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 import {
   arbitrumNova,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  localL3Network
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
@@ -23,7 +24,8 @@ const chainList = isTestingEnvironment
       arbitrumGoerli,
       // add local environments during testing
       local,
-      arbitrumLocal
+      arbitrumLocal,
+      localL3Network
     ]
   : [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli]
 
@@ -39,7 +41,8 @@ enum TargetChainKey {
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli'
+  ArbitrumGoerli = 'arbitrum-goerli',
+  XaiGoerli = 'xai-goerli'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -72,6 +75,9 @@ function getChainId(targetChainKey: TargetChainKey): number {
 
     case TargetChainKey.ArbitrumGoerli:
       return ChainId.ArbitrumGoerli
+
+    case TargetChainKey.XaiGoerli:
+      return ChainId.XaiGoerli
   }
 }
 

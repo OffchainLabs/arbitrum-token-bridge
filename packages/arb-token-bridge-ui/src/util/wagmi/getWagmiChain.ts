@@ -4,7 +4,8 @@ import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
 import {
   arbitrumNova,
   localL1Network,
-  localL2Network
+  localL2Network,
+  localL3Network
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
 
@@ -32,6 +33,10 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumLocal:
       return localL2Network
+
+    // L3
+    case ChainId.XaiGoerli:
+      return localL3Network
 
     default:
       throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)

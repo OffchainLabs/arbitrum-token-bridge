@@ -55,6 +55,7 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -180,13 +181,14 @@ export function TransferPanel() {
     useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
-  const { isArbitrumNova } = isNetwork(l2Network.id)
+  const { isArbitrumNova, isXai } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
+  const isConnectedToL3 = useLatest(useIsConnectedToL3())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -395,6 +397,18 @@ export function TransferPanel() {
       return
     }
 
+    // Check if only L1 and L3 networks are selected.
+    // L1 <> L3 transfers aren't enabled.
+    // Just in case, UI and SDK should prevent it.
+    const areL1AndL3NetworksSelected = [l1Network.id, l2Network.id].every(id => {
+      const { isEthereum, isL3 } = isNetwork(id)
+      return isEthereum || isL3
+    })
+    if (areL1AndL3NetworksSelected) {
+      console.error("Transfers between L1 and L3 aren't supported yet.")
+      return
+    }
+
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
@@ -431,7 +445,10 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (isConnectedToArbitrum.current) {
+        if (
+          isConnectedToArbitrum.current &&
+          isNetwork(l1Network.id).isEthereum
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -461,7 +478,8 @@ export function TransferPanel() {
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
-          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
+          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID) &&
+          !isNetwork(connectedChainID).isL3
         ) {
           return networkConnectionWarningToast()
         }
@@ -596,7 +614,7 @@ export function TransferPanel() {
           })
         }
       } else {
-        if (!isConnectedToArbitrum.current) {
+        if (!isConnectedToArbitrum.current && !isConnectedToL3) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -1070,7 +1088,8 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark'
+                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark',
+                isXai ? 'bg-xai-dark' : ''
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -1083,7 +1102,10 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={isSwitchingL2Chain || disableWithdrawalV2}
               onClick={transfer}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
+                isConnectedToL3 ? 'bg-arb-one-dark' : ''
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'

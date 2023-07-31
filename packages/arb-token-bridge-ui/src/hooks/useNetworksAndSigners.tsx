@@ -26,12 +26,13 @@ import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
 
-import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { chainIdToDefaultL2ChainId, isNetwork, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -158,6 +159,7 @@ export function NetworksAndSignersProvider(
     status: defaultStatus
   })
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
   const isTosAccepted = tosAccepted !== undefined
 
@@ -198,15 +200,19 @@ export function NetworksAndSignersProvider(
       return
     }
 
+    console.log({ selectedL2ChainId })
+
     /***
-     * Case 1: selectedChainId is undefined => set it to provider's default L2
+     * Case 1: selectedChainId is undefined =>
+     *    A. if connected to Arbitrum, keep as undefined for special case that sets L1 to Ethereum
+     *    B. else, set it to provider's default L2
      * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 3: selectedChainId is defined and supported, continue
      */
     let _selectedL2ChainId = selectedL2ChainId
     const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
-    // Case 1: use a default L2 based on the connected provider chainid
+    // Case 1: allow undefined for the Arbitrum connection, or use a default L2 based on the connected provider chainid
     _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
@@ -217,8 +223,13 @@ export function NetworksAndSignersProvider(
       return
     }
 
+    const isSelectedL2ChainIdArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
+
     // Case 2: L2 is not supported by provider
-    if (!providerSupportedL2.includes(_selectedL2ChainId)) {
+    if (
+      !providerSupportedL2.includes(_selectedL2ChainId) &&
+      !isSelectedL2ChainIdArbitrum
+    ) {
       // remove the l2chainId, keeping the rest of the params intact
       setQueryParams({
         l2ChainId: undefined
@@ -230,15 +241,38 @@ export function NetworksAndSignersProvider(
     // Case 3
     getL1Network(provider as Web3Provider)
       .then(async l1Network => {
+        const isL1Arbitrum = isNetwork(l1Network.chainID).isArbitrum
+
+        // // There's no preffered L2 set, but we are connected to Arbitrum.
+        // if (isL1Arbitrum && !selectedL2ChainId) {
+        //   // We want Arbitrum to be paired with Ethereum instead of L3 in our UI.
+        //   // However the current flow would set it to Arbitrum's partner L3.
+
+        //   // We know L1 is Arbitrum, we will set it to L2 instead.
+        //   _selectedL2ChainId = l1Network.chainID
+        //   // Jump to 'getL2Network'
+        //   throw new Error()
+        // }
+
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
         const l2Provider = new StaticJsonRpcProvider(
           rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
         )
         const l2Network = await getL2Network(l2Provider)
 
+        if (isL1Arbitrum) {
+          if (isSelectedL2ChainIdArbitrum) {
+            // Special case for L1 <> L3 switching in 'to' network.
+            // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
+            l1Network = await getL1Network(l2Network.partnerChainID)
+          }
+        }
+
         // from the L1 network, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
         const l1Provider = new StaticJsonRpcProvider(rpcURLs[l1Network.chainID])
+
+        console.log('Setting 1.')
 
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
@@ -274,6 +308,7 @@ export function NetworksAndSignersProvider(
               rpcURLs[l2Network.chainID]
             )
 
+            console.log('Setting 2.')
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {

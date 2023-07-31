@@ -40,6 +40,8 @@ module.exports = {
         'arb-one-dark': '#001A6B',
         'arb-nova-primary': '#E57310',
         'arb-nova-dark': '#743600',
+        'xai-primary': '#641E00',
+        'xai-dark': '#320F00',
         'eth-primary': '#454A75',
         'eth-dark': '#1A1C33',
         'ocl-blue': '#243145'

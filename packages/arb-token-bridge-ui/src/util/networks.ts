@@ -21,7 +21,11 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
   }
 
   if (l1ChainId === ChainId.Goerli) {
-    return [ChainId.ArbitrumGoerli]
+    return [ChainId.ArbitrumGoerli, ChainId.XaiGoerli]
+  }
+
+  if (l1ChainId === ChainId.ArbitrumGoerli) {
+    return [ChainId.Goerli, ChainId.XaiGoerli]
   }
 
   if (l1ChainId === ChainId.Local) {
@@ -51,7 +55,9 @@ export enum ChainId {
    */
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613,
-  ArbitrumLocal = 412346
+  ArbitrumLocal = 412346,
+  // L3
+  XaiGoerli = 51204936
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -69,7 +75,9 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
+  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
+  // L3
+  [ChainId.XaiGoerli]: 'http://localhost:8449'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -94,7 +102,7 @@ export const getBlockTime = (chainId: ChainId) => {
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
-  return network.blockTime
+  return (network as L1Network).blockTime ?? 0
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
@@ -130,7 +138,9 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli]
+  [ChainId.ArbitrumGoerli]: [ChainId.XaiGoerli],
+  // L3 Testnets
+  [ChainId.XaiGoerli]: [ChainId.XaiGoerli]
 }
 
 const defaultL1Network: L1Network = {
@@ -145,6 +155,7 @@ const defaultL1Network: L1Network = {
 
 const defaultL2Network: L2Network = {
   chainID: 412346,
+  partnerChainIDs: [],
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
@@ -180,14 +191,55 @@ const defaultL2Network: L2Network = {
   }
 }
 
+const defaultL3Network: L2Network = {
+  chainID: 51204936,
+  partnerChainIDs: [],
+  confirmPeriodBlocks: 150,
+  ethBridge: {
+    bridge: '0xA0a2bdC2EFAC9714fA5dA3F0e2f0a83c776Dc641',
+    inbox: '0x4160D735f4fa8BBD7a6C30bB015a48b74d5a3269',
+    outbox: '0xB91eeef09Fdc910F9884EfACb53a3752Ec20Fe79',
+    rollup: '0xf35c65050635da8653D58685eC01d1492cc4C8e4',
+    sequencerInbox: '0xD75d57942Ee6b4b11A06bae6dAd44837c7c9C15E'
+  },
+  explorerUrl: '',
+  isCustom: true,
+  name: 'Bartek',
+  partnerChainID: 421613,
+  retryableLifetimeSeconds: 604800,
+  nitroGenesisBlock: 0,
+  nitroGenesisL1Block: 0,
+  depositTimeout: 900000,
+  isArbitrum: true,
+  isL3: true,
+  tokenBridge: {
+    l1CustomGateway: '0x3FfF6b939cb79df542224fdDfc7C5864396D0C6F',
+    l1ERC20Gateway: '0x12192B642565447a759Fb70c68a38Fa07D73168A',
+    l1GatewayRouter: '0xe100022aC0505Aa2c20cAea09dFd360BFf9f3D3C',
+    l1MultiCall: '0x8dFd97E3475054a266072a70120481d88A390FDC',
+    l1ProxyAdmin: '0xFEaf3Df2eD6ddB5B4d1f3934B54a76ac434081B9',
+    l1Weth: '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
+    l1WethGateway: '0xB87873AcB45Ac42D2A871A977c0C0a55952B79b2',
+    l2CustomGateway: '0x5050017503cbDC76185144470A33F08FcDeBefAB',
+    l2ERC20Gateway: '0xe9f3E1d892a125ddAbA401C12Cf6c6FD50DD0C1d',
+    l2GatewayRouter: '0x5A55B48AE5c90B06dCd412B8b10301b5660e85Cb',
+    l2Multicall: '0xF1EbE27e93a9673040408e44734a772300E6a0F0',
+    l2ProxyAdmin: '0x1A9932c26a7DDA1ed536ea39e5c5f0c6cE8c6bf3',
+    l2Weth: '0x39c17A6cf6fA8F2346734088813c4ad59374D3d9',
+    l2WethGateway: '0xb3B15E5b09BbE1C8f6447F78D69020624d88d0D2'
+  }
+}
+
 export type RegisterLocalNetworkParams = {
   l1Network: L1Network
   l2Network: L2Network
+  l3Network: L2Network
 }
 
 const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
   l1Network: defaultL1Network,
-  l2Network: defaultL2Network
+  l2Network: defaultL2Network,
+  l3Network: defaultL3Network
 }
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
@@ -198,20 +250,23 @@ export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
   fallback: 'http://localhost:8547'
 })
+export const localL3NetworkRpcUrl = 'http://localhost:8449'
 
 export function registerLocalNetwork(
   params: RegisterLocalNetworkParams = registerLocalNetworkDefaultParams
 ) {
-  const { l1Network, l2Network } = params
+  const { l1Network, l2Network, l3Network } = params
 
   try {
     rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
     rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
+    rpcURLs[l3Network.chainID] = localL3NetworkRpcUrl
 
     chainIdToDefaultL2ChainId[l1Network.chainID] = [l2Network.chainID]
     chainIdToDefaultL2ChainId[l2Network.chainID] = [l2Network.chainID]
 
     addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
+    addCustomNetwork({ customL1Network: l2Network, customL2Network: l3Network })
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
@@ -230,6 +285,10 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
+  const isXaiGoerli = chainId === ChainId.XaiGoerli
+  const isXai = isXaiGoerli
+  const isL3 = isXaiGoerli
+
   const isArbitrum =
     isArbitrumOne ||
     isArbitrumNova ||
@@ -238,15 +297,25 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumLocal
 
   const isTestnet =
-    isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
+    isRinkeby ||
+    isGoerli ||
+    isArbitrumGoerli ||
+    isArbitrumRinkeby ||
+    isSepolia ||
+    isXaiGoerli
 
   const isSupported =
-    isArbitrumOne || isArbitrumNova || isMainnet || isGoerli || isArbitrumGoerli // is network supported on bridge
+    isArbitrumOne ||
+    isArbitrumNova ||
+    isMainnet ||
+    isGoerli ||
+    isArbitrumGoerli ||
+    isXai // is network supported on bridge
 
   return {
     // L1
     isMainnet,
-    isEthereum: !isArbitrum,
+    isEthereum: !isArbitrum && !isL3,
     // L1 Testnets
     isRinkeby,
     isGoerli,
@@ -258,6 +327,11 @@ export function isNetwork(chainId: ChainId) {
     // L2 Testnets
     isArbitrumRinkeby,
     isArbitrumGoerli,
+    // L3
+    isL3,
+    isXai,
+    // L3 Testnets
+    isXaiGoerli,
     // Testnet
     isTestnet,
     // General
@@ -288,6 +362,9 @@ export function getNetworkName(chainId: number) {
     case ChainId.ArbitrumLocal:
       return 'Arbitrum'
 
+    case ChainId.XaiGoerli:
+      return 'Xai Goerli'
+
     default:
       return 'Unknown'
   }
@@ -308,6 +385,9 @@ export function getNetworkLogo(chainId: number) {
 
     case ChainId.ArbitrumNova:
       return '/images/ArbitrumNovaLogo.svg'
+    
+    case ChainId.XaiGoerli:
+      return '/images/XaiLogo.svg'
 
     default:
       return '/images/EthereumLogo.svg'
@@ -316,6 +396,6 @@ export function getNetworkLogo(chainId: number) {
 
 export function getSupportedNetworks(chainId = 0) {
   return isNetwork(chainId).isTestnet
-    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+    ? [ChainId.Goerli, ChainId.ArbitrumGoerli, ChainId.XaiGoerli]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }
