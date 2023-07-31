@@ -8,10 +8,16 @@ import {
 import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
 
+const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
+if (!subgraphUrl) {
+  console.error('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
+  throw new Error('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
+}
+
 export function getSubgraphClient(subgraph: string) {
   return new ApolloClient({
     link: new HttpLink({
-      uri: `https://api.thegraph.com/subgraphs/name/chrstph-dvx/${subgraph}`,
+      uri: `${subgraphUrl}${subgraph}`,
       fetch
     }),
     cache: new InMemoryCache()
@@ -22,8 +28,13 @@ export function getSubgraphClient(subgraph: string) {
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
     address: `0x${string}`
-    l1ChainId: ChainId
+    sourceChainId: ChainId
   }
+}
+
+export enum ChainDomain {
+  Mainnet = 0,
+  ArbitrumOne = 3
 }
 
 export type MessageReceived = {
@@ -34,7 +45,7 @@ export type MessageReceived = {
   messageBody: string
   nonce: number
   sender: `0x${string}`
-  sourceDomain: 0 | 1 // 0: Mainnet, 1: Avalanche
+  sourceDomain: ChainDomain
   transactionHash: `0x${string}`
 }
 
@@ -46,7 +57,7 @@ export type MessageSent = {
   message: string
   nonce: number
   sender: `0x${string}`
-  sourceDomain: 0 | 1 // 0: Mainnet, 1: Avalanche
+  sourceDomain: ChainDomain
   transactionHash: `0x${string}`
 }
 
@@ -68,7 +79,7 @@ export default async function handler(
   res: NextApiResponse<Response>
 ) {
   try {
-    const { walletAddress, l1ChainId } = req.query
+    const { walletAddress, sourceChainId } = req.query
     const { type } = req.query
 
     if (
@@ -89,7 +100,7 @@ export default async function handler(
 
     // validate the request parameters
     const errorMessage = []
-    if (!l1ChainId) errorMessage.push('<l1ChainId> is required')
+    if (!sourceChainId) errorMessage.push('<sourceChainId> is required')
     if (!walletAddress) errorMessage.push('<walletAddress> is required')
 
     if (errorMessage.length) {
@@ -101,10 +112,10 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp' : 'cctp-goerli'
+      sourceChainId === ChainId.Mainnet ? 'cctp' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'arb1-cctp' : 'arb1-cctp-goerli'
+      sourceChainId === ChainId.Mainnet ? 'arb1-cctp' : 'arb1-cctp-goerli'
     )
 
     const messageSentsQuery = gql(`{
