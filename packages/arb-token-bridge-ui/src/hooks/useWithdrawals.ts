@@ -73,7 +73,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     }
   } = useAppState()
 
-  const additionalQueryParams = isTransactionHistoryShowingSentTx
+  const additionalSubgraphQueryParams = isTransactionHistoryShowingSentTx
     ? getQueryParamsForFetchingSentFunds(walletAddress)
     : getQueryParamsForFetchingReceivedFunds(walletAddress)
 
@@ -108,7 +108,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,
-        ...additionalQueryParams
+        ...additionalSubgraphQueryParams
       })
   )
 }
