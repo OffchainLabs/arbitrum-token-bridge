@@ -27,8 +27,8 @@ export function getSubgraphClient(subgraph: string) {
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
-    address: `0x${string}`
-    sourceChainId: ChainId
+    walletAddress: `0x${string}`
+    l1ChainId: ChainId
   }
 }
 
@@ -65,7 +65,7 @@ export type Response =
   | {
       data: {
         pending: MessageSent[]
-        fulfilled: MessageSent[]
+        completed: MessageSent[]
       }
       error: null
     }
@@ -79,7 +79,7 @@ export default async function handler(
   res: NextApiResponse<Response>
 ) {
   try {
-    const { walletAddress, sourceChainId } = req.query
+    const { walletAddress, l1ChainId } = req.query
     const { type } = req.query
 
     if (
@@ -100,7 +100,7 @@ export default async function handler(
 
     // validate the request parameters
     const errorMessage = []
-    if (!sourceChainId) errorMessage.push('<sourceChainId> is required')
+    if (!l1ChainId) errorMessage.push('<l1ChainId> is required')
     if (!walletAddress) errorMessage.push('<walletAddress> is required')
 
     if (errorMessage.length) {
@@ -112,10 +112,10 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      sourceChainId === ChainId.Mainnet ? 'cctp' : 'cctp-goerli'
+      l1ChainId === ChainId.Mainnet ? 'cctp-mainnet' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
-      sourceChainId === ChainId.Mainnet ? 'arb1-cctp' : 'arb1-cctp-goerli'
+      l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
     const messageSentsQuery = gql(`{
@@ -179,18 +179,21 @@ export default async function handler(
     const { messageReceiveds } = messageReceivedsResult.data
 
     // MessageSents can be link to MessageReceived with the tuple (sourceDomain, nonce)
-    // Multiple MessageSent can have the same tuple, we should consider only the most recent one
+    // Map constructor accept an array of [key, value] arrays
+    // new Map(['key1', 'value1'], ['key2', 'value2'], ['keyN', 'valueN']) would return
+    // Map(3) {'key1' => 'value1', 'key2' => 'value2', 'keyN' => 'valueN'}
+    // We create a map with all keys being MessageReceived ids, and values being the corresponding MessageReceived
     const messageReceivedMap = new Map(
       messageReceiveds.map(messageReceived => [
         messageReceived.id,
         messageReceived
       ])
     )
-    const { pending, fulfilled } = messageSents.reduce(
+    const { pending, completed } = messageSents.reduce(
       (acc, message) => {
         // If the MessageSent has a corresponding MessageReceived
         if (messageReceivedMap.has(message.id)) {
-          acc.fulfilled.push(message)
+          acc.completed.push(message)
         } else {
           acc.pending.push(message)
         }
@@ -198,10 +201,10 @@ export default async function handler(
         return acc
       },
       {
-        fulfilled: [],
+        completed: [],
         pending: []
       } as {
-        fulfilled: MessageSent[]
+        completed: MessageSent[]
         pending: MessageSent[]
       }
     )
@@ -209,7 +212,7 @@ export default async function handler(
     res.status(200).json({
       data: {
         pending,
-        fulfilled
+        completed
       },
       error: null
     })
