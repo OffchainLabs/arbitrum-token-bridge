@@ -4,12 +4,12 @@ import { Response } from '../../pages/api/cctp/[type]'
 
 export type FetchParams = {
   walletAddress: string
-  l1ChainId: ChainId
+  sourceChainId: ChainId
 }
 
 async function fetchCCTP({
   walletAddress,
-  l1ChainId,
+  sourceChainId,
   type
 }: FetchParams & {
   type: 'deposits' | 'withdrawals'
@@ -17,7 +17,7 @@ async function fetchCCTP({
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       walletAddress,
-      l1ChainId
+      sourceChainId
     })
   )
 

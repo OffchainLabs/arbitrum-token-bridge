@@ -1,6 +1,7 @@
 import { utils, BigNumber, Signer } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import { useContractWrite } from 'wagmi'
+import { prepareWriteContract, writeContract } from '@wagmi/core'
 import * as Sentry from '@sentry/react'
 
 import { ChainId } from '../util/networks'
@@ -17,6 +18,8 @@ import {
 import { ERC20BridgeToken } from './arbTokenBridge.types'
 import { Provider } from '@ethersproject/providers'
 import { isUserRejectedError } from '../util/isUserRejectedError'
+import { ChainDomain } from '../pages/api/cctp/[type]'
+import { errorToast } from '../components/common/atoms/Toast'
 
 type CCTPSupportedChainId =
   | ChainId.Mainnet
@@ -27,49 +30,49 @@ type CCTPSupportedChainId =
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
   tokenMessengerContractAddress: `0x${string}`
-  targetChainDomain: 0 | 3
-  targetChainId: ChainIdKeys
-  USDCContractAddress: `0x${string}`
+  targetChainDomain: ChainDomain
+  targetChainId: CCTPSupportedChainId
+  usdcContractAddress: `0x${string}`
   messengerTransmitterContractAddress: `0x${string}`
-  attestation_API_URL: string
+  attestationApiUrl: string
 }
 
-const contracts: Record<ChainIdKeys, Contracts> = {
+const contracts: Record<CCTPSupportedChainId, Contracts> = {
   [ChainId.Mainnet]: {
     tokenMessengerContractAddress: '0xbd3fa81b58ba92a82136038b25adec7066af3155',
-    targetChainDomain: 3,
+    targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumOne,
-    USDCContractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+    usdcContractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     messengerTransmitterContractAddress:
       '0xC30362313FBBA5cf9163F0bb16a0e01f01A896ca',
-    attestation_API_URL: 'https://iris-api.circle.com'
+    attestationApiUrl: 'https://iris-api.circle.com'
   },
   [ChainId.Goerli]: {
     tokenMessengerContractAddress: '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
-    targetChainDomain: 3,
+    targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumGoerli,
-    USDCContractAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+    usdcContractAddress: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
     messengerTransmitterContractAddress:
       '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
-    attestation_API_URL: 'https://iris-api-sandbox.circle.com'
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com'
   },
   [ChainId.ArbitrumOne]: {
     tokenMessengerContractAddress: '0x19330d10D9Cc8751218eaf51E8885D058642E08A',
-    targetChainDomain: 0,
+    targetChainDomain: ChainDomain.Mainnet,
     targetChainId: ChainId.Mainnet,
-    USDCContractAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    usdcContractAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     messengerTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
-    attestation_API_URL: 'https://iris-api.circle.com'
+    attestationApiUrl: 'https://iris-api.circle.com'
   },
   [ChainId.ArbitrumGoerli]: {
     tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
-    targetChainDomain: 0,
+    targetChainDomain: ChainDomain.Mainnet,
     targetChainId: ChainId.Goerli,
-    USDCContractAddress: '0xfd064a18f3bf249cf1f87fc203e90d8f650f2d63',
+    usdcContractAddress: '0xfd064a18f3bf249cf1f87fc203e90d8f650f2d63',
     messengerTransmitterContractAddress:
       '0x26413e8157cd32011e726065a5462e97dd4d03d9',
-    attestation_API_URL: 'https://iris-api-sandbox.circle.com'
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com'
   }
 }
 
@@ -98,7 +101,7 @@ type AttestationResponse =
       status: 'pending_confirmations'
     }
 
-function getContracts(chainId: ChainIdKeys | undefined) {
+function getContracts(chainId: CCTPSupportedChainId | undefined) {
   if (!chainId) {
     return contracts[ChainId.Mainnet]
   }
@@ -106,20 +109,20 @@ function getContracts(chainId: ChainIdKeys | undefined) {
 }
 
 export function useCCTP({
-  chainId,
+  sourceChainId,
   walletAddress
 }: {
-  chainId?: ChainIdKeys
+  sourceChainId?: CCTPSupportedChainId
   walletAddress?: `0x${string}` | string
 }) {
   const {
     tokenMessengerContractAddress,
     targetChainDomain,
     targetChainId,
-    attestation_API_URL,
-    USDCContractAddress,
+    attestationApiUrl,
+    usdcContractAddress,
     messengerTransmitterContractAddress
-  } = getContracts(chainId)
+  } = getContracts(sourceChainId)
   const { l1, l2 } = useNetworksAndSigners()
   const {
     erc20: [, updateErc20L1Balance]
@@ -141,32 +144,20 @@ export function useCCTP({
     return utils.hexlify(utils.zeroPad(walletAddress, 32)) as `0x${string}`
   }, [walletAddress])
 
-  const { writeAsync: depositForBurn } = useContractWrite({
-    address: tokenMessengerContractAddress,
-    abi: tokenMessengerAbi,
-    functionName: 'depositForBurn',
-    mode: 'recklesslyUnprepared'
-  })
-
-  const { writeAsync: receiveMessage } = useContractWrite({
-    address: messengerTransmitterContractAddress,
-    abi: messengerTransmitterAbi,
-    functionName: 'receiveMessage',
-    mode: 'recklesslyUnprepared',
-    chainId: targetChainId
-  })
-
   const deposit = useCallback(
     async (amount: BigNumber) => {
-      const depositTx = await depositForBurn({
-        recklesslySetUnpreparedArgs: [
+      const config = await prepareWriteContract({
+        address: tokenMessengerContractAddress,
+        abi: tokenMessengerAbi,
+        functionName: 'depositForBurn',
+        args: [
           amount,
           targetChainDomain,
           destinationAddress as `0x${string}`,
-          USDCContractAddress
+          usdcContractAddress
         ]
       })
-
+      const depositTx = await writeContract(config)
       const txReceipt = await depositTx.wait()
       const eventTopic = utils.keccak256(
         utils.toUtf8Bytes('MessageSent(bytes)')
@@ -187,37 +178,37 @@ export function useCCTP({
       }
     },
     [
+      tokenMessengerContractAddress,
       targetChainDomain,
       destinationAddress,
-      USDCContractAddress,
-      receiveMessage,
-      depositForBurn
+      usdcContractAddress
     ]
   )
 
   const fetchAttestation = useCallback(
     async (attestationHash: `0x${string}`) => {
-      let attestationResponse: AttestationResponse = {
-        status: 'pending_confirmations',
-        attestation: null
-      }
+      const response = await fetch(
+        `${attestationApiUrl}/attestations/${attestationHash}`
+      )
 
+      const attestationResponse: AttestationResponse = await response.json()
+      return attestationResponse
+    },
+    [attestationApiUrl]
+  )
+
+  const waitForAttestation = useCallback(
+    async (attestationHash: `0x${string}`) => {
       while (true) {
-        const response = await fetch(
-          `${attestation_API_URL}/attestations/${attestationHash}`
-        )
-
-        attestationResponse = await response.json()
-        if (attestationResponse.status === 'complete') {
-          break
+        const attestation = await fetchAttestation(attestationHash)
+        if (attestation.status === 'complete') {
+          return attestation.attestation
         }
 
         await new Promise(r => setTimeout(r, 5000))
       }
-
-      return attestationResponse.attestation
     },
-    []
+    [fetchAttestation]
   )
 
   const redeem = useCallback(
@@ -228,12 +219,17 @@ export function useCCTP({
       messageBytes: `0x${string}`
       attestation: `0x${string}`
     }) => {
-      const receiveTx = await receiveMessage({
-        recklesslySetUnpreparedArgs: [messageBytes, attestation]
+      const config = await prepareWriteContract({
+        address: messengerTransmitterContractAddress,
+        abi: messengerTransmitterAbi,
+        functionName: 'receiveMessage',
+        chainId: targetChainId,
+        args: [messageBytes, attestation]
       })
+      const receiveTx = await writeContract(config)
       return await receiveTx.wait()
     },
-    [receiveMessage]
+    [messengerTransmitterContractAddress, targetChainId]
   )
 
   const updateUSDCBalances = useCallback((address: `0x${string}` | string) => {
@@ -256,15 +252,13 @@ export function useCCTP({
 
   const approveUSDC = useCallback(
     async (signer: Signer, amount: BigNumber) => {
-      const contract = ERC20__factory.connect(USDCContractAddress, signer)
-      const tx = await contract.functions.approve(
+      const contract = ERC20__factory.connect(usdcContractAddress, signer)
+      return await contract.functions.approve(
         tokenMessengerContractAddress,
         amount
       )
-      await tx.wait()
-      updateUSDCBalances(USDCContractAddress)
     },
-    [USDCContractAddress, tokenMessengerContractAddress, updateUSDCBalances]
+    [usdcContractAddress, tokenMessengerContractAddress, updateUSDCBalances]
   )
 
   const approveAndDeposit = useCallback(
@@ -302,14 +296,22 @@ export function useCCTP({
           if (!shouldContinue) {
             return
           }
-          await approveUSDC(signer, amountRaw)
+
+          const tx = await approveUSDC(signer, amountRaw)
+          await tx.wait()
+          updateUSDCBalances(usdcContractAddress)
         }
         await deposit(amountRaw)
         onSubmit()
       } catch (error: any) {
-        if (!isUserRejectedError(error)) {
-          Sentry.captureException(error)
+        if (isUserRejectedError(error)) {
+          return
         }
+
+        Sentry.captureException(error)
+        return errorToast(
+          `There was an error approving USDC, here is more information: ${error.message}`
+        )
       }
     },
     [tokenMessengerContractAddress]
@@ -317,8 +319,8 @@ export function useCCTP({
 
   return {
     approveAndDeposit,
-    fetchAttestation,
     redeem,
+    waitForAttestation,
     updateUSDCBalances
   }
 }
