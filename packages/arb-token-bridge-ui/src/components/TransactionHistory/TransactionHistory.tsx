@@ -91,6 +91,8 @@ export const TransactionHistory = ({
   }
 
   useEffect(() => {
+    // this function runs every time the network card is changed, and here it is also triggered when the page loads
+    // it sets the tab to 0 (deposits), which is the default tab
     handleSentOrReceivedTxForSCW(0)
   }, [isSmartContractWallet, chain])
 
