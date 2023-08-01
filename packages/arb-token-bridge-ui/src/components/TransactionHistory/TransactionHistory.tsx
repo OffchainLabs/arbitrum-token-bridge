@@ -1,5 +1,5 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, SetStateAction, useMemo } from 'react'
+import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
 import { useNetwork } from 'wagmi'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
@@ -62,7 +62,7 @@ export const TransactionHistory = ({
   const roundedTabClasses =
     'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
 
-  function handlePanelChange(index: number) {
+  function handleSentOrReceivedTxForSCW(index: number) {
     if (!isSmartContractWallet || !chain) {
       return
     }
@@ -90,6 +90,10 @@ export const TransactionHistory = ({
     }
   }
 
+  useEffect(() => {
+    handleSentOrReceivedTxForSCW(0)
+  }, [isSmartContractWallet])
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
@@ -104,7 +108,7 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group onChange={handlePanelChange}>
+        <Tab.Group onChange={handleSentOrReceivedTxForSCW}>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
