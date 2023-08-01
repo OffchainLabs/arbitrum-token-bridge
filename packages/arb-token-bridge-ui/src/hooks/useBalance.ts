@@ -10,6 +10,11 @@ import useSWR, {
 import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
+import { useAppState } from '../state'
+import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
+import { useIsConnectedToL3 } from './useIsConnectedToL3'
+import { useIsSwitchingL2Chain } from '../components/TransferPanel/TransferPanelMainUtils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
@@ -41,6 +46,7 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
 }
 
 const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
+  const { l1, l2 } = useNetworksAndSigners()
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),
@@ -57,9 +63,16 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         return null
       }
 
-      return [walletAddressLowercased, chainId, 'balance', type] as const
+      return [
+        walletAddressLowercased,
+        chainId,
+        'balance',
+        type,
+        l1.network.id,
+        l2.network.id
+      ] as const
     },
-    [chainId, walletAddressLowercased]
+    [chainId, walletAddressLowercased, l1, l2]
   )
   const fetchErc20 = useCallback(
     async (_addresses: string[] | undefined) => {

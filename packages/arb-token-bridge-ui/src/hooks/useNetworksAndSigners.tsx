@@ -32,7 +32,6 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
-import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 import { useIsConnectedToL3 } from './useIsConnectedToL3'
 
 export enum UseNetworksAndSignersStatus {
