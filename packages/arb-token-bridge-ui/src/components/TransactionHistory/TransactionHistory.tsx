@@ -92,7 +92,7 @@ export const TransactionHistory = ({
 
   useEffect(() => {
     handleSentOrReceivedTxForSCW(0)
-  }, [isSmartContractWallet])
+  }, [isSmartContractWallet, chain])
 
   return (
     <div className="flex flex-col justify-around gap-6">
