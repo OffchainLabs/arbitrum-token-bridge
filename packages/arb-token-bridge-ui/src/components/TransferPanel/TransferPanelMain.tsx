@@ -412,30 +412,24 @@ export function TransferPanelMain({
   }, [erc20L1Balances, erc20L2Balances, selectedToken, l1, l2])
 
   const externalFrom = useMemo(() => {
-    if (isConnectedToArbitrum) {
-      if (isNetwork(l2.network.id).isArbitrum) {
-        return l2.network
-      }
-      return l1.network
+    if (isNetwork(l1.network.id).isArbitrum) {
+      return isConnectedToArbitrum ? l1.network : l2.network
     }
-    if (isConnectedToL3) {
-      return l2.network
-    }
-    return l1.network
-  }, [l1, l2, isConnectedToArbitrum, isConnectedToL3])
-
-  const externalTo = useMemo(() => {
-    if (isConnectedToArbitrum) {
-      if (isNetwork(l2.network.id).isArbitrum) {
-        return l1.network
-      }
-      return l2.network
-    }
-    if (isConnectedToL3) {
-      return l1.network
+    if (isNetwork(l1.network.id).isEthereum) {
+      return isConnectedToArbitrum ? l2.network : l1.network
     }
     return l2.network
-  }, [l1, l2, isConnectedToArbitrum, isConnectedToL3])
+  }, [l1, l2])
+
+  const externalTo = useMemo(() => {
+    if (isNetwork(l1.network.id).isArbitrum) {
+      return isConnectedToArbitrum ? l2.network : l1.network
+    }
+    if (isNetwork(l1.network.id).isEthereum) {
+      return isConnectedToArbitrum ? l1.network : l2.network
+    }
+    return l1.network
+  }, [l1, l2])
 
   const [from, setFrom] = useState<Chain>(externalFrom)
   const [to, setTo] = useState<Chain>(externalTo)
@@ -458,11 +452,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-  }, [
-    externalFrom,
-    externalTo,
-    setQueryParams
-  ])
+  }, [externalFrom, externalTo, setQueryParams])
 
   const estimateGas = useCallback(
     async (

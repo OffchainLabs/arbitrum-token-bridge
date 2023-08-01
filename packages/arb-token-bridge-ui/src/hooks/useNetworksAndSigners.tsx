@@ -33,6 +33,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
+import { useIsConnectedToL3 } from './useIsConnectedToL3'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -159,7 +160,7 @@ export function NetworksAndSignersProvider(
     status: defaultStatus
   })
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const isConnectedToL3 = useIsConnectedToL3()
 
   const isTosAccepted = tosAccepted !== undefined
 
@@ -200,19 +201,25 @@ export function NetworksAndSignersProvider(
       return
     }
 
-    console.log({ selectedL2ChainId })
-
     /***
-     * Case 1: selectedChainId is undefined =>
+     * Case 1: Connected to L3 & Arbitrum as preferredL2ChainId. Need to set to L3.
+     * Case 2: selectedChainId is undefined =>
      *    A. if connected to Arbitrum, keep as undefined for special case that sets L1 to Ethereum
      *    B. else, set it to provider's default L2
-     * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
-     * Case 3: selectedChainId is defined and supported, continue
+     * Case 3: selectedChainId is defined but not supported by provider => reset query params -> case 1
+     * Case 4: selectedChainId is defined and supported, continue
      */
     let _selectedL2ChainId = selectedL2ChainId
+
+    // Case 1: Connected to L3 & Arbitrum as preferredL2ChainId. Need to set to L3.
+    if (isConnectedToL3 && isNetwork(_selectedL2ChainId!).isArbitrum) {
+      setQueryParams({ l2ChainId: providerChainId })
+      return
+    }
+
     const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
-    // Case 1: allow undefined for the Arbitrum connection, or use a default L2 based on the connected provider chainid
+    // Case 2: allow undefined for the Arbitrum connection, or use a default L2 based on the connected provider chainid
     _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
@@ -225,7 +232,7 @@ export function NetworksAndSignersProvider(
 
     const isSelectedL2ChainIdArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
 
-    // Case 2: L2 is not supported by provider
+    // Case 3: L2 is not supported by provider
     if (
       !providerSupportedL2.includes(_selectedL2ChainId) &&
       !isSelectedL2ChainIdArbitrum
@@ -238,21 +245,21 @@ export function NetworksAndSignersProvider(
       return
     }
 
-    // Case 3
+    // Case 4
     getL1Network(provider as Web3Provider)
       .then(async l1Network => {
         const isL1Arbitrum = isNetwork(l1Network.chainID).isArbitrum
 
-        // // There's no preffered L2 set, but we are connected to Arbitrum.
-        // if (isL1Arbitrum && !selectedL2ChainId) {
-        //   // We want Arbitrum to be paired with Ethereum instead of L3 in our UI.
-        //   // However the current flow would set it to Arbitrum's partner L3.
+        // There's no preffered L2 set, but we are connected to Arbitrum.
+        if (isL1Arbitrum && !selectedL2ChainId) {
+          // We want Arbitrum to be paired with Ethereum instead of L3 in our UI.
+          // However the current flow would set it to Arbitrum's partner L3.
 
-        //   // We know L1 is Arbitrum, we will set it to L2 instead.
-        //   _selectedL2ChainId = l1Network.chainID
-        //   // Jump to 'getL2Network'
-        //   throw new Error()
-        // }
+          // We know L1 is Arbitrum, we will set it to L2 instead.
+          // When the hook reruns it will set L1 to Ethereum.
+          setQueryParams({ l2ChainId: l1Network.chainID })
+          return
+        }
 
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
         const l2Provider = new StaticJsonRpcProvider(
