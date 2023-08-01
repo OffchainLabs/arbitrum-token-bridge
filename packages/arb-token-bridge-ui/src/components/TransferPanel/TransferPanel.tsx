@@ -373,6 +373,8 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
+    const signerUndefinedError = 'Signer is undefined'
+
     if (!isConnected) {
       return
     }
@@ -382,8 +384,8 @@ export function TransferPanel() {
       return
     }
 
-    if (!l1Signer || !l2Signer) {
-      throw 'Signer is undefined'
+    if (!isSmartContractWallet && (!l1Signer || !l2Signer)) {
+      throw signerUndefinedError
     }
 
     const destinationAddressError = await getDestinationAddressError({
@@ -414,6 +416,10 @@ export function TransferPanel() {
 
     try {
       if (isDepositMode) {
+        if (!l1Signer) {
+          throw signerUndefinedError
+        }
+
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -596,6 +602,10 @@ export function TransferPanel() {
           })
         }
       } else {
+        if (!l2Signer) {
+          throw signerUndefinedError
+        }
+
         if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
