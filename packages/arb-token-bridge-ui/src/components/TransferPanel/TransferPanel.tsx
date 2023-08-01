@@ -455,6 +455,8 @@ export function TransferPanel() {
           )
         }
         if (
+          // only connect to L1 if the selected L1 network is Ethereum
+          // Arbitrum connection is valid for deposits to L3
           isConnectedToArbitrum.current &&
           isNetwork(l1Network.id).isEthereum
         ) {
@@ -627,7 +629,8 @@ export function TransferPanel() {
           throw signerUndefinedError
         }
 
-        if (!isConnectedToArbitrum.current && !isConnectedToL3) {
+        // only switch to L2 if connected to L1, to withdraw from L2 to L1
+        if (!isConnectedToArbitrum.current && !isConnectedToL3.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',

@@ -10,11 +10,7 @@ import useSWR, {
 import { MultiCaller } from '@arbitrum/sdk'
 
 import { useChainId } from './useChainId'
-import { useAppState } from '../state'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
-import { useIsConnectedToL3 } from './useIsConnectedToL3'
-import { useIsSwitchingL2Chain } from '../components/TransferPanel/TransferPanelMainUtils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
@@ -68,6 +64,8 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         chainId,
         'balance',
         type,
+        // include l1 and l2 in the query key to cover an edge case
+        // where Arbitrum changes from being L2 to L1, or from L2 to L1
         l1.network.id,
         l2.network.id
       ] as const

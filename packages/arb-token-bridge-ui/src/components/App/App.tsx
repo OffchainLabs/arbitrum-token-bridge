@@ -188,7 +188,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (
-      (isConnectedToArbitrum && !isNetwork(l2.network.id).isL3) ||
+      (isConnectedToArbitrum && isNetwork(l1.network.id).isEthereum) ||
       isConnectedToL3
     ) {
       console.info('Withdrawal mode detected:')

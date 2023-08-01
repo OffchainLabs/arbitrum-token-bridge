@@ -409,25 +409,39 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken, l1, l2])
+  }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
   const externalFrom = useMemo(() => {
+    // if Arbitrum is L1...
     if (isNetwork(l1.network.id).isArbitrum) {
+      // ...and we are connected to Arbitrum, then we deposit FROM L1 (L2 -> L3)
+      // otherwise we withdraw FROM L2 (L3 -> L2)
       return isConnectedToArbitrum ? l1.network : l2.network
     }
+    // if Ethereum is L1...
     if (isNetwork(l1.network.id).isEthereum) {
+      // ...and we are connected to Arbitrum, then we withdraw FROM L2 (L2 -> L1)
+      // otherwise we deposit FROM L1 (L1 -> L2)
       return isConnectedToArbitrum ? l2.network : l1.network
     }
+    // if L3, we set FROM L2 (L3 -> L2) as default
     return l2.network
   }, [l1, l2])
 
   const externalTo = useMemo(() => {
+    // if Arbitrum is L1...
     if (isNetwork(l1.network.id).isArbitrum) {
+      // ...and we are connected to Arbitrum, then we deposit TO L2 (L2 -> L3)
+      // otherwise we withdraw TO L1 (L3 -> L2)
       return isConnectedToArbitrum ? l2.network : l1.network
     }
+    // if Ethereum is L1...
     if (isNetwork(l1.network.id).isEthereum) {
+      // ...and we are connected to Arbitrum, then we withdraw TO L1 (L2 -> L1)
+      // otherwise we deposit TO L2 (L1 -> L2)
       return isConnectedToArbitrum ? l1.network : l2.network
     }
+    // if L3, we set TO L1 (L3 -> L2) as default
     return l1.network
   }, [l1, l2])
 
@@ -452,7 +466,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-  }, [externalFrom, externalTo, setQueryParams])
+  }, [externalFrom, externalTo])
 
   const estimateGas = useCallback(
     async (
@@ -674,6 +688,7 @@ export function TransferPanelMain({
       )
     }
 
+    // gets currently selected Arbitrum chain ID, either from L1 or L2
     function getSelectedArbitrumChainId() {
       if (isNetwork(l1.network.id).isArbitrum) {
         return l1.network.id
@@ -681,6 +696,8 @@ export function TransferPanelMain({
       if (isNetwork(l2.network.id).isArbitrum) {
         return l2.network.id
       }
+      // we can safely assume one of the selected chains is Arbitrum
+      // here we default to Arbitrum Goerli or Arbitrum One, just in case
       if (isNetwork(l1.network.id).isTestnet) {
         return ChainId.ArbitrumGoerli
       }

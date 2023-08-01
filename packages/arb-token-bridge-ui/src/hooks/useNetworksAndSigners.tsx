@@ -201,16 +201,14 @@ export function NetworksAndSignersProvider(
     }
 
     /***
-     * Case 1: Connected to L3 & Arbitrum as preferredL2ChainId. Need to set to L3.
-     * Case 2: selectedChainId is undefined =>
-     *    A. if connected to Arbitrum, keep as undefined for special case that sets L1 to Ethereum
-     *    B. else, set it to provider's default L2
+     * Case 1: Connected to L3 & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to L3.
+     * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 3: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 4: selectedChainId is defined and supported, continue
      */
     let _selectedL2ChainId = selectedL2ChainId
 
-    // Case 1: Connected to L3 & Arbitrum as preferredL2ChainId. Need to set to L3.
+    // Case 1: Connected to L3 & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to L3.
     if (isConnectedToL3 && isNetwork(_selectedL2ChainId!).isArbitrum) {
       setQueryParams({ l2ChainId: providerChainId })
       return
@@ -218,7 +216,7 @@ export function NetworksAndSignersProvider(
 
     const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
-    // Case 2: allow undefined for the Arbitrum connection, or use a default L2 based on the connected provider chainid
+    // Case 2: use a default L2 based on the connected provider chainid
     _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
@@ -266,19 +264,16 @@ export function NetworksAndSignersProvider(
         )
         const l2Network = await getL2Network(l2Provider)
 
-        if (isL1Arbitrum) {
-          if (isSelectedL2ChainIdArbitrum) {
-            // Special case for L1 <> L3 switching in 'to' network.
-            // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
-            l1Network = await getL1Network(l2Network.partnerChainID)
-          }
+        if (isL1Arbitrum && isSelectedL2ChainIdArbitrum) {
+          // Special case for L1 <> L3 switching in 'to' network.
+          // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
+          // We know l2Network is Arbitrum, we set l1Network to L1 (Arbitrum's partnerChainID).
+          l1Network = await getL1Network(l2Network.partnerChainID)
         }
 
         // from the L1 network, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
         const l1Provider = new StaticJsonRpcProvider(rpcURLs[l1Network.chainID])
-
-        console.log('Setting 1.')
 
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
@@ -314,7 +309,6 @@ export function NetworksAndSignersProvider(
               rpcURLs[l2Network.chainID]
             )
 
-            console.log('Setting 2.')
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
