@@ -373,6 +373,8 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
+    const signerUndefinedError = 'Signer is undefined'
+
     if (!isConnected) {
       return
     }
@@ -382,8 +384,9 @@ export function TransferPanel() {
       return
     }
 
-    if (!l1Signer || !l2Signer) {
-      throw 'Signer is undefined'
+    const hasBothSigners = l1Signer && l2Signer
+    if (isEOA && !hasBothSigners) {
+      throw signerUndefinedError
     }
 
     const destinationAddressError = await getDestinationAddressError({
@@ -414,6 +417,10 @@ export function TransferPanel() {
 
     try {
       if (isDepositMode) {
+        if (!l1Signer) {
+          throw signerUndefinedError
+        }
+
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -596,6 +603,10 @@ export function TransferPanel() {
           })
         }
       } else {
+        if (!l2Signer) {
+          throw signerUndefinedError
+        }
+
         if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
@@ -852,48 +863,60 @@ export function TransferPanel() {
     ]
   )
 
+  const disableDepositAndWithdrawal = useMemo(() => {
+    if (!amountNum) return true
+    if (isTransferring) return true
+    if (isSwitchingL2Chain) return true
+    if (destinationAddressError) return true
+
+    if (isSmartContractWallet && !selectedToken) {
+      return true
+    }
+
+    // Keep the button disabled while loading gas summary
+    if (!ethBalance || gasSummary.status !== 'success') {
+      return true
+    }
+
+    return false
+  }, [
+    amountNum,
+    destinationAddressError,
+    isSmartContractWallet,
+    ethBalance,
+    requiredGasFees,
+    gasSummary.status,
+    isSwitchingL2Chain,
+    isTransferring,
+    selectedToken
+  ])
+
   const disableDeposit = useMemo(() => {
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
+
     if (
-      isDepositMode &&
       selectedToken &&
       isWithdrawOnlyToken(selectedToken.address, l2Network.id)
     ) {
       return true
     }
 
-    return (
-      isTransferring ||
-      !amountNum ||
-      (isDepositMode &&
-        !isBridgingANewStandardToken &&
-        (!amountNum || !l1Balance || amountNum > +l1Balance)) ||
-      // allow 0-amount deposits when bridging new token
-      (isDepositMode &&
-        isBridgingANewStandardToken &&
-        (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    l2Network,
-    amountNum,
-    l1Balance,
-    isBridgingANewStandardToken,
-    selectedToken,
-    isSmartContractWallet,
-    destinationAddressError
-  ])
-
-  // TODO: Refactor this and the property above
-  const disableDepositV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableDeposit || gasSummary.status !== 'success') {
-      return true
+    if (isBridgingANewStandardToken) {
+      if (l1Balance === null || amountNum > Number(l1Balance)) {
+        return true
+      }
+    } else {
+      if (!l1Balance || amountNum > Number(l1Balance)) {
+        return true
+      }
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -901,49 +924,38 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l1Balance)
   }, [
-    ethBalance,
-    disableDeposit,
+    disableDepositAndWithdrawal,
+    isBridgingANewStandardToken,
     selectedToken,
-    gasSummary,
     amount,
+    amountNum,
     l1Balance,
+    l2Network.id,
     requiredGasFees
   ])
 
   const disableWithdrawal = useMemo(() => {
-    return (
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-      isTransferring ||
-      (!isDepositMode &&
-        (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    amountNum,
-    l2Balance,
-    selectedToken,
-    isSmartContractWallet,
-    destinationAddressError
-  ])
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
 
-  // TODO: Refactor this and the property above
-  const disableWithdrawalV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableWithdrawal || gasSummary.status !== 'success') {
+    if (!l2Balance) return true
+    if (amountNum > Number(l2Balance)) return true
+
+    if (
+      selectedToken &&
+      [
+        '0x0e192d382a36de7011f795acc4391cd302003606',
+        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+      ].includes(selectedToken.address.toLowerCase())
+    ) {
       return true
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -951,12 +963,11 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
-    ethBalance,
-    disableWithdrawal,
-    selectedToken,
-    gasSummary,
     amount,
+    amountNum,
+    disableDepositAndWithdrawal,
     l2Balance,
+    selectedToken,
     requiredGasFees
   ])
 
@@ -1060,7 +1071,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableDepositV2}
+              disabled={disableDeposit}
               onClick={() => {
                 if (selectedToken) {
                   depositToken()
@@ -1081,7 +1092,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableWithdrawalV2}
+              disabled={disableWithdrawal}
               onClick={transfer}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
