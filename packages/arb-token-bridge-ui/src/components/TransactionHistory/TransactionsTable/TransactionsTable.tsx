@@ -1,10 +1,13 @@
 import React, { Dispatch, SetStateAction, useMemo } from 'react'
+import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
+
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import {
   getStandardizedDate,
   getStandardizedTime,
+  isCustomDestinationAddressTx,
   isDeposit,
   isWithdrawal
 } from '../../../state/app/utils'
@@ -13,8 +16,13 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
+import { TableSentOrReceivedFundsSwitch } from './TableSentOrReceivedFundsSwitch'
 import { useAppState } from '../../../state'
-import { useAccountType } from '../../../hooks/useAccountType'
+import { useAppContextState } from '../../App/AppContext'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { ExternalLink } from '../../common/ExternalLink'
+import { getExplorerUrl } from '../../../util/networks'
+import { shortenAddress } from '../../../util/CommonUtils'
 
 export type PageParams = {
   searchString: string
@@ -62,6 +70,75 @@ export const TransactionDateTime = ({
   )
 }
 
+export const CustomAddressTxExplorer = ({
+  tx,
+  explorerClassName = 'arb-hover underline'
+}: {
+  tx: MergedTransaction
+  explorerClassName?: string
+}) => {
+  const { address } = useAccount()
+  const { l1, l2 } = useNetworksAndSigners()
+
+  const isDifferentSenderTx = useMemo(() => {
+    if (!tx.sender || !address) {
+      return false
+    }
+    return tx.sender.toLowerCase() !== address.toLowerCase()
+  }, [tx.sender, address])
+
+  const isCustomDestinationTx = useMemo(() => {
+    if (!address || !tx.destination) {
+      return false
+    }
+    return tx.destination.toLowerCase() !== address.toLowerCase()
+  }, [tx.destination, address])
+
+  const explorerChainId = useMemo(() => {
+    if (!isDifferentSenderTx && !isCustomDestinationTx) {
+      return null
+    }
+
+    if (tx.isWithdrawal) {
+      // this is a withdrawal, so
+      // if it's a different sender, show their L2 address (where the withdrawal originated)
+      // otherwise it's a custom destination, show their L1 address (where the funds will land)
+      return isDifferentSenderTx ? l2.network.id : l1.network.id
+    }
+
+    // this is a deposit, so
+    // if it's a different sender, show their L1 address (where the deposit originated)
+    // otherwise it's a custom destination, show their L2 address (where the funds will land)
+    return isDifferentSenderTx ? l1.network.id : l2.network.id
+  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
+
+  if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
+    return null
+  }
+
+  if (!tx.sender || !tx.destination) {
+    return null
+  }
+
+  return (
+    <>
+      {isDifferentSenderTx ? (
+        <span>Funds received from: </span>
+      ) : (
+        <span>Funds sent to: </span>
+      )}
+      <ExternalLink
+        className={explorerClassName}
+        href={`${getExplorerUrl(explorerChainId)}/address/${
+          isDifferentSenderTx ? tx.sender : tx.destination
+        }`}
+      >
+        {shortenAddress(isDifferentSenderTx ? tx.sender : tx.destination)}
+      </ExternalLink>
+    </>
+  )
+}
+
 enum TableStatus {
   LOADING,
   ERROR,
@@ -73,6 +150,7 @@ export type TransactionsTableProps = {
   pageParams: PageParams
   setPageParams: Dispatch<SetStateAction<PageParams>>
   transactions: MergedTransaction[]
+  isSmartContractWallet?: boolean
   loading: boolean
   error: boolean
 }
@@ -82,14 +160,17 @@ export function TransactionsTable({
   pageParams,
   setPageParams,
   transactions,
+  isSmartContractWallet,
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet = false } = useAccountType()
-
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
+  const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
+  const { address } = useAccount()
 
   // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
@@ -138,6 +219,18 @@ export function TransactionsTable({
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
 
+  const transactionsBySentOrReceivedFunds = useMemo(() => {
+    if (!address) return []
+    // both sent and received PENDING txs are stored together
+    // here we make sure we display a correct tx (sent or received)
+    return _transactions.filter(tx => {
+      if (isTransactionHistoryShowingSentTx) {
+        return tx.sender?.toLowerCase() === address.toLowerCase()
+      }
+      return tx.sender?.toLowerCase() !== address.toLowerCase()
+    })
+  }, [_transactions, address])
+
   const locallyStoredTransactionsMap = useMemo(() => {
     // map of all the locally-stored transactions (pending + recently executed)
     // so that tx rows can easily subscribe to live-local status without refetching table data
@@ -162,88 +255,91 @@ export function TransactionsTable({
 
   return (
     <>
+      {!isSmartContractWallet && (
+        <TableSentOrReceivedFundsSwitch
+          className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
+        />
+      )}
+
       {/* search and pagination buttons */}
       <TableActionHeader
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
-        transactions={transactions}
+        transactions={transactionsBySentOrReceivedFunds}
+        isSmartContractWallet={isSmartContractWallet}
         loading={loading}
       />
 
-      {
-        <table className="w-full overflow-hidden rounded-b-lg bg-white">
-          <thead className="text-gray-10 text-left text-sm">
-            <tr>
-              <th className="py-3 pl-6 pr-3 font-normal">Status</th>
-              <th className="px-3 py-3 font-normal">Time</th>
-              <th className="px-3 py-3 font-normal">Amount</th>
-              <th className="px-3 py-3 font-normal">TxID</th>
-              <th className="py-3 pl-3 pr-6 font-normal">
-                {/* Empty header text */}
-              </th>
-            </tr>
-          </thead>
+      <table className="w-full overflow-hidden rounded-b-lg bg-white">
+        <thead className="text-gray-10 text-left text-sm">
+          <tr>
+            <th className="py-3 pl-6 pr-3 font-normal">Status</th>
+            <th className="px-3 py-3 font-normal">Time</th>
+            <th className="px-3 py-3 font-normal">Amount</th>
+            <th className="px-3 py-3 font-normal">TxID</th>
+            <th className="py-3 pl-3 pr-6 font-normal">
+              {/* Empty header text */}
+            </th>
+          </tr>
+        </thead>
 
-          <tbody>
-            {status === TableStatus.LOADING && <TableBodyLoading />}
+        <tbody>
+          {status === TableStatus.LOADING && <TableBodyLoading />}
 
-            {status === TableStatus.ERROR && <TableBodyError />}
+          {status === TableStatus.ERROR && <TableBodyError />}
 
-            {/* when there are no search results found */}
-            {status === TableStatus.SUCCESS && noSearchResults && (
-              <NoDataOverlay />
+          {/* when there are no search results found */}
+          {status === TableStatus.SUCCESS && noSearchResults && (
+            <NoDataOverlay />
+          )}
+
+          {/* when there are no transactions present */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            !transactionsBySentOrReceivedFunds.length && (
+              <EmptyTableRow>
+                <span className="text-sm font-medium">No transactions</span>
+              </EmptyTableRow>
             )}
 
-            {/* when there are no transactions present */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              !_transactions.length && (
-                <EmptyTableRow>
-                  <span className="text-sm font-medium">
-                    {isSmartContractWallet
-                      ? 'You can see tx history in your smart contract wallet'
-                      : 'No transactions'}
-                  </span>
-                </EmptyTableRow>
-              )}
+          {/* finally, when transactions are present, show rows */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            transactionsBySentOrReceivedFunds.map((tx, index) => {
+              const isLastRow =
+                index === transactionsBySentOrReceivedFunds.length - 1
 
-            {/* finally, when transactions are present, show rows */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              _transactions.map((tx, index) => {
-                const isLastRow = index === _transactions.length - 1
+              // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
+              // this will make sure the row updates with any updates in the local app state
+              // else show static subgraph table data
+              const locallyStoredTransaction = locallyStoredTransactionsMap.get(
+                tx.txId
+              )
+              const finalTx = locallyStoredTransaction ?? tx
 
-                // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
-                // this will make sure the row updates with any updates in the local app state
-                // else show static subgraph table data
-                const locallyStoredTransaction =
-                  locallyStoredTransactionsMap.get(tx.txId)
-                const finalTx = locallyStoredTransaction ?? tx
-
-                if (isDeposit(finalTx)) {
-                  return (
-                    <TransactionsTableDepositRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-3' : ''}
-                    />
-                  )
-                } else if (isWithdrawal(finalTx)) {
-                  return (
-                    <TransactionsTableWithdrawalRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-3' : ''}
-                    />
-                  )
-                } else {
-                  return null
-                }
-              })}
-          </tbody>
-        </table>
-      }
+              if (isDeposit(finalTx)) {
+                return (
+                  <TransactionsTableDepositRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else if (isWithdrawal(finalTx)) {
+                return (
+                  <TransactionsTableWithdrawalRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+        </tbody>
+      </table>
     </>
   )
 }

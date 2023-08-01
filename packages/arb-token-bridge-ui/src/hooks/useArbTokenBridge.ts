@@ -199,6 +199,8 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
+      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
+      destination: walletAddress,
       l1NetworkID,
       l2NetworkID
     })
@@ -256,6 +258,8 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
+        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
+        destination: walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -284,6 +288,8 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
+          sender: tx.from,
+          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
@@ -442,6 +448,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         tokenAddress: erc20L1Address,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         l1NetworkID,
         l2NetworkID
       })
@@ -538,6 +545,7 @@ export const useArbTokenBridge = (
         assetName: symbol,
         assetType: AssetType.ERC20,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -563,6 +571,8 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
+          sender: walletAddress,
+          destinationAddress: destinationAddress ?? walletAddress,
           type: AssetType.ERC20,
           tokenAddress: erc20L1Address,
           value: amount,
