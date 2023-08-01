@@ -69,21 +69,6 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
   }
 }
 
-function getL1AddressFromAddress(address: string) {
-  switch (address) {
-    case CommonAddress.ArbitrumGoerli.USDC:
-      return CommonAddress.Goerli.USDC
-    case CommonAddress.ArbitrumGoerli['USDC.e']:
-      return CommonAddress.Goerli.USDC
-    case CommonAddress.ArbitrumOne.USDC:
-      return CommonAddress.Mainnet.USDC
-    case CommonAddress.ArbitrumOne['USDC.e']:
-      return CommonAddress.Mainnet.USDC
-    default:
-      return CommonAddress.Mainnet.USDC
-  }
-}
-
 type AttestationResponse =
   | {
       attestation: `0x${string}`
