@@ -55,7 +55,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
-import { useCCTP } from '../../hooks/useCCTP'
+import { useUpdateUSDCBalances } from '../../hooks/useUpdateUSDCBalances'
 
 enum NetworkType {
   l1 = 'l1',
@@ -359,10 +359,8 @@ export function TransferPanelMain({
     provider: l2.provider,
     walletAddress: l2WalletAddress
   })
-
-  const { updateUSDCBalances } = useCCTP({
-    walletAddress: destinationAddressOrWalletAddress,
-    chainId
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
+    walletAddress: destinationAddressOrWalletAddress
   })
 
   useEffect(() => {

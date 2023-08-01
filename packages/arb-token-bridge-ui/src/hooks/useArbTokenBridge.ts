@@ -45,7 +45,7 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { useCCTP } from './useCCTP'
+import { useUpdateUSDCBalances } from './useUpdateUSDCBalances'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -123,9 +123,7 @@ export const useArbTokenBridge = (
     [id: string]: boolean
   }
 
-  const chainId = useChainId()
-  const { updateUSDCBalances } = useCCTP({
-    chainId,
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress
   })
 

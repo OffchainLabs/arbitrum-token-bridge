@@ -170,7 +170,7 @@ export function TransferPanel() {
   })
 
   const { approveAndDeposit } = useCCTP({
-    chainId: isDepositMode ? l1Network.id : l2Network.id,
+    sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
     walletAddress: account
   })
 
@@ -520,7 +520,6 @@ export function TransferPanel() {
                 amount,
                 provider: l1Provider,
                 signer: l1Signer,
-                selectedToken,
                 destinationAddress,
                 async onAllowanceTooLow() {
                   const waitForInput = openTokenApprovalDialog()
@@ -677,7 +676,6 @@ export function TransferPanel() {
               amount,
               provider: l2Provider,
               signer: l2Signer,
-              selectedToken,
               destinationAddress,
               onSubmit: () => {
                 setTransferring(false)

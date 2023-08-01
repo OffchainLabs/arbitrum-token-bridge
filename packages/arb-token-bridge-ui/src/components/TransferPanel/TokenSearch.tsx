@@ -39,7 +39,7 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
-import { useCCTP } from '../../hooks/useCCTP'
+import { useUpdateUSDCBalances } from '../../hooks/useUpdateUSDCBalances'
 
 enum Panel {
   TOKENS,
@@ -451,12 +451,8 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const chainId = useChainId()
-  const { updateUSDCBalances } = useCCTP({
-    chainId,
-    walletAddress
-  })
   const { l1, l2 } = useNetworksAndSigners()
+  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
