@@ -403,10 +403,12 @@ export function TransferPanel() {
     // Check if only L1 and L3 networks are selected.
     // L1 <> L3 transfers aren't enabled.
     // Just in case, UI and SDK should prevent it.
-    const areL1AndL3NetworksSelected = [l1Network.id, l2Network.id].every(id => {
-      const { isEthereum, isL3 } = isNetwork(id)
-      return isEthereum || isL3
-    })
+    const areL1AndL3NetworksSelected = [l1Network.id, l2Network.id].every(
+      id => {
+        const { isEthereum, isL3 } = isNetwork(id)
+        return isEthereum || isL3
+      }
+    )
     if (areL1AndL3NetworksSelected) {
       console.error("Transfers between L1 and L3 aren't supported yet.")
       return

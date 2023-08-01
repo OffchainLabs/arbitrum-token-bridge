@@ -385,7 +385,7 @@ export function getNetworkLogo(chainId: number) {
 
     case ChainId.ArbitrumNova:
       return '/images/ArbitrumNovaLogo.svg'
-    
+
     case ChainId.XaiGoerli:
       return '/images/XaiLogo.svg'
 
