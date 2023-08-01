@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
@@ -11,11 +13,16 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { isDepositReadyToRedeem, isPending } from '../../../state/app/utils'
+import {
+  isCustomDestinationAddressTx,
+  isDepositReadyToRedeem,
+  isPending
+} from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -169,6 +176,7 @@ export function TransactionsTableDepositRow({
   className?: string
 }) {
   const { l1 } = useNetworksAndSigners()
+  const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
 
@@ -222,32 +230,53 @@ export function TransactionsTableDepositRow({
     [l1.network, tx.asset, tx.tokenAddress]
   )
 
+  const customAddressTxPadding = useMemo(
+    () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
+    [tx]
+  )
+
+  if (!tx.sender || !address) {
+    return null
+  }
+
   return (
     <tr
-      className={`text-sm text-dark ${
-        bgClassName || `bg-cyan even:bg-white`
-      } ${className}`}
+      className={twMerge(
+        'relative text-sm text-dark',
+        bgClassName || 'bg-cyan even:bg-white',
+        className
+      )}
       data-testid={`deposit-row-${tx.txId}`}
     >
-      <td className="w-1/5 py-3 pl-6 pr-3">
+      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
         <DepositRowStatus tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <DepositRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 whitespace-nowrap px-3 py-3">
+      <td
+        className={twMerge(
+          'w-1/5 whitespace-nowrap px-3 py-3',
+          customAddressTxPadding
+        )}
+      >
         {formatAmount(Number(tx.value), {
           symbol: tokenSymbol
         })}
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <DepositRowTxID tx={tx} />
       </td>
 
-      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
+      <td
+        className={twMerge(
+          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          customAddressTxPadding
+        )}
+      >
         {showRedeemRetryableButton && (
           <Tooltip
             show={isRedeemButtonDisabled}
@@ -287,6 +316,9 @@ export function TransactionsTableDepositRow({
           </Tooltip>
         )}
       </td>
+      {isCustomDestinationAddressTx(tx) && (
+        <TransactionsTableCustomAddressLabel tx={tx} />
+      )}
     </tr>
   )
 }

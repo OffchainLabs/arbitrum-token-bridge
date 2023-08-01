@@ -5,9 +5,11 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
 import { useMemo } from 'react'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
@@ -47,6 +49,14 @@ export function WithdrawalCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L1 transaction: Will show after claiming
             </span>
+            {isCustomDestinationAddressTx(tx) && (
+              <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
+                <CustomAddressTxExplorer
+                  tx={tx}
+                  explorerClassName="arb-hover text-blue-link"
+                />
+              </span>
+            )}
           </div>
         </div>
 

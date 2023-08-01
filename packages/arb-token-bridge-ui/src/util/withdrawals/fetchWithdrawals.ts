@@ -14,7 +14,10 @@ import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromE
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
-  walletAddress: string
+  sender?: string
+  senderNot?: string
+  receiver?: string
+  receiverNot?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -28,7 +31,10 @@ export type FetchWithdrawalsParams = {
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
-  walletAddress, // wallet address
+  sender,
+  senderNot,
+  receiver,
+  receiverNot,
   l1Provider,
   l2Provider,
   gatewayAddresses,
@@ -38,7 +44,10 @@ export const fetchWithdrawals = async ({
   fromBlock,
   toBlock
 }: FetchWithdrawalsParams) => {
-  if (!walletAddress || !l1Provider || !l2Provider) return []
+  const address = sender ?? receiver
+
+  if (typeof address === 'undefined') return []
+  if (!l1Provider || !l2Provider) return []
 
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
@@ -63,7 +72,10 @@ export const fetchWithdrawals = async ({
     tokenWithdrawalsFromEventLogs
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
-      address: walletAddress,
+      sender,
+      senderNot,
+      receiver,
+      receiverNot,
       fromBlock: fromBlock,
       toBlock: toBlock,
       l2ChainId: l2ChainID,
@@ -72,13 +84,13 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address: walletAddress,
+      address,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address: walletAddress,
+      address,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -110,7 +122,7 @@ export const fetchWithdrawals = async ({
           l1Provider,
           l2Provider,
           l2ChainID,
-          walletAddress
+          address
         )
       )
     ])
