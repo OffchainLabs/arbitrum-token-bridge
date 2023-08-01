@@ -384,7 +384,8 @@ export function TransferPanel() {
       return
     }
 
-    if (!isSmartContractWallet && (!l1Signer || !l2Signer)) {
+    const hasBothSigners = l1Signer && l2Signer
+    if (isEOA && !hasBothSigners) {
       throw signerUndefinedError
     }
 
