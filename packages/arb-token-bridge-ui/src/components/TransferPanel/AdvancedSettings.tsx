@@ -247,9 +247,11 @@ export const AdvancedSettings = () => {
                 value={destinationAddress}
                 disabled={inputLocked}
                 spellCheck={false}
-                onChange={e =>
-                  setDestinationAddress(e.target.value?.toLowerCase().trim())
-                }
+                onChange={e => {
+                  const value = e.target.value?.toLowerCase().trim()
+                  const valueOrUndefined = value.length > 0 ? value : undefined
+                  setDestinationAddress(valueOrUndefined)
+                }}
               />
               {isEOA && (
                 <button onClick={() => setInputLocked(!inputLocked)}>

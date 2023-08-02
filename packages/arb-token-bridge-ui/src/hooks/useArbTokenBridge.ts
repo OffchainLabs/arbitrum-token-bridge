@@ -181,9 +181,13 @@ export const useArbTokenBridge = (
 
     let tx: L1EthDepositTransaction & L1ContractCallTransaction
 
+    const isDifferentDestinationTransfer =
+      destinationAddress &&
+      destinationAddress.toLowerCase() !== walletAddress.toLocaleLowerCase()
+
     try {
       tx = (
-        destinationAddress
+        isDifferentDestinationTransfer
           ? await ethBridger.depositTo({
               amount,
               l1Signer,
@@ -214,8 +218,7 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
-      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
-      destination: walletAddress,
+      destination: destinationAddress ?? walletAddress,
       l1NetworkID,
       l2NetworkID
     })
@@ -289,8 +292,7 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
-        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
-        destination: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -320,7 +322,7 @@ export const useArbTokenBridge = (
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
           sender: tx.from,
-          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
+          destinationAddress: destinationAddress ?? walletAddress,
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
