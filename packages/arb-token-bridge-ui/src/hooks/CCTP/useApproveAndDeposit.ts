@@ -35,7 +35,7 @@ export function useApproveAndDeposit({
       onDepositTxFailed: (error: unknown) => void
     }) => {
       if (!walletAddress || !usdcToken) {
-        return false
+        return
       }
 
       const { decimals, address } = usdcToken
