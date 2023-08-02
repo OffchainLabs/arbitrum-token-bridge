@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAccount, useNetwork, useSigner, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
