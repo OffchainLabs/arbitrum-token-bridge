@@ -4,15 +4,15 @@ import { prepareWriteContract, writeContract } from '@wagmi/core'
 import { useToken } from 'wagmi'
 import * as Sentry from '@sentry/react'
 
-import { ChainId } from '../util/networks'
-import { messengerTransmitterAbi, tokenMessengerAbi } from '../util/cctp/abi'
+import { ChainId } from '../../util/networks'
+import { messengerTransmitterAbi, tokenMessengerAbi } from '../../util/cctp/abi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { getTokenAllowanceForSpender } from '../util/TokenUtils'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { getTokenAllowanceForSpender } from '../../util/TokenUtils'
 import { Provider } from '@ethersproject/providers'
-import { isUserRejectedError } from '../util/isUserRejectedError'
-import { ChainDomain } from '../pages/api/cctp/[type]'
-import { errorToast } from '../components/common/atoms/Toast'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { ChainDomain } from '../../pages/api/cctp/[type]'
+import { errorToast } from '../../components/common/atoms/Toast'
 
 type CCTPSupportedChainId =
   | ChainId.Mainnet
@@ -86,13 +86,11 @@ function getContracts(chainId: CCTPSupportedChainId | undefined) {
   return contracts[chainId]
 }
 
-export function useCCTP({
-  sourceChainId,
-  walletAddress
-}: {
+export type UseCCTPParams = {
   sourceChainId?: CCTPSupportedChainId
   walletAddress?: `0x${string}` | string
-}) {
+}
+export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
   const {
     tokenMessengerContractAddress,
     targetChainDomain,
@@ -101,7 +99,6 @@ export function useCCTP({
     usdcContractAddress,
     messengerTransmitterContractAddress
   } = getContracts(sourceChainId)
-  const { data: usdcToken } = useToken({ address: usdcContractAddress })
 
   const destinationAddress = useMemo(() => {
     if (!walletAddress) return
@@ -111,11 +108,12 @@ export function useCCTP({
   }, [walletAddress])
 
   const depositForBurn = useCallback(
-    async (amount: BigNumber) => {
+    async (amount: BigNumber, signer: Signer) => {
       const config = await prepareWriteContract({
         address: tokenMessengerContractAddress,
         abi: tokenMessengerAbi,
         functionName: 'depositForBurn',
+        signer,
         args: [
           amount,
           targetChainDomain,
@@ -162,16 +160,19 @@ export function useCCTP({
   const receiveMessage = useCallback(
     async ({
       messageBytes,
-      attestation
+      attestation,
+      signer
     }: {
       messageBytes: `0x${string}`
       attestation: `0x${string}`
+      signer: Signer
     }) => {
       const config = await prepareWriteContract({
         address: messengerTransmitterContractAddress,
         abi: messengerTransmitterAbi,
         functionName: 'receiveMessage',
         chainId: targetChainId,
+        signer,
         args: [messageBytes, attestation]
       })
       return writeContract(config)
@@ -179,76 +180,20 @@ export function useCCTP({
     [messengerTransmitterContractAddress, targetChainId]
   )
 
-  const approveUSDC = useCallback(
-    async (signer: Signer, amount: BigNumber) => {
+  const approveForBurn = useCallback(
+    async (amount: BigNumber, signer: Signer) => {
       const contract = ERC20__factory.connect(usdcContractAddress, signer)
       return contract.functions.approve(tokenMessengerContractAddress, amount)
     },
     [usdcContractAddress, tokenMessengerContractAddress]
   )
 
-  const approveAndDeposit = useCallback(
-    async ({
-      amount,
-      provider,
-      signer,
-      onSubmit,
-      onAllowanceTooLow
-    }: {
-      amount: string
-      provider: Provider
-      signer: Signer
-      onAllowanceTooLow?: () => Promise<boolean>
-      onSubmit: () => void
-    }) => {
-      if (!walletAddress || !usdcToken) {
-        return false
-      }
-
-      const { decimals, address } = usdcToken
-      const amountRaw = utils.parseUnits(amount, decimals)
-      const allowance = await getTokenAllowanceForSpender({
-        account: walletAddress,
-        erc20Address: address,
-        provider,
-        spender: tokenMessengerContractAddress
-      })
-
-      try {
-        if (allowance.lte(amountRaw)) {
-          const shouldContinue = await onAllowanceTooLow?.()
-          if (!shouldContinue) {
-            return
-          }
-
-          const tx = await approveUSDC(signer, amountRaw)
-          await tx.wait()
-        }
-        await depositForBurn(amountRaw)
-        onSubmit()
-      } catch (error: any) {
-        if (isUserRejectedError(error)) {
-          return
-        }
-
-        Sentry.captureException(error)
-        return errorToast(
-          `There was an error approving USDC, here is more information: ${error.message}`
-        )
-      }
-    },
-    [
-      approveUSDC,
-      depositForBurn,
-      tokenMessengerContractAddress,
-      usdcToken,
-      walletAddress
-    ]
-  )
-
   return {
-    approveAndDeposit,
+    approveForBurn,
+    depositForBurn,
     receiveMessage,
-    waitForAttestation
+    waitForAttestation,
+    usdcContractAddress,
+    tokenMessengerContractAddress
   }
 }

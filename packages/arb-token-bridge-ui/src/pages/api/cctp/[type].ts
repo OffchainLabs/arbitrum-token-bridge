@@ -61,11 +61,19 @@ export type MessageSent = {
   transactionHash: `0x${string}`
 }
 
+export type PendingCCTPTransfer = {
+  messageSent: MessageSent
+}
+
+export type CompletedCCTPTransfer = PendingCCTPTransfer & {
+  messageReceived: MessageReceived
+}
+
 export type Response =
   | {
       data: {
-        pending: MessageSent[]
-        completed: MessageSent[]
+        pending: PendingCCTPTransfer[]
+        completed: CompletedCCTPTransfer[]
       }
       error: null
     }
@@ -118,7 +126,7 @@ export default async function handler(
       l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
-    const messageSentsQuery = gql(`{
+    const messagesSentQuery = gql(`{
         messageSents(
           where: {
             sender: "${walletAddress}"
@@ -138,7 +146,7 @@ export default async function handler(
         }
       }`)
 
-    const messageReceivedsQuery = gql(`{
+    const messagesReceivedQuery = gql(`{
         messageReceiveds(
           where: {
             caller: "${walletAddress}"
@@ -159,43 +167,49 @@ export default async function handler(
       }
     `)
 
-    let messageSentsResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
-    let messageReceivedsResult: ApolloQueryResult<{
-      messageReceiveds: MessageReceived[]
+    let messagesSentResult: ApolloQueryResult<{ messagesSent: MessageSent[] }>
+    let messagesReceivedResult: ApolloQueryResult<{
+      messagesReceived: MessageReceived[]
     }>
     if (type === 'deposits') {
-      ;[messageSentsResult, messageReceivedsResult] = await Promise.all([
-        l1Subgraph.query({ query: messageSentsQuery }),
-        l2Subgraph.query({ query: messageReceivedsQuery })
+      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
+        l1Subgraph.query({ query: messagesSentQuery }),
+        l2Subgraph.query({ query: messagesReceivedQuery })
       ])
     } else {
-      ;[messageSentsResult, messageReceivedsResult] = await Promise.all([
-        l2Subgraph.query({ query: messageSentsQuery }),
-        l1Subgraph.query({ query: messageReceivedsQuery })
+      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
+        l2Subgraph.query({ query: messagesSentQuery }),
+        l1Subgraph.query({ query: messagesReceivedQuery })
       ])
     }
 
-    const { messageSents } = messageSentsResult.data
-    const { messageReceiveds } = messageReceivedsResult.data
+    const { messagesSent } = messagesSentResult.data
+    const { messagesReceived } = messagesReceivedResult.data
 
-    // MessageSents can be link to MessageReceived with the tuple (sourceDomain, nonce)
+    // MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce)
     // Map constructor accept an array of [key, value] arrays
     // new Map(['key1', 'value1'], ['key2', 'value2'], ['keyN', 'valueN']) would return
     // Map(3) {'key1' => 'value1', 'key2' => 'value2', 'keyN' => 'valueN'}
-    // We create a map with all keys being MessageReceived ids, and values being the corresponding MessageReceived
-    const messageReceivedMap = new Map(
-      messageReceiveds.map(messageReceived => [
+    // We create a map with all keys being MessagesReceived ids, and values being the corresponding MessageReceived
+    const messagesReceivedMap = new Map(
+      messagesReceived.map(messageReceived => [
         messageReceived.id,
         messageReceived
       ])
     )
-    const { pending, completed } = messageSents.reduce(
-      (acc, message) => {
+    const { pending, completed } = messagesSent.reduce(
+      (acc, messageSent) => {
         // If the MessageSent has a corresponding MessageReceived
-        if (messageReceivedMap.has(message.id)) {
-          acc.completed.push(message)
+        const messageReceived = messagesReceivedMap.get(messageSent.id)
+        if (messageReceived) {
+          acc.completed.push({
+            messageReceived,
+            messageSent
+          })
         } else {
-          acc.pending.push(message)
+          acc.pending.push({
+            messageSent
+          })
         }
 
         return acc
@@ -204,8 +218,8 @@ export default async function handler(
         completed: [],
         pending: []
       } as {
-        completed: MessageSent[]
-        pending: MessageSent[]
+        completed: CompletedCCTPTransfer[]
+        pending: PendingCCTPTransfer[]
       }
     )
 
