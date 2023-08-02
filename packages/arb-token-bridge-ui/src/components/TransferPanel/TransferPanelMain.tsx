@@ -55,7 +55,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
-import { useUpdateUSDCBalances } from '../../hooks/useUpdateUSDCBalances'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 
 enum NetworkType {
   l1 = 'l1',
@@ -364,21 +364,23 @@ export function TransferPanelMain({
   })
 
   useEffect(() => {
-    if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
-      if (
-        isTokenMainnetUSDC(selectedToken.address) ||
-        isTokenGoerliUSDC(selectedToken.address) ||
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-        isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
-      ) {
-        updateUSDCBalances(selectedToken.address)
-        return
-      }
+    if (!selectedToken || !utils.isAddress(destinationAddressOrWalletAddress)) {
+      return
+    }
 
-      updateErc20L1Balances([selectedToken.address])
-      if (selectedToken.l2Address) {
-        updateErc20L2Balances([selectedToken.l2Address])
-      }
+    if (
+      isTokenMainnetUSDC(selectedToken.address) ||
+      isTokenGoerliUSDC(selectedToken.address) ||
+      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+    ) {
+      updateUSDCBalances(selectedToken.address)
+      return
+    }
+
+    updateErc20L1Balances([selectedToken.address])
+    if (selectedToken.l2Address) {
+      updateErc20L2Balances([selectedToken.l2Address])
     }
   }, [
     selectedToken,

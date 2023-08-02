@@ -1,19 +1,21 @@
 import { useCallback } from 'react'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../util/TokenUtils'
-import { useBalance } from './useBalance'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { CommonAddress } from '../../util/CommonAddressUtils'
+import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
+import { useBalance } from '../useBalance'
+import { useNetworksAndSigners } from '../useNetworksAndSigners'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
+    case CommonAddress.Goerli.USDC:
     case CommonAddress.ArbitrumGoerli.USDC:
-      return CommonAddress.Goerli.USDC
     case CommonAddress.ArbitrumGoerli['USDC.e']:
       return CommonAddress.Goerli.USDC
+
+    case CommonAddress.Mainnet.USDC:
     case CommonAddress.ArbitrumOne.USDC:
-      return CommonAddress.Mainnet.USDC
     case CommonAddress.ArbitrumOne['USDC.e']:
       return CommonAddress.Mainnet.USDC
+
     default:
       return CommonAddress.Mainnet.USDC
   }

@@ -45,7 +45,7 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { useUpdateUSDCBalances } from './useUpdateUSDCBalances'
+import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))

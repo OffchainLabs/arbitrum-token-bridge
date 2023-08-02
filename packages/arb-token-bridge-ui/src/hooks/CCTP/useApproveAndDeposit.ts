@@ -15,7 +15,10 @@ export function useApproveAndDeposit({
   })
   const { usdcContractAddress, tokenMessengerContractAddress } =
     getContracts(sourceChainId)
-  const { data: usdcToken } = useToken({ address: usdcContractAddress })
+  const { data: usdcToken } = useToken({
+    address: usdcContractAddress,
+    chainId: sourceChainId
+  })
   const approveAndDepositForBurn = useCallback(
     async ({
       amount,

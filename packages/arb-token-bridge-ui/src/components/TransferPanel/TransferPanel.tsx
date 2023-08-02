@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, Signer, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
@@ -8,7 +8,6 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { create } from 'zustand'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -40,7 +39,6 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
-  getTokenAllowanceForSpender,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -49,7 +47,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { warningToast } from '../common/atoms/Toast'
+import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
@@ -59,7 +57,10 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { useCCTP } from '../../hooks/useCCTP'
+import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
+import { useApproveAndDeposit } from '../../hooks/CCTP/useApproveAndDeposit'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { formatAmount } from '../../util/NumberUtils'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -169,7 +170,7 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { approveAndDeposit } = useCCTP({
+  const { approveAndDepositForBurn } = useApproveAndDeposit({
     sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
     walletAddress: account
   })
@@ -512,11 +513,26 @@ export function TransferPanel() {
             isTokenGoerliUSDC(selectedToken.address)
           ) {
             const waitForInput = openUSDCDepositConfirmationDialog()
-            const result = await waitForInput()
-            const [confirmed, primaryButtonClicked] = result
+            const [confirmed, primaryButtonClicked] = await waitForInput()
 
             if (confirmed && primaryButtonClicked === 'cctp') {
-              await approveAndDeposit({
+              // CCTP has an upper limit for transfer
+              const burnLimit = await fetchPerMessageBurnLimit({
+                sourceChainId: l1ChainID
+              })
+
+              if (burnLimit.gte(amount)) {
+                const formatedLimit = formatAmount(burnLimit, {
+                  decimals: 6,
+                  symbol: 'USDC'
+                })
+                errorToast(
+                  `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
+                )
+                return
+              }
+
+              const depositTx = await approveAndDepositForBurn({
                 amount,
                 provider: l1Provider,
                 signer: l1Signer,
@@ -527,11 +543,29 @@ export function TransferPanel() {
 
                   return confirmed
                 },
-                onSubmit() {
-                  clearAmountInput()
-                  setTransferring(false)
+                onApproveTxFailed(error) {
+                  if (isUserRejectedError(error)) {
+                    return
+                  }
+                  Sentry.captureException(error)
+                  errorToast(
+                    `USDC approve failed: ${(error as Error)?.message ?? error}`
+                  )
+                },
+                onDepositTxFailed(error) {
+                  if (isUserRejectedError(error)) {
+                    return
+                  }
+                  Sentry.captureException(error)
+                  errorToast(
+                    `USDC deposit failed: ${(error as Error)?.message ?? error}`
+                  )
                 }
               })
+              await depositTx?.wait()
+
+              clearAmountInput()
+              setTransferring(false)
               return
             }
 
