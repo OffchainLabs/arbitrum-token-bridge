@@ -49,26 +49,30 @@ export function useApproveAndDeposit({
         spender: tokenMessengerContractAddress
       })
 
-      if (allowance.lte(amountRaw)) {
+      if (allowance.lt(amountRaw)) {
         const shouldContinue = await onAllowanceTooLow?.()
         if (!shouldContinue) {
           return
         }
 
         try {
-          await approveForBurn(amountRaw, signer)
+          const tx = await approveForBurn(amountRaw, signer)
+          await tx.wait()
         } catch (e) {
           onApproveTxFailed(e)
           return
         }
       }
 
+      let depositForBurnTx
       try {
-        return depositForBurn(amountRaw, signer)
+        depositForBurnTx = await depositForBurn(amountRaw, signer)
       } catch (e) {
         onDepositTxFailed(e)
         return
       }
+
+      return depositForBurnTx
     },
     [
       approveForBurn,
