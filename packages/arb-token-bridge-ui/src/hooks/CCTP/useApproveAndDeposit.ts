@@ -49,7 +49,7 @@ export function useApproveAndDeposit({
 
       if (allowance.lt(amountRaw)) {
         const shouldContinue = onAllowanceTooLow
-          ? await onAllowanceTooLow?.()
+          ? await onAllowanceTooLow()
           : true
         if (!shouldContinue) {
           return
