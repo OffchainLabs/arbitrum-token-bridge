@@ -1,5 +1,5 @@
 import { utils, BigNumber, Signer } from 'ethers'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 
 import { ChainId } from '../../util/networks'
