@@ -3,13 +3,13 @@ import { useCallback, useMemo } from 'react'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 
 import { ChainId } from '../../util/networks'
-import { tokenMessengerAbi } from '../../util/cctp/abi'
+import { messengerTransmitterAbi, tokenMessengerAbi } from '../../util/cctp/abi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 
 import { ChainDomain } from '../../pages/api/cctp/[type]'
 
-type CCTPSupportedChainId =
+export type CCTPSupportedChainId =
   | ChainId.Mainnet
   | ChainId.Goerli
   | ChainId.ArbitrumOne
@@ -23,6 +23,7 @@ type Contracts = {
   usdcContractAddress: `0x${string}`
   messengerTransmitterContractAddress: `0x${string}`
   attestationApiUrl: string
+  tokenMinterContractAddress: `0x${string}`
 }
 
 const contracts: Record<CCTPSupportedChainId, Contracts> = {
@@ -33,7 +34,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.Mainnet.USDC,
     messengerTransmitterContractAddress:
       '0xC30362313FBBA5cf9163F0bb16a0e01f01A896ca',
-    attestationApiUrl: 'https://iris-api.circle.com'
+    attestationApiUrl: 'https://iris-api.circle.com',
+    tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
   [ChainId.Goerli]: {
     tokenMessengerContractAddress: '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
@@ -42,7 +44,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.Goerli.USDC,
     messengerTransmitterContractAddress:
       '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
-    attestationApiUrl: 'https://iris-api-sandbox.circle.com'
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com',
+    tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
   },
   [ChainId.ArbitrumOne]: {
     tokenMessengerContractAddress: '0x19330d10D9Cc8751218eaf51E8885D058642E08A',
@@ -51,7 +54,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
     messengerTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
-    attestationApiUrl: 'https://iris-api.circle.com'
+    attestationApiUrl: 'https://iris-api.circle.com',
+    tokenMinterContractAddress: '0xE7Ed1fa7f45D05C508232aa32649D89b73b8bA48'
   },
   [ChainId.ArbitrumGoerli]: {
     tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
@@ -60,7 +64,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
     messengerTransmitterContractAddress:
       '0x26413e8157cd32011e726065a5462e97dd4d03d9',
-    attestationApiUrl: 'https://iris-api-sandbox.circle.com'
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com',
+    tokenMinterContractAddress: '0xe997d7d2f6e065a9a93fa2175e878fb9081f1f0a'
   }
 }
 
@@ -74,7 +79,7 @@ type AttestationResponse =
       status: 'pending_confirmations'
     }
 
-function getContracts(chainId: CCTPSupportedChainId | undefined) {
+export function getContracts(chainId: CCTPSupportedChainId | undefined) {
   if (!chainId) {
     return contracts[ChainId.Mainnet]
   }
@@ -82,8 +87,8 @@ function getContracts(chainId: CCTPSupportedChainId | undefined) {
 }
 
 export type UseCCTPParams = {
-  sourceChainId?: CCTPSupportedChainId
-  walletAddress?: `0x${string}` | string
+  sourceChainId: CCTPSupportedChainId | undefined
+  walletAddress: `0x${string}` | string | undefined
 }
 export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
   const {
@@ -187,8 +192,6 @@ export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
     approveForBurn,
     depositForBurn,
     receiveMessage,
-    waitForAttestation,
-    usdcContractAddress,
-    tokenMessengerContractAddress
+    waitForAttestation
   }
 }

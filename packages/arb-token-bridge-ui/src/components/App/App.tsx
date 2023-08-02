@@ -52,7 +52,6 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { useApproveAndDeposit } from '../../hooks/CCTP/useApproveAndDeposit'
 
 declare global {
   interface Window {
@@ -139,34 +138,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const { approveAndDepositForBurn } = useApproveAndDeposit({
-    walletAddress: address,
-    sourceChainId: 5
-  })
-  const { data: signer } = useSigner()
-  const { l1, l2 } = useNetworksAndSigners()
-
-  useEffect(() => {
-    if (signer) {
-      console.log({
-        approveAndDepositForBurn,
-        args: {
-          amount: '2',
-          provider: l1.provider,
-          signer,
-          onAllowanceTooLow() {
-            return true
-          },
-          onApproveTxFailed(error: unknown) {
-            console.log('approve tx failed', error)
-          },
-          onDepositTxFailed(error: unknown) {
-            console.log('onDepositTxFailed tx failed', error)
-          }
-        }
-      })
-    }
-  }, [approveAndDepositForBurn, signer])
   const networksAndSigners = useNetworksAndSigners()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
