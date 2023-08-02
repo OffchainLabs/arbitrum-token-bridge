@@ -4,6 +4,7 @@ import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
@@ -244,9 +245,22 @@ type SanitizeTokenOptions = {
   chain: Chain // chain for which we want to retrieve the token name / symbol
 }
 
-export const isTokenMainnetUSDC = (tokenAddress: string) => {
-  return tokenAddress.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
-}
+export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+
+export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
+
+export const isTokenArbitrumOneNativeUSDC = (
+  tokenAddress: string | undefined
+) =>
+  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
+
+export const isTokenArbitrumGoerliNativeUSDC = (
+  tokenAddress: string | undefined
+) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumGoerli.USDC.toLowerCase()
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
@@ -257,11 +271,14 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
-    // It should be `USDC` on all chains except Arbitrum One
-    if (isArbitrumOne) return 'USDC.e'
+  if (
+    isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenGoerliUSDC(options.erc20L1Address)
+  ) {
+    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Goerli
+    if (isArbitrumOne || isArbitrumGoerli) return 'USDC.e'
     return 'USDC'
   }
 
@@ -277,11 +294,14 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const isArbitrumOne = isNetwork(options.chain.id).isArbitrumOne
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
 
-  if (isTokenMainnetUSDC(options.erc20L1Address)) {
-    // It should be `USD Coin` on all chains except Arbitrum One
-    if (isArbitrumOne) return 'Bridged USDC'
+  if (
+    isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenGoerliUSDC(options.erc20L1Address)
+  ) {
+    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Goerli
+    if (isArbitrumOne || isArbitrumGoerli) return 'Bridged USDC'
     return 'USD Coin'
   }
 

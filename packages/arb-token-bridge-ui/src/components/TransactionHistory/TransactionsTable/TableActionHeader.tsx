@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { twMerge } from 'tailwind-merge'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -18,7 +19,8 @@ export const TableActionHeader = ({
   pageParams,
   setPageParams,
   transactions,
-  loading
+  loading,
+  isSmartContractWallet
 }: TableActionHeaderProps) => {
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 
@@ -73,9 +75,11 @@ export const TableActionHeader = ({
 
   return (
     <div
-      className={`sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-tr-lg bg-white p-3 text-sm ${
-        type !== 'deposits' && 'rounded-tl-lg'
-      }`}
+      className={twMerge(
+        'sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 bg-white p-3 text-sm',
+        isSmartContractWallet ? 'rounded-t-lg' : '',
+        type === 'deposits' ? 'rounded-tl-none' : ''
+      )}
     >
       {/* Search bar */}
       <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">

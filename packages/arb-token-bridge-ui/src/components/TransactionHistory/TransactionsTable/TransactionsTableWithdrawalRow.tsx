@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
+import { useAccount } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
+import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
@@ -20,6 +23,7 @@ import {
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { GET_HELP_LINK } from '../../../constants'
 import {
+  isCustomDestinationAddressTx,
   findMatchingL1TxForWithdrawal,
   isPending
 } from '../../../state/app/utils'
@@ -353,6 +357,7 @@ export function TransactionsTableWithdrawalRow({
 }) {
   const isError = tx.status === 'Failure'
   const { l2 } = useNetworksAndSigners()
+  const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -369,34 +374,58 @@ export function TransactionsTableWithdrawalRow({
     [l2.network, tx.tokenAddress, tx.asset]
   )
 
+  const customAddressTxPadding = useMemo(
+    () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
+    [tx]
+  )
+
+  if (!tx.sender || !address) {
+    return null
+  }
+
   return (
     <tr
-      className={`text-sm text-dark ${
-        bgClassName || `bg-cyan even:bg-white`
-      } ${className}`}
+      className={twMerge(
+        'relative text-sm text-dark',
+        bgClassName || 'bg-cyan even:bg-white',
+        className
+      )}
       data-testid={`withdrawal-row-${tx.txId}`}
     >
-      <td className="w-1/5 py-3 pl-6 pr-3">
+      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
         <WithdrawalRowStatus tx={tx} />
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <WithdrawalRowTime tx={tx} />
       </td>
 
-      <td className="w-1/5 whitespace-nowrap px-3 py-3">
+      <td
+        className={twMerge(
+          'w-1/5 whitespace-nowrap px-3 py-3',
+          customAddressTxPadding
+        )}
+      >
         {formatAmount(Number(tx.value), {
           symbol: tokenSymbol
         })}
       </td>
 
-      <td className="w-1/5 px-3 py-3">
+      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
         <WithdrawalRowTxID tx={tx} />
       </td>
 
-      <td className="relative w-1/5 py-3 pl-3 pr-6 text-right">
+      <td
+        className={twMerge(
+          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          customAddressTxPadding
+        )}
+      >
         <WithdrawalRowAction tx={tx} isError={isError} />
       </td>
+      {isCustomDestinationAddressTx(tx) && (
+        <TransactionsTableCustomAddressLabel tx={tx} />
+      )}
     </tr>
   )
 }

@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { create } from 'zustand'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -48,14 +49,31 @@ import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
-import { getDestinationAddressError } from './AdvancedSettings'
+import {
+  getDestinationAddressError,
+  useDestinationAddressStore
+} from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
     Sentry.captureException(error)
   }
 }
+
+type USDCWithdrawalConfirmationDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useUSDCWithdrawalConfirmationDialogStore =
+  create<USDCWithdrawalConfirmationDialogStore>(set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  }))
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -120,9 +138,6 @@ export function TransferPanel() {
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
-  const [destinationAddress, setDestinationAddress] = useState<
-    string | undefined
-  >(undefined)
 
   const {
     app: {
@@ -190,6 +205,10 @@ export function TransferPanel() {
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
+  const {
+    isOpen: isOpenUSDCWithdrawalConfirmationDialog,
+    closeDialog: closeUSDCWithdrawalConfirmationDialog
+  } = useUSDCWithdrawalConfirmationDialogStore()
   const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
@@ -209,11 +228,8 @@ export function TransferPanel() {
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
 
-  const destinationAddressError = useMemo(
-    () =>
-      getDestinationAddressError({ destinationAddress, isSmartContractWallet }),
-    [destinationAddress, isSmartContractWallet]
-  )
+  const { error: destinationAddressError, destinationAddress } =
+    useDestinationAddressStore()
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -357,6 +373,8 @@ export function TransferPanel() {
   }
 
   const transfer = async () => {
+    const signerUndefinedError = 'Signer is undefined'
+
     if (!isConnected) {
       return
     }
@@ -366,10 +384,15 @@ export function TransferPanel() {
       return
     }
 
-    if (!l1Signer || !l2Signer) {
-      throw 'Signer is undefined'
+    const hasBothSigners = l1Signer && l2Signer
+    if (isEOA && !hasBothSigners) {
+      throw signerUndefinedError
     }
 
+    const destinationAddressError = await getDestinationAddressError({
+      destinationAddress,
+      isSmartContractWallet
+    })
     if (destinationAddressError) {
       console.error(destinationAddressError)
       return
@@ -388,6 +411,10 @@ export function TransferPanel() {
 
     try {
       if (isDepositMode) {
+        if (!l1Signer) {
+          throw signerUndefinedError
+        }
+
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -588,6 +615,10 @@ export function TransferPanel() {
           })
         }
       } else {
+        if (!l2Signer) {
+          throw signerUndefinedError
+        }
+
         if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
@@ -853,46 +884,55 @@ export function TransferPanel() {
     ]
   )
 
+  const disableDepositAndWithdrawal = useMemo(() => {
+    if (!amountNum) return true
+    if (isTransferring) return true
+    if (isSwitchingL2Chain) return true
+    if (destinationAddressError) return true
+
+    // Keep the button disabled while loading gas summary
+    if (!ethBalance || gasSummary.status !== 'success') {
+      return true
+    }
+
+    return false
+  }, [
+    amountNum,
+    destinationAddressError,
+    ethBalance,
+    requiredGasFees,
+    gasSummary.status,
+    isSwitchingL2Chain,
+    isTransferring,
+    selectedToken
+  ])
+
   const disableDeposit = useMemo(() => {
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
+
     if (
-      isDepositMode &&
       selectedToken &&
       isWithdrawOnlyToken(selectedToken.address, l2Network.id)
     ) {
       return true
     }
 
-    return (
-      isTransferring ||
-      !amountNum ||
-      (isDepositMode &&
-        !isBridgingANewStandardToken &&
-        (!amountNum || !l1Balance || amountNum > +l1Balance)) ||
-      // allow 0-amount deposits when bridging new token
-      (isDepositMode &&
-        isBridgingANewStandardToken &&
-        (l1Balance === null || amountNum > +l1Balance)) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    l2Network,
-    amountNum,
-    l1Balance,
-    isBridgingANewStandardToken,
-    selectedToken,
-    destinationAddressError
-  ])
-
-  // TODO: Refactor this and the property above
-  const disableDepositV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableDeposit || gasSummary.status !== 'success') {
-      return true
+    if (isBridgingANewStandardToken) {
+      if (l1Balance === null || amountNum > Number(l1Balance)) {
+        return true
+      }
+    } else {
+      if (!l1Balance || amountNum > Number(l1Balance)) {
+        return true
+      }
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -900,47 +940,38 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l1Balance)
   }, [
-    ethBalance,
-    disableDeposit,
+    disableDepositAndWithdrawal,
+    isBridgingANewStandardToken,
     selectedToken,
-    gasSummary,
     amount,
+    amountNum,
     l1Balance,
+    l2Network.id,
     requiredGasFees
   ])
 
   const disableWithdrawal = useMemo(() => {
-    return (
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-      isTransferring ||
-      (!isDepositMode &&
-        (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    amountNum,
-    l2Balance,
-    selectedToken,
-    destinationAddressError
-  ])
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
 
-  // TODO: Refactor this and the property above
-  const disableWithdrawalV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableWithdrawal || gasSummary.status !== 'success') {
+    if (!l2Balance) return true
+    if (amountNum > Number(l2Balance)) return true
+
+    if (
+      selectedToken &&
+      [
+        '0x0e192d382a36de7011f795acc4391cd302003606',
+        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+      ].includes(selectedToken.address.toLowerCase())
+    ) {
       return true
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -948,12 +979,11 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
-    ethBalance,
-    disableWithdrawal,
-    selectedToken,
-    gasSummary,
     amount,
+    amountNum,
+    disableDepositAndWithdrawal,
     l2Balance,
+    selectedToken,
     requiredGasFees
   ])
 
@@ -995,6 +1025,12 @@ export function TransferPanel() {
         amount={amount}
       />
 
+      <USDCWithdrawalConfirmationDialog
+        isOpen={isOpenUSDCWithdrawalConfirmationDialog}
+        onClose={closeUSDCWithdrawalConfirmationDialog}
+        amount={amount}
+      />
+
       <USDCDepositConfirmationDialog
         {...usdcDepositConfirmationDialogProps}
         amount={amount}
@@ -1009,8 +1045,6 @@ export function TransferPanel() {
               ? getErrorMessage(amount, l1Balance)
               : getErrorMessage(amount, l2Balance)
           }
-          destinationAddress={destinationAddress}
-          setDestinationAddress={setDestinationAddress}
         />
 
         <div className="border-r border-gray-2" />
@@ -1053,7 +1087,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableDepositV2}
+              disabled={disableDeposit}
               onClick={() => {
                 if (selectedToken) {
                   depositToken()
@@ -1074,7 +1108,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableWithdrawalV2}
+              disabled={disableWithdrawal}
               onClick={transfer}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
