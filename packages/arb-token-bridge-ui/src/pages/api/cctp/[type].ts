@@ -33,8 +33,8 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
 }
 
 export enum ChainDomain {
-  Mainnet = 0,
-  ArbitrumOne = 3
+  Mainnet = '0',
+  ArbitrumOne = '3'
 }
 
 export type MessageReceived = {

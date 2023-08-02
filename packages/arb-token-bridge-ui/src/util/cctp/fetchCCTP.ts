@@ -30,17 +30,17 @@ async function fetchCCTP({
   )
 
   const parsedResponse: Response = await response.json()
-  return parsedResponse
+  return parsedResponse.data
 }
 
 export async function fetchCCTPDeposits(
   params: FetchParams
-): Promise<Response> {
+): Promise<Response['data']> {
   return fetchCCTP({ ...params, type: 'deposits' })
 }
 
 export async function fetchCCTPWithdrawals(
   params: FetchParams
-): Promise<Response> {
+): Promise<Response['data']> {
   return fetchCCTP({ ...params, type: 'withdrawals' })
 }
