@@ -1,18 +1,13 @@
 import { utils, BigNumber, Signer } from 'ethers'
 import { useCallback, useMemo } from 'react'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { useToken } from 'wagmi'
-import * as Sentry from '@sentry/react'
 
 import { ChainId } from '../../util/networks'
-import { messengerTransmitterAbi, tokenMessengerAbi } from '../../util/cctp/abi'
+import { tokenMessengerAbi } from '../../util/cctp/abi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { getTokenAllowanceForSpender } from '../../util/TokenUtils'
-import { Provider } from '@ethersproject/providers'
-import { isUserRejectedError } from '../../util/isUserRejectedError'
+
 import { ChainDomain } from '../../pages/api/cctp/[type]'
-import { errorToast } from '../../components/common/atoms/Toast'
 
 type CCTPSupportedChainId =
   | ChainId.Mainnet
