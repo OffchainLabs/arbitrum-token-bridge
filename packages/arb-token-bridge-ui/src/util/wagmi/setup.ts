@@ -42,7 +42,7 @@ enum TargetChainKey {
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',
   ArbitrumGoerli = 'arbitrum-goerli',
-  XaiGoerli = 'xai-goerli'
+  XaiTestnet = 'xai-testnet'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -76,8 +76,8 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumGoerli:
       return ChainId.ArbitrumGoerli
 
-    case TargetChainKey.XaiGoerli:
-      return ChainId.XaiGoerli
+    case TargetChainKey.XaiTestnet:
+      return ChainId.XaiTestnet
   }
 }
 

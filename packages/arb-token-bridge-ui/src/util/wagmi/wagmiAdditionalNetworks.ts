@@ -63,16 +63,16 @@ export const localL2Network: Chain = {
 }
 
 export const localL3Network: Chain = {
-  id: ChainId.XaiGoerli,
-  name: 'Xai Goerli',
-  network: 'xai-goerli',
+  id: ChainId.XaiTestnet,
+  name: 'Xai Testnet',
+  network: 'xai-testnet',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
     default: {
-      http: [rpcURLs[ChainId.XaiGoerli]!]
+      http: [rpcURLs[ChainId.XaiTestnet]!]
     },
     public: {
-      http: [rpcURLs[ChainId.XaiGoerli]!]
+      http: [rpcURLs[ChainId.XaiTestnet]!]
     }
   },
   blockExplorers: {

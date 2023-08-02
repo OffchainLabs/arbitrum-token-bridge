@@ -35,7 +35,7 @@ export function getWagmiChain(chainId: number): Chain {
       return localL2Network
 
     // L3
-    case ChainId.XaiGoerli:
+    case ChainId.XaiTestnet:
       return localL3Network
 
     default:

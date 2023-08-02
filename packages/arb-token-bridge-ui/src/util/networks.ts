@@ -21,11 +21,11 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
   }
 
   if (l1ChainId === ChainId.Goerli) {
-    return [ChainId.ArbitrumGoerli, ChainId.XaiGoerli]
+    return [ChainId.ArbitrumGoerli, ChainId.XaiTestnet]
   }
 
   if (l1ChainId === ChainId.ArbitrumGoerli) {
-    return [ChainId.Goerli, ChainId.XaiGoerli]
+    return [ChainId.Goerli, ChainId.XaiTestnet]
   }
 
   if (l1ChainId === ChainId.Local) {
@@ -57,7 +57,7 @@ export enum ChainId {
   ArbitrumGoerli = 421613,
   ArbitrumLocal = 412346,
   // L3
-  XaiGoerli = 51204936
+  XaiTestnet = 51204936
 }
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -76,8 +76,8 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
-  // L3
-  [ChainId.XaiGoerli]: 'http://localhost:8449'
+  // L3 Testnets
+  [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -89,7 +89,9 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
+  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
+  // L3 Testnets
+  [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -138,9 +140,9 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: [ChainId.XaiGoerli],
+  [ChainId.ArbitrumGoerli]: [ChainId.XaiTestnet],
   // L3 Testnets
-  [ChainId.XaiGoerli]: [ChainId.XaiGoerli]
+  [ChainId.XaiTestnet]: [ChainId.XaiTestnet]
 }
 
 const defaultL1Network: L1Network = {
@@ -285,9 +287,9 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
-  const isXaiGoerli = chainId === ChainId.XaiGoerli
-  const isXai = isXaiGoerli
-  const isL3 = isXaiGoerli
+  const isXaiTestnet = chainId === ChainId.XaiTestnet
+  const isXai = isXaiTestnet
+  const isL3 = isXaiTestnet
 
   const isArbitrum =
     isArbitrumOne ||
@@ -302,7 +304,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isSepolia ||
-    isXaiGoerli
+    isXaiTestnet
 
   const isSupported =
     isArbitrumOne ||
@@ -331,7 +333,7 @@ export function isNetwork(chainId: ChainId) {
     isL3,
     isXai,
     // L3 Testnets
-    isXaiGoerli,
+    isXaiTestnet,
     // Testnet
     isTestnet,
     // General
@@ -362,7 +364,7 @@ export function getNetworkName(chainId: number) {
     case ChainId.ArbitrumLocal:
       return 'Arbitrum'
 
-    case ChainId.XaiGoerli:
+    case ChainId.XaiTestnet:
       return 'Xai Goerli'
 
     default:
@@ -386,7 +388,7 @@ export function getNetworkLogo(chainId: number) {
     case ChainId.ArbitrumNova:
       return '/images/ArbitrumNovaLogo.svg'
 
-    case ChainId.XaiGoerli:
+    case ChainId.XaiTestnet:
       return '/images/XaiLogo.svg'
 
     default:
@@ -396,6 +398,6 @@ export function getNetworkLogo(chainId: number) {
 
 export function getSupportedNetworks(chainId = 0) {
   return isNetwork(chainId).isTestnet
-    ? [ChainId.Goerli, ChainId.ArbitrumGoerli, ChainId.XaiGoerli]
+    ? [ChainId.Goerli, ChainId.ArbitrumGoerli, ChainId.XaiTestnet]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }
