@@ -3,23 +3,19 @@ import { Signer, utils } from 'ethers'
 import { useCallback } from 'react'
 import { useToken } from 'wagmi'
 import { getTokenAllowanceForSpender } from '../../util/TokenUtils'
-import { useCCTP, UseCCTPParams } from './useCCTP'
+import { useCCTP, UseCCTPParams, getContracts } from './useCCTP'
 
 export function useApproveAndDeposit({
   sourceChainId,
   walletAddress
 }: UseCCTPParams) {
-  const {
-    approveForBurn,
-    depositForBurn,
-    usdcContractAddress,
-    tokenMessengerContractAddress
-  } = useCCTP({
+  const { approveForBurn, depositForBurn } = useCCTP({
     sourceChainId,
     walletAddress
   })
+  const { usdcContractAddress, tokenMessengerContractAddress } =
+    getContracts(sourceChainId)
   const { data: usdcToken } = useToken({ address: usdcContractAddress })
-
   const approveAndDepositForBurn = useCallback(
     async ({
       amount,
