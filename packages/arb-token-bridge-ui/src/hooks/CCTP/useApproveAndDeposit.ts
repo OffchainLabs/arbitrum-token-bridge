@@ -29,7 +29,7 @@ export function useApproveAndDeposit({
       amount: string
       provider: Provider
       signer: Signer
-      destinationAddress: `0x${string}`
+      destinationAddress: `0x${string}` | undefined
       onAllowanceTooLow?: () => Promise<boolean>
       onApproveTxFailed: (error: unknown) => void
       onDepositTxFailed: (error: unknown) => void
@@ -48,7 +48,9 @@ export function useApproveAndDeposit({
       })
 
       if (allowance.lt(amountRaw)) {
-        const shouldContinue = await onAllowanceTooLow?.()
+        const shouldContinue = onAllowanceTooLow
+          ? await onAllowanceTooLow?.()
+          : true
         if (!shouldContinue) {
           return
         }
@@ -67,7 +69,7 @@ export function useApproveAndDeposit({
         depositForBurnTx = await depositForBurn({
           amount: amountRaw,
           signer,
-          recipient: destinationAddress
+          recipient: destinationAddress || walletAddress
         })
       } catch (e) {
         onDepositTxFailed(e)
