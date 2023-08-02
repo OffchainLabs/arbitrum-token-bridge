@@ -33,7 +33,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainId: ChainId.ArbitrumOne,
     usdcContractAddress: CommonAddress.Mainnet.USDC,
     messengerTransmitterContractAddress:
-      '0xC30362313FBBA5cf9163F0bb16a0e01f01A896ca',
+      '0xc30362313fbba5cf9163f0bb16a0e01f01a896ca',
     attestationApiUrl: 'https://iris-api.circle.com',
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
@@ -48,14 +48,14 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
   },
   [ChainId.ArbitrumOne]: {
-    tokenMessengerContractAddress: '0x19330d10D9Cc8751218eaf51E8885D058642E08A',
+    tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
     targetChainDomain: ChainDomain.Mainnet,
     targetChainId: ChainId.Mainnet,
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
     messengerTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
     attestationApiUrl: 'https://iris-api.circle.com',
-    tokenMinterContractAddress: '0xE7Ed1fa7f45D05C508232aa32649D89b73b8bA48'
+    tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
   },
   [ChainId.ArbitrumGoerli]: {
     tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
@@ -100,35 +100,31 @@ export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
     messengerTransmitterContractAddress
   } = getContracts(sourceChainId)
 
-  const destinationAddress = useMemo(() => {
-    if (!walletAddress) return
-
-    // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
-    return utils.hexlify(utils.zeroPad(walletAddress, 32)) as `0x${string}`
-  }, [walletAddress])
-
   const depositForBurn = useCallback(
-    async (amount: BigNumber, signer: Signer) => {
+    async ({
+      amount,
+      signer,
+      recipient
+    }: {
+      amount: BigNumber
+      signer: Signer
+      recipient: string
+    }) => {
+      // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
+      const mintRecipient = utils.hexlify(
+        utils.zeroPad(recipient, 32)
+      ) as `0x${string}`
+
       const config = await prepareWriteContract({
         address: tokenMessengerContractAddress,
         abi: tokenMessengerAbi,
         functionName: 'depositForBurn',
         signer,
-        args: [
-          amount,
-          targetChainDomain,
-          destinationAddress as `0x${string}`,
-          usdcContractAddress
-        ]
+        args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
       })
       return writeContract(config)
     },
-    [
-      tokenMessengerContractAddress,
-      targetChainDomain,
-      destinationAddress,
-      usdcContractAddress
-    ]
+    [tokenMessengerContractAddress, targetChainDomain, usdcContractAddress]
   )
 
   const fetchAttestation = useCallback(

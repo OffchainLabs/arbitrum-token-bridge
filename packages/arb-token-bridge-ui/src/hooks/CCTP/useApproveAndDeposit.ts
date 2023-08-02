@@ -21,6 +21,7 @@ export function useApproveAndDeposit({
       amount,
       provider,
       signer,
+      destinationAddress,
       onAllowanceTooLow,
       onApproveTxFailed,
       onDepositTxFailed
@@ -28,6 +29,7 @@ export function useApproveAndDeposit({
       amount: string
       provider: Provider
       signer: Signer
+      destinationAddress: `0x${string}`
       onAllowanceTooLow?: () => Promise<boolean>
       onApproveTxFailed: (error: unknown) => void
       onDepositTxFailed: (error: unknown) => void
@@ -62,7 +64,11 @@ export function useApproveAndDeposit({
 
       let depositForBurnTx
       try {
-        depositForBurnTx = await depositForBurn(amountRaw, signer)
+        depositForBurnTx = await depositForBurn({
+          amount: amountRaw,
+          signer,
+          recipient: destinationAddress
+        })
       } catch (e) {
         onDepositTxFailed(e)
         return
