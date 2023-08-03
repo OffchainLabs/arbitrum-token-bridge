@@ -22,9 +22,9 @@ export type CompleteDepositData = {
   transformedDeposits: MergedTransaction[]
 }
 
-type TotalForType = { [key in TxHistoryTransferTypes]: number }
+type TxHistoryTotalFetched = { [key in TxHistoryTransferTypes]: number }
 
-const emptyTotalForType: TotalForType = {
+const emptyTxHistoryTotalFetched: TxHistoryTotalFetched = {
   [TxHistoryTransferTypes.DepositSent]: 0,
   [TxHistoryTransferTypes.DepositReceived]: 0,
   [TxHistoryTransferTypes.RetryableSent]: 0,
@@ -34,19 +34,15 @@ const emptyTotalForType: TotalForType = {
 // Stores the last fetched index for each Transfer Type.
 // With each page change we get the most recent txs and store number of txs fetched for the type.
 export const useTxHistoryTotalTxFetched = create<{
-  totalForType: TotalForType
-  setTotalForType: (data: TotalForType) => void
-  latestPage: number
-  setLatestPage: (newPage: number) => void
+  txHistoryTotalFetched: TxHistoryTotalFetched
+  setTxHistoryTotalFetched: (data: TxHistoryTotalFetched) => void
 }>(set => ({
-  totalForType: emptyTotalForType,
-  setTotalForType: newTotalForType => set({ totalForType: newTotalForType }),
-  latestPage: 0,
-  setLatestPage: newPage => set({ latestPage: newPage })
+  txHistoryTotalFetched: emptyTxHistoryTotalFetched,
+  setTxHistoryTotalFetched: data => set({ txHistoryTotalFetched: data })
 }))
 
-function mapDepositsToTotalForType(txs: Transaction[]): TotalForType {
-  const data = JSON.parse(JSON.stringify(emptyTotalForType))
+function mapDepositsToTotalFetched(txs: Transaction[]): TxHistoryTotalFetched {
+  const data = { ...emptyTxHistoryTotalFetched }
 
   for (const tx of txs) {
     if (tx.transferType === TxHistoryTransferTypes.DepositReceived) {
@@ -58,49 +54,37 @@ function mapDepositsToTotalForType(txs: Transaction[]): TotalForType {
   return data
 }
 
-function mergeTwoTotalForType(
-  totalForType_1: TotalForType,
-  totalForType_2: TotalForType
+function mergeTxHistoryTotalFetched(
+  txHistoryTotalFetched_1: TxHistoryTotalFetched,
+  txHistoryTotalFetched_2: TxHistoryTotalFetched
 ) {
-  const result: TotalForType = { ...totalForType_1 }
-  Object.keys(totalForType_1).map(type => {
+  const result: TxHistoryTotalFetched = { ...txHistoryTotalFetched_1 }
+  Object.keys(txHistoryTotalFetched_1).map(type => {
     result[type as TxHistoryTransferTypes] =
-      totalForType_1[type as TxHistoryTransferTypes] +
-      totalForType_2[type as TxHistoryTransferTypes]
+      txHistoryTotalFetched_1[type as TxHistoryTransferTypes] +
+      txHistoryTotalFetched_2[type as TxHistoryTransferTypes]
   })
 
   return result
 }
 
-function isValidAddTotalForType(
-  currentTotalForType: TotalForType,
-  pageNumber: number
-) {
-  let sumAll = 0
-
-  Object.values(currentTotalForType).map(value => (sumAll += value))
-
-  return sumAll <= pageNumber * 10
-}
-
 export const fetchCompleteDepositData = async ({
   walletAddress,
-  totalForType,
-  setTotalForType,
+  txHistoryTotalFetched,
+  setTxHistoryTotalFetched,
   depositParams
 }: {
   walletAddress: string
-  totalForType: TotalForType
-  setTotalForType: (data: TotalForType) => void
+  txHistoryTotalFetched: TxHistoryTotalFetched
+  setTxHistoryTotalFetched: (data: TxHistoryTotalFetched) => void
   depositParams: FetchDepositParams & { pageNumber: number }
 }): Promise<CompleteDepositData> => {
-
   const promises = Object.values(TxHistoryTransferTypes).map(type =>
     fetchDeposits({
       type,
       ...depositParams,
       ...getSubgraphQueryParams(type, walletAddress),
-      totalFetched: totalForType[type]
+      totalFetched: txHistoryTotalFetched[type]
     })
   )
 
@@ -123,9 +107,13 @@ export const fetchCompleteDepositData = async ({
     tx => typeof pendingDepositsMap.get(tx.txID) !== 'undefined'
   )
 
-  const latestTotalForType = mapDepositsToTotalForType(earliestDeposits)
-  const newTotalForType = mergeTwoTotalForType(totalForType, latestTotalForType)
-  setTotalForType(newTotalForType)
+  const latestTxHistoryTotalFetched =
+    mapDepositsToTotalFetched(earliestDeposits)
+  const newTxHistoryTotalFetched = mergeTxHistoryTotalFetched(
+    txHistoryTotalFetched,
+    latestTxHistoryTotalFetched
+  )
+  setTxHistoryTotalFetched(newTxHistoryTotalFetched)
 
   return {
     deposits: earliestDeposits,
@@ -136,7 +124,8 @@ export const fetchCompleteDepositData = async ({
 
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
-  const { totalForType, setTotalForType } = useTxHistoryTotalTxFetched()
+  const { txHistoryTotalFetched, setTxHistoryTotalFetched } =
+    useTxHistoryTotalTxFetched()
 
   // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
@@ -171,8 +160,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
     ]) =>
       fetchCompleteDepositData({
         walletAddress,
-        totalForType,
-        setTotalForType,
+        txHistoryTotalFetched,
+        setTxHistoryTotalFetched,
         depositParams: {
           l1Provider: _l1Provider,
           l2Provider: _l2Provider,
