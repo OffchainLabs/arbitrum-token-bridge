@@ -120,7 +120,12 @@ export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
         abi: tokenMessengerAbi,
         functionName: 'depositForBurn',
         signer,
-        args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
+        args: [
+          amount,
+          parseInt(targetChainDomain, 10),
+          mintRecipient,
+          usdcContractAddress
+        ]
       })
       return writeContract(config)
     },
