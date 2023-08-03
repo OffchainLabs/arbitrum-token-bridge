@@ -45,8 +45,6 @@ function mapDepositsToTotalFetched(txs: Transaction[]): TxHistoryTotalFetched {
   const data = { ...emptyTxHistoryTotalFetched }
 
   for (const tx of txs) {
-    if (tx.transferType === TxHistoryTransferTypes.DepositReceived) {
-    }
     const current = data[tx.transferType as TxHistoryTransferTypes]
     data[tx.transferType as TxHistoryTransferTypes] = current + 1
   }
@@ -54,15 +52,15 @@ function mapDepositsToTotalFetched(txs: Transaction[]): TxHistoryTotalFetched {
   return data
 }
 
-function mergeTxHistoryTotalFetched(
+function sumTxHistoryTotalFetched(
   txHistoryTotalFetched_1: TxHistoryTotalFetched,
   txHistoryTotalFetched_2: TxHistoryTotalFetched
 ) {
   const result: TxHistoryTotalFetched = { ...txHistoryTotalFetched_1 }
   Object.keys(txHistoryTotalFetched_1).map(type => {
-    result[type as TxHistoryTransferTypes] =
-      txHistoryTotalFetched_1[type as TxHistoryTransferTypes] +
-      txHistoryTotalFetched_2[type as TxHistoryTransferTypes]
+    const _type = type as TxHistoryTransferTypes
+    result[_type] =
+      txHistoryTotalFetched_1[_type] + txHistoryTotalFetched_2[_type]
   })
 
   return result
@@ -92,7 +90,7 @@ export const fetchCompleteDepositData = async ({
   const deposits = (await Promise.all(promises)).flat()
   const earliestDeposits = [...deposits]
     .sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
-    .slice(0, 10)
+    .slice(0, depositParams.pageSize)
 
   // filter out pending deposits
   const pendingDepositsMap = new Map<string, boolean>()
@@ -107,11 +105,11 @@ export const fetchCompleteDepositData = async ({
     tx => typeof pendingDepositsMap.get(tx.txID) !== 'undefined'
   )
 
-  const latestTxHistoryTotalFetched =
+  const recentTxHistoryTotalFetched =
     mapDepositsToTotalFetched(earliestDeposits)
-  const newTxHistoryTotalFetched = mergeTxHistoryTotalFetched(
+  const newTxHistoryTotalFetched = sumTxHistoryTotalFetched(
     txHistoryTotalFetched,
-    latestTxHistoryTotalFetched
+    recentTxHistoryTotalFetched
   )
   setTxHistoryTotalFetched(newTxHistoryTotalFetched)
 
