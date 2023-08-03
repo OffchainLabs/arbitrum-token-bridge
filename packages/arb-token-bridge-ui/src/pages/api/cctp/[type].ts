@@ -167,9 +167,9 @@ export default async function handler(
       }
     `)
 
-    let messagesSentResult: ApolloQueryResult<{ messagesSent: MessageSent[] }>
+    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
     let messagesReceivedResult: ApolloQueryResult<{
-      messagesReceived: MessageReceived[]
+      messageReceiveds: MessageReceived[]
     }>
     if (type === 'deposits') {
       ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
@@ -183,8 +183,8 @@ export default async function handler(
       ])
     }
 
-    const { messagesSent } = messagesSentResult.data
-    const { messagesReceived } = messagesReceivedResult.data
+    const { messageSents } = messagesSentResult.data
+    const { messageReceiveds } = messagesReceivedResult.data
 
     // MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce)
     // Map constructor accept an array of [key, value] arrays
@@ -192,12 +192,12 @@ export default async function handler(
     // Map(3) {'key1' => 'value1', 'key2' => 'value2', 'keyN' => 'valueN'}
     // We create a map with all keys being MessagesReceived ids, and values being the corresponding MessageReceived
     const messagesReceivedMap = new Map(
-      messagesReceived.map(messageReceived => [
+      messageReceiveds.map(messageReceived => [
         messageReceived.id,
         messageReceived
       ])
     )
-    const { pending, completed } = messagesSent.reduce(
+    const { pending, completed } = messageSents.reduce(
       (acc, messageSent) => {
         // If the MessageSent has a corresponding MessageReceived
         const messageReceived = messagesReceivedMap.get(messageSent.id)
