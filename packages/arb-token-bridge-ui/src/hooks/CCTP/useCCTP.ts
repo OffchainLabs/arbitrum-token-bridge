@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 
 import { ChainId } from '../../util/networks'
-import { messengerTransmitterAbi, tokenMessengerAbi } from '../../util/cctp/abi'
+import { messengerTransmitterAbi } from '../../util/cctp/messengerTransmitterAbi'
+import { tokenMessengerAbi } from '../../util/cctp/tokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 
@@ -90,7 +91,7 @@ export type UseCCTPParams = {
   sourceChainId: CCTPSupportedChainId | undefined
   walletAddress: `0x${string}` | string | undefined
 }
-export function useCCTP({ sourceChainId, walletAddress }: UseCCTPParams) {
+export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const {
     tokenMessengerContractAddress,
     targetChainDomain,

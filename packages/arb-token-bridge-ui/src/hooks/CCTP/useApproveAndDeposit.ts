@@ -22,7 +22,9 @@ export function useApproveAndDeposit({
       provider,
       signer,
       destinationAddress,
-      onAllowanceTooLow,
+      onAllowanceTooLow = async () => {
+        return true
+      },
       onApproveTxFailed,
       onDepositTxFailed
     }: {
@@ -30,7 +32,7 @@ export function useApproveAndDeposit({
       provider: Provider
       signer: Signer
       destinationAddress: `0x${string}` | undefined
-      onAllowanceTooLow?: () => Promise<boolean>
+      onAllowanceTooLow: () => Promise<boolean>
       onApproveTxFailed: (error: unknown) => void
       onDepositTxFailed: (error: unknown) => void
     }) => {
@@ -48,10 +50,7 @@ export function useApproveAndDeposit({
       })
 
       if (allowance.lt(amountRaw)) {
-        const shouldContinue = onAllowanceTooLow
-          ? await onAllowanceTooLow()
-          : true
-        if (!shouldContinue) {
+        if (!onAllowanceTooLow()) {
           return
         }
 

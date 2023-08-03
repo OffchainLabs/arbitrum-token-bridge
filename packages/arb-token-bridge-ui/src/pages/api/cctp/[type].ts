@@ -230,10 +230,10 @@ export default async function handler(
       },
       error: null
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     res.status(500).json({
       data: null,
-      error: error?.message ?? 'Something went wrong'
+      error: (error as Error)?.message ?? 'Something went wrong'
     })
   }
 }

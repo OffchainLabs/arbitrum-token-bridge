@@ -1,9 +1,16 @@
 import { readContract } from '@wagmi/core'
-import { fiatTokenProxyAbi, tokenMinterAbi } from '../../util/cctp/abi'
+import { fiatTokenProxyAbi } from '../../util/cctp/fiatTokenProxyAbi'
+import { tokenMinterAbi } from '../../util/cctp/tokenMinterAbi'
 import { getContracts, CCTPSupportedChainId } from './useCCTP'
 
-// See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#transaction-limits
-// Note: fetchMinterAllowance returns allowance on the DESTINATION chain
+/**
+ *
+ * @param targetChainId target ChainId of the CCTP transfer
+ *
+ * See https://developers.circle.com/stablecoin/docs/cctp-technical-reference#transaction-limits
+ *
+ * Note: fetchMinterAllowance returns allowance on the DESTINATION chain
+ */
 export function fetchMinterAllowance({
   targetChainId
 }: {
