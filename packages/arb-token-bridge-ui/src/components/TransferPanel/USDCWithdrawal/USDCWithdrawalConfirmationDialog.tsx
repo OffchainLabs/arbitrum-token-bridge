@@ -86,7 +86,7 @@ export function USDCWithdrawalConfirmationDialog(
               </p>
               <p>
                 USDC native to {fromNetworkName} cannot be withdrawn using
-                Arbitrum's bridge.
+                Arbitrum&apos;s bridge.
               </p>
             </div>
 
