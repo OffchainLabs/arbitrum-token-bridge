@@ -6,6 +6,10 @@ import {
   getL1SubgraphClient
 } from '../../util/SubgraphUtils'
 
+/*
+  Retryables are used to fetch ETH transfers to a custom address.
+*/
+
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
@@ -20,6 +24,16 @@ type NextApiRequestWithDepositParams = NextApiRequest & {
     fromBlock?: string
     toBlock?: string
   }
+}
+
+type RetryableSubgraphResult = {
+  sender: string
+  destAddr: string
+  timestamp: string
+  transactionHash: string
+  id: string
+  value: string
+  blockCreatedAt: string
 }
 
 type DepositsResponse = {
@@ -68,12 +82,12 @@ export default async function handler(
 
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql(`{
-        deposits(
+        retryables(
           where: {            
             ${sender ? `sender: "${sender}",` : ''}
             ${senderNot ? `sender_not: "${senderNot}",` : ''}
-            ${receiver ? `receiver: "${receiver}",` : ''}
-            ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}   
+            ${receiver ? `destAddr: "${receiver}",` : ''}
+            ${receiverNot ? `destAddr_not: "${receiverNot}",` : ''}   
             ${
               typeof fromBlock !== 'undefined'
                 ? `blockCreatedAt_gte: ${Number(fromBlock)}`
@@ -86,43 +100,42 @@ export default async function handler(
             }  
             ${search ? `transactionHash_contains: "${search}"` : ''}
           }
+          value_gt: "0",
           orderBy: blockCreatedAt
           orderDirection: desc
           first: ${Number(pageSize)},
           skip: ${Number(totalFetched)}
         ) {
-          receiver
-          sender
-          sequenceNumber
-          timestamp
-          tokenAmount
-          transactionHash
-          type
-          isClassic
-          id
-          ethValue
-          blockCreatedAt
-          l1Token {
-            symbol
-            decimals    
-            id
-            name
-            registeredAtBlock
-          }                  
+          sender,
+          destAddr,
+          timestamp,
+          transactionHash,
+          id,
+          value,
+          blockCreatedAt              
         }
       }
     `)
     })
 
-    const transactions = (
-      subgraphResult.data.deposits as FetchDepositsFromSubgraphResult[]
-    ).map(tx => {
+    const transactions: FetchDepositsFromSubgraphResult[] = (
+      subgraphResult.data.retryables as RetryableSubgraphResult[]
+    ).map(s => {
       return {
-        ...tx,
+        sender: s.sender,
+        receiver: s.destAddr,
+        sequenceNumber: '',
+        timestamp: s.timestamp,
+        transactionHash: s.transactionHash,
+        type: 'EthDeposit',
+        isClassic: false,
+        id: s.id,
+        ethValue: s.value,
+        blockCreatedAt: s.blockCreatedAt,
         transferType:
           senderNot && receiver
-            ? TxHistoryTransferTypes.DepositReceived
-            : TxHistoryTransferTypes.DepositSent
+            ? TxHistoryTransferTypes.RetryableReceived
+            : TxHistoryTransferTypes.RetryableSent
       }
     })
 

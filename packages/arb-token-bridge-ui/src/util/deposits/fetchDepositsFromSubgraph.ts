@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+import { TxHistoryTransferTypes } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchDepositsFromSubgraphResult = {
@@ -19,6 +21,7 @@ export type FetchDepositsFromSubgraphResult = {
     name: string
     registeredAtBlock: string
   }
+  transferType: TxHistoryTransferTypes
 }
 
 /**
@@ -35,6 +38,7 @@ export type FetchDepositsFromSubgraphResult = {
  */
 
 export const fetchDepositsFromSubgraph = async ({
+  type,
   sender,
   senderNot,
   receiver,
@@ -43,9 +47,10 @@ export const fetchDepositsFromSubgraph = async ({
   toBlock,
   l2ChainId,
   pageSize = 10,
-  pageNumber = 0,
+  totalFetched = 0,
   searchString = ''
 }: {
+  type: TxHistoryTransferTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -54,7 +59,7 @@ export const fetchDepositsFromSubgraph = async ({
   toBlock: number
   l2ChainId: number
   pageSize?: number
-  pageNumber?: number
+  totalFetched?: number
   searchString?: string
 }): Promise<FetchDepositsFromSubgraphResult[]> => {
   if (fromBlock >= toBlock) {
@@ -72,12 +77,24 @@ export const fetchDepositsFromSubgraph = async ({
       toBlock,
       l2ChainId,
       pageSize,
-      page: pageNumber,
+      totalFetched,
       search: searchString
     })
   )
 
-  const response = await fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
+  function getAPITransferType() {
+    if (
+      [
+        TxHistoryTransferTypes.DepositSent,
+        TxHistoryTransferTypes.DepositReceived
+      ].includes(type)
+    ) {
+      return 'deposits'
+    }
+    return 'retryables'
+  }
+
+  const response = await fetch(`${getAPIBaseUrl()}/api/${getAPITransferType()}?${urlParams}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
   })

@@ -219,18 +219,6 @@ export function TransactionsTable({
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
 
-  const transactionsBySentOrReceivedFunds = useMemo(() => {
-    if (!address) return []
-    // both sent and received PENDING txs are stored together
-    // here we make sure we display a correct tx (sent or received)
-    return _transactions.filter(tx => {
-      if (isTransactionHistoryShowingSentTx) {
-        return tx.sender?.toLowerCase() === address.toLowerCase()
-      }
-      return tx.sender?.toLowerCase() !== address.toLowerCase()
-    })
-  }, [_transactions, address])
-
   const locallyStoredTransactionsMap = useMemo(() => {
     // map of all the locally-stored transactions (pending + recently executed)
     // so that tx rows can easily subscribe to live-local status without refetching table data
@@ -255,18 +243,18 @@ export function TransactionsTable({
 
   return (
     <>
-      {!isSmartContractWallet && (
+      {/* {!isSmartContractWallet && (
         <TableSentOrReceivedFundsSwitch
           className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
         />
-      )}
+      )} */}
 
       {/* search and pagination buttons */}
       <TableActionHeader
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
-        transactions={transactionsBySentOrReceivedFunds}
+        transactions={_transactions}
         isSmartContractWallet={isSmartContractWallet}
         loading={loading}
       />
@@ -297,7 +285,7 @@ export function TransactionsTable({
           {/* when there are no transactions present */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            !transactionsBySentOrReceivedFunds.length && (
+            !_transactions.length && (
               <EmptyTableRow>
                 <span className="text-sm font-medium">No transactions</span>
               </EmptyTableRow>
@@ -306,9 +294,9 @@ export function TransactionsTable({
           {/* finally, when transactions are present, show rows */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            transactionsBySentOrReceivedFunds.map((tx, index) => {
+            _transactions.map((tx, index) => {
               const isLastRow =
-                index === transactionsBySentOrReceivedFunds.length - 1
+                index === _transactions.length - 1
 
               // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
               // this will make sure the row updates with any updates in the local app state

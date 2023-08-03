@@ -3,6 +3,15 @@ import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
 import { FetchDepositParams } from './deposits/fetchDeposits'
 import { FetchWithdrawalsParams } from './withdrawals/fetchWithdrawals'
 
+export enum TxHistoryTransferTypes {
+  DepositSent = 'Deposit Sent',
+  DepositReceived = 'Deposit Received',
+  // Retryables are fetched from subgraph to get ETH sent to a custom address.
+  // See method 'depositTo' in SDK. It refunds excess ETH in a retryable to 'send' ETH to a custom address.
+  RetryableSent = 'Retryable Sent',
+  RetryableReceived = 'Retryable Received'
+}
+
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
     link: new HttpLink({
@@ -70,6 +79,25 @@ export function getL2SubgraphClient(l2ChainId: number) {
 
     default:
       throw new Error(`[getL2SubgraphClient] Unsupported network: ${l2ChainId}`)
+  }
+}
+
+export function getSubgraphQueryParams(
+  type: TxHistoryTransferTypes,
+  address: string
+) {
+  switch (type) {
+    case TxHistoryTransferTypes.DepositReceived:
+    case TxHistoryTransferTypes.RetryableSent:
+      return {
+        sender: address
+      }
+    case TxHistoryTransferTypes.DepositSent:
+    case TxHistoryTransferTypes.RetryableReceived:
+      return {
+        senderNot: address,
+        receiver: address
+      }
   }
 }
 

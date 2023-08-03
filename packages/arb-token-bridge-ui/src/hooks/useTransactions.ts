@@ -9,6 +9,7 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { TxHistoryTransferTypes } from '../util/SubgraphUtils'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -97,6 +98,7 @@ type TransactionBase = {
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   isClassic?: boolean
+  transferType?: TxHistoryTransferTypes
 }
 
 export interface Transaction extends TransactionBase {

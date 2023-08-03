@@ -5,7 +5,10 @@ import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import {
+  tryFetchLatestSubgraphBlockNumber,
+  TxHistoryTransferTypes
+} from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 
@@ -19,7 +22,7 @@ export type FetchDepositParams = {
   l1Provider: Provider
   l2Provider: Provider
   pageSize?: number
-  pageNumber?: number
+  totalFetched?: number
   searchString?: string
 }
 
@@ -27,6 +30,7 @@ export type FetchDepositParams = {
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
 export const fetchDeposits = async ({
+  type,
   sender,
   senderNot,
   receiver,
@@ -36,9 +40,11 @@ export const fetchDeposits = async ({
   l1Provider,
   l2Provider,
   pageSize = 10,
-  pageNumber = 0,
+  totalFetched = 0,
   searchString = ''
-}: FetchDepositParams): Promise<Transaction[]> => {
+}: FetchDepositParams & {
+  type: TxHistoryTransferTypes
+}): Promise<Transaction[]> => {
   if (!sender && !receiver) return []
   if (!l1Provider || !l2Provider) return []
 
@@ -67,6 +73,7 @@ export const fetchDeposits = async ({
   }
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
+    type,
     sender,
     senderNot,
     receiver,
@@ -75,7 +82,7 @@ export const fetchDeposits = async ({
     toBlock,
     l2ChainId,
     pageSize,
-    pageNumber,
+    totalFetched,
     searchString
   })
 
@@ -120,7 +127,9 @@ export const fetchDeposits = async ({
         l2NetworkID: String(l2ChainId),
         blockNumber: Number(tx.blockCreatedAt),
         timestampCreated: tx.timestamp,
-        isClassic: tx.isClassic
+        isClassic: tx.isClassic,
+
+        transferType: tx.transferType
       }
     }
   )
