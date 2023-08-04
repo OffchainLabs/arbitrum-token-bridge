@@ -1,4 +1,4 @@
-export const messengerTransmitterAbi = [
+export const MessageTransmitterAbi = [
   {
     inputs: [
       { internalType: 'uint32', name: '_localDomain', type: 'uint32' },

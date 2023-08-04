@@ -1,4 +1,4 @@
-export const fiatTokenProxyAbi = [
+export const FiatTokenProxyAbi = [
   {
     anonymous: false,
     inputs: [

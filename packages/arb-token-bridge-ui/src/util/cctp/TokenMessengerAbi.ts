@@ -1,4 +1,4 @@
-export const tokenMessengerAbi = [
+export const TokenMessengerAbi = [
   {
     inputs: [
       { internalType: 'address', name: '_messageTransmitter', type: 'address' },

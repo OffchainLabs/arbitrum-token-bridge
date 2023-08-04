@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core'
-import { fiatTokenProxyAbi } from '../../util/cctp/fiatTokenProxyAbi'
-import { tokenMinterAbi } from '../../util/cctp/tokenMinterAbi'
+import { FiatTokenProxyAbi } from '../../util/cctp/FiatTokenProxyAbi'
+import { TokenMinterAbi } from '../../util/cctp/TokenMinterAbi'
 import { getContracts, CCTPSupportedChainId } from './useCCTP'
 
 /**
@@ -22,7 +22,7 @@ export function fetchMinterAllowance({
   return readContract({
     address: usdcContractAddress,
     chainId: targetChainId,
-    abi: fiatTokenProxyAbi,
+    abi: FiatTokenProxyAbi,
     functionName: 'minterAllowance',
     args: [tokenMinterContractAddress]
   })
@@ -39,7 +39,7 @@ export function fetchPerMessageBurnLimit({
   return readContract({
     address: tokenMinterContractAddress,
     chainId: sourceChainId,
-    abi: tokenMinterAbi,
+    abi: TokenMinterAbi,
     functionName: 'burnLimitsPerMessage',
     args: [usdcContractAddress]
   })

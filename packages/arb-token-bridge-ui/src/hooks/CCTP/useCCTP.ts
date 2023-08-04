@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 
 import { ChainId } from '../../util/networks'
-import { messengerTransmitterAbi } from '../../util/cctp/messengerTransmitterAbi'
-import { tokenMessengerAbi } from '../../util/cctp/tokenMessengerAbi'
+import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
+import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 
@@ -118,7 +118,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
 
       const config = await prepareWriteContract({
         address: tokenMessengerContractAddress,
-        abi: tokenMessengerAbi,
+        abi: TokenMessengerAbi,
         functionName: 'depositForBurn',
         signer,
         args: [
@@ -171,7 +171,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
     }) => {
       const config = await prepareWriteContract({
         address: messengerTransmitterContractAddress,
-        abi: messengerTransmitterAbi,
+        abi: MessageTransmitterAbi,
         functionName: 'receiveMessage',
         chainId: targetChainId,
         signer,
