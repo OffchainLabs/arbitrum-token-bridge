@@ -50,7 +50,7 @@ export function useApproveAndDeposit({
       })
 
       if (allowance.lt(amountRaw)) {
-        if (!onAllowanceTooLow()) {
+        if (!(await onAllowanceTooLow())) {
           return
         }
 
