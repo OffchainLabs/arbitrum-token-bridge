@@ -1,3 +1,4 @@
+import { useAccount } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
@@ -7,12 +8,21 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useDeposits } from '../../hooks/useDeposits'
+import { useDeposits, useTxHistoryTotalFetched } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+
+const TX_HISTORY_PAGE_SIZE = 10
+
+const defaultTxHistoryPageParams: PageParams = {
+  searchString: '',
+  pageNumber: 0,
+  pageSize: TX_HISTORY_PAGE_SIZE
+}
 
 export const motionDivProps = {
   layout: true,
@@ -31,6 +41,9 @@ export const motionDivProps = {
 }
 
 export function MainContent() {
+  const { address } = useAccount()
+  const { resetTxHistoryTotalFetched } = useTxHistoryTotalFetched()
+  const { l1, l2 } = useNetworksAndSigners()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransactionHistoryPanelVisible }
@@ -43,18 +56,12 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
-    searchString: '',
-    pageNumber: 0,
-    pageSize: 10
-  })
+  const [depositsPageParams, setDepositsPageParams] = useState<PageParams>(
+    defaultTxHistoryPageParams
+  )
 
   const [withdrawalsPageParams, setWithdrawalsPageParams] =
-    useState<PageParams>({
-      searchString: '',
-      pageNumber: 0,
-      pageSize: 10
-    })
+    useState<PageParams>(defaultTxHistoryPageParams)
 
   const {
     data: depositsData = {
@@ -75,6 +82,14 @@ export function MainContent() {
     isValidating: withdrawalsLoading,
     error: withdrawalsError
   } = useWithdrawals(withdrawalsPageParams)
+
+  useEffect(() => {
+    // Go to Page 1 in tx history.
+    setDepositsPageParams(defaultTxHistoryPageParams)
+    setWithdrawalsPageParams(defaultTxHistoryPageParams)
+    // Reset the fetched tx count storage.
+    resetTxHistoryTotalFetched()
+  }, [address, l1, l2, resetTxHistoryTotalFetched])
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status

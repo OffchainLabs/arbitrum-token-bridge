@@ -12,6 +12,11 @@ export enum TxHistoryTransferTypes {
   RetryableReceived = 'Retryable Received'
 }
 
+type AdditionalSubgraphQueryParams = Pick<
+  FetchDepositParams | FetchWithdrawalsParams,
+  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
+>
+
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
     link: new HttpLink({
@@ -82,10 +87,10 @@ export function getL2SubgraphClient(l2ChainId: number) {
   }
 }
 
-export function getSubgraphQueryParams(
+export function getAdditionalSubgraphQueryParams(
   type: TxHistoryTransferTypes,
   address: string
-) {
+): AdditionalSubgraphQueryParams {
   switch (type) {
     case TxHistoryTransferTypes.DepositReceived:
     case TxHistoryTransferTypes.RetryableSent:
@@ -146,27 +151,5 @@ export const tryFetchLatestSubgraphBlockNumber = async (
   } catch (error) {
     // In case the subgraph is not supported or down, fall back to fetching everything through event logs
     return 0
-  }
-}
-
-type AdditionalSubgraphQueryParams = Pick<
-  FetchDepositParams | FetchWithdrawalsParams,
-  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
->
-
-export function getQueryParamsForFetchingSentFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    sender: address
-  }
-}
-
-export function getQueryParamsForFetchingReceivedFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    senderNot: address,
-    receiver: address
   }
 }

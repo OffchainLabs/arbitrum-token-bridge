@@ -13,7 +13,7 @@ import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
 import {
   TxHistoryTransferTypes,
-  getSubgraphQueryParams
+  getAdditionalSubgraphQueryParams
 } from '../util/SubgraphUtils'
 
 export type CompleteDepositData = {
@@ -31,17 +31,28 @@ const emptyTxHistoryTotalFetched: TxHistoryTotalFetched = {
   [TxHistoryTransferTypes.RetryableReceived]: 0
 }
 
-// Stores the last fetched index for each Transfer Type.
-// With each page change we get the most recent txs and store number of txs fetched for the type.
-export const useTxHistoryTotalTxFetched = create<{
+// Tracks how many transactions have been stored for each transfer type.
+// For each transfer type we do a separate subgraph query.
+// We use these values to decide how many entries to skip for subsequent queries.
+//
+// This allows us to have transactions from different subgraph queries in a single table.
+// We reset values to 0 and set the page to 1 when the address or networks change.
+export const useTxHistoryTotalFetched = create<{
   txHistoryTotalFetched: TxHistoryTotalFetched
   setTxHistoryTotalFetched: (data: TxHistoryTotalFetched) => void
+  resetTxHistoryTotalFetched: () => void
 }>(set => ({
   txHistoryTotalFetched: emptyTxHistoryTotalFetched,
-  setTxHistoryTotalFetched: data => set({ txHistoryTotalFetched: data })
+  setTxHistoryTotalFetched: data => set({ txHistoryTotalFetched: data }),
+  resetTxHistoryTotalFetched: () =>
+    set({ txHistoryTotalFetched: emptyTxHistoryTotalFetched })
 }))
 
-function mapDepositsToTotalFetched(txs: Transaction[]): TxHistoryTotalFetched {
+// Separates different 'transferType's for each transaction, and counts them.
+// We store this to know how many entries to skip in the next query.
+function mapTransferTypeToTotalFetched(
+  txs: Transaction[]
+): TxHistoryTotalFetched {
   const data = { ...emptyTxHistoryTotalFetched }
 
   for (const tx of txs) {
@@ -81,7 +92,7 @@ export const fetchCompleteDepositData = async ({
     fetchDeposits({
       type,
       ...depositParams,
-      ...getSubgraphQueryParams(type, walletAddress),
+      ...getAdditionalSubgraphQueryParams(type, walletAddress),
       totalFetched: txHistoryTotalFetched[type]
     })
   )
@@ -106,7 +117,7 @@ export const fetchCompleteDepositData = async ({
   )
 
   const recentTxHistoryTotalFetched =
-    mapDepositsToTotalFetched(earliestDeposits)
+    mapTransferTypeToTotalFetched(earliestDeposits)
   const newTxHistoryTotalFetched = sumTxHistoryTotalFetched(
     txHistoryTotalFetched,
     recentTxHistoryTotalFetched
@@ -123,7 +134,7 @@ export const fetchCompleteDepositData = async ({
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
   const { txHistoryTotalFetched, setTxHistoryTotalFetched } =
-    useTxHistoryTotalTxFetched()
+    useTxHistoryTotalFetched()
 
   // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
@@ -157,7 +168,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _searchString
     ]) =>
       fetchCompleteDepositData({
-        walletAddress,
+        walletAddress: _walletAddress,
         txHistoryTotalFetched,
         setTxHistoryTotalFetched,
         depositParams: {
