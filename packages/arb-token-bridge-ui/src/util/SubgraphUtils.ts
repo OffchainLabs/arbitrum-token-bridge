@@ -1,21 +1,10 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
+
 import { FetchDepositParams } from './deposits/fetchDeposits'
 import { FetchWithdrawalsParams } from './withdrawals/fetchWithdrawals'
-
-export enum TxHistoryTransferTypes {
-  DepositSent = 'Deposit Sent',
-  DepositReceived = 'Deposit Received',
-  // Retryables are fetched from subgraph to get ETH sent to a custom address.
-  // See method 'depositTo' in SDK. It refunds excess ETH in a retryable to 'send' ETH to a custom address.
-  RetryableSent = 'Retryable Sent',
-  RetryableReceived = 'Retryable Received'
-}
-
-type AdditionalSubgraphQueryParams = Pick<
-  FetchDepositParams | FetchWithdrawalsParams,
-  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
->
+import { Transaction } from '../hooks/useTransactions'
+import { L2ToL1EventResultPlus } from '../hooks/arbTokenBridge.types'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -87,25 +76,6 @@ export function getL2SubgraphClient(l2ChainId: number) {
   }
 }
 
-export function getAdditionalSubgraphQueryParams(
-  type: TxHistoryTransferTypes,
-  address: string
-): AdditionalSubgraphQueryParams {
-  switch (type) {
-    case TxHistoryTransferTypes.DepositReceived:
-    case TxHistoryTransferTypes.RetryableSent:
-      return {
-        sender: address
-      }
-    case TxHistoryTransferTypes.DepositSent:
-    case TxHistoryTransferTypes.RetryableReceived:
-      return {
-        senderNot: address,
-        receiver: address
-      }
-  }
-}
-
 // TODO: Codegen types
 type FetchBlockNumberFromSubgraphQueryResult = {
   data: {
@@ -152,4 +122,77 @@ export const tryFetchLatestSubgraphBlockNumber = async (
     // In case the subgraph is not supported or down, fall back to fetching everything through event logs
     return 0
   }
+}
+
+export enum TxHistoryTransferTypes {
+  TxSent = 'Tx Sent',
+  TxReceived = 'Tx Received',
+  // Retryables are fetched from subgraph to get ETH sent to a custom address.
+  // See method 'depositTo' in SDK. It refunds excess ETH in a retryable to 'send' ETH to a custom address.
+  RetryableSent = 'Retryable Sent',
+  RetryableReceived = 'Retryable Received'
+}
+
+export type TxHistoryTotalFetched = { [key in TxHistoryTransferTypes]: number }
+
+type AdditionalSubgraphQueryParams = Pick<
+  FetchDepositParams | FetchWithdrawalsParams,
+  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
+>
+
+export const emptyTxHistoryTotalFetched: {
+  [key in TxHistoryTransferTypes]: number
+} = {
+  [TxHistoryTransferTypes.TxSent]: 0,
+  [TxHistoryTransferTypes.TxReceived]: 0,
+  [TxHistoryTransferTypes.RetryableSent]: 0,
+  [TxHistoryTransferTypes.RetryableReceived]: 0
+}
+
+export function getAdditionalSubgraphQueryParams(
+  type: TxHistoryTransferTypes,
+  address: string
+): AdditionalSubgraphQueryParams {
+  switch (type) {
+    case TxHistoryTransferTypes.TxSent:
+    case TxHistoryTransferTypes.RetryableSent:
+      return {
+        sender: address
+      }
+    case TxHistoryTransferTypes.TxReceived:
+    case TxHistoryTransferTypes.RetryableReceived:
+      return {
+        senderNot: address,
+        receiver: address
+      }
+  }
+}
+
+// Separates different 'transferType's for each transaction, and counts them.
+// We store this to know how many entries to skip in the next query.
+export function mapTransferTypeToTotalFetched(
+  txs: (Transaction | L2ToL1EventResultPlus)[]
+) {
+  const data = { ...emptyTxHistoryTotalFetched }
+
+  for (const tx of txs) {
+    const type = tx.transferType as TxHistoryTransferTypes
+    const current = data[type]
+    data[type] = current + 1
+  }
+
+  return data
+}
+
+export function sumTxHistoryTotalFetched(
+  totalFetched_1: TxHistoryTotalFetched,
+  totalFetched_2: TxHistoryTotalFetched
+) {
+  const result: TxHistoryTotalFetched = { ...totalFetched_1 }
+  Object.keys(totalFetched_1).map(type => {
+    const _type = type as TxHistoryTransferTypes
+    result[_type] = totalFetched_1[_type] + totalFetched_2[_type]
+  })
+
+  return result
 }

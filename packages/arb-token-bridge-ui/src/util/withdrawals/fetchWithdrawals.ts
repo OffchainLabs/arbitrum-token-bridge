@@ -23,7 +23,7 @@ export type FetchWithdrawalsParams = {
   l1Provider: Provider
   l2Provider: Provider
   gatewayAddresses: string[]
-  pageNumber?: number
+  totalFetched?: number
   pageSize?: number
   searchString?: string
 }
@@ -38,7 +38,7 @@ export const fetchWithdrawals = async ({
   l1Provider,
   l2Provider,
   gatewayAddresses,
-  pageNumber = 0,
+  totalFetched = 0,
   pageSize,
   searchString,
   fromBlock,
@@ -79,7 +79,7 @@ export const fetchWithdrawals = async ({
       fromBlock: fromBlock,
       toBlock: toBlock,
       l2ChainId: l2ChainID,
-      pageNumber,
+      totalFetched,
       pageSize,
       searchString
     }),

@@ -1,7 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import { getL2SubgraphClient } from '../../util/SubgraphUtils'
+import {
+  TxHistoryTransferTypes,
+  getL2SubgraphClient
+} from '../../util/SubgraphUtils'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
@@ -16,6 +19,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
     pageSize?: string
     fromBlock?: string
     toBlock?: string
+    totalFetched?: string
   }
 }
 
@@ -36,7 +40,7 @@ export default async function handler(
       senderNot,
       receiver,
       receiverNot,
-      page = '0',
+      totalFetched = '0',
       pageSize = '10',
       fromBlock,
       toBlock
@@ -86,7 +90,7 @@ export default async function handler(
                 orderBy: l2BlockTimestamp
                 orderDirection: desc
                 first: ${Number(pageSize)},
-                skip: ${Number(page) * Number(pageSize)}
+                skip: ${totalFetched}
             ) {
                 id,
                 type,
@@ -132,7 +136,11 @@ export default async function handler(
           isClassic,
           l2BlockTimestamp,
           l2TxHash,
-          l2BlockNum
+          l2BlockNum,
+          transferType:
+            senderNot && receiver
+              ? TxHistoryTransferTypes.TxReceived
+              : TxHistoryTransferTypes.TxSent
         }
       })
 

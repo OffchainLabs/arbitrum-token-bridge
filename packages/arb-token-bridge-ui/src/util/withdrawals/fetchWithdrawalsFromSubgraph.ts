@@ -1,4 +1,5 @@
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
+import { TxHistoryTransferTypes } from '../SubgraphUtils'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
@@ -14,6 +15,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
   l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
+  transferType: TxHistoryTransferTypes
 }
 
 /**
@@ -37,7 +39,7 @@ export async function fetchWithdrawalsFromSubgraph({
   toBlock,
   l2ChainId,
   pageSize = 10,
-  pageNumber = 0,
+  totalFetched = 0,
   searchString = ''
 }: {
   sender?: string
@@ -48,7 +50,7 @@ export async function fetchWithdrawalsFromSubgraph({
   toBlock: number
   l2ChainId: number
   pageSize?: number
-  pageNumber?: number
+  totalFetched?: number
   searchString?: string
 }): Promise<FetchWithdrawalsFromSubgraphResult[]> {
   if (fromBlock >= toBlock) {
@@ -66,7 +68,7 @@ export async function fetchWithdrawalsFromSubgraph({
       toBlock,
       l2ChainId,
       pageSize,
-      page: pageNumber,
+      totalFetched,
       search: searchString
     })
   )

@@ -121,8 +121,8 @@ export default async function handler(
         ...tx,
         transferType:
           senderNot && receiver
-            ? TxHistoryTransferTypes.DepositReceived
-            : TxHistoryTransferTypes.DepositSent
+            ? TxHistoryTransferTypes.TxReceived
+            : TxHistoryTransferTypes.TxSent
       }
     })
 

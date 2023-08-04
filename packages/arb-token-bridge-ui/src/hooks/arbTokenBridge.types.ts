@@ -33,6 +33,7 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
+import { TxHistoryTransferTypes } from '../util/SubgraphUtils'
 
 export { OutgoingMessageState }
 
@@ -89,6 +90,7 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
+  transferType?: TxHistoryTransferTypes
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {

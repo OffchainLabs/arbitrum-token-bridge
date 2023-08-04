@@ -84,8 +84,8 @@ export const fetchDepositsFromSubgraph = async ({
   function getAPITransferType() {
     if (
       [
-        TxHistoryTransferTypes.DepositSent,
-        TxHistoryTransferTypes.DepositReceived
+        TxHistoryTransferTypes.TxSent,
+        TxHistoryTransferTypes.TxReceived
       ].includes(type)
     ) {
       return 'deposits'

@@ -219,7 +219,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
       outgoingMessageState,
       symbol,
       decimals,
-      l2TxHash: l2TxReceipt.transactionHash
+      l2TxHash: l2TxReceipt.transactionHash,
+      transferType: withdrawal.transferType
     } as L2ToL1EventResultPlus
   }
 
@@ -233,6 +234,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     outgoingMessageState,
     l2TxHash: l2TxReceipt.transactionHash,
     symbol: 'ETH',
-    decimals: 18
+    decimals: 18,
+    transferType: withdrawal.transferType
   } as L2ToL1EventResultPlus
 }

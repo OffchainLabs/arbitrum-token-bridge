@@ -8,9 +8,12 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useDeposits, useTxHistoryTotalFetched } from '../../hooks/useDeposits'
+import { useDeposits, useDepositsTotalFetched } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useWithdrawals } from '../../hooks/useWithdrawals'
+import {
+  useWithdrawals,
+  useWithdrawalsTotalFetched
+} from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
@@ -42,7 +45,8 @@ export const motionDivProps = {
 
 export function MainContent() {
   const { address } = useAccount()
-  const { resetTxHistoryTotalFetched } = useTxHistoryTotalFetched()
+  const { resetDepositsTotalFetched } = useDepositsTotalFetched()
+  const { resetWithdrawalsTotalFetched } = useWithdrawalsTotalFetched()
   const { l1, l2 } = useNetworksAndSigners()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
@@ -88,8 +92,9 @@ export function MainContent() {
     setDepositsPageParams(defaultTxHistoryPageParams)
     setWithdrawalsPageParams(defaultTxHistoryPageParams)
     // Reset the fetched tx count storage.
-    resetTxHistoryTotalFetched()
-  }, [address, l1, l2, resetTxHistoryTotalFetched])
+    resetDepositsTotalFetched()
+    resetWithdrawalsTotalFetched()
+  }, [address, l1, l2, resetDepositsTotalFetched, resetWithdrawalsTotalFetched])
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
