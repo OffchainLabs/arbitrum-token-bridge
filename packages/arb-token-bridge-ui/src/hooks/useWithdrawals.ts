@@ -20,17 +20,14 @@ import {
   mapSubgraphQueryTypeToTotalFetched,
   sumTxHistoryTotalFetched
 } from '../util/SubgraphUtils'
+import { useAccountType } from './useAccountType'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
   pendingWithdrawals: L2ToL1EventResultPlus[]
   transformedWithdrawals: MergedTransaction[]
 }
-
-const withdrawalQueryTypes = [
-  SubgraphQueryTypes.TxSent,
-  SubgraphQueryTypes.TxReceived
-]
 
 // Tracks how many transactions have been stored for each SubgraphQueryType.
 // For each SubgraphQueryType we do a separate subgraph query.
@@ -51,11 +48,13 @@ export const useWithdrawalsTotalFetchedStore = create<{
 
 const fetchCompleteWithdrawalData = async ({
   walletAddress,
+  withdrawalQueryTypes,
   withdrawalsTotalFetched,
   setWithdrawalsTotalFetched,
   params
 }: {
   walletAddress: string
+  withdrawalQueryTypes: Partial<SubgraphQueryTypes>[]
   withdrawalsTotalFetched: TxHistoryTotalFetched
   setWithdrawalsTotalFetched: (data: TxHistoryTotalFetched) => void
   params: FetchWithdrawalsParams & { pageNumber: number }
@@ -117,6 +116,8 @@ const fetchCompleteWithdrawalData = async ({
 
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { isSmartContractWallet } = useAccountType()
   const { withdrawalsTotalFetched, setWithdrawalsTotalFetched } =
     useWithdrawalsTotalFetchedStore()
 
@@ -124,6 +125,26 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
+
+  const withdrawalQueryTypes = useMemo(() => {
+    if (
+      typeof isSmartContractWallet === 'undefined' ||
+      typeof isConnectedToArbitrum === 'undefined'
+    ) {
+      return []
+    }
+    // contract wallet address is tied to a specific network, therefore:
+    if (isSmartContractWallet) {
+      // if connected to L2, we only fetch sent txs
+      if (isConnectedToArbitrum) {
+        return [SubgraphQueryTypes.TxSent]
+      }
+      // if connected to L1, we only fetch received txs
+      return [SubgraphQueryTypes.TxReceived]
+    }
+    // EOA
+    return [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived]
+  }, [isConnectedToArbitrum, isSmartContractWallet])
 
   const gatewaysToUse = useL2Gateways({ l2Provider })
 
@@ -141,6 +162,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       l1Provider,
       l2Provider,
       gatewaysToUse,
+      isSmartContractWallet,
+      isConnectedToArbitrum,
       withdrawalPageParams.pageNumber,
       withdrawalPageParams.pageSize,
       withdrawalPageParams.searchString
@@ -151,12 +174,15 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
+      ,
+      ,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
         walletAddress: _walletAddress,
+        withdrawalQueryTypes,
         withdrawalsTotalFetched,
         setWithdrawalsTotalFetched,
         params: {

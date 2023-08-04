@@ -30,7 +30,7 @@ export type FetchDepositParams = {
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
 export const fetchDeposits = async ({
-  type,
+  subgraphQueryType,
   sender,
   senderNot,
   receiver,
@@ -43,7 +43,7 @@ export const fetchDeposits = async ({
   totalFetched = 0,
   searchString = ''
 }: FetchDepositParams & {
-  type: SubgraphQueryTypes
+  subgraphQueryType: SubgraphQueryTypes
 }): Promise<Transaction[]> => {
   if (!sender && !receiver) return []
   if (!l1Provider || !l2Provider) return []
@@ -73,7 +73,7 @@ export const fetchDeposits = async ({
   }
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
-    type,
+    queryType: subgraphQueryType,
     sender,
     senderNot,
     receiver,

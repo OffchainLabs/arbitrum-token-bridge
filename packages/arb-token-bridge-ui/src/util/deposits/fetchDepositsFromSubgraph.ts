@@ -37,7 +37,7 @@ export type FetchDepositsFromSubgraphResult = {
  */
 
 export const fetchDepositsFromSubgraph = async ({
-  type,
+  queryType,
   sender,
   senderNot,
   receiver,
@@ -49,7 +49,7 @@ export const fetchDepositsFromSubgraph = async ({
   totalFetched = 0,
   searchString = ''
 }: {
-  type: SubgraphQueryTypes
+  queryType: SubgraphQueryTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -83,7 +83,9 @@ export const fetchDepositsFromSubgraph = async ({
 
   function getAPISubgraphQueryType() {
     if (
-      [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived].includes(type)
+      [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived].includes(
+        queryType
+      )
     ) {
       return 'deposits'
     }

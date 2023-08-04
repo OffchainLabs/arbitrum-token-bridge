@@ -19,20 +19,14 @@ import {
   mapSubgraphQueryTypeToTotalFetched,
   sumTxHistoryTotalFetched
 } from '../util/SubgraphUtils'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
+import { useAccountType } from './useAccountType'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
   pendingDeposits: Transaction[]
   transformedDeposits: MergedTransaction[]
 }
-
-const depositQueryTypes = [
-  SubgraphQueryTypes.TxSent,
-  SubgraphQueryTypes.TxReceived
-  // TODO: Enable for custom destination ETH
-  // SubgraphQueryTypes.RetryableSent,
-  // SubgraphQueryTypes.RetryableReceived
-]
 
 // Tracks how many transactions have been fetched for each SubgraphQueryType.
 // For each SubgraphQueryType we do a separate subgraph query.
@@ -53,11 +47,13 @@ export const useDepositsTotalFetchedStore = create<{
 
 export const fetchCompleteDepositData = async ({
   walletAddress,
+  depositQueryTypes,
   depositsTotalFetched,
   setDepositsTotalFetched,
   depositParams
 }: {
   walletAddress: string
+  depositQueryTypes: Partial<SubgraphQueryTypes>[]
   depositsTotalFetched: TxHistoryTotalFetched
   setDepositsTotalFetched: (data: TxHistoryTotalFetched) => void
   depositParams: FetchDepositParams & { pageNumber: number }
@@ -66,7 +62,7 @@ export const fetchCompleteDepositData = async ({
   // we will fetch them all, and in the next steps we decide which of them to display
   const promises = depositQueryTypes.map(type =>
     fetchDeposits({
-      type,
+      subgraphQueryType: type,
       ...depositParams,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
       totalFetched: depositsTotalFetched[type]
@@ -118,6 +114,8 @@ export const fetchCompleteDepositData = async ({
 
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { isSmartContractWallet } = useAccountType()
   const { depositsTotalFetched, setDepositsTotalFetched } =
     useDepositsTotalFetchedStore()
 
@@ -125,6 +123,27 @@ export const useDeposits = (depositPageParams: PageParams) => {
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
+
+  const depositQueryTypes = useMemo(() => {
+    if (
+      typeof isSmartContractWallet === 'undefined' ||
+      typeof isConnectedToArbitrum === 'undefined'
+    ) {
+      return []
+    }
+    // contract wallet address is tied to a specific network, therefore:
+    if (isSmartContractWallet) {
+      // if connected to L2, we only fetch received txs
+      if (isConnectedToArbitrum) {
+        return [SubgraphQueryTypes.TxReceived]
+      }
+      // if connected to L1, we only fetch sent txs
+      return [SubgraphQueryTypes.TxSent]
+    }
+    // EOA
+    // TODO: Add retryables for custom address ETH
+    return [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived]
+  }, [isConnectedToArbitrum, isSmartContractWallet])
 
   const {
     app: {
@@ -139,6 +158,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
       walletAddress,
       l1Provider,
       l2Provider,
+      isSmartContractWallet,
+      isConnectedToArbitrum,
       depositPageParams.pageNumber,
       depositPageParams.pageSize,
       depositPageParams.searchString
@@ -148,12 +169,15 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
+      ,
+      ,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteDepositData({
         walletAddress: _walletAddress,
+        depositQueryTypes,
         depositsTotalFetched,
         setDepositsTotalFetched,
         depositParams: {

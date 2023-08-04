@@ -1,3 +1,5 @@
+import { SubgraphQueryTypes } from '../../SubgraphUtils'
+
 const sender = '0x5d64a0fd6af0d76a7ed189d4061ffa6823fbf97e'
 
 const baseQuery = {
@@ -7,13 +9,28 @@ const baseQuery = {
 }
 
 export function getQueryCoveringClassicOnlyWithoutResults() {
-  return { ...baseQuery, fromBlock: 0, toBlock: 14309825 }
+  return {
+    ...baseQuery,
+    fromBlock: 0,
+    toBlock: 14309825,
+    queryType: SubgraphQueryTypes.TxSent
+  }
 }
 
 export function getQueryCoveringClassicOnlyWithResults() {
-  return { ...baseQuery, fromBlock: 14309825, toBlock: 14428639 }
+  return {
+    ...baseQuery,
+    fromBlock: 14309825,
+    toBlock: 14428639,
+    queryType: SubgraphQueryTypes.TxSent
+  }
 }
 
 export function getQueryCoveringClassicAndNitroWithResults() {
-  return { ...baseQuery, fromBlock: 15362737, toBlock: 15517648 }
+  return {
+    ...baseQuery,
+    fromBlock: 15362737,
+    toBlock: 15517648,
+    queryType: SubgraphQueryTypes.TxSent
+  }
 }

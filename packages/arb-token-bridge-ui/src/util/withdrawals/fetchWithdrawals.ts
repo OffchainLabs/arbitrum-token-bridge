@@ -83,19 +83,25 @@ export const fetchWithdrawals = async ({
       pageSize,
       searchString
     }),
-    fetchETHWithdrawalsFromEventLogs({
-      address,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider
-    }),
-    fetchTokenWithdrawalsFromEventLogs({
-      address,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider,
-      l2GatewayAddresses: gatewayAddresses
-    })
+    // TODO: Fix event logs to accept sender besides destination.
+    receiver
+      ? fetchETHWithdrawalsFromEventLogs({
+          address: receiver,
+          fromBlock: toBlock + 1,
+          toBlock: 'latest',
+          l2Provider: l2Provider
+        })
+      : [],
+    // TODO: Fix event logs to accept destination besides sender.
+    sender
+      ? fetchTokenWithdrawalsFromEventLogs({
+          address,
+          fromBlock: toBlock + 1,
+          toBlock: 'latest',
+          l2Provider: l2Provider,
+          l2GatewayAddresses: gatewayAddresses
+        })
+      : []
   ])
 
   const l2ToL1Txns = (
