@@ -38,7 +38,7 @@ const withdrawalQueryTypes = [
 //
 // This allows us to have transactions from different subgraph queries in a single table.
 // We reset values to 0 and set the page to 1 when the address or networks change.
-export const useWithdrawalsTotalFetched = create<{
+export const useWithdrawalsTotalFetchedStore = create<{
   withdrawalsTotalFetched: TxHistoryTotalFetched
   setWithdrawalsTotalFetched: (data: TxHistoryTotalFetched) => void
   resetWithdrawalsTotalFetched: () => void
@@ -117,7 +117,7 @@ const fetchCompleteWithdrawalData = async ({
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
   const { withdrawalsTotalFetched, setWithdrawalsTotalFetched } =
-    useWithdrawalsTotalFetched()
+    useWithdrawalsTotalFetchedStore()
 
   // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)

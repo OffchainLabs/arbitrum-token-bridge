@@ -8,11 +8,14 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useDeposits, useDepositsTotalFetched } from '../../hooks/useDeposits'
+import {
+  useDeposits,
+  useDepositsTotalFetchedStore
+} from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import {
   useWithdrawals,
-  useWithdrawalsTotalFetched
+  useWithdrawalsTotalFetchedStore
 } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
@@ -45,8 +48,8 @@ export const motionDivProps = {
 
 export function MainContent() {
   const { address } = useAccount()
-  const { resetDepositsTotalFetched } = useDepositsTotalFetched()
-  const { resetWithdrawalsTotalFetched } = useWithdrawalsTotalFetched()
+  const { resetDepositsTotalFetched } = useDepositsTotalFetchedStore()
+  const { resetWithdrawalsTotalFetched } = useWithdrawalsTotalFetchedStore()
   const { l1, l2 } = useNetworksAndSigners()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {

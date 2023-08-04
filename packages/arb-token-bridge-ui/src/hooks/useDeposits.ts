@@ -40,7 +40,7 @@ const depositQueryTypes = [
 //
 // This allows us to have transactions from different subgraph queries in a single table.
 // We reset values to 0 and set the page to 1 when the address or networks change.
-export const useDepositsTotalFetched = create<{
+export const useDepositsTotalFetchedStore = create<{
   depositsTotalFetched: TxHistoryTotalFetched
   setDepositsTotalFetched: (data: TxHistoryTotalFetched) => void
   resetDepositsTotalFetched: () => void
@@ -118,7 +118,7 @@ export const fetchCompleteDepositData = async ({
 export const useDeposits = (depositPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
   const { depositsTotalFetched, setDepositsTotalFetched } =
-    useDepositsTotalFetched()
+    useDepositsTotalFetchedStore()
 
   // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
