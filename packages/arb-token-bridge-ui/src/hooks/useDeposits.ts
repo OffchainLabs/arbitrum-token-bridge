@@ -56,8 +56,9 @@ function mapTransferTypeToTotalFetched(
   const data = { ...emptyTxHistoryTotalFetched }
 
   for (const tx of txs) {
-    const current = data[tx.transferType as TxHistoryTransferTypes]
-    data[tx.transferType as TxHistoryTransferTypes] = current + 1
+    const type = tx.transferType as TxHistoryTransferTypes
+    const current = data[type]
+    data[type] = current + 1
   }
 
   return data
@@ -88,6 +89,8 @@ export const fetchCompleteDepositData = async ({
   setTxHistoryTotalFetched: (data: TxHistoryTotalFetched) => void
   depositParams: FetchDepositParams & { pageNumber: number }
 }): Promise<CompleteDepositData> => {
+  // create queries for each transfer type
+  // we will fetch them all, and in the next steps we decide which of them to display
   const promises = Object.values(TxHistoryTransferTypes).map(type =>
     fetchDeposits({
       type,
@@ -99,6 +102,8 @@ export const fetchCompleteDepositData = async ({
 
   // get the original deposits
   const deposits = (await Promise.all(promises)).flat()
+  // we grab the earliest {pageSize} txs from all fetched deposits
+  // they are going to be displayed in the tx history
   const earliestDeposits = [...deposits]
     .sort((a, b) => Number(b.timestampCreated) - Number(a.timestampCreated))
     .slice(0, depositParams.pageSize)
@@ -116,12 +121,18 @@ export const fetchCompleteDepositData = async ({
     tx => typeof pendingDepositsMap.get(tx.txID) !== 'undefined'
   )
 
+  // the most recently fetched deposits (current fetch)
+  // here we count how many txs of each type we fetched and store this info
   const recentTxHistoryTotalFetched =
     mapTransferTypeToTotalFetched(earliestDeposits)
+
+  // we create a new fetched count by adding the most recent one to the currently stored one
   const newTxHistoryTotalFetched = sumTxHistoryTotalFetched(
     txHistoryTotalFetched,
     recentTxHistoryTotalFetched
   )
+
+  // we update the currently stored fetched count with the new one
   setTxHistoryTotalFetched(newTxHistoryTotalFetched)
 
   return {

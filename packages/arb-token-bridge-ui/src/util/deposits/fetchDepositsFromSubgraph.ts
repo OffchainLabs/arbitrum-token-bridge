@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { TxHistoryTransferTypes } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
