@@ -19,8 +19,7 @@ export const TableActionHeader = ({
   pageParams,
   setPageParams,
   transactions,
-  loading,
-  isSmartContractWallet
+  loading
 }: TableActionHeaderProps) => {
   const layerType = type === 'deposits' ? 'L1' : 'L2'
 
@@ -76,8 +75,7 @@ export const TableActionHeader = ({
   return (
     <div
       className={twMerge(
-        'sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 bg-white p-3 text-sm',
-        isSmartContractWallet ? 'rounded-t-lg' : '',
+        'sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 rounded-t-lg bg-white p-3 text-sm',
         type === 'deposits' ? 'rounded-tl-none' : ''
       )}
     >

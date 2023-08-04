@@ -16,9 +16,7 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
-import { TableSentOrReceivedFundsSwitch } from './TableSentOrReceivedFundsSwitch'
 import { useAppState } from '../../../state'
-import { useAppContextState } from '../../App/AppContext'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
@@ -167,10 +165,6 @@ export function TransactionsTable({
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
-  const { address } = useAccount()
 
   // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
@@ -243,19 +237,12 @@ export function TransactionsTable({
 
   return (
     <>
-      {/* {!isSmartContractWallet && (
-        <TableSentOrReceivedFundsSwitch
-          className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
-        />
-      )} */}
-
       {/* search and pagination buttons */}
       <TableActionHeader
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={_transactions}
-        isSmartContractWallet={isSmartContractWallet}
         loading={loading}
       />
 
