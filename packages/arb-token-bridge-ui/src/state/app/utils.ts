@@ -180,7 +180,9 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
-export function isCustomDestinationAddressTx(tx: MergedTransaction) {
+export function isCustomDestinationAddressTx(
+  tx: Pick<MergedTransaction, 'sender' | 'destination'>
+) {
   if (!tx.sender || !tx.destination) {
     return false
   }

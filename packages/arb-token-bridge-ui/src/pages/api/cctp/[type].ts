@@ -38,7 +38,7 @@ export enum ChainDomain {
 }
 
 export type MessageReceived = {
-  blockNumber: number
+  blockNumber: string
   blockTimestamp: number
   caller: `0x${string}`
   id: string
@@ -51,7 +51,7 @@ export type MessageReceived = {
 
 export type MessageSent = {
   attestationHash: `0x${string}`
-  blockNumber: number
+  blockNumber: string
   blockTimestamp: number
   id: string
   message: string
@@ -78,7 +78,10 @@ export type Response =
       error: null
     }
   | {
-      data: null
+      data: {
+        pending: []
+        completed: []
+      }
       error: string
     }
 
@@ -94,15 +97,25 @@ export default async function handler(
       typeof type !== 'string' ||
       (type !== 'deposits' && type !== 'withdrawals')
     ) {
-      res.status(400).send({ error: `invalid API route: ${type}`, data: null })
+      res.status(400).send({
+        error: `invalid API route: ${type}`,
+        data: {
+          pending: [],
+          completed: []
+        }
+      })
       return
     }
 
     // validate method
     if (req.method !== 'GET') {
-      res
-        .status(400)
-        .send({ error: `invalid_method: ${req.method}`, data: null })
+      res.status(400).send({
+        error: `invalid_method: ${req.method}`,
+        data: {
+          pending: [],
+          completed: []
+        }
+      })
       return
     }
 
@@ -114,7 +127,10 @@ export default async function handler(
     if (errorMessage.length) {
       res.status(400).json({
         error: `incomplete request: ${errorMessage.join(', ')}`,
-        data: null
+        data: {
+          pending: [],
+          completed: []
+        }
       })
       return
     }
@@ -171,6 +187,7 @@ export default async function handler(
     let messagesReceivedResult: ApolloQueryResult<{
       messageReceiveds: MessageReceived[]
     }>
+
     if (type === 'deposits') {
       ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
         l1Subgraph.query({ query: messagesSentQuery }),
@@ -197,6 +214,7 @@ export default async function handler(
         messageReceived
       ])
     )
+
     const { pending, completed } = messageSents.reduce(
       (acc, messageSent) => {
         // If the MessageSent has a corresponding MessageReceived
@@ -211,13 +229,9 @@ export default async function handler(
             messageSent
           })
         }
-
         return acc
       },
-      {
-        completed: [],
-        pending: []
-      } as {
+      { completed: [], pending: [] } as {
         completed: CompletedCCTPTransfer[]
         pending: PendingCCTPTransfer[]
       }
@@ -232,7 +246,10 @@ export default async function handler(
     })
   } catch (error: unknown) {
     res.status(500).json({
-      data: null,
+      data: {
+        pending: [],
+        completed: []
+      },
       error: (error as Error)?.message ?? 'Something went wrong'
     })
   }

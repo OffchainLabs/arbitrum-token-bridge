@@ -57,7 +57,7 @@ export function useUpdateUSDCBalances({
         ])
       }
     },
-    [updateErc20L2Balance]
+    [updateErc20L1Balance, updateErc20L2Balance]
   )
 
   return { updateUSDCBalances }

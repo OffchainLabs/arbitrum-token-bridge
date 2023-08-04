@@ -21,7 +21,7 @@ import {
   isNetwork
 } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
+import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -75,7 +75,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a third-party bridge</TabButton>
-            <TabButton>Use Arbitrum’s bridge (USDC)</TabButton>
+            <TabButton>Use Arbitrum&apos;s bridge (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -124,7 +124,8 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   Native USDC
                 </ExternalLink>{' '}
-                on Arbitrum One using Arbitrum’s native bridge with Circle's{' '}
+                on Arbitrum One using Arbitrum&apos;s native bridge with
+                Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"

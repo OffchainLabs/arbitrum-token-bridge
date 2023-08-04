@@ -18,6 +18,7 @@ import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppContextActions } from '../App/AppContext'
+import { CompletedTransferMap, PendingTransferMap } from '../../state/cctpState'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -29,7 +30,12 @@ export const TransactionHistory = ({
   withdrawalsLoading,
   withdrawalsError,
   setDepositsPageParams,
-  setWithdrawalsPageParams
+  setWithdrawalsPageParams,
+  // CCTP
+  isLoadingCctpDeposits,
+  isLoadingCctpWithdrawals,
+  depositsCctpError,
+  withdrawalsCctpError
 }: {
   depositsPageParams: PageParams
   withdrawalsPageParams: PageParams
@@ -41,22 +47,43 @@ export const TransactionHistory = ({
   withdrawalsError: boolean
   setDepositsPageParams: Dispatch<SetStateAction<PageParams>>
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
+  // CCTP
+  completedCctp: CompletedTransferMap
+  completedIdsCctp: string[]
+  pendingCctp: PendingTransferMap
+  pendingIdsCctp: string[]
+  isLoadingCctpDeposits: boolean
+  isLoadingCctpWithdrawals: boolean
+  depositsCctpError: boolean
+  withdrawalsCctpError: boolean
 }) => {
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
   const { isSmartContractWallet } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
+
   const {
     app: { mergedTransactions }
   } = useAppState()
 
+  const isLoading =
+    depositsLoading ||
+    withdrawalsLoading ||
+    isLoadingCctpDeposits ||
+    isLoadingCctpWithdrawals
+  const error =
+    depositsError ||
+    withdrawalsError ||
+    depositsCctpError ||
+    withdrawalsCctpError
+
   const pendingTransactions = useMemo(() => {
-    return mergedTransactions?.filter(tx => isPending(tx))
+    return mergedTransactions.filter(tx => isPending(tx))
   }, [mergedTransactions])
 
   const failedTransactions = useMemo(() => {
-    return mergedTransactions?.filter(tx => isFailed(tx))
+    return mergedTransactions.filter(tx => isFailed(tx))
   }, [mergedTransactions])
 
   const roundedTabClasses =
@@ -100,9 +127,9 @@ export const TransactionHistory = ({
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
       <PendingTransactions
-        loading={depositsLoading || withdrawalsLoading}
+        loading={isLoading}
         transactions={pendingTransactions}
-        error={depositsError || withdrawalsError}
+        error={error}
       />
 
       {/* Warning to show when there are 3 or more failed transactions for the user */}

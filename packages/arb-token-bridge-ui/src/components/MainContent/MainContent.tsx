@@ -13,6 +13,9 @@ import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
+import { useAccount } from 'wagmi'
+import { useCctpState } from '../../state/cctpState'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export const motionDivProps = {
   layout: true,
@@ -39,6 +42,7 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
+  const { address } = useAccount()
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -75,6 +79,20 @@ export function MainContent() {
     isValidating: withdrawalsLoading,
     error: withdrawalsError
   } = useWithdrawals(withdrawalsPageParams)
+  const { l1 } = useNetworksAndSigners()
+  const {
+    completed,
+    completedIds,
+    pending,
+    pendingIds,
+    isLoadingDeposits,
+    isLoadingWithdrawals,
+    depositsError: depositsCctpError,
+    withdrawalsError: withdrawalsCctpError
+  } = useCctpState({
+    l1ChainId: l1.network.id,
+    walletAddress: address
+  })
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
@@ -123,7 +141,16 @@ export function MainContent() {
             withdrawalsLoading,
             withdrawalsError,
             setDepositsPageParams,
-            setWithdrawalsPageParams
+            setWithdrawalsPageParams,
+            // CCTP
+            completedCctp: completed,
+            completedIdsCctp: completedIds,
+            pendingCctp: pending,
+            pendingIdsCctp: pendingIds,
+            isLoadingCctpDeposits: isLoadingDeposits,
+            isLoadingCctpWithdrawals: isLoadingWithdrawals,
+            depositsCctpError: !!depositsCctpError,
+            withdrawalsCctpError: !!withdrawalsCctpError
           }}
         />
       </SidePanel>

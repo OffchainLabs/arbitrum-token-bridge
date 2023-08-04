@@ -8,10 +8,9 @@ import { useCCTP, UseCCTPParams, getContracts } from './useCCTP'
 export function useApproveAndDeposit({
   sourceChainId,
   walletAddress
-}: UseCCTPParams) {
+}: UseCCTPParams & { walletAddress: `0x${string}` | undefined }) {
   const { approveForBurn, depositForBurn } = useCCTP({
-    sourceChainId,
-    walletAddress
+    sourceChainId
   })
   const { usdcContractAddress, tokenMessengerContractAddress } =
     getContracts(sourceChainId)
@@ -34,8 +33,8 @@ export function useApproveAndDeposit({
       amount: string
       provider: Provider
       signer: Signer
-      destinationAddress: `0x${string}` | undefined
-      onAllowanceTooLow: () => Promise<boolean>
+      destinationAddress: string | undefined
+      onAllowanceTooLow?: () => Promise<boolean>
       onApproveTxFailed: (error: unknown) => void
       onDepositTxFailed: (error: unknown) => void
     }) => {

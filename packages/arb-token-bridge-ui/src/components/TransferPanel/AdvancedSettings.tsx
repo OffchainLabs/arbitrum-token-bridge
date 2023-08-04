@@ -13,7 +13,6 @@ import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
-import { getAPIBaseUrl } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'

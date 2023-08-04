@@ -1,5 +1,4 @@
 import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { USDC_LEARN_MORE_LINK } from '../../../constants'
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useChainId } from 'wagmi'
@@ -32,7 +31,7 @@ export function USDCDepositConfirmationDialogCheckbox({
     if (checkboxesChecked.every(checked => checked)) {
       onAllCheckboxesCheched?.()
     }
-  }, [checkboxesChecked])
+  }, [checkboxesChecked, onAllCheckboxesCheched])
 
   return (
     <>
@@ -41,12 +40,12 @@ export function USDCDepositConfirmationDialogCheckbox({
           <Checkbox
             label={
               <span className="select-none font-light">
-                I understand that I'll have to send{' '}
+                I understand that I&apos;ll have to send{' '}
                 <span className="strong">a second transaction on L2</span> and
                 pay another L2 fee to claim my USDC.
               </span>
             }
-            checked={checkboxesChecked[0]!}
+            checked={checkboxesChecked[0] ?? false}
             onChange={checked => {
               onChange(checked)
               setCheckboxesChecked(prevCheckboxesState => {
@@ -64,7 +63,7 @@ export function USDCDepositConfirmationDialogCheckbox({
                 my USDC on Arbitrum One.
               </span>
             }
-            checked={checkboxesChecked[1]!}
+            checked={checkboxesChecked[1] ?? false}
             onChange={checked => {
               onChange(checked)
               setCheckboxesChecked(prevCheckboxesState => {
@@ -110,7 +109,7 @@ export function USDCDepositConfirmationDialogCheckbox({
             .
           </span>
         }
-        checked={checkboxesChecked[2]!}
+        checked={checkboxesChecked[2] ?? false}
         onChange={checked => {
           onChange(checked)
           setCheckboxesChecked(prevCheckboxesState => {

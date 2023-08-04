@@ -7,7 +7,6 @@ import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
 import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-
 import { ChainDomain } from '../../pages/api/cctp/[type]'
 
 export type CCTPSupportedChainId =
@@ -70,7 +69,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
   }
 }
 
-type AttestationResponse =
+export type AttestationResponse =
   | {
       attestation: `0x${string}`
       status: 'complete'
@@ -89,7 +88,6 @@ export function getContracts(chainId: CCTPSupportedChainId | undefined) {
 
 export type UseCCTPParams = {
   sourceChainId: CCTPSupportedChainId | undefined
-  walletAddress: `0x${string}` | string | undefined
 }
 export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const {
@@ -194,6 +192,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
     approveForBurn,
     depositForBurn,
     receiveMessage,
+    fetchAttestation,
     waitForAttestation
   }
 }

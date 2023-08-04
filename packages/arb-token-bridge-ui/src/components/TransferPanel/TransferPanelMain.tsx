@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 
 import * as Sentry from '@sentry/react'
-import { Chain, useAccount, useChainId } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -320,7 +320,6 @@ export function TransferPanelMain({
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
-  const chainId = useChainId()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -386,7 +385,8 @@ export function TransferPanelMain({
     selectedToken,
     updateErc20L1Balances,
     updateErc20L2Balances,
-    destinationAddressOrWalletAddress
+    destinationAddressOrWalletAddress,
+    updateUSDCBalances
   ])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
@@ -572,7 +572,7 @@ export function TransferPanelMain({
     if (!selectedToken) {
       setDestinationAddress(undefined)
     }
-  }, [selectedToken])
+  }, [selectedToken, setDestinationAddress])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -654,7 +654,7 @@ export function TransferPanelMain({
     setTo(newTo)
 
     actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [actions.app, app.isDepositMode, from, to, selectedToken])
+  }, [actions.app, app.isDepositMode, from, to])
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)

@@ -12,6 +12,9 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { PendingTransfer, useCctpState } from '../../state/cctpState'
+import { useAccount } from 'wagmi'
+import { CctpCardUnconfirmed } from '../TransferPanel/CctpCard'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -20,6 +23,34 @@ const getOtherL2NetworkChainId = (chainId: number) => {
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
     : ChainId.ArbitrumOne
+}
+
+const MergedTransactionCard = ({
+  transaction
+}: {
+  transaction: MergedTransaction
+}) => {
+  return isDeposit(transaction) ? (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <DepositCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  ) : (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <WithdrawalCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  )
+}
+
+const CctpTransactionCard = ({
+  transaction
+}: {
+  transaction: PendingTransfer
+}) => {
+  return (
+    <motion.div key={transaction.id} {...motionDivProps}>
+      <CctpCardUnconfirmed tx={transaction} />
+    </motion.div>
+  )
 }
 
 export const PendingTransactions = ({
@@ -36,6 +67,11 @@ export const PendingTransactions = ({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { address } = useAccount()
+  const { pending, pendingIds } = useCctpState({
+    l1ChainId: l1Network.id,
+    walletAddress: address
+  })
 
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-dark'
@@ -75,7 +111,7 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && !transactions.length && (
+      {!error && !loading && transactions.length + pendingIds.length === 0 && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
@@ -85,19 +121,13 @@ export const PendingTransactions = ({
         transactions.some(tx => isTokenDeposit(tx)) && (
           <PendingDepositWarning />
         )}
-
       {/* Transaction cards */}
-      {transactions?.map(tx =>
-        isDeposit(tx) ? (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <DepositCard key={tx.txId} tx={tx} />
-          </motion.div>
-        ) : (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <WithdrawalCard key={tx.txId} tx={tx} />
-          </motion.div>
-        )
-      )}
+      {transactions.map(tx => (
+        <MergedTransactionCard transaction={tx} key={tx.txId} />
+      ))}
+      {pendingIds.map(id => (
+        <CctpTransactionCard transaction={pending[id]!} key={id} />
+      ))}
     </div>
   )
 }

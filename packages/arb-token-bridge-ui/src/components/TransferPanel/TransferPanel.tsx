@@ -61,6 +61,9 @@ import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { useApproveAndDeposit } from '../../hooks/CCTP/useApproveAndDeposit'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
+import { useCctpState, useSyncCctpStore } from '../../state/cctpState'
+import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { ChainDomain } from '../../pages/api/cctp/[type]'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -174,6 +177,11 @@ export function TransferPanel() {
     sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
     walletAddress: account
   })
+  const { setPendingTransfer } = useCctpState({
+    l1ChainId: l1Network.id,
+    walletAddress: account
+  })
+  useSyncCctpStore({ l1ChainId: l1Network.id, walletAddress: account })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -298,7 +306,7 @@ export function TransferPanel() {
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      let addressLookup =
+      const addressLookup =
         isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
         isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
           ? selectedToken.address.toLowerCase()
@@ -521,7 +529,7 @@ export function TransferPanel() {
                 sourceChainId: l1ChainID
               })
 
-              if (burnLimit.gte(amount)) {
+              if (burnLimit.lte(amount)) {
                 const formatedLimit = formatAmount(burnLimit, {
                   decimals: 6,
                   symbol: 'USDC'
@@ -532,11 +540,12 @@ export function TransferPanel() {
                 return
               }
 
+              const recipient = destinationAddress || walletAddress
               const depositTx = await approveAndDepositForBurn({
                 amount,
                 provider: l1Provider,
                 signer: l1Signer,
-                destinationAddress,
+                destinationAddress: recipient,
                 async onAllowanceTooLow() {
                   const waitForInput = openTokenApprovalDialog()
                   const [confirmed] = await waitForInput()
@@ -562,7 +571,48 @@ export function TransferPanel() {
                   )
                 }
               })
-              await depositTx?.wait()
+
+              if (!depositTx || !account) {
+                return
+              }
+
+              const depositTxReceipt = await depositTx.wait()
+
+              const depositForBurnLog = depositTxReceipt?.logs[4]
+              if (!depositForBurnLog) {
+                return
+              }
+
+              const nonce = depositForBurnLog.topics[1]
+              if (!nonce) {
+                return
+              }
+
+              const { messageBytes, attestationHash } =
+                getAttestationHashAndMessageFromReceipt(depositTxReceipt)
+
+              if (messageBytes && attestationHash) {
+                setPendingTransfer({
+                  id: `0x0${ChainDomain.Mainnet}00${nonce.slice(2)}`,
+                  source: {
+                    chainId: l1Network.id,
+                    timestamp: Date.now(),
+                    transactionHash:
+                      depositTxReceipt.transactionHash as `0x${string}`,
+                    blockNum: depositTxReceipt.blockNumber
+                  },
+                  destination: {
+                    chainId: l2Network.id
+                  },
+                  sender: account,
+                  recipient: recipient as `0x${string}`,
+                  amount: utils.parseUnits(amount, selectedToken.decimals),
+                  direction: 'deposit',
+                  attestationHash,
+                  messageBytes
+                })
+                openTransactionHistoryPanel()
+              }
 
               clearAmountInput()
               setTransferring(false)
@@ -706,16 +756,77 @@ export function TransferPanel() {
               return
             }
 
-            await approveAndDeposit({
+            // Withdrawal
+            const recipient = destinationAddress || walletAddress
+            const depositTx = await approveAndDepositForBurn({
               amount,
               provider: l2Provider,
               signer: l2Signer,
-              destinationAddress,
-              onSubmit: () => {
-                setTransferring(false)
-                clearAmountInput()
+              destinationAddress: recipient,
+              onApproveTxFailed(error) {
+                if (isUserRejectedError(error)) {
+                  return
+                }
+                Sentry.captureException(error)
+                errorToast(
+                  `USDC approve failed: ${(error as Error)?.message ?? error}`
+                )
+              },
+              onDepositTxFailed(error) {
+                if (isUserRejectedError(error)) {
+                  return
+                }
+                Sentry.captureException(error)
+                errorToast(
+                  `USDC deposit failed: ${(error as Error)?.message ?? error}`
+                )
               }
             })
+
+            if (!depositTx || !account) {
+              return
+            }
+            const depositTxReceipt = await depositTx.wait()
+
+            const depositForBurnLog = depositTxReceipt?.logs[4]
+            if (!depositForBurnLog) {
+              return
+            }
+
+            const nonce = depositForBurnLog.topics[1]
+            if (!nonce) {
+              return
+            }
+
+            const { messageBytes, attestationHash } =
+              getAttestationHashAndMessageFromReceipt(depositTxReceipt)
+
+            if (messageBytes && attestationHash) {
+              setPendingTransfer({
+                id: `0x0${ChainDomain.ArbitrumOne}00${nonce.slice(2)}`,
+                source: {
+                  chainId: l2Network.id,
+                  timestamp: Date.now(),
+                  transactionHash:
+                    depositTxReceipt.transactionHash as `0x${string}`,
+                  blockNum: depositTxReceipt.blockNumber
+                },
+                destination: {
+                  chainId: l1Network.id
+                },
+                sender: account,
+                recipient: recipient as `0x${string}`,
+                amount: utils.parseUnits(amount, selectedToken.decimals),
+                direction: 'withdrawal',
+                attestationHash,
+                messageBytes
+              })
+              openTransactionHistoryPanel()
+            }
+
+            setTransferring(false)
+            clearAmountInput()
+
             return
           }
 
@@ -1013,13 +1124,14 @@ export function TransferPanel() {
     return Number(amount) + requiredGasFees > Number(l1Balance)
   }, [
     disableDepositAndWithdrawal,
-    isBridgingANewStandardToken,
     selectedToken,
-    amount,
-    amountNum,
-    l1Balance,
     l2Network.id,
-    requiredGasFees
+    isBridgingANewStandardToken,
+    amount,
+    requiredGasFees,
+    l1Balance,
+    amountNum,
+    ethBalance
   ])
 
   const disableWithdrawal = useMemo(() => {
@@ -1051,12 +1163,13 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
-    amount,
-    amountNum,
     disableDepositAndWithdrawal,
     l2Balance,
+    amountNum,
     selectedToken,
-    requiredGasFees
+    amount,
+    requiredGasFees,
+    ethBalance
   ])
 
   const isSummaryVisible = useMemo(() => {

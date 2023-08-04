@@ -74,7 +74,7 @@ export const CustomAddressTxExplorer = ({
   tx,
   explorerClassName = 'arb-hover underline'
 }: {
-  tx: MergedTransaction
+  tx: Pick<MergedTransaction, 'sender' | 'destination' | 'isWithdrawal'>
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
