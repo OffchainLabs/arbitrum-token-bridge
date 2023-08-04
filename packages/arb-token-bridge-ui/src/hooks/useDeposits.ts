@@ -97,17 +97,17 @@ export const fetchCompleteDepositData = async ({
 
   // the most recently fetched deposits (current fetch)
   // here we count how many txs of each type we fetched and store this info
-  const recentTxHistoryTotalFetched =
+  const recentDepositsTotalFetched =
     mapSubgraphQueryTypeToTotalFetched(earliestDeposits)
 
   // we create a new fetched count by adding the most recent one to the currently stored one
-  const newTxHistoryTotalFetched = sumTxHistoryTotalFetched(
+  const newDepositsTotalFetched = sumTxHistoryTotalFetched(
     depositsTotalFetched,
-    recentTxHistoryTotalFetched
+    recentDepositsTotalFetched
   )
 
   // we update the currently stored fetched count with the new one
-  setDepositsTotalFetched(newTxHistoryTotalFetched)
+  setDepositsTotalFetched(newDepositsTotalFetched)
 
   return {
     deposits: earliestDeposits,
