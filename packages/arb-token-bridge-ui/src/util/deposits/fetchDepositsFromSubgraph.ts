@@ -1,4 +1,4 @@
-import { TxHistoryTransferTypes } from '../SubgraphUtils'
+import { SubgraphQueryTypes } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchDepositsFromSubgraphResult = {
@@ -20,7 +20,7 @@ export type FetchDepositsFromSubgraphResult = {
     name: string
     registeredAtBlock: string
   }
-  transferType: TxHistoryTransferTypes
+  subgraphQueryType: SubgraphQueryTypes
 }
 
 /**
@@ -49,7 +49,7 @@ export const fetchDepositsFromSubgraph = async ({
   totalFetched = 0,
   searchString = ''
 }: {
-  type: TxHistoryTransferTypes
+  type: SubgraphQueryTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -81,12 +81,9 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
-  function getAPITransferType() {
+  function getAPISubgraphQueryType() {
     if (
-      [
-        TxHistoryTransferTypes.TxSent,
-        TxHistoryTransferTypes.TxReceived
-      ].includes(type)
+      [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived].includes(type)
     ) {
       return 'deposits'
     }
@@ -94,7 +91,7 @@ export const fetchDepositsFromSubgraph = async ({
   }
 
   const response = await fetch(
-    `${getAPIBaseUrl()}/api/${getAPITransferType()}?${urlParams}`,
+    `${getAPIBaseUrl()}/api/${getAPISubgraphQueryType()}?${urlParams}`,
     {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }

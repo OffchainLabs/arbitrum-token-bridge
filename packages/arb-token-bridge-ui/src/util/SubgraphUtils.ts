@@ -124,7 +124,7 @@ export const tryFetchLatestSubgraphBlockNumber = async (
   }
 }
 
-export enum TxHistoryTransferTypes {
+export enum SubgraphQueryTypes {
   TxSent = 'Tx Sent',
   TxReceived = 'Tx Received',
   // Retryables are fetched from subgraph to get ETH sent to a custom address.
@@ -133,7 +133,7 @@ export enum TxHistoryTransferTypes {
   RetryableReceived = 'Retryable Received'
 }
 
-export type TxHistoryTotalFetched = { [key in TxHistoryTransferTypes]: number }
+export type TxHistoryTotalFetched = { [key in SubgraphQueryTypes]: number }
 
 type AdditionalSubgraphQueryParams = Pick<
   FetchDepositParams | FetchWithdrawalsParams,
@@ -141,26 +141,26 @@ type AdditionalSubgraphQueryParams = Pick<
 >
 
 export const emptyTxHistoryTotalFetched: {
-  [key in TxHistoryTransferTypes]: number
+  [key in SubgraphQueryTypes]: number
 } = {
-  [TxHistoryTransferTypes.TxSent]: 0,
-  [TxHistoryTransferTypes.TxReceived]: 0,
-  [TxHistoryTransferTypes.RetryableSent]: 0,
-  [TxHistoryTransferTypes.RetryableReceived]: 0
+  [SubgraphQueryTypes.TxSent]: 0,
+  [SubgraphQueryTypes.TxReceived]: 0,
+  [SubgraphQueryTypes.RetryableSent]: 0,
+  [SubgraphQueryTypes.RetryableReceived]: 0
 }
 
 export function getAdditionalSubgraphQueryParams(
-  type: TxHistoryTransferTypes,
+  type: SubgraphQueryTypes,
   address: string
 ): AdditionalSubgraphQueryParams {
   switch (type) {
-    case TxHistoryTransferTypes.TxSent:
-    case TxHistoryTransferTypes.RetryableSent:
+    case SubgraphQueryTypes.TxSent:
+    case SubgraphQueryTypes.RetryableSent:
       return {
         sender: address
       }
-    case TxHistoryTransferTypes.TxReceived:
-    case TxHistoryTransferTypes.RetryableReceived:
+    case SubgraphQueryTypes.TxReceived:
+    case SubgraphQueryTypes.RetryableReceived:
       return {
         senderNot: address,
         receiver: address
@@ -168,15 +168,15 @@ export function getAdditionalSubgraphQueryParams(
   }
 }
 
-// Separates different 'transferType's for each transaction, and counts them.
+// Separates different 'SubgraphQueryTypes' for each transaction, and counts them.
 // We store this to know how many entries to skip in the next query.
-export function mapTransferTypeToTotalFetched(
+export function mapSubgraphQueryTypeToTotalFetched(
   txs: (Transaction | L2ToL1EventResultPlus)[]
 ) {
   const data = { ...emptyTxHistoryTotalFetched }
 
   for (const tx of txs) {
-    const type = tx.transferType as TxHistoryTransferTypes
+    const type = tx.subgraphQueryType as SubgraphQueryTypes
     const current = data[type]
     data[type] = current + 1
   }
@@ -190,7 +190,7 @@ export function sumTxHistoryTotalFetched(
 ) {
   const result: TxHistoryTotalFetched = { ...totalFetched_1 }
   Object.keys(totalFetched_1).map(type => {
-    const _type = type as TxHistoryTransferTypes
+    const _type = type as SubgraphQueryTypes
     result[_type] = totalFetched_1[_type] + totalFetched_2[_type]
   })
 

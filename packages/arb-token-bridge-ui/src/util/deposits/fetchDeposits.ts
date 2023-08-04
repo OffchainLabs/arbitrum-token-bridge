@@ -7,7 +7,7 @@ import {
 } from './fetchDepositsFromSubgraph'
 import {
   tryFetchLatestSubgraphBlockNumber,
-  TxHistoryTransferTypes
+  SubgraphQueryTypes
 } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
@@ -43,7 +43,7 @@ export const fetchDeposits = async ({
   totalFetched = 0,
   searchString = ''
 }: FetchDepositParams & {
-  type: TxHistoryTransferTypes
+  type: SubgraphQueryTypes
 }): Promise<Transaction[]> => {
   if (!sender && !receiver) return []
   if (!l1Provider || !l2Provider) return []
@@ -128,8 +128,7 @@ export const fetchDeposits = async ({
         blockNumber: Number(tx.blockCreatedAt),
         timestampCreated: tx.timestamp,
         isClassic: tx.isClassic,
-
-        transferType: tx.transferType
+        subgraphQueryType: tx.subgraphQueryType
       }
     }
   )

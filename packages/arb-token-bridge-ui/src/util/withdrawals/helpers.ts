@@ -220,7 +220,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
       symbol,
       decimals,
       l2TxHash: l2TxReceipt.transactionHash,
-      transferType: withdrawal.transferType
+      subgraphQueryType: withdrawal.subgraphQueryType
     } as L2ToL1EventResultPlus
   }
 
@@ -235,6 +235,6 @@ export async function mapWithdrawalToL2ToL1EventResult(
     l2TxHash: l2TxReceipt.transactionHash,
     symbol: 'ETH',
     decimals: 18,
-    transferType: withdrawal.transferType
+    subgraphQueryType: withdrawal.subgraphQueryType
   } as L2ToL1EventResultPlus
 }

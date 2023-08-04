@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import {
-  TxHistoryTransferTypes,
+  SubgraphQueryTypes,
   getL2SubgraphClient
 } from '../../util/SubgraphUtils'
 
@@ -137,10 +137,10 @@ export default async function handler(
           l2BlockTimestamp,
           l2TxHash,
           l2BlockNum,
-          transferType:
+          subgraphQueryType:
             senderNot && receiver
-              ? TxHistoryTransferTypes.TxReceived
-              : TxHistoryTransferTypes.TxSent
+              ? SubgraphQueryTypes.TxReceived
+              : SubgraphQueryTypes.TxSent
         }
       })
 

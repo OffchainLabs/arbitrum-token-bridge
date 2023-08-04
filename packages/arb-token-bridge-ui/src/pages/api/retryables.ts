@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
 import {
-  TxHistoryTransferTypes,
+  SubgraphQueryTypes,
   getL1SubgraphClient
 } from '../../util/SubgraphUtils'
 
@@ -132,10 +132,10 @@ export default async function handler(
         id: s.id,
         ethValue: s.value,
         blockCreatedAt: s.blockCreatedAt,
-        transferType:
+        subgraphQueryType:
           senderNot && receiver
-            ? TxHistoryTransferTypes.RetryableReceived
-            : TxHistoryTransferTypes.RetryableSent
+            ? SubgraphQueryTypes.RetryableReceived
+            : SubgraphQueryTypes.RetryableSent
       }
     })
 

@@ -14,10 +14,10 @@ import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import {
   TxHistoryTotalFetched,
-  TxHistoryTransferTypes,
+  SubgraphQueryTypes,
   emptyTxHistoryTotalFetched,
   getAdditionalSubgraphQueryParams,
-  mapTransferTypeToTotalFetched,
+  mapSubgraphQueryTypeToTotalFetched,
   sumTxHistoryTotalFetched
 } from '../util/SubgraphUtils'
 
@@ -27,9 +27,9 @@ export type CompleteWithdrawalData = {
   transformedWithdrawals: MergedTransaction[]
 }
 
-const withdrawalTransferTypes = [
-  TxHistoryTransferTypes.TxSent,
-  TxHistoryTransferTypes.TxReceived
+const withdrawalQueryTypes = [
+  SubgraphQueryTypes.TxSent,
+  SubgraphQueryTypes.TxReceived
 ]
 
 // Tracks how many transactions have been stored for each transfer type.
@@ -62,7 +62,7 @@ const fetchCompleteWithdrawalData = async ({
 }): Promise<CompleteWithdrawalData> => {
   // create queries for each transfer type
   // we will fetch them all, and in the next steps we decide which of them to display
-  const promises = withdrawalTransferTypes.map(type =>
+  const promises = withdrawalQueryTypes.map(type =>
     fetchWithdrawals({
       ...params,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
@@ -96,7 +96,7 @@ const fetchCompleteWithdrawalData = async ({
   // the most recently fetched withdrawals (current fetch)
   // here we count how many txs of each type we fetched and store this info
   const recentWithdrawalsTotalFetched =
-    mapTransferTypeToTotalFetched(earliestWithdrawals)
+    mapSubgraphQueryTypeToTotalFetched(earliestWithdrawals)
 
   // we create a new fetched count by adding the most recent one to the currently stored one
   const newWithdrawalsTotalFetched = sumTxHistoryTotalFetched(

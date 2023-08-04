@@ -12,11 +12,11 @@ import {
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
 import {
-  TxHistoryTransferTypes,
   TxHistoryTotalFetched,
+  SubgraphQueryTypes,
   emptyTxHistoryTotalFetched,
   getAdditionalSubgraphQueryParams,
-  mapTransferTypeToTotalFetched,
+  mapSubgraphQueryTypeToTotalFetched,
   sumTxHistoryTotalFetched
 } from '../util/SubgraphUtils'
 
@@ -26,12 +26,12 @@ export type CompleteDepositData = {
   transformedDeposits: MergedTransaction[]
 }
 
-const depositTransferTypes = [
-  TxHistoryTransferTypes.TxSent,
-  TxHistoryTransferTypes.TxReceived
+const depositQueryTypes = [
+  SubgraphQueryTypes.TxSent,
+  SubgraphQueryTypes.TxReceived
   // TODO: Enable for custom destination ETH
-  // TxHistoryTransferTypes.RetryableSent,
-  // TxHistoryTransferTypes.RetryableReceived
+  // SubgraphQueryTypes.RetryableSent,
+  // SubgraphQueryTypes.RetryableReceived
 ]
 
 // Tracks how many transactions have been stored for each transfer type.
@@ -64,7 +64,7 @@ export const fetchCompleteDepositData = async ({
 }): Promise<CompleteDepositData> => {
   // create queries for each transfer type
   // we will fetch them all, and in the next steps we decide which of them to display
-  const promises = depositTransferTypes.map(type =>
+  const promises = depositQueryTypes.map(type =>
     fetchDeposits({
       type,
       ...depositParams,
@@ -97,7 +97,7 @@ export const fetchCompleteDepositData = async ({
   // the most recently fetched deposits (current fetch)
   // here we count how many txs of each type we fetched and store this info
   const recentTxHistoryTotalFetched =
-    mapTransferTypeToTotalFetched(earliestDeposits)
+    mapSubgraphQueryTypeToTotalFetched(earliestDeposits)
 
   // we create a new fetched count by adding the most recent one to the currently stored one
   const newTxHistoryTotalFetched = sumTxHistoryTotalFetched(

@@ -1,5 +1,5 @@
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
-import { TxHistoryTransferTypes } from '../SubgraphUtils'
+import { SubgraphQueryTypes } from '../SubgraphUtils'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
@@ -15,7 +15,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
   l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
-  transferType: TxHistoryTransferTypes
+  subgraphQueryType: SubgraphQueryTypes
 }
 
 /**
