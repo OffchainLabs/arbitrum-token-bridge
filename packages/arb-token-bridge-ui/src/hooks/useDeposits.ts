@@ -34,8 +34,8 @@ const depositQueryTypes = [
   // SubgraphQueryTypes.RetryableReceived
 ]
 
-// Tracks how many transactions have been stored for each transfer type.
-// For each transfer type we do a separate subgraph query.
+// Tracks how many transactions have been fetched for each SubgraphQueryType.
+// For each SubgraphQueryType we do a separate subgraph query.
 // We use these values to decide how many entries to skip for subsequent queries.
 //
 // This allows us to have transactions from different subgraph queries in a single table.
@@ -62,7 +62,7 @@ export const fetchCompleteDepositData = async ({
   setDepositsTotalFetched: (data: TxHistoryTotalFetched) => void
   depositParams: FetchDepositParams & { pageNumber: number }
 }): Promise<CompleteDepositData> => {
-  // create queries for each transfer type
+  // create queries for each SubgraphQueryType for deposits
   // we will fetch them all, and in the next steps we decide which of them to display
   const promises = depositQueryTypes.map(type =>
     fetchDeposits({
@@ -75,6 +75,7 @@ export const fetchCompleteDepositData = async ({
 
   // get the original deposits
   const deposits = (await Promise.all(promises)).flat()
+
   // we grab the earliest {pageSize} txs from all fetched deposits
   // they are going to be displayed in the tx history
   const earliestDeposits = [...deposits]

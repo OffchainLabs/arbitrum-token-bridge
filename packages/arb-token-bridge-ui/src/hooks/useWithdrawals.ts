@@ -32,8 +32,8 @@ const withdrawalQueryTypes = [
   SubgraphQueryTypes.TxReceived
 ]
 
-// Tracks how many transactions have been stored for each transfer type.
-// For each transfer type we do a separate subgraph query.
+// Tracks how many transactions have been stored for each SubgraphQueryType.
+// For each SubgraphQueryType we do a separate subgraph query.
 // We use these values to decide how many entries to skip for subsequent queries.
 //
 // This allows us to have transactions from different subgraph queries in a single table.
@@ -60,7 +60,7 @@ const fetchCompleteWithdrawalData = async ({
   setWithdrawalsTotalFetched: (data: TxHistoryTotalFetched) => void
   params: FetchWithdrawalsParams & { pageNumber: number }
 }): Promise<CompleteWithdrawalData> => {
-  // create queries for each transfer type
+  // create queries for each SubgraphQueryType for withdrawals
   // we will fetch them all, and in the next steps we decide which of them to display
   const promises = withdrawalQueryTypes.map(type =>
     fetchWithdrawals({
@@ -72,6 +72,7 @@ const fetchCompleteWithdrawalData = async ({
 
   // get the original withdrawals
   const withdrawals = (await Promise.all(promises)).flat()
+
   // we grab the earliest {pageSize} txs from all fetched withdrawals
   // they are going to be displayed in the tx history
   const earliestWithdrawals = [...withdrawals]
