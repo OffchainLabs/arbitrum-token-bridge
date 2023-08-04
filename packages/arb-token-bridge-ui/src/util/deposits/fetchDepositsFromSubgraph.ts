@@ -94,10 +94,13 @@ export const fetchDepositsFromSubgraph = async ({
     return 'retryables'
   }
 
-  const response = await fetch(`${getAPIBaseUrl()}/api/${getAPITransferType()}?${urlParams}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
-  })
+  const response = await fetch(
+    `${getAPIBaseUrl()}/api/${getAPITransferType()}?${urlParams}`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    }
+  )
 
   const transactions: FetchDepositsFromSubgraphResult[] = (
     await response.json()

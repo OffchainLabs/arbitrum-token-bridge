@@ -295,8 +295,7 @@ export function TransactionsTable({
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
             _transactions.map((tx, index) => {
-              const isLastRow =
-                index === _transactions.length - 1
+              const isLastRow = index === _transactions.length - 1
 
               // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
               // this will make sure the row updates with any updates in the local app state
