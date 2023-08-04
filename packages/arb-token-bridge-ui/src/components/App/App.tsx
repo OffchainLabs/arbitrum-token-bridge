@@ -52,8 +52,7 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { fetchMinterAllowance } from '../../hooks/CCTP/fetchCCTPLimits'
-fetchMinterAllowance
+
 declare global {
   interface Window {
     Cypress?: any
