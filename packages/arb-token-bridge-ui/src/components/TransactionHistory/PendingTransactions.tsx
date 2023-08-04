@@ -14,7 +14,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { PendingTransfer, useCctpState } from '../../state/cctpState'
 import { useAccount } from 'wagmi'
-import { CctpCardUnconfirmed } from '../TransferPanel/CctpCard'
+import { CctpCard } from '../TransferPanel/CctpCard'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -48,7 +48,7 @@ const CctpTransactionCard = ({
 }) => {
   return (
     <motion.div key={transaction.id} {...motionDivProps}>
-      <CctpCardUnconfirmed tx={transaction} />
+      <CctpCard tx={transaction} />
     </motion.div>
   )
 }

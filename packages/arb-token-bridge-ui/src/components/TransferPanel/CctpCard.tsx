@@ -130,7 +130,7 @@ function getBlockBeforeConfirmation(chainId: CCTPSupportedChainId) {
   }[chainId]
 }
 
-export function CctpCardUnconfirmed({ tx }: { tx: PendingTransfer }) {
+export function CctpCard({ tx }: { tx: PendingTransfer }) {
   const [isClaiming, setIsClaiming] = useState(false)
   const { l1, l2 } = useNetworksAndSigners()
   const networkName = getNetworkName(
