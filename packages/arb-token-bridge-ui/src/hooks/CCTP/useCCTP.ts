@@ -22,7 +22,7 @@ type Contracts = {
   targetChainDomain: ChainDomain
   targetChainId: CCTPSupportedChainId
   usdcContractAddress: `0x${string}`
-  messengerTransmitterContractAddress: `0x${string}`
+  messageTransmitterContractAddress: `0x${string}`
   attestationApiUrl: string
   tokenMinterContractAddress: `0x${string}`
 }
@@ -33,7 +33,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumOne,
     usdcContractAddress: CommonAddress.Mainnet.USDC,
-    messengerTransmitterContractAddress:
+    messageTransmitterContractAddress:
       '0xc30362313fbba5cf9163f0bb16a0e01f01a896ca',
     attestationApiUrl: 'https://iris-api.circle.com',
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
@@ -43,7 +43,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumGoerli,
     usdcContractAddress: CommonAddress.Goerli.USDC,
-    messengerTransmitterContractAddress:
+    messageTransmitterContractAddress:
       '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com',
     tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
@@ -53,7 +53,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainDomain: ChainDomain.Mainnet,
     targetChainId: ChainId.Mainnet,
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
-    messengerTransmitterContractAddress:
+    messageTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
     attestationApiUrl: 'https://iris-api.circle.com',
     tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
@@ -63,7 +63,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainDomain: ChainDomain.Mainnet,
     targetChainId: ChainId.Goerli,
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
-    messengerTransmitterContractAddress:
+    messageTransmitterContractAddress:
       '0x26413e8157cd32011e726065a5462e97dd4d03d9',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com',
     tokenMinterContractAddress: '0xe997d7d2f6e065a9a93fa2175e878fb9081f1f0a'
@@ -98,7 +98,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
     targetChainId,
     attestationApiUrl,
     usdcContractAddress,
-    messengerTransmitterContractAddress
+    messageTransmitterContractAddress
   } = getContracts(sourceChainId)
 
   const depositForBurn = useCallback(
@@ -170,7 +170,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
       signer: Signer
     }) => {
       const config = await prepareWriteContract({
-        address: messengerTransmitterContractAddress,
+        address: messageTransmitterContractAddress,
         abi: MessageTransmitterAbi,
         functionName: 'receiveMessage',
         chainId: targetChainId,
@@ -179,7 +179,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
       })
       return writeContract(config)
     },
-    [messengerTransmitterContractAddress, targetChainId]
+    [messageTransmitterContractAddress, targetChainId]
   )
 
   const approveForBurn = useCallback(
