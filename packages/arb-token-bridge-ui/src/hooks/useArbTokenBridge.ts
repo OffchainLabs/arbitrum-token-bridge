@@ -43,6 +43,8 @@ import {
   l1TokenIsDisabled
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
+import { CommonAddress } from '../util/CommonAddressUtils'
+import { isNetwork } from '../util/networks'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -197,6 +199,8 @@ export const useArbTokenBridge = (
       assetName: 'ETH',
       assetType: AssetType.ETH,
       sender: walletAddress,
+      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
+      destination: walletAddress,
       l1NetworkID,
       l2NetworkID
     })
@@ -254,6 +258,8 @@ export const useArbTokenBridge = (
         assetName: 'ETH',
         assetType: AssetType.ETH,
         sender: walletAddress,
+        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
+        destination: walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -282,6 +288,8 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventResult,
+          sender: tx.from,
+          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
@@ -440,6 +448,7 @@ export const useArbTokenBridge = (
         assetType: AssetType.ERC20,
         tokenAddress: erc20L1Address,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         l1NetworkID,
         l2NetworkID
       })
@@ -536,6 +545,7 @@ export const useArbTokenBridge = (
         assetName: symbol,
         assetType: AssetType.ERC20,
         sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         blockNumber: tx.blockNumber,
         l1NetworkID,
         l2NetworkID
@@ -561,6 +571,8 @@ export const useArbTokenBridge = (
         const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
         const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
           ...l2ToL1EventDataResult,
+          sender: walletAddress,
+          destinationAddress: destinationAddress ?? walletAddress,
           type: AssetType.ERC20,
           tokenAddress: erc20L1Address,
           value: amount,
@@ -702,6 +714,15 @@ export const useArbTokenBridge = (
     setBridgeTokens(oldBridgeTokens => {
       const l1Addresses: string[] = []
       const l2Addresses: string[] = []
+
+      // USDC is not on any token list as it's unbridgeable
+      // but we still want to detect its balance on user's wallet
+      if (isNetwork(l2ChainID).isArbitrumOne) {
+        l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isNetwork(l2ChainID).isArbitrumGoerli) {
+        l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      }
 
       for (const tokenAddress in bridgeTokensToAdd) {
         const tokenToAdd = bridgeTokensToAdd[tokenAddress]

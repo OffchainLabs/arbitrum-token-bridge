@@ -211,6 +211,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
     })
     return {
       ...event,
+      sender: withdrawal.sender,
+      destinationAddress: withdrawal.receiver,
       type: AssetType.ERC20,
       value: BigNumber.from(withdrawal.tokenAmount),
       tokenAddress: withdrawal.l1Token.id,
@@ -224,6 +226,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
   // Else, Eth withdrawal
   return {
     ...event,
+    sender: withdrawal.sender,
+    destinationAddress: withdrawal.receiver,
     type: AssetType.ETH,
     value: BigNumber.from(withdrawal.ethValue),
     outgoingMessageState,
