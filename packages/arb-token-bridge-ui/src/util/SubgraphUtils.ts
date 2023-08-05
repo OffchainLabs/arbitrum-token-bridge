@@ -133,21 +133,10 @@ export enum SubgraphQueryTypes {
   RetryableReceived = 'Retryable Received'
 }
 
-export type TxHistoryTotalFetched = { [key in SubgraphQueryTypes]: number }
-
 type AdditionalSubgraphQueryParams = Pick<
   FetchDepositParams | FetchWithdrawalsParams,
   'sender' | 'senderNot' | 'receiver' | 'receiverNot'
 >
-
-export const emptyTxHistoryTotalFetched: {
-  [key in SubgraphQueryTypes]: number
-} = {
-  [SubgraphQueryTypes.TxSent]: 0,
-  [SubgraphQueryTypes.TxReceived]: 0,
-  [SubgraphQueryTypes.RetryableSent]: 0,
-  [SubgraphQueryTypes.RetryableReceived]: 0
-}
 
 export function getAdditionalSubgraphQueryParams(
   type: SubgraphQueryTypes,
@@ -168,12 +157,18 @@ export function getAdditionalSubgraphQueryParams(
   }
 }
 
+export type TxHistoryTotalFetched = { [key in SubgraphQueryTypes]: number }
+
 // Separates different 'SubgraphQueryTypes' for each transaction, and counts them.
-// We store this to know how many entries to skip in the next query.
 export function mapSubgraphQueryTypeToTotalFetched(
   txs: (Transaction | L2ToL1EventResultPlus)[]
 ) {
-  const data = { ...emptyTxHistoryTotalFetched }
+  const data = {
+    [SubgraphQueryTypes.TxSent]: 0,
+    [SubgraphQueryTypes.TxReceived]: 0,
+    [SubgraphQueryTypes.RetryableSent]: 0,
+    [SubgraphQueryTypes.RetryableReceived]: 0
+  }
 
   for (const tx of txs) {
     const type = tx.subgraphQueryType as SubgraphQueryTypes
@@ -182,17 +177,4 @@ export function mapSubgraphQueryTypeToTotalFetched(
   }
 
   return data
-}
-
-export function sumTxHistoryTotalFetched(
-  totalFetched_1: TxHistoryTotalFetched,
-  totalFetched_2: TxHistoryTotalFetched
-) {
-  const result: TxHistoryTotalFetched = { ...totalFetched_1 }
-  Object.keys(totalFetched_1).map(type => {
-    const _type = type as SubgraphQueryTypes
-    result[_type] = totalFetched_1[_type] + totalFetched_2[_type]
-  })
-
-  return result
 }

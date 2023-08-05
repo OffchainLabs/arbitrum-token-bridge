@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
+import { unstable_serialize, useSWRConfig } from 'swr'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
@@ -15,10 +15,8 @@ import { useNetworksAndSigners } from './useNetworksAndSigners'
 import {
   TxHistoryTotalFetched,
   SubgraphQueryTypes,
-  emptyTxHistoryTotalFetched,
   getAdditionalSubgraphQueryParams,
-  mapSubgraphQueryTypeToTotalFetched,
-  sumTxHistoryTotalFetched
+  mapSubgraphQueryTypeToTotalFetched
 } from '../util/SubgraphUtils'
 import { useAccountType } from './useAccountType'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
@@ -29,35 +27,16 @@ export type CompleteWithdrawalData = {
   transformedWithdrawals: MergedTransaction[]
 }
 
-// Tracks how many transactions have been stored for each SubgraphQueryType.
-// For each SubgraphQueryType we do a separate subgraph query.
-// We use these values to decide how many entries to skip for subsequent queries.
-//
-// This allows us to have transactions from different subgraph queries in a single table.
-// We reset values to 0 and set the page to 1 when the address or networks change.
-export const useWithdrawalsTotalFetchedStore = create<{
-  withdrawalsTotalFetched: TxHistoryTotalFetched
-  setWithdrawalsTotalFetched: (data: TxHistoryTotalFetched) => void
-  resetWithdrawalsTotalFetched: () => void
-}>(set => ({
-  withdrawalsTotalFetched: emptyTxHistoryTotalFetched,
-  setWithdrawalsTotalFetched: data => set({ withdrawalsTotalFetched: data }),
-  resetWithdrawalsTotalFetched: () =>
-    set({ withdrawalsTotalFetched: emptyTxHistoryTotalFetched })
-}))
-
 const fetchCompleteWithdrawalData = async ({
   walletAddress,
   withdrawalQueryTypes,
   withdrawalsTotalFetched,
-  setWithdrawalsTotalFetched,
   params
 }: {
   walletAddress: string
   withdrawalQueryTypes: Partial<SubgraphQueryTypes>[]
   withdrawalsTotalFetched: TxHistoryTotalFetched
-  setWithdrawalsTotalFetched: (data: TxHistoryTotalFetched) => void
-  params: FetchWithdrawalsParams & { pageNumber: number }
+  params: FetchWithdrawalsParams
 }): Promise<CompleteWithdrawalData> => {
   // create queries for each SubgraphQueryType for withdrawals
   // we will fetch them all, and in the next steps we decide which of them to display
@@ -93,20 +72,6 @@ const fetchCompleteWithdrawalData = async ({
       typeof pendingWithdrawalMap.get(tx.l2TxHash) !== 'undefined'
   )
 
-  // the most recently fetched withdrawals (current fetch)
-  // here we count how many txs of each type we fetched and store this info
-  const recentWithdrawalsTotalFetched =
-    mapSubgraphQueryTypeToTotalFetched(earliestWithdrawals)
-
-  // we create a new fetched count by adding the most recent one to the currently stored one
-  const newWithdrawalsTotalFetched = sumTxHistoryTotalFetched(
-    withdrawalsTotalFetched,
-    recentWithdrawalsTotalFetched
-  )
-
-  // we update the currently stored fetched count with the new one
-  setWithdrawalsTotalFetched(newWithdrawalsTotalFetched)
-
   return {
     withdrawals: earliestWithdrawals,
     pendingWithdrawals,
@@ -118,8 +83,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isSmartContractWallet } = useAccountType()
-  const { withdrawalsTotalFetched, setWithdrawalsTotalFetched } =
-    useWithdrawalsTotalFetchedStore()
+  const { cache } = useSWRConfig()
 
   // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
@@ -174,25 +138,51 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
-      ,
-      ,
+      _isSmartContractWallet,
+      _isConnectedToArbitrum,
       _pageNumber,
       _pageSize,
       _searchString
-    ]) =>
-      fetchCompleteWithdrawalData({
+    ]) => {
+      const cachedTransactions: L2ToL1EventResultPlus[] = []
+
+      // We need to know how many txs of each query type have been fetched so far.
+      // First we get all the previous txs from cache.
+      for (let prevPage = 0; prevPage < _pageNumber; prevPage++) {
+        const txFromCache = cache.get(
+          unstable_serialize([
+            'withdrawals',
+            _walletAddress,
+            _l1Provider,
+            _l2Provider,
+            _gatewayAddresses,
+            _isSmartContractWallet,
+            _isConnectedToArbitrum,
+            prevPage,
+            _pageSize,
+            _searchString
+          ])
+        )?.data.withdrawals
+        cachedTransactions.push(txFromCache)
+      }
+
+      // Count txs by subgraph query type.
+      const withdrawalsTotalFetched = mapSubgraphQueryTypeToTotalFetched(
+        cachedTransactions.flat()
+      )
+
+      return fetchCompleteWithdrawalData({
         walletAddress: _walletAddress,
         withdrawalQueryTypes,
         withdrawalsTotalFetched,
-        setWithdrawalsTotalFetched,
         params: {
           l1Provider: _l1Provider,
           l2Provider: _l2Provider,
           gatewayAddresses: _gatewayAddresses,
-          pageNumber: _pageNumber,
           pageSize: _pageSize,
           searchString: _searchString
         }
       })
+    }
   )
 }
