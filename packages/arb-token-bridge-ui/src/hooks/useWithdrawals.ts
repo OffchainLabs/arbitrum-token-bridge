@@ -100,11 +100,10 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     // contract wallet address is tied to a specific network, therefore:
     if (isSmartContractWallet) {
       // if connected to L2, we only fetch sent txs
-      if (isConnectedToArbitrum) {
-        return [SubgraphQueryTypes.TxSent]
-      }
       // if connected to L1, we only fetch received txs
-      return [SubgraphQueryTypes.TxReceived]
+      return isConnectedToArbitrum
+        ? [SubgraphQueryTypes.TxSent]
+        : [SubgraphQueryTypes.TxReceived]
     }
     // EOA
     return [SubgraphQueryTypes.TxSent, SubgraphQueryTypes.TxReceived]
@@ -149,7 +148,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       // We need to know how many txs of each query type have been fetched so far.
       // First we get all the previous txs from cache.
       for (let prevPage = 0; prevPage < _pageNumber; prevPage++) {
-        const txFromCache = cache.get(
+        const txsFromCache = cache.get(
           unstable_serialize([
             'withdrawals',
             _walletAddress,
@@ -163,7 +162,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
             _searchString
           ])
         )?.data.withdrawals
-        cachedTransactions.push(txFromCache)
+        cachedTransactions.push(txsFromCache)
       }
 
       // Count txs by subgraph query type.

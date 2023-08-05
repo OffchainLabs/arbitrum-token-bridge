@@ -50,7 +50,11 @@ export function MainContent() {
   })
 
   const [withdrawalsPageParams, setWithdrawalsPageParams] =
-    useState<PageParams>({ searchString: '', pageNumber: 0, pageSize: 10 })
+    useState<PageParams>({
+      searchString: '',
+      pageNumber: 0,
+      pageSize: 10
+    })
 
   const {
     data: depositsData = {

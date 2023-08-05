@@ -98,11 +98,10 @@ export const useDeposits = (depositPageParams: PageParams) => {
     // contract wallet address is tied to a specific network, therefore:
     if (isSmartContractWallet) {
       // if connected to L2, we only fetch received txs
-      if (isConnectedToArbitrum) {
-        return [SubgraphQueryTypes.TxReceived]
-      }
       // if connected to L1, we only fetch sent txs
-      return [SubgraphQueryTypes.TxSent]
+      return isConnectedToArbitrum
+        ? [SubgraphQueryTypes.TxReceived]
+        : [SubgraphQueryTypes.TxSent]
     }
     // EOA
     // TODO: Add retryables for custom address ETH
@@ -144,7 +143,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       // We need to know how many txs of each query type have been fetched so far.
       // First we get all the previous txs from cache.
       for (let prevPage = 0; prevPage < _pageNumber; prevPage++) {
-        const txFromCache = cache.get(
+        const txsFromCache = cache.get(
           unstable_serialize([
             'deposits',
             _walletAddress,
@@ -157,7 +156,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
             _searchString
           ])
         )?.data.deposits
-        cachedTransactions.push(txFromCache)
+        cachedTransactions.push(txsFromCache)
       }
 
       // Count txs by subgraph query type.
