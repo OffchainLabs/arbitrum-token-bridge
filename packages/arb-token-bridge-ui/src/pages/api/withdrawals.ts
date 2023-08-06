@@ -9,6 +9,7 @@ import {
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
   query: {
+    queryType: SubgraphQueryTypes
     l2ChainId: string
     search?: string
     sender?: string
@@ -34,6 +35,7 @@ export default async function handler(
 ) {
   try {
     const {
+      queryType,
       search = '',
       l2ChainId,
       sender,
@@ -137,10 +139,7 @@ export default async function handler(
           l2BlockTimestamp,
           l2TxHash,
           l2BlockNum,
-          subgraphQueryType:
-            senderNot && receiver
-              ? SubgraphQueryTypes.TxReceived
-              : SubgraphQueryTypes.TxSent
+          subgraphQueryType: queryType
         }
       })
 

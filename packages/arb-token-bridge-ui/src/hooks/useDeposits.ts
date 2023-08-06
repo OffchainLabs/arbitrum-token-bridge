@@ -35,7 +35,7 @@ export const fetchCompleteDepositData = async ({
   walletAddress: string
   depositQueryTypes: Partial<SubgraphQueryTypes>[]
   depositsQueryCount: SubgraphQueryTypeCount
-  depositParams: FetchDepositParams
+  depositParams: Omit<FetchDepositParams, 'subgraphQueryType'>
 }): Promise<CompleteDepositData> => {
   // create queries for each SubgraphQueryType for deposits
   // we will fetch them all, and in the next steps we decide which of them to display

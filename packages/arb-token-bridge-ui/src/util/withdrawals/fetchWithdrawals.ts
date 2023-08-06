@@ -9,11 +9,15 @@ import {
   updateAdditionalWithdrawalData
 } from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import {
+  SubgraphQueryTypes,
+  tryFetchLatestSubgraphBlockNumber
+} from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
+  subgraphQueryType: SubgraphQueryTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -31,6 +35,7 @@ export type FetchWithdrawalsParams = {
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
+  subgraphQueryType,
   sender,
   senderNot,
   receiver,
@@ -72,6 +77,7 @@ export const fetchWithdrawals = async ({
     tokenWithdrawalsFromEventLogs
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
+      queryType: subgraphQueryType,
       sender,
       senderNot,
       receiver,
@@ -119,7 +125,8 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID
+          l2ChainID,
+          subgraphQueryType
         )
       ),
       ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
@@ -128,7 +135,8 @@ export const fetchWithdrawals = async ({
           l1Provider,
           l2Provider,
           l2ChainID,
-          address
+          address,
+          subgraphQueryType
         )
       )
     ])

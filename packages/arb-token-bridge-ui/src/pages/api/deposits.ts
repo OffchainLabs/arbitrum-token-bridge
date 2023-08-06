@@ -9,6 +9,7 @@ import {
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
+    queryType: SubgraphQueryTypes
     l2ChainId: string
     search?: string
     sender?: string
@@ -33,6 +34,7 @@ export default async function handler(
 ) {
   try {
     const {
+      queryType,
       search = '',
       l2ChainId,
       sender,
@@ -119,10 +121,7 @@ export default async function handler(
     ).map(tx => {
       return {
         ...tx,
-        subgraphQueryType:
-          senderNot && receiver
-            ? SubgraphQueryTypes.TxReceived
-            : SubgraphQueryTypes.TxSent
+        subgraphQueryType: queryType
       }
     })
 

@@ -2,6 +2,7 @@ import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 import { SubgraphQueryTypes } from '../SubgraphUtils'
 
 export type FetchWithdrawalsFromSubgraphResult = {
+  subgraphQueryType: SubgraphQueryTypes
   id: string
   type: 'EthWithdrawal' | 'TokenWithdrawal'
   sender: string
@@ -15,7 +16,6 @@ export type FetchWithdrawalsFromSubgraphResult = {
   l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
-  subgraphQueryType: SubgraphQueryTypes
 }
 
 /**
@@ -31,6 +31,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
  * @param query.searchString Searches records through the l2TxHash
  */
 export async function fetchWithdrawalsFromSubgraph({
+  queryType,
   sender,
   senderNot,
   receiver,
@@ -42,6 +43,7 @@ export async function fetchWithdrawalsFromSubgraph({
   totalFetched = 0,
   searchString = ''
 }: {
+  queryType: SubgraphQueryTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -60,6 +62,7 @@ export async function fetchWithdrawalsFromSubgraph({
 
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
+      queryType,
       sender,
       senderNot,
       receiver,

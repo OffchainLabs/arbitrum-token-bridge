@@ -13,6 +13,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 
 export type FetchDepositParams = {
+  subgraphQueryType: SubgraphQueryTypes
   sender?: string
   senderNot?: string
   receiver?: string
@@ -42,9 +43,7 @@ export const fetchDeposits = async ({
   pageSize = 10,
   totalFetched = 0,
   searchString = ''
-}: FetchDepositParams & {
-  subgraphQueryType: SubgraphQueryTypes
-}): Promise<Transaction[]> => {
+}: FetchDepositParams): Promise<Transaction[]> => {
   if (!sender && !receiver) return []
   if (!l1Provider || !l2Provider) return []
 

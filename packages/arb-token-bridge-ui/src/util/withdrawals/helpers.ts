@@ -13,6 +13,7 @@ import {
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { SubgraphQueryTypes } from '../SubgraphUtils'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
@@ -34,7 +35,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainId: number
+  l2ChainId: number,
+  queryType: SubgraphQueryTypes
 ): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
@@ -51,7 +53,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     symbol: 'ETH',
     outgoingMessageState,
     decimals: 18,
-    l2TxHash: event.l2TxHash || event.transactionHash
+    l2TxHash: event.l2TxHash || event.transactionHash,
+    subgraphQueryType: queryType
   }
 }
 
@@ -136,7 +139,8 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainID: number,
-  walletAddress: string
+  walletAddress: string,
+  queryType: SubgraphQueryTypes
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
     account: walletAddress,
@@ -170,7 +174,8 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     outgoingMessageState,
     symbol,
     decimals,
-    l2TxHash: l2TxReceipt.transactionHash
+    l2TxHash: l2TxReceipt.transactionHash,
+    subgraphQueryType: queryType
   }
 }
 

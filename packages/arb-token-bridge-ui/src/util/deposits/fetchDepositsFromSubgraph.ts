@@ -2,6 +2,7 @@ import { SubgraphQueryTypes } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchDepositsFromSubgraphResult = {
+  subgraphQueryType: SubgraphQueryTypes
   receiver: string
   sender: string
   sequenceNumber: string
@@ -20,7 +21,6 @@ export type FetchDepositsFromSubgraphResult = {
     name: string
     registeredAtBlock: string
   }
-  subgraphQueryType: SubgraphQueryTypes
 }
 
 /**
@@ -68,6 +68,7 @@ export const fetchDepositsFromSubgraph = async ({
 
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
+      queryType,
       sender,
       senderNot,
       receiver,

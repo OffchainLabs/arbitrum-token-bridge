@@ -36,7 +36,7 @@ const fetchCompleteWithdrawalData = async ({
   walletAddress: string
   withdrawalQueryTypes: Partial<SubgraphQueryTypes>[]
   withdrawalsQueryCount: SubgraphQueryTypeCount
-  params: FetchWithdrawalsParams
+  params: Omit<FetchWithdrawalsParams, 'subgraphQueryType'>
 }): Promise<CompleteWithdrawalData> => {
   // create queries for each SubgraphQueryType for withdrawals
   // we will fetch them all, and in the next steps we decide which of them to display
@@ -44,6 +44,7 @@ const fetchCompleteWithdrawalData = async ({
     fetchWithdrawals({
       ...params,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
+      subgraphQueryType: type,
       totalFetched: withdrawalsQueryCount[type]
     })
   )

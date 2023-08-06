@@ -125,12 +125,12 @@ export const tryFetchLatestSubgraphBlockNumber = async (
 }
 
 export enum SubgraphQueryTypes {
-  TxSent = 'Tx Sent',
-  TxReceived = 'Tx Received',
+  TxSent = 'tx_sent',
+  TxReceived = 'tx_received',
   // Retryables are fetched from subgraph to get ETH sent to a custom address.
   // See method 'depositTo' in SDK. It refunds excess ETH in a retryable to 'send' ETH to a custom address.
-  RetryableSent = 'Retryable Sent',
-  RetryableReceived = 'Retryable Received'
+  RetryableSent = 'retryable_sent',
+  RetryableReceived = 'retryable_received'
 }
 
 type AdditionalSubgraphQueryParams = Pick<
