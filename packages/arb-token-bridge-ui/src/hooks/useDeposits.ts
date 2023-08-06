@@ -41,9 +41,9 @@ export const fetchCompleteDepositData = async ({
   // we will fetch them all, and in the next steps we decide which of them to display
   const promises = depositQueryTypes.map(type =>
     fetchDeposits({
-      subgraphQueryType: type,
       ...depositParams,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
+      subgraphQueryType: type,
       totalFetched: depositsQueryCount[type]
     })
   )
