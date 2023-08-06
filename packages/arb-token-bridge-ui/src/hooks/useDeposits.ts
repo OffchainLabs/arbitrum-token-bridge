@@ -12,10 +12,10 @@ import {
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
 import {
-  TxHistoryTotalFetched,
   SubgraphQueryTypes,
-  getAdditionalSubgraphQueryParams,
-  mapSubgraphQueryTypeToTotalFetched
+  SubgraphQueryTypeCount,
+  countSubgraphQueryTypes,
+  getAdditionalSubgraphQueryParams
 } from '../util/SubgraphUtils'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 import { useAccountType } from './useAccountType'
@@ -29,12 +29,12 @@ export type CompleteDepositData = {
 export const fetchCompleteDepositData = async ({
   walletAddress,
   depositQueryTypes,
-  depositsTotalFetched,
+  depositsQueryCount,
   depositParams
 }: {
   walletAddress: string
   depositQueryTypes: Partial<SubgraphQueryTypes>[]
-  depositsTotalFetched: TxHistoryTotalFetched
+  depositsQueryCount: SubgraphQueryTypeCount
   depositParams: FetchDepositParams
 }): Promise<CompleteDepositData> => {
   // create queries for each SubgraphQueryType for deposits
@@ -44,7 +44,7 @@ export const fetchCompleteDepositData = async ({
       subgraphQueryType: type,
       ...depositParams,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
-      totalFetched: depositsTotalFetched[type]
+      totalFetched: depositsQueryCount[type]
     })
   )
 
@@ -160,14 +160,14 @@ export const useDeposits = (depositPageParams: PageParams) => {
       }
 
       // Count txs by subgraph query type.
-      const depositsTotalFetched = mapSubgraphQueryTypeToTotalFetched(
+      const depositsQueryCount = countSubgraphQueryTypes(
         cachedTransactions.flat()
       )
 
       return fetchCompleteDepositData({
         walletAddress: _walletAddress,
         depositQueryTypes,
-        depositsTotalFetched,
+        depositsQueryCount,
         depositParams: {
           l1Provider: _l1Provider,
           l2Provider: _l2Provider,

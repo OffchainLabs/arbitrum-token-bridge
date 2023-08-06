@@ -13,10 +13,10 @@ import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import {
-  TxHistoryTotalFetched,
   SubgraphQueryTypes,
-  getAdditionalSubgraphQueryParams,
-  mapSubgraphQueryTypeToTotalFetched
+  SubgraphQueryTypeCount,
+  countSubgraphQueryTypes,
+  getAdditionalSubgraphQueryParams
 } from '../util/SubgraphUtils'
 import { useAccountType } from './useAccountType'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
@@ -30,12 +30,12 @@ export type CompleteWithdrawalData = {
 const fetchCompleteWithdrawalData = async ({
   walletAddress,
   withdrawalQueryTypes,
-  withdrawalsTotalFetched,
+  withdrawalsQueryCount,
   params
 }: {
   walletAddress: string
   withdrawalQueryTypes: Partial<SubgraphQueryTypes>[]
-  withdrawalsTotalFetched: TxHistoryTotalFetched
+  withdrawalsQueryCount: SubgraphQueryTypeCount
   params: FetchWithdrawalsParams
 }): Promise<CompleteWithdrawalData> => {
   // create queries for each SubgraphQueryType for withdrawals
@@ -44,7 +44,7 @@ const fetchCompleteWithdrawalData = async ({
     fetchWithdrawals({
       ...params,
       ...getAdditionalSubgraphQueryParams(type, walletAddress),
-      totalFetched: withdrawalsTotalFetched[type]
+      totalFetched: withdrawalsQueryCount[type]
     })
   )
 
@@ -166,14 +166,14 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       }
 
       // Count txs by subgraph query type.
-      const withdrawalsTotalFetched = mapSubgraphQueryTypeToTotalFetched(
+      const withdrawalsQueryCount = countSubgraphQueryTypes(
         cachedTransactions.flat()
       )
 
       return fetchCompleteWithdrawalData({
         walletAddress: _walletAddress,
         withdrawalQueryTypes,
-        withdrawalsTotalFetched,
+        withdrawalsQueryCount,
         params: {
           l1Provider: _l1Provider,
           l2Provider: _l2Provider,

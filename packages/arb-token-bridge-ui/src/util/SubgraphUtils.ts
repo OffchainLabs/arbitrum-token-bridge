@@ -157,10 +157,10 @@ export function getAdditionalSubgraphQueryParams(
   }
 }
 
-export type TxHistoryTotalFetched = { [key in SubgraphQueryTypes]: number }
+export type SubgraphQueryTypeCount = { [key in SubgraphQueryTypes]: number }
 
 // Separates different 'SubgraphQueryTypes' for each transaction, and counts them.
-export function mapSubgraphQueryTypeToTotalFetched(
+export function countSubgraphQueryTypes(
   txs: (Transaction | L2ToL1EventResultPlus)[]
 ) {
   const data = {
