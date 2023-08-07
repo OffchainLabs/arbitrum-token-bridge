@@ -109,6 +109,32 @@ export async function getL1TokenData({
 }
 
 /**
+ * Retrieves token allowance for a given contract of an ERC-20 token using its L1/L2 address.
+ * @param account,
+ * @param erc20Address,
+ * @param provider,
+ * @param spender
+ */
+export async function getTokenAllowanceForSpender({
+  account,
+  erc20Address,
+  spender,
+  provider
+}: {
+  account: string
+  erc20Address: string
+  spender: string
+  provider: Provider
+}) {
+  const multiCaller = await MultiCaller.fromProvider(provider)
+  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
+    allowance: { owner: account, spender }
+  })
+
+  return tokenData?.allowance ?? constants.Zero
+}
+
+/**
  * Retrieves token allowance of an ERC-20 token using its L1 address.
  * @param account,
  * @param erc20L1Address,
