@@ -39,11 +39,11 @@ export enum ChainDomain {
 
 export type MessageReceived = {
   blockNumber: string
-  blockTimestamp: number
+  blockTimestamp: string
   caller: `0x${string}`
   id: string
   messageBody: string
-  nonce: number
+  nonce: string
   sender: `0x${string}`
   sourceDomain: ChainDomain
   transactionHash: `0x${string}`
@@ -52,13 +52,15 @@ export type MessageReceived = {
 export type MessageSent = {
   attestationHash: `0x${string}`
   blockNumber: string
-  blockTimestamp: number
+  blockTimestamp: string
   id: string
   message: string
-  nonce: number
+  nonce: string
   sender: `0x${string}`
+  recipient: `0x${string}`
   sourceDomain: ChainDomain
   transactionHash: `0x${string}`
+  amount: string
 }
 
 export type PendingCCTPTransfer = {

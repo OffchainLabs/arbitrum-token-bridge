@@ -88,7 +88,7 @@ function parsePendingTransfer(
   return {
     id: messageSent.id,
     source: {
-      timestamp: messageSent.blockTimestamp * 1_000,
+      timestamp: parseInt(messageSent.blockTimestamp, 10) * 1_000,
       transactionHash: messageSent.transactionHash,
       chainId: sourceChainId,
       blockNum: parseInt(messageSent.blockNumber, 10)
@@ -101,8 +101,8 @@ function parsePendingTransfer(
         ? 'deposit'
         : 'withdrawal',
     sender: messageSent.sender,
-    recipient: messageSent.sender, // TODO: update in subgraph
-    amount: BigNumber.from(2), // TODO: update in subgraph
+    recipient: messageSent.recipient,
+    amount: BigNumber.from(messageSent.amount),
     attestationHash: messageSent.attestationHash,
     messageBytes: messageSent.message
   }
@@ -117,13 +117,13 @@ function parseCompletedTransfer(
   return {
     id: messageSent.id,
     source: {
-      timestamp: messageSent.blockTimestamp * 1_000,
+      timestamp: parseInt(messageSent.blockTimestamp, 10) * 1_000,
       transactionHash: messageSent.transactionHash,
       chainId: sourceChainId,
       blockNum: parseInt(messageSent.blockNumber, 10)
     },
     destination: {
-      timestamp: messageReceived.blockTimestamp * 1_000,
+      timestamp: parseInt(messageReceived.blockTimestamp, 10) * 1_000,
       transactionHash: messageReceived.transactionHash,
       chainId: targetChainId
     },
@@ -132,8 +132,8 @@ function parseCompletedTransfer(
         ? 'deposit'
         : 'withdrawal',
     sender: messageSent.sender,
-    recipient: messageSent.sender, // TODO: update in subgraph
-    amount: BigNumber.from(2) // TODO: update in subgraph
+    recipient: messageSent.recipient,
+    amount: BigNumber.from(messageSent.amount)
   }
 }
 function parseSWRResponse(
