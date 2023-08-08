@@ -159,8 +159,10 @@ export default async function handler(
           message
           nonce
           sender
+          recipient
           sourceDomain
           transactionHash
+          amount
         }
       }`)
 
