@@ -14,8 +14,6 @@ import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusIn
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
 import { useAccount } from 'wagmi'
-import { useCctpState } from '../../state/cctpState'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 export const motionDivProps = {
   layout: true,
@@ -42,7 +40,6 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const { address } = useAccount()
   const {
     app: { arbTokenBridge }
   } = useAppState()

@@ -63,7 +63,6 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import { useCctpState, useSyncCctpStore } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { ChainDomain } from '../../pages/api/cctp/[type]'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {

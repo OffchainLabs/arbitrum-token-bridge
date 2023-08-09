@@ -6,7 +6,6 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { useCCTP } from './CCTP/useCCTP'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => void

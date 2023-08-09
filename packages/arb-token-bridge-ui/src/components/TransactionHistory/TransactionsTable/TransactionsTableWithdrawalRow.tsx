@@ -197,7 +197,7 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
         }
       : findMatchingL1TxForWithdrawal(tx)
 
-    if (typeof matchingL1Tx === 'undefined') {
+    if (!matchingL1Tx?.txId) {
       return (
         <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
           <span className="rounded-md px-2 text-xs text-dark">Step 2</span>

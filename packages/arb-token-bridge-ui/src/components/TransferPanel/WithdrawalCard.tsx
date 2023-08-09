@@ -6,7 +6,6 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
@@ -140,15 +139,15 @@ export function WithdrawalCardContainer({
 
 export function WithdrawalCard({ tx }: { tx: MergedTransaction }) {
   if (tx.direction === 'withdraw') {
-    return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="l2" />
+    return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="L2" />
   }
 
   switch (tx.status) {
     case 'Unconfirmed':
-      return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="l2" />
+      return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="L2" />
 
     case 'Confirmed':
-      return <ClaimableCardConfirmed tx={tx} sourceNetwork="l2" />
+      return <ClaimableCardConfirmed tx={tx} sourceNetwork="L2" />
 
     default:
       return null

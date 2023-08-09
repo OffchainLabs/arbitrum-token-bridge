@@ -18,12 +18,7 @@ import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppContextActions } from '../App/AppContext'
-import {
-  CompletedTransferMap,
-  PendingTransferMap,
-  parseTransferToMergedTransaction,
-  useCctpState
-} from '../../state/cctpState'
+import { useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
 
