@@ -93,21 +93,23 @@ export const PendingTransactions = ({
           <PendingDepositWarning />
         )}
 
-      <CustomMessageWarning show={showSubgraphMaintenanceMessage}>
-        <span>
-          The Graph is expected to undergo scheduled database maintenance
-          beginning August 14, 2023, 07:00 UTC. Transaction history may not
-          appear between 07:00-13:00 UTC on August 14, 2023. Please check back
-          later or visit{' '}
-          <ExternalLink
-            href="https://status.thegraph.com"
-            className="arb-hover text-blue-link underline"
-          >
-            The Graph&apos;s status page
-          </ExternalLink>{' '}
-          for the latest.
-        </span>
-      </CustomMessageWarning>
+      {showSubgraphMaintenanceMessage && (
+        <CustomMessageWarning>
+          <span>
+            The Graph is expected to undergo scheduled database maintenance
+            beginning August 14, 2023, 07:00 UTC. Transaction history may not
+            appear between 07:00-13:00 UTC on August 14, 2023. Please check back
+            later or visit{' '}
+            <ExternalLink
+              href="https://status.thegraph.com"
+              className="arb-hover text-blue-link underline"
+            >
+              The Graph&apos;s status page
+            </ExternalLink>{' '}
+            for the latest.
+          </span>
+        </CustomMessageWarning>
+      )}
 
       {/* Transaction cards */}
       {transactions?.map(tx =>
