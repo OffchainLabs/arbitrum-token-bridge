@@ -593,7 +593,7 @@ export function TransferPanel() {
 
               if (messageBytes && attestationHash) {
                 setPendingTransfer({
-                  id: `0x0${ChainDomain.Mainnet}00${nonce.slice(2)}`,
+                  id: depositTxReceipt.transactionHash,
                   source: {
                     chainId: l1Network.id,
                     timestamp: Date.now(),
@@ -602,14 +602,17 @@ export function TransferPanel() {
                     blockNum: depositTxReceipt.blockNumber
                   },
                   destination: {
-                    chainId: l2Network.id
+                    chainId: l2Network.id,
+                    timestamp: null,
+                    transactionHash: null
                   },
                   sender: account,
                   recipient: recipient as `0x${string}`,
                   amount: utils.parseUnits(amount, selectedToken.decimals),
                   direction: 'deposit',
                   attestationHash,
-                  messageBytes
+                  messageBytes,
+                  isPending: true
                 })
                 openTransactionHistoryPanel()
               }
@@ -803,7 +806,7 @@ export function TransferPanel() {
 
             if (messageBytes && attestationHash) {
               setPendingTransfer({
-                id: `0x0${ChainDomain.ArbitrumOne}00${nonce.slice(2)}`,
+                id: depositTxReceipt.transactionHash,
                 source: {
                   chainId: l2Network.id,
                   timestamp: Date.now(),
@@ -812,14 +815,17 @@ export function TransferPanel() {
                   blockNum: depositTxReceipt.blockNumber
                 },
                 destination: {
-                  chainId: l1Network.id
+                  chainId: l1Network.id,
+                  timestamp: null,
+                  transactionHash: null
                 },
                 sender: account,
                 recipient: recipient as `0x${string}`,
                 amount: utils.parseUnits(amount, selectedToken.decimals),
-                direction: 'withdrawal',
+                direction: 'withdraw',
                 attestationHash,
-                messageBytes
+                messageBytes,
+                isPending: true
               })
               openTransactionHistoryPanel()
             }

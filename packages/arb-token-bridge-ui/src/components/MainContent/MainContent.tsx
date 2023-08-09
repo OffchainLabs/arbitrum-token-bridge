@@ -79,20 +79,6 @@ export function MainContent() {
     isValidating: withdrawalsLoading,
     error: withdrawalsError
   } = useWithdrawals(withdrawalsPageParams)
-  const { l1 } = useNetworksAndSigners()
-  const {
-    completed,
-    completedIds,
-    pending,
-    pendingIds,
-    isLoadingDeposits,
-    isLoadingWithdrawals,
-    depositsError: depositsCctpError,
-    withdrawalsError: withdrawalsCctpError
-  } = useCctpState({
-    l1ChainId: l1.network.id,
-    walletAddress: address
-  })
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
@@ -141,16 +127,7 @@ export function MainContent() {
             withdrawalsLoading,
             withdrawalsError,
             setDepositsPageParams,
-            setWithdrawalsPageParams,
-            // CCTP
-            completedCctp: completed,
-            completedIdsCctp: completedIds,
-            pendingCctp: pending,
-            pendingIdsCctp: pendingIds,
-            isLoadingCctpDeposits: isLoadingDeposits,
-            isLoadingCctpWithdrawals: isLoadingWithdrawals,
-            depositsCctpError: !!depositsCctpError,
-            withdrawalsCctpError: !!withdrawalsCctpError
+            setWithdrawalsPageParams
           }}
         />
       </SidePanel>

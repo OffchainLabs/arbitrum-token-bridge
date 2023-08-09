@@ -22,7 +22,13 @@ export const TableActionHeader = ({
   loading,
   isSmartContractWallet
 }: TableActionHeaderProps) => {
-  const layerType = type === 'deposits' ? 'L1' : 'L2'
+  const layerType = (() => {
+    if (type === 'cctp') {
+      return ''
+    }
+
+    return type === 'deposits' ? 'L1' : 'L2'
+  })()
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 
@@ -87,7 +93,11 @@ export const TableActionHeader = ({
         <input
           className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-dark"
           type="text"
-          placeholder={`Search for a full or partial ${layerType} tx ID`}
+          placeholder={
+            layerType
+              ? `Search for a full or partial ${layerType} tx ID`
+              : 'Search for a full or partial tx ID'
+          }
           value={searchString}
           onChange={e => {
             setSearchString(e.target.value)

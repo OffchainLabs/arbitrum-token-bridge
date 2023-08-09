@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers'
-import { useEffect } from 'react'
+import { BigNumber, utils } from 'ethers'
+import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 
@@ -12,6 +12,22 @@ import {
 } from '../pages/api/cctp/[type]'
 import { ChainId, isNetwork } from '../util/networks'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
+import { DepositStatus, MergedTransaction } from './app/state'
+import { getStandardizedTimestamp } from './app/utils'
+import { fetchBlockNumber } from '@wagmi/core'
+
+export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
+  if (!tx.cctpData) {
+    return ChainId.Mainnet
+  }
+
+  return {
+    [ChainId.Mainnet]: ChainId.Mainnet,
+    [ChainId.Goerli]: ChainId.Goerli,
+    [ChainId.ArbitrumOne]: ChainId.Mainnet,
+    [ChainId.ArbitrumGoerli]: ChainId.Goerli
+  }[tx.cctpData.sourceChainId]
+}
 
 function getChainIdsFromSourceDomain(
   chainId: ChainId,
@@ -61,20 +77,24 @@ export type CompletedTransfer = {
   sender: `0x${string}`
   recipient: `0x${string}`
   amount: BigNumber
-  direction: 'deposit' | 'withdrawal'
+  direction: 'deposit' | 'withdraw'
+  isPending: false
 }
 export type PendingTransfer = {
   id: string
   source: TransferSource
   destination: {
+    timestamp: null
+    transactionHash: null
     chainId: CCTPSupportedChainId
   }
   sender: `0x${string}`
   recipient: `0x${string}`
   amount: BigNumber
-  direction: 'deposit' | 'withdrawal'
+  direction: 'deposit' | 'withdraw'
   attestationHash: `0x${string}`
   messageBytes: string
+  isPending: true
 }
 
 function parsePendingTransfer(
@@ -94,17 +114,18 @@ function parsePendingTransfer(
       blockNum: parseInt(messageSent.blockNumber, 10)
     },
     destination: {
-      chainId: targetChainId
+      chainId: targetChainId,
+      timestamp: null,
+      transactionHash: null
     },
     direction:
-      messageSent.sourceDomain === ChainDomain.Mainnet
-        ? 'deposit'
-        : 'withdrawal',
+      messageSent.sourceDomain === ChainDomain.Mainnet ? 'deposit' : 'withdraw',
     sender: messageSent.sender,
     recipient: messageSent.recipient,
     amount: BigNumber.from(messageSent.amount),
     attestationHash: messageSent.attestationHash,
-    messageBytes: messageSent.message
+    messageBytes: messageSent.message,
+    isPending: true
   }
 }
 function parseCompletedTransfer(
@@ -128,12 +149,11 @@ function parseCompletedTransfer(
       chainId: targetChainId
     },
     direction:
-      messageSent.sourceDomain === ChainDomain.Mainnet
-        ? 'deposit'
-        : 'withdrawal',
+      messageSent.sourceDomain === ChainDomain.Mainnet ? 'deposit' : 'withdraw',
     sender: messageSent.sender,
     recipient: messageSent.recipient,
-    amount: BigNumber.from(messageSent.amount)
+    amount: BigNumber.from(messageSent.amount),
+    isPending: false
   }
 }
 function parseSWRResponse(
@@ -152,17 +172,79 @@ function parseSWRResponse(
     )
   }
 }
-function transformPendingToCompletedTransfer(
-  pendingTransfer: PendingTransfer,
-  timestamp: number,
-  transactionHash: `0x${string}`
-): CompletedTransfer {
+
+// see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
+export function getBlockBeforeConfirmation(
+  chainId: CCTPSupportedChainId | undefined
+) {
+  if (!chainId) {
+    return 65
+  }
+
   return {
-    ...pendingTransfer,
-    destination: {
-      chainId: pendingTransfer.destination.chainId,
-      timestamp: timestamp,
-      transactionHash: transactionHash
+    [ChainId.Mainnet]: 65,
+    [ChainId.ArbitrumOne]: 65,
+    [ChainId.Goerli]: 5,
+    [ChainId.ArbitrumGoerli]: 5
+  }[chainId]
+}
+
+export function parseTransferToMergedTransaction(
+  transfer: PendingTransfer | CompletedTransfer,
+  blockNumbers: {
+    [ChainId.Mainnet]: number
+    [ChainId.ArbitrumOne]: number
+    [ChainId.Goerli]: number
+    [ChainId.ArbitrumGoerli]: number
+  }
+): MergedTransaction {
+  const depositStatus = transfer.isPending
+    ? DepositStatus.CCTP_SOURCE_SUCCESS
+    : DepositStatus.CCTP_DESTINATION_SUCCESS
+  let status
+  const requiredBlockForConfirmation = getBlockBeforeConfirmation(
+    transfer.source.chainId
+  )
+
+  const currentBlock = blockNumbers[transfer.source.chainId]
+  if (transfer.destination.transactionHash) {
+    status = 'Executed'
+  } else if (
+    currentBlock - transfer.source.blockNum >
+    requiredBlockForConfirmation
+  ) {
+    status = 'Confirmed'
+  } else {
+    status = 'Unconfirmed'
+  }
+
+  return {
+    sender: transfer.sender,
+    destination: transfer.recipient,
+    direction: transfer.direction,
+    status,
+    createdAt: getStandardizedTimestamp(transfer.source.timestamp.toString()),
+    resolvedAt: transfer.destination.timestamp
+      ? getStandardizedTimestamp(transfer.destination.timestamp.toString())
+      : null,
+    txId: transfer.source.transactionHash,
+    asset: 'USDC',
+    value: utils.formatUnits(transfer.amount.toString(), 6),
+    uniqueId: null,
+    isWithdrawal: transfer.direction === 'withdraw',
+    blockNum: transfer.source.blockNum,
+    tokenAddress: 'TODO: UPDATE',
+    depositStatus,
+    isCctp: true,
+    cctpData: {
+      sourceChainId: transfer.source.chainId,
+      attestationHash:
+        'attestationHash' in transfer ? transfer.attestationHash : null,
+      messageBytes: 'messageBytes' in transfer ? transfer.messageBytes : null,
+      receiveMessageTransactionHash: transfer.destination.transactionHash,
+      receiveMessageTimestamp: transfer.destination.timestamp
+        ? getStandardizedTimestamp(transfer.destination.timestamp.toString())
+        : null
     }
   }
 }
@@ -214,86 +296,88 @@ export type CompletedTransferMap = {
 }
 
 type CctpStore = {
-  pending: { [id: string]: PendingTransfer }
-  completed: { [id: string]: CompletedTransfer }
-  pendingIds: string[]
-  completedIds: string[]
-  setPendingTransfers: (transfers: PendingTransfer[]) => void
-  setCompletedTransfers: (transfers: CompletedTransfer[]) => void
-  setPendingTransfer: (transfer: PendingTransfer) => void
-  completePendingTransfer: (
-    transfer: PendingTransfer,
-    timestamp: number,
-    transactionHash: string
+  transfers: { [id: string]: MergedTransaction }
+  transfersIds: string[]
+  setTransfers: (
+    deposits: {
+      pending: PendingTransfer[]
+      completed: CompletedTransfer[]
+    },
+    withdrawals: {
+      pending: PendingTransfer[]
+      completed: CompletedTransfer[]
+    }
   ) => void
+  setPendingTransfer: (transfer: PendingTransfer) => void
+  updatePendingTransfer: (transfer: MergedTransaction) => void
 }
 
 const useCctpStore = create<CctpStore>(set => ({
-  pending: {},
-  completed: {},
-  pendingIds: [],
-  completedIds: [],
-  setPendingTransfers: async transfers =>
-    set(() => {
-      const transfersOrdered = transfers.sort(
-        (t1, t2) => t2.source.timestamp - t1.source.timestamp
-      )
-      const transfersParsed: { [id: string]: PendingTransfer } = {}
-      const ids: string[] = []
-      for (const transfer of transfersOrdered) {
-        transfersParsed[transfer.id] = transfer
-        ids.push(transfer.id)
-      }
+  transfers: {},
+  transfersIds: [],
+  setTransfers: async (deposits, withdrawals) => {
+    const pendings = deposits.pending
+      .concat(withdrawals.pending)
+      .sort((t1, t2) => t2.source.timestamp - t1.source.timestamp)
+    const completeds = deposits.completed
+      .concat(withdrawals.completed)
+      .sort((t1, t2) => t2.source.timestamp - t1.source.timestamp)
 
-      return {
-        pending: transfersParsed,
-        pendingIds: ids
-      }
-    }),
-  setCompletedTransfers: async transfers =>
-    set(() => {
-      const transfersOrdered = transfers.sort(
-        (t1, t2) => t2.destination.timestamp - t1.destination.timestamp
-      )
-      const transfersParsed: { [id: string]: CompletedTransfer } = {}
-      const ids: string[] = []
-      for (const transfer of transfersOrdered) {
-        transfersParsed[transfer.id] = transfer
-        ids.push(transfer.id)
-      }
+    const transfers: {
+      [id: string]: MergedTransaction
+    } = {}
+    const ids: string[] = []
 
-      return {
-        completed: transfersParsed,
-        completedIds: ids
-      }
-    }),
-  setPendingTransfer: transfer =>
-    set(prevState => ({
-      pending: {
-        ...prevState.pending,
-        [transfer.id]: transfer
+    const blockNumbers = await Promise.all([
+      fetchBlockNumber({ chainId: ChainId.Mainnet }),
+      fetchBlockNumber({ chainId: ChainId.ArbitrumOne }),
+      fetchBlockNumber({ chainId: ChainId.Goerli }),
+      fetchBlockNumber({ chainId: ChainId.ArbitrumGoerli })
+    ])
+    for (const transfer of [...pendings, ...completeds]) {
+      const parsedTransfer = parseTransferToMergedTransaction(transfer, {
+        [ChainId.Mainnet]: blockNumbers[0],
+        [ChainId.ArbitrumOne]: blockNumbers[1],
+        [ChainId.Goerli]: blockNumbers[2],
+        [ChainId.ArbitrumGoerli]: blockNumbers[3]
+      })
+      transfers[parsedTransfer.txId] = parsedTransfer
+      ids.push(parsedTransfer.txId)
+    }
+
+    return set({
+      transfers: transfers,
+      transfersIds: ids
+    })
+  },
+  setPendingTransfer: async transfer => {
+    const blockNumbers = await Promise.all([
+      fetchBlockNumber({ chainId: ChainId.Mainnet }),
+      fetchBlockNumber({ chainId: ChainId.ArbitrumOne }),
+      fetchBlockNumber({ chainId: ChainId.Goerli }),
+      fetchBlockNumber({ chainId: ChainId.ArbitrumGoerli })
+    ])
+
+    return set(prevState => ({
+      transfers: {
+        ...prevState.transfers,
+        [transfer.id]: parseTransferToMergedTransaction(transfer, {
+          [ChainId.Mainnet]: blockNumbers[0],
+          [ChainId.ArbitrumOne]: blockNumbers[1],
+          [ChainId.Goerli]: blockNumbers[2],
+          [ChainId.ArbitrumGoerli]: blockNumbers[3]
+        })
       },
       // Set the new transfer as first item (showing first in pending transaction)
-      pendingIds: [...new Set([transfer.id].concat(prevState.pendingIds))]
-    })),
-  completePendingTransfer: (
-    transfer: PendingTransfer,
-    timestamp: number,
-    transactionHash: string
-  ) =>
+      transfersIds: [...new Set([transfer.id].concat(prevState.transfersIds))]
+    }))
+  },
+  updatePendingTransfer: transfer =>
     set(prevState => ({
-      completed: {
-        ...prevState.completed,
-        [transfer.id]: transformPendingToCompletedTransfer(
-          transfer,
-          timestamp,
-          transactionHash as `0x${string}`
-        )
-      },
-      pendingIds: prevState.pendingIds.filter(
-        pendingId => pendingId !== transfer.id
-      ),
-      completedIds: [...new Set(prevState.completedIds.concat(transfer.id))]
+      transfers: {
+        ...prevState.transfers,
+        [transfer.txId]: transfer
+      }
     }))
 }))
 
@@ -303,14 +387,11 @@ type useCctpStateParams = {
 }
 export function useCctpState({ l1ChainId, walletAddress }: useCctpStateParams) {
   const {
-    completed,
-    completedIds,
-    pending,
-    pendingIds,
-    setPendingTransfers,
-    setCompletedTransfers,
+    transfersIds,
+    transfers,
+    setTransfers,
     setPendingTransfer,
-    completePendingTransfer
+    updatePendingTransfer
   } = useCctpStore()
 
   const {
@@ -327,21 +408,53 @@ export function useCctpState({ l1ChainId, walletAddress }: useCctpStateParams) {
     error: withdrawalsError
   } = useCCTPWithdrawals({ l1ChainId, walletAddress })
 
+  const { pendingIds, completedIds, depositIds, withdrawalIds } =
+    useMemo(() => {
+      return transfersIds.reduce(
+        (acc, id) => {
+          const transfer = transfers[id]
+          if (!transfer) {
+            return acc
+          }
+
+          if (transfer.direction === 'deposit') {
+            acc.depositIds.push(id)
+          } else {
+            acc.withdrawalIds.push(id)
+          }
+          if (transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS) {
+            acc.pendingIds.push(id)
+          } else {
+            acc.completedIds.push(id)
+          }
+
+          return acc
+        },
+        {
+          pendingIds: [] as string[],
+          completedIds: [] as string[],
+          depositIds: [] as string[],
+          withdrawalIds: [] as string[]
+        }
+      )
+    }, [transfersIds, transfers])
+
   return {
     deposits,
     withdrawals,
-    completed,
-    completedIds,
-    pending,
-    pendingIds,
     isLoadingDeposits,
     isLoadingWithdrawals,
     depositsError,
     withdrawalsError,
     setPendingTransfer,
-    completePendingTransfer,
-    setPendingTransfers,
-    setCompletedTransfers
+    setTransfers,
+    transfersIds,
+    transfers,
+    pendingIds,
+    completedIds,
+    depositIds,
+    withdrawalIds,
+    updatePendingTransfer
   }
 }
 
@@ -349,20 +462,14 @@ export function useSyncCctpStore({
   l1ChainId,
   walletAddress
 }: useCctpStateParams) {
-  const { setPendingTransfers, setCompletedTransfers, deposits, withdrawals } =
-    useCctpState({ l1ChainId, walletAddress })
+  const { setTransfers, deposits, withdrawals } = useCctpState({
+    l1ChainId,
+    walletAddress
+  })
 
   useEffect(() => {
-    setPendingTransfers([
-      ...(deposits?.pending || []),
-      ...(withdrawals?.pending || [])
-    ])
-  }, [deposits, withdrawals, setPendingTransfers])
-
-  useEffect(() => {
-    setCompletedTransfers([
-      ...(deposits?.completed || []),
-      ...(withdrawals?.completed || [])
-    ])
-  }, [deposits, withdrawals, setCompletedTransfers])
+    if (deposits && withdrawals) {
+      setTransfers(deposits, withdrawals)
+    }
+  }, [deposits, withdrawals, setTransfers])
 }

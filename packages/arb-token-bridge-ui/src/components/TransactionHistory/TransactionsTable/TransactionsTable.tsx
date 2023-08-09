@@ -23,6 +23,7 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
+import { TransactionsTableCctpRow } from './TransactionsTableCctpRow'
 
 export type PageParams = {
   searchString: string
@@ -146,7 +147,7 @@ enum TableStatus {
 }
 
 export type TransactionsTableProps = {
-  type: 'deposits' | 'withdrawals'
+  type: 'deposits' | 'withdrawals' | 'cctp'
   pageParams: PageParams
   setPageParams: Dispatch<SetStateAction<PageParams>>
   transactions: MergedTransaction[]

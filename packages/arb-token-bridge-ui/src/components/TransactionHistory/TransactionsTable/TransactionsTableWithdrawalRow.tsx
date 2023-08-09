@@ -33,7 +33,9 @@ import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitru
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
-  const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
+  const matchingL1Tx = tx.isCctp
+    ? tx.cctpData?.receiveMessageTransactionHash
+    : findMatchingL1TxForWithdrawal(tx)
 
   switch (tx.status) {
     case 'Unconfirmed':
@@ -144,7 +146,11 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
     )
   }
 
-  const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
+  const matchingL1Tx = tx.isCctp
+    ? {
+        createdAt: tx.cctpData?.receiveMessageTimestamp
+      }
+    : findMatchingL1TxForWithdrawal(tx)
 
   if (typeof matchingL1Tx === 'undefined') {
     return (
@@ -185,7 +191,11 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
       return null
     }
 
-    const matchingL1Tx = findMatchingL1TxForWithdrawal(tx)
+    const matchingL1Tx = tx.isCctp
+      ? {
+          txId: tx.cctpData?.receiveMessageTransactionHash
+        }
+      : findMatchingL1TxForWithdrawal(tx)
 
     if (typeof matchingL1Tx === 'undefined') {
       return (
