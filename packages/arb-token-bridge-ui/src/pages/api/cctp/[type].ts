@@ -101,7 +101,7 @@ export default async function handler(
       pageNumber = '0',
       pageSize = '10',
       type,
-      search = ''
+      searchString = ''
     } = req.query
 
     if (
@@ -164,7 +164,7 @@ export default async function handler(
           orderBy: "blockTimestamp"
           first: ${Number(pageSize)}
           skip: ${Number(pageNumber) * Number(pageSize)}
-          ${search ? `transactionHash: "${search}"` : ''}
+          ${searchString ? `transactionHash: "${searchString}"` : ''}
         ) {
           attestationHash
           blockNumber
@@ -197,7 +197,6 @@ export default async function handler(
           where: {id_in: [${formatedIds.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
-          ${search ? `transactionHash: "${search}"` : ''}
         ) {
           id
           caller
@@ -224,18 +223,6 @@ export default async function handler(
         query: messagesReceivedQuery
       })
     }
-
-    // if (type === 'deposits') {
-    //   ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-    //     l1Subgraph.query({ query: messagesSentQuery }),
-    //     l2Subgraph.query({ query: messagesReceivedQuery })
-    //   ])
-    // } else {
-    //   ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-    //     l2Subgraph.query({ query: messagesSentQuery }),
-    //     l1Subgraph.query({ query: messagesReceivedQuery })
-    //   ])
-    // }
 
     const { messageReceiveds } = messagesReceivedResult.data
 
