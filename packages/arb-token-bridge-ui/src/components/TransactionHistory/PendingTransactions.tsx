@@ -12,9 +12,8 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
-import { PendingTransfer, useCctpState } from '../../state/cctpState'
-import { useAccount } from 'wagmi'
-import { CctpCard } from '../TransferPanel/CctpCard'
+import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
+import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -30,6 +29,25 @@ const MergedTransactionCard = ({
 }: {
   transaction: MergedTransaction
 }) => {
+  if (transaction.isCctp) {
+    const sourceNetwork = transaction.direction === 'deposit' ? 'L1' : 'L2'
+    return (
+      <motion.div key={transaction.txId} {...motionDivProps}>
+        {transaction.status === 'Confirmed' ? (
+          <ClaimableCardConfirmed
+            tx={transaction}
+            sourceNetwork={sourceNetwork}
+          />
+        ) : (
+          <ClaimableCardUnconfirmed
+            tx={transaction}
+            sourceNetwork={sourceNetwork}
+          />
+        )}
+      </motion.div>
+    )
+  }
+
   return isDeposit(transaction) ? (
     <motion.div key={transaction.txId} {...motionDivProps}>
       <DepositCard key={transaction.txId} tx={transaction} />
@@ -37,18 +55,6 @@ const MergedTransactionCard = ({
   ) : (
     <motion.div key={transaction.txId} {...motionDivProps}>
       <WithdrawalCard key={transaction.txId} tx={transaction} />
-    </motion.div>
-  )
-}
-
-const CctpTransactionCard = ({
-  transaction
-}: {
-  transaction: PendingTransfer
-}) => {
-  return (
-    <motion.div key={transaction.id} {...motionDivProps}>
-      <CctpCard tx={transaction} />
     </motion.div>
   )
 }
@@ -67,11 +73,6 @@ export const PendingTransactions = ({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const { address } = useAccount()
-  const { pending, pendingIds } = useCctpState({
-    l1ChainId: l1Network.id,
-    walletAddress: address
-  })
 
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-dark'
@@ -111,7 +112,7 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && transactions.length + pendingIds.length === 0 && (
+      {!error && !loading && transactions.length === 0 && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
@@ -124,9 +125,6 @@ export const PendingTransactions = ({
       {/* Transaction cards */}
       {transactions.map(tx => (
         <MergedTransactionCard transaction={tx} key={tx.txId} />
-      ))}
-      {pendingIds.map(id => (
-        <CctpTransactionCard transaction={pending[id]!} key={id} />
       ))}
     </div>
   )

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import {
   ChevronLeftIcon,
@@ -11,8 +11,10 @@ import { Loader } from '../../common/atoms/Loader'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
-  'error' | 'pendingTransactions'
->
+  'error' | 'pendingTransactions' | 'type'
+> & {
+  type: 'deposits' | 'withdrawals' | 'cctp'
+}
 
 export const TableActionHeader = ({
   type,
@@ -22,7 +24,13 @@ export const TableActionHeader = ({
   loading,
   isSmartContractWallet
 }: TableActionHeaderProps) => {
-  const layerType = type === 'deposits' ? 'L1' : 'L2'
+  const layerType = useMemo(() => {
+    if (type === 'cctp') {
+      return ''
+    }
+
+    return type === 'deposits' ? 'L1' : 'L2'
+  }, [type])
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 
@@ -58,7 +66,7 @@ export const TableActionHeader = ({
     setPageParams(prevParams => ({
       ...prevParams,
       pageNumber: 0,
-      pageSize: 10,
+      pageSize: pageParams.pageSize,
       searchString: trimmedSearchString
     }))
   }
@@ -87,7 +95,11 @@ export const TableActionHeader = ({
         <input
           className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-dark"
           type="text"
-          placeholder={`Search for a full or partial ${layerType} tx ID`}
+          placeholder={
+            layerType
+              ? `Search for a full or partial ${layerType} tx ID`
+              : 'Search for a full or partial tx ID'
+          }
           value={searchString}
           onChange={e => {
             setSearchString(e.target.value)

@@ -102,6 +102,8 @@ export function DepositCardContainer({
         return 'bg-brick'
 
       case DepositStatus.L2_SUCCESS:
+      case DepositStatus.CCTP_DESTINATION_SUCCESS:
+      case DepositStatus.CCTP_SOURCE_SUCCESS:
         return 'bg-lime'
 
       case DepositStatus.L2_FAILURE:

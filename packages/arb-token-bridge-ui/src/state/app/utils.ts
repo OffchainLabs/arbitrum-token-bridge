@@ -157,6 +157,9 @@ export const isWithdrawal = (tx: MergedTransaction) => {
 }
 
 export const isPending = (tx: MergedTransaction) => {
+  if (tx.isCctp && !tx.resolvedAt) {
+    return true
+  }
   return (
     (isDeposit(tx) &&
       (tx.status === 'pending' ||

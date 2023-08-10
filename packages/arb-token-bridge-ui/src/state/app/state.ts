@@ -26,6 +26,7 @@ import {
   Transaction,
   TxnType
 } from '../../hooks/useTransactions'
+import { CCTPSupportedChainId } from '../../hooks/CCTP/useCCTP'
 
 export enum WhiteListState {
   VERIFYING,
@@ -40,7 +41,12 @@ export enum DepositStatus {
   L2_SUCCESS = 4,
   L2_FAILURE = 5,
   CREATION_FAILED = 6,
-  EXPIRED = 7
+  EXPIRED = 7,
+  // CCTP Specific
+  CCTP_SOURCE_PENDING = 8,
+  CCTP_SOURCE_SUCCESS = 9,
+  CCTP_DESTINATION_PENDING = 10,
+  CCTP_DESTINATION_SUCCESS = 11
 }
 
 export interface MergedTransaction {
@@ -59,10 +65,18 @@ export interface MergedTransaction {
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
+  isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
+  cctpData?: {
+    sourceChainId: CCTPSupportedChainId
+    attestationHash: `0x${string}` | null
+    messageBytes: string | null
+    receiveMessageTransactionHash: `0x${string}` | null
+    receiveMessageTimestamp: string | null
+  }
 }
 
 export interface WarningTokens {

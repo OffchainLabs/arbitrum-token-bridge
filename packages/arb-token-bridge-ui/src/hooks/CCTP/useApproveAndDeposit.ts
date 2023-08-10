@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers'
-import { Signer, utils } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import { useCallback } from 'react'
 import { useToken } from 'wagmi'
 import { getTokenAllowanceForSpender } from '../../util/TokenUtils'
@@ -30,7 +30,7 @@ export function useApproveAndDeposit({
       onApproveTxFailed,
       onDepositTxFailed
     }: {
-      amount: string
+      amount: BigNumber
       provider: Provider
       signer: Signer
       destinationAddress: string | undefined
@@ -42,8 +42,7 @@ export function useApproveAndDeposit({
         return
       }
 
-      const { decimals, address } = usdcToken
-      const amountRaw = utils.parseUnits(amount, decimals)
+      const { address } = usdcToken
       const allowance = await getTokenAllowanceForSpender({
         account: walletAddress,
         erc20Address: address,
@@ -51,13 +50,13 @@ export function useApproveAndDeposit({
         spender: tokenMessengerContractAddress
       })
 
-      if (allowance.lt(amountRaw)) {
+      if (allowance.lt(amount)) {
         if (!(await onAllowanceTooLow())) {
           return
         }
 
         try {
-          const tx = await approveForBurn(amountRaw, signer)
+          const tx = await approveForBurn(amount, signer)
           await tx.wait()
         } catch (e) {
           onApproveTxFailed(e)
@@ -68,7 +67,7 @@ export function useApproveAndDeposit({
       let depositForBurnTx
       try {
         depositForBurnTx = await depositForBurn({
-          amount: amountRaw,
+          amount,
           signer,
           recipient: destinationAddress || walletAddress
         })

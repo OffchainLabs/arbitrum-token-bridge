@@ -6,13 +6,13 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
-import { WithdrawalCardConfirmed } from './WithdrawalCardConfirmed'
-import { WithdrawalCardUnconfirmed } from './WithdrawalCardUnconfirmed'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
 import Image from 'next/image'
+import { ClaimableCardConfirmed } from './ClaimableCardConfirmed'
+import { ClaimableCardUnconfirmed } from './ClaimableCardUnconfirmed'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -54,7 +54,7 @@ export function WithdrawalL1TxStatus({
   const { network: l1Network } = l1
 
   // Try to find the L1 transaction that matches the L2ToL1 message
-  const l1Tx = findMatchingL1TxForWithdrawal(tx)
+  const l1Tx = tx.isCctp ? tx : findMatchingL1TxForWithdrawal(tx)
 
   if (typeof l1Network === 'undefined') {
     return <span>Not available</span>
@@ -78,11 +78,13 @@ export function WithdrawalL1TxStatus({
 export type WithdrawalCardContainerProps = {
   tx: MergedTransaction
   children: React.ReactNode
+  sourceNetwork: 'L1' | 'L2'
 }
 
 export function WithdrawalCardContainer({
   tx,
-  children
+  children,
+  sourceNetwork
 }: WithdrawalCardContainerProps) {
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
@@ -106,7 +108,11 @@ export function WithdrawalCardContainer({
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <Image
-          src={getNetworkLogo(ChainId.Mainnet)}
+          src={
+            sourceNetwork === 'L2'
+              ? getNetworkLogo(ChainId.Mainnet)
+              : getNetworkLogo(ChainId.ArbitrumOne)
+          }
           className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
           alt="Withdrawal"
           width={90}
@@ -133,15 +139,15 @@ export function WithdrawalCardContainer({
 
 export function WithdrawalCard({ tx }: { tx: MergedTransaction }) {
   if (tx.direction === 'withdraw') {
-    return <WithdrawalCardUnconfirmed tx={tx} />
+    return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="L2" />
   }
 
   switch (tx.status) {
     case 'Unconfirmed':
-      return <WithdrawalCardUnconfirmed tx={tx} />
+      return <ClaimableCardUnconfirmed tx={tx} sourceNetwork="L2" />
 
     case 'Confirmed':
-      return <WithdrawalCardConfirmed tx={tx} />
+      return <ClaimableCardConfirmed tx={tx} sourceNetwork="L2" />
 
     default:
       return null

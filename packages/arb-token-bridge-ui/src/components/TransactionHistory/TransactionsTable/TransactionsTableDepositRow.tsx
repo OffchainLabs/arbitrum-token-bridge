@@ -23,6 +23,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -97,6 +98,41 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         </div>
       )
 
+    case DepositStatus.CCTP_SOURCE_PENDING:
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
+            Pending
+          </StatusBadge>
+        </div>
+      )
+
+    case DepositStatus.CCTP_SOURCE_SUCCESS:
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <Tooltip content={<span>Funds are ready to be claimed on L2</span>}>
+            <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
+              <InformationCircleIcon className="h-4 w-4" /> Confirmed
+            </StatusBadge>
+          </Tooltip>
+        </div>
+      )
+
+    case DepositStatus.CCTP_DESTINATION_SUCCESS:
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            Success
+          </StatusBadge>
+        </div>
+      )
+
     default:
       return null
   }
@@ -131,7 +167,13 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const l2TxHash = tx.l1ToL2MsgData?.l2TxID
+  const l2TxHash = (() => {
+    if (tx.l1ToL2MsgData?.l2TxID) {
+      return tx.l1ToL2MsgData?.l2TxID
+    }
+
+    return tx.isCctp && tx.cctpData?.receiveMessageTransactionHash
+  })()
 
   return (
     <div className="flex flex-col space-y-3">
@@ -315,9 +357,19 @@ export function TransactionsTableDepositRow({
             </span>
           </Tooltip>
         )}
+
+        {tx.isCctp && (
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type="deposits"
+          />
+        )}
       </td>
       {isCustomDestinationAddressTx(tx) && (
-        <TransactionsTableCustomAddressLabel tx={tx} />
+        <td>
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </td>
       )}
     </tr>
   )

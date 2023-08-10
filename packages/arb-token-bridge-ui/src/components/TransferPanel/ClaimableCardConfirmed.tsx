@@ -2,40 +2,55 @@ import { useMemo } from 'react'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
-import { WithdrawalCardContainer, WithdrawalL2TxStatus } from './WithdrawalCard'
+import {
+  WithdrawalCardContainer,
+  WithdrawalL1TxStatus,
+  WithdrawalL2TxStatus
+} from './WithdrawalCard'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
+import { useChainId } from 'wagmi'
 
-export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l2 } = useNetworksAndSigners()
+import { isNetwork } from '../../util/networks'
+import { useClaimCctp } from '../../state/cctpState'
+
+export function ClaimableCardConfirmed({
+  tx,
+  sourceNetwork
+}: {
+  tx: MergedTransaction
+  sourceNetwork: 'L1' | 'L2'
+}) {
+  const { l1, l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { claim: claimCttp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
+  const chainId = useChainId()
+  const { isMainnet, isGoerli, isArbitrumOne, isArbitrumGoerli } =
+    isNetwork(chainId)
+  const currentChainIsInvalid =
+    (sourceNetwork === 'L1' && (isMainnet || isGoerli)) ||
+    (sourceNetwork === 'L2' && (isArbitrumOne || isArbitrumGoerli))
 
-  const isClaimButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
+  const isClaimButtonDisabled = useMemo(() => {
+    return isClaiming || isClaimingCctp || currentChainIsInvalid
+  }, [isClaiming, isClaimingCctp, currentChainIsInvalid])
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l2.network
+        chain: sourceNetwork === 'L1' ? l1.network : l2.network
       }),
-    [tx, l2]
+    [tx, sourceNetwork, l1, l2]
   )
 
   return (
-    <WithdrawalCardContainer tx={tx}>
+    <WithdrawalCardContainer tx={tx} sourceNetwork={sourceNetwork}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="lg:-ml-8">
           {/* Heading */}
@@ -46,12 +61,26 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
           {/* Addresses */}
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-              L2 transaction: <WithdrawalL2TxStatus tx={tx} />
-            </span>
-            <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-              L1 transaction: Will show after claiming
-            </span>
+            {sourceNetwork === 'L2' ? (
+              <>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                </span>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  <>L1 transaction: Will show after claiming</>
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                </span>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  <>L2 transaction: Will show after claiming</>
+                </span>
+              </>
+            )}
+
             {isCustomDestinationAddressTx(tx) && (
               <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
                 <CustomAddressTxExplorer
@@ -65,10 +94,11 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
         <Tooltip
           wrapperClassName=""
-          show={isClaimButtonDisabled}
+          show={currentChainIsInvalid}
           content={
             <span>
-              Please connect to the L1 network to claim your withdrawal.
+              Please connect to the {sourceNetwork === 'L2' ? 'L1' : 'L2'}{' '}
+              network to claim your withdrawal.
             </span>
           }
         >
@@ -76,7 +106,9 @@ export function WithdrawalCardConfirmed({ tx }: { tx: MergedTransaction }) {
             variant="primary"
             loading={isClaiming}
             disabled={isClaimButtonDisabled}
-            onClick={() => claim(tx)}
+            onClick={() => {
+              tx.isCctp ? claimCttp() : claim(tx)
+            }}
             className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
           >
             <div className="flex flex-nowrap whitespace-pre">

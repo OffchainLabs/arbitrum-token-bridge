@@ -70,6 +70,22 @@ export const TransactionDateTime = ({
   )
 }
 
+export const TransactionsTableHeader = () => {
+  return (
+    <thead className="text-gray-10 text-left text-sm">
+      <tr>
+        <th className="py-3 pl-6 pr-3 font-normal">Status</th>
+        <th className="px-3 py-3 font-normal">Time</th>
+        <th className="px-3 py-3 font-normal">Amount</th>
+        <th className="px-3 py-3 font-normal">TxID</th>
+        <th className="py-3 pl-3 pr-6 font-normal">
+          {/* Empty header text */}
+        </th>
+      </tr>
+    </thead>
+  )
+}
+
 export const CustomAddressTxExplorer = ({
   tx,
   explorerClassName = 'arb-hover underline'
@@ -139,7 +155,7 @@ export const CustomAddressTxExplorer = ({
   )
 }
 
-enum TableStatus {
+export enum TableStatus {
   LOADING,
   ERROR,
   SUCCESS
@@ -272,17 +288,7 @@ export function TransactionsTable({
       />
 
       <table className="w-full overflow-hidden rounded-b-lg bg-white">
-        <thead className="text-gray-10 text-left text-sm">
-          <tr>
-            <th className="py-3 pl-6 pr-3 font-normal">Status</th>
-            <th className="px-3 py-3 font-normal">Time</th>
-            <th className="px-3 py-3 font-normal">Amount</th>
-            <th className="px-3 py-3 font-normal">TxID</th>
-            <th className="py-3 pl-3 pr-6 font-normal">
-              {/* Empty header text */}
-            </th>
-          </tr>
-        </thead>
+        <TransactionsTableHeader />
 
         <tbody>
           {status === TableStatus.LOADING && <TableBodyLoading />}
