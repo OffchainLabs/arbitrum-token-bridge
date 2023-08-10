@@ -1,7 +1,6 @@
-import dayjs from 'dayjs'
-import { useAccount, useBlockNumber } from 'wagmi'
+import { useEffect, useMemo } from 'react'
 
-import { getBlockTime, getNetworkName } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -14,60 +13,9 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
-import { useEffect, useMemo, useState } from 'react'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { CCTPSupportedChainId } from '../../hooks/CCTP/useCCTP'
-import { getBlockBeforeConfirmation, useCctpState } from '../../state/cctpState'
-
-function useRemainingTime(tx: MergedTransaction) {
-  const { data: currentBlockNumber } = useBlockNumber({
-    chainId: tx.cctpData?.sourceChainId,
-    watch: true
-  })
-
-  const requiredBlocksBeforeConfirmation = getBlockBeforeConfirmation(
-    tx.cctpData?.sourceChainId as CCTPSupportedChainId
-  )
-  const blockTime =
-    tx.cctpData?.sourceChainId && tx.direction === 'deposit'
-      ? getBlockTime(tx.cctpData.sourceChainId)
-      : 15
-
-  const [remainingTime, setRemainingTime] = useState<string | null>(null)
-  const [isConfirmed, setIsConfirmed] = useState(false)
-
-  useEffect(() => {
-    if (!currentBlockNumber || !tx.blockNum) {
-      return
-    }
-
-    const elapsedBlocks = Math.max(currentBlockNumber - tx.blockNum, 0)
-    const blocksLeftBeforeConfirmation = Math.max(
-      requiredBlocksBeforeConfirmation - elapsedBlocks,
-      0
-    )
-    const withdrawalDate = dayjs().add(
-      blocksLeftBeforeConfirmation * blockTime,
-      'second'
-    )
-
-    if (blocksLeftBeforeConfirmation === 0) {
-      setIsConfirmed(true)
-    }
-    setRemainingTime(dayjs().to(withdrawalDate, true))
-  }, [
-    blockTime,
-    currentBlockNumber,
-    requiredBlocksBeforeConfirmation,
-    tx.blockNum
-  ])
-
-  return {
-    remainingTime,
-    isConfirmed
-  }
-}
+import { useCctpState, useRemainingTime } from '../../state/cctpState'
 
 export function ClaimableCardUnconfirmed({
   tx,
@@ -77,11 +25,7 @@ export function ClaimableCardUnconfirmed({
   sourceNetwork: 'L1' | 'L2'
 }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const { address } = useAccount()
-  const { updatePendingTransfer } = useCctpState({
-    l1ChainId: l1.network.id, // TODO: update l1 of the transaction?
-    walletAddress: address
-  })
+  const { updatePendingTransfer } = useCctpState()
 
   const networkName = getNetworkName(
     sourceNetwork === 'L2' ? l1.network.id : l2.network.id

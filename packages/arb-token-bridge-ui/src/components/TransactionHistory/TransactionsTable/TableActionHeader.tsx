@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import {
   ChevronLeftIcon,
@@ -11,8 +11,10 @@ import { Loader } from '../../common/atoms/Loader'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
-  'error' | 'pendingTransactions'
->
+  'error' | 'pendingTransactions' | 'type'
+> & {
+  type: 'deposits' | 'withdrawals' | 'cctp'
+}
 
 export const TableActionHeader = ({
   type,
@@ -22,13 +24,13 @@ export const TableActionHeader = ({
   loading,
   isSmartContractWallet
 }: TableActionHeaderProps) => {
-  const layerType = (() => {
+  const layerType = useMemo(() => {
     if (type === 'cctp') {
       return ''
     }
 
     return type === 'deposits' ? 'L1' : 'L2'
-  })()
+  }, [type])
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 
@@ -64,7 +66,7 @@ export const TableActionHeader = ({
     setPageParams(prevParams => ({
       ...prevParams,
       pageNumber: 0,
-      pageSize: 10,
+      pageSize: pageParams.pageSize,
       searchString: trimmedSearchString
     }))
   }

@@ -1,27 +1,18 @@
 import { useMemo } from 'react'
-import { Popover } from '@headlessui/react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
-import dayjs from 'dayjs'
 
 import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
 import { ExternalLink } from '../../common/ExternalLink'
 import { shortenTxHash } from '../../../util/CommonUtils'
-import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import {
-  EllipsisVerticalIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline'
-import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
-import { GET_HELP_LINK } from '../../../constants'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
   findMatchingL1TxForWithdrawal,
@@ -29,8 +20,8 @@ import {
 } from '../../../state/app/utils'
 import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
-import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   const matchingL1Tx = tx.isCctp
@@ -244,120 +235,6 @@ function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
   )
 }
 
-const GetHelpButton = ({
-  variant,
-  onClick
-}: {
-  variant: 'primary' | 'secondary'
-  onClick: () => void
-}) => {
-  return (
-    <Button
-      variant={variant}
-      onClick={onClick}
-      className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
-    >
-      Get Help
-    </Button>
-  )
-}
-
-function WithdrawalRowAction({
-  tx,
-  isError
-}: {
-  tx: MergedTransaction
-  isError: boolean
-}) {
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.id)
-
-  const { claim, isClaiming } = useClaimWithdrawal()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-
-  const isClaimButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
-
-  const getHelpOnError = () => {
-    window.open(GET_HELP_LINK, '_blank')
-
-    // track the button click
-    if (shouldTrackAnalytics(l2NetworkName)) {
-      trackEvent('Tx Error: Get Help Click', { network: l2NetworkName })
-    }
-  }
-
-  if (tx.status === 'Unconfirmed') {
-    return (
-      <Tooltip
-        wrapperClassName=""
-        content={<span>Funds aren&apos;t ready to claim yet</span>}
-      >
-        <Button variant="primary" disabled>
-          Claim
-        </Button>
-      </Tooltip>
-    )
-  }
-
-  if (tx.status === 'Confirmed') {
-    return (
-      <Tooltip
-        show={isClaimButtonDisabled}
-        wrapperClassName=""
-        content={
-          <span>
-            Please connect to the L1 network to claim your withdrawal.
-          </span>
-        }
-      >
-        <Button
-          variant="primary"
-          loading={isClaiming}
-          disabled={isClaimButtonDisabled}
-          onClick={() => claim(tx)}
-        >
-          Claim
-        </Button>
-      </Tooltip>
-    )
-  }
-
-  if (isError) {
-    const isTxOlderThan7Days = dayjs().diff(dayjs(tx.createdAt), 'days') > 7
-
-    return (
-      <>
-        {isTxOlderThan7Days ? (
-          // show a dropdown menu with the button
-          <Popover>
-            <Popover.Button>
-              <EllipsisVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
-            </Popover.Button>
-            <Popover.Panel
-              className={'absolute top-4 z-50 rounded-md bg-white shadow-lg'}
-            >
-              <GetHelpButton variant="secondary" onClick={getHelpOnError} />
-            </Popover.Panel>
-          </Popover>
-        ) : (
-          // show a normal button outside
-          <GetHelpButton variant="primary" onClick={getHelpOnError} />
-        )}
-      </>
-    )
-  }
-
-  return null
-}
-
 export function TransactionsTableWithdrawalRow({
   tx,
   className = ''
@@ -431,10 +308,16 @@ export function TransactionsTableWithdrawalRow({
           customAddressTxPadding
         )}
       >
-        <WithdrawalRowAction tx={tx} isError={isError} />
+        <TransactionsTableRowAction
+          tx={tx}
+          isError={isError}
+          type="withdrawals"
+        />
       </td>
       {isCustomDestinationAddressTx(tx) && (
-        <TransactionsTableCustomAddressLabel tx={tx} />
+        <td>
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </td>
       )}
     </tr>
   )

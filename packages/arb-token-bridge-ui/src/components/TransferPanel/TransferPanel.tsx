@@ -61,7 +61,7 @@ import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { useApproveAndDeposit } from '../../hooks/CCTP/useApproveAndDeposit'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
-import { useCctpState, useSyncCctpStore } from '../../state/cctpState'
+import { useCctpState } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 
 const onTxError = (error: any) => {
@@ -176,11 +176,7 @@ export function TransferPanel() {
     sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
     walletAddress: account
   })
-  const { setPendingTransfer } = useCctpState({
-    l1ChainId: l1Network.id,
-    walletAddress: account
-  })
-  useSyncCctpStore({ l1ChainId: l1Network.id, walletAddress: account })
+  const { setPendingTransfer } = useCctpState()
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -528,7 +524,8 @@ export function TransferPanel() {
                 sourceChainId: l1ChainID
               })
 
-              if (burnLimit.lte(amount)) {
+              const amountBigNumber = utils.parseUnits(amount, decimals)
+              if (burnLimit.lte(amountBigNumber)) {
                 const formatedLimit = formatAmount(burnLimit, {
                   decimals: 6,
                   symbol: 'USDC'
@@ -541,7 +538,7 @@ export function TransferPanel() {
 
               const recipient = destinationAddress || walletAddress
               const depositTx = await approveAndDepositForBurn({
-                amount,
+                amount: amountBigNumber,
                 provider: l1Provider,
                 signer: l1Signer,
                 destinationAddress: recipient,
@@ -761,7 +758,7 @@ export function TransferPanel() {
             // Withdrawal
             const recipient = destinationAddress || walletAddress
             const depositTx = await approveAndDepositForBurn({
-              amount,
+              amount: utils.parseUnits(amount, selectedToken.decimals),
               provider: l2Provider,
               signer: l2Signer,
               destinationAddress: recipient,

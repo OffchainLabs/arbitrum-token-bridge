@@ -28,7 +28,10 @@ export function getSubgraphClient(subgraph: string) {
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
     walletAddress: `0x${string}`
-    l1ChainId: ChainId
+    l1ChainId: string
+    pageNumber?: string
+    pageSize?: string
+    search?: string
   }
 }
 
@@ -92,8 +95,14 @@ export default async function handler(
   res: NextApiResponse<Response>
 ) {
   try {
-    const { walletAddress, l1ChainId } = req.query
-    const { type } = req.query
+    const {
+      walletAddress,
+      l1ChainId,
+      pageNumber = '0',
+      pageSize = '10',
+      type,
+      search = ''
+    } = req.query
 
     if (
       typeof type !== 'string' ||
@@ -138,10 +147,12 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-mainnet' : 'cctp-goerli'
+      l1ChainId === ChainId.Mainnet.toString() ? 'cctp-mainnet' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
+      l1ChainId === ChainId.Mainnet.toString()
+        ? 'cctp-arb-one'
+        : 'cctp-arb-goerli'
     )
 
     const messagesSentQuery = gql(`{
@@ -151,6 +162,9 @@ export default async function handler(
           }
           orderDirection: "desc"
           orderBy: "blockTimestamp"
+          first: ${Number(pageSize)}
+          skip: ${Number(pageNumber) * Number(pageSize)}
+          ${search ? `transactionHash: "${search}"` : ''}
         ) {
           attestationHash
           blockNumber
@@ -166,13 +180,24 @@ export default async function handler(
         }
       }`)
 
+    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
+    if (type === 'deposits') {
+      messagesSentResult = await l1Subgraph.query({ query: messagesSentQuery })
+    } else {
+      messagesSentResult = await l2Subgraph.query({ query: messagesSentQuery })
+    }
+    const { messageSents } = messagesSentResult.data
+    const messagesSentIds = messageSents.map(messageSent => messageSent.id)
+    const formatedIds = messagesSentIds.map(
+      messageSentId => `"${messageSentId}"`
+    )
+
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {
-            caller: "${walletAddress}"
-          }
+          where: {id_in: [${formatedIds.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
+          ${search ? `transactionHash: "${search}"` : ''}
         ) {
           id
           caller
@@ -187,24 +212,31 @@ export default async function handler(
       }
     `)
 
-    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
     let messagesReceivedResult: ApolloQueryResult<{
       messageReceiveds: MessageReceived[]
     }>
-
     if (type === 'deposits') {
-      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-        l1Subgraph.query({ query: messagesSentQuery }),
-        l2Subgraph.query({ query: messagesReceivedQuery })
-      ])
+      messagesReceivedResult = await l2Subgraph.query({
+        query: messagesReceivedQuery
+      })
     } else {
-      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-        l2Subgraph.query({ query: messagesSentQuery }),
-        l1Subgraph.query({ query: messagesReceivedQuery })
-      ])
+      messagesReceivedResult = await l1Subgraph.query({
+        query: messagesReceivedQuery
+      })
     }
 
-    const { messageSents } = messagesSentResult.data
+    // if (type === 'deposits') {
+    //   ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
+    //     l1Subgraph.query({ query: messagesSentQuery }),
+    //     l2Subgraph.query({ query: messagesReceivedQuery })
+    //   ])
+    // } else {
+    //   ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
+    //     l2Subgraph.query({ query: messagesSentQuery }),
+    //     l1Subgraph.query({ query: messagesReceivedQuery })
+    //   ])
+    // }
+
     const { messageReceiveds } = messagesReceivedResult.data
 
     // MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce)

@@ -1,0 +1,168 @@
+import React, { useEffect, useMemo, useState } from 'react'
+import { useAccount } from 'wagmi'
+
+import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
+import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
+import { isDeposit, isWithdrawal } from '../../../state/app/utils'
+import { NoDataOverlay } from './NoDataOverlay'
+import { TableBodyLoading } from './TableBodyLoading'
+import { TableBodyError } from './TableBodyError'
+import { TableActionHeader } from './TableActionHeader'
+import {
+  EmptyTableRow,
+  PageParams,
+  TableStatus,
+  TransactionsTableHeader
+} from './TransactionsTable'
+import { TransactionsTableSwitch } from './TransactionsTableSwitch'
+import { useCctpFetching, useCctpState } from '../../../state/cctpState'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { MergedTransaction } from '../../../state/app/state'
+import { useAccountType } from '../../../hooks/useAccountType'
+
+export function TransactionsTableCctp() {
+  const { address } = useAccount()
+  const [type, setType] = useState<'deposits' | 'withdrawals'>('deposits')
+  const { isSmartContractWallet } = useAccountType()
+  const [pageParams, setPageParams] = useState<PageParams>({
+    searchString: '',
+    pageNumber: 0,
+    pageSize: 10
+  })
+  const { l1 } = useNetworksAndSigners()
+  const { transfers, depositIds, withdrawalIds } = useCctpState()
+  const {
+    depositsError,
+    withdrawalsError,
+    isLoadingDeposits,
+    isLoadingWithdrawals
+  } = useCctpFetching({
+    l1ChainId: l1.network.id,
+    walletAddress: address,
+    pageSize: pageParams.pageSize,
+    searchString: pageParams.searchString,
+    pageNumber: pageParams.pageNumber,
+    type
+  })
+  const isLoading =
+    type === 'deposits' ? isLoadingDeposits : isLoadingWithdrawals
+  const hasError = type === 'deposits' ? depositsError : withdrawalsError
+
+  const status = useMemo(() => {
+    if (isLoading) return TableStatus.LOADING
+    if (hasError) return TableStatus.ERROR
+    return TableStatus.SUCCESS
+  }, [hasError, isLoading])
+
+  const transactions = useMemo(() => {
+    const startIndex = pageParams.pageNumber * pageParams.pageSize
+    const ids = type === 'deposits' ? depositIds : withdrawalIds
+    return ids
+      .map(id => transfers[id])
+      .slice(
+        startIndex,
+        startIndex + pageParams.pageSize
+      ) as unknown as MergedTransaction[]
+  }, [
+    depositIds,
+    pageParams.pageNumber,
+    pageParams.pageSize,
+    transfers,
+    type,
+    withdrawalIds
+  ])
+
+  const noSearchResults = !!(
+    pageParams.searchString.length &&
+    status === TableStatus.SUCCESS &&
+    !transactions.length
+  )
+
+  useEffect(() => {
+    setPageParams(prevPageParams => ({
+      ...prevPageParams,
+      pageNumber: 0
+    }))
+  }, [setPageParams, type])
+
+  const tabs = useMemo(() => {
+    return [
+      {
+        handleClick: () => setType('deposits'),
+        isActive: type === 'deposits',
+        text: 'Deposits'
+      },
+      {
+        handleClick: () => setType('withdrawals'),
+        isActive: type === 'withdrawals',
+        text: 'Withdrawals'
+      }
+    ]
+  }, [type])
+
+  return (
+    <>
+      {!isSmartContractWallet && <TransactionsTableSwitch tabs={tabs} />}
+
+      {/* search and pagination buttons */}
+      <TableActionHeader
+        type={'cctp'}
+        pageParams={pageParams}
+        setPageParams={setPageParams}
+        transactions={transactions}
+        isSmartContractWallet={isSmartContractWallet}
+        loading={isLoading}
+      />
+
+      <table className="w-full overflow-hidden rounded-b-lg bg-white">
+        <TransactionsTableHeader />
+
+        <tbody>
+          {status === TableStatus.LOADING && <TableBodyLoading />}
+
+          {status === TableStatus.ERROR && <TableBodyError />}
+
+          {/* when there are no search results found */}
+          {status === TableStatus.SUCCESS && noSearchResults && (
+            <NoDataOverlay />
+          )}
+
+          {/* when there are no transactions present */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            !transactions.length && (
+              <EmptyTableRow>
+                <span className="text-sm font-medium">No transactions</span>
+              </EmptyTableRow>
+            )}
+
+          {/* finally, when transactions are present, show rows */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            transactions.map((tx, index) => {
+              const isLastRow = index === transactions.length - 1
+              if (isDeposit(tx)) {
+                return (
+                  <TransactionsTableDepositRow
+                    key={`${tx.txId}-${tx.direction}`}
+                    tx={tx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else if (isWithdrawal(tx)) {
+                return (
+                  <TransactionsTableWithdrawalRow
+                    key={`${tx.txId}-${tx.direction}`}
+                    tx={tx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+        </tbody>
+      </table>
+    </>
+  )
+}

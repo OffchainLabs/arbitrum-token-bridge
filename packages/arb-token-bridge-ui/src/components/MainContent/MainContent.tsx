@@ -13,7 +13,6 @@ import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { PreferencesDialog } from '../common/PreferencesDialog'
-import { useAccount } from 'wagmi'
 
 export const motionDivProps = {
   layout: true,

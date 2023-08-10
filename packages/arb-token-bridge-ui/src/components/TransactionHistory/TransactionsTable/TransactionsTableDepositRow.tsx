@@ -23,6 +23,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -356,9 +357,19 @@ export function TransactionsTableDepositRow({
             </span>
           </Tooltip>
         )}
+
+        {tx.isCctp && (
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type="deposits"
+          />
+        )}
       </td>
       {isCustomDestinationAddressTx(tx) && (
-        <TransactionsTableCustomAddressLabel tx={tx} />
+        <td>
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </td>
       )}
     </tr>
   )

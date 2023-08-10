@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react'
 import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -21,6 +21,7 @@ import { useAppContextActions } from '../App/AppContext'
 import { useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
+import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -50,35 +51,15 @@ export const TransactionHistory = ({
   const { isSmartContractWallet } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
-  const { address } = useAccount()
-  const {
-    depositsError: depositsCctpError,
-    withdrawalsError: withdrawalsCctpError,
-    isLoadingDeposits: isLoadingCctpDeposits,
-    isLoadingWithdrawals: isLoadingCctpWithdrawals,
-    pendingIds: pendingIdsCctp,
-    transfers: transfersCctp,
-    depositIds,
-    withdrawalIds
-  } = useCctpState({
-    l1ChainId: l1.network.id,
-    walletAddress: address
-  })
+  const { pendingIds: pendingIdsCctp, transfers: transfersCctp } =
+    useCctpState()
 
   const {
     app: { mergedTransactions }
   } = useAppState()
 
-  const isLoading =
-    depositsLoading ||
-    withdrawalsLoading ||
-    isLoadingCctpDeposits ||
-    isLoadingCctpWithdrawals
-  const error =
-    depositsError ||
-    withdrawalsError ||
-    depositsCctpError ||
-    withdrawalsCctpError
+  const isLoading = depositsLoading || withdrawalsLoading
+  const error = depositsError || withdrawalsError
 
   const pendingTransactions = useMemo(() => {
     const pendingCctpTransactions = pendingIdsCctp
@@ -137,21 +118,6 @@ export const TransactionHistory = ({
     }
   }
 
-  const cctpWithdrawals = useMemo(() => {
-    return withdrawalIds
-      .map(id => {
-        return transfersCctp[id]
-      })
-      .filter(Boolean) as unknown as MergedTransaction[]
-  }, [transfersCctp, withdrawalIds])
-  const cctpDeposits = useMemo(() => {
-    return depositIds
-      .map(id => {
-        return transfersCctp[id]
-      })
-      .filter(Boolean) as unknown as MergedTransaction[]
-  }, [transfersCctp, depositIds])
-
   useEffect(() => {
     // this function runs every time the network tab is changed, and here it is also triggered when the page loads
     // it sets the tab to 0 (deposits), which is the default tab
@@ -208,7 +174,7 @@ export const TransactionHistory = ({
             >
               {/* CCTP */}
               <Image
-                src={getNetworkLogo(l1.network.id)} // TODO: change to USDC
+                src={getNetworkLogo(l1.network.id)}
                 className="h-6 w-auto"
                 alt="Withdraw"
                 width={24}
@@ -240,15 +206,7 @@ export const TransactionHistory = ({
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
-            <TransactionsTable
-              type="cctp"
-              pageParams={withdrawalsPageParams}
-              setPageParams={setWithdrawalsPageParams}
-              transactions={cctpWithdrawals}
-              isSmartContractWallet={isSmartContractWallet}
-              loading={withdrawalsLoading}
-              error={withdrawalsError}
-            />
+            <TransactionsTableCctp />
           </Tab.Panel>
         </Tab.Group>
       </div>

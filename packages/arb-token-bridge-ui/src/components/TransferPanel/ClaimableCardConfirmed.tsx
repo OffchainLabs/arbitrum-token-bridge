@@ -1,8 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
-import * as Sentry from '@sentry/react'
+import { useMemo } from 'react'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
+import { MergedTransaction } from '../../state/app/state'
 import {
   WithdrawalCardContainer,
   WithdrawalL1TxStatus,
@@ -12,74 +11,13 @@ import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getStandardizedTimestamp,
-  isCustomDestinationAddressTx
-} from '../../state/app/utils'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useAccount, useChainId, useSigner } from 'wagmi'
-import { useCCTP } from '../../hooks/CCTP/useCCTP'
-import {
-  getL1ChainIdFromSourceChain,
-  useCctpState
-} from '../../state/cctpState'
-import { BigNumber } from 'ethers'
+import { useChainId } from 'wagmi'
+
 import { isNetwork } from '../../util/networks'
-
-function useClaimCctp(tx: MergedTransaction) {
-  const { address } = useAccount()
-  const [isClaiming, setIsClaiming] = useState(false)
-  const { waitForAttestation, receiveMessage } = useCCTP({
-    sourceChainId: tx.cctpData?.sourceChainId
-  })
-
-  const { updatePendingTransfer } = useCctpState({
-    l1ChainId: getL1ChainIdFromSourceChain(tx),
-    walletAddress: address
-  })
-  const { data: signer } = useSigner()
-
-  const claim = useCallback(async () => {
-    if (!tx.cctpData?.attestationHash || !tx.cctpData.messageBytes || !signer) {
-      console.log('a')
-      return
-    }
-
-    setIsClaiming(true)
-    try {
-      const attestation = await waitForAttestation(tx.cctpData.attestationHash)
-      const receiveTx = await receiveMessage({
-        attestation,
-        messageBytes: tx.cctpData.messageBytes as `0x${string}`,
-        signer
-      })
-      const receiveReceiptTx = await receiveTx.wait()
-      updatePendingTransfer({
-        ...tx,
-        resolvedAt: getStandardizedTimestamp(
-          BigNumber.from(Date.now()).toString()
-        ),
-        status: 'Executed',
-        depositStatus: DepositStatus.CCTP_DESTINATION_SUCCESS,
-        cctpData: {
-          ...tx.cctpData,
-          receiveMessageTransactionHash:
-            receiveReceiptTx.transactionHash as `0x${string}`
-        }
-      })
-    } catch (e) {
-      Sentry.captureException(e)
-    } finally {
-      setIsClaiming(false)
-    }
-  }, [receiveMessage, signer, tx, updatePendingTransfer, waitForAttestation])
-
-  return {
-    isClaiming,
-    claim
-  }
-}
+import { useClaimCctp } from '../../state/cctpState'
 
 export function ClaimableCardConfirmed({
   tx,
