@@ -347,12 +347,12 @@ const useCctpStore = create<CctpStore>((set, get) => ({
     const transfersMap = get().transfers
     const ids = [...get().transfersIds]
 
-    const test = [...pendings, ...completeds]
+    const transactions = [...pendings, ...completeds]
       .map(transfer => parseTransferToMergedTransaction(transfer))
       .concat(Object.values(transfersMap))
       .sort((t1, t2) => (t2.blockNum || 0) - (t1.blockNum || 0))
 
-    for (const transfer of test) {
+    for (const transfer of transactions) {
       if (!transfersMap[transfer.txId]) {
         transfersMap[transfer.txId] = transfer
         ids.push(transfer.txId)
@@ -482,7 +482,7 @@ export function useCctpFetching({
 
   useEffect(() => {
     resetTransfers()
-  }, [searchString])
+  }, [searchString, resetTransfers])
 
   useEffect(() => {
     if (deposits) {
