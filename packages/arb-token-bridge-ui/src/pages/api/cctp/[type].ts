@@ -31,7 +31,7 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
-    search?: string
+    searchString?: string
   }
 }
 
@@ -159,12 +159,12 @@ export default async function handler(
         messageSents(
           where: {
             sender: "${walletAddress}"
+            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
           }
           orderDirection: "desc"
           orderBy: "blockTimestamp"
           first: ${Number(pageSize)}
           skip: ${Number(pageNumber) * Number(pageSize)}
-          ${searchString ? `transactionHash: "${searchString}"` : ''}
         ) {
           attestationHash
           blockNumber

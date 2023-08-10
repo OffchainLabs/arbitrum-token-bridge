@@ -326,6 +326,7 @@ type CctpStore = {
     pending: PendingTransfer[]
     completed: CompletedTransfer[]
   }) => void
+  resetTransfers: () => void
   setPendingTransfer: (transfer: PendingTransfer) => void
   updatePendingTransfer: (transfer: MergedTransaction) => void
 }
@@ -333,7 +334,13 @@ type CctpStore = {
 const useCctpStore = create<CctpStore>((set, get) => ({
   transfers: {},
   transfersIds: [],
-  setTransfers: async transfers => {
+  resetTransfers: () => {
+    return set({
+      transfers: {},
+      transfersIds: []
+    })
+  },
+  setTransfers: transfers => {
     const pendings = transfers.pending
     const completeds = transfers.completed
 
@@ -380,6 +387,7 @@ export function useCctpState() {
   const {
     transfersIds,
     transfers,
+    resetTransfers,
     setTransfers,
     setPendingTransfer,
     updatePendingTransfer
@@ -418,6 +426,7 @@ export function useCctpState() {
 
   return {
     setPendingTransfer,
+    resetTransfers,
     setTransfers,
     transfersIds,
     transfers,
@@ -469,22 +478,22 @@ export function useCctpFetching({
     searchString,
     enabled: type !== 'deposits'
   })
-  const { setTransfers } = useCctpState()
+  const { setTransfers, resetTransfers } = useCctpState()
 
   useEffect(() => {
-    if (!deposits) {
-      return
-    }
+    resetTransfers()
+  }, [searchString])
 
-    setTransfers(deposits)
+  useEffect(() => {
+    if (deposits) {
+      setTransfers(deposits)
+    }
   }, [deposits, setTransfers])
 
   useEffect(() => {
-    if (!withdrawals) {
-      return
+    if (withdrawals) {
+      setTransfers(withdrawals)
     }
-
-    setTransfers(withdrawals)
   }, [withdrawals, setTransfers])
 
   return {
