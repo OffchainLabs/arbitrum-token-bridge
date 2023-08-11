@@ -201,14 +201,14 @@ export function NetworksAndSignersProvider(
     }
 
     /***
-     * Case 1: Connected to L3 & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to L3.
+     * Case 1: Connected to an Orbit chain & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to an Orbit chain.
      * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 3: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 4: selectedChainId is defined and supported, continue
      */
     let _selectedL2ChainId = selectedL2ChainId
 
-    // Case 1: Connected to L3 & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to L3.
+    // Case 1: Connected to an Orbit chain & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to an Orbit chain.
     if (isConnectedToOrbitChain && isNetwork(_selectedL2ChainId!).isArbitrum) {
       setQueryParams({ l2ChainId: providerChainId })
       return
@@ -249,8 +249,8 @@ export function NetworksAndSignersProvider(
 
         // There's no preffered L2 set, but we are connected to Arbitrum.
         if (isParentChainArbitrum && !selectedL2ChainId) {
-          // We want Arbitrum to be paired with Ethereum instead of L3 in our UI.
-          // However the current flow would set it to Arbitrum's partner L3.
+          // We want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
+          // However the current flow would set it to Arbitrum's partner Orbit chain.
 
           // We know L1 is Arbitrum, we will set it to L2 instead.
           // When the hook reruns it will set L1 to Ethereum.
@@ -265,7 +265,7 @@ export function NetworksAndSignersProvider(
         const chain = await getChain(l2Provider)
 
         if (isParentChainArbitrum && isSelectedL2ChainIdArbitrum) {
-          // Special case for L1 <> L3 switching in 'to' network.
+          // Special case for L1 <> Orbit switching in 'to' network.
           // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
           // We know l2Network is Arbitrum, we set l1Network to L1 (Arbitrum's partnerChainID).
           parentChain = await getParentChain(chain.partnerChainID)

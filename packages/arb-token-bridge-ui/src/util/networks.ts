@@ -62,7 +62,7 @@ export enum ChainId {
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613,
   ArbitrumLocal = 412346,
-  // L3
+  // Orbit
   XaiTestnet = 51204936
 }
 
@@ -83,7 +83,7 @@ export const rpcURLs: { [chainId: number]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
   // L3 Testnets
-  [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc'
+  [ChainId.XaiTestnet]: 'http://localhost:8449'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -97,7 +97,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
   // L3 Testnets
-  [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net'
+  [ChainId.XaiTestnet]: ''
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -336,10 +336,10 @@ export function isNetwork(chainId: ChainId) {
     // L2 Testnets
     isArbitrumRinkeby,
     isArbitrumGoerli,
-    // L3
+    // Orbit
     isOrbitChain,
     isXai,
-    // L3 Testnets
+    // Orbit Testnets
     isXaiTestnet,
     // Testnet
     isTestnet,

@@ -400,16 +400,14 @@ export function TransferPanel() {
       return
     }
 
-    // Check if only L1 and L3 networks are selected.
-    // L1 <> L3 transfers aren't enabled.
-    // Just in case, UI and SDK should prevent it.
-    const areL1AndL3NetworksSelected = [l1Network.id, l2Network.id].every(
+    // Make sure Ethereum and an Orbit chain are not selected as a pair.
+    const isEthereumAndOrbitChainPair = [l1Network.id, l2Network.id].every(
       id => {
-        const { isEthereum, isL3 } = isNetwork(id)
-        return isEthereum || isL3
+        const { isEthereum, isOrbitChain } = isNetwork(id)
+        return isEthereum || isOrbitChain
       }
     )
-    if (areL1AndL3NetworksSelected) {
+    if (isEthereumAndOrbitChainPair) {
       console.error("Transfers between L1 and L3 aren't supported yet.")
       return
     }
@@ -454,11 +452,12 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
+        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
         if (
           // only connect to L1 if the selected L1 network is Ethereum
-          // Arbitrum connection is valid for deposits to L3
+          // Arbitrum connection is valid for deposits to Orbit chains
           isConnectedToArbitrum.current &&
-          isNetwork(l1Network.id).isEthereum
+          isParentChainEthereum
         ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
@@ -490,7 +489,7 @@ export function TransferPanel() {
           latestConnectedProvider.current?.network?.chainId
         if (
           !(l1ChainID && connectedChainID && l1ChainID === connectedChainID) &&
-          !isNetwork(connectedChainID).isL3
+          !isNetwork(connectedChainID).isOrbitChain
         ) {
           return networkConnectionWarningToast()
         }
@@ -629,8 +628,11 @@ export function TransferPanel() {
           throw signerUndefinedError
         }
 
-        // only switch to L2 if connected to L1, to withdraw from L2 to L1
-        if (!isConnectedToArbitrum.current && !isConnectedToOrbitChain.current) {
+        // only switch to L2 if connected to L1, in order to withdraw from L2 to L1
+        if (
+          !isConnectedToArbitrum.current &&
+          !isConnectedToOrbitChain.current
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
