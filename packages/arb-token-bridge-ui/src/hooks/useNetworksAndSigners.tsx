@@ -21,7 +21,7 @@ import {
   StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
-import { getL1Network, getL2Network } from '@arbitrum/sdk'
+import { getParentChain, getChain } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
@@ -243,18 +243,18 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 4
-    getL1Network(provider as Web3Provider)
-      .then(async l1Network => {
-        const isL1Arbitrum = isNetwork(l1Network.chainID).isArbitrum
+    getParentChain(provider as Web3Provider)
+      .then(async parentChain => {
+        const isParentChainArbitrum = isNetwork(parentChain.chainID).isArbitrum
 
         // There's no preffered L2 set, but we are connected to Arbitrum.
-        if (isL1Arbitrum && !selectedL2ChainId) {
+        if (isParentChainArbitrum && !selectedL2ChainId) {
           // We want Arbitrum to be paired with Ethereum instead of L3 in our UI.
           // However the current flow would set it to Arbitrum's partner L3.
 
           // We know L1 is Arbitrum, we will set it to L2 instead.
           // When the hook reruns it will set L1 to Ethereum.
-          setQueryParams({ l2ChainId: l1Network.chainID })
+          setQueryParams({ l2ChainId: parentChain.chainID })
           return
         }
 
@@ -262,27 +262,29 @@ export function NetworksAndSignersProvider(
         const l2Provider = new StaticJsonRpcProvider(
           rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
         )
-        const l2Network = await getL2Network(l2Provider)
+        const chain = await getChain(l2Provider)
 
-        if (isL1Arbitrum && isSelectedL2ChainIdArbitrum) {
+        if (isParentChainArbitrum && isSelectedL2ChainIdArbitrum) {
           // Special case for L1 <> L3 switching in 'to' network.
           // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
           // We know l2Network is Arbitrum, we set l1Network to L1 (Arbitrum's partnerChainID).
-          l1Network = await getL1Network(l2Network.partnerChainID)
+          parentChain = await getParentChain(chain.partnerChainID)
         }
 
         // from the L1 network, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-        const l1Provider = new StaticJsonRpcProvider(rpcURLs[l1Network.chainID])
+        const l1Provider = new StaticJsonRpcProvider(
+          rpcURLs[parentChain.chainID]
+        )
 
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
-            network: getWagmiChain(l1Network.chainID),
+            network: getWagmiChain(parentChain.chainID),
             provider: l1Provider
           },
           l2: {
-            network: getWagmiChain(l2Network.chainID),
+            network: getWagmiChain(chain.chainID),
             provider: l2Provider
           }
         })
@@ -297,31 +299,29 @@ export function NetworksAndSignersProvider(
           })
           return
         }
-        getL2Network(provider as Web3Provider)
-          .then(async l2Network => {
-            const l1NetworkChainId = l2Network.partnerChainID
+        getChain(provider as Web3Provider)
+          .then(async chain => {
+            const l1NetworkChainId = chain.partnerChainID
             const l1Provider = new StaticJsonRpcProvider(
               rpcURLs[l1NetworkChainId]
             )
-            const l1Network = await getL1Network(l1Provider)
+            const parentChain = await getParentChain(l1Provider)
 
-            const l2Provider = new StaticJsonRpcProvider(
-              rpcURLs[l2Network.chainID]
-            )
+            const l2Provider = new StaticJsonRpcProvider(rpcURLs[chain.chainID])
 
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
-                network: getWagmiChain(l1Network.chainID),
+                network: getWagmiChain(parentChain.chainID),
                 provider: l1Provider
               },
               l2: {
-                network: getWagmiChain(l2Network.chainID),
+                network: getWagmiChain(chain.chainID),
                 provider: l2Provider
               }
             })
           })
-          .catch(() => {
+          .catch((e) => {
             setResult({
               status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
               chainId: providerChainId

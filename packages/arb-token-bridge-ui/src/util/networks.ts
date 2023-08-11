@@ -6,8 +6,8 @@ import {
   addCustomNetwork
 } from '@arbitrum/sdk'
 import {
-  l1Networks,
-  l2Networks
+  l2Networks,
+  parentChains
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -106,11 +106,11 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getBlockTime = (chainId: ChainId) => {
-  const network = l1Networks[chainId]
+  const network = parentChains[chainId]
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
-  return (network as L1Network).blockTime ?? 0
+  return (network as L1Network).blockTime ?? 10
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
