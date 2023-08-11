@@ -9,5 +9,5 @@ export function useIsConnectedToOrbitChain() {
     return undefined
   }
 
-  return isNetwork(chain.id).isL3
+  return isNetwork(chain.id).isOrbitChain
 }

@@ -255,10 +255,10 @@ export function TransferPanelSummary({
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
-  const isL3Selected = isNetwork(l2.network.id).isL3
+  const { isOrbitChain } = isNetwork(l2.network.id)
 
-  const parentChainLayer = isL3Selected ? 'L2' : 'L1'
-  const chainLayer = isL3Selected ? 'L3' : 'L2'
+  const parentChainLayer = isOrbitChain ? 'L2' : 'L1'
+  const chainLayer = isOrbitChain ? 'Orbit' : 'L2'
 
   const { isMainnet } = isNetwork(l1.network.id)
 

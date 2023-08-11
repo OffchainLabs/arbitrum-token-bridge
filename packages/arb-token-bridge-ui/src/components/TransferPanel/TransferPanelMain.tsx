@@ -411,39 +411,27 @@ export function TransferPanelMain({
     return result
   }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
-  const externalFrom = useMemo(() => {
-    // if Arbitrum is L1...
-    if (isNetwork(l1.network.id).isArbitrum) {
-      // ...and we are connected to Arbitrum, then we deposit FROM L1 (L2 -> L3)
-      // otherwise we withdraw FROM L2 (L3 -> L2)
-      return isConnectedToArbitrum ? l1.network : l2.network
-    }
-    // if Ethereum is L1...
-    if (isNetwork(l1.network.id).isEthereum) {
-      // ...and we are connected to Arbitrum, then we withdraw FROM L2 (L2 -> L1)
-      // otherwise we deposit FROM L1 (L1 -> L2)
-      return isConnectedToArbitrum ? l2.network : l1.network
-    }
-    // if L3, we set FROM L2 (L3 -> L2) as default
-    return l2.network
-  }, [l1, l2])
+  const [externalFrom, externalTo] = useMemo(() => {
+    const isParentChainArbitrum = isNetwork(l1.network.id).isArbitrum
+    const { isOrbitChain } = isNetwork(l2.network.id)
 
-  const externalTo = useMemo(() => {
-    // if Arbitrum is L1...
-    if (isNetwork(l1.network.id).isArbitrum) {
-      // ...and we are connected to Arbitrum, then we deposit TO L2 (L2 -> L3)
-      // otherwise we withdraw TO L1 (L3 -> L2)
-      return isConnectedToArbitrum ? l2.network : l1.network
+    if (isParentChainArbitrum) {
+      return isConnectedToArbitrum
+        ? [l1.network, l2.network]
+        : [l2.network, l1.network]
     }
-    // if Ethereum is L1...
-    if (isNetwork(l1.network.id).isEthereum) {
-      // ...and we are connected to Arbitrum, then we withdraw TO L1 (L2 -> L1)
-      // otherwise we deposit TO L2 (L1 -> L2)
-      return isConnectedToArbitrum ? l1.network : l2.network
+
+    if (isOrbitChain) {
+      return isConnectedToArbitrum
+        ? [l1.network, l2.network]
+        : [l2.network, l1.network]
     }
-    // if L3, we set TO L1 (L3 -> L2) as default
-    return l1.network
-  }, [l1, l2])
+
+    // Parent chain is Ethereum
+    return isConnectedToArbitrum
+      ? [l2.network, l1.network]
+      : [l1.network, l2.network]
+  }, [l1, l2, isConnectedToArbitrum])
 
   const [from, setFrom] = useState<Chain>(externalFrom)
   const [to, setTo] = useState<Chain>(externalTo)
@@ -755,9 +743,11 @@ export function TransferPanelMain({
               return
             }
 
-            const { isEthereum, isL3, isTestnet } = isNetwork(network.id)
+            const { isEthereum, isOrbitChain, isTestnet } = isNetwork(
+              network.id
+            )
 
-            if (isL3) {
+            if (isOrbitChain) {
               try {
                 // If the destination is L3, we need to connect to Arbitrum One.
                 // That's the only option for Xai for now.
@@ -835,7 +825,7 @@ export function TransferPanelMain({
             return
           }
 
-          const { isEthereum, isL3, isTestnet } = isNetwork(network.id)
+          const { isEthereum, isOrbitChain, isTestnet } = isNetwork(network.id)
 
           if (isEthereum) {
             // If connected to an Orbit chain, we need to change to L2.
@@ -858,7 +848,7 @@ export function TransferPanelMain({
             updatePreferredL2Chain(getSelectedArbitrumChainId())
           }
 
-          if (isL3) {
+          if (isOrbitChain) {
             updatePreferredL2Chain(network.id)
           }
 
@@ -876,7 +866,6 @@ export function TransferPanelMain({
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
-    isConnectedToArbitrum,
     isConnectedToOrbitChain
   ])
 

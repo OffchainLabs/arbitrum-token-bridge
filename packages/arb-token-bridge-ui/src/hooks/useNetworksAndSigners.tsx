@@ -321,7 +321,7 @@ export function NetworksAndSignersProvider(
               }
             })
           })
-          .catch((e) => {
+          .catch(() => {
             setResult({
               status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
               chainId: providerChainId

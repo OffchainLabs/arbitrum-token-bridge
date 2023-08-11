@@ -2,7 +2,7 @@ import {
   L1Network,
   L2Network,
   ParentChain,
-  Chain,
+  Chain as ArbitrumSDKChain,
   addCustomNetwork
 } from '@arbitrum/sdk'
 import {
@@ -199,7 +199,7 @@ const defaultL2Network: ParentChain = {
   }
 }
 
-const defaultL3Network: Chain = {
+const defaultL3Network: ArbitrumSDKChain = {
   chainID: 51204936,
   confirmPeriodBlocks: 150,
   ethBridge: {
@@ -239,7 +239,7 @@ const defaultL3Network: Chain = {
 export type RegisterLocalNetworkParams = {
   l1Network: L1Network
   l2Network: ParentChain
-  l3Network: Chain
+  l3Network: ArbitrumSDKChain
 }
 
 const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
@@ -296,7 +296,7 @@ export function isNetwork(chainId: ChainId) {
 
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isXai = isXaiTestnet
-  const isL3 = isXaiTestnet
+  const isOrbitChain = isXaiTestnet
 
   const isArbitrum =
     isArbitrumOne ||
@@ -319,12 +319,12 @@ export function isNetwork(chainId: ChainId) {
     isMainnet ||
     isGoerli ||
     isArbitrumGoerli ||
-    isXai // is network supported on bridge
+    isOrbitChain // is network supported on bridge
 
   return {
     // L1
     isMainnet,
-    isEthereum: !isArbitrum && !isL3,
+    isEthereum: !isArbitrum && !isOrbitChain,
     // L1 Testnets
     isRinkeby,
     isGoerli,
@@ -337,7 +337,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumRinkeby,
     isArbitrumGoerli,
     // L3
-    isL3,
+    isOrbitChain,
     isXai,
     // L3 Testnets
     isXaiTestnet,
