@@ -176,7 +176,7 @@ export function TransferPanel() {
     sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
     walletAddress: account
   })
-  const { setPendingTransfer } = useCctpState()
+  const { setPendingTransfer, updateTransfer } = useCctpState()
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -380,6 +380,177 @@ export function TransferPanel() {
     }
   }
 
+  const amountBigNumber = useMemo(() => {
+    try {
+      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
+    } catch (error) {
+      return constants.Zero
+    }
+  }, [amount, selectedToken])
+
+  const transferCctp = async (type: 'deposits' | 'withdrawals') => {
+    if (!selectedToken) {
+      return
+    }
+    if (!l1Signer || !l2Signer) {
+      throw 'Signer is undefined'
+    }
+
+    let currentNetwork =
+      type === 'deposits'
+        ? latestNetworksAndSigners.current.l1.network
+        : latestNetworksAndSigners.current.l2.network
+
+    const currentNetworkName = getNetworkName(currentNetwork.id)
+    const isConnectedOnTheWrongChain =
+      (type === 'deposits' && isConnectedToArbitrum.current) ||
+      (type === 'withdrawals' && !isConnectedToArbitrum.current)
+
+    if (isConnectedOnTheWrongChain) {
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent('Switch Network and Transfer', {
+          type: type === 'deposits' ? 'Deposit' : 'Withdrawal',
+          tokenSymbol: selectedToken?.symbol,
+          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount)
+        })
+      }
+      const switchTargetChainId =
+        type === 'deposits'
+          ? latestNetworksAndSigners.current.l1.network.id
+          : latestNetworksAndSigners.current.l2.network.id
+      await switchNetworkAsync?.(switchTargetChainId)
+      currentNetwork =
+        type === 'deposits'
+          ? latestNetworksAndSigners.current.l1.network
+          : latestNetworksAndSigners.current.l2.network
+    }
+
+    try {
+      setTransferring(true)
+      const l1ChainID = latestNetworksAndSigners.current.l1.network.id
+      const l2ChainID = latestNetworksAndSigners.current.l2.network.id
+      const sourceChainId = type === 'deposits' ? l1ChainID : l2ChainID
+
+      const waitForInput =
+        type === 'deposits'
+          ? openUSDCDepositConfirmationDialog()
+          : openUSDCWithdrawalConfirmationDialog()
+      const [confirmed, primaryButtonClicked] = await waitForInput()
+
+      if (!confirmed || (type === 'deposits' && !primaryButtonClicked)) {
+        return
+      }
+
+      // CCTP has an upper limit for transfer
+      const burnLimit = await fetchPerMessageBurnLimit({
+        sourceChainId
+      })
+
+      if (burnLimit.lte(amountBigNumber)) {
+        const formatedLimit = formatAmount(burnLimit, {
+          decimals: selectedToken.decimals,
+          symbol: 'USDC'
+        })
+        errorToast(
+          `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
+        )
+        return
+      }
+
+      const recipient = destinationAddress || walletAddress
+      const depositTx = await approveAndDepositForBurn({
+        amount: amountBigNumber,
+        provider: type === 'deposits' ? l1Provider : l2Provider,
+        signer: type === 'deposits' ? l1Signer : l2Signer,
+        destinationAddress: recipient,
+        async onAllowanceTooLow() {
+          const waitForInput = openTokenApprovalDialog()
+          const [confirmed] = await waitForInput()
+
+          return confirmed
+        },
+        onApproveTxFailed(error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          Sentry.captureException(error)
+          errorToast(
+            `USDC approve failed: ${(error as Error)?.message ?? error}`
+          )
+        },
+        onDepositTxFailed(error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          Sentry.captureException(error)
+          errorToast(
+            `USDC deposit failed: ${(error as Error)?.message ?? error}`
+          )
+        }
+      })
+
+      if (!depositTx || !account) {
+        return
+      }
+
+      setPendingTransfer({
+        id: depositTx.hash,
+        source: {
+          chainId: type === 'deposits' ? l1Network.id : l2Network.id,
+          timestamp: Date.now(),
+          transactionHash: depositTx.hash as `0x${string}`,
+          blockNum: null
+        },
+        destination: {
+          chainId: type === 'deposits' ? l2Network.id : l1Network.id,
+          timestamp: null,
+          transactionHash: null
+        },
+        sender: account,
+        recipient: recipient as `0x${string}`,
+        amount: utils.parseUnits(amount, selectedToken.decimals),
+        direction: type === 'deposits' ? 'deposit' : 'withdraw',
+        attestationHash: null,
+        messageBytes: null,
+        isPending: true
+      })
+      openTransactionHistoryPanel()
+
+      const depositTxReceipt = await depositTx.wait()
+
+      const depositForBurnLog = depositTxReceipt?.logs[4]
+      if (!depositForBurnLog) {
+        return
+      }
+
+      const nonce = depositForBurnLog.topics[1]
+      if (!nonce) {
+        return
+      }
+
+      const { messageBytes, attestationHash } =
+        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
+
+      if (messageBytes && attestationHash) {
+        updateTransfer({
+          txId: depositTx.hash,
+          blockNum: depositTxReceipt.blockNumber,
+          cctpData: {
+            attestationHash,
+            messageBytes
+          }
+        })
+      }
+      clearAmountInput()
+    } catch (e) {
+    } finally {
+      setTransferring(false)
+    }
+  }
+
   const transfer = async () => {
     const signerUndefinedError = 'Signer is undefined'
 
@@ -511,118 +682,6 @@ export function TransferPanel() {
             }
           }
 
-          if (
-            isTokenMainnetUSDC(selectedToken.address) ||
-            isTokenGoerliUSDC(selectedToken.address)
-          ) {
-            const waitForInput = openUSDCDepositConfirmationDialog()
-            const [confirmed, primaryButtonClicked] = await waitForInput()
-
-            if (confirmed && primaryButtonClicked === 'cctp') {
-              // CCTP has an upper limit for transfer
-              const burnLimit = await fetchPerMessageBurnLimit({
-                sourceChainId: l1ChainID
-              })
-
-              const amountBigNumber = utils.parseUnits(amount, decimals)
-              if (burnLimit.lte(amountBigNumber)) {
-                const formatedLimit = formatAmount(burnLimit, {
-                  decimals: 6,
-                  symbol: 'USDC'
-                })
-                errorToast(
-                  `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
-                )
-                return
-              }
-
-              const recipient = destinationAddress || walletAddress
-              const depositTx = await approveAndDepositForBurn({
-                amount: amountBigNumber,
-                provider: l1Provider,
-                signer: l1Signer,
-                destinationAddress: recipient,
-                async onAllowanceTooLow() {
-                  const waitForInput = openTokenApprovalDialog()
-                  const [confirmed] = await waitForInput()
-
-                  return confirmed
-                },
-                onApproveTxFailed(error) {
-                  if (isUserRejectedError(error)) {
-                    return
-                  }
-                  Sentry.captureException(error)
-                  errorToast(
-                    `USDC approve failed: ${(error as Error)?.message ?? error}`
-                  )
-                },
-                onDepositTxFailed(error) {
-                  if (isUserRejectedError(error)) {
-                    return
-                  }
-                  Sentry.captureException(error)
-                  errorToast(
-                    `USDC deposit failed: ${(error as Error)?.message ?? error}`
-                  )
-                }
-              })
-
-              if (!depositTx || !account) {
-                return
-              }
-
-              const depositTxReceipt = await depositTx.wait()
-
-              const depositForBurnLog = depositTxReceipt?.logs[4]
-              if (!depositForBurnLog) {
-                return
-              }
-
-              const nonce = depositForBurnLog.topics[1]
-              if (!nonce) {
-                return
-              }
-
-              const { messageBytes, attestationHash } =
-                getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-              if (messageBytes && attestationHash) {
-                setPendingTransfer({
-                  id: depositTxReceipt.transactionHash,
-                  source: {
-                    chainId: l1Network.id,
-                    timestamp: Date.now(),
-                    transactionHash:
-                      depositTxReceipt.transactionHash as `0x${string}`,
-                    blockNum: depositTxReceipt.blockNumber
-                  },
-                  destination: {
-                    chainId: l2Network.id,
-                    timestamp: null,
-                    transactionHash: null
-                  },
-                  sender: account,
-                  recipient: recipient as `0x${string}`,
-                  amount: utils.parseUnits(amount, selectedToken.decimals),
-                  direction: 'deposit',
-                  attestationHash,
-                  messageBytes,
-                  isPending: true
-                })
-                openTransactionHistoryPanel()
-              }
-
-              clearAmountInput()
-              setTransferring(false)
-              return
-            }
-
-            if (!confirmed) {
-              return
-            }
-          }
-
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
@@ -743,95 +802,6 @@ export function TransferPanel() {
         }
 
         if (!isSmartContractWallet) {
-          if (
-            selectedToken &&
-            (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-              isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
-          ) {
-            const waitForInput = openUSDCWithdrawalConfirmationDialog()
-            const [confirmed] = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-
-            // Withdrawal
-            const recipient = destinationAddress || walletAddress
-            const depositTx = await approveAndDepositForBurn({
-              amount: utils.parseUnits(amount, selectedToken.decimals),
-              provider: l2Provider,
-              signer: l2Signer,
-              destinationAddress: recipient,
-              onApproveTxFailed(error) {
-                if (isUserRejectedError(error)) {
-                  return
-                }
-                Sentry.captureException(error)
-                errorToast(
-                  `USDC approve failed: ${(error as Error)?.message ?? error}`
-                )
-              },
-              onDepositTxFailed(error) {
-                if (isUserRejectedError(error)) {
-                  return
-                }
-                Sentry.captureException(error)
-                errorToast(
-                  `USDC deposit failed: ${(error as Error)?.message ?? error}`
-                )
-              }
-            })
-
-            if (!depositTx || !account) {
-              return
-            }
-            const depositTxReceipt = await depositTx.wait()
-
-            const depositForBurnLog = depositTxReceipt?.logs[4]
-            if (!depositForBurnLog) {
-              return
-            }
-
-            const nonce = depositForBurnLog.topics[1]
-            if (!nonce) {
-              return
-            }
-
-            const { messageBytes, attestationHash } =
-              getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-            if (messageBytes && attestationHash) {
-              setPendingTransfer({
-                id: depositTxReceipt.transactionHash,
-                source: {
-                  chainId: l2Network.id,
-                  timestamp: Date.now(),
-                  transactionHash:
-                    depositTxReceipt.transactionHash as `0x${string}`,
-                  blockNum: depositTxReceipt.blockNumber
-                },
-                destination: {
-                  chainId: l1Network.id,
-                  timestamp: null,
-                  transactionHash: null
-                },
-                sender: account,
-                recipient: recipient as `0x${string}`,
-                amount: utils.parseUnits(amount, selectedToken.decimals),
-                direction: 'withdraw',
-                attestationHash,
-                messageBytes,
-                isPending: true
-              })
-              openTransactionHistoryPanel()
-            }
-
-            setTransferring(false)
-            clearAmountInput()
-
-            return
-          }
-
           const waitForInput = openWithdrawalConfirmationDialog()
           const [confirmed] = await waitForInput()
 
@@ -950,14 +920,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
   }
-
-  const amountBigNumber = useMemo(() => {
-    try {
-      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
-    } catch (error) {
-      return constants.Zero
-    }
-  }, [amount, selectedToken])
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(
@@ -1275,7 +1237,15 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={disableDeposit}
               onClick={() => {
-                if (selectedToken) {
+                if (
+                  selectedToken &&
+                  (isTokenMainnetUSDC(selectedToken.address) ||
+                    isTokenGoerliUSDC(selectedToken.address) ||
+                    isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                ) {
+                  transferCctp('deposits')
+                } else if (selectedToken) {
                   depositToken()
                 } else {
                   transfer()
@@ -1295,7 +1265,19 @@ export function TransferPanel() {
               variant="primary"
               loading={isTransferring}
               disabled={disableWithdrawal}
-              onClick={transfer}
+              onClick={() => {
+                if (
+                  selectedToken &&
+                  (isTokenMainnetUSDC(selectedToken.address) ||
+                    isTokenGoerliUSDC(selectedToken.address) ||
+                    isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                ) {
+                  transferCctp('withdrawals')
+                } else {
+                  transfer()
+                }
+              }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring

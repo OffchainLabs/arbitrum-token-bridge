@@ -1,8 +1,4 @@
-import { CommonAddress } from '../../../util/CommonAddressUtils'
-import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
-import { useChainId } from 'wagmi'
-import { getExplorerUrl } from '../../../util/networks'
 import { useEffect, useState } from 'react'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
@@ -12,18 +8,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange: (checked: boolean) => void
   onAllCheckboxesCheched?: () => void
 }) {
-  const [checkboxesChecked, setCheckboxesChecked] = useState([
-    false,
-    false,
-    false
-  ])
-  const chainId = useChainId()
-  const externalLinkClassnames = 'arb-hover text-blue-link underline'
-
-  function linksOnClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.stopPropagation()
-    event.nativeEvent.stopImmediatePropagation()
-  }
+  const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
 
   useEffect(() => {
     if (checkboxesChecked.every(checked => checked)) {
@@ -65,50 +50,6 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
           setCheckboxesChecked(prevCheckboxesState => {
             const newState = [...prevCheckboxesState]
             newState[1] = checked
-            return newState
-          })
-        }}
-      />
-      <Checkbox
-        label={
-          <span className="select-none font-light">
-            I understand{' '}
-            <ExternalLink
-              className={externalLinkClassnames}
-              href={`${getExplorerUrl(chainId)}/token/${
-                CommonAddress.ArbitrumOne['USDC.e']
-              }`}
-              onClick={linksOnClickHandler}
-            >
-              USDC.e
-            </ExternalLink>{' '}
-            is different from{' '}
-            <ExternalLink
-              className={externalLinkClassnames}
-              href={`${getExplorerUrl(chainId)}/token/${
-                CommonAddress.ArbitrumOne.USDC
-              }`}
-              onClick={linksOnClickHandler}
-            >
-              USDC
-            </ExternalLink>
-            .{' '}
-            <ExternalLink
-              className={externalLinkClassnames}
-              href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
-              onClick={linksOnClickHandler}
-            >
-              Learn more
-            </ExternalLink>
-            .
-          </span>
-        }
-        checked={checkboxesChecked[2] ?? false}
-        onChange={checked => {
-          onChange(checked)
-          setCheckboxesChecked(prevCheckboxesState => {
-            const newState = [...prevCheckboxesState]
-            newState[2] = checked
             return newState
           })
         }}

@@ -122,7 +122,7 @@ export function USDCWithdrawalConfirmationDialog(
                     CommonAddress.ArbitrumOne
                   }`}
                 >
-                  Native USDC
+                  USDC
                 </ExternalLink>{' '}
                 on Arbitrum One using Arbitrum&apos;s native bridge with
                 Circle&apos;s{' '}

@@ -70,7 +70,7 @@ type TransferNetworkInformation = {
   chainId: CCTPSupportedChainId
 }
 type TransferSource = TransferNetworkInformation & {
-  blockNum: number
+  blockNum: number | null
 }
 export type CompletedTransfer = {
   id: string
@@ -94,8 +94,8 @@ export type PendingTransfer = {
   recipient: `0x${string}`
   amount: BigNumber
   direction: 'deposit' | 'withdraw'
-  attestationHash: `0x${string}`
-  messageBytes: string
+  attestationHash: `0x${string}` | null
+  messageBytes: string | null
   isPending: true
 }
 
@@ -319,6 +319,10 @@ export type CompletedTransferMap = {
   [id: string]: CompletedTransfer
 }
 
+type PartialMergedTransaction = Pick<MergedTransaction, 'txId'> &
+  Partial<Omit<MergedTransaction, 'cctpData'>> & {
+    cctpData?: Partial<MergedTransaction['cctpData']>
+  }
 type CctpStore = {
   transfers: { [id: string]: MergedTransaction }
   transfersIds: string[]
@@ -328,7 +332,7 @@ type CctpStore = {
   }) => void
   resetTransfers: () => void
   setPendingTransfer: (transfer: PendingTransfer) => void
-  updatePendingTransfer: (transfer: MergedTransaction) => void
+  updateTransfer: (transfer: PartialMergedTransaction) => void
 }
 
 const useCctpStore = create<CctpStore>((set, get) => ({
@@ -374,13 +378,26 @@ const useCctpStore = create<CctpStore>((set, get) => ({
       transfersIds: [...new Set([transfer.id].concat(prevState.transfersIds))]
     }))
   },
-  updatePendingTransfer: transfer =>
+  updateTransfer: transfer => {
+    const prevTransfer = get().transfers[transfer.txId]
+    if (!prevTransfer) {
+      return
+    }
+
     set(prevState => ({
       transfers: {
         ...prevState.transfers,
-        [transfer.txId]: transfer
+        [transfer.txId]: {
+          ...prevTransfer,
+          ...transfer,
+          cctpData: {
+            ...prevTransfer.cctpData,
+            ...transfer.cctpData
+          }
+        } as MergedTransaction
       }
     }))
+  }
 }))
 
 export function useCctpState() {
@@ -390,7 +407,7 @@ export function useCctpState() {
     resetTransfers,
     setTransfers,
     setPendingTransfer,
-    updatePendingTransfer
+    updateTransfer
   } = useCctpStore()
 
   const { pendingIds, completedIds, depositIds, withdrawalIds } =
@@ -434,7 +451,7 @@ export function useCctpState() {
     completedIds,
     depositIds,
     withdrawalIds,
-    updatePendingTransfer
+    updateTransfer
   }
 }
 
@@ -512,7 +529,7 @@ export function useClaimCctp(tx: MergedTransaction) {
     sourceChainId: tx.cctpData?.sourceChainId
   })
 
-  const { updatePendingTransfer } = useCctpState()
+  const { updateTransfer } = useCctpState()
   const { data: signer } = useSigner()
 
   const claim = useCallback(async () => {
@@ -529,7 +546,7 @@ export function useClaimCctp(tx: MergedTransaction) {
         signer
       })
       const receiveReceiptTx = await receiveTx.wait()
-      updatePendingTransfer({
+      updateTransfer({
         ...tx,
         resolvedAt: getStandardizedTimestamp(
           BigNumber.from(Date.now()).toString()
@@ -547,7 +564,7 @@ export function useClaimCctp(tx: MergedTransaction) {
     } finally {
       setIsClaiming(false)
     }
-  }, [receiveMessage, signer, tx, updatePendingTransfer, waitForAttestation])
+  }, [receiveMessage, signer, tx, updateTransfer, waitForAttestation])
 
   return {
     isClaiming,
@@ -564,10 +581,10 @@ export function useRemainingTime(tx: MergedTransaction) {
   const requiredBlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.cctpData?.sourceChainId as CCTPSupportedChainId
   )
+
+  const l1SourceChain = getL1ChainIdFromSourceChain(tx)
   const blockTime =
-    tx.cctpData?.sourceChainId && tx.direction === 'deposit'
-      ? getBlockTime(tx.cctpData.sourceChainId)
-      : 15
+    tx.direction === 'deposit' ? getBlockTime(l1SourceChain) : 15
 
   const [remainingTime, setRemainingTime] = useState<string | null>(null)
   const [isConfirmed, setIsConfirmed] = useState(false)

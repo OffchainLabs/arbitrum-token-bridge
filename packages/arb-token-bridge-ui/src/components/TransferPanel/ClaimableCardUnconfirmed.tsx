@@ -25,7 +25,7 @@ export function ClaimableCardUnconfirmed({
   sourceNetwork: 'L1' | 'L2'
 }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const { updatePendingTransfer } = useCctpState()
+  const { updateTransfer } = useCctpState()
 
   const networkName = getNetworkName(
     sourceNetwork === 'L2' ? l1.network.id : l2.network.id
@@ -43,12 +43,12 @@ export function ClaimableCardUnconfirmed({
   const { remainingTime, isConfirmed } = useRemainingTime(tx)
   useEffect(() => {
     if (isConfirmed) {
-      updatePendingTransfer({
+      updateTransfer({
         ...tx,
         status: 'Confirmed'
       })
     }
-  }, [isConfirmed, tx, updatePendingTransfer])
+  }, [isConfirmed, tx, updateTransfer])
 
   return (
     <WithdrawalCardContainer tx={tx} sourceNetwork={sourceNetwork}>

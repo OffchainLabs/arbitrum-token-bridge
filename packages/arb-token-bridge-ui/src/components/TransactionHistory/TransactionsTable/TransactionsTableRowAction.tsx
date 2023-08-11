@@ -51,7 +51,7 @@ export function TransactionsTableRowAction({
   const l1NetworkName = getNetworkName(l1Network.id)
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
-  const { updatePendingTransfer } = useCctpState()
+  const { updateTransfer } = useCctpState()
 
   const chainId = useChainId()
   const { claim, isClaiming } = useClaimWithdrawal()
@@ -60,12 +60,12 @@ export function TransactionsTableRowAction({
 
   useEffect(() => {
     if (isConfirmed && tx.status === 'Unconfirmed') {
-      updatePendingTransfer({
+      updateTransfer({
         ...tx,
         status: 'Confirmed'
       })
     }
-  }, [isConfirmed, tx, updatePendingTransfer])
+  }, [isConfirmed, tx, updateTransfer])
 
   const { isMainnet, isGoerli, isArbitrumOne, isArbitrumGoerli } =
     isNetwork(chainId)
