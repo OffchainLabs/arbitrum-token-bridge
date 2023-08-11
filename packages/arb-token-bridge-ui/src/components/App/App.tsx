@@ -178,8 +178,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     const { l1, l2 } = networksAndSigners
+    const isParentChainEthereum = isNetwork(l1.network.id).isEthereum
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
-    const isConnectedToL3 = isNetwork(chain.id).isL3
+    const isConnectedToOrbitChain = isNetwork(chain.id).isOrbitChain
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
@@ -188,8 +189,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
     if (
-      (isConnectedToArbitrum && isNetwork(l1.network.id).isEthereum) ||
-      isConnectedToL3
+      (isConnectedToArbitrum && isParentChainEthereum) ||
+      isConnectedToOrbitChain
     ) {
       console.info('Withdrawal mode detected:')
       actions.app.setIsDepositMode(false)
