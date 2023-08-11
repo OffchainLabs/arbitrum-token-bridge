@@ -32,7 +32,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
-import { useIsConnectedToL3 } from './useIsConnectedToL3'
+import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -159,7 +159,7 @@ export function NetworksAndSignersProvider(
     status: defaultStatus
   })
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const isConnectedToL3 = useIsConnectedToL3()
+  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
 
   const isTosAccepted = tosAccepted !== undefined
 
@@ -209,7 +209,7 @@ export function NetworksAndSignersProvider(
     let _selectedL2ChainId = selectedL2ChainId
 
     // Case 1: Connected to L3 & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to L3.
-    if (isConnectedToL3 && isNetwork(_selectedL2ChainId!).isArbitrum) {
+    if (isConnectedToOrbitChain && isNetwork(_selectedL2ChainId!).isArbitrum) {
       setQueryParams({ l2ChainId: providerChainId })
       return
     }

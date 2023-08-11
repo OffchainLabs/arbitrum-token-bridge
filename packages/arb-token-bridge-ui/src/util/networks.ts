@@ -1,4 +1,10 @@
-import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
+import {
+  L1Network,
+  L2Network,
+  ParentChain,
+  Chain,
+  addCustomNetwork
+} from '@arbitrum/sdk'
 import {
   l1Networks,
   l2Networks
@@ -155,7 +161,7 @@ const defaultL1Network: L1Network = {
   isArbitrum: false
 }
 
-const defaultL2Network: L2Network = {
+const defaultL2Network: ParentChain = {
   chainID: 412346,
   partnerChainIDs: [],
   confirmPeriodBlocks: 20,
@@ -193,9 +199,8 @@ const defaultL2Network: L2Network = {
   }
 }
 
-const defaultL3Network: L2Network = {
+const defaultL3Network: Chain = {
   chainID: 51204936,
-  partnerChainIDs: [],
   confirmPeriodBlocks: 150,
   ethBridge: {
     bridge: '0xA0a2bdC2EFAC9714fA5dA3F0e2f0a83c776Dc641',
@@ -213,7 +218,6 @@ const defaultL3Network: L2Network = {
   nitroGenesisL1Block: 0,
   depositTimeout: 900000,
   isArbitrum: true,
-  isL3: true,
   tokenBridge: {
     l1CustomGateway: '0x3FfF6b939cb79df542224fdDfc7C5864396D0C6F',
     l1ERC20Gateway: '0x12192B642565447a759Fb70c68a38Fa07D73168A',
@@ -234,8 +238,8 @@ const defaultL3Network: L2Network = {
 
 export type RegisterLocalNetworkParams = {
   l1Network: L1Network
-  l2Network: L2Network
-  l3Network: L2Network
+  l2Network: ParentChain
+  l3Network: Chain
 }
 
 const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
@@ -267,7 +271,10 @@ export function registerLocalNetwork(
     chainIdToDefaultL2ChainId[l1Network.chainID] = [l2Network.chainID]
     chainIdToDefaultL2ChainId[l2Network.chainID] = [l2Network.chainID]
 
-    addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
+    addCustomNetwork({
+      customL1Network: l1Network,
+      customL2Network: l2Network as L2Network
+    })
     addCustomNetwork({ customL1Network: l2Network, customL2Network: l3Network })
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)

@@ -55,7 +55,7 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
+import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -188,7 +188,7 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
-  const isConnectedToL3 = useLatest(useIsConnectedToL3())
+  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -630,7 +630,7 @@ export function TransferPanel() {
         }
 
         // only switch to L2 if connected to L1, to withdraw from L2 to L1
-        if (!isConnectedToArbitrum.current && !isConnectedToL3.current) {
+        if (!isConnectedToArbitrum.current && !isConnectedToOrbitChain.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -1120,7 +1120,7 @@ export function TransferPanel() {
               onClick={transfer}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                isConnectedToL3 ? 'bg-arb-one-dark' : ''
+                isConnectedToOrbitChain ? 'bg-arb-one-dark' : ''
               )}
             >
               {isSmartContractWallet && isTransferring

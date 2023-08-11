@@ -2,7 +2,7 @@ import { useNetwork } from 'wagmi'
 
 import { isNetwork } from '../util/networks'
 
-export function useIsConnectedToL3() {
+export function useIsConnectedToOrbitChain() {
   const { chain } = useNetwork()
 
   if (typeof chain === 'undefined') {

@@ -53,7 +53,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
-import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
+import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 
 enum NetworkType {
   l1 = 'l1',
@@ -323,7 +323,7 @@ export function TransferPanelMain({
 
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const isConnectedToL3 = useIsConnectedToL3()
+  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
 
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
@@ -838,9 +838,9 @@ export function TransferPanelMain({
           const { isEthereum, isL3, isTestnet } = isNetwork(network.id)
 
           if (isEthereum) {
-            // If connected to L3, we need to change to L2.
-            // We can't withdraw from L3 to L1.
-            if (isConnectedToL3) {
+            // If connected to an Orbit chain, we need to change to L2.
+            // We can't withdraw from an Orbit chain to L1.
+            if (isConnectedToOrbitChain) {
               try {
                 const arbitrumOneChainId = isTestnet
                   ? ChainId.ArbitrumGoerli
@@ -877,7 +877,7 @@ export function TransferPanelMain({
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
     isConnectedToArbitrum,
-    isConnectedToL3
+    isConnectedToOrbitChain
   ])
 
   return (

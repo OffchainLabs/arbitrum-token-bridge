@@ -17,7 +17,6 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useIsConnectedToL3 } from '../../hooks/useIsConnectedToL3'
 
 export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
 
