@@ -408,7 +408,7 @@ export function TransferPanel() {
       }
     )
     if (isEthereumAndOrbitChainPair) {
-      console.error("Transfers between L1 and L3 aren't supported yet.")
+      console.error("Transfers between L1 and Orbit chains aren't supported yet.")
       return
     }
 
