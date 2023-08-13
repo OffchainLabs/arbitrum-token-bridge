@@ -59,18 +59,9 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         return null
       }
 
-      return [
-        walletAddressLowercased,
-        chainId,
-        'balance',
-        type,
-        // include l1 and l2 in the query key to cover an edge case
-        // where Arbitrum changes from being L2 to L1, or from L2 to L1
-        l1.network.id,
-        l2.network.id
-      ] as const
+      return [walletAddressLowercased, chainId, 'balance', type] as const
     },
-    [chainId, walletAddressLowercased, l1, l2]
+    [chainId, walletAddressLowercased]
   )
   const fetchErc20 = useCallback(
     async (_addresses: string[] | undefined) => {
