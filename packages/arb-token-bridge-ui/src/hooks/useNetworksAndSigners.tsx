@@ -267,7 +267,7 @@ export function NetworksAndSignersProvider(
 
         if (isParentChainArbitrum && isSelectedL2ChainArbitrum) {
           // Special case if user selects an Ethereum-Orbit pair in the UI.
-          // Befoer the switch happens, Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
+          // Before the switch happens, Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
 
           // We know our 'chain' is Arbitrum, we need to set 'parentChain' to Ethereum (Arbitrum's 'partnerChainID').
           parentChain = await getParentChain(chain.partnerChainID)
