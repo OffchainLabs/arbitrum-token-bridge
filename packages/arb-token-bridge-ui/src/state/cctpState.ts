@@ -1,180 +1,17 @@
-import { BigNumber, utils } from 'ethers'
+import { BigNumber } from 'ethers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
 
-import { CCTPSupportedChainId, useCCTP } from '../hooks/CCTP/useCCTP'
-import {
-  ChainDomain,
-  CompletedCCTPTransfer,
-  PendingCCTPTransfer,
-  Response
-} from '../pages/api/cctp/[type]'
-import { ChainId, getBlockTime, isNetwork } from '../util/networks'
+import { useCCTP } from '../hooks/CCTP/useCCTP'
+import { ChainId, getBlockTime } from '../util/networks'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
 import { useBlockNumber, useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-
-export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData) {
-    return ChainId.Mainnet
-  }
-
-  return {
-    [ChainId.Mainnet]: ChainId.Mainnet,
-    [ChainId.Goerli]: ChainId.Goerli,
-    [ChainId.ArbitrumOne]: ChainId.Mainnet,
-    [ChainId.ArbitrumGoerli]: ChainId.Goerli
-  }[tx.cctpData.sourceChainId]
-}
-
-function getChainIdsFromSourceDomain(
-  chainId: ChainId,
-  sourceDomain: ChainDomain
-): {
-  source: CCTPSupportedChainId
-  target: CCTPSupportedChainId
-} {
-  const { isTestnet } = isNetwork(chainId)
-  // Deposits
-  if (sourceDomain === '0') {
-    return isTestnet
-      ? {
-          source: ChainId.Goerli,
-          target: ChainId.ArbitrumGoerli
-        }
-      : {
-          source: ChainId.Mainnet,
-          target: ChainId.ArbitrumOne
-        }
-  }
-
-  // Withdrawals
-  return isTestnet
-    ? {
-        source: ChainId.ArbitrumGoerli,
-        target: ChainId.Goerli
-      }
-    : {
-        source: ChainId.ArbitrumOne,
-        target: ChainId.Mainnet
-      }
-}
-
-type TransferNetworkInformation = {
-  timestamp: number
-  transactionHash: `0x${string}`
-  chainId: CCTPSupportedChainId
-}
-type TransferSource = TransferNetworkInformation & {
-  blockNum: number | null
-}
-export type CompletedTransfer = {
-  id: string
-  source: TransferSource
-  destination: TransferNetworkInformation
-  sender: `0x${string}`
-  recipient: `0x${string}`
-  amount: BigNumber
-  direction: 'deposit' | 'withdraw'
-  isPending: false
-}
-export type PendingTransfer = {
-  id: string
-  source: TransferSource
-  destination: {
-    timestamp: null
-    transactionHash: null
-    chainId: CCTPSupportedChainId
-  }
-  sender: `0x${string}`
-  recipient: `0x${string}`
-  amount: BigNumber
-  direction: 'deposit' | 'withdraw'
-  attestationHash: `0x${string}` | null
-  messageBytes: string | null
-  isPending: true
-}
-
-function parsePendingTransfer(
-  transfer: PendingCCTPTransfer,
-  chainId: ChainId
-): PendingTransfer {
-  const { messageSent } = transfer
-  const { source: sourceChainId, target: targetChainId } =
-    getChainIdsFromSourceDomain(chainId, messageSent.sourceDomain)
-
-  return {
-    id: messageSent.id,
-    source: {
-      timestamp: parseInt(messageSent.blockTimestamp, 10) * 1_000,
-      transactionHash: messageSent.transactionHash,
-      chainId: sourceChainId,
-      blockNum: parseInt(messageSent.blockNumber, 10)
-    },
-    destination: {
-      chainId: targetChainId,
-      timestamp: null,
-      transactionHash: null
-    },
-    direction:
-      messageSent.sourceDomain === ChainDomain.Mainnet ? 'deposit' : 'withdraw',
-    sender: messageSent.sender,
-    recipient: messageSent.recipient,
-    amount: BigNumber.from(messageSent.amount),
-    attestationHash: messageSent.attestationHash,
-    messageBytes: messageSent.message,
-    isPending: true
-  }
-}
-function parseCompletedTransfer(
-  transfer: CompletedCCTPTransfer,
-  chainId: ChainId
-): CompletedTransfer {
-  const { messageSent, messageReceived } = transfer
-  const { source: sourceChainId, target: targetChainId } =
-    getChainIdsFromSourceDomain(chainId, messageSent.sourceDomain)
-  return {
-    id: messageSent.id,
-    source: {
-      timestamp: parseInt(messageSent.blockTimestamp, 10) * 1_000,
-      transactionHash: messageSent.transactionHash,
-      chainId: sourceChainId,
-      blockNum: parseInt(messageSent.blockNumber, 10)
-    },
-    destination: {
-      timestamp: parseInt(messageReceived.blockTimestamp, 10) * 1_000,
-      transactionHash: messageReceived.transactionHash,
-      chainId: targetChainId
-    },
-    direction:
-      messageSent.sourceDomain === ChainDomain.Mainnet ? 'deposit' : 'withdraw',
-    sender: messageSent.sender,
-    recipient: messageSent.recipient,
-    amount: BigNumber.from(messageSent.amount),
-    isPending: false
-  }
-}
-// TODO: parse to MergeTransaction
-function parseSWRResponse(
-  { pending, completed }: Response['data'],
-  chainId: ChainId
-): {
-  pending: PendingTransfer[]
-  completed: CompletedTransfer[]
-} {
-  return {
-    pending: pending.map(pendingDeposit =>
-      parsePendingTransfer(pendingDeposit, chainId)
-    ),
-    completed: completed.map(completedDeposit =>
-      parseCompletedTransfer(completedDeposit, chainId)
-    )
-  }
-}
+import { CCTPSupportedChainId } from '../pages/api/cctp/[type]'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 export function getBlockBeforeConfirmation(
@@ -190,44 +27,6 @@ export function getBlockBeforeConfirmation(
     [ChainId.Goerli]: 5,
     [ChainId.ArbitrumGoerli]: 5
   }[chainId]
-}
-
-export function parseTransferToMergedTransaction(
-  transfer: PendingTransfer | CompletedTransfer
-): MergedTransaction {
-  const depositStatus = transfer.isPending
-    ? DepositStatus.CCTP_SOURCE_SUCCESS
-    : DepositStatus.CCTP_DESTINATION_SUCCESS
-
-  return {
-    sender: transfer.sender,
-    destination: transfer.recipient,
-    direction: transfer.direction,
-    status: transfer.destination.transactionHash ? 'Executed' : 'Unconfirmed',
-    createdAt: getStandardizedTimestamp(transfer.source.timestamp.toString()),
-    resolvedAt: transfer.destination.timestamp
-      ? getStandardizedTimestamp(transfer.destination.timestamp.toString())
-      : null,
-    txId: transfer.source.transactionHash,
-    asset: 'USDC',
-    value: utils.formatUnits(transfer.amount.toString(), 6),
-    uniqueId: null,
-    isWithdrawal: transfer.direction === 'withdraw',
-    blockNum: transfer.source.blockNum,
-    tokenAddress: 'TODO: UPDATE',
-    depositStatus,
-    isCctp: true,
-    cctpData: {
-      sourceChainId: transfer.source.chainId,
-      attestationHash:
-        'attestationHash' in transfer ? transfer.attestationHash : null,
-      messageBytes: 'messageBytes' in transfer ? transfer.messageBytes : null,
-      receiveMessageTransactionHash: transfer.destination.transactionHash,
-      receiveMessageTimestamp: transfer.destination.timestamp
-        ? getStandardizedTimestamp(transfer.destination.timestamp.toString())
-        : null
-    }
-  }
 }
 
 type fetchCctpParams = {
@@ -265,7 +64,7 @@ export const useCCTPDeposits = ({
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize
-      }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
+      })
   )
 
   return { data, error, isLoading }
@@ -299,32 +98,25 @@ export const useCCTPWithdrawals = ({
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize
-      }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
+      })
   )
 
   return { data, error, isLoading, isValidating }
 }
 
-export type PendingTransferMap = {
-  [id: string]: PendingTransfer
+type PartialMergedTransaction = Partial<Omit<MergedTransaction, 'cctpData'>> & {
+  txId: MergedTransaction['txId']
+  cctpData?: Partial<MergedTransaction['cctpData']>
 }
-export type CompletedTransferMap = {
-  [id: string]: CompletedTransfer
-}
-
-type PartialMergedTransaction = Pick<MergedTransaction, 'txId'> &
-  Partial<Omit<MergedTransaction, 'cctpData'>> & {
-    cctpData?: Partial<MergedTransaction['cctpData']>
-  }
 type CctpStore = {
   transfers: { [id: string]: MergedTransaction }
   transfersIds: string[]
   setTransfers: (transfers: {
-    pending: PendingTransfer[]
-    completed: CompletedTransfer[]
+    pending: MergedTransaction[]
+    completed: MergedTransaction[]
   }) => void
   resetTransfers: () => void
-  setPendingTransfer: (transfer: PendingTransfer) => void
+  setPendingTransfer: (transfer: MergedTransaction) => void
   updateTransfer: (transfer: PartialMergedTransaction) => void
 }
 
@@ -345,7 +137,6 @@ const useCctpStore = create<CctpStore>((set, get) => ({
     const ids = [...get().transfersIds]
 
     const transactions = [...pendings, ...completeds]
-      .map(transfer => parseTransferToMergedTransaction(transfer))
       .concat(Object.values(transfersMap))
       .sort((t1, t2) => (t2.blockNum || 0) - (t1.blockNum || 0))
 
@@ -365,10 +156,10 @@ const useCctpStore = create<CctpStore>((set, get) => ({
     return set(prevState => ({
       transfers: {
         ...prevState.transfers,
-        [transfer.id]: parseTransferToMergedTransaction(transfer)
+        [transfer.txId]: transfer
       },
       // Set the new transfer as first item (showing first in pending transaction)
-      transfersIds: [...new Set([transfer.id].concat(prevState.transfersIds))]
+      transfersIds: [...new Set([transfer.txId].concat(prevState.transfersIds))]
     }))
   },
   updateTransfer: transfer => {
@@ -555,6 +346,19 @@ export function useClaimCctp(tx: MergedTransaction) {
     isClaiming,
     claim
   }
+}
+
+export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
+  if (!tx.cctpData) {
+    return ChainId.Mainnet
+  }
+
+  return {
+    [ChainId.Mainnet]: ChainId.Mainnet,
+    [ChainId.Goerli]: ChainId.Goerli,
+    [ChainId.ArbitrumOne]: ChainId.Mainnet,
+    [ChainId.ArbitrumGoerli]: ChainId.Goerli
+  }[tx.cctpData.sourceChainId]
 }
 
 export function useRemainingTime(tx: MergedTransaction) {

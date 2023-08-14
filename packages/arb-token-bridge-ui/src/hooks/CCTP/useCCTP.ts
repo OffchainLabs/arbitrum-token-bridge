@@ -7,13 +7,7 @@ import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
 import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { ChainDomain } from '../../pages/api/cctp/[type]'
-
-export type CCTPSupportedChainId =
-  | ChainId.Mainnet
-  | ChainId.Goerli
-  | ChainId.ArbitrumOne
-  | ChainId.ArbitrumGoerli
+import { CCTPSupportedChainId, ChainDomain } from '../../pages/api/cctp/[type]'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -119,12 +113,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
         abi: TokenMessengerAbi,
         functionName: 'depositForBurn',
         signer,
-        args: [
-          amount,
-          parseInt(targetChainDomain, 10),
-          mintRecipient,
-          usdcContractAddress
-        ]
+        args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
       })
       return writeContract(config)
     },

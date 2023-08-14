@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 
-import { getNetworkName } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -17,27 +17,21 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useCctpState, useRemainingTime } from '../../state/cctpState'
 
-export function ClaimableCardUnconfirmed({
-  tx,
-  sourceNetwork
-}: {
-  tx: MergedTransaction
-  sourceNetwork: 'L1' | 'L2'
-}) {
+export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const { updateTransfer } = useCctpState()
-
-  const networkName = getNetworkName(
-    sourceNetwork === 'L2' ? l1.network.id : l2.network.id
-  )
+  // This component is used for withdrawal and Cctp, default to Arb1
+  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
+  const networkName = getNetworkName(sourceChainId)
+  const { isEthereum } = isNetwork(sourceChainId)
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: sourceNetwork === 'L2' ? l2.network : l1.network
+        chain: isEthereum ? l1.network : l2.network
       }),
-    [tx.asset, tx.tokenAddress, sourceNetwork, l2.network, l1.network]
+    [tx.asset, tx.tokenAddress, isEthereum, l1.network, l2.network]
   )
 
   const { remainingTime, isConfirmed } = useRemainingTime(tx)
@@ -51,7 +45,7 @@ export function ClaimableCardUnconfirmed({
   }, [isConfirmed, tx, updateTransfer])
 
   return (
-    <WithdrawalCardContainer tx={tx} sourceNetwork={sourceNetwork}>
+    <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="flex flex-col lg:ml-[-2rem]">
           <span className="ml-8 text-lg text-ocl-blue lg:ml-0 lg:text-2xl">
@@ -71,22 +65,22 @@ export function ClaimableCardUnconfirmed({
 
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            {sourceNetwork === 'L2' ? (
-              <>
-                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
-                </span>
-                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: Will show after claiming
-                </span>
-              </>
-            ) : (
+            {isEthereum ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
                   L1 transaction: <WithdrawalL1TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
                   L2 transaction: Will show after claiming
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                </span>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L1 transaction: Will show after claiming
                 </span>
               </>
             )}

@@ -475,30 +475,18 @@ export function TokenSearch({
 
     try {
       // Native USDC on L2 won't have a corresponding L1 address
-      const isArbOneNativeUSDC = isTokenArbitrumOneNativeUSDC(_token.address)
-      const isArbGoerliNativeUSDC = isTokenArbitrumGoerliNativeUSDC(
-        _token.address
-      )
-      if (isArbOneNativeUSDC || isArbGoerliNativeUSDC) {
-        const { contract } = await getL2TokenData({
-          account: walletAddress,
-          erc20L2Address: _token.address,
-          l2Provider: l2.provider
-        })
+      const isNativeUSDC =
+        isTokenArbitrumOneNativeUSDC(_token.address) ||
+        isTokenArbitrumGoerliNativeUSDC(_token.address)
 
-        const [decimals, symbol, name] = await Promise.all([
-          contract.decimals(),
-          contract.symbol(),
-          contract.name()
-        ])
-
+      if (isNativeUSDC) {
         updateUSDCBalances(_token.address)
         setSelectedToken({
-          name,
+          name: 'USD Coin',
           type: TokenType.ERC20,
-          symbol,
+          symbol: 'USDC',
           address: _token.address,
-          decimals,
+          decimals: 6,
           listIds: new Set()
         })
         return

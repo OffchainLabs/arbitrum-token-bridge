@@ -32,19 +32,12 @@ const MergedTransactionCard = ({
   transaction: MergedTransaction
 }) => {
   if (transaction.isCctp) {
-    const sourceNetwork = transaction.direction === 'deposit' ? 'L1' : 'L2'
     return (
       <motion.div key={transaction.txId} {...motionDivProps}>
         {transaction.status === 'Confirmed' ? (
-          <ClaimableCardConfirmed
-            tx={transaction}
-            sourceNetwork={sourceNetwork}
-          />
+          <ClaimableCardConfirmed tx={transaction} />
         ) : (
-          <ClaimableCardUnconfirmed
-            tx={transaction}
-            sourceNetwork={sourceNetwork}
-          />
+          <ClaimableCardUnconfirmed tx={transaction} />
         )}
       </motion.div>
     )

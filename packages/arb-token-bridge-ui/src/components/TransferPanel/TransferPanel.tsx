@@ -63,6 +63,9 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import { useCctpState } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { DepositStatus } from '../../state/app/state'
+import { getStandardizedTimestamp } from '../../state/app/utils'
+import { getUsdcTokenAddressFromSourceChainId } from '../../pages/api/cctp/[type]'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -421,11 +424,17 @@ export function TransferPanel() {
         type === 'deposits'
           ? latestNetworksAndSigners.current.l1.network.id
           : latestNetworksAndSigners.current.l2.network.id
-      await switchNetworkAsync?.(switchTargetChainId)
-      currentNetwork =
-        type === 'deposits'
-          ? latestNetworksAndSigners.current.l1.network
-          : latestNetworksAndSigners.current.l2.network
+      try {
+        await switchNetworkAsync?.(switchTargetChainId)
+        currentNetwork =
+          type === 'deposits'
+            ? latestNetworksAndSigners.current.l1.network
+            : latestNetworksAndSigners.current.l2.network
+      } catch (e) {
+        if (isUserRejectedError(e)) {
+          return
+        }
+      }
     }
 
     try {
@@ -496,26 +505,30 @@ export function TransferPanel() {
         return
       }
 
+      const isDeposit = type === 'deposits'
       setPendingTransfer({
-        id: depositTx.hash,
-        source: {
-          chainId: type === 'deposits' ? l1Network.id : l2Network.id,
-          timestamp: Date.now(),
-          transactionHash: depositTx.hash as `0x${string}`,
-          blockNum: null
-        },
-        destination: {
-          chainId: type === 'deposits' ? l2Network.id : l1Network.id,
-          timestamp: null,
-          transactionHash: null
-        },
+        txId: depositTx.hash,
+        asset: 'USDC',
+        blockNum: null,
+        createdAt: getStandardizedTimestamp(new Date().toString()),
+        direction: isDeposit ? 'deposit' : 'withdraw',
+        isWithdrawal: !isDeposit,
+        resolvedAt: null,
+        status: 'Unconfirmed',
+        uniqueId: null,
+        value: amount,
+        depositStatus: DepositStatus.CCTP_SOURCE_PENDING,
+        destination: recipient,
         sender: account,
-        recipient: recipient as `0x${string}`,
-        amount: utils.parseUnits(amount, selectedToken.decimals),
-        direction: type === 'deposits' ? 'deposit' : 'withdraw',
-        attestationHash: null,
-        messageBytes: null,
-        isPending: true
+        isCctp: true,
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        cctpData: {
+          sourceChainId,
+          attestationHash: null,
+          messageBytes: null,
+          receiveMessageTransactionHash: null,
+          receiveMessageTimestamp: null
+        }
       })
       openTransactionHistoryPanel()
 
@@ -538,6 +551,7 @@ export function TransferPanel() {
         updateTransfer({
           txId: depositTx.hash,
           blockNum: depositTxReceipt.blockNumber,
+          depositStatus: DepositStatus.CCTP_SOURCE_SUCCESS,
           cctpData: {
             attestationHash,
             messageBytes
@@ -546,6 +560,7 @@ export function TransferPanel() {
       }
       clearAmountInput()
     } catch (e) {
+      console.log('AAA', e)
     } finally {
       setTransferring(false)
     }

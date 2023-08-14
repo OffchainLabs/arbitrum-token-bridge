@@ -35,7 +35,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
   const chainId = useChainId()
-  const [allCheckboxesCheched, setAllCheckboxesCheched] = useState(false)
+  const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
@@ -75,7 +75,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
       <div className="flex flex-col md:min-w-[725px]">
         <Tab.Group
           onChange={() => {
-            setAllCheckboxesCheched(false)
+            setAllCheckboxesChecked(false)
           }}
         >
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
@@ -114,7 +114,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
               <div className="flex flex-col space-y-6">
                 <USDCDepositConfirmationDialogCheckbox
                   onChange={checked => {
-                    setAllCheckboxesCheched(checked)
+                    setAllCheckboxesChecked(checked)
                   }}
                 />
               </div>
@@ -129,7 +129,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 disabled={!allCheckboxesCheched}
                 onClick={() => {
                   props.onClose(true, 'bridged')
-                  setAllCheckboxesCheched(false)
+                  setAllCheckboxesChecked(false)
                   trackEvent('Use Arbitrum Bridge Click', {
                     tokenSymbol
                   })
@@ -192,11 +192,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
               <div className="flex flex-col space-y-6">
                 <USDCDepositConfirmationDialogCheckbox
                   onAllCheckboxesCheched={() => {
-                    setAllCheckboxesCheched(true)
+                    setAllCheckboxesChecked(true)
                   }}
                   onChange={checked => {
                     if (!checked) {
-                      setAllCheckboxesCheched(false)
+                      setAllCheckboxesChecked(false)
                     }
                   }}
                   isBridingNativeUSDC
@@ -212,7 +212,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 disabled={!allCheckboxesCheched}
                 onClick={() => {
                   props.onClose(true, 'cctp')
-                  setAllCheckboxesCheched(false)
+                  setAllCheckboxesChecked(false)
                   trackEvent('Use Arbitrum Bridge Click', {
                     tokenSymbol
                   })

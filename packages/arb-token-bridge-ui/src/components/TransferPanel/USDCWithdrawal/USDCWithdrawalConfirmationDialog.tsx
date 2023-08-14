@@ -28,7 +28,7 @@ export function USDCWithdrawalConfirmationDialog(
 ) {
   const { l1, l2 } = useNetworksAndSigners()
   const chainId = useChainId()
-  const [allCheckboxesCheched, setAllCheckboxesCheched] = useState(false)
+  const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
 
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
@@ -124,7 +124,7 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   USDC
                 </ExternalLink>{' '}
-                on Arbitrum One using Arbitrum&apos;s native bridge with
+                on {toNetworkName} using Arbitrum&apos;s native bridge with
                 Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -138,11 +138,11 @@ export function USDCWithdrawalConfirmationDialog(
               <div className="flex flex-col space-y-6">
                 <USDCWithdrawalConfirmationDialogCheckbox
                   onAllCheckboxesCheched={() => {
-                    setAllCheckboxesCheched(true)
+                    setAllCheckboxesChecked(true)
                   }}
                   onChange={checked => {
                     if (!checked) {
-                      setAllCheckboxesCheched(false)
+                      setAllCheckboxesChecked(false)
                     }
                   }}
                 />
@@ -157,7 +157,7 @@ export function USDCWithdrawalConfirmationDialog(
                 disabled={!allCheckboxesCheched}
                 onClick={() => {
                   props.onClose(true)
-                  setAllCheckboxesCheched(false)
+                  setAllCheckboxesChecked(false)
                 }}
               >
                 Confirm

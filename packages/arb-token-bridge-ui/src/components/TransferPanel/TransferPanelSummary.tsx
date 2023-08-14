@@ -318,7 +318,7 @@ export function TransferPanelSummary({
     return (
       <TransferPanelSummaryContainer>
         <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          Gas estimates are not available for withdrawing Arbitrum-native USDC.
+          Gas estimates are not available for this action.
         </div>
         <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
           <span className="w-2/5 font-light">You’re moving</span>

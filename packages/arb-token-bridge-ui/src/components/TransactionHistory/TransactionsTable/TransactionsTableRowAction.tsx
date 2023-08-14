@@ -106,7 +106,7 @@ export function TransactionsTableRowAction({
 
     return (
       <Tooltip
-        show={isClaimButtonDisabled}
+        show={!currentChainIsValid}
         wrapperClassName=""
         content={
           <span>

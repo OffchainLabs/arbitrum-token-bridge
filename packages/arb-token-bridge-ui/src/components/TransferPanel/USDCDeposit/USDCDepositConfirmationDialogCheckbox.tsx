@@ -41,8 +41,8 @@ export function USDCDepositConfirmationDialogCheckbox({
             label={
               <span className="select-none font-light">
                 I understand that I&apos;ll have to send{' '}
-                <span className="strong">a second transaction on L2</span> and
-                pay another L2 fee to claim my USDC.
+                <span className="font-medium">a second transaction on L2</span>{' '}
+                and pay another L2 fee to claim my USDC.
               </span>
             }
             checked={checkboxesChecked[0] ?? false}
@@ -59,8 +59,8 @@ export function USDCDepositConfirmationDialogCheckbox({
             label={
               <span className="select-none font-light">
                 I understand that it will take{' '}
-                <span className="strong">~15 minutes</span> before I can claim
-                my USDC on Arbitrum One.
+                <span className="font-medium">~15 minutes</span> before I can
+                claim my USDC on Arbitrum One.
               </span>
             }
             checked={checkboxesChecked[1] ?? false}

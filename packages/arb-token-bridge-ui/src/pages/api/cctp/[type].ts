@@ -6,7 +6,10 @@ import {
   InMemoryCache
 } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { ChainId } from '../../../util/networks'
+import { DepositStatus, MergedTransaction } from '../../../state/app/state'
+import { getStandardizedTimestamp } from '../../../state/app/utils'
+import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { ChainId, isNetwork } from '../../../util/networks'
 
 const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
 if (!subgraphUrl) {
@@ -36,8 +39,8 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
 }
 
 export enum ChainDomain {
-  Mainnet = '0',
-  ArbitrumOne = '3'
+  Mainnet = 0,
+  ArbitrumOne = 3
 }
 
 export type MessageReceived = {
@@ -48,7 +51,7 @@ export type MessageReceived = {
   messageBody: string
   nonce: string
   sender: `0x${string}`
-  sourceDomain: ChainDomain
+  sourceDomain: `${ChainDomain}`
   transactionHash: `0x${string}`
 }
 
@@ -61,24 +64,24 @@ export type MessageSent = {
   nonce: string
   sender: `0x${string}`
   recipient: `0x${string}`
-  sourceDomain: ChainDomain
+  sourceDomain: `${ChainDomain}`
   transactionHash: `0x${string}`
   amount: string
 }
 
-export type PendingCCTPTransfer = {
+type PendingCCTPTransfer = {
   messageSent: MessageSent
 }
 
-export type CompletedCCTPTransfer = PendingCCTPTransfer & {
+type CompletedCCTPTransfer = PendingCCTPTransfer & {
   messageReceived: MessageReceived
 }
 
 export type Response =
   | {
       data: {
-        pending: PendingCCTPTransfer[]
-        completed: CompletedCCTPTransfer[]
+        pending: MergedTransaction[]
+        completed: MergedTransaction[]
       }
       error: null
     }
@@ -90,6 +93,99 @@ export type Response =
       error: string
     }
 
+export type CCTPSupportedChainId =
+  | ChainId.Mainnet
+  | ChainId.Goerli
+  | ChainId.ArbitrumOne
+  | ChainId.ArbitrumGoerli
+
+function getSourceChainIdFromSourceDomain(
+  sourceDomain: ChainDomain,
+  l1ChainId: ChainId
+): CCTPSupportedChainId {
+  const { isTestnet } = isNetwork(l1ChainId)
+
+  console.log(sourceDomain, isTestnet, l1ChainId)
+  // Deposits
+  if (sourceDomain === ChainDomain.Mainnet) {
+    return isTestnet ? ChainId.Goerli : ChainId.Mainnet
+  }
+
+  // Withdrawals
+  return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+}
+
+export function getUsdcTokenAddressFromSourceChainId(
+  sourceChainId: CCTPSupportedChainId
+) {
+  return {
+    [ChainId.Mainnet]: CommonAddress.Mainnet.USDC,
+    [ChainId.ArbitrumOne]: CommonAddress.ArbitrumOne.USDC,
+    [ChainId.Goerli]: CommonAddress.Goerli.USDC,
+    [ChainId.ArbitrumGoerli]: CommonAddress.ArbitrumGoerli.USDC
+  }[sourceChainId]
+}
+function parseTransferToMergedTransaction(
+  transfer: PendingCCTPTransfer | CompletedCCTPTransfer,
+  l1ChainId: ChainId,
+  isPending: boolean
+): MergedTransaction {
+  const depositStatus = isPending
+    ? DepositStatus.CCTP_SOURCE_SUCCESS
+    : DepositStatus.CCTP_DESTINATION_SUCCESS
+
+  const { messageSent } = transfer
+  let status = 'Unconfirmed'
+  let resolvedAt = null
+  let receiveMessageTransactionHash = null
+  let receiveMessageTimestamp = null
+
+  if ('messageReceived' in transfer) {
+    const { messageReceived } = transfer
+    status = 'Executed'
+    resolvedAt = getStandardizedTimestamp(
+      (parseInt(messageReceived.blockTimestamp, 10) * 1_000).toString()
+    )
+    receiveMessageTransactionHash = messageReceived.transactionHash
+    receiveMessageTimestamp = getStandardizedTimestamp(
+      messageReceived.blockTimestamp
+    )
+  }
+  const sourceChainId = getSourceChainIdFromSourceDomain(
+    parseInt(messageSent.sourceDomain, 10),
+    l1ChainId
+  )
+  const isDeposit =
+    parseInt(messageSent.sourceDomain, 10) === ChainDomain.Mainnet
+
+  return {
+    sender: messageSent.sender,
+    destination: messageSent.recipient,
+    direction: isDeposit ? 'deposit' : 'withdraw',
+    status,
+    createdAt: getStandardizedTimestamp(
+      (parseInt(messageSent.blockTimestamp, 10) * 1_000).toString()
+    ),
+    resolvedAt,
+    txId: messageSent.transactionHash,
+    asset: 'USDC',
+    value: messageSent.amount,
+    uniqueId: null,
+    isWithdrawal: !isDeposit,
+    blockNum: parseInt(messageSent.blockNumber, 10),
+    tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+    depositStatus,
+    isCctp: true,
+    cctpData: {
+      sourceChainId,
+      attestationHash: messageSent.attestationHash,
+      messageBytes: messageSent.message,
+      receiveMessageTransactionHash,
+      receiveMessageTimestamp
+    }
+  }
+}
+
 export default async function handler(
   req: NextApiRequestWithCCTPParams,
   res: NextApiResponse<Response>
@@ -97,12 +193,13 @@ export default async function handler(
   try {
     const {
       walletAddress,
-      l1ChainId,
+      l1ChainId: l1ChainIdString,
       pageNumber = '0',
       pageSize = '10',
       type,
       searchString = ''
     } = req.query
+    const l1ChainId = parseInt(l1ChainIdString, 10)
 
     if (
       typeof type !== 'string' ||
@@ -147,12 +244,10 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet.toString() ? 'cctp-mainnet' : 'cctp-goerli'
+      l1ChainId === ChainId.Mainnet ? 'cctp-mainnet' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet.toString()
-        ? 'cctp-arb-one'
-        : 'cctp-arb-goerli'
+      l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
     const messagesSentQuery = gql(`{
@@ -243,20 +338,23 @@ export default async function handler(
         // If the MessageSent has a corresponding MessageReceived
         const messageReceived = messagesReceivedMap.get(messageSent.id)
         if (messageReceived) {
-          acc.completed.push({
-            messageReceived,
-            messageSent
-          })
+          acc.completed.push(
+            parseTransferToMergedTransaction(
+              { messageSent, messageReceived },
+              l1ChainId,
+              false
+            )
+          )
         } else {
-          acc.pending.push({
-            messageSent
-          })
+          acc.pending.push(
+            parseTransferToMergedTransaction({ messageSent }, l1ChainId, true)
+          )
         }
         return acc
       },
       { completed: [], pending: [] } as {
-        completed: CompletedCCTPTransfer[]
-        pending: PendingCCTPTransfer[]
+        completed: MergedTransaction[]
+        pending: MergedTransaction[]
       }
     )
 

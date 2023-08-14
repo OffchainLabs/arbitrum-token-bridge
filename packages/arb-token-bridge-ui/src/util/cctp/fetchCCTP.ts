@@ -1,6 +1,7 @@
 import { ChainId } from '../networks'
 import { getAPIBaseUrl, sanitizeQueryParams } from '..'
 import { Response } from '../../pages/api/cctp/[type]'
+import { utils } from 'ethers'
 
 export type FetchParams = {
   walletAddress: string
@@ -9,6 +10,9 @@ export type FetchParams = {
   pageSize: number
 }
 
+function convertStringToUsdcBigNumber(amount: string) {
+  return utils.formatUnits(amount, 6)
+}
 async function fetchCCTP({
   walletAddress,
   l1ChainId,
@@ -34,7 +38,21 @@ async function fetchCCTP({
   )
 
   const parsedResponse: Response = await response.json()
-  return parsedResponse.data
+  const { pending, completed } = parsedResponse.data
+  return {
+    pending: pending.map(pendingTransfer => {
+      pendingTransfer.value = convertStringToUsdcBigNumber(
+        pendingTransfer.value ?? '0'
+      )
+      return pendingTransfer
+    }),
+    completed: completed.map(completedTransfer => {
+      completedTransfer.value = convertStringToUsdcBigNumber(
+        completedTransfer.value ?? '0'
+      )
+      return completedTransfer
+    })
+  }
 }
 
 export async function fetchCCTPDeposits(

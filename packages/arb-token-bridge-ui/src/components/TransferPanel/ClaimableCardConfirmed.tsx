@@ -16,25 +16,24 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useChainId } from 'wagmi'
 
-import { isNetwork } from '../../util/networks'
+import { ChainId, isNetwork } from '../../util/networks'
 import { useClaimCctp } from '../../state/cctpState'
 
-export function ClaimableCardConfirmed({
-  tx,
-  sourceNetwork
-}: {
-  tx: MergedTransaction
-  sourceNetwork: 'L1' | 'L2'
-}) {
+export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCttp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const chainId = useChainId()
-  const { isMainnet, isGoerli, isArbitrumOne, isArbitrumGoerli } =
-    isNetwork(chainId)
+  const { isArbitrum, isEthereum } = isNetwork(chainId)
+  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
+  const {
+    isEthereum: isSourceChainIdEthereum,
+    isArbitrum: isSourceChainIdArbitrum
+  } = isNetwork(sourceChainId)
+
   const currentChainIsInvalid =
-    (sourceNetwork === 'L1' && (isMainnet || isGoerli)) ||
-    (sourceNetwork === 'L2' && (isArbitrumOne || isArbitrumGoerli))
+    (isSourceChainIdEthereum && isEthereum) ||
+    (isSourceChainIdArbitrum && isArbitrum)
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || currentChainIsInvalid
@@ -44,13 +43,13 @@ export function ClaimableCardConfirmed({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: sourceNetwork === 'L1' ? l1.network : l2.network
+        chain: isSourceChainIdEthereum ? l1.network : l2.network
       }),
-    [tx, sourceNetwork, l1, l2]
+    [tx, isSourceChainIdEthereum, l1, l2]
   )
 
   return (
-    <WithdrawalCardContainer tx={tx} sourceNetwork={sourceNetwork}>
+    <WithdrawalCardContainer tx={tx}>
       <div className="flex flex-row flex-wrap items-center justify-between">
         <div className="lg:-ml-8">
           {/* Heading */}
@@ -61,22 +60,22 @@ export function ClaimableCardConfirmed({
           {/* Addresses */}
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            {sourceNetwork === 'L2' ? (
-              <>
-                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
-                </span>
-                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  <>L1 transaction: Will show after claiming</>
-                </span>
-              </>
-            ) : (
+            {isSourceChainIdEthereum ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
                   L1 transaction: <WithdrawalL1TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
                   <>L2 transaction: Will show after claiming</>
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                </span>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  <>L1 transaction: Will show after claiming</>
                 </span>
               </>
             )}
@@ -97,7 +96,7 @@ export function ClaimableCardConfirmed({
           show={currentChainIsInvalid}
           content={
             <span>
-              Please connect to the {sourceNetwork === 'L2' ? 'L1' : 'L2'}{' '}
+              Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
               network to claim your withdrawal.
             </span>
           }

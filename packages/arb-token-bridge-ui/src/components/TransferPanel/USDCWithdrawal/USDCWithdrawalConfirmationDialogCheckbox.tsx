@@ -22,8 +22,8 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand that I&apos;ll have to send{' '}
-            <span className="strong">a second transaction on L1</span> and pay
-            another L1 fee to claim my USDC.
+            <span className="font-medium">a second transaction on L1</span> and
+            pay another L1 fee to claim my USDC.
           </span>
         }
         checked={checkboxesChecked[0] ?? false}
@@ -40,8 +40,8 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand that it will take{' '}
-            <span className="strong">~15 minutes</span> before I can claim my
-            USDC on Ethereum Mainnet.
+            <span className="font-medium">~15 minutes</span> before I can claim
+            my USDC on Ethereum Mainnet.
           </span>
         }
         checked={checkboxesChecked[1] ?? false}
