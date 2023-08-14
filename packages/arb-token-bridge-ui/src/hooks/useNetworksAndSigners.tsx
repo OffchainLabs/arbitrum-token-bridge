@@ -293,9 +293,9 @@ export function NetworksAndSignersProvider(
       })
       .catch(() => {
         // Web3Provider is connected to a Chain. We instantiate a provider for the Parent Chain.
-        // We continue the check if connected to Arbitrum, because Arbitrum can be either Parent Chain or Chain.
         if (providerChainId !== _selectedL2ChainId && !isConnectedToArbitrum) {
           // Make sure the Chain provider chainid match the selected chainid
+          // We continue the check if connected to Arbitrum, because Arbitrum can be either Parent Chain or Chain.
           setResult({
             status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
             chainId: providerChainId
