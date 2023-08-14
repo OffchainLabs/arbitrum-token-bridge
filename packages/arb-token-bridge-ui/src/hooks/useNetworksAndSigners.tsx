@@ -249,7 +249,7 @@ export function NetworksAndSignersProvider(
       .then(async parentChain => {
         const isParentChainArbitrum = isNetwork(parentChain.chainID).isArbitrum
 
-        // There's no preferred L2 set, but Arbitrum is the Parent Chain.
+        // There's no preferred L2 set, but Arbitrum is the ParentChain.
         if (isParentChainArbitrum && !selectedL2ChainId) {
           // By default, we want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
           // This is so we default users to their preferred case: Withdrawal from Arbitrum to Ethereum.
@@ -259,7 +259,7 @@ export function NetworksAndSignersProvider(
           throw new Error()
         }
 
-        // Web3Provider is connected to a Parent Chain. We instantiate a provider for the Chain.
+        // Web3Provider is connected to a ParentChain. We instantiate a provider for the Chain.
         const chainProvider = new StaticJsonRpcProvider(
           rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
         )
@@ -273,7 +273,7 @@ export function NetworksAndSignersProvider(
           parentChain = await getParentChain(chain.partnerChainID)
         }
 
-        // from the Parent Chain, instantiate the provider for that too
+        // from the ParentChain, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
         const parentProvider = new StaticJsonRpcProvider(
           rpcURLs[parentChain.chainID]
@@ -292,10 +292,10 @@ export function NetworksAndSignersProvider(
         })
       })
       .catch(() => {
-        // Web3Provider is connected to a Chain. We instantiate a provider for the Parent Chain.
+        // Web3Provider is connected to a Chain. We instantiate a provider for the ParentChain.
         if (providerChainId !== _selectedL2ChainId && !isConnectedToArbitrum) {
           // Make sure the Chain provider chainid match the selected chainid
-          // We continue the check if connected to Arbitrum, because Arbitrum can be either Parent Chain or Chain.
+          // We continue the check if connected to Arbitrum, because Arbitrum can be either ParentChain or Chain.
           setResult({
             status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
             chainId: providerChainId
