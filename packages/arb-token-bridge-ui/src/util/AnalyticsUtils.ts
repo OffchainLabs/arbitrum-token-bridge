@@ -84,6 +84,8 @@ export type FathomEventMap =
   //
   | `Tx Error: Get Help Click on ${AnalyticsNetworkName}`
   | `Multiple Tx Error: Get Help Click on ${AnalyticsNetworkName}`
+  | 'CCTP Deposits'
+  | 'CCTP Withdrawals'
 
 const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   [key in FathomEventNonCanonicalTokens | FathomEventUSDC]: string
@@ -205,7 +207,10 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Tx Error: Get Help Click on Arbitrum One': 'HT1BWVVI',
   'Tx Error: Get Help Click on Arbitrum Nova': 'XD5VYLPU',
   'Multiple Tx Error: Get Help Click on Arbitrum One': 'CWMVRSXW',
-  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
+  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB',
+  //
+  'CCTP Deposits': '',
+  'CCTP Withdrawals': ''
 }
 
 type AnalyticsEventMap = {
@@ -348,6 +353,9 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
         // tx history from the header
         return event
       }
+    case 'CCTP Deposits':
+      return event
+
     default:
       // events w/o properties in fathom
       return event

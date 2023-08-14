@@ -39,6 +39,7 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useAccountType } from '../../hooks/useAccountType'
 
 enum Panel {
   TOKENS,
@@ -437,10 +438,12 @@ function TokensPanel({
 
 export function TokenSearch({
   close,
-  onImportToken
+  onImportToken,
+  onNativeUSDCSelected
 }: {
   close: () => void
   onImportToken: (address: string) => void
+  onNativeUSDCSelected: () => void
 }) {
   const {
     app: {
@@ -452,6 +455,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { isSmartContractWallet } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -480,6 +484,11 @@ export function TokenSearch({
         isTokenArbitrumGoerliNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
+        if (isSmartContractWallet) {
+          onNativeUSDCSelected()
+          return
+        }
+
         updateUSDCBalances(_token.address)
         setSelectedToken({
           name: 'USD Coin',

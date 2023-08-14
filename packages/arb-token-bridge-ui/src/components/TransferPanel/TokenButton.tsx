@@ -12,8 +12,9 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 
-export function TokenButton(): JSX.Element {
+export function TokenButton({ amount }: { amount: string }): JSX.Element {
   const {
     app: {
       isDepositMode,
@@ -26,6 +27,11 @@ export function TokenButton(): JSX.Element {
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
+
+  const [
+    usdcWithdrawalConfirmationDialogProps,
+    openUSDCWithdrawalConfirmationDialog
+  ] = useDialog()
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
@@ -79,6 +85,11 @@ export function TokenButton(): JSX.Element {
         />
       )}
 
+      <USDCWithdrawalConfirmationDialog
+        {...usdcWithdrawalConfirmationDialogProps}
+        amount={amount}
+      />
+
       <Popover className="h-full">
         <Popover.Button
           className="arb-hover h-full w-max rounded-bl-xl rounded-tl-xl bg-white px-3 hover:bg-gray-2"
@@ -103,7 +114,13 @@ export function TokenButton(): JSX.Element {
         </Popover.Button>
         <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
           {({ close }) => (
-            <TokenSearch close={close} onImportToken={importToken} />
+            <TokenSearch
+              close={close}
+              onImportToken={importToken}
+              onNativeUSDCSelected={() => {
+                openUSDCWithdrawalConfirmationDialog()
+              }}
+            />
           )}
         </Popover.Panel>
       </Popover>

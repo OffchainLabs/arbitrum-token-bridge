@@ -22,6 +22,7 @@ import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmation
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { getExplorerUrl } from '../../../util/networks'
 import { useChainId } from 'wagmi'
+import { useAccountType } from '../../../hooks/useAccountType'
 
 type Props = UseDialogProps & {
   amount: string
@@ -36,6 +37,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
   const chainId = useChainId()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
+  const { isEOA } = useAccountType()
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
@@ -95,7 +97,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
             <TabButton>Use a fast bridge (USDC)</TabButton>
-            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
+            {isEOA && <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>}
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -172,62 +174,67 @@ export function USDCDepositConfirmationDialog(props: Props) {
             </div>
           </Tab.Panel>
 
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Receive{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href={`${getExplorerUrl(chainId)}/token/${
-                    selectedToken.address
-                  }`}
-                >
-                  Native USDC
-                </ExternalLink>{' '}
-                on Arbitrum One using Arbitrum&apos;s native bridge with
-                Circle&apos;s{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                >
-                  Cross-Chain Transfer Protocol
-                </ExternalLink>{' '}
-                integrated.
-              </p>
+          {isEOA && (
+            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+              <div className="flex flex-col space-y-3">
+                <p className="font-light">
+                  Receive{' '}
+                  <ExternalLink
+                    className="arb-hover text-blue-link underline"
+                    href={`${getExplorerUrl(chainId)}/token/${
+                      selectedToken.address
+                    }`}
+                  >
+                    Native USDC
+                  </ExternalLink>{' '}
+                  on Arbitrum One using Arbitrum&apos;s native bridge with
+                  Circle&apos;s{' '}
+                  <ExternalLink
+                    className="arb-hover text-blue-link underline"
+                    href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                  >
+                    Cross-Chain Transfer Protocol
+                  </ExternalLink>{' '}
+                  integrated.
+                </p>
 
-              <div className="flex flex-col space-y-6">
-                <USDCDepositConfirmationDialogCheckbox
-                  onAllCheckboxesCheched={() => {
-                    setAllCheckboxesChecked(true)
-                  }}
-                  onChange={checked => {
-                    if (!checked) {
-                      setAllCheckboxesChecked(false)
-                    }
-                  }}
-                  isBridingNativeUSDC
-                />
+                <div className="flex flex-col space-y-6">
+                  <USDCDepositConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                    isBridingNativeUSDC
+                  />
+                </div>
               </div>
-            </div>
-            <div className="mt-2 flex flex-row justify-end space-x-2">
-              <Button variant="secondary" onClick={() => props.onClose(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={!allCheckboxesCheched}
-                onClick={() => {
-                  props.onClose(true, 'cctp')
-                  setAllCheckboxesChecked(false)
-                  trackEvent('Use Arbitrum Bridge Click', {
-                    tokenSymbol
-                  })
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </Tab.Panel>
+              <div className="mt-2 flex flex-row justify-end space-x-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => props.onClose(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  disabled={!allCheckboxesCheched}
+                  onClick={() => {
+                    props.onClose(true, 'cctp')
+                    setAllCheckboxesChecked(false)
+                    trackEvent('Use Arbitrum Bridge Click', {
+                      tokenSymbol
+                    })
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </Tab.Panel>
+          )}
         </Tab.Group>
       </div>
     </Dialog>
