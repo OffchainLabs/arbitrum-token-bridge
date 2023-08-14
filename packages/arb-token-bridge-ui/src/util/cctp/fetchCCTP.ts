@@ -7,7 +7,6 @@ export type FetchParams = {
   l1ChainId: ChainId
   pageNumber: number
   pageSize: number
-  searchString: string
 }
 
 async function fetchCCTP({
@@ -15,7 +14,6 @@ async function fetchCCTP({
   l1ChainId,
   pageNumber,
   pageSize,
-  searchString,
   type
 }: FetchParams & { type: 'deposits' | 'withdrawals' }) {
   const urlParams = new URLSearchParams(
@@ -23,8 +21,7 @@ async function fetchCCTP({
       walletAddress,
       l1ChainId,
       pageNumber,
-      pageSize,
-      searchString
+      pageSize
     })
   )
 

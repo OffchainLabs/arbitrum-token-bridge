@@ -235,7 +235,6 @@ type fetchCctpParams = {
   l1ChainId: ChainId
   pageNumber: number
   pageSize: number
-  searchString: string
   enabled: boolean
 }
 export const useCCTPDeposits = ({
@@ -243,7 +242,6 @@ export const useCCTPDeposits = ({
   l1ChainId,
   pageNumber,
   pageSize,
-  searchString,
   enabled
 }: fetchCctpParams) => {
   const { data, error, isLoading } = useSWRImmutable(
@@ -258,17 +256,15 @@ export const useCCTPDeposits = ({
         l1ChainId,
         pageNumber,
         pageSize,
-        searchString,
         'cctp-deposits'
       ] as const
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize, _searchString]) =>
+    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
       fetchCCTPDeposits({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize,
-        searchString: _searchString
+        pageSize: _pageSize
       }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
   )
 
@@ -280,7 +276,6 @@ export const useCCTPWithdrawals = ({
   l1ChainId,
   pageNumber,
   pageSize,
-  searchString,
   enabled
 }: fetchCctpParams) => {
   const { data, error, isLoading, isValidating } = useSWRImmutable(
@@ -295,17 +290,15 @@ export const useCCTPWithdrawals = ({
         l1ChainId,
         pageNumber,
         pageSize,
-        searchString,
         'cctp-withdrawals'
       ] as const
     },
-    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize, _searchString]) =>
+    ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
       fetchCCTPWithdrawals({
         walletAddress: _walletAddress,
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
-        pageSize: _pageSize,
-        searchString: _searchString
+        pageSize: _pageSize
       }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
   )
 
@@ -460,7 +453,6 @@ type useCctpFetchingParams = {
   walletAddress: `0x${string}` | undefined
   pageSize: number
   pageNumber: number
-  searchString: string
   type: 'deposits' | 'withdrawals' | 'all'
 }
 export function useCctpFetching({
@@ -468,7 +460,6 @@ export function useCctpFetching({
   walletAddress,
   pageSize = 10,
   pageNumber,
-  searchString = '',
   type
 }: useCctpFetchingParams) {
   const {
@@ -480,7 +471,6 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    searchString,
     enabled: type !== 'withdrawals'
   })
   const {
@@ -492,14 +482,9 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    searchString,
     enabled: type !== 'deposits'
   })
-  const { setTransfers, resetTransfers } = useCctpState()
-
-  useEffect(() => {
-    resetTransfers()
-  }, [searchString, resetTransfers])
+  const { setTransfers } = useCctpState()
 
   useEffect(() => {
     if (deposits) {

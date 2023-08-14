@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import {
   ChevronLeftIcon,
@@ -14,6 +14,7 @@ type TableActionHeaderProps = Omit<
   'error' | 'pendingTransactions' | 'type'
 > & {
   type: 'deposits' | 'withdrawals' | 'cctp'
+  showSearch: boolean
 }
 
 export const TableActionHeader = ({
@@ -22,15 +23,10 @@ export const TableActionHeader = ({
   setPageParams,
   transactions,
   loading,
-  isSmartContractWallet
+  isSmartContractWallet,
+  showSearch
 }: TableActionHeaderProps) => {
-  const layerType = useMemo(() => {
-    if (type === 'cctp') {
-      return ''
-    }
-
-    return type === 'deposits' ? 'L1' : 'L2'
-  }, [type])
+  const layerType = type === 'deposits' ? 'L1' : 'L2'
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 
@@ -90,27 +86,34 @@ export const TableActionHeader = ({
       )}
     >
       {/* Search bar */}
-      <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
-        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
-        <input
-          className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-dark"
-          type="text"
-          placeholder={
-            layerType
-              ? `Search for a full or partial ${layerType} tx ID`
-              : 'Search for a full or partial tx ID'
-          }
-          value={searchString}
-          onChange={e => {
-            setSearchString(e.target.value)
-          }}
-        />
-        {showDebounceLoader && <Loader color="black" size="small" />}
-      </div>
+      {showSearch && (
+        <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
+          <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
+          <input
+            className="text-normal h-full w-full p-2 font-light text-dark placeholder:text-gray-dark"
+            type="text"
+            placeholder={
+              layerType
+                ? `Search for a full or partial ${layerType} tx ID`
+                : 'Search for a full or partial tx ID'
+            }
+            value={searchString}
+            onChange={e => {
+              setSearchString(e.target.value)
+            }}
+          />
+          {showDebounceLoader && <Loader color="black" size="small" />}
+        </div>
+      )}
 
       {/* Pagination buttons */}
       {!hidePaginationBtns && (
-        <div className="flex w-auto shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-dark">
+        <div
+          className={twMerge(
+            'flex w-auto shrink grow-0 flex-row flex-nowrap items-center justify-end text-gray-dark',
+            !showSearch && 'ml-auto' // Align the arrows on the right if no search input is displayed
+          )}
+        >
           <button
             disabled={disablePrevBtn}
             className={`rounded border border-gray-dark p-1 ${

@@ -285,6 +285,7 @@ export function TransactionsTable({
         transactions={transactionsBySentOrReceivedFunds}
         isSmartContractWallet={isSmartContractWallet}
         loading={loading}
+        showSearch
       />
 
       <table className="w-full overflow-hidden rounded-b-lg bg-white">

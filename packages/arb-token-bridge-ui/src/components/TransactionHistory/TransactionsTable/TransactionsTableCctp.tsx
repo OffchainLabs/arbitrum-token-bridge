@@ -4,7 +4,6 @@ import { useAccount } from 'wagmi'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
 import { isDeposit, isWithdrawal } from '../../../state/app/utils'
-import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
@@ -40,7 +39,6 @@ export function TransactionsTableCctp() {
     l1ChainId: l1.network.id,
     walletAddress: address,
     pageSize: pageParams.pageSize,
-    searchString: pageParams.searchString,
     pageNumber: pageParams.pageNumber,
     type
   })
@@ -71,12 +69,6 @@ export function TransactionsTableCctp() {
     type,
     withdrawalIds
   ])
-
-  const noSearchResults = !!(
-    pageParams.searchString.length &&
-    status === TableStatus.SUCCESS &&
-    !transactions.length
-  )
 
   useEffect(() => {
     setPageParams(prevPageParams => ({
@@ -112,6 +104,7 @@ export function TransactionsTableCctp() {
         transactions={transactions}
         isSmartContractWallet={isSmartContractWallet}
         loading={isLoading}
+        showSearch={false}
       />
 
       <table className="w-full overflow-hidden rounded-b-lg bg-white">
@@ -122,23 +115,15 @@ export function TransactionsTableCctp() {
 
           {status === TableStatus.ERROR && <TableBodyError />}
 
-          {/* when there are no search results found */}
-          {status === TableStatus.SUCCESS && noSearchResults && (
-            <NoDataOverlay />
-          )}
-
           {/* when there are no transactions present */}
-          {status === TableStatus.SUCCESS &&
-            !noSearchResults &&
-            !transactions.length && (
-              <EmptyTableRow>
-                <span className="text-sm font-medium">No transactions</span>
-              </EmptyTableRow>
-            )}
+          {status === TableStatus.SUCCESS && !transactions.length && (
+            <EmptyTableRow>
+              <span className="text-sm font-medium">No transactions</span>
+            </EmptyTableRow>
+          )}
 
           {/* finally, when transactions are present, show rows */}
           {status === TableStatus.SUCCESS &&
-            !noSearchResults &&
             transactions.map((tx, index) => {
               const isLastRow = index === transactions.length - 1
               if (isDeposit(tx)) {
@@ -157,8 +142,6 @@ export function TransactionsTableCctp() {
                     className={!isLastRow ? 'border-b border-black' : ''}
                   />
                 )
-              } else {
-                return null
               }
             })}
         </tbody>
