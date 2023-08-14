@@ -105,7 +105,6 @@ function getSourceChainIdFromSourceDomain(
 ): CCTPSupportedChainId {
   const { isTestnet } = isNetwork(l1ChainId)
 
-  console.log(sourceDomain, isTestnet, l1ChainId)
   // Deposits
   if (sourceDomain === ChainDomain.Mainnet) {
     return isTestnet ? ChainId.Goerli : ChainId.Mainnet

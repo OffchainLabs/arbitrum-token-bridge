@@ -560,7 +560,6 @@ export function TransferPanel() {
       }
       clearAmountInput()
     } catch (e) {
-      console.log('AAA', e)
     } finally {
       setTransferring(false)
     }
