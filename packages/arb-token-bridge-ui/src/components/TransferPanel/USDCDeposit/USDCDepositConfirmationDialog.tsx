@@ -94,8 +94,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
-            <TabButton>Use a third-party bridge</TabButton>
-            <TabButton>Use Arbitrum&apos;s bridge (USDC)</TabButton>
+            <TabButton>Use a fast bridge (USDC)</TabButton>
+            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -148,10 +148,16 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   className="arb-hover text-blue-link underline"
                   href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
                 >
-                  USDC
+                  Native USDC
                 </ExternalLink>{' '}
-                on Arbitrum One using a third-party bridge with Circle&apos;s
-                CCTP integrated.
+                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                >
+                  Cross-Chain Transfer Protocol
+                </ExternalLink>{' '}
+                integrated.
               </p>
             </div>
 
@@ -184,7 +190,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
                 >
-                  CCTP
+                  Cross-Chain Transfer Protocol
                 </ExternalLink>{' '}
                 integrated.
               </p>

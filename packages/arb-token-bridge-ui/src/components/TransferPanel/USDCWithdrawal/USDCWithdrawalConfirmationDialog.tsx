@@ -34,7 +34,6 @@ export function USDCWithdrawalConfirmationDialog(
 
   const from = l2.network
   const to = l1.network
-  const fromNetworkName = getNetworkName(from.id)
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
@@ -74,8 +73,8 @@ export function USDCWithdrawalConfirmationDialog(
           </div>
 
           <Tab.List className="bg-ocl-blue">
-            <TabButton>Use a third-party bridge</TabButton>
-            <TabButton>Use Arbitrum&apos;s bridge (USDC)</TabButton>
+            <TabButton>Use a fast bridge</TabButton>
+            <TabButton>Use Arbitrum&apos;s bridge</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -92,12 +91,14 @@ export function USDCWithdrawalConfirmationDialog(
                 >
                   USDC
                 </ExternalLink>{' '}
-                on {toNetworkName} using a third-party bridge with Circle&apos;s
-                CCTP integrated.
-              </p>
-              <p>
-                USDC native to {fromNetworkName} cannot be withdrawn using
-                Arbitrum&apos;s bridge.
+                on {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                >
+                  Cross-Chain Transfer Protocol
+                </ExternalLink>{' '}
+                integrated.
               </p>
             </div>
 
@@ -130,7 +131,7 @@ export function USDCWithdrawalConfirmationDialog(
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
                 >
-                  CCTP
+                  Cross-Chain Transfer Protocol
                 </ExternalLink>{' '}
                 integrated.
               </p>
