@@ -208,7 +208,10 @@ export function useCctpState() {
           } else {
             acc.withdrawalIds.push(id)
           }
-          if (transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS) {
+          if (
+            transfer.depositStatus === DepositStatus.CCTP_SOURCE_PENDING ||
+            transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS
+          ) {
             acc.pendingIds.push(id)
           } else {
             acc.completedIds.push(id)
@@ -375,7 +378,9 @@ export function useRemainingTime(tx: MergedTransaction) {
   const blockTime =
     tx.direction === 'deposit' ? getBlockTime(l1SourceChain) : 15
 
-  const [remainingTime, setRemainingTime] = useState<string | null>(null)
+  const [remainingTime, setRemainingTime] = useState<string | null>(
+    'Calculating...'
+  )
   const [isConfirmed, setIsConfirmed] = useState(false)
 
   useEffect(() => {

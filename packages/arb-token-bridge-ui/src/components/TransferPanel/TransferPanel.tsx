@@ -514,7 +514,7 @@ export function TransferPanel() {
         direction: isDeposit ? 'deposit' : 'withdraw',
         isWithdrawal: !isDeposit,
         resolvedAt: null,
-        status: 'Unconfirmed',
+        status: 'pending',
         uniqueId: null,
         value: amount,
         depositStatus: DepositStatus.CCTP_SOURCE_PENDING,
@@ -530,6 +530,7 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         }
       })
+      clearAmountInput()
       openTransactionHistoryPanel()
 
       const depositTxReceipt = await depositTx.wait()
@@ -547,7 +548,6 @@ export function TransferPanel() {
           }
         })
       }
-      clearAmountInput()
     } catch (e) {
     } finally {
       setTransferring(false)
