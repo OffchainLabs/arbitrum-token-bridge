@@ -115,7 +115,7 @@ export function Dialog(props: DialogProps) {
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
-        className="fixed inset-0 z-50 flex md:items-center md:justify-center md:bg-[rgba(0,0,0,0.6)]"
+        className="fixed inset-0 z-50 flex bg-[rgba(0,0,0,0.6)] md:items-center md:justify-center"
       >
         <div
           className={twMerge(
