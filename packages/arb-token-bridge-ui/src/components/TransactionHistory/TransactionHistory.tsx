@@ -48,7 +48,7 @@ export const TransactionHistory = ({
 }) => {
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isEOA } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
   const { pendingIds: pendingIdsCctp, transfers: transfersCctp } =
@@ -168,20 +168,22 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            <TabButton
-              aria-label="show CCTP (Native USDC) transactions"
-              className={`${roundedTabClasses} roundedTabLeft`}
-            >
-              {/* CCTP */}
-              <Image
-                src={getNetworkLogo(l1.network.id)}
-                className="h-6 w-auto"
-                alt="Withdraw"
-                width={24}
-                height={24}
-              />
-              {'CCTP (Native USDC)'}
-            </TabButton>
+            {isEOA && (
+              <TabButton
+                aria-label="show CCTP (Native USDC) transactions"
+                className={`${roundedTabClasses} roundedTabLeft`}
+              >
+                {/* CCTP */}
+                <Image
+                  src={getNetworkLogo(l1.network.id)}
+                  className="h-6 w-auto"
+                  alt="Withdraw"
+                  width={24}
+                  height={24}
+                />
+                {'CCTP (Native USDC)'}
+              </TabButton>
+            )}
           </Tab.List>
           <Tab.Panel className="overflow-auto">
             <TransactionsTable
@@ -205,9 +207,11 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          <Tab.Panel className="overflow-auto">
-            <TransactionsTableCctp />
-          </Tab.Panel>
+          {isEOA && (
+            <Tab.Panel className="overflow-auto">
+              <TransactionsTableCctp />
+            </Tab.Panel>
+          )}
         </Tab.Group>
       </div>
     </div>
