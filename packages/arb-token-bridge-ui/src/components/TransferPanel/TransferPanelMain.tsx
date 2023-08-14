@@ -647,7 +647,7 @@ export function TransferPanelMain({
       return ChainId.ArbitrumOne
     }, [l1.network.id])
 
-    function updatePreferredL2Chain(l2ChainId: number | undefined) {
+    function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
     }
 
