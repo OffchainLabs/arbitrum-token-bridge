@@ -533,17 +533,6 @@ export function TransferPanel() {
       openTransactionHistoryPanel()
 
       const depositTxReceipt = await depositTx.wait()
-
-      const depositForBurnLog = depositTxReceipt?.logs[4]
-      if (!depositForBurnLog) {
-        return
-      }
-
-      const nonce = depositForBurnLog.topics[1]
-      if (!nonce) {
-        return
-      }
-
       const { messageBytes, attestationHash } =
         getAttestationHashAndMessageFromReceipt(depositTxReceipt)
 
