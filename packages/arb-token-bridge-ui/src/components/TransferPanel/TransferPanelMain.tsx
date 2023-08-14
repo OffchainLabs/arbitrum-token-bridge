@@ -406,7 +406,6 @@ export function TransferPanelMain({
 
   const [externalFrom, externalTo] = useMemo(() => {
     const isParentChainArbitrum = isNetwork(l1.network.id).isArbitrum
-    const { isOrbitChain } = isNetwork(l2.network.id)
 
     if (isParentChainArbitrum) {
       return isConnectedToArbitrum
@@ -414,13 +413,7 @@ export function TransferPanelMain({
         : [l2.network, l1.network]
     }
 
-    if (isOrbitChain) {
-      return isConnectedToArbitrum
-        ? [l1.network, l2.network]
-        : [l2.network, l1.network]
-    }
-
-    // Parent chain is Ethereum
+    // Parent chain is Ethereum.
     return isConnectedToArbitrum
       ? [l2.network, l1.network]
       : [l1.network, l2.network]
