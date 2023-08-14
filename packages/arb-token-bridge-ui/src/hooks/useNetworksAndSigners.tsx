@@ -21,7 +21,7 @@ import {
   StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
-import { getParentChain, getChain } from '@arbitrum/sdk'
+import { getChain, getParentChain } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
@@ -249,7 +249,7 @@ export function NetworksAndSignersProvider(
       .then(async parentChain => {
         const isParentChainArbitrum = isNetwork(parentChain.chainID).isArbitrum
 
-        // There's no preffered L2 set, but Arbitrum is the Parent Chain.
+        // There's no preferred L2 set, but Arbitrum is the Parent Chain.
         if (isParentChainArbitrum && !selectedL2ChainId) {
           // By default, we want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
           // This is so we default users to their preferred case: Withdrawal from Arbitrum to Ethereum.
@@ -267,7 +267,7 @@ export function NetworksAndSignersProvider(
 
         if (isParentChainArbitrum && isSelectedL2ChainArbitrum) {
           // Special case if user selects an Ethereum-Orbit pair in the UI.
-          // Before the switch happens, Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
+          // Before the switch happens, Arbitrum is the preferred L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
 
           // We know our 'chain' is Arbitrum, we need to set 'parentChain' to Ethereum (Arbitrum's 'partnerChainID').
           parentChain = await getParentChain(chain.partnerChainID)
@@ -283,11 +283,11 @@ export function NetworksAndSignersProvider(
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
             network: getWagmiChain(parentChain.chainID),
-            provider: chainProvider
+            provider: parentProvider
           },
           l2: {
             network: getWagmiChain(chain.chainID),
-            provider: parentProvider
+            provider: chainProvider
           }
         })
       })
@@ -311,7 +311,7 @@ export function NetworksAndSignersProvider(
             const parentChain = await getParentChain(parentProvider)
 
             const chainProvider = new StaticJsonRpcProvider(
-              rpcURLs[parentChain.chainID]
+              rpcURLs[chain.chainID]
             )
 
             setResult({

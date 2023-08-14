@@ -632,13 +632,13 @@ export function TransferPanelMain({
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     const options = getListboxOptionsFromL1Network(l1.network)
 
-    const arbitrumOneOrArbitrumGoerli = useMemo(() => {
+    const arbitrumOneOrArbitrumGoerli = (() => {
       const { isTestnet } = isNetwork(l1.network.id)
       if (isTestnet) {
         return ChainId.ArbitrumGoerli
       }
       return ChainId.ArbitrumOne
-    }, [l1.network.id])
+    })()
 
     function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
@@ -841,6 +841,7 @@ export function TransferPanelMain({
     }
   }, [
     l1.network,
+    l2.network,
     from,
     to,
     isSmartContractWallet,
@@ -848,7 +849,9 @@ export function TransferPanelMain({
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
-    isConnectedToArbitrum
+    openOneNovaTransferDialog,
+    isConnectedToArbitrum,
+    isConnectedToOrbitChain
   ])
 
   return (
