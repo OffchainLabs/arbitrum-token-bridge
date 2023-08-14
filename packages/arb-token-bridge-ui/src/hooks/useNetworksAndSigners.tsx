@@ -33,6 +33,7 @@ import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -159,6 +160,7 @@ export function NetworksAndSignersProvider(
     status: defaultStatus
   })
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
 
   const isTosAccepted = tosAccepted !== undefined
@@ -184,7 +186,12 @@ export function NetworksAndSignersProvider(
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
-    if (!address || !chain) {
+    if (
+      !address ||
+      !chain ||
+      typeof isConnectedToArbitrum === 'undefined' ||
+      typeof isConnectedToOrbitChain === 'undefined'
+    ) {
       return
     }
 
@@ -206,10 +213,11 @@ export function NetworksAndSignersProvider(
      * Case 3: selectedChainId is defined but not supported by provider => reset query params -> case 1
      * Case 4: selectedChainId is defined and supported, continue
      */
+    const isSelectedL2ChainArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
     let _selectedL2ChainId = selectedL2ChainId
 
     // Case 1: Connected to an Orbit chain & Arbitrum is preferredL2ChainId. Need to set preferredL2ChainId to an Orbit chain.
-    if (isConnectedToOrbitChain && isNetwork(_selectedL2ChainId!).isArbitrum) {
+    if (isConnectedToOrbitChain && isSelectedL2ChainArbitrum) {
       setQueryParams({ l2ChainId: providerChainId })
       return
     }
@@ -227,13 +235,8 @@ export function NetworksAndSignersProvider(
       return
     }
 
-    const isSelectedL2ChainIdArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
-
     // Case 3: L2 is not supported by provider
-    if (
-      !providerSupportedL2.includes(_selectedL2ChainId) &&
-      !isSelectedL2ChainIdArbitrum
-    ) {
+    if (!providerSupportedL2.includes(_selectedL2ChainId)) {
       // remove the l2chainId, keeping the rest of the params intact
       setQueryParams({
         l2ChainId: undefined
@@ -249,13 +252,12 @@ export function NetworksAndSignersProvider(
 
         // There's no preffered L2 set, but we are connected to Arbitrum.
         if (isParentChainArbitrum && !selectedL2ChainId) {
-          // We want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
-          // However the current flow would set it to Arbitrum's partner Orbit chain.
+          // By default, we want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
+          // This is so that we default users to their most likely preferred case: Withdrawal from L2 to L1.
+          // However, the current flow would set it to Arbitrum's partner Orbit chain.
 
-          // We know L1 is Arbitrum, we will set it to L2 instead.
-          // When the hook reruns it will set L1 to Ethereum.
-          setQueryParams({ l2ChainId: parentChain.chainID })
-          return
+          // We skip getParentChain and instead we try to get a Chain. This means Arbitrum will be seen as an L2 and paired with Ethereum.
+          throw new Error()
         }
 
         // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
@@ -264,10 +266,10 @@ export function NetworksAndSignersProvider(
         )
         const chain = await getChain(l2Provider)
 
-        if (isParentChainArbitrum && isSelectedL2ChainIdArbitrum) {
-          // Special case for L1 <> Orbit switching in 'to' network.
+        if (isParentChainArbitrum && isSelectedL2ChainArbitrum) {
+          // Special case if user tried to pair Ethereum with an Orbit chain.
           // This happens when Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum.
-          // We know l2Network is Arbitrum, we set l1Network to L1 (Arbitrum's partnerChainID).
+          // We know l2Network is Arbitrum, we set l1Network to Ethereum (Arbitrum's partnerChainID).
           parentChain = await getParentChain(chain.partnerChainID)
         }
 
@@ -291,7 +293,8 @@ export function NetworksAndSignersProvider(
       })
       .catch(() => {
         // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
-        if (providerChainId !== _selectedL2ChainId) {
+        // We continue the check if connected to Arbitrum, because Arbitrum can be either L1 or L2.
+        if (providerChainId !== _selectedL2ChainId && !isConnectedToArbitrum) {
           // Make sure the L2 provider chainid match the selected chainid
           setResult({
             status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
@@ -328,7 +331,15 @@ export function NetworksAndSignersProvider(
             })
           })
       })
-  }, [address, chain, provider, selectedL2ChainId, setQueryParams])
+  }, [
+    address,
+    chain,
+    provider,
+    selectedL2ChainId,
+    setQueryParams,
+    isConnectedToArbitrum,
+    isConnectedToOrbitChain
+  ])
 
   useEffect(() => {
     update()
