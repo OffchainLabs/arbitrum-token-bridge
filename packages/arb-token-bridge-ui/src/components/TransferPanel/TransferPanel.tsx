@@ -404,38 +404,37 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    const isDeposit = type === 'deposits'
+
     setTransferring(true)
-    let currentNetwork =
-      type === 'deposits'
-        ? latestNetworksAndSigners.current.l1.network
-        : latestNetworksAndSigners.current.l2.network
+    let currentNetwork = isDeposit
+      ? latestNetworksAndSigners.current.l1.network
+      : latestNetworksAndSigners.current.l2.network
 
     const currentNetworkName = getNetworkName(currentNetwork.id)
     const isConnectedOnTheWrongChain =
-      (type === 'deposits' && isConnectedToArbitrum.current) ||
+      (isDeposit && isConnectedToArbitrum.current) ||
       (type === 'withdrawals' && !isConnectedToArbitrum.current)
 
     if (isConnectedOnTheWrongChain) {
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent('Switch Network and Transfer', {
-          type: type === 'deposits' ? 'Deposit' : 'Withdrawal',
-          tokenSymbol: selectedToken?.symbol,
-          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          type: isDeposit ? 'Deposit' : 'Withdrawal',
+          tokenSymbol: 'USDC',
+          assetType: 'ERC-20',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: currentNetworkName,
           amount: Number(amount)
         })
       }
-      const switchTargetChainId =
-        type === 'deposits'
-          ? latestNetworksAndSigners.current.l1.network.id
-          : latestNetworksAndSigners.current.l2.network.id
+      const switchTargetChainId = isDeposit
+        ? latestNetworksAndSigners.current.l1.network.id
+        : latestNetworksAndSigners.current.l2.network.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-        currentNetwork =
-          type === 'deposits'
-            ? latestNetworksAndSigners.current.l1.network
-            : latestNetworksAndSigners.current.l2.network
+        currentNetwork = isDeposit
+          ? latestNetworksAndSigners.current.l1.network
+          : latestNetworksAndSigners.current.l2.network
       } catch (e) {
         if (isUserRejectedError(e)) {
           return
@@ -446,15 +445,14 @@ export function TransferPanel() {
     try {
       const l1ChainID = latestNetworksAndSigners.current.l1.network.id
       const l2ChainID = latestNetworksAndSigners.current.l2.network.id
-      const sourceChainId = type === 'deposits' ? l1ChainID : l2ChainID
+      const sourceChainId = isDeposit ? l1ChainID : l2ChainID
 
-      const waitForInput =
-        type === 'deposits'
-          ? openUSDCDepositConfirmationDialog()
-          : openUSDCWithdrawalConfirmationDialog()
+      const waitForInput = isDeposit
+        ? openUSDCDepositConfirmationDialog()
+        : openUSDCWithdrawalConfirmationDialog()
       const [confirmed, primaryButtonClicked] = await waitForInput()
 
-      if (!confirmed || (type === 'deposits' && !primaryButtonClicked)) {
+      if (!confirmed || (isDeposit && !primaryButtonClicked)) {
         return
       }
 
@@ -496,7 +494,7 @@ export function TransferPanel() {
         try {
           const tx = await approveForBurn(
             amountBigNumber,
-            type === 'deposits' ? l1Signer : l2Signer
+            isDeposit ? l1Signer : l2Signer
           )
           await tx.wait()
         } catch (error) {
@@ -515,7 +513,7 @@ export function TransferPanel() {
       try {
         depositForBurnTx = await depositForBurn({
           amount: amountBigNumber,
-          signer: type === 'deposits' ? l1Signer : l2Signer,
+          signer: isDeposit ? l1Signer : l2Signer,
           recipient: destinationAddress || walletAddress
         })
       } catch (error) {
@@ -531,7 +529,15 @@ export function TransferPanel() {
         return
       }
 
-      const isDeposit = type === 'deposits'
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent(isDeposit ? 'CCTP Deposits' : 'CCTP Withdrawals', {
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount),
+          complete: false
+        })
+      }
+
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',

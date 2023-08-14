@@ -5,7 +5,12 @@ import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
 
 import { useCCTP } from '../hooks/CCTP/useCCTP'
-import { ChainId, getBlockTime, isNetwork } from '../util/networks'
+import {
+  ChainId,
+  getBlockTime,
+  getNetworkName,
+  isNetwork
+} from '../util/networks'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
@@ -18,6 +23,8 @@ import {
   Response
 } from '../pages/api/cctp/[type]'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
+import { useAccountType } from '../hooks/useAccountType'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 export function getBlockBeforeConfirmation(
@@ -422,6 +429,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { waitForAttestation, receiveMessage } = useCCTP({
     sourceChainId: tx.cctpData?.sourceChainId
   })
+  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
   const { updateTransfer } = useCctpState()
   const { data: signer } = useSigner()
@@ -453,13 +461,33 @@ export function useClaimCctp(tx: MergedTransaction) {
             receiveReceiptTx.transactionHash as `0x${string}`
         }
       })
+
+      const targetChainId = getTargetChainIdFromSourceChain(tx)
+      const currentNetworkName = getNetworkName(targetChainId)
+      const { isEthereum } = isNetwork(targetChainId)
+
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent(isEthereum ? 'CCTP Withdrawals' : 'CCTP Deposits', {
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(tx.value),
+          complete: true
+        })
+      }
     } catch (e) {
       Sentry.captureException(e)
       throw e
     } finally {
       setIsClaiming(false)
     }
-  }, [receiveMessage, signer, tx, updateTransfer, waitForAttestation])
+  }, [
+    isSmartContractWallet,
+    receiveMessage,
+    signer,
+    tx,
+    updateTransfer,
+    waitForAttestation
+  ])
 
   return {
     isClaiming,

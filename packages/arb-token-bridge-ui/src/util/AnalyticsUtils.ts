@@ -253,6 +253,18 @@ type AnalyticsEventMap = {
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined
   'Add to Google Calendar Click': undefined
+  'CCTP Deposits': {
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+    complete: boolean
+  }
+  'CCTP Withdrawals': {
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+    complete: boolean
+  }
 }
 
 type AnalyticsEvent = keyof AnalyticsEventMap
