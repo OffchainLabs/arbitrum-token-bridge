@@ -45,6 +45,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -187,6 +188,7 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
+  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -404,6 +406,20 @@ export function TransferPanel() {
       return
     }
 
+    // Make sure Ethereum and an Orbit chain are not selected as a pair.
+    const isEthereumAndOrbitChainPair = [l1Network.id, l2Network.id].every(
+      id => {
+        const { isEthereum, isOrbitChain } = isNetwork(id)
+        return isEthereum || isOrbitChain
+      }
+    )
+    if (isEthereumAndOrbitChainPair) {
+      console.error(
+        "Transfers between L1 and Orbit chains aren't supported yet."
+      )
+      return
+    }
+
     const l2NetworkName = getNetworkName(l2Network.id)
 
     // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
@@ -438,7 +454,10 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (isConnectedToArbitrum.current) {
+        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
+        // Only switch to L1 if the selected L1 network is Ethereum.
+        // Arbitrum can also be an L1, and then it would be a valid parent to an Orbit chain.
+        if (isConnectedToArbitrum.current && isParentChainEthereum) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -467,9 +486,13 @@ export function TransferPanel() {
         const l1ChainID = latestNetworksAndSigners.current.l1.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
-        if (
-          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
-        ) {
+        const l1ChainEqualsConnectedChain =
+          l1ChainID && connectedChainID && l1ChainID === connectedChainID
+        const isConnectedToOrbitChain = isNetwork(connectedChainID).isOrbitChain
+
+        if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain) {
+          // Deposit is invalid if the connected chain doesn't match L1...
+          // ...or if connected to an Orbit chain, as it can't make deposits.
           return networkConnectionWarningToast()
         }
         if (selectedToken) {
@@ -607,7 +630,10 @@ export function TransferPanel() {
           throw signerUndefinedError
         }
 
-        if (!isConnectedToArbitrum.current) {
+        const isConnectedToEthereum =
+          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+
+        if (isConnectedToEthereum) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',

@@ -21,12 +21,14 @@ import {
   StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
-import { getL1Network, getL2Network } from '@arbitrum/sdk'
+import { getParentChain, getChain } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
 
-import { chainIdToDefaultL2ChainId, rpcURLs } from '../util/networks'
+import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
+import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
+import { chainIdToDefaultL2ChainId, isNetwork, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
@@ -158,6 +160,8 @@ export function NetworksAndSignersProvider(
     status: defaultStatus
   })
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
 
   const isTosAccepted = tosAccepted !== undefined
 
@@ -182,7 +186,12 @@ export function NetworksAndSignersProvider(
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
-    if (!address || !chain) {
+    if (
+      !address ||
+      !chain ||
+      typeof isConnectedToArbitrum === 'undefined' ||
+      typeof isConnectedToOrbitChain === 'undefined'
+    ) {
       return
     }
 
@@ -199,14 +208,22 @@ export function NetworksAndSignersProvider(
     }
 
     /***
-     * Case 1: selectedChainId is undefined => set it to provider's default L2
+     * Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId.' Need to set 'preferredL2ChainId' to an Orbit chain.
      * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1
-     * Case 3: selectedChainId is defined and supported, continue
+     * Case 3: selectedChainId is defined but not supported by provider => reset query params -> case 1
+     * Case 4: selectedChainId is defined and supported, continue
      */
+    const isSelectedL2ChainArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
     let _selectedL2ChainId = selectedL2ChainId
     const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
-    // Case 1: use a default L2 based on the connected provider chainid
+    // Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId'. Need to set 'preferredL2ChainId' to an Orbit chain.
+    if (isConnectedToOrbitChain && isSelectedL2ChainArbitrum) {
+      setQueryParams({ l2ChainId: providerChainId })
+      return
+    }
+
+    // Case 2: use a default L2 based on the connected provider chainid
     _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
@@ -217,7 +234,7 @@ export function NetworksAndSignersProvider(
       return
     }
 
-    // Case 2: L2 is not supported by provider
+    // Case 3: L2 is not supported by provider
     if (!providerSupportedL2.includes(_selectedL2ChainId)) {
       // remove the l2chainId, keeping the rest of the params intact
       setQueryParams({
@@ -227,62 +244,85 @@ export function NetworksAndSignersProvider(
       return
     }
 
-    // Case 3
-    getL1Network(provider as Web3Provider)
-      .then(async l1Network => {
-        // Web3Provider is connected to an L1 network. We instantiate a provider for the L2 network.
-        const l2Provider = new StaticJsonRpcProvider(
+    // Case 4
+    getParentChain(provider as Web3Provider)
+      .then(async parentChain => {
+        const isParentChainArbitrum = isNetwork(parentChain.chainID).isArbitrum
+
+        // There's no preffered L2 set, but Arbitrum is the Parent Chain.
+        if (isParentChainArbitrum && !selectedL2ChainId) {
+          // By default, we want Arbitrum to be paired with Ethereum instead of an Orbit chain in our UI.
+          // This is so we default users to their preferred case: Withdrawal from Arbitrum to Ethereum.
+          // However, the current flow would set it to Arbitrum's partner Orbit chain.
+
+          // We jump to 'getChain'. This means Arbitrum will be considered an L2 and paired with Ethereum.
+          throw new Error()
+        }
+
+        // Web3Provider is connected to a Parent Chain. We instantiate a provider for the Chain.
+        const chainProvider = new StaticJsonRpcProvider(
           rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
         )
-        const l2Network = await getL2Network(l2Provider)
+        const chain = await getChain(chainProvider)
 
-        // from the L1 network, instantiate the provider for that too
+        if (isParentChainArbitrum && isSelectedL2ChainArbitrum) {
+          // Special case if user selects an Ethereum-Orbit pair in the UI.
+          // Befoer the switch happens, Arbitrum is the preffered L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
+
+          // We know our 'chain' is Arbitrum, we need to set 'parentChain' to Ethereum (Arbitrum's 'partnerChainID').
+          parentChain = await getParentChain(chain.partnerChainID)
+        }
+
+        // from the Parent Chain, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
-        const l1Provider = new StaticJsonRpcProvider(rpcURLs[l1Network.chainID])
+        const parentProvider = new StaticJsonRpcProvider(
+          rpcURLs[parentChain.chainID]
+        )
 
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
-            network: getWagmiChain(l1Network.chainID),
-            provider: l1Provider
+            network: getWagmiChain(parentChain.chainID),
+            provider: chainProvider
           },
           l2: {
-            network: getWagmiChain(l2Network.chainID),
-            provider: l2Provider
+            network: getWagmiChain(chain.chainID),
+            provider: parentProvider
           }
         })
       })
       .catch(() => {
-        // Web3Provider is connected to an L2 network. We instantiate a provider for the L1 network.
-        if (providerChainId !== _selectedL2ChainId) {
-          // Make sure the L2 provider chainid match the selected chainid
+        // Web3Provider is connected to a Chain. We instantiate a provider for the Parent Chain.
+        // We continue the check if connected to Arbitrum, because Arbitrum can be either Parent Chain or Chain.
+        if (providerChainId !== _selectedL2ChainId && !isConnectedToArbitrum) {
+          // Make sure the Chain provider chainid match the selected chainid
           setResult({
             status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
             chainId: providerChainId
           })
           return
         }
-        getL2Network(provider as Web3Provider)
-          .then(async l2Network => {
-            const l1NetworkChainId = l2Network.partnerChainID
-            const l1Provider = new StaticJsonRpcProvider(
-              rpcURLs[l1NetworkChainId]
+        getChain(provider as Web3Provider)
+          .then(async chain => {
+            const parentChainId = chain.partnerChainID
+            const parentProvider = new StaticJsonRpcProvider(
+              rpcURLs[parentChainId]
             )
-            const l1Network = await getL1Network(l1Provider)
+            const parentChain = await getParentChain(parentProvider)
 
-            const l2Provider = new StaticJsonRpcProvider(
-              rpcURLs[l2Network.chainID]
+            const chainProvider = new StaticJsonRpcProvider(
+              rpcURLs[parentChain.chainID]
             )
 
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
-                network: getWagmiChain(l1Network.chainID),
-                provider: l1Provider
+                network: getWagmiChain(parentChain.chainID),
+                provider: parentProvider
               },
               l2: {
-                network: getWagmiChain(l2Network.chainID),
-                provider: l2Provider
+                network: getWagmiChain(chain.chainID),
+                provider: chainProvider
               }
             })
           })
@@ -293,7 +333,15 @@ export function NetworksAndSignersProvider(
             })
           })
       })
-  }, [address, chain, provider, selectedL2ChainId, setQueryParams])
+  }, [
+    address,
+    chain,
+    provider,
+    selectedL2ChainId,
+    setQueryParams,
+    isConnectedToArbitrum,
+    isConnectedToOrbitChain
+  ])
 
   useEffect(() => {
     update()

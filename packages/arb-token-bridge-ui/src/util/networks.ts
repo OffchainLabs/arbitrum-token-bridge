@@ -1,7 +1,8 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import {
-  l1Networks,
-  l2Networks
+  ParentChain,
+  l2Networks,
+  parentChains
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -90,11 +91,11 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getBlockTime = (chainId: ChainId) => {
-  const network = l1Networks[chainId]
+  const network = parentChains[chainId]
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
-  return network.blockTime
+  return (network as L1Network).blockTime ?? 10
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
@@ -143,8 +144,11 @@ const defaultL1Network: L1Network = {
   isArbitrum: false
 }
 
-const defaultL2Network: L2Network = {
+const defaultL2Network: ParentChain = {
   chainID: 412346,
+  partnerChainIDs: [
+    // Orbit chains will go here
+  ],
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
@@ -237,6 +241,9 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumRinkeby ||
     isArbitrumLocal
 
+  // No Orbit chains for now. Setting to false.
+  const isOrbitChain = false
+
   const isTestnet =
     isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
 
@@ -246,7 +253,7 @@ export function isNetwork(chainId: ChainId) {
   return {
     // L1
     isMainnet,
-    isEthereum: !isArbitrum,
+    isEthereum: !isArbitrum && !isOrbitChain,
     // L1 Testnets
     isRinkeby,
     isGoerli,
@@ -258,6 +265,8 @@ export function isNetwork(chainId: ChainId) {
     // L2 Testnets
     isArbitrumRinkeby,
     isArbitrumGoerli,
+    // Orbit chains
+    isOrbitChain,
     // Testnet
     isTestnet,
     // General
