@@ -383,7 +383,7 @@ export function TransferPanelMain({
     selectedToken,
     updateErc20L1Balances,
     updateErc20L2Balances,
-    destinationAddressOrWalletAddress,
+    destinationAddressOrWalletAddress
   ])
 
   useEffect(() => {
@@ -652,6 +652,10 @@ export function TransferPanelMain({
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     const options = getListboxOptionsFromL1Network(l1.network)
 
+    const preferredArbitrumChainId = isNetwork(l1.network.id).isTestnet
+      ? ChainId.ArbitrumGoerli
+      : ChainId.ArbitrumOne
+
     function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
     }
@@ -692,10 +696,7 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereum, isTestnet } = isNetwork(network.id)
-            const preferredArbitrumChainId = isTestnet
-              ? ChainId.ArbitrumGoerli
-              : ChainId.ArbitrumOne
+            const { isEthereum } = isNetwork(network.id)
 
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
@@ -711,8 +712,11 @@ export function TransferPanelMain({
             try {
               await switchNetworkAsync?.(network.id)
               if (isEthereum) {
-                // Pair L1 Ethereum with an Arbitrum chain.
-                updatePreferredL2Chain(preferredArbitrumChainId)
+                // Pair L1 Ethereum with an Arbitrum chain if an Orbit chain is selected.
+                // Otherwise we want to keep the current chain, in case it's Nova.
+                if (isNetwork(l2.network.id).isOrbitChain) {
+                  updatePreferredL2Chain(preferredArbitrumChainId)
+                }
                 return
               }
               updatePreferredL2Chain(network.id)
@@ -728,12 +732,7 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            const { isEthereum, isOrbitChain, isTestnet } = isNetwork(
-              network.id
-            )
-            const preferredArbitrumChainId = isTestnet
-              ? ChainId.ArbitrumGoerli
-              : ChainId.ArbitrumOne
+            const { isEthereum, isOrbitChain } = isNetwork(network.id)
 
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
@@ -759,8 +758,11 @@ export function TransferPanelMain({
             }
 
             if (isEthereum) {
-              // Pair L1 Ethereum with an Arbitrum chain.
-              updatePreferredL2Chain(preferredArbitrumChainId)
+              // Pair L1 Ethereum with an Arbitrum chain if an Orbit chain is selected.
+              // Otherwise we want to keep the current chain, in case it's Nova.
+              if (isNetwork(l2.network.id).isOrbitChain) {
+                updatePreferredL2Chain(preferredArbitrumChainId)
+              }
               return
             }
 
@@ -780,10 +782,7 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          const { isEthereum, isTestnet } = isNetwork(network.id)
-          const preferredArbitrumChainId = isTestnet
-            ? ChainId.ArbitrumGoerli
-            : ChainId.ArbitrumOne
+          const { isEthereum } = isNetwork(network.id)
 
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
@@ -799,8 +798,11 @@ export function TransferPanelMain({
           try {
             await switchNetworkAsync?.(network.id)
             if (isEthereum) {
-              // Pair L1 Ethereum with an Arbitrum chain.
-              updatePreferredL2Chain(preferredArbitrumChainId)
+              // Pair L1 Ethereum with an Arbitrum chain if an Orbit chain is selected.
+              // Otherwise we want to keep the current chain, in case it's Nova.
+              if (isNetwork(l2.network.id).isOrbitChain) {
+                updatePreferredL2Chain(preferredArbitrumChainId)
+              }
               return
             }
             updatePreferredL2Chain(network.id)
@@ -817,9 +819,8 @@ export function TransferPanelMain({
         value: to,
         onChange: async network => {
           const { isEthereum, isOrbitChain, isTestnet } = isNetwork(network.id)
-          const preferredArbitrumChainId = isTestnet
-            ? ChainId.ArbitrumGoerli
-            : ChainId.ArbitrumOne
+          const isConnectedToEthereum =
+            !isConnectedToArbitrum && !isConnectedToOrbitChain
 
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
@@ -833,7 +834,7 @@ export function TransferPanelMain({
           }
 
           if (isEthereum) {
-            // If connected to an Orbit chain, we need to change to L2.
+            // If connected to an Orbit chain, we need to change network to L2.
             // We can't withdraw from an Orbit chain to L1.
             if (isConnectedToOrbitChain) {
               try {
@@ -851,6 +852,11 @@ export function TransferPanelMain({
           }
 
           if (isOrbitChain) {
+            if (isConnectedToEthereum) {
+              // If connected to L1, we need to change network to L2.
+              // We can't deposit from L1 chain to an Orbit chain.
+              await switchNetworkAsync?.(preferredArbitrumChainId)
+            }
             updatePreferredL2Chain(network.id)
           }
 
