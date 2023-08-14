@@ -39,6 +39,7 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
+  getTokenAllowanceForSpender,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -58,14 +59,16 @@ import {
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
-import { useApproveAndDeposit } from '../../hooks/CCTP/useApproveAndDeposit'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
-import { useCctpState } from '../../state/cctpState'
+import {
+  getUsdcTokenAddressFromSourceChainId,
+  useCctpState
+} from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
-import { getUsdcTokenAddressFromSourceChainId } from '../../pages/api/cctp/[type]'
+import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -175,10 +178,6 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { approveAndDepositForBurn } = useApproveAndDeposit({
-    sourceChainId: isDepositMode ? l1Network.id : l2Network.id,
-    walletAddress: account
-  })
   const { setPendingTransfer, updateTransfer } = useCctpState()
 
   const { openTransactionHistoryPanel, setTransferring } =
@@ -203,6 +202,12 @@ export function TransferPanel() {
     },
     [setQueryParams]
   )
+
+  const { approveForBurn, depositForBurn } = useCCTP({
+    sourceChainId: isDepositMode
+      ? latestNetworksAndSigners.current.l1.network.id
+      : latestNetworksAndSigners.current.l2.network.id
+  })
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -399,6 +404,7 @@ export function TransferPanel() {
       throw 'Signer is undefined'
     }
 
+    setTransferring(true)
     let currentNetwork =
       type === 'deposits'
         ? latestNetworksAndSigners.current.l1.network
@@ -438,7 +444,6 @@ export function TransferPanel() {
     }
 
     try {
-      setTransferring(true)
       const l1ChainID = latestNetworksAndSigners.current.l1.network.id
       const l2ChainID = latestNetworksAndSigners.current.l2.network.id
       const sourceChainId = type === 'deposits' ? l1ChainID : l2ChainID
@@ -470,18 +475,31 @@ export function TransferPanel() {
       }
 
       const recipient = destinationAddress || walletAddress
-      const depositTx = await approveAndDepositForBurn({
-        amount: amountBigNumber,
-        provider: type === 'deposits' ? l1Provider : l2Provider,
-        signer: type === 'deposits' ? l1Signer : l2Signer,
-        destinationAddress: recipient,
-        async onAllowanceTooLow() {
-          const waitForInput = openTokenApprovalDialog()
-          const [confirmed] = await waitForInput()
+      const { usdcContractAddress, tokenMessengerContractAddress } =
+        getContracts(sourceChainId)
 
-          return confirmed
-        },
-        onApproveTxFailed(error) {
+      const allowance = await getTokenAllowanceForSpender({
+        account: walletAddress,
+        erc20Address: usdcContractAddress,
+        provider: latestConnectedProvider.current,
+        spender: tokenMessengerContractAddress
+      })
+
+      if (allowance.lt(amountBigNumber)) {
+        const waitForInput = openTokenApprovalDialog()
+        const [confirmed] = await waitForInput()
+
+        if (!confirmed) {
+          return
+        }
+
+        try {
+          const tx = await approveForBurn(
+            amountBigNumber,
+            type === 'deposits' ? l1Signer : l2Signer
+          )
+          await tx.wait()
+        } catch (error) {
           if (isUserRejectedError(error)) {
             return
           }
@@ -489,25 +507,33 @@ export function TransferPanel() {
           errorToast(
             `USDC approve failed: ${(error as Error)?.message ?? error}`
           )
-        },
-        onDepositTxFailed(error) {
-          if (isUserRejectedError(error)) {
-            return
-          }
-          Sentry.captureException(error)
-          errorToast(
-            `USDC deposit failed: ${(error as Error)?.message ?? error}`
-          )
+          return
         }
-      })
+      }
 
-      if (!depositTx || !account) {
+      let depositForBurnTx
+      try {
+        depositForBurnTx = await depositForBurn({
+          amount: amountBigNumber,
+          signer: type === 'deposits' ? l1Signer : l2Signer,
+          recipient: destinationAddress || walletAddress
+        })
+      } catch (error) {
+        if (isUserRejectedError(error)) {
+          return
+        }
+        Sentry.captureException(error)
+        errorToast(`USDC deposit failed: ${(error as Error)?.message ?? error}`)
+        return
+      }
+
+      if (!depositForBurnTx || !account) {
         return
       }
 
       const isDeposit = type === 'deposits'
       setPendingTransfer({
-        txId: depositTx.hash,
+        txId: depositForBurnTx.hash,
         asset: 'USDC',
         blockNum: null,
         createdAt: getStandardizedTimestamp(new Date().toString()),
@@ -533,13 +559,13 @@ export function TransferPanel() {
       clearAmountInput()
       openTransactionHistoryPanel()
 
-      const depositTxReceipt = await depositTx.wait()
+      const depositTxReceipt = await depositForBurnTx.wait()
       const { messageBytes, attestationHash } =
         getAttestationHashAndMessageFromReceipt(depositTxReceipt)
 
       if (messageBytes && attestationHash) {
         updateTransfer({
-          txId: depositTx.hash,
+          txId: depositForBurnTx.hash,
           blockNum: depositTxReceipt.blockNumber,
           depositStatus: DepositStatus.CCTP_SOURCE_SUCCESS,
           cctpData: {

@@ -1,5 +1,5 @@
 import { readContract } from '@wagmi/core'
-import { CCTPSupportedChainId } from '../../pages/api/cctp/[type]'
+import { CCTPSupportedChainId } from '../../state/cctpState'
 import { FiatTokenProxyAbi } from '../../util/cctp/FiatTokenProxyAbi'
 import { TokenMinterAbi } from '../../util/cctp/TokenMinterAbi'
 import { getContracts } from './useCCTP'

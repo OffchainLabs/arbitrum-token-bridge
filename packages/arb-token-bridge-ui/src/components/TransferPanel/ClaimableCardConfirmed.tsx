@@ -18,11 +18,13 @@ import { useChainId } from 'wagmi'
 
 import { ChainId, isNetwork } from '../../util/networks'
 import { useClaimCctp } from '../../state/cctpState'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { errorToast } from '../common/atoms/Toast'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
-  const { claim: claimCttp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
+  const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const chainId = useChainId()
   const { isArbitrum, isEthereum } = isNetwork(chainId)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
@@ -105,8 +107,21 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             variant="primary"
             loading={isClaiming}
             disabled={isClaimButtonDisabled}
-            onClick={() => {
-              tx.isCctp ? claimCttp() : claim(tx)
+            onClick={async () => {
+              if (!tx.isCctp) {
+                claim(tx)
+                return
+              }
+
+              try {
+                await claimCctp()
+              } catch (error: any) {
+                if (isUserRejectedError(error)) {
+                  return
+                }
+
+                errorToast(`Can't claim withdrawal: ${error?.message ?? error}`)
+              }
             }}
             className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
           >

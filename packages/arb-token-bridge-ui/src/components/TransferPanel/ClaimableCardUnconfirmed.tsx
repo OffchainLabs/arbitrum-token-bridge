@@ -15,14 +15,18 @@ import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useCctpState, useRemainingTime } from '../../state/cctpState'
+import {
+  getTargetChainIdFromSourceChain,
+  useCctpState,
+  useRemainingTime
+} from '../../state/cctpState'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const { updateTransfer } = useCctpState()
   // This component is used for withdrawal and Cctp, default to Arb1
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
-  const networkName = getNetworkName(sourceChainId)
+  const networkName = getNetworkName(getTargetChainIdFromSourceChain(tx))
   const { isEthereum } = isNetwork(sourceChainId)
 
   const tokenSymbol = useMemo(

@@ -7,7 +7,8 @@ import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
 import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { CCTPSupportedChainId, ChainDomain } from '../../pages/api/cctp/[type]'
+import { ChainDomain } from '../../pages/api/cctp/[type]'
+import { CCTPSupportedChainId } from '../../state/cctpState'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {

@@ -13,7 +13,9 @@ import {
   useRemainingTime
 } from '../../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
+import { isUserRejectedError } from '../../../util/isUserRejectedError'
 import { getNetworkName, isNetwork } from '../../../util/networks'
+import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 
@@ -120,11 +122,20 @@ export function TransactionsTableRowAction({
           variant="primary"
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
-          onClick={() => {
-            if (tx.isCctp) {
-              claimCctp()
-            } else {
+          onClick={async () => {
+            if (!tx.isCctp) {
               claim(tx)
+              return
+            }
+
+            try {
+              await claimCctp()
+            } catch (error: any) {
+              if (isUserRejectedError(error)) {
+                return
+              }
+
+              errorToast(`Can't claim withdrawal: ${error?.message ?? error}`)
             }
           }}
         >

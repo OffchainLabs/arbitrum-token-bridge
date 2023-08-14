@@ -26,7 +26,7 @@ import {
   Transaction,
   TxnType
 } from '../../hooks/useTransactions'
-import { CCTPSupportedChainId } from '../../pages/api/cctp/[type]'
+import { CCTPSupportedChainId } from '../cctpState'
 
 export enum WhiteListState {
   VERIFYING,

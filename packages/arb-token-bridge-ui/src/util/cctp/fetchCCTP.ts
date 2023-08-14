@@ -41,14 +41,14 @@ async function fetchCCTP({
   const { pending, completed } = parsedResponse.data
   return {
     pending: pending.map(pendingTransfer => {
-      pendingTransfer.value = convertStringToUsdcBigNumber(
-        pendingTransfer.value ?? '0'
+      pendingTransfer.messageSent.amount = convertStringToUsdcBigNumber(
+        pendingTransfer.messageSent.amount ?? '0'
       )
       return pendingTransfer
     }),
     completed: completed.map(completedTransfer => {
-      completedTransfer.value = convertStringToUsdcBigNumber(
-        completedTransfer.value ?? '0'
+      completedTransfer.messageSent.amount = convertStringToUsdcBigNumber(
+        completedTransfer.messageSent.amount ?? '0'
       )
       return completedTransfer
     })
