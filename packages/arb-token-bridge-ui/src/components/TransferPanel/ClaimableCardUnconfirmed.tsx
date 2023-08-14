@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -17,13 +17,11 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import {
   getTargetChainIdFromSourceChain,
-  useCctpState,
   useRemainingTime
 } from '../../state/cctpState'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const { updateTransfer } = useCctpState()
   // This component is used for withdrawal and Cctp, default to Arb1
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const networkName = getNetworkName(getTargetChainIdFromSourceChain(tx))
@@ -38,15 +36,7 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
     [tx.asset, tx.tokenAddress, isEthereum, l1.network, l2.network]
   )
 
-  const { remainingTime, isConfirmed } = useRemainingTime(tx)
-  useEffect(() => {
-    if (isConfirmed) {
-      updateTransfer({
-        ...tx,
-        status: 'Confirmed'
-      })
-    }
-  }, [isConfirmed, tx, updateTransfer])
+  const { remainingTime } = useRemainingTime(tx)
 
   return (
     <WithdrawalCardContainer tx={tx}>
@@ -70,12 +60,26 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           <div className="h-2" />
           <div className="flex flex-col font-light">
             {isEthereum ? (
+              tx.status === 'Failure' ? (
+                <>
+                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                    L1 transaction: Failed {tx.txId}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                    L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                  </span>
+                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                    L2 transaction: Will show after claiming
+                  </span>
+                </>
+              )
+            ) : tx.status === 'Failure' ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
-                </span>
-                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: Will show after claiming
+                  L2 transaction: Failed {tx.txId}
                 </span>
               </>
             ) : (

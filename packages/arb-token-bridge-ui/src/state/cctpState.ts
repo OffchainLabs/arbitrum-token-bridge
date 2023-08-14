@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
+import { useInterval } from 'react-use'
 
 import { useCCTP } from '../hooks/CCTP/useCCTP'
 import {
@@ -25,6 +26,7 @@ import {
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
+import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 export function getBlockBeforeConfirmation(
@@ -86,7 +88,6 @@ function parseTransferToMergedTransaction(
   let status = 'Unconfirmed'
   let resolvedAt = null
   let receiveMessageTransactionHash = null
-  let receiveMessageTimestamp = null
 
   if ('messageReceived' in transfer) {
     const { messageReceived } = transfer
@@ -95,9 +96,6 @@ function parseTransferToMergedTransaction(
       (parseInt(messageReceived.blockTimestamp, 10) * 1_000).toString()
     )
     receiveMessageTransactionHash = messageReceived.transactionHash
-    receiveMessageTimestamp = getStandardizedTimestamp(
-      messageReceived.blockTimestamp
-    )
   }
   const sourceChainId = getSourceChainIdFromSourceDomain(
     parseInt(messageSent.sourceDomain, 10),
@@ -129,7 +127,7 @@ function parseTransferToMergedTransaction(
       attestationHash: messageSent.attestationHash,
       messageBytes: messageSent.message,
       receiveMessageTransactionHash,
-      receiveMessageTimestamp
+      receiveMessageTimestamp: resolvedAt || null
     }
   }
 }
@@ -332,7 +330,8 @@ export function useCctpState() {
           }
           if (
             transfer.depositStatus === DepositStatus.CCTP_SOURCE_PENDING ||
-            transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS
+            transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS ||
+            transfer.depositStatus === DepositStatus.CCTP_DESTINATION_PENDING
           ) {
             acc.pendingIds.push(id)
           } else {
@@ -362,6 +361,62 @@ export function useCctpState() {
     withdrawalIds,
     updateTransfer
   }
+}
+
+export function useCctpTransactionsUpdater() {
+  const { pendingIds, transfers, updateTransfer } = useCctpState()
+  const {
+    l1: { provider: l1Provider, network: l1Network },
+    l2: { provider: l2Provider, network: l2Network }
+  } = useNetworksAndSigners()
+  const getTransactionReceipt = useCallback(
+    async (tx: MergedTransaction) => {
+      const provider = tx.direction === 'deposit' ? l1Provider : l2Provider
+      const receipt = await provider.getTransactionReceipt(tx.txId)
+      return {
+        receipt,
+        chainId: tx.direction === 'deposit' ? l1Network.id : l2Network.id,
+        tx
+      }
+    },
+    [l1Network.id, l1Provider, l2Network.id, l2Provider]
+  )
+
+  const pendingTransactions = useMemo(() => {
+    return pendingIds
+      .map(pendingId => transfers[pendingId])
+      .filter(transfer => transfer) as unknown as MergedTransaction[]
+  }, [pendingIds, transfers])
+
+  useInterval(async () => {
+    const receipts = await Promise.all(
+      pendingTransactions.map(getTransactionReceipt)
+    )
+    receipts.forEach(({ chainId, receipt, tx }) => {
+      const requiredBlocksBeforeConfirmation =
+        getBlockBeforeConfirmation(chainId)
+
+      if (receipt.status === 0) {
+        updateTransfer({
+          txId: receipt.transactionHash,
+          status: 'Failure',
+          depositStatus: DepositStatus.CCTP_SOURCE_FAILURE
+        })
+      } else if (tx.cctpData?.receiveMessageTransactionHash) {
+        updateTransfer({
+          txId: receipt.transactionHash,
+          status: 'Executed',
+          depositStatus: DepositStatus.CCTP_DESTINATION_SUCCESS
+        })
+      } else if (receipt.confirmations > requiredBlocksBeforeConfirmation) {
+        updateTransfer({
+          txId: receipt.transactionHash,
+          status: 'Confirmed',
+          depositStatus: DepositStatus.CCTP_DESTINATION_PENDING
+        })
+      }
+    })
+  }, 4000)
 }
 
 type useCctpFetchingParams = {
@@ -558,13 +613,23 @@ export function useRemainingTime(tx: MergedTransaction) {
     if (blocksLeftBeforeConfirmation === 0) {
       setIsConfirmed(true)
     }
-    setRemainingTime(dayjs().to(withdrawalDate, true))
+
+    if (tx.status !== 'Failure') {
+      setRemainingTime(dayjs().to(withdrawalDate, true))
+    }
   }, [
     blockTime,
     currentBlockNumber,
     requiredBlocksBeforeConfirmation,
-    tx.blockNum
+    tx.blockNum,
+    tx.status
   ])
+
+  useEffect(() => {
+    if (tx.status === 'Failure') {
+      setRemainingTime('')
+    }
+  }, [tx.status, setRemainingTime])
 
   return {
     remainingTime,

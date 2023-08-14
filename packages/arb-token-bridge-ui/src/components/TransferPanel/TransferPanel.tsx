@@ -573,6 +573,7 @@ export function TransferPanel() {
         updateTransfer({
           txId: depositForBurnTx.hash,
           blockNum: depositTxReceipt.blockNumber,
+          status: 'Unconfirmed',
           depositStatus: DepositStatus.CCTP_SOURCE_SUCCESS,
           cctpData: {
             attestationHash,

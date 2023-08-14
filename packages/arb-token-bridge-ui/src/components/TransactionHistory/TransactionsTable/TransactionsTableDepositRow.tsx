@@ -121,6 +121,20 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         </div>
       )
 
+    case DepositStatus.CCTP_DESTINATION_PENDING:
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+            Success
+          </StatusBadge>
+          <Tooltip content={<span>Funds are ready to be claimed on L2</span>}>
+            <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
+              <InformationCircleIcon className="h-4 w-4" /> Confirmed
+            </StatusBadge>
+          </Tooltip>
+        </div>
+      )
+
     case DepositStatus.CCTP_DESTINATION_SUCCESS:
       return (
         <div className="flex flex-col space-y-1">
@@ -129,6 +143,15 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
           </StatusBadge>
           <StatusBadge variant="green" aria-label="L2 Transaction Status">
             Success
+          </StatusBadge>
+        </div>
+      )
+
+    case DepositStatus.CCTP_SOURCE_FAILURE:
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="red" aria-label="L1 Transaction Status">
+            Failed
           </StatusBadge>
         </div>
       )
@@ -233,7 +256,8 @@ export function TransactionsTableDepositRow({
   const isError = useMemo(() => {
     if (
       tx.depositStatus === DepositStatus.L1_FAILURE ||
-      tx.depositStatus === DepositStatus.EXPIRED
+      tx.depositStatus === DepositStatus.EXPIRED ||
+      tx.depositStatus === DepositStatus.CCTP_SOURCE_FAILURE
     ) {
       return true
     }

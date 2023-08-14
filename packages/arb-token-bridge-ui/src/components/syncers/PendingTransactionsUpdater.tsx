@@ -5,6 +5,7 @@ import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useCctpTransactionsUpdater } from '../../state/cctpState'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -12,6 +13,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
+  useCctpTransactionsUpdater()
 
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }

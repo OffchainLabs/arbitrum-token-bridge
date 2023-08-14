@@ -45,8 +45,9 @@ export enum DepositStatus {
   // CCTP Specific
   CCTP_SOURCE_PENDING = 8,
   CCTP_SOURCE_SUCCESS = 9,
-  CCTP_DESTINATION_PENDING = 10,
-  CCTP_DESTINATION_SUCCESS = 11
+  CCTP_SOURCE_FAILURE = 10,
+  CCTP_DESTINATION_PENDING = 11, // Ready to claim (enough blocks have elapsed since CCTP_SOURCE_SUCCESS)
+  CCTP_DESTINATION_SUCCESS = 12
 }
 
 export interface MergedTransaction {
@@ -55,7 +56,7 @@ export interface MergedTransaction {
   sender?: string
   destination?: string
   direction: TxnType
-  status: string
+  status: string // TODO: Use enums
   createdAt: string | null
   resolvedAt: string | null
   txId: string

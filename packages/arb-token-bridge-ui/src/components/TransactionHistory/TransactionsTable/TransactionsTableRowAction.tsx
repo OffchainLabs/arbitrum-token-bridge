@@ -1,17 +1,13 @@
 import { Popover } from '@headlessui/react'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
-import {
-  useCctpState,
-  useClaimCctp,
-  useRemainingTime
-} from '../../../state/cctpState'
+import { useClaimCctp } from '../../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../../util/isUserRejectedError'
 import { getNetworkName, isNetwork } from '../../../util/networks'
@@ -53,21 +49,10 @@ export function TransactionsTableRowAction({
   const l1NetworkName = getNetworkName(l1Network.id)
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
-  const { updateTransfer } = useCctpState()
 
   const chainId = useChainId()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { isConfirmed } = useRemainingTime(tx)
-
-  useEffect(() => {
-    if (isConfirmed && tx.status === 'Unconfirmed') {
-      updateTransfer({
-        ...tx,
-        status: 'Confirmed'
-      })
-    }
-  }, [isConfirmed, tx, updateTransfer])
 
   const { isMainnet, isGoerli, isArbitrumOne, isArbitrumGoerli } =
     isNetwork(chainId)

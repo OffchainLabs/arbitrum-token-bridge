@@ -29,6 +29,14 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
     : findMatchingL1TxForWithdrawal(tx)
 
   switch (tx.status) {
+    case 'pending':
+      return (
+        <div className="flex flex-col space-y-1">
+          <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
+            Pending
+          </StatusBadge>
+        </div>
+      )
     case 'Unconfirmed':
       return (
         <div className="flex flex-col space-y-1">

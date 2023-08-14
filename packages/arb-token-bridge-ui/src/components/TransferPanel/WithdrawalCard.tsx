@@ -101,6 +101,9 @@ export function WithdrawalCardContainer({
       case 'Executed':
         return 'bg-lime'
 
+      case 'Failure':
+        return 'bg-brick'
+
       default:
         return 'bg-white'
     }
