@@ -331,7 +331,8 @@ export function useCctpState() {
           if (
             transfer.depositStatus === DepositStatus.CCTP_SOURCE_PENDING ||
             transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS ||
-            transfer.depositStatus === DepositStatus.CCTP_DESTINATION_PENDING
+            transfer.depositStatus === DepositStatus.CCTP_DESTINATION_PENDING ||
+            transfer.status !== 'Executed'
           ) {
             acc.pendingIds.push(id)
           } else {
@@ -396,6 +397,10 @@ export function useCctpTransactionsUpdater() {
       const requiredBlocksBeforeConfirmation =
         getBlockBeforeConfirmation(chainId)
 
+      if (!receipt) {
+        return
+      }
+
       if (receipt.status === 0) {
         updateTransfer({
           txId: receipt.transactionHash,
@@ -409,6 +414,11 @@ export function useCctpTransactionsUpdater() {
           depositStatus: DepositStatus.CCTP_DESTINATION_SUCCESS
         })
       } else if (receipt.confirmations > requiredBlocksBeforeConfirmation) {
+        // If transaction claim was set to failure, don't reset to Confirmed
+        if (tx.status === 'Failure') {
+          return
+        }
+
         updateTransfer({
           txId: receipt.transactionHash,
           status: 'Confirmed',
@@ -503,17 +513,23 @@ export function useClaimCctp(tx: MergedTransaction) {
         signer
       })
       const receiveReceiptTx = await receiveTx.wait()
+
+      const resolvedAt =
+        receiveReceiptTx.status === 1
+          ? getStandardizedTimestamp(BigNumber.from(Date.now()).toString())
+          : null
       updateTransfer({
         ...tx,
-        resolvedAt: getStandardizedTimestamp(
-          BigNumber.from(Date.now()).toString()
-        ),
-        status: 'Executed',
-        depositStatus: DepositStatus.CCTP_DESTINATION_SUCCESS,
+        resolvedAt,
+
+        status: receiveReceiptTx.status === 1 ? 'Executed' : 'Failure',
         cctpData: {
           ...tx.cctpData,
+          receiveMessageTimestamp: resolvedAt,
           receiveMessageTransactionHash:
-            receiveReceiptTx.transactionHash as `0x${string}`
+            receiveReceiptTx.status === 1
+              ? (receiveReceiptTx.transactionHash as `0x${string}`)
+              : null
         }
       })
 

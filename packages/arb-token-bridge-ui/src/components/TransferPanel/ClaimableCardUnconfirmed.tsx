@@ -60,26 +60,15 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           <div className="h-2" />
           <div className="flex flex-col font-light">
             {isEthereum ? (
-              tx.status === 'Failure' ? (
-                <>
-                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                    L1 transaction: Failed {tx.txId}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                    L1 transaction: <WithdrawalL1TxStatus tx={tx} />
-                  </span>
-                  <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                    L2 transaction: Will show after claiming
-                  </span>
-                </>
-              )
-            ) : tx.status === 'Failure' ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: Failed {tx.txId}
+                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                </span>
+                <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
+                  L2 transaction:{' '}
+                  {tx.status === 'Failure'
+                    ? 'Failed'
+                    : 'Will show after claiming'}
                 </span>
               </>
             ) : (
@@ -88,7 +77,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
                   L2 transaction: <WithdrawalL2TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: Will show after claiming
+                  L1 transaction:{' '}
+                  {tx.status === 'Failure'
+                    ? 'Failed'
+                    : 'Will show after claiming'}
                 </span>
               </>
             )}
