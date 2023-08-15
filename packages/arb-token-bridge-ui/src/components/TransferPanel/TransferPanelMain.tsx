@@ -3,7 +3,9 @@ import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-
+import { EthBridger } from '@arbitrum/sdk'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Provider } from '@ethersproject/providers'
 import * as Sentry from '@sentry/react'
 import { Chain, useAccount } from 'wagmi'
 
@@ -37,7 +39,7 @@ import {
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -302,6 +304,62 @@ export enum TransferPanelMainErrorMessage {
   SC_WALLET_ETH_NOT_SUPPORTED
 }
 
+async function fetchNativeToken(params: {
+  chainProvider: Provider
+  parentChainProvider: Provider
+}): Promise<ERC20BridgeToken> {
+  const { chainProvider, parentChainProvider } = params
+  const ethBridger = await EthBridger.fromProvider(chainProvider)
+
+  if (typeof ethBridger.nativeToken === 'undefined') {
+    throw new Error('native token is eth')
+  }
+
+  const address = ethBridger.nativeToken
+  const contract = ERC20__factory.connect(address, parentChainProvider)
+
+  const [name, symbol, decimals] = await Promise.all([
+    contract.name(),
+    contract.symbol(),
+    contract.decimals()
+  ])
+
+  return {
+    type: TokenType.ERC20,
+    name,
+    symbol,
+    decimals,
+    address,
+    listIds: new Set()
+  }
+}
+
+function useNativeToken(params: {
+  chainProvider: Provider
+  parentChainProvider: Provider
+}) {
+  const { chainProvider, parentChainProvider } = params
+  const [nativeToken, setNativeToken] = useState<
+    undefined | null | ERC20BridgeToken
+  >(undefined)
+
+  useEffect(() => {
+    async function update() {
+      try {
+        setNativeToken(
+          await fetchNativeToken({ chainProvider, parentChainProvider })
+        )
+      } catch (error) {
+        setNativeToken(null)
+      }
+    }
+
+    update()
+  }, [chainProvider, parentChainProvider])
+
+  return nativeToken
+}
+
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -317,6 +375,11 @@ export function TransferPanelMain({
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
+
+  const nativeToken = useNativeToken({
+    chainProvider: l2.provider,
+    parentChainProvider: l1.provider
+  })
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -357,6 +420,12 @@ export function TransferPanelMain({
   })
 
   useEffect(() => {
+    if (nativeToken) {
+      updateErc20L1Balances([nativeToken.address])
+    }
+  }, [nativeToken, updateErc20L1Balances])
+
+  useEffect(() => {
     if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
       updateErc20L1Balances([selectedToken.address])
       if (selectedToken.l2Address) {
@@ -377,6 +446,31 @@ export function TransferPanelMain({
   ])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
+
+  const nativeTokenBalances = useMemo(() => {
+    const result: {
+      l1: BigNumber | null
+      l2: BigNumber | null
+    } = {
+      l1: null,
+      l2: null
+    }
+
+    if (!nativeToken) {
+      return result
+    }
+
+    if (erc20L1Balances) {
+      result.l1 = erc20L1Balances[nativeToken.address] ?? null
+    }
+
+    if (ethL2Balance) {
+      // on L2, we use the native balance
+      result.l2 = ethL2Balance ?? null
+    }
+
+    return result
+  }, [erc20L1Balances, ethL2Balance, nativeToken])
 
   const selectedTokenBalances = useMemo(() => {
     const result: {
@@ -848,10 +942,28 @@ export function TransferPanelMain({
                   forToken={selectedToken}
                   prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
-                <ETHBalance
-                  balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
-                  prefix={selectedToken ? '' : 'BALANCE: '}
-                />
+                {nativeToken ? (
+                  <>
+                    <TokenBalance
+                      on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                      balance={
+                        app.isDepositMode
+                          ? nativeTokenBalances.l1
+                          : nativeTokenBalances.l2
+                      }
+                      forToken={nativeToken}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                    <ETHBalance
+                      balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+                    />
+                  </>
+                ) : (
+                  <ETHBalance
+                    balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+                    prefix={selectedToken ? '' : 'BALANCE: '}
+                  />
+                )}
               </>
             )}
           </BalancesContainer>
@@ -948,10 +1060,23 @@ export function TransferPanelMain({
                       tokenSymbolOverride="USDC"
                     />
                   )}
-                  <ETHBalance
-                    balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
-                    prefix={selectedToken ? '' : 'BALANCE: '}
-                  />
+                  {nativeToken ? (
+                    <TokenBalance
+                      on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                      balance={
+                        app.isDepositMode
+                          ? nativeTokenBalances.l2
+                          : nativeTokenBalances.l1
+                      }
+                      forToken={nativeToken}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                  ) : (
+                    <ETHBalance
+                      balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                  )}
                 </>
               )
             )}
