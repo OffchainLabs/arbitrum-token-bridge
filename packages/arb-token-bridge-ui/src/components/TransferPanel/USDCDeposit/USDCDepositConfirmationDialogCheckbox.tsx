@@ -1,7 +1,7 @@
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
-import { ExplorerUrl } from './ExplorerUrl'
+import { ExplorerUrl } from '../ExplorerUrl'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -80,6 +80,7 @@ export function USDCDepositConfirmationDialogCheckbox({
               token="USDC.e"
               className={externalLinkClassnames}
               onClick={linksOnClickHandler}
+              network="l2"
             >
               USDC.e
             </ExplorerUrl>{' '}
@@ -88,6 +89,7 @@ export function USDCDepositConfirmationDialogCheckbox({
               token="USDC"
               className={externalLinkClassnames}
               onClick={linksOnClickHandler}
+              network="l2"
             >
               USDC
             </ExplorerUrl>

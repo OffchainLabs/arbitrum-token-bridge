@@ -20,7 +20,7 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
-import { ExplorerUrl } from './ExplorerUrl'
+import { ExplorerUrl } from '../ExplorerUrl'
 
 type Props = UseDialogProps & {
   amount: string
@@ -101,7 +101,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Receive{' '}
-                <ExplorerUrl token="USDC.e">Bridged USDC (USDC.e)</ExplorerUrl>{' '}
+                <ExplorerUrl token="USDC.e" network="l2">
+                  Bridged USDC (USDC.e)
+                </ExplorerUrl>{' '}
                 on {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
@@ -137,8 +139,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive <ExplorerUrl token="USDC">Native USDC</ExplorerUrl> on
-                Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                Receive{' '}
+                <ExplorerUrl token="USDC" network="l2">
+                  Native USDC
+                </ExplorerUrl>{' '}
+                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -164,7 +169,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
-                  Receive <ExplorerUrl token="USDC">Native USDC</ExplorerUrl> on
+                  Receive{' '}
+                  <ExplorerUrl token="USDC" network="l2">
+                    Native USDC
+                  </ExplorerUrl>{' '}
+                  on
                   {toNetworkName} using Arbitrum&apos;s native bridge with
                   Circle&apos;s{' '}
                   <ExternalLink

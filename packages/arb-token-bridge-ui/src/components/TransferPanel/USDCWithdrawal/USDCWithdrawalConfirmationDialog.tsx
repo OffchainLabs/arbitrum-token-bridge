@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useChainId } from 'wagmi'
 
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -15,20 +14,16 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import {
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../../util/networks'
+import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { ExplorerUrl } from '../ExplorerUrl'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
-  const chainId = useChainId()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const { isEOA } = useAccountType()
 
@@ -83,16 +78,9 @@ export function USDCWithdrawalConfirmationDialog(
             <div className="flex flex-col space-y-3 font-light">
               <p>
                 Receive{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href={
-                    isArbitrumGoerli
-                      ? `https://goerli.etherscan.io/token/${CommonAddress.Goerli.USDC}`
-                      : `https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`
-                  }
-                >
+                <ExplorerUrl token="USDC" network="l1">
                   USDC
-                </ExternalLink>{' '}
+                </ExplorerUrl>{' '}
                 on {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -120,14 +108,9 @@ export function USDCWithdrawalConfirmationDialog(
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
                   Receive{' '}
-                  <ExternalLink
-                    className="arb-hover text-blue-link underline"
-                    href={`${getExplorerUrl(chainId)}/token/${
-                      CommonAddress.ArbitrumOne
-                    }`}
-                  >
+                  <ExplorerUrl token="USDC" network="l1">
                     USDC
-                  </ExternalLink>{' '}
+                  </ExplorerUrl>{' '}
                   on {toNetworkName} using Arbitrum&apos;s native bridge with
                   Circle&apos;s{' '}
                   <ExternalLink
