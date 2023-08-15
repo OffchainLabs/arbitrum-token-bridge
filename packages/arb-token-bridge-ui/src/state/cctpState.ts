@@ -369,7 +369,7 @@ export function useCctpState() {
   }
 }
 
-export function useCctpTransactionsUpdater() {
+export function useUpdateCctpTransactions() {
   const { pendingIds, transfers, updateTransfer } = useCctpState()
   const {
     l1: { provider: l1Provider, network: l1Network },
@@ -394,7 +394,7 @@ export function useCctpTransactionsUpdater() {
       .filter(transfer => transfer) as unknown as MergedTransaction[]
   }, [pendingIds, transfers])
 
-  useInterval(async () => {
+  const updateCctpTransactions = useCallback(async () => {
     const receipts = await Promise.all(
       pendingTransactions.map(getTransactionReceipt)
     )
@@ -431,7 +431,9 @@ export function useCctpTransactionsUpdater() {
         })
       }
     })
-  }, 4000)
+  }, [getTransactionReceipt, pendingTransactions, updateTransfer])
+
+  return { updateCctpTransactions }
 }
 
 type useCctpFetchingParams = {
@@ -543,7 +545,7 @@ export function useClaimCctp(tx: MergedTransaction) {
       const { isEthereum } = isNetwork(targetChainId)
 
       if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isEthereum ? 'CCTP Withdrawals' : 'CCTP Deposits', {
+        trackEvent(isEthereum ? 'CCTP Withdrawal' : 'CCTP Deposit', {
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: currentNetworkName,
           amount: Number(tx.value),

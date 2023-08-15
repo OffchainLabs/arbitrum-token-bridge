@@ -538,7 +538,7 @@ export function TransferPanel() {
       }
 
       if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isDeposit ? 'CCTP Deposits' : 'CCTP Withdrawals', {
+        trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: currentNetworkName,
           amount: Number(amount),

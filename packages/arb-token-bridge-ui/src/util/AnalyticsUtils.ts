@@ -84,8 +84,8 @@ export type FathomEventMap =
   //
   | `Tx Error: Get Help Click on ${AnalyticsNetworkName}`
   | `Multiple Tx Error: Get Help Click on ${AnalyticsNetworkName}`
-  | 'CCTP Deposits'
-  | 'CCTP Withdrawals'
+  | 'CCTP Deposit'
+  | 'CCTP Withdrawal'
 
 const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   [key in FathomEventNonCanonicalTokens | FathomEventUSDC]: string
@@ -209,8 +209,8 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Multiple Tx Error: Get Help Click on Arbitrum One': 'CWMVRSXW',
   'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB',
   //
-  'CCTP Deposits': '',
-  'CCTP Withdrawals': ''
+  'CCTP Deposit': '',
+  'CCTP Withdrawal': ''
 }
 
 type AnalyticsEventMap = {
@@ -258,13 +258,13 @@ type AnalyticsEventMap = {
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined
   'Add to Google Calendar Click': undefined
-  'CCTP Deposits': {
+  'CCTP Deposit': {
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
     complete: boolean
   }
-  'CCTP Withdrawals': {
+  'CCTP Withdrawal': {
     accountType: AccountType
     network: AnalyticsNetworkName
     amount: number
@@ -353,7 +353,7 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
         // tx history from the header
         return event
       }
-    case 'CCTP Deposits':
+    case 'CCTP Deposit':
       return event
 
     default:

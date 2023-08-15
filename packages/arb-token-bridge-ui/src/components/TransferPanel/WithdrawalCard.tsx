@@ -60,7 +60,7 @@ export function WithdrawalL1TxStatus({
   const { network: l1Network } = l1
 
   // Try to find the L1 transaction that matches the L2ToL1 message
-  const l1Tx = tx.isCctp ? tx : findMatchingL1TxForWithdrawal(tx)
+  const l1Tx = findMatchingL1TxForWithdrawal(tx)
 
   if (typeof l1Network === 'undefined') {
     return <span>Not available</span>

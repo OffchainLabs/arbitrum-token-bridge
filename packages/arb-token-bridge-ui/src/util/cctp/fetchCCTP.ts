@@ -1,6 +1,10 @@
 import { ChainId } from '../networks'
 import { getAPIBaseUrl, sanitizeQueryParams } from '..'
-import { Response } from '../../pages/api/cctp/[type]'
+import {
+  CompletedCCTPTransfer,
+  PendingCCTPTransfer,
+  Response
+} from '../../pages/api/cctp/[type]'
 import { utils } from 'ethers'
 
 export type FetchParams = {
@@ -13,13 +17,24 @@ export type FetchParams = {
 function convertStringToUsdcBigNumber(amount: string) {
   return utils.formatUnits(amount, 6)
 }
+function mapCCTPTransfer<T extends PendingCCTPTransfer | CompletedCCTPTransfer>(
+  cctpTransfer: T
+): T {
+  cctpTransfer.messageSent.amount = convertStringToUsdcBigNumber(
+    cctpTransfer.messageSent.amount
+  )
+  return cctpTransfer
+}
+
 async function fetchCCTP({
   walletAddress,
   l1ChainId,
   pageNumber,
   pageSize,
   type
-}: FetchParams & { type: 'deposits' | 'withdrawals' }) {
+}: FetchParams & { type: 'deposits' | 'withdrawals' }): Promise<
+  Response['data']
+> {
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       walletAddress,
@@ -39,19 +54,10 @@ async function fetchCCTP({
 
   const parsedResponse: Response = await response.json()
   const { pending, completed } = parsedResponse.data
+
   return {
-    pending: pending.map(pendingTransfer => {
-      pendingTransfer.messageSent.amount = convertStringToUsdcBigNumber(
-        pendingTransfer.messageSent.amount ?? '0'
-      )
-      return pendingTransfer
-    }),
-    completed: completed.map(completedTransfer => {
-      completedTransfer.messageSent.amount = convertStringToUsdcBigNumber(
-        completedTransfer.messageSent.amount ?? '0'
-      )
-      return completedTransfer
-    })
+    pending: pending.map(transfer => mapCCTPTransfer(transfer)),
+    completed: completed.map(transfer => mapCCTPTransfer(transfer))
   }
 }
 

@@ -117,9 +117,7 @@ export function TokenButton({ amount }: { amount: string }): JSX.Element {
             <TokenSearch
               close={close}
               onImportToken={importToken}
-              onNativeUSDCSelected={() => {
-                openUSDCWithdrawalConfirmationDialog()
-              }}
+              onNativeUSDCSelected={openUSDCWithdrawalConfirmationDialog}
             />
           )}
         </Popover.Panel>

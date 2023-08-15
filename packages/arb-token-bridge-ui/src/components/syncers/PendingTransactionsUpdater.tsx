@@ -5,7 +5,7 @@ import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useCctpTransactionsUpdater } from '../../state/cctpState'
+import { useUpdateCctpTransactions } from '../../state/cctpState'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -13,7 +13,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
-  useCctpTransactionsUpdater()
+  const { updateCctpTransactions } = useUpdateCctpTransactions()
 
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
@@ -30,6 +30,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
   // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
+    updateCctpTransactions()
     const pendingTransactions = actions.app.getPendingTransactions()
     if (pendingTransactions.length) {
       console.info(

@@ -841,9 +841,8 @@ export const useArbTokenBridge = (
       setBridgeTokens(oldBridgeTokens => {
         return { ...oldBridgeTokens, ...newBridgeTokens }
       })
-
-      updateErc20L1Balance([l1AddressLowerCased])
       const { l2Address } = bridgeToken
+      updateErc20L1Balance([l1AddressLowerCased])
       if (l2Address) {
         updateErc20L2Balance([l2Address])
       }
