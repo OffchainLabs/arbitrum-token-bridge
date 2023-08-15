@@ -74,15 +74,17 @@ export type AttestationResponse =
       status: 'pending_confirmations'
     }
 
-export function getContracts(chainId: CCTPSupportedChainId | undefined) {
+export function getContracts(chainId: ChainId | undefined) {
   if (!chainId) {
     return contracts[ChainId.Mainnet]
   }
-  return contracts[chainId]
+  return (
+    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Mainnet]
+  )
 }
 
 export type UseCCTPParams = {
-  sourceChainId: CCTPSupportedChainId | undefined
+  sourceChainId: ChainId | undefined
 }
 export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const {

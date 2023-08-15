@@ -321,7 +321,7 @@ export function TransferPanelSummary({
           Gas estimates are not available for this action.
         </div>
         <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          <span className="w-2/5 font-light">You’re moving</span>
+          <span className="w-2/5 font-light">You&apos;re moving</span>
           <div className="flex w-3/5 flex-row justify-between">
             <span>
               {formatAmount(amount, {
@@ -337,7 +337,7 @@ export function TransferPanelSummary({
   return (
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You’re moving</span>
+        <span className="w-2/5 font-light">You&apos;re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
@@ -354,7 +354,7 @@ export function TransferPanelSummary({
       </div>
 
       <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You’ll pay in gas fees</span>
+        <span className="w-2/5 font-light">You&apos;ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
           <span>
             {formatAmount(estimatedTotalGasFees, {

@@ -570,7 +570,6 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         }
       })
-      clearAmountInput()
       openTransactionHistoryPanel()
 
       const depositTxReceipt = await depositForBurnTx.wait()
@@ -593,6 +592,7 @@ export function TransferPanel() {
     } finally {
       setTransferring(false)
       setIsCctp(false)
+      clearAmountInput()
     }
   }
 
