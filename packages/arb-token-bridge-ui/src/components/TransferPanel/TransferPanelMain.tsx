@@ -55,6 +55,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
+import { useCustomFeeToken } from './CustomFeeTokenUtils'
 
 enum NetworkType {
   l1 = 'l1',
@@ -304,62 +305,6 @@ export enum TransferPanelMainErrorMessage {
   SC_WALLET_ETH_NOT_SUPPORTED
 }
 
-async function fetchNativeToken(params: {
-  chainProvider: Provider
-  parentChainProvider: Provider
-}): Promise<ERC20BridgeToken> {
-  const { chainProvider, parentChainProvider } = params
-  const ethBridger = await EthBridger.fromProvider(chainProvider)
-
-  if (typeof ethBridger.nativeToken === 'undefined') {
-    throw new Error('native token is eth')
-  }
-
-  const address = ethBridger.nativeToken
-  const contract = ERC20__factory.connect(address, parentChainProvider)
-
-  const [name, symbol, decimals] = await Promise.all([
-    contract.name(),
-    contract.symbol(),
-    contract.decimals()
-  ])
-
-  return {
-    type: TokenType.ERC20,
-    name,
-    symbol,
-    decimals,
-    address,
-    listIds: new Set()
-  }
-}
-
-function useNativeToken(params: {
-  chainProvider: Provider
-  parentChainProvider: Provider
-}) {
-  const { chainProvider, parentChainProvider } = params
-  const [nativeToken, setNativeToken] = useState<
-    undefined | null | ERC20BridgeToken
-  >(undefined)
-
-  useEffect(() => {
-    async function update() {
-      try {
-        setNativeToken(
-          await fetchNativeToken({ chainProvider, parentChainProvider })
-        )
-      } catch (error) {
-        setNativeToken(null)
-      }
-    }
-
-    update()
-  }, [chainProvider, parentChainProvider])
-
-  return nativeToken
-}
-
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -376,7 +321,7 @@ export function TransferPanelMain({
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
 
-  const nativeToken = useNativeToken({
+  const customFeeToken = useCustomFeeToken({
     chainProvider: l2.provider,
     parentChainProvider: l1.provider
   })
@@ -420,10 +365,10 @@ export function TransferPanelMain({
   })
 
   useEffect(() => {
-    if (nativeToken) {
-      updateErc20L1Balances([nativeToken.address])
+    if (customFeeToken) {
+      updateErc20L1Balances([customFeeToken.address])
     }
-  }, [nativeToken, updateErc20L1Balances])
+  }, [customFeeToken, updateErc20L1Balances])
 
   useEffect(() => {
     if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
@@ -447,7 +392,7 @@ export function TransferPanelMain({
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const nativeTokenBalances = useMemo(() => {
+  const customFeeTokenBalances = useMemo(() => {
     const result: {
       l1: BigNumber | null
       l2: BigNumber | null
@@ -456,12 +401,12 @@ export function TransferPanelMain({
       l2: null
     }
 
-    if (!nativeToken) {
+    if (!customFeeToken) {
       return result
     }
 
     if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[nativeToken.address] ?? null
+      result.l1 = erc20L1Balances[customFeeToken.address] ?? null
     }
 
     if (ethL2Balance) {
@@ -470,7 +415,7 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, ethL2Balance, nativeToken])
+  }, [erc20L1Balances, ethL2Balance, customFeeToken])
 
   const selectedTokenBalances = useMemo(() => {
     const result: {
@@ -942,16 +887,16 @@ export function TransferPanelMain({
                   forToken={selectedToken}
                   prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
-                {nativeToken ? (
+                {customFeeToken ? (
                   <>
                     <TokenBalance
                       on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
                       balance={
                         app.isDepositMode
-                          ? nativeTokenBalances.l1
-                          : nativeTokenBalances.l2
+                          ? customFeeTokenBalances.l1
+                          : customFeeTokenBalances.l2
                       }
-                      forToken={nativeToken}
+                      forToken={customFeeToken}
                       prefix={selectedToken ? '' : 'BALANCE: '}
                     />
                     <ETHBalance
@@ -1060,15 +1005,15 @@ export function TransferPanelMain({
                       tokenSymbolOverride="USDC"
                     />
                   )}
-                  {nativeToken ? (
+                  {customFeeToken ? (
                     <TokenBalance
                       on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                       balance={
                         app.isDepositMode
-                          ? nativeTokenBalances.l2
-                          : nativeTokenBalances.l1
+                          ? customFeeTokenBalances.l2
+                          : customFeeTokenBalances.l1
                       }
-                      forToken={nativeToken}
+                      forToken={customFeeToken}
                       prefix={selectedToken ? '' : 'BALANCE: '}
                     />
                   ) : (
