@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -15,7 +14,6 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
-import { CustomMessageWarning } from './CustomMessageWarning'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
@@ -73,11 +71,6 @@ export const PendingTransactions = ({
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
-  // Show from 13th August 2023
-  const showSubgraphMaintenanceMessage = dayjs()
-    .startOf('day')
-    .isAfter(dayjs('2023-08-12').startOf('day'))
-
   return (
     <div
       className={`pending-transactions relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
@@ -122,24 +115,6 @@ export const PendingTransactions = ({
         transactions.some(tx => isTokenDeposit(tx)) && (
           <PendingDepositWarning />
         )}
-
-      {showSubgraphMaintenanceMessage && (
-        <CustomMessageWarning>
-          <span>
-            The Graph is expected to undergo scheduled database maintenance
-            beginning August 14, 2023, 07:00 UTC. Transaction history may not
-            appear between 07:00-13:00 UTC on August 14, 2023. Please check back
-            later or visit{' '}
-            <ExternalLink
-              href="https://status.thegraph.com"
-              className="arb-hover text-blue-link underline"
-            >
-              The Graph&apos;s status page
-            </ExternalLink>{' '}
-            for the latest.
-          </span>
-        </CustomMessageWarning>
-      )}
 
       {/* Transaction cards */}
       {transactions.map(tx => (
