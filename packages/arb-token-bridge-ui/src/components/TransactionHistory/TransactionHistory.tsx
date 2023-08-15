@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react'
 import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
-import { useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -18,7 +18,7 @@ import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppContextActions } from '../App/AppContext'
-import { useCctpState } from '../../state/cctpState'
+import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
 import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
@@ -53,6 +53,21 @@ export const TransactionHistory = ({
     useAppContextActions()
   const { pendingIds: pendingIdsCctp, transfers: transfersCctp } =
     useCctpState()
+  const { address } = useAccount()
+  useCctpFetching({
+    l1ChainId: l1.network.id,
+    walletAddress: address,
+    pageSize: 10,
+    pageNumber: 0,
+    type: 'deposits'
+  })
+  useCctpFetching({
+    l1ChainId: l1.network.id,
+    walletAddress: address,
+    pageSize: 10,
+    pageNumber: 0,
+    type: 'withdrawals'
+  })
 
   const {
     app: { mergedTransactions }
