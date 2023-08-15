@@ -76,7 +76,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a fast bridge</TabButton>
-            {isEOA && <TabButton>Use Arbitrum&apos;s bridge</TabButton>}
+            {isEOA && <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>}
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
