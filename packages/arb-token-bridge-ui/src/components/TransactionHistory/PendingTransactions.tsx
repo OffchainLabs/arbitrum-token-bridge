@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -13,7 +12,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
-import { CustomMessageWarning } from './CustomMessageWarning'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
