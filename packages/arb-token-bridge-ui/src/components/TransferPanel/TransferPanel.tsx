@@ -452,7 +452,12 @@ export function TransferPanel() {
         : openUSDCWithdrawalConfirmationDialog()
       const [confirmed, primaryButtonClicked] = await waitForInput()
 
-      if (!confirmed || (isDeposit && !primaryButtonClicked)) {
+      if (!confirmed) {
+        return
+      }
+      if (isDeposit && primaryButtonClicked === 'bridged') {
+        // User has selected normal bridge (USDC.e)
+        depositToken()
         return
       }
 
@@ -1276,9 +1281,7 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address) ||
-                    isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                    isTokenGoerliUSDC(selectedToken.address))
                 ) {
                   transferCctp('deposits')
                 } else if (selectedToken) {
@@ -1304,9 +1307,7 @@ export function TransferPanel() {
               onClick={() => {
                 if (
                   selectedToken &&
-                  (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address) ||
-                    isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+                  (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
                 ) {
                   transferCctp('withdrawals')
