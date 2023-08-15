@@ -238,6 +238,7 @@ export function TransferPanel() {
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
+  const [isCctp, setIsCctp] = useState(false)
 
   const { error: destinationAddressError, destinationAddress } =
     useDestinationAddressStore()
@@ -489,6 +490,8 @@ export function TransferPanel() {
       })
 
       if (allowance.lt(amountBigNumber)) {
+        setAllowance(allowance)
+        setIsCctp(true)
         const waitForInput = openTokenApprovalDialog()
         const [confirmed] = await waitForInput()
 
@@ -589,6 +592,7 @@ export function TransferPanel() {
     } catch (e) {
     } finally {
       setTransferring(false)
+      setIsCctp(false)
     }
   }
 
@@ -1203,6 +1207,7 @@ export function TransferPanel() {
         amount={amount}
         allowance={allowance}
         token={selectedToken}
+        isCctp={isCctp}
       />
 
       <WithdrawalConfirmationDialog
