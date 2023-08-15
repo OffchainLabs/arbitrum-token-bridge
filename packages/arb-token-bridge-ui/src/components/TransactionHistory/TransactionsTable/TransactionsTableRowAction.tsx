@@ -99,7 +99,9 @@ export function TransactionsTableRowAction({
           <span>
             {`Please connect to the ${
               type === 'deposits' ? 'L2' : 'L1'
-            } network to claim your withdrawal.`}
+            } network to claim your ${
+              type === 'deposits' ? 'deposit' : 'withdrawal'
+            }.`}
           </span>
         }
       >
@@ -108,19 +110,22 @@ export function TransactionsTableRowAction({
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
           onClick={async () => {
-            if (!tx.isCctp) {
-              claim(tx)
-              return
-            }
-
             try {
-              await claimCctp()
+              if (tx.isCctp) {
+                return await claimCctp()
+              } else {
+                return await claim(tx)
+              }
             } catch (error: any) {
               if (isUserRejectedError(error)) {
                 return
               }
 
-              errorToast(`Can't claim withdrawal: ${error?.message ?? error}`)
+              errorToast(
+                `Can't claim ${
+                  type === 'deposits' ? 'withdrawal' : 'deposit'
+                }: ${error?.message ?? error}`
+              )
             }
           }}
         >

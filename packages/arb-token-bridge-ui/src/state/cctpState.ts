@@ -528,8 +528,6 @@ export function useClaimCctp(tx: MergedTransaction) {
       updateTransfer({
         ...tx,
         resolvedAt,
-
-        status: receiveReceiptTx.status === 1 ? 'Executed' : 'Failure',
         cctpData: {
           ...tx.cctpData,
           receiveMessageTimestamp: resolvedAt,
@@ -551,6 +549,10 @@ export function useClaimCctp(tx: MergedTransaction) {
           amount: Number(tx.value),
           complete: true
         })
+      }
+
+      if (receiveReceiptTx.status === 0) {
+        throw new Error('Transaction failed')
       }
     } catch (e) {
       Sentry.captureException(e)

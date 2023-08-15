@@ -99,7 +99,8 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
           content={
             <span>
               Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
-              network to claim your withdrawal.
+              network to claim your{' '}
+              {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
             </span>
           }
         >
@@ -108,19 +109,22 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             loading={isClaiming}
             disabled={isClaimButtonDisabled}
             onClick={async () => {
-              if (!tx.isCctp) {
-                claim(tx)
-                return
-              }
-
               try {
-                await claimCctp()
+                if (tx.isCctp) {
+                  await claimCctp()
+                } else {
+                  await claim(tx)
+                }
               } catch (error: any) {
                 if (isUserRejectedError(error)) {
                   return
                 }
 
-                errorToast(`Can't claim withdrawal: ${error?.message ?? error}`)
+                errorToast(
+                  `Can't claim ${
+                    isSourceChainIdEthereum ? 'withdrawal' : 'deposit'
+                  }: ${error?.message ?? error}`
+                )
               }
             }}
             className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
