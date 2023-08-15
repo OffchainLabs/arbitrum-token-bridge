@@ -44,7 +44,7 @@ export function useUpdateUSDCBalances({
     (address: `0x${string}` | string) => {
       const l1Address = getL1AddressFromAddress(address)
 
-      updateErc20L1Balance([l1Address.toLocaleLowerCase()])
+      updateErc20L1Balance([l1Address.toLowerCase()])
       if (isTokenMainnetUSDC(l1Address)) {
         updateErc20L2Balance([
           CommonAddress.ArbitrumOne.USDC,

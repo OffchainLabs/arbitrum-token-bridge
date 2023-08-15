@@ -17,12 +17,12 @@ export const TableSentOrReceivedFundsSwitch = ({
   const tabs = useMemo(() => {
     return [
       {
-        handleClick: () => showSentTransactions(),
+        handleClick: showSentTransactions,
         text: 'Funds Sent',
         isActive: isTransactionHistoryShowingSentTx
       },
       {
-        handleClick: () => showReceivedTransactions(),
+        handleClick: showReceivedTransactions,
         text: 'Funds Received',
         isActive: !isTransactionHistoryShowingSentTx
       }

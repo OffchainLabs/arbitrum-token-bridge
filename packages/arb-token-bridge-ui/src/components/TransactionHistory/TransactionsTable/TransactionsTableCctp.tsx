@@ -18,6 +18,7 @@ import { useCctpFetching, useCctpState } from '../../../state/cctpState'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { getNetworkName } from '../../../util/networks'
 
 export function TransactionsTableCctp() {
   const { address } = useAccount()
@@ -28,7 +29,7 @@ export function TransactionsTableCctp() {
     pageNumber: 0,
     pageSize: 10
   })
-  const { l1 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
   const { transfers, depositIds, withdrawalIds } = useCctpState()
   const {
     depositsError,
@@ -82,15 +83,15 @@ export function TransactionsTableCctp() {
       {
         handleClick: () => setType('deposits'),
         isActive: type === 'deposits',
-        text: 'Deposits'
+        text: `To ${getNetworkName(l2.network.id)}`
       },
       {
         handleClick: () => setType('withdrawals'),
         isActive: type === 'withdrawals',
-        text: 'Withdrawals'
+        text: `To ${getNetworkName(l1.network.id)}`
       }
     ]
-  }, [type])
+  }, [type, l1.network.id, l2.network.id])
 
   return (
     <>
