@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -16,13 +16,11 @@ import { useAppState } from '../../../state'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
-import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
-import { getExplorerUrl } from '../../../util/networks'
-import { useChainId } from 'wagmi'
 import { useAccountType } from '../../../hooks/useAccountType'
+import { ExplorerUrl } from './ExplorerUrl'
 
 type Props = UseDialogProps & {
   amount: string
@@ -32,15 +30,14 @@ export function USDCDepositConfirmationDialog(props: Props) {
     app: { selectedToken }
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
-  const chainId = useChainId()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const { isEOA } = useAccountType()
 
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const from = l1.network
+  const to = l2.network
+  const toNetworkName = getNetworkName(to.id)
 
   if (!selectedToken) {
     return null
@@ -104,13 +101,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Receive{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne['USDC.e']}`}
-                >
-                  Bridged USDC (USDC.e)
-                </ExternalLink>{' '}
-                on Arbitrum One using Arbitrum&apos;s native bridge.
+                <ExplorerUrl token="USDC.e">Bridged USDC (USDC.e)</ExplorerUrl>{' '}
+                on {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
               <div className="flex flex-col space-y-6">
@@ -145,14 +137,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href={`https://arbiscan.io/token/${CommonAddress.ArbitrumOne.USDC}`}
-                >
-                  Native USDC
-                </ExternalLink>{' '}
-                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                Receive <ExplorerUrl token="USDC">Native USDC</ExplorerUrl> on
+                Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -178,16 +164,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
-                  Receive{' '}
-                  <ExternalLink
-                    className="arb-hover text-blue-link underline"
-                    href={`${getExplorerUrl(chainId)}/token/${
-                      selectedToken.address
-                    }`}
-                  >
-                    Native USDC
-                  </ExternalLink>{' '}
-                  on Arbitrum One using Arbitrum&apos;s native bridge with
+                  Receive <ExplorerUrl token="USDC">Native USDC</ExplorerUrl> on
+                  {toNetworkName} using Arbitrum&apos;s native bridge with
                   Circle&apos;s{' '}
                   <ExternalLink
                     className="arb-hover text-blue-link underline"

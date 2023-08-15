@@ -1,9 +1,7 @@
-import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
-import { useChainId } from 'wagmi'
-import { getExplorerUrl } from '../../../util/networks'
 import { useEffect, useState } from 'react'
+import { ExplorerUrl } from './ExplorerUrl'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -19,7 +17,6 @@ export function USDCDepositConfirmationDialogCheckbox({
     false,
     false
   ])
-  const chainId = useChainId()
   const externalLinkClassnames = 'arb-hover text-blue-link underline'
 
   function linksOnClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
@@ -79,25 +76,21 @@ export function USDCDepositConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand{' '}
-            <ExternalLink
+            <ExplorerUrl
+              token="USDC.e"
               className={externalLinkClassnames}
-              href={`${getExplorerUrl(chainId)}/token/${
-                CommonAddress.ArbitrumOne['USDC.e']
-              }`}
               onClick={linksOnClickHandler}
             >
               USDC.e
-            </ExternalLink>{' '}
+            </ExplorerUrl>{' '}
             is different from{' '}
-            <ExternalLink
+            <ExplorerUrl
+              token="USDC"
               className={externalLinkClassnames}
-              href={`${getExplorerUrl(chainId)}/token/${
-                CommonAddress.ArbitrumOne.USDC
-              }`}
               onClick={linksOnClickHandler}
             >
               USDC
-            </ExternalLink>
+            </ExplorerUrl>
             .{' '}
             <ExternalLink
               className={externalLinkClassnames}

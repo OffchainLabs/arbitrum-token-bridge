@@ -65,16 +65,21 @@ function getSourceChainIdFromSourceDomain(
   return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
 }
 
+export function getUSDCAddresses(chainId: CCTPSupportedChainId) {
+  return {
+    [ChainId.Mainnet]: CommonAddress.Mainnet,
+    [ChainId.ArbitrumOne]: CommonAddress.ArbitrumOne,
+    [ChainId.Goerli]: CommonAddress.Goerli,
+    [ChainId.ArbitrumGoerli]: CommonAddress.ArbitrumGoerli
+  }[chainId]
+}
+
 export function getUsdcTokenAddressFromSourceChainId(
   sourceChainId: CCTPSupportedChainId
 ) {
-  return {
-    [ChainId.Mainnet]: CommonAddress.Mainnet.USDC,
-    [ChainId.ArbitrumOne]: CommonAddress.ArbitrumOne.USDC,
-    [ChainId.Goerli]: CommonAddress.Goerli.USDC,
-    [ChainId.ArbitrumGoerli]: CommonAddress.ArbitrumGoerli.USDC
-  }[sourceChainId]
+  return getUSDCAddresses(sourceChainId).USDC
 }
+
 function parseTransferToMergedTransaction(
   transfer: PendingCCTPTransfer | CompletedCCTPTransfer,
   chainId: ChainId,
