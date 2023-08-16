@@ -1,8 +1,15 @@
 import { Chain } from 'wagmi'
-import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
+import {
+  mainnet,
+  goerli,
+  sepolia,
+  arbitrum,
+  arbitrumGoerli
+} from 'wagmi/chains'
 
 import {
   arbitrumNova,
+  arbitrumSepolia,
   localL1Network,
   localL2Network
 } from './wagmiAdditionalNetworks'
@@ -25,6 +32,12 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumGoerli:
       return arbitrumGoerli
+
+    case ChainId.Sepolia:
+      return sepolia
+
+    case ChainId.ArbitrumSepolia:
+      return arbitrumSepolia
 
     // Local networks
     case ChainId.Local:
