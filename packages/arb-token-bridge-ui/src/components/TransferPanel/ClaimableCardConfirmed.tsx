@@ -16,10 +16,15 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useChainId } from 'wagmi'
 
-import { ChainId, isNetwork } from '../../util/networks'
-import { useClaimCctp } from '../../state/cctpState'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getTargetChainIdFromSourceChain,
+  useClaimCctp
+} from '../../state/cctpState'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { errorToast } from '../common/atoms/Toast'
+import { GET_HELP_LINK } from '../../constants'
+import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
@@ -32,6 +37,15 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     isEthereum: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
+
+  let toNetworkId
+  if (tx.isCctp) {
+    toNetworkId = getTargetChainIdFromSourceChain(tx)
+  } else {
+    toNetworkId = tx.isWithdrawal ? l1.network.id : l2.network.id
+  }
+
+  const networkName = getNetworkName(toNetworkId)
 
   const currentChainIsValid =
     (isSourceChainIdEthereum && isArbitrum) ||
@@ -51,6 +65,15 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     tx.status,
     tx.cctpData?.receiveMessageTimestamp
   ])
+
+  const getHelpOnError = () => {
+    window.open(GET_HELP_LINK, '_blank')
+
+    // track the button click
+    if (shouldTrackAnalytics(networkName)) {
+      trackEvent('Tx Error: Get Help Click', { network: networkName })
+    }
+  }
 
   const tokenSymbol = useMemo(
     () =>
@@ -104,52 +127,58 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip
-          wrapperClassName=""
-          show={!currentChainIsValid}
-          content={
-            <span>
-              Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
-              network to claim your{' '}
-              {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
-            </span>
-          }
-        >
-          <Button
-            variant="primary"
-            loading={isClaiming || isClaimingCctp}
-            disabled={isClaimButtonDisabled}
-            onClick={async () => {
-              try {
-                if (tx.isCctp) {
-                  await claimCctp()
-                } else {
-                  await claim(tx)
-                }
-              } catch (error: any) {
-                if (isUserRejectedError(error)) {
-                  return
-                }
-
-                errorToast(
-                  `Can't claim ${
-                    isSourceChainIdEthereum ? 'withdrawal' : 'deposit'
-                  }: ${error?.message ?? error}`
-                )
-              }
-            }}
-            className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
-          >
-            <div className="flex flex-nowrap whitespace-pre">
-              Claim{' '}
-              <span className="hidden lg:flex">
-                {formatAmount(Number(tx.value), {
-                  symbol: tokenSymbol
-                })}
+        {tx.status !== 'Failure' ? (
+          <Tooltip
+            wrapperClassName=""
+            show={!currentChainIsValid}
+            content={
+              <span>
+                Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
+                network to claim your{' '}
+                {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
               </span>
-            </div>
+            }
+          >
+            <Button
+              variant="primary"
+              loading={isClaiming || isClaimingCctp}
+              disabled={isClaimButtonDisabled}
+              onClick={async () => {
+                try {
+                  if (tx.isCctp) {
+                    await claimCctp()
+                  } else {
+                    await claim(tx)
+                  }
+                } catch (error: any) {
+                  if (isUserRejectedError(error)) {
+                    return
+                  }
+
+                  errorToast(
+                    `Can't claim ${
+                      isSourceChainIdEthereum ? 'withdrawal' : 'deposit'
+                    }: ${error?.message ?? error}`
+                  )
+                }
+              }}
+              className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
+            >
+              <div className="flex flex-nowrap whitespace-pre">
+                Claim{' '}
+                <span className="hidden lg:flex">
+                  {formatAmount(Number(tx.value), {
+                    symbol: tokenSymbol
+                  })}
+                </span>
+              </div>
+            </Button>
+          </Tooltip>
+        ) : (
+          <Button variant="primary" onClick={getHelpOnError}>
+            Get Help
           </Button>
-        </Tooltip>
+        )}
       </div>
     </WithdrawalCardContainer>
   )
