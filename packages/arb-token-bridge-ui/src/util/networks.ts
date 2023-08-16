@@ -88,7 +88,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Mainnet]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
-  [ChainId.Sepolia]: 'https://sepolia-explorer.io',
+  [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
