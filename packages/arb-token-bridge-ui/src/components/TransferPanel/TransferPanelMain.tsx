@@ -899,9 +899,8 @@ export function TransferPanelMain({
                       forToken={customFeeToken}
                       prefix={selectedToken ? '' : 'BALANCE: '}
                     />
-                    <ETHBalance
-                      balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
-                    />
+                    {/* Only show ETH balance on L1 */}
+                    {app.isDepositMode && <ETHBalance balance={ethL1Balance} />}
                   </>
                 ) : (
                   <ETHBalance
@@ -1006,16 +1005,21 @@ export function TransferPanelMain({
                     />
                   )}
                   {customFeeToken ? (
-                    <TokenBalance
-                      on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                      balance={
-                        app.isDepositMode
-                          ? customFeeTokenBalances.l2
-                          : customFeeTokenBalances.l1
-                      }
-                      forToken={customFeeToken}
-                      prefix={selectedToken ? '' : 'BALANCE: '}
-                    />
+                    <>
+                      <TokenBalance
+                        on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                        balance={
+                          app.isDepositMode
+                            ? customFeeTokenBalances.l2
+                            : customFeeTokenBalances.l1
+                        }
+                        forToken={customFeeToken}
+                        prefix={selectedToken ? '' : 'BALANCE: '}
+                      />
+                      {!app.isDepositMode && (
+                        <ETHBalance balance={ethL1Balance} />
+                      )}
+                    </>
                   ) : (
                     <ETHBalance
                       balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
