@@ -38,8 +38,19 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     (isSourceChainIdArbitrum && isEthereum)
 
   const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || currentChainIsValid
-  }, [isClaiming, isClaimingCctp, currentChainIsValid])
+    return !!(
+      isClaiming ||
+      isClaimingCctp ||
+      !currentChainIsValid ||
+      (tx.status === 'Confirmed' && tx.cctpData?.receiveMessageTimestamp)
+    )
+  }, [
+    isClaiming,
+    isClaimingCctp,
+    currentChainIsValid,
+    tx.status,
+    tx.cctpData?.receiveMessageTimestamp
+  ])
 
   const tokenSymbol = useMemo(
     () =>
@@ -95,7 +106,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
         <Tooltip
           wrapperClassName=""
-          show={currentChainIsValid}
+          show={!currentChainIsValid}
           content={
             <span>
               Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
@@ -106,7 +117,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
         >
           <Button
             variant="primary"
-            loading={isClaiming}
+            loading={isClaiming || isClaimingCctp}
             disabled={isClaimButtonDisabled}
             onClick={async () => {
               try {
