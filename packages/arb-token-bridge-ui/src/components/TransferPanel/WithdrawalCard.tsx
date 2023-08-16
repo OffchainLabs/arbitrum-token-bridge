@@ -123,11 +123,11 @@ export function WithdrawalCardContainer({
           <Image
             src="/icons/cctp.svg"
             className="mr-1 h-5 w-auto"
-            alt="Cross Chain Transfer Protocol (Native USDC)"
+            alt="Cross-Chain Transfer Protocol (Native USDC)"
             width={20}
             height={20}
           />
-          Cross Chain Transfer Protocol Transaction
+          Cross-Chain Transfer Protocol Transaction
         </div>
       )}
       <div className={`${tx.isCctp && 'p-4'}`}>

@@ -192,12 +192,12 @@ export const TransactionHistory = ({
                 <Image
                   src="/icons/cctp.svg"
                   className="h-6 w-auto"
-                  alt="Cross Chain Transfer Protocol (Native USDC)"
+                  alt="Cross-Chain Transfer Protocol (Native USDC)"
                   width={24}
                   height={24}
                 />
                 <span className="hidden md:block">
-                  Cross Chain Transfer Protocol (Native USDC)
+                  Cross-Chain Transfer Protocol (Native USDC)
                 </span>
                 <span className="md:hidden">CCTP (Native USDC)</span>
               </TabButton>
