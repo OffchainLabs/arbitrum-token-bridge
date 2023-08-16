@@ -38,6 +38,7 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
+import { useCustomFeeToken } from './CustomFeeTokenUtils'
 
 enum Panel {
   TOKENS,
@@ -167,6 +168,11 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
+  const customFeeToken = useCustomFeeToken({
+    chainProvider: L2Provider,
+    parentChainProvider: L1Provider
+  })
+
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 
   const tokensFromUser = useTokensFromUser()
@@ -181,6 +187,12 @@ function TokensPanel({
   const getBalance = useCallback(
     (address: string) => {
       if (address === ETH_IDENTIFIER) {
+        if (customFeeToken) {
+          return isDepositMode
+            ? erc20L1Balances?.[customFeeToken.address]
+            : ethL2Balance
+        }
+
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
@@ -203,6 +215,7 @@ function TokensPanel({
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
     [
+      customFeeToken,
       bridgeTokens,
       erc20L1Balances,
       erc20L2Balances,
@@ -403,6 +416,7 @@ function TokensPanel({
                       key="TokenRowEther"
                       onClick={() => onTokenSelected(null)}
                       token={null}
+                      customFeeToken={customFeeToken}
                     />
                   )
                 }
@@ -423,6 +437,7 @@ function TokensPanel({
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}
+                    customFeeToken={customFeeToken}
                   />
                 )
               }}

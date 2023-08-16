@@ -71,12 +71,14 @@ interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
   token: ERC20BridgeToken | null
+  customFeeToken: ERC20BridgeToken | null | undefined
 }
 
 export function TokenRow({
   style,
   onClick,
-  token
+  token,
+  customFeeToken
 }: TokenRowProps): JSX.Element {
   const {
     app: {
@@ -91,26 +93,35 @@ export function TokenRow({
 
   const isSmallScreen = useMedia('(max-width: 419px)')
 
-  const tokenName = useMemo(
-    () =>
-      token
-        ? sanitizeTokenName(token.name, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'Ether',
-    [token, isDepositMode, l2Network, l1Network]
-  )
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'ETH',
-    [token, isDepositMode, l2Network, l1Network]
-  )
+  const tokenName = useMemo(() => {
+    if (token) {
+      return sanitizeTokenName(token.name, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    if (customFeeToken) {
+      return customFeeToken.name
+    }
+
+    return 'Ether'
+  }, [token, customFeeToken, isDepositMode, l2Network, l1Network])
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    if (customFeeToken) {
+      return customFeeToken.symbol
+    }
+
+    return 'ETH'
+  }, [token, customFeeToken, isDepositMode, l2Network, l1Network])
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
@@ -132,6 +143,10 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
+      if (customFeeToken) {
+        return undefined
+      }
+
       return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
     }
 
@@ -140,10 +155,16 @@ export function TokenRow({
     }
 
     return token.logoURI
-  }, [token])
+  }, [token, customFeeToken])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
+      if (customFeeToken) {
+        return isDepositMode
+          ? erc20L1Balances?.[customFeeToken.address.toLowerCase()]
+          : ethL2Balance
+      }
+
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
@@ -162,7 +183,8 @@ export function TokenRow({
     token,
     isDepositMode,
     erc20L1Balances,
-    erc20L2Balances
+    erc20L2Balances,
+    customFeeToken
   ])
 
   const isArbitrumToken = useMemo(() => {
@@ -185,7 +207,7 @@ export function TokenRow({
   }, [token, isArbitrumToken])
 
   const tokenListInfo = useMemo(() => {
-    if (!token) {
+    if (!token || customFeeToken) {
       return null
     }
 
@@ -223,7 +245,7 @@ export function TokenRow({
       return true
     }
 
-    if (!token) {
+    if (!token || customFeeToken) {
       return true
     }
 
@@ -232,7 +254,7 @@ export function TokenRow({
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [token, bridgeTokens])
+  }, [token, customFeeToken, bridgeTokens])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
