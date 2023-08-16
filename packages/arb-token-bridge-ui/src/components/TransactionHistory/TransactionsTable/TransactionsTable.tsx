@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
+import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import {
   getStandardizedDate,
   getStandardizedTime,
@@ -335,7 +335,7 @@ export function TransactionsTable({
                 )
               } else if (isWithdrawal(finalTx)) {
                 return (
-                  <TransactionsTableWithdrawalRow
+                  <TransactionsTableClaimableRow
                     key={`${finalTx.txId}-${finalTx.direction}`}
                     tx={finalTx}
                     className={!isLastRow ? 'border-b border-black' : ''}

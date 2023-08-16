@@ -82,13 +82,8 @@ export function getUsdcTokenAddressFromSourceChainId(
 
 function parseTransferToMergedTransaction(
   transfer: PendingCCTPTransfer | CompletedCCTPTransfer,
-  chainId: ChainId,
-  isPending: boolean
+  chainId: ChainId
 ): MergedTransaction {
-  const depositStatus = isPending
-    ? DepositStatus.CCTP_SOURCE_SUCCESS
-    : DepositStatus.CCTP_DESTINATION_SUCCESS
-
   const { messageSent } = transfer
   let status = 'Unconfirmed'
   let resolvedAt = null
@@ -125,7 +120,7 @@ function parseTransferToMergedTransaction(
     isWithdrawal: !isDeposit,
     blockNum: parseInt(messageSent.blockNumber, 10),
     tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
-    depositStatus,
+    depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
     isCctp: true,
     cctpData: {
       sourceChainId,
@@ -146,10 +141,10 @@ function parseSWRResponse(
 } {
   return {
     pending: pending.map(pendingDeposit =>
-      parseTransferToMergedTransaction(pendingDeposit, chainId, true)
+      parseTransferToMergedTransaction(pendingDeposit, chainId)
     ),
     completed: completed.map(completedDeposit =>
-      parseTransferToMergedTransaction(completedDeposit, chainId, false)
+      parseTransferToMergedTransaction(completedDeposit, chainId)
     )
   }
 }
@@ -333,12 +328,7 @@ export function useCctpState() {
           } else {
             acc.withdrawalIds.push(id)
           }
-          if (
-            transfer.depositStatus === DepositStatus.CCTP_SOURCE_PENDING ||
-            transfer.depositStatus === DepositStatus.CCTP_SOURCE_SUCCESS ||
-            transfer.depositStatus === DepositStatus.CCTP_DESTINATION_PENDING ||
-            transfer.status !== 'Executed'
-          ) {
+          if (transfer.status !== 'Executed') {
             acc.pendingIds.push(id)
           } else {
             acc.completedIds.push(id)
@@ -409,14 +399,12 @@ export function useUpdateCctpTransactions() {
       if (receipt.status === 0) {
         updateTransfer({
           txId: receipt.transactionHash,
-          status: 'Failure',
-          depositStatus: DepositStatus.CCTP_SOURCE_FAILURE
+          status: 'Failure'
         })
       } else if (tx.cctpData?.receiveMessageTransactionHash) {
         updateTransfer({
           txId: receipt.transactionHash,
-          status: 'Executed',
-          depositStatus: DepositStatus.CCTP_DESTINATION_SUCCESS
+          status: 'Executed'
         })
       } else if (receipt.confirmations > requiredBlocksBeforeConfirmation) {
         // If transaction claim was set to failure, don't reset to Confirmed
@@ -426,8 +414,7 @@ export function useUpdateCctpTransactions() {
 
         updateTransfer({
           txId: receipt.transactionHash,
-          status: 'Confirmed',
-          depositStatus: DepositStatus.CCTP_DESTINATION_PENDING
+          status: 'Confirmed'
         })
       }
     })

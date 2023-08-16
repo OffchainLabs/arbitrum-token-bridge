@@ -563,7 +563,7 @@ export function TransferPanel() {
         status: 'pending',
         uniqueId: null,
         value: amount,
-        depositStatus: DepositStatus.CCTP_SOURCE_PENDING,
+        depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
         destination: recipient,
         sender: account,
         isCctp: true,
@@ -587,7 +587,6 @@ export function TransferPanel() {
           txId: depositForBurnTx.hash,
           blockNum: depositTxReceipt.blockNumber,
           status: 'Unconfirmed',
-          depositStatus: DepositStatus.CCTP_SOURCE_SUCCESS,
           cctpData: {
             attestationHash,
             messageBytes

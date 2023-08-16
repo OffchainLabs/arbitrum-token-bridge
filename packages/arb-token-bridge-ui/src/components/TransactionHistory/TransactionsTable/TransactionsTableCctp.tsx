@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 
-import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
-import { isDeposit, isWithdrawal } from '../../../state/app/utils'
+import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
@@ -127,23 +125,14 @@ export function TransactionsTableCctp() {
           {status === TableStatus.SUCCESS &&
             transactions.map((tx, index) => {
               const isLastRow = index === transactions.length - 1
-              if (isDeposit(tx)) {
-                return (
-                  <TransactionsTableDepositRow
-                    key={`${tx.txId}-${tx.direction}`}
-                    tx={tx}
-                    className={!isLastRow ? 'border-b border-black' : ''}
-                  />
-                )
-              } else if (isWithdrawal(tx)) {
-                return (
-                  <TransactionsTableWithdrawalRow
-                    key={`${tx.txId}-${tx.direction}`}
-                    tx={tx}
-                    className={!isLastRow ? 'border-b border-black' : ''}
-                  />
-                )
-              }
+
+              return (
+                <TransactionsTableClaimableRow
+                  key={`${tx.txId}-${tx.direction}`}
+                  tx={tx}
+                  className={!isLastRow ? 'border-b border-black' : ''}
+                />
+              )
             })}
         </tbody>
       </table>

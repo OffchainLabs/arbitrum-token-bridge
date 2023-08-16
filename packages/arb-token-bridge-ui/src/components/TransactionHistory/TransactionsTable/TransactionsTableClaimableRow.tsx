@@ -11,7 +11,12 @@ import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
 import { ExternalLink } from '../../common/ExternalLink'
 import { shortenTxHash } from '../../../util/CommonUtils'
 import { Tooltip } from '../../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import {
+  ChainId,
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork
+} from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
@@ -23,16 +28,26 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
-function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
+type CommonProps = {
+  tx: MergedTransaction
+  isSourceChainArbitrum: boolean
+}
+
+function ClaimableRowStatus({ tx, isSourceChainArbitrum }: CommonProps) {
   const matchingL1Tx = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
     : findMatchingL1TxForWithdrawal(tx)
+  const fromNetwork = isSourceChainArbitrum ? 'L2' : 'L1'
+  const toNetwork = isSourceChainArbitrum ? 'L1' : 'L2'
 
   switch (tx.status) {
     case 'pending':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="yellow" aria-label="L2 Transaction Status">
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${fromNetwork} Transaction Status`}
+          >
             Pending
           </StatusBadge>
         </div>
@@ -40,10 +55,16 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
     case 'Unconfirmed':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+          <StatusBadge
+            variant="green"
+            aria-label={`${fromNetwork} Transaction Status`}
+          >
             Success
           </StatusBadge>
-          <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${toNetwork} Transaction Status`}
+          >
             Pending
           </StatusBadge>
         </div>
@@ -52,11 +73,19 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
     case 'Confirmed':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+          <StatusBadge
+            variant="green"
+            aria-label={`${fromNetwork} Transaction Status`}
+          >
             Success
           </StatusBadge>
-          <Tooltip content={<span>Funds are ready to be claimed on L1</span>}>
-            <StatusBadge variant="yellow" aria-label="L1 Transaction Status">
+          <Tooltip
+            content={<span>Funds are ready to be claimed on {toNetwork}</span>}
+          >
+            <StatusBadge
+              variant="yellow"
+              aria-label={`${toNetwork} Transaction Status`}
+            >
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
           </Tooltip>
@@ -67,18 +96,24 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
       if (typeof matchingL1Tx === 'undefined') {
         return (
           <div className="flex flex-col space-y-1">
-            <StatusBadge variant="green" aria-label="L2 Transaction Status">
+            <StatusBadge
+              variant="green"
+              aria-label={`${fromNetwork} Transaction Status`}
+            >
               Success
             </StatusBadge>
             <Tooltip
               content={
                 <span>
-                  Executed: Funds have been claimed on L1, but the corresponding
-                  Tx ID was not found
+                  Executed: Funds have been claimed on {toNetwork}, but the
+                  corresponding Tx ID was not found
                 </span>
               }
             >
-              <StatusBadge variant="gray" aria-label="L1 Transaction Status">
+              <StatusBadge
+                variant="gray"
+                aria-label={`${toNetwork} Transaction Status`}
+              >
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
             </Tooltip>
@@ -88,10 +123,16 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
 
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="green" aria-label="L2 Transaction Status">
+          <StatusBadge
+            variant="green"
+            aria-label={`${fromNetwork} Transaction Status`}
+          >
             Success
           </StatusBadge>
-          <StatusBadge variant="green" aria-label="L1 Transaction Status">
+          <StatusBadge
+            variant="green"
+            aria-label={`${toNetwork} Transaction Status`}
+          >
             Success
           </StatusBadge>
         </div>
@@ -101,7 +142,10 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
     case 'Failure':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="red" aria-label="L2 Transaction Status">
+          <StatusBadge
+            variant="red"
+            aria-label={`${fromNetwork} Transaction Status`}
+          >
             Failed
           </StatusBadge>
         </div>
@@ -112,14 +156,18 @@ function WithdrawalRowStatus({ tx }: { tx: MergedTransaction }) {
   }
 }
 
-function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
+function ClaimableRowTime({ tx, isSourceChainArbitrum }: CommonProps) {
+  const fromNetwork = isSourceChainArbitrum ? 'L2' : 'L1'
+  const toNetwork = isSourceChainArbitrum ? 'L1' : 'L2'
+
   if (tx.status === 'Unconfirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>L2 Transaction Time</span>}>
+        <Tooltip content={<span>{fromNetwork} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
+        {/* FIX WITHDRAWAL OR USE USEREMAININGTIME HERE */}
         <WithdrawalCountdown
           nodeBlockDeadline={
             tx.nodeBlockDeadline ||
@@ -133,11 +181,11 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   if (tx.status === 'Confirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>L2 Transaction Time</span>}>
+        <Tooltip content={<span>{fromNetwork} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>L1 Transaction Time</span>}>
+          <Tooltip content={<span>{toNetwork} Transaction Time</span>}>
             <span className="whitespace-nowrap">Ready</span>
           </Tooltip>
         )}
@@ -145,20 +193,20 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
     )
   }
 
-  const matchingL1Tx = tx.isCctp
+  const claimedTx = tx.isCctp
     ? {
         createdAt: tx.cctpData?.receiveMessageTimestamp
       }
     : findMatchingL1TxForWithdrawal(tx)
 
-  if (typeof matchingL1Tx === 'undefined') {
+  if (typeof claimedTx === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>L2 Transaction time</span>}>
+        <Tooltip content={<span>{fromNetwork} Transaction time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>Ready to claim funds on L1</span>}>
+          <Tooltip content={<span>Ready to claim funds on {toNetwork}</span>}>
             <span className="whitespace-nowrap">n/a</span>
           </Tooltip>
         )}
@@ -168,13 +216,13 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>L2 Transaction Time</span>}>
+      <Tooltip content={<span>{fromNetwork} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
-      {matchingL1Tx?.createdAt && (
-        <Tooltip content={<span>L1 Transaction Time</span>}>
+      {claimedTx?.createdAt && (
+        <Tooltip content={<span>{toNetwork} Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            <TransactionDateTime standardizedDate={matchingL1Tx?.createdAt} />
+            <TransactionDateTime standardizedDate={claimedTx?.createdAt} />
           </span>
         </Tooltip>
       )}
@@ -182,68 +230,75 @@ function WithdrawalRowTime({ tx }: { tx: MergedTransaction }) {
   )
 }
 
-function WithdrawalRowTxID({ tx }: { tx: MergedTransaction }) {
+function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
+  const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
 
-  function L1TxInfo() {
-    if (tx.status !== 'Executed') {
-      return null
-    }
+  const isExecuted = tx.status === 'Executed'
+  const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
+  if (!isExecuted && !isBeingClaimed) {
+    return null
+  }
 
-    const matchingL1Tx = tx.isCctp
-      ? {
-          txId: tx.cctpData?.receiveMessageTransactionHash
-        }
-      : findMatchingL1TxForWithdrawal(tx)
+  const claimedTx = tx.isCctp
+    ? {
+        txId: tx.cctpData?.receiveMessageTransactionHash
+      }
+    : findMatchingL1TxForWithdrawal(tx)
 
-    if (!matchingL1Tx?.txId) {
-      return (
-        <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
-          <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-          {getNetworkName(l1.network.id)}: Not available
-        </span>
-      )
-    }
-
+  if (!claimedTx?.txId) {
     return (
-      <span
-        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label="L1 Transaction Link"
-      >
+      <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
         <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-        {getNetworkName(l1.network.id)}:{' '}
-        <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${matchingL1Tx.txId}`}
-          className="arb-hover text-blue-link"
-        >
-          {shortenTxHash(matchingL1Tx.txId)}
-        </ExternalLink>
+        {getNetworkName(toNetworkId)}: Not available
       </span>
     )
   }
 
   return (
+    <span
+      className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+      aria-label={`${isSourceChainArbitrum ? 'L1' : 'L2'} Transaction Link`}
+    >
+      <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
+      {getNetworkName(toNetworkId)}:{' '}
+      <ExternalLink
+        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
+        className="arb-hover text-blue-link"
+      >
+        {shortenTxHash(claimedTx.txId)}
+      </ExternalLink>
+    </span>
+  )
+}
+
+function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
+  const { l1, l2 } = useNetworksAndSigners()
+  const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
+
+  return (
     <div className="flex flex-col space-y-3">
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label="L2 Transaction Link"
+        aria-label={`${isSourceChainArbitrum ? 'L2' : 'L1'} Transaction Link`}
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(l2.network.id)}:{' '}
+        {getNetworkName(fromNetworkId)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l2.network.id)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
         </ExternalLink>
       </span>
 
-      <L1TxInfo />
+      <ClaimedTxInfo tx={tx} isSourceChainArbitrum={isSourceChainArbitrum} />
     </div>
   )
 }
 
-export function TransactionsTableWithdrawalRow({
+// This component either render Cctp row (deposit/withdrawal) or standard withdrawal
+export function TransactionsTableClaimableRow({
   tx,
   className = ''
 }: {
@@ -251,7 +306,12 @@ export function TransactionsTableWithdrawalRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const { l2 } = useNetworksAndSigners()
+  const { l1, l2 } = useNetworksAndSigners()
+  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne // TODO: check if other L2
+  const {
+    isEthereum: isSourceChainIdEthereum,
+    isArbitrum: isSourceChainIdArbitrum
+  } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
@@ -264,9 +324,9 @@ export function TransactionsTableWithdrawalRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l2.network
+        chain: isSourceChainIdEthereum ? l1.network : l2.network
       }),
-    [l2.network, tx.tokenAddress, tx.asset]
+    [tx.asset, tx.tokenAddress, isSourceChainIdEthereum, l1.network, l2.network]
   )
 
   const customAddressTxPadding = useMemo(
@@ -288,11 +348,17 @@ export function TransactionsTableWithdrawalRow({
       data-testid={`withdrawal-row-${tx.txId}`}
     >
       <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
-        <WithdrawalRowStatus tx={tx} />
+        <ClaimableRowStatus
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
       </td>
 
       <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <WithdrawalRowTime tx={tx} />
+        <ClaimableRowTime
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
       </td>
 
       <td
@@ -307,7 +373,10 @@ export function TransactionsTableWithdrawalRow({
       </td>
 
       <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <WithdrawalRowTxID tx={tx} />
+        <ClaimableRowTxID
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
       </td>
 
       <td
@@ -319,7 +388,7 @@ export function TransactionsTableWithdrawalRow({
         <TransactionsTableRowAction
           tx={tx}
           isError={isError}
-          type="withdrawals"
+          type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
         />
       </td>
       {isCustomDestinationAddressTx(tx) && (

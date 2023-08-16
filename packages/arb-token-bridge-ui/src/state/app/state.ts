@@ -42,12 +42,7 @@ export enum DepositStatus {
   L2_FAILURE = 5,
   CREATION_FAILED = 6,
   EXPIRED = 7,
-  // CCTP Specific
-  CCTP_SOURCE_PENDING = 8,
-  CCTP_SOURCE_SUCCESS = 9,
-  CCTP_SOURCE_FAILURE = 10,
-  CCTP_DESTINATION_PENDING = 11, // Ready to claim (enough blocks have elapsed since CCTP_SOURCE_SUCCESS)
-  CCTP_DESTINATION_SUCCESS = 12
+  CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
 }
 
 export interface MergedTransaction {
