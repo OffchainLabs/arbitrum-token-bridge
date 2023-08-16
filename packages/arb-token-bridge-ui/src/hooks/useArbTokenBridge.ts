@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
-import { Chain, useChainId } from 'wagmi'
+import { Chain } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
