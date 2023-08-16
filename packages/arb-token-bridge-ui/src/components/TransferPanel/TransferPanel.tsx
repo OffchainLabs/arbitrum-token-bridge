@@ -413,11 +413,11 @@ export function TransferPanel() {
       : latestNetworksAndSigners.current.l2.network
 
     const currentNetworkName = getNetworkName(currentNetwork.id)
-    const isConnectedOnTheWrongChain =
+    const isConnectedToTheWrongChain =
       (isDeposit && isConnectedToArbitrum.current) ||
       (type === 'withdrawals' && !isConnectedToArbitrum.current)
 
-    if (isConnectedOnTheWrongChain) {
+    if (isConnectedToTheWrongChain) {
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent('Switch Network and Transfer', {
           type: isDeposit ? 'Deposit' : 'Withdrawal',
