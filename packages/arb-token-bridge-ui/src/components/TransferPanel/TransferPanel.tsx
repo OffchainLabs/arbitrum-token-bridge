@@ -511,7 +511,9 @@ export function TransferPanel() {
           }
           Sentry.captureException(error)
           errorToast(
-            `USDC approve failed: ${(error as Error)?.message ?? error}`
+            `USDC approval transaction failed: ${
+              (error as Error)?.message ?? error
+            }`
           )
           return
         }
@@ -529,7 +531,11 @@ export function TransferPanel() {
           return
         }
         Sentry.captureException(error)
-        errorToast(`USDC deposit failed: ${(error as Error)?.message ?? error}`)
+        errorToast(
+          `USDC deposit transaction failed: ${
+            (error as Error)?.message ?? error
+          }`
+        )
         return
       }
 
