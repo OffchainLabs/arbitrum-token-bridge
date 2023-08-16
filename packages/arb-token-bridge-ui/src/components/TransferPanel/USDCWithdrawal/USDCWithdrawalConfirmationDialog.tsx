@@ -18,7 +18,7 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { useAccountType } from '../../../hooks/useAccountType'
-import { ExplorerUrl } from '../ExplorerUrl'
+import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -78,9 +78,9 @@ export function USDCWithdrawalConfirmationDialog(
             <div className="flex flex-col space-y-3 font-light">
               <p>
                 Receive{' '}
-                <ExplorerUrl token="USDC" network="l1">
+                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
                   USDC
-                </ExplorerUrl>{' '}
+                </USDCTokenExplorerLink>{' '}
                 on {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -108,9 +108,9 @@ export function USDCWithdrawalConfirmationDialog(
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
                   Receive{' '}
-                  <ExplorerUrl token="USDC" network="l1">
+                  <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
                     USDC
-                  </ExplorerUrl>{' '}
+                  </USDCTokenExplorerLink>{' '}
                   on {toNetworkName} using Arbitrum&apos;s native bridge with
                   Circle&apos;s{' '}
                   <ExternalLink

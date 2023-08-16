@@ -20,7 +20,7 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { useAccountType } from '../../../hooks/useAccountType'
-import { ExplorerUrl } from '../ExplorerUrl'
+import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 type Props = UseDialogProps & {
   amount: string
@@ -101,9 +101,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Receive{' '}
-                <ExplorerUrl token="USDC.e" network="l2">
+                <USDCTokenExplorerLink token="USDC.e" networkId={l2.network.id}>
                   Bridged USDC (USDC.e)
-                </ExplorerUrl>{' '}
+                </USDCTokenExplorerLink>{' '}
                 on {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
@@ -140,9 +140,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Receive{' '}
-                <ExplorerUrl token="USDC" network="l2">
+                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
                   Native USDC
-                </ExplorerUrl>{' '}
+                </USDCTokenExplorerLink>{' '}
                 on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -170,9 +170,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
                   Receive{' '}
-                  <ExplorerUrl token="USDC" network="l2">
+                  <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
                     Native USDC
-                  </ExplorerUrl>{' '}
+                  </USDCTokenExplorerLink>{' '}
                   on
                   {toNetworkName} using Arbitrum&apos;s native bridge with
                   Circle&apos;s{' '}

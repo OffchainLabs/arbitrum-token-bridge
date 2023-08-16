@@ -485,7 +485,7 @@ export function TransferPanel() {
       const allowance = await getTokenAllowanceForSpender({
         account: walletAddress,
         erc20Address: usdcContractAddress,
-        provider: latestConnectedProvider.current,
+        provider: type === 'deposits' ? l1Provider : l2Provider,
         spender: tokenMessengerContractAddress
       })
 

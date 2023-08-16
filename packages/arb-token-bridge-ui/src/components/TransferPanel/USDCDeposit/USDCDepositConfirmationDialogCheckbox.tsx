@@ -1,7 +1,9 @@
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
-import { ExplorerUrl } from '../ExplorerUrl'
+import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
+import { ChainId, isNetwork } from '../../../util/networks'
+import { useChainId } from 'wagmi'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -18,6 +20,8 @@ export function USDCDepositConfirmationDialogCheckbox({
     false
   ])
   const externalLinkClassnames = 'arb-hover text-blue-link underline'
+  const chainId = useChainId()
+  const { isTestnet } = isNetwork(chainId)
 
   function linksOnClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
     event.stopPropagation()
@@ -76,23 +80,27 @@ export function USDCDepositConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand{' '}
-            <ExplorerUrl
+            <USDCTokenExplorerLink
               token="USDC.e"
               className={externalLinkClassnames}
               onClick={linksOnClickHandler}
-              network="l2"
+              networkId={
+                isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+              }
             >
               USDC.e
-            </ExplorerUrl>{' '}
+            </USDCTokenExplorerLink>{' '}
             is different from{' '}
-            <ExplorerUrl
+            <USDCTokenExplorerLink
               token="USDC"
               className={externalLinkClassnames}
               onClick={linksOnClickHandler}
-              network="l2"
+              networkId={
+                isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+              }
             >
               USDC
-            </ExplorerUrl>
+            </USDCTokenExplorerLink>
             .{' '}
             <ExternalLink
               className={externalLinkClassnames}
