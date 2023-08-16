@@ -536,7 +536,6 @@ export function TransferPanel() {
             (error as Error)?.message ?? error
           }`
         )
-        return
       }
 
       if (!depositForBurnTx || !account) {
@@ -599,7 +598,6 @@ export function TransferPanel() {
     } finally {
       setTransferring(false)
       setIsCctp(false)
-      clearAmountInput()
     }
   }
 
