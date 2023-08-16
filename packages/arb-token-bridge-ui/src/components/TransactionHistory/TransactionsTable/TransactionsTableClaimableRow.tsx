@@ -307,7 +307,7 @@ export function TransactionsTableClaimableRow({
 }) {
   const isError = tx.status === 'Failure'
   const { l1, l2 } = useNetworksAndSigners()
-  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne // TODO: check if other L2
+  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereum: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum

@@ -694,7 +694,7 @@ export function TransferPanelMain({
         l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
       })
     }
-  }, [isDepositMode, selectedToken])
+  }, [actions.app, isDepositMode, selectedToken, token])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>
