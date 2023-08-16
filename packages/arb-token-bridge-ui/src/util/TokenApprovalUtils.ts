@@ -32,12 +32,12 @@ export const approveTokenEstimateGas = async ({
 }
 
 export async function approveCctpEstimateGas(
-  chainId: CCTPSupportedChainId,
+  sourceChainId: CCTPSupportedChainId,
   amount: BigNumber,
   signer: Signer
 ) {
   const { usdcContractAddress, tokenMessengerContractAddress } =
-    getContracts(chainId)
+    getContracts(sourceChainId)
   const contract = ERC20__factory.connect(usdcContractAddress, signer)
 
   try {

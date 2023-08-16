@@ -18,12 +18,23 @@ export function USDCTokenExplorerLink({
 }>) {
   const explorerUrl = getExplorerUrl(networkId)
   const usdcAddresses = getUSDCAddresses(networkId)
+  let usdcContractAddress: string
+
+  if (token === 'USDC.e') {
+    if ('USDC.e' in usdcAddresses) {
+      usdcContractAddress = usdcAddresses[token]
+    } else {
+      return <>children</>
+    }
+  } else {
+    usdcContractAddress = usdcAddresses[token]
+  }
 
   return (
     <ExternalLink
       onClick={onClick}
       className={twMerge('arb-hover text-blue-link underline', className)}
-      href={`${explorerUrl}/token/${usdcAddresses[token]}`}
+      href={`${explorerUrl}/token/${usdcContractAddress}`}
     >
       {children}
     </ExternalLink>
