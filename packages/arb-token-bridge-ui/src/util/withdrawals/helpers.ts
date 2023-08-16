@@ -46,6 +46,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
 
   return {
     ...event,
+    sender: event.caller,
+    destinationAddress: event.destination,
     type: AssetType.ETH,
     value: callvalue,
     symbol: 'ETH',
@@ -164,6 +166,8 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 
   return {
     ...event,
+    sender: event.caller,
+    destinationAddress: event.destination,
     type: AssetType.ERC20,
     value: result._amount,
     tokenAddress: result.l1Token,
