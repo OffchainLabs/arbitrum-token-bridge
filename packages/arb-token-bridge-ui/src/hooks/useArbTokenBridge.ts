@@ -45,6 +45,7 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
+import { fetchCustomFeeToken } from '../components/TransferPanel/CustomFeeTokenUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -172,6 +173,16 @@ export const useArbTokenBridge = (
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
     const ethBridger = await EthBridger.fromProvider(l2.provider)
+    let nativeTokenSymbol = 'ETH'
+
+    if (ethBridger.nativeToken) {
+      nativeTokenSymbol = (
+        await fetchCustomFeeToken({
+          chainProvider: l2.provider,
+          parentChainProvider: l1.provider
+        })
+      ).symbol
+    }
 
     let tx: L1EthDepositTransaction
 
@@ -196,7 +207,7 @@ export const useArbTokenBridge = (
       status: 'pending',
       value: utils.formatEther(amount),
       txID: tx.hash,
-      assetName: 'ETH',
+      assetName: nativeTokenSymbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address

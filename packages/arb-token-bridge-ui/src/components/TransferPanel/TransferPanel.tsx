@@ -9,6 +9,7 @@ import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { create } from 'zustand'
+import { EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -40,6 +41,7 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
+  getTokenAllowanceForSpender,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
@@ -55,6 +57,8 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { useCustomFeeToken } from './CustomFeeTokenUtils'
+import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -199,8 +203,15 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
+  const customFeeToken = useCustomFeeToken({
+    chainProvider: l2Provider,
+    parentChainProvider: l1Provider
+  })
+
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
+  const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
+    useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
@@ -370,6 +381,42 @@ export function TransferPanel() {
     } else {
       transfer()
     }
+  }
+
+  async function approveCustomFeeTokenForInbox(): Promise<boolean> {
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    const ethBridger = await EthBridger.fromProvider(l2Provider)
+    const l2Network = ethBridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('failed to read custom fee token addres from l2 network')
+    }
+
+    const feeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+      account: walletAddress,
+      spender: l2Network.ethBridge.inbox,
+      erc20Address: l2Network.nativeToken,
+      provider: l1Provider
+    })
+
+    const amountRaw = utils.parseUnits(amount, 18)
+
+    if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const confirmed = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveFeeTokenTx = await ethBridger.approveFeeToken({ l1Signer })
+      await approveFeeTokenTx.wait()
+    }
+
+    return true
   }
 
   const transfer = async () => {
@@ -577,6 +624,14 @@ export function TransferPanel() {
           })
         } else {
           const amountRaw = utils.parseUnits(amount, 18)
+
+          if (customFeeToken) {
+            const approved = await approveCustomFeeTokenForInbox()
+
+            if (!approved) {
+              return
+            }
+          }
 
           await latestEth.current.deposit({
             amount: amountRaw,
@@ -999,6 +1054,11 @@ export function TransferPanel() {
         token={selectedToken}
       />
 
+      <CustomFeeTokenApprovalDialog
+        {...customFeeTokenApprovalDialogProps}
+        customFeeToken={customFeeToken}
+      />
+
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}
         amount={amount}
@@ -1071,7 +1131,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={disableDeposit}
+              // disabled={disableDeposit}
               onClick={() => {
                 if (selectedToken) {
                   depositToken()
@@ -1092,7 +1152,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={disableWithdrawal}
+              // disabled={disableWithdrawal}
               onClick={transfer}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >

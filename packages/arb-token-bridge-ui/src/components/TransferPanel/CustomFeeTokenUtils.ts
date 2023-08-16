@@ -1,9 +1,22 @@
 import { useEffect, useState } from 'react'
+import { Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { EthBridger } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+
+export async function approveCustomFeeTokenForInboxEstimateGas(params: {
+  chainProvider: Provider
+  parentChainSigner: Signer
+}) {
+  const { chainProvider, parentChainSigner } = params
+  const ethBridger = await EthBridger.fromProvider(chainProvider)
+
+  const approveFeeTokenTxRequest = ethBridger.getApproveFeeTokenTxRequest()
+
+  return parentChainSigner.estimateGas(approveFeeTokenTxRequest)
+}
 
 export async function fetchCustomFeeToken(params: {
   chainProvider: Provider
