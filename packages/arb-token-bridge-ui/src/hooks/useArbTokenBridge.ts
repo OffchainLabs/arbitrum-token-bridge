@@ -250,6 +250,16 @@ export const useArbTokenBridge = (
   }) {
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
+      let nativeTokenSymbol = 'ETH'
+
+      if (ethBridger.nativeToken) {
+        nativeTokenSymbol = (
+          await fetchCustomFeeToken({
+            chainProvider: l2.provider,
+            parentChainProvider: l1.provider
+          })
+        ).symbol
+      }
 
       const tx = await ethBridger.withdraw({
         amount,
@@ -266,7 +276,7 @@ export const useArbTokenBridge = (
         status: 'pending',
         value: utils.formatEther(amount),
         txID: tx.hash,
-        assetName: 'ETH',
+        assetName: nativeTokenSymbol,
         assetType: AssetType.ETH,
         sender: walletAddress,
         // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -304,7 +314,7 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: 'ETH',
+          symbol: nativeTokenSymbol,
           decimals: 18,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
