@@ -577,6 +577,8 @@ export function TransferPanel() {
         }
       })
       openTransactionHistoryPanel()
+      setTransferring(false)
+      clearAmountInput()
 
       const depositTxReceipt = await depositForBurnTx.wait()
       const { messageBytes, attestationHash } =
