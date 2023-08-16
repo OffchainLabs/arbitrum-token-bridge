@@ -30,7 +30,11 @@ export const useL2Gateways = ({ l2Provider }: { l2Provider: Provider }) => {
     /* configure gateway addresses for fetching withdrawals */
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
       l2Network.tokenBridge
-    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
+    const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway]
+    // temporary fix for wethgateway
+    if (l2WethGateway) {
+      gatewaysToUse.push(l2WethGateway)
+    }
     const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
     const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainID]
     const l2LptGateway = l2LptGatewayAddresses[l2Network.chainID]
