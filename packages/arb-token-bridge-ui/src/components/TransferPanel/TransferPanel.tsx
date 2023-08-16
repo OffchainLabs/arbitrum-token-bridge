@@ -9,7 +9,7 @@ import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { create } from 'zustand'
-import { EthBridger } from '@arbitrum/sdk'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
@@ -419,6 +419,54 @@ export function TransferPanel() {
     return true
   }
 
+  async function approveCustomFeeTokenForGateway(): Promise<boolean> {
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    if (!selectedToken) {
+      throw new Error('no selected token')
+    }
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    const l2Network = erc20Bridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('failed to read custom fee token addres from l2 network')
+    }
+
+    const gateway = await erc20Bridger.getL1GatewayAddress(
+      selectedToken.address,
+      l1Provider
+    )
+
+    const feeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+      account: walletAddress,
+      spender: gateway,
+      erc20Address: l2Network.nativeToken,
+      provider: l1Provider
+    })
+
+    const amountRaw = utils.parseUnits(amount, 18)
+
+    if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const confirmed = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveFeeTokenTx = await erc20Bridger.approveFeeToken({
+        erc20L1Address: selectedToken.address,
+        l1Signer
+      })
+      await approveFeeTokenTx.wait()
+    }
+
+    return true
+  }
+
   const transfer = async () => {
     const signerUndefinedError = 'Signer is undefined'
 
@@ -555,6 +603,14 @@ export function TransferPanel() {
             const confirmed = await waitForInput()
 
             if (!confirmed) {
+              return
+            }
+          }
+
+          if (customFeeToken) {
+            const approved = await approveCustomFeeTokenForGateway()
+
+            if (!approved) {
               return
             }
           }
