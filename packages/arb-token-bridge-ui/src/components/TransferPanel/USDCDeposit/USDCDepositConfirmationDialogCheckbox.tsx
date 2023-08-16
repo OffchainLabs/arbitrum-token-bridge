@@ -6,11 +6,11 @@ import { ExplorerUrl } from '../ExplorerUrl'
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
   onAllCheckboxesCheched,
-  isBridingNativeUSDC
+  isBridgingNativeUSDC
 }: {
   onChange: (checked: boolean) => void
   onAllCheckboxesCheched?: () => void
-  isBridingNativeUSDC?: true
+  isBridgingNativeUSDC?: true
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([
     false,
@@ -32,7 +32,7 @@ export function USDCDepositConfirmationDialogCheckbox({
 
   return (
     <>
-      {isBridingNativeUSDC && (
+      {isBridgingNativeUSDC && (
         <>
           <Checkbox
             label={

@@ -195,7 +195,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                         setAllCheckboxesChecked(false)
                       }
                     }}
-                    isBridingNativeUSDC
+                    isBridgingNativeUSDC
                   />
                 </div>
               </div>
