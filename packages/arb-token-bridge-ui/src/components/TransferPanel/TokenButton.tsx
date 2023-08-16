@@ -12,6 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useCustomFeeToken } from './CustomFeeTokenUtils'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -27,9 +28,17 @@ export function TokenButton(): JSX.Element {
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
+  const customFeeToken = useCustomFeeToken({
+    chainProvider: l2.provider,
+    parentChainProvider: l1.provider
+  })
+
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
+      if (customFeeToken) {
+        return undefined
+      }
       return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
     }
     if (
@@ -46,18 +55,24 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+  }, [
+    customFeeToken,
+    bridgeTokens,
+    selectedToken?.address,
+    status,
+    arbTokenBridgeLoaded
+  ])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
-      return 'ETH'
+      return customFeeToken?.symbol ?? 'ETH'
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
       chain: isDepositMode ? l1.network : l2.network
     })
-  }, [selectedToken, isDepositMode, l2.network, l1.network])
+  }, [selectedToken, customFeeToken, isDepositMode, l2.network, l1.network])
 
   function closeWithReset() {
     setTokenToImport(undefined)
