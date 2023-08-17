@@ -1294,6 +1294,7 @@ export function TransferPanel() {
               disabled={disableDeposit}
               onClick={() => {
                 if (
+                  isEOA &&
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
                     isTokenGoerliUSDC(selectedToken.address)) &&
@@ -1322,6 +1323,7 @@ export function TransferPanel() {
               disabled={disableWithdrawal}
               onClick={() => {
                 if (
+                  isEOA &&
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
