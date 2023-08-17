@@ -111,15 +111,14 @@ export function USDCWithdrawalConfirmationDialog(
                   <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
                     USDC
                   </USDCTokenExplorerLink>{' '}
-                  on {toNetworkName} within the Arbitrum Bridge with
-                  Circle&apos;s{' '}
+                  on {toNetworkName} with Circle&apos;s{' '}
                   <ExternalLink
                     className="arb-hover text-blue-link underline"
                     href="https://www.circle.com/en/cross-chain-transfer-protocol"
                   >
                     Cross-Chain Transfer Protocol
                   </ExternalLink>{' '}
-                  integrated.
+                  within the Arbitrum Bridge.
                 </p>
 
                 <div className="flex flex-col space-y-6">
