@@ -1,3 +1,4 @@
+import { utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
@@ -46,6 +47,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
 
   return {
     ...event,
+    sender: event.caller,
+    destinationAddress: event.destination,
     type: AssetType.ETH,
     value: callvalue,
     symbol: 'ETH',
@@ -162,8 +165,40 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     l2ChainID
   )
 
+  // We cannot access sender and destination from the withdrawal object.
+  // We have to get them from the receipt logs.
+  //
+  // Get hash of the topic that contains sender and destination.
+  const signatureHash = utils.id(
+    'TransferRouted(address,address,address,address)'
+  )
+  // Searching logs for the topic.
+  const logs = txReceipt.logs.find(log => {
+    if (!log) {
+      return false
+    }
+    return log.topics[0] === signatureHash
+  })
+
+  // We can directly access them by index, these won't change.
+  let sender = logs?.topics[2]
+  let destinationAddress = logs?.topics[3]
+
+  // SCW relayer won't return leading zeros, but we will get them when using EOA.
+  if (sender && !utils.isAddress(sender)) {
+    // Strips leading zeros if necessary.
+    sender = '0x' + sender.slice(-40)
+  }
+
+  if (destinationAddress && !utils.isAddress(destinationAddress)) {
+    // Strips leading zeros if necessary.
+    destinationAddress = '0x' + destinationAddress.slice(-40)
+  }
+
   return {
     ...event,
+    sender,
+    destinationAddress,
     type: AssetType.ERC20,
     value: result._amount,
     tokenAddress: result.l1Token,
