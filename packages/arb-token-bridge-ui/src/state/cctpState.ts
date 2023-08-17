@@ -36,7 +36,6 @@ export function getBlockBeforeConfirmation(chainId: ChainId) {
   return isTestnet ? 5 : 65
 }
 
-console.log(dayjs)
 export type CCTPSupportedChainId =
   | ChainId.Mainnet
   | ChainId.Goerli
@@ -605,11 +604,11 @@ export function useRemainingTime(tx: MergedTransaction) {
     getBlockBeforeConfirmation(l1SourceChain)
   const blockTime = getBlockTime(l1SourceChain)
 
-  const [remainingTime, setRemainingTime] = useState<string | null>(
-    'Calculating...'
-  )
+  const [remainingTime, setRemainingTime] = useState<string>('Calculating...')
   const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
-  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [isConfirmed, setIsConfirmed] = useState(
+    tx.status === 'Confirmed' || tx.status === 'Executed'
+  )
 
   useEffect(() => {
     if (tx.status === 'Failure') {
@@ -644,7 +643,7 @@ export function useRemainingTime(tx: MergedTransaction) {
   }, 2000)
 
   return {
-    remainingTime: remainingTime?.toString() ?? '',
+    remainingTime,
     isConfirmed
   }
 }
