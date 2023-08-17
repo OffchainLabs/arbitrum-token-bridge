@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
-import { useInterval } from 'react-use'
 
 import { useCCTP } from '../hooks/CCTP/useCCTP'
 import {
