@@ -27,6 +27,7 @@ import { TransactionDateTime } from './TransactionsTable'
 import { formatAmount } from '../../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
+import { useRemainingTime } from '../../../state/cctpState'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -159,6 +160,7 @@ function ClaimableRowStatus({ tx, isSourceChainArbitrum }: CommonProps) {
 function ClaimableRowTime({ tx, isSourceChainArbitrum }: CommonProps) {
   const fromNetwork = isSourceChainArbitrum ? 'L2' : 'L1'
   const toNetwork = isSourceChainArbitrum ? 'L1' : 'L2'
+  const { remainingTime } = useRemainingTime(tx)
 
   if (tx.status === 'Unconfirmed') {
     return (
@@ -167,13 +169,16 @@ function ClaimableRowTime({ tx, isSourceChainArbitrum }: CommonProps) {
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {/* FIX WITHDRAWAL OR USE USEREMAININGTIME HERE */}
-        <WithdrawalCountdown
-          nodeBlockDeadline={
-            tx.nodeBlockDeadline ||
-            NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
-          }
-        />
+        {tx.isCctp ? (
+          <>{remainingTime}</>
+        ) : (
+          <WithdrawalCountdown
+            nodeBlockDeadline={
+              tx.nodeBlockDeadline ||
+              NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
+            }
+          />
+        )}
       </div>
     )
   }
