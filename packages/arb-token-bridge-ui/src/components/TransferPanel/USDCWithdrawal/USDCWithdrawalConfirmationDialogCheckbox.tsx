@@ -1,5 +1,7 @@
+import { useChainId } from 'wagmi'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
+import { isNetwork } from '../../../util/networks'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange,
@@ -9,6 +11,8 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   onAllCheckboxesCheched?: () => void
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
+  const chainId = useChainId()
+  const { isTestnet } = isNetwork(chainId)
 
   useEffect(() => {
     if (checkboxesChecked.every(checked => checked)) {
@@ -40,8 +44,10 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand that it will take{' '}
-            <span className="font-medium">~15 minutes</span> before I can claim
-            my USDC on Ethereum Mainnet.
+            <span className="font-medium">
+              {isTestnet ? '~1 minute' : '~15 minutes'}
+            </span>{' '}
+            before I can claim my USDC on {isTestnet ? 'Goerli' : 'Mainnet'}.
           </span>
         }
         checked={checkboxesChecked[1] ?? false}
