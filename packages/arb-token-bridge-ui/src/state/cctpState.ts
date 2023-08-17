@@ -33,7 +33,8 @@ import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttesta
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
 export function getBlockBeforeConfirmation(chainId: ChainId) {
   const { isTestnet } = isNetwork(chainId)
-  return isTestnet ? 5 : 65
+  // Required blocks are 65 (mainnet) and 5 (testnet), we're adding a buffer of ~30%
+  return isTestnet ? 7 : 85
 }
 
 export type CCTPSupportedChainId =
