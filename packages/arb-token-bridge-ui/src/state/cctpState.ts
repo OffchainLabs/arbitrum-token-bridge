@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
+import { useInterval } from 'react-use'
 
 import { useCCTP } from '../hooks/CCTP/useCCTP'
 import {
@@ -14,7 +15,7 @@ import {
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
-import { useBlockNumber, useSigner } from 'wagmi'
+import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import {
   ChainDomain,
@@ -29,21 +30,13 @@ import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
 import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
-export function getBlockBeforeConfirmation(
-  chainId: CCTPSupportedChainId | undefined
-) {
-  if (!chainId) {
-    return 65
-  }
-
-  return {
-    [ChainId.Mainnet]: 65,
-    [ChainId.ArbitrumOne]: 65,
-    [ChainId.Goerli]: 5,
-    [ChainId.ArbitrumGoerli]: 5
-  }[chainId]
+// Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
+export function getBlockBeforeConfirmation(chainId: ChainId) {
+  const { isTestnet } = isNetwork(chainId)
+  return isTestnet ? 5 : 65
 }
 
+console.log(dayjs)
 export type CCTPSupportedChainId =
   | ChainId.Mainnet
   | ChainId.Goerli
@@ -362,8 +355,8 @@ export function useCctpState() {
 export function useUpdateCctpTransactions() {
   const { pendingIds, transfers, updateTransfer } = useCctpState()
   const {
-    l1: { provider: l1Provider, network: l1Network },
-    l2: { provider: l2Provider, network: l2Network }
+    l1: { provider: l1Provider },
+    l2: { provider: l2Provider }
   } = useNetworksAndSigners()
   const getTransactionReceipt = useCallback(
     async (tx: MergedTransaction) => {
@@ -371,11 +364,10 @@ export function useUpdateCctpTransactions() {
       const receipt = await provider.getTransactionReceipt(tx.txId)
       return {
         receipt,
-        chainId: tx.direction === 'deposit' ? l1Network.id : l2Network.id,
         tx
       }
     },
-    [l1Network.id, l1Provider, l2Network.id, l2Provider]
+    [l1Provider, l2Provider]
   )
 
   const pendingTransactions = useMemo(() => {
@@ -388,13 +380,16 @@ export function useUpdateCctpTransactions() {
     const receipts = await Promise.all(
       pendingTransactions.map(getTransactionReceipt)
     )
-    receipts.forEach(({ chainId, receipt, tx }) => {
-      const requiredBlocksBeforeConfirmation =
-        getBlockBeforeConfirmation(chainId)
-
+    const now = dayjs()
+    receipts.forEach(({ receipt, tx }) => {
       if (!receipt) {
         return
       }
+
+      const l1SourceChain = getL1ChainIdFromSourceChain(tx)
+      const requiredL1BlocksBeforeConfirmation =
+        getBlockBeforeConfirmation(l1SourceChain)
+      const blockTime = getBlockTime(l1SourceChain)
 
       if (receipt.status === 0) {
         updateTransfer({
@@ -418,7 +413,11 @@ export function useUpdateCctpTransactions() {
             attestationHash
           }
         })
-      } else if (receipt.confirmations > requiredBlocksBeforeConfirmation) {
+      } else if (
+        tx.createdAt &&
+        now.diff(tx.createdAt, 'second') >
+          requiredL1BlocksBeforeConfirmation * blockTime
+      ) {
         // If transaction claim was set to failure, don't reset to Confirmed
         if (tx.status === 'Failure') {
           return
@@ -601,53 +600,16 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
 }
 
 export function useRemainingTime(tx: MergedTransaction) {
-  const { data: currentBlockNumber } = useBlockNumber({
-    chainId: tx.cctpData?.sourceChainId,
-    watch: true
-  })
-
-  const requiredBlocksBeforeConfirmation = getBlockBeforeConfirmation(
-    tx.cctpData?.sourceChainId as CCTPSupportedChainId
-  )
-
   const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  const blockTime =
-    tx.direction === 'deposit' ? getBlockTime(l1SourceChain) : 15
+  const requiredL1BlocksBeforeConfirmation =
+    getBlockBeforeConfirmation(l1SourceChain)
+  const blockTime = getBlockTime(l1SourceChain)
 
   const [remainingTime, setRemainingTime] = useState<string | null>(
     'Calculating...'
   )
+  const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
   const [isConfirmed, setIsConfirmed] = useState(false)
-
-  useEffect(() => {
-    if (!currentBlockNumber || !tx.blockNum) {
-      return
-    }
-
-    const elapsedBlocks = Math.max(currentBlockNumber - tx.blockNum, 0)
-    const blocksLeftBeforeConfirmation = Math.max(
-      requiredBlocksBeforeConfirmation - elapsedBlocks,
-      0
-    )
-    const withdrawalDate = dayjs().add(
-      blocksLeftBeforeConfirmation * blockTime,
-      'second'
-    )
-
-    if (blocksLeftBeforeConfirmation === 0) {
-      setIsConfirmed(true)
-    }
-
-    if (tx.status !== 'Failure') {
-      setRemainingTime(dayjs().to(withdrawalDate, true))
-    }
-  }, [
-    blockTime,
-    currentBlockNumber,
-    requiredBlocksBeforeConfirmation,
-    tx.blockNum,
-    tx.status
-  ])
 
   useEffect(() => {
     if (tx.status === 'Failure') {
@@ -655,8 +617,34 @@ export function useRemainingTime(tx: MergedTransaction) {
     }
   }, [tx.status, setRemainingTime])
 
+  useEffect(() => {
+    if (!tx.createdAt || tx.status === 'Failure') {
+      return
+    }
+
+    setCanBeClaimedDate(
+      dayjs(tx.createdAt).add(
+        requiredL1BlocksBeforeConfirmation * blockTime,
+        'seconds'
+      )
+    )
+  }, [blockTime, requiredL1BlocksBeforeConfirmation, tx.createdAt, tx.status])
+
+  useInterval(() => {
+    if (!canBeClaimedDate) {
+      return
+    }
+
+    if (dayjs().isAfter(canBeClaimedDate)) {
+      setIsConfirmed(true)
+      setRemainingTime('')
+    } else {
+      setRemainingTime(canBeClaimedDate.fromNow().toString())
+    }
+  }, 2000)
+
   return {
-    remainingTime,
+    remainingTime: remainingTime?.toString() ?? '',
     isConfirmed
   }
 }
