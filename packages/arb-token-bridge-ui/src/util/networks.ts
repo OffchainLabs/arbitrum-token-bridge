@@ -107,6 +107,12 @@ export const getConfirmPeriodBlocks = (chainId: ChainId) => {
   return network.confirmPeriodBlocks
 }
 
+export const l2ArbReverseGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumOne]: '0xCaD7828a19b363A2B44717AFB1786B5196974D8E',
+  [ChainId.ArbitrumNova]: '0xbf544970E6BD77b21C6492C281AB60d0770451F4',
+  [ChainId.ArbitrumGoerli]: '0x584d4D9bED1bEb39f02bb51dE07F493D3A5CdaA0'
+}
+
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F'
