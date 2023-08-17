@@ -181,6 +181,7 @@ jobs:
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
           envkey_TEST_FILE: ${{ matrix.tests.file }}
           envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
@@ -190,6 +191,7 @@ jobs:
           envkey_NEXT_PUBLIC_IS_E2E_TEST: true
           envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
           directory: ./packages/arb-token-bridge-ui/
           file_name: .env
 
