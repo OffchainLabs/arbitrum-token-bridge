@@ -111,7 +111,7 @@ export function USDCWithdrawalConfirmationDialog(
                   <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
                     USDC
                   </USDCTokenExplorerLink>{' '}
-                  on {toNetworkName} using Arbitrum&apos;s native bridge with
+                  on {toNetworkName} within the Arbitrum Bridge with
                   Circle&apos;s{' '}
                   <ExternalLink
                     className="arb-hover text-blue-link underline"

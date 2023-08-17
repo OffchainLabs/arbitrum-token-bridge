@@ -173,7 +173,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
                     Native USDC
                   </USDCTokenExplorerLink>{' '}
-                  on {toNetworkName} using Arbitrum&apos;s native bridge with
+                  on {toNetworkName} within the Arbitrum Bridge with
                   Circle&apos;s{' '}
                   <ExternalLink
                     className="arb-hover text-blue-link underline"
