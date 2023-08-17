@@ -17,7 +17,8 @@ import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
   l1Provider: Provider,
-  l2Provider: Provider
+  l2Provider: Provider,
+  walletAddress: string
 ) => {
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
     withdrawalTx as L2ToL1EventResultPlus,
@@ -25,7 +26,10 @@ export const updateAdditionalWithdrawalData = async (
     l2Provider
   )
 
-  return l2toL1TxWithDeadline
+  return {
+    ...l2toL1TxWithDeadline,
+    sender: l2toL1TxWithDeadline.sender ?? walletAddress // fallback to walletAddress if withdrawal doesn't have valid sender field (eg. event logs)
+  }
 }
 
 export async function mapETHWithdrawalToL2ToL1EventResult(

@@ -132,7 +132,12 @@ export const fetchWithdrawals = async ({
 
   const finalL2ToL1Txns: L2ToL1EventResultPlus[] = await Promise.all(
     l2ToL1Txns.map(withdrawal =>
-      updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
+      updateAdditionalWithdrawalData(
+        withdrawal,
+        l1Provider,
+        l2Provider,
+        address
+      )
     )
   )
 
