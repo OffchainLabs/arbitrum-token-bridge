@@ -1,11 +1,12 @@
 import { useCallback, useEffect } from 'react'
 import { TransactionReceipt } from '@ethersproject/providers'
+import { useAccount } from 'wagmi'
 
 import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useUpdateCctpTransactions } from '../../state/cctpState'
+import { useCctpState, useUpdateCctpTransactions } from '../../state/cctpState'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
@@ -18,6 +19,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
+  const { address } = useAccount()
+  const { resetTransfers } = useCctpState()
+
+  useEffect(() => {
+    resetTransfers()
+  }, [address, resetTransfers])
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
