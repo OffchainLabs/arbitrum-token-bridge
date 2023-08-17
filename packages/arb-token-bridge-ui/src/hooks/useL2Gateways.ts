@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import {
+  l2ArbReverseGatewayAddresses,
   l2DaiGatewayAddresses,
   l2LptGatewayAddresses,
   l2wstETHGatewayAddresses
@@ -31,9 +32,14 @@ export const useL2Gateways = ({ l2Provider }: { l2Provider: Provider }) => {
     const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
       l2Network.tokenBridge
     const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
+    const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainID]
     const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
     const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainID]
     const l2LptGateway = l2LptGatewayAddresses[l2Network.chainID]
+
+    if (l2ArbReverseGateway) {
+      gatewaysToUse.push(l2ArbReverseGateway)
+    }
     if (l2DaiGateway) {
       gatewaysToUse.push(l2DaiGateway)
     }
