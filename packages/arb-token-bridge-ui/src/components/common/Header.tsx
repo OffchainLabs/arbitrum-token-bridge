@@ -206,6 +206,9 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
 }
 
 export function Header() {
+  if (process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL) {
+    return <div>Doesnt exist</div>
+  }
   return (
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
