@@ -60,8 +60,11 @@ export function USDCDepositConfirmationDialogCheckbox({
             label={
               <span className="select-none font-light">
                 I understand that it will take{' '}
-                <span className="font-medium">~15 minutes</span> before I can
-                claim my USDC on Arbitrum One.
+                <span className="font-medium">
+                  {isTestnet ? '~1 minute' : '~15 minutes'}
+                </span>{' '}
+                before I can claim my USDC on{' '}
+                {isTestnet ? 'Arbitrum Goerli' : 'Arbitrum One'}.
               </span>
             }
             checked={checkboxesChecked[1] ?? false}
