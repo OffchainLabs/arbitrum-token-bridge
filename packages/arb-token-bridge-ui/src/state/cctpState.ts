@@ -471,11 +471,7 @@ export function useCctpFetching({
     pageSize,
     enabled: type !== 'deposits'
   })
-  const { setTransfers, resetTransfers } = useCctpState()
-
-  useEffect(() => {
-    resetTransfers()
-  }, [walletAddress, resetTransfers])
+  const { setTransfers } = useCctpState()
 
   useEffect(() => {
     if (deposits) {
