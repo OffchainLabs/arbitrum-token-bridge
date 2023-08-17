@@ -65,17 +65,6 @@ export const fetchWithdrawals = async ({
     toBlock = latestSubgraphBlockNumber
   }
 
-  let fromAddress: string | undefined = undefined
-  let toAddress: string | undefined = undefined
-
-  if (sender) {
-    fromAddress = sender
-    toAddress = undefined
-  } else {
-    fromAddress = undefined
-    toAddress = receiver
-  }
-
   const [
     withdrawalsFromSubgraph,
     ethWithdrawalsFromEventLogs,
@@ -95,14 +84,14 @@ export const fetchWithdrawals = async ({
     }),
     fetchETHWithdrawalsFromEventLogs({
       // todo: update this when eth deposits to custom destination address are enabled
-      toAddress,
+      toAddress: receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      fromAddress,
-      toAddress,
+      fromAddress: sender,
+      toAddress: receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
