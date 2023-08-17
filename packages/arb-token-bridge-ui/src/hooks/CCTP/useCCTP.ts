@@ -143,7 +143,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
           return attestation.attestation
         }
 
-        await new Promise(r => setTimeout(r, 5000))
+        await new Promise(r => setTimeout(r, 30_000))
       }
     },
     [fetchAttestation]
