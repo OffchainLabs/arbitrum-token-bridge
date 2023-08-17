@@ -85,7 +85,7 @@ describe('Deposit ERC20 Token', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
-            cy.findByText('You&pos;re moving')
+            cy.findByText("You're moving")
               .siblings()
               .last()
               .contains(formatAmount(ERC20AmountToSend))

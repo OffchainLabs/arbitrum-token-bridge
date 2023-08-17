@@ -26,6 +26,7 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
 import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
+import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 export function getBlockBeforeConfirmation(
@@ -404,6 +405,18 @@ export function useUpdateCctpTransactions() {
         updateTransfer({
           txId: receipt.transactionHash,
           status: 'Executed'
+        })
+      } else if (receipt.blockNumber && !tx.blockNum) {
+        // If blockNumber was never set (for example, network switch just after the deposit)
+        const { messageBytes, attestationHash } =
+          getAttestationHashAndMessageFromReceipt(receipt)
+        updateTransfer({
+          txId: receipt.transactionHash,
+          blockNum: receipt.blockNumber,
+          cctpData: {
+            messageBytes,
+            attestationHash
+          }
         })
       } else if (receipt.confirmations > requiredBlocksBeforeConfirmation) {
         // If transaction claim was set to failure, don't reset to Confirmed

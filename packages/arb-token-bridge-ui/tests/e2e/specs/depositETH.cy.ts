@@ -26,7 +26,7 @@ describe('Deposit ETH', () => {
     cy.findByPlaceholderText('Enter amount')
       .typeRecursively(String(ETHAmountToDeposit))
       .then(() => {
-        cy.findByText('You&pos;re moving')
+        cy.findByText("You're moving")
           .siblings()
           .last()
           .contains(formatAmount(0.0001, { symbol: 'ETH' }))

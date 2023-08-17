@@ -19,7 +19,8 @@ import { useChainId } from 'wagmi'
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import {
   getTargetChainIdFromSourceChain,
-  useClaimCctp
+  useClaimCctp,
+  useRemainingTime
 } from '../../state/cctpState'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { errorToast } from '../common/atoms/Toast'
@@ -30,6 +31,8 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
+  const { isConfirmed } = useRemainingTime(tx)
+
   const chainId = useChainId()
   const { isArbitrum, isEthereum } = isNetwork(chainId)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
@@ -56,12 +59,14 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
       isClaiming ||
       isClaimingCctp ||
       !currentChainIsValid ||
+      !isConfirmed ||
       (tx.status === 'Confirmed' && tx.cctpData?.receiveMessageTimestamp)
     )
   }, [
     isClaiming,
     isClaimingCctp,
     currentChainIsValid,
+    isConfirmed,
     tx.status,
     tx.cctpData?.receiveMessageTimestamp
   ])

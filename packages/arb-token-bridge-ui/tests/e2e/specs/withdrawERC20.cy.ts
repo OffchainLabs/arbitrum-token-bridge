@@ -63,7 +63,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20ToWithdraw))
           .then(() => {
-            cy.findByText('You&pos;re moving')
+            cy.findByText("You're moving")
               .siblings()
               .last()
               .contains(formatAmount(ERC20ToWithdraw, { symbol: 'WETH' }))

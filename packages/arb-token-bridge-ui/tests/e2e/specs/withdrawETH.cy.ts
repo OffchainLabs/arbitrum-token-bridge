@@ -34,7 +34,7 @@ describe('Withdraw ETH', () => {
         typeAmountIntoInput()
           .should('have.value', String(ETHToWithdraw))
           .then(() => {
-            cy.findByText('You&pos;re moving')
+            cy.findByText("You're moving")
               .siblings()
               .last()
               .contains(formatAmount(0.0001, { symbol: 'ETH' }))

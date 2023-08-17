@@ -7,7 +7,7 @@ import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
-import { useClaimCctp } from '../../../state/cctpState'
+import { useClaimCctp, useRemainingTime } from '../../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../../util/isUserRejectedError'
 import { getNetworkName, isNetwork } from '../../../util/networks'
@@ -53,6 +53,7 @@ export function TransactionsTableRowAction({
   const chainId = useChainId()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
+  const { isConfirmed } = useRemainingTime(tx)
 
   const { isMainnet, isGoerli, isArbitrumOne, isArbitrumGoerli } =
     isNetwork(chainId)
@@ -61,8 +62,8 @@ export function TransactionsTableRowAction({
     (type === 'withdrawals' && (isMainnet || isGoerli))
 
   const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !currentChainIsValid
-  }, [isClaiming, isClaimingCctp, currentChainIsValid])
+    return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed
+  }, [isClaiming, isClaimingCctp, currentChainIsValid, isConfirmed])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
