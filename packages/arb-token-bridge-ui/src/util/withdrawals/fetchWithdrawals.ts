@@ -44,10 +44,9 @@ export const fetchWithdrawals = async ({
   fromBlock,
   toBlock
 }: FetchWithdrawalsParams) => {
-  const address = sender ?? receiver
-
-  if (typeof address === 'undefined') return []
-  if (!l1Provider || !l2Provider) return []
+  if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
+    return []
+  }
 
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
@@ -64,6 +63,17 @@ export const fetchWithdrawals = async ({
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
+  }
+
+  let fromAddress: string | undefined = undefined
+  let toAddress: string | undefined = undefined
+
+  if (sender) {
+    fromAddress = sender
+    toAddress = undefined
+  } else {
+    fromAddress = undefined
+    toAddress = receiver
   }
 
   const [
@@ -84,13 +94,15 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address,
+      // todo: update this when eth deposits to custom destination address are enabled
+      toAddress,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address,
+      fromAddress,
+      toAddress,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -121,8 +133,7 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID,
-          address
+          l2ChainID
         )
       )
     ])

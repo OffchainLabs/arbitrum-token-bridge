@@ -138,11 +138,12 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainID: number,
-  walletAddress: string
+  l2ChainID: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
-    account: walletAddress,
+    // we don't care about allowance in this call, so we're just using vitalik.eth
+    // didn't want to use address zero in case contracts have checks for it
+    account: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     erc20L1Address: result.l1Token,
     l1Provider,
     l2Provider
