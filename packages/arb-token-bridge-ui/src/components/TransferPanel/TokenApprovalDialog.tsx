@@ -77,7 +77,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           } else {
             gasEstimate = await approveCctpEstimateGas(
               chainId,
-              BigNumber.from(amount),
+              constants.MaxUint256,
               signer
             )
           }
