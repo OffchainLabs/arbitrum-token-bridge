@@ -583,6 +583,11 @@ export function TransferPanel() {
       const { messageBytes, attestationHash } =
         getAttestationHashAndMessageFromReceipt(depositTxReceipt)
 
+      if (depositTxReceipt.status === 0) {
+        errorToast('USDC deposit transaction failed')
+        return
+      }
+
       if (messageBytes && attestationHash) {
         updateTransfer({
           txId: depositForBurnTx.hash,
