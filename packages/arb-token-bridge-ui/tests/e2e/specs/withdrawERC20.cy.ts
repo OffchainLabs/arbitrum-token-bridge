@@ -68,7 +68,7 @@ describe('Withdraw ERC20 Token', () => {
               .last()
               .contains(formatAmount(ERC20ToWithdraw, { symbol: 'WETH' }))
               .should('be.visible')
-            cy.findByText(/You&apos;ll pay in gas fees/i)
+            cy.findByText(/You'll pay in gas fees/i)
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)

@@ -28,7 +28,7 @@ describe('Approve token and deposit afterwards', () => {
       cy.findByPlaceholderText('Enter amount')
         .typeRecursively(ERC20Amount)
         .then(() => {
-          cy.findByText('You&apos;ll pay in gas fees')
+          cy.findByText("You'll pay in gas fees")
             .siblings()
             .last()
             .contains(zeroToLessThanOneETH)

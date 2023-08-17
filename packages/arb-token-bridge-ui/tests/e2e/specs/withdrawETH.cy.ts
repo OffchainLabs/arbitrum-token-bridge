@@ -39,7 +39,7 @@ describe('Withdraw ETH', () => {
               .last()
               .contains(formatAmount(0.0001, { symbol: 'ETH' }))
               .should('be.visible')
-            cy.findByText('You&apos;ll pay in gas fees')
+            cy.findByText("You'll pay in gas fees")
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
