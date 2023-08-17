@@ -206,7 +206,7 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
 }
 
 export function Header() {
-  if (process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL) {
+  if (!process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL) {
     return <div>Doesnt exist</div>
   }
   return (
