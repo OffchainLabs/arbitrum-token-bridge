@@ -1296,7 +1296,8 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address))
+                    isTokenGoerliUSDC(selectedToken.address)) &&
+                  !isArbitrumNova
                 ) {
                   transferCctp('deposits')
                 } else if (selectedToken) {

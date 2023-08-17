@@ -20,6 +20,11 @@ export function USDCTokenExplorerLink({
   const usdcAddresses = getUSDCAddresses(networkId)
   let usdcContractAddress: string
 
+  // While this case should not happen, we have this safety to avoid crashes
+  if (!usdcAddresses) {
+    return <>children</>
+  }
+
   if (token === 'USDC.e') {
     if ('USDC.e' in usdcAddresses) {
       usdcContractAddress = usdcAddresses[token]
