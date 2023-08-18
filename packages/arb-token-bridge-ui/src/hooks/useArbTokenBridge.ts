@@ -45,6 +45,7 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
+import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -121,6 +122,10 @@ export const useArbTokenBridge = (
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
+
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
+    walletAddress
+  })
 
   const [executedMessagesCache, setExecutedMessagesCache] =
     useLocalStorage<ExecutedMessagesCache>(
@@ -820,6 +825,8 @@ export const useArbTokenBridge = (
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
+      updateUSDCBalances(l1Address)
+
       if (typeof bridgeTokens === 'undefined') {
         return
       }

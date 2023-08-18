@@ -157,6 +157,9 @@ export const isWithdrawal = (tx: MergedTransaction) => {
 }
 
 export const isPending = (tx: MergedTransaction) => {
+  if (tx.isCctp && !tx.resolvedAt && tx.status !== 'Failure') {
+    return true
+  }
   return (
     (isDeposit(tx) &&
       (tx.status === 'pending' ||
@@ -180,7 +183,9 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
-export function isCustomDestinationAddressTx(tx: MergedTransaction) {
+export function isCustomDestinationAddressTx(
+  tx: Pick<MergedTransaction, 'sender' | 'destination'>
+) {
   if (!tx.sender || !tx.destination) {
     return false
   }

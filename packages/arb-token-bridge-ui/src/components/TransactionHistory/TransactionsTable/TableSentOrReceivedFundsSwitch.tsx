@@ -1,6 +1,7 @@
-import { twMerge } from 'tailwind-merge'
+import { useMemo } from 'react'
 
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
+import { TransactionsTableSwitch } from './TransactionsTableSwitch'
 
 export const TableSentOrReceivedFundsSwitch = ({
   className
@@ -13,37 +14,24 @@ export const TableSentOrReceivedFundsSwitch = ({
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
 
-  const buttonActiveClassName = 'pointer-events-none border-b-4 border-black'
-  const buttonInactiveClassName = 'arb-hover border-b-2 pb-[1px] border-gray'
+  const tabs = useMemo(() => {
+    return [
+      {
+        handleClick: showSentTransactions,
+        text: 'Funds Sent',
+        isActive: isTransactionHistoryShowingSentTx
+      },
+      {
+        handleClick: showReceivedTransactions,
+        text: 'Funds Received',
+        isActive: !isTransactionHistoryShowingSentTx
+      }
+    ]
+  }, [
+    isTransactionHistoryShowingSentTx,
+    showReceivedTransactions,
+    showSentTransactions
+  ])
 
-  return (
-    <div
-      className={twMerge(
-        'sticky left-0 top-0 rounded-tr-lg bg-white p-4 pt-6 text-lg',
-        className
-      )}
-    >
-      <button
-        onClick={showSentTransactions}
-        className={
-          isTransactionHistoryShowingSentTx
-            ? buttonActiveClassName
-            : buttonInactiveClassName
-        }
-      >
-        <span className="px-4">Funds Sent</span>
-      </button>
-
-      <button
-        onClick={showReceivedTransactions}
-        className={
-          isTransactionHistoryShowingSentTx
-            ? buttonInactiveClassName
-            : buttonActiveClassName
-        }
-      >
-        <span className="px-4">Funds Received</span>
-      </button>
-    </div>
-  )
+  return <TransactionsTableSwitch className={className} tabs={tabs} />
 }

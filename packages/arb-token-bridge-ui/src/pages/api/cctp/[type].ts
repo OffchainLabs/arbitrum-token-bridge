@@ -28,37 +28,42 @@ export function getSubgraphClient(subgraph: string) {
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
     walletAddress: `0x${string}`
-    l1ChainId: ChainId
+    l1ChainId: string
+    pageNumber?: string
+    pageSize?: string
+    searchString?: string
   }
 }
 
 export enum ChainDomain {
-  Mainnet = '0',
-  ArbitrumOne = '3'
+  Mainnet = 0,
+  ArbitrumOne = 3
 }
 
 export type MessageReceived = {
-  blockNumber: number
-  blockTimestamp: number
+  blockNumber: string
+  blockTimestamp: string
   caller: `0x${string}`
   id: string
   messageBody: string
-  nonce: number
+  nonce: string
   sender: `0x${string}`
-  sourceDomain: ChainDomain
+  sourceDomain: `${ChainDomain}`
   transactionHash: `0x${string}`
 }
 
 export type MessageSent = {
   attestationHash: `0x${string}`
-  blockNumber: number
-  blockTimestamp: number
+  blockNumber: string
+  blockTimestamp: string
   id: string
   message: string
-  nonce: number
+  nonce: string
   sender: `0x${string}`
-  sourceDomain: ChainDomain
+  recipient: `0x${string}`
+  sourceDomain: `${ChainDomain}`
   transactionHash: `0x${string}`
+  amount: string
 }
 
 export type PendingCCTPTransfer = {
@@ -78,7 +83,10 @@ export type Response =
       error: null
     }
   | {
-      data: null
+      data: {
+        pending: []
+        completed: []
+      }
       error: string
     }
 
@@ -87,22 +95,39 @@ export default async function handler(
   res: NextApiResponse<Response>
 ) {
   try {
-    const { walletAddress, l1ChainId } = req.query
-    const { type } = req.query
+    const {
+      walletAddress,
+      l1ChainId: l1ChainIdString,
+      pageNumber = '0',
+      pageSize = '10',
+      type,
+      searchString = ''
+    } = req.query
+    const l1ChainId = parseInt(l1ChainIdString, 10)
 
     if (
       typeof type !== 'string' ||
       (type !== 'deposits' && type !== 'withdrawals')
     ) {
-      res.status(400).send({ error: `invalid API route: ${type}`, data: null })
+      res.status(400).send({
+        error: `invalid API route: ${type}`,
+        data: {
+          pending: [],
+          completed: []
+        }
+      })
       return
     }
 
     // validate method
     if (req.method !== 'GET') {
-      res
-        .status(400)
-        .send({ error: `invalid_method: ${req.method}`, data: null })
+      res.status(400).send({
+        error: `invalid_method: ${req.method}`,
+        data: {
+          pending: [],
+          completed: []
+        }
+      })
       return
     }
 
@@ -114,7 +139,10 @@ export default async function handler(
     if (errorMessage.length) {
       res.status(400).json({
         error: `incomplete request: ${errorMessage.join(', ')}`,
-        data: null
+        data: {
+          pending: [],
+          completed: []
+        }
       })
       return
     }
@@ -130,9 +158,12 @@ export default async function handler(
         messageSents(
           where: {
             sender: "${walletAddress}"
+            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
           }
           orderDirection: "desc"
           orderBy: "blockTimestamp"
+          first: ${Number(pageSize)}
+          skip: ${Number(pageNumber) * Number(pageSize)}
         ) {
           attestationHash
           blockNumber
@@ -141,16 +172,28 @@ export default async function handler(
           message
           nonce
           sender
+          recipient
           sourceDomain
           transactionHash
+          amount
         }
       }`)
 
+    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
+    if (type === 'deposits') {
+      messagesSentResult = await l1Subgraph.query({ query: messagesSentQuery })
+    } else {
+      messagesSentResult = await l2Subgraph.query({ query: messagesSentQuery })
+    }
+    const { messageSents } = messagesSentResult.data
+    const messagesSentIds = messageSents.map(messageSent => messageSent.id)
+    const formatedIds = messagesSentIds.map(
+      messageSentId => `"${messageSentId}"`
+    )
+
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {
-            caller: "${walletAddress}"
-          }
+          where: {id_in: [${formatedIds.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
         ) {
@@ -167,23 +210,19 @@ export default async function handler(
       }
     `)
 
-    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
     let messagesReceivedResult: ApolloQueryResult<{
       messageReceiveds: MessageReceived[]
     }>
     if (type === 'deposits') {
-      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-        l1Subgraph.query({ query: messagesSentQuery }),
-        l2Subgraph.query({ query: messagesReceivedQuery })
-      ])
+      messagesReceivedResult = await l2Subgraph.query({
+        query: messagesReceivedQuery
+      })
     } else {
-      ;[messagesSentResult, messagesReceivedResult] = await Promise.all([
-        l2Subgraph.query({ query: messagesSentQuery }),
-        l1Subgraph.query({ query: messagesReceivedQuery })
-      ])
+      messagesReceivedResult = await l1Subgraph.query({
+        query: messagesReceivedQuery
+      })
     }
 
-    const { messageSents } = messagesSentResult.data
     const { messageReceiveds } = messagesReceivedResult.data
 
     // MessagesSent can be link to MessageReceived with the tuple (sourceDomain, nonce)
@@ -197,6 +236,7 @@ export default async function handler(
         messageReceived
       ])
     )
+
     const { pending, completed } = messageSents.reduce(
       (acc, messageSent) => {
         // If the MessageSent has a corresponding MessageReceived
@@ -211,13 +251,9 @@ export default async function handler(
             messageSent
           })
         }
-
         return acc
       },
-      {
-        completed: [],
-        pending: []
-      } as {
+      { completed: [], pending: [] } as {
         completed: CompletedCCTPTransfer[]
         pending: PendingCCTPTransfer[]
       }
@@ -232,7 +268,10 @@ export default async function handler(
     })
   } catch (error: unknown) {
     res.status(500).json({
-      data: null,
+      data: {
+        pending: [],
+        completed: []
+      },
       error: (error as Error)?.message ?? 'Something went wrong'
     })
   }
