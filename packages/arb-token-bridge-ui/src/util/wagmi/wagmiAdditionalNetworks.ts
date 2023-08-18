@@ -1,25 +1,16 @@
-import { Chain } from 'wagmi'
+import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 import { ChainId, explorerUrls, rpcURLs } from '../networks'
 
 export const sepolia: Chain = {
-  id: ChainId.Sepolia,
-  name: 'Sepolia',
-  network: 'sepolia',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  ...sepoliaDefault,
   rpcUrls: {
+    ...sepoliaDefault.rpcUrls,
+    // override the default public RPC with the Infura RPC
+    // public RPCs are getting rate limited
     default: {
-      http: [rpcURLs[ChainId.Sepolia]!]
-    },
-    public: {
+      ...sepoliaDefault.rpcUrls.infura,
       http: [rpcURLs[ChainId.Sepolia]!]
     }
-  },
-  blockExplorers: {
-    etherscan: {
-      name: 'Blockscout',
-      url: explorerUrls[ChainId.Sepolia]!
-    },
-    default: { name: 'Blockscout', url: explorerUrls[ChainId.Sepolia]! }
   }
 }
 
