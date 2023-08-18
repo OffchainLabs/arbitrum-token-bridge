@@ -5,20 +5,23 @@ import { Erc20Bridger } from '@arbitrum/sdk'
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
  *
  * @param query Query params
- * @param query.address Account address
+ * @param query.fromAddress Address that initiated the withdrawal
+ * @param query.toAddress Address that will receive the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
  * @param query.l2GatewayAddresses L2 gateway addresses to use
  */
 export async function fetchTokenWithdrawalsFromEventLogs({
-  address,
+  fromAddress,
+  toAddress,
   fromBlock,
   toBlock,
   l2Provider,
   l2GatewayAddresses = []
 }: {
-  address: string
+  fromAddress?: string
+  toAddress?: string
   fromBlock: BlockTag
   toBlock: BlockTag
   l2Provider: Provider
@@ -34,7 +37,8 @@ export async function fetchTokenWithdrawalsFromEventLogs({
           gatewayAddress,
           { fromBlock, toBlock },
           undefined,
-          address
+          fromAddress,
+          toAddress
         )
       )
     )
