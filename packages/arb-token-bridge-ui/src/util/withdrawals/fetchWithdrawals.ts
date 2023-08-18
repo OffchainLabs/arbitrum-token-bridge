@@ -1,4 +1,5 @@
 import { Provider } from '@ethersproject/providers'
+import { constants as arbitrumConstants } from '@arbitrum/sdk'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -65,6 +66,31 @@ export const fetchWithdrawals = async ({
     toBlock = latestSubgraphBlockNumber
   }
 
+  // todo: update when eth withdrawals to a custom destination address are enabled (requires https://github.com/OffchainLabs/arbitrum-sdk/issues/325)
+  function getETHWithdrawalsFromEventLogsQuery() {
+    // give me all the eth withdrawals that someone else initiated, but the funds are sent to me
+    if (receiver) {
+      // since we don't do eth withdrawals to a custom destination address, we don't expect any results here
+      // however, if we pass in `undefined`, it will skip the filter and give us everything, which is why we use the node interface address that should never return any results
+      return { toAddress: arbitrumConstants.NODE_INTERFACE_ADDRESS }
+    }
+
+    // give me all the eth withdrawals that i initiated
+    // since we don't do eth withdrawals to a custom destination address, we set `toAddress` to be the sender, giving us all withdrawals sent to the same address
+    return { toAddress: sender }
+  }
+
+  function getTokenWithdrawalsFromEventLogsQuery() {
+    // give me all the token withdrawals that someone else initiated, but the funds are sent to me
+    // because we can't exclude withdrawals that were sent from the same address, we have to filter them out later, see `mappedTokenWithdrawalsFromEventLogs`
+    if (receiver) {
+      return { fromAddress: undefined, toAddress: receiver }
+    }
+
+    // give me all the token withdrawals that i initiated
+    return { fromAddress: sender, toAddress: undefined }
+  }
+
   const [
     withdrawalsFromSubgraph,
     ethWithdrawalsFromEventLogs,
@@ -83,16 +109,13 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      // todo: update when eth deposits to custom destination address are enabled (requires https://github.com/OffchainLabs/arbitrum-sdk/issues/325)
-      //
-      // currently, we can only do eth deposits to the same address, which is why we set `toAddress` to be `sender`
+      ...getETHWithdrawalsFromEventLogsQuery(),
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      fromAddress: sender,
-      toAddress: receiver,
+      ...getTokenWithdrawalsFromEventLogsQuery(),
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -100,8 +123,29 @@ export const fetchWithdrawals = async ({
     })
   ])
 
-  const l2ToL1Txns = (
+  const mappedTokenWithdrawalsFromEventLogs = (
     await Promise.all([
+      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
+        )
+      )
+    ])
+  )
+    // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
+    .filter(withdrawal => {
+      if (senderNot && receiver && withdrawal) {
+        return withdrawal.sender?.toLowerCase() !== senderNot.toLowerCase()
+      }
+
+      return true
+    })
+
+  const l2ToL1Txns = [
+    ...(await Promise.all([
       ...withdrawalsFromSubgraph.map(withdrawal =>
         mapWithdrawalToL2ToL1EventResult(
           withdrawal,
@@ -117,17 +161,10 @@ export const fetchWithdrawals = async ({
           l2Provider,
           l2ChainID
         )
-      ),
-      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
-        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
       )
-    ])
-  )
+    ])),
+    ...mappedTokenWithdrawalsFromEventLogs
+  ]
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
     .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
