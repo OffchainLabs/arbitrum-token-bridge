@@ -20,8 +20,7 @@ import {
 import {
   getL1TokenData,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC,
-  getL2TokenData
+  isTokenArbitrumGoerliNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import {
@@ -303,7 +302,15 @@ function TokensPanel({
         }
         return bal1.gt(bal2) ? -1 : 1
       })
-  }, [tokensFromLists, tokensFromUser, newToken, getBalance, l2Network])
+  }, [
+    newToken,
+    tokensFromUser,
+    tokensFromLists,
+    isDepositMode,
+    isArbitrumOne,
+    isArbitrumGoerli,
+    getBalance
+  ])
 
   const storeNewToken = async () => {
     let error = 'Token not found on this network.'

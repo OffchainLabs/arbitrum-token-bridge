@@ -24,12 +24,13 @@ import {
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
+import { useAccountType } from '../../hooks/useAccountType'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -84,6 +85,7 @@ export function TokenRow({
       isDepositMode
     }
   } = useAppState()
+  const { isSmartContractWallet } = useAccountType()
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
@@ -215,7 +217,7 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token])
+  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -232,7 +234,7 @@ export function TokenRow({
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [token, bridgeTokens])
+  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
@@ -272,6 +274,18 @@ export function TokenRow({
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
 
+    // We don't want users to be able to click on USDC before we know whether or not they are SCW users
+    if (
+      typeof isSmartContractWallet === 'undefined' &&
+      (tokenIsArbGoerliNativeUSDC || tokenIsArbOneNativeUSDC)
+    ) {
+      return (
+        <div className="mr-2">
+          <Loader color="#28A0F0" size="small" />
+        </div>
+      )
+    }
+
     return (
       <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
         {tokenBalance ? (
@@ -286,7 +300,15 @@ export function TokenRow({
         )}
       </span>
     )
-  }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
+  }, [
+    isSmartContractWallet,
+    token?.decimals,
+    tokenBalance,
+    tokenIsAddedToTheBridge,
+    tokenIsArbGoerliNativeUSDC,
+    tokenIsArbOneNativeUSDC,
+    tokenSymbol
+  ])
 
   return (
     <button
