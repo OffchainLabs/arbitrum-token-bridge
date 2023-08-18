@@ -55,6 +55,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
@@ -65,6 +68,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -84,6 +90,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
@@ -101,6 +110,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
@@ -114,6 +126,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -130,7 +145,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-     
+
       - id: set-matrix
         run: |
           content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .`
@@ -146,10 +161,13 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-  
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Chown workspace
         run: chown -R $(whoami) .
