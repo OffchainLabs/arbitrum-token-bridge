@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react'
 import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
-import { useNetwork } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -18,6 +18,10 @@ import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppContextActions } from '../App/AppContext'
+import { useCctpFetching, useCctpState } from '../../state/cctpState'
+import { MergedTransaction } from '../../state/app/state'
+import dayjs from 'dayjs'
+import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -44,19 +48,71 @@ export const TransactionHistory = ({
 }) => {
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isEOA } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
+  const {
+    pendingIds: pendingIdsCctp,
+    transfers: transfersCctp,
+    transfersIds
+  } = useCctpState()
+  const { address } = useAccount()
+  const { isLoadingDeposits, depositsError: cctpDepositsError } =
+    useCctpFetching({
+      l1ChainId: l1.network.id,
+      walletAddress: address,
+      pageSize: 10,
+      pageNumber: 0,
+      type: 'deposits'
+    })
+  const { isLoadingWithdrawals, withdrawalsError: cctpWithdrawalsError } =
+    useCctpFetching({
+      l1ChainId: l1.network.id,
+      walletAddress: address,
+      pageSize: 10,
+      pageNumber: 0,
+      type: 'withdrawals'
+    })
+
   const {
     app: { mergedTransactions }
   } = useAppState()
 
+  const isLoading =
+    depositsLoading ||
+    withdrawalsLoading ||
+    isLoadingDeposits ||
+    isLoadingWithdrawals
+  const error =
+    depositsError ||
+    withdrawalsError ||
+    cctpDepositsError ||
+    cctpWithdrawalsError
+
   const pendingTransactions = useMemo(() => {
-    return mergedTransactions?.filter(tx => isPending(tx))
-  }, [mergedTransactions])
+    const pendingCctpTransactions = pendingIdsCctp
+      .map(pendingId => {
+        return transfersCctp[pendingId]
+      })
+      .filter(Boolean) as unknown as MergedTransaction[]
+    const transactions = mergedTransactions
+      .concat(pendingCctpTransactions)
+      .sort((t1, t2) => {
+        if (t1.createdAt && t2.createdAt) {
+          return dayjs(t2.createdAt).isAfter(t1.createdAt) ? 1 : -1
+        }
+
+        if (t2.blockNum && t1.blockNum) {
+          return t2.blockNum - t1.blockNum
+        }
+
+        return 0
+      })
+    return transactions.filter(tx => isPending(tx))
+  }, [mergedTransactions, pendingIdsCctp, transfersCctp])
 
   const failedTransactions = useMemo(() => {
-    return mergedTransactions?.filter(tx => isFailed(tx))
+    return mergedTransactions.filter(tx => isFailed(tx))
   }, [mergedTransactions])
 
   const roundedTabClasses =
@@ -100,9 +156,9 @@ export const TransactionHistory = ({
     <div className="flex flex-col justify-around gap-6">
       {/* Pending transactions cards */}
       <PendingTransactions
-        loading={depositsLoading || withdrawalsLoading}
+        loading={isLoading}
         transactions={pendingTransactions}
-        error={depositsError || withdrawalsError}
+        error={error}
       />
 
       {/* Warning to show when there are 3 or more failed transactions for the user */}
@@ -110,7 +166,7 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group onChange={handleSentOrReceivedTxForSCW}>
+        <Tab.Group onChange={handleSentOrReceivedTxForSCW} key={address}>
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
@@ -140,6 +196,25 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
+            {isEOA && !!transfersIds.length && (
+              <TabButton
+                aria-label="show CCTP (Native USDC) transactions"
+                className={`${roundedTabClasses} roundedTabLeft`}
+              >
+                {/* CCTP */}
+                <Image
+                  src="/icons/cctp.svg"
+                  className="h-6 w-auto"
+                  alt="Cross-Chain Transfer Protocol (Native USDC)"
+                  width={24}
+                  height={24}
+                />
+                <span className="hidden md:block">
+                  Cross-Chain Transfer Protocol (Native USDC)
+                </span>
+                <span className="md:hidden">CCTP (Native USDC)</span>
+              </TabButton>
+            )}
           </Tab.List>
           <Tab.Panel className="overflow-auto">
             <TransactionsTable
@@ -163,6 +238,11 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
+          {isEOA && !!transfersIds.length && (
+            <Tab.Panel className="overflow-auto">
+              <TransactionsTableCctp />
+            </Tab.Panel>
+          )}
         </Tab.Group>
       </div>
     </div>

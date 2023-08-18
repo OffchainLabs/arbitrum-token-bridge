@@ -23,6 +23,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
+import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
@@ -131,7 +132,13 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const l2TxHash = tx.l1ToL2MsgData?.l2TxID
+  const l2TxHash = (() => {
+    if (tx.l1ToL2MsgData?.l2TxID) {
+      return tx.l1ToL2MsgData?.l2TxID
+    }
+
+    return tx.isCctp && tx.cctpData?.receiveMessageTransactionHash
+  })()
 
   return (
     <div className="flex flex-col space-y-3">
@@ -315,9 +322,19 @@ export function TransactionsTableDepositRow({
             </span>
           </Tooltip>
         )}
+
+        {tx.isCctp && (
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type="deposits"
+          />
+        )}
       </td>
       {isCustomDestinationAddressTx(tx) && (
-        <TransactionsTableCustomAddressLabel tx={tx} />
+        <td>
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </td>
       )}
     </tr>
   )

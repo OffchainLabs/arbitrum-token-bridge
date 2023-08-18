@@ -7,14 +7,8 @@ import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
 import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-
 import { ChainDomain } from '../../pages/api/cctp/[type]'
-
-export type CCTPSupportedChainId =
-  | ChainId.Mainnet
-  | ChainId.Goerli
-  | ChainId.ArbitrumOne
-  | ChainId.ArbitrumGoerli
+import { CCTPSupportedChainId } from '../../state/cctpState'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -70,7 +64,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
   }
 }
 
-type AttestationResponse =
+export type AttestationResponse =
   | {
       attestation: `0x${string}`
       status: 'complete'
@@ -80,16 +74,17 @@ type AttestationResponse =
       status: 'pending_confirmations'
     }
 
-export function getContracts(chainId: CCTPSupportedChainId | undefined) {
+export function getContracts(chainId: ChainId | undefined) {
   if (!chainId) {
     return contracts[ChainId.Mainnet]
   }
-  return contracts[chainId]
+  return (
+    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Mainnet]
+  )
 }
 
 export type UseCCTPParams = {
-  sourceChainId: CCTPSupportedChainId | undefined
-  walletAddress: `0x${string}` | string | undefined
+  sourceChainId: ChainId | undefined
 }
 export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const {
@@ -121,12 +116,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
         abi: TokenMessengerAbi,
         functionName: 'depositForBurn',
         signer,
-        args: [
-          amount,
-          parseInt(targetChainDomain, 10),
-          mintRecipient,
-          usdcContractAddress
-        ]
+        args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
       })
       return writeContract(config)
     },
@@ -153,7 +143,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
           return attestation.attestation
         }
 
-        await new Promise(r => setTimeout(r, 5000))
+        await new Promise(r => setTimeout(r, 30_000))
       }
     },
     [fetchAttestation]
@@ -194,6 +184,7 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
     approveForBurn,
     depositForBurn,
     receiveMessage,
+    fetchAttestation,
     waitForAttestation
   }
 }
