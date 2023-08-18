@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
+import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import {
   getStandardizedDate,
   getStandardizedTime,
@@ -70,11 +70,27 @@ export const TransactionDateTime = ({
   )
 }
 
+export const TransactionsTableHeader = () => {
+  return (
+    <thead className="text-gray-10 text-left text-sm">
+      <tr>
+        <th className="py-3 pl-6 pr-3 font-normal">Status</th>
+        <th className="px-3 py-3 font-normal">Time</th>
+        <th className="px-3 py-3 font-normal">Amount</th>
+        <th className="px-3 py-3 font-normal">TxID</th>
+        <th className="py-3 pl-3 pr-6 font-normal">
+          {/* Empty header text */}
+        </th>
+      </tr>
+    </thead>
+  )
+}
+
 export const CustomAddressTxExplorer = ({
   tx,
   explorerClassName = 'arb-hover underline'
 }: {
-  tx: MergedTransaction
+  tx: Pick<MergedTransaction, 'sender' | 'destination' | 'isWithdrawal'>
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
@@ -139,7 +155,7 @@ export const CustomAddressTxExplorer = ({
   )
 }
 
-enum TableStatus {
+export enum TableStatus {
   LOADING,
   ERROR,
   SUCCESS
@@ -269,20 +285,11 @@ export function TransactionsTable({
         transactions={transactionsBySentOrReceivedFunds}
         isSmartContractWallet={isSmartContractWallet}
         loading={loading}
+        showSearch
       />
 
       <table className="w-full overflow-hidden rounded-b-lg bg-white">
-        <thead className="text-gray-10 text-left text-sm">
-          <tr>
-            <th className="py-3 pl-6 pr-3 font-normal">Status</th>
-            <th className="px-3 py-3 font-normal">Time</th>
-            <th className="px-3 py-3 font-normal">Amount</th>
-            <th className="px-3 py-3 font-normal">TxID</th>
-            <th className="py-3 pl-3 pr-6 font-normal">
-              {/* Empty header text */}
-            </th>
-          </tr>
-        </thead>
+        <TransactionsTableHeader />
 
         <tbody>
           {status === TableStatus.LOADING && <TableBodyLoading />}
@@ -328,7 +335,7 @@ export function TransactionsTable({
                 )
               } else if (isWithdrawal(finalTx)) {
                 return (
-                  <TransactionsTableWithdrawalRow
+                  <TransactionsTableClaimableRow
                     key={`${finalTx.txId}-${finalTx.direction}`}
                     tx={finalTx}
                     className={!isLastRow ? 'border-b border-black' : ''}

@@ -6,7 +6,8 @@ module.exports = {
     extend: {
       backgroundImage: {
         gradient:
-          'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)'
+          'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
+        gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)'
       },
       colors: {
         // ACTION

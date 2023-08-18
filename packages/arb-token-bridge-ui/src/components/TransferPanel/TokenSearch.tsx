@@ -30,7 +30,6 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { useUSDCWithdrawalConfirmationDialogStore } from './TransferPanel'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
@@ -38,6 +37,8 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useAccountType } from '../../hooks/useAccountType'
 
 enum Panel {
   TOKENS,
@@ -301,7 +302,15 @@ function TokensPanel({
         }
         return bal1.gt(bal2) ? -1 : 1
       })
-  }, [tokensFromLists, tokensFromUser, newToken, getBalance, l2Network])
+  }, [
+    newToken,
+    tokensFromUser,
+    tokensFromLists,
+    isDepositMode,
+    isArbitrumOne,
+    isArbitrumGoerli,
+    getBalance
+  ])
 
   const storeNewToken = async () => {
     let error = 'Token not found on this network.'
@@ -436,10 +445,12 @@ function TokensPanel({
 
 export function TokenSearch({
   close,
-  onImportToken
+  onImportToken,
+  onNativeUSDCSelected
 }: {
   close: () => void
   onImportToken: (address: string) => void
+  onNativeUSDCSelected: () => void
 }) {
   const {
     app: {
@@ -450,8 +461,8 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
-  const { openDialog: openUSDCWithdrawalConfirmationDialog } =
-    useUSDCWithdrawalConfirmationDialogStore()
+  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { isSmartContractWallet } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -474,11 +485,30 @@ export function TokenSearch({
     }
 
     try {
-      if (
+      // Native USDC on L2 won't have a corresponding L1 address
+      const isNativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumGoerliNativeUSDC(_token.address)
-      ) {
-        openUSDCWithdrawalConfirmationDialog()
+
+      if (isNativeUSDC) {
+        if (typeof isSmartContractWallet === 'undefined') {
+          return
+        }
+
+        if (isSmartContractWallet) {
+          onNativeUSDCSelected()
+          return
+        }
+
+        updateUSDCBalances(_token.address)
+        setSelectedToken({
+          name: 'USD Coin',
+          type: TokenType.ERC20,
+          symbol: 'USDC',
+          address: _token.address,
+          decimals: 6,
+          listIds: new Set()
+        })
         return
       }
 

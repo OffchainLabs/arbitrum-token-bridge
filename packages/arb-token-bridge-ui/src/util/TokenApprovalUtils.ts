@@ -2,6 +2,9 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MaxUint256 } from '@ethersproject/constants'
 import { Provider } from '@ethersproject/providers'
+import { BigNumber, constants, Signer } from 'ethers'
+import { getContracts } from '../hooks/CCTP/useCCTP'
+import { CCTPSupportedChainId } from '../state/cctpState'
 
 export const approveTokenEstimateGas = async ({
   erc20L1Address,
@@ -26,4 +29,23 @@ export const approveTokenEstimateGas = async ({
   return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
     from: address
   })
+}
+
+export async function approveCctpEstimateGas(
+  sourceChainId: CCTPSupportedChainId,
+  amount: BigNumber,
+  signer: Signer
+) {
+  const { usdcContractAddress, tokenMessengerContractAddress } =
+    getContracts(sourceChainId)
+  const contract = ERC20__factory.connect(usdcContractAddress, signer)
+
+  try {
+    return await contract.estimateGas.approve(
+      tokenMessengerContractAddress,
+      amount
+    )
+  } catch (e) {
+    return constants.Zero
+  }
 }

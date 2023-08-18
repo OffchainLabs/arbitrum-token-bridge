@@ -8,7 +8,7 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 
 export type UseClaimWithdrawalResult = {
-  claim: (tx: MergedTransaction) => void
+  claim: (tx: MergedTransaction) => Promise<void>
   isClaiming: boolean
 }
 
