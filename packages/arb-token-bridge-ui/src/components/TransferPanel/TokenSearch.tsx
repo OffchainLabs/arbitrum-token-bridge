@@ -491,6 +491,10 @@ export function TokenSearch({
         isTokenArbitrumGoerliNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
+        if (typeof isSmartContractWallet === 'undefined') {
+          return
+        }
+
         if (isSmartContractWallet) {
           onNativeUSDCSelected()
           return
