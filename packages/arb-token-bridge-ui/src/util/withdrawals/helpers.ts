@@ -1,3 +1,4 @@
+import { utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
@@ -46,6 +47,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
 
   return {
     ...event,
+    sender: event.caller,
+    destinationAddress: event.destination,
     type: AssetType.ETH,
     value: callvalue,
     symbol: 'ETH',
@@ -135,11 +138,12 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainID: number,
-  walletAddress: string
+  l2ChainID: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
-    account: walletAddress,
+    // we don't care about allowance in this call, so we're just using vitalik.eth
+    // didn't want to use address zero in case contracts have checks for it
+    account: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     erc20L1Address: result.l1Token,
     l1Provider,
     l2Provider
@@ -162,8 +166,40 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     l2ChainID
   )
 
+  // We cannot access sender and destination from the withdrawal object.
+  // We have to get them from the receipt logs.
+  //
+  // Get hash of the topic that contains sender and destination.
+  const signatureHash = utils.id(
+    'TransferRouted(address,address,address,address)'
+  )
+  // Searching logs for the topic.
+  const logs = txReceipt.logs.find(log => {
+    if (!log) {
+      return false
+    }
+    return log.topics[0] === signatureHash
+  })
+
+  // We can directly access them by index, these won't change.
+  let sender = logs?.topics[2]
+  let destinationAddress = logs?.topics[3]
+
+  // SCW relayer won't return leading zeros, but we will get them when using EOA.
+  if (sender && !utils.isAddress(sender)) {
+    // Strips leading zeros if necessary.
+    sender = '0x' + sender.slice(-40)
+  }
+
+  if (destinationAddress && !utils.isAddress(destinationAddress)) {
+    // Strips leading zeros if necessary.
+    destinationAddress = '0x' + destinationAddress.slice(-40)
+  }
+
   return {
     ...event,
+    sender,
+    destinationAddress,
     type: AssetType.ERC20,
     value: result._amount,
     tokenAddress: result.l1Token,
