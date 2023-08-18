@@ -1,6 +1,28 @@
 import { Chain } from 'wagmi'
 import { ChainId, explorerUrls, rpcURLs } from '../networks'
 
+export const sepolia: Chain = {
+  id: ChainId.Sepolia,
+  name: 'Sepolia',
+  network: 'sepolia',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Sepolia]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Sepolia]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Blockscout',
+      url: explorerUrls[ChainId.Sepolia]!
+    },
+    default: { name: 'Blockscout', url: explorerUrls[ChainId.Sepolia]! }
+  }
+}
+
 export const arbitrumSepolia: Chain = {
   id: ChainId.ArbitrumSepolia,
   name: 'Arbitrum Sepolia',

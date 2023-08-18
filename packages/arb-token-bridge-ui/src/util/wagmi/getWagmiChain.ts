@@ -1,13 +1,8 @@
 import { Chain } from 'wagmi'
-import {
-  mainnet,
-  goerli,
-  sepolia,
-  arbitrum,
-  arbitrumGoerli
-} from 'wagmi/chains'
+import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
 
 import {
+  sepolia,
   arbitrumNova,
   arbitrumSepolia,
   localL1Network,
