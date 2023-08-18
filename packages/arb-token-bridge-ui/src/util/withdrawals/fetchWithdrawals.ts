@@ -83,9 +83,10 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      // todo: update this when eth deposits to custom destination address are enabled
-      toAddress: receiver,
-      fromBlock: toBlock + 1,
+      // todo: update when eth deposits to custom destination address are enabled (requires https://github.com/OffchainLabs/arbitrum-sdk/issues/325)
+      //
+      // currently, we can only do eth deposits to the same address, which is why we set `toAddress` to be `sender`
+      toAddress: sender,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
