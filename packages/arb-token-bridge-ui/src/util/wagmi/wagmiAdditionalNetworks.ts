@@ -8,7 +8,6 @@ export const sepolia: Chain = {
     // override the default public RPC with the Infura RPC
     // public RPCs are getting rate limited
     default: {
-      ...sepoliaDefault.rpcUrls.infura,
       http: [rpcURLs[ChainId.Sepolia]!]
     }
   }
