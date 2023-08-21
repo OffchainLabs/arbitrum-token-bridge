@@ -33,7 +33,7 @@ export const AddCustomChain = () => {
   const [customChains, setCustomChains] = useState<Chain[]>(
     getCustomChainsFromLocalStorage()
   )
-  const [chainsJson, setChainsJson] = useState<string>('')
+  const [chainJson, setChainJson] = useState<string>('')
   const [needsReload, setNeedsReload] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,8 +42,8 @@ export const AddCustomChain = () => {
 
     try {
       const chain = (
-        chainsJson.trim()
-          ? JSON.parse(chainsJson.replace(/[\r\n]+/g, ''))
+        chainJson.trim()
+          ? JSON.parse(chainJson.replace(/[\r\n]+/g, ''))
           : undefined
       ) as Chain
 
@@ -59,10 +59,7 @@ export const AddCustomChain = () => {
 
       chain.isCustom = true
 
-      addCustomChain({
-        customChain: chain
-      })
-
+      addCustomChain({ customChain: chain })
       saveCustomChainToLocalStorage(chain)
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
@@ -138,8 +135,8 @@ export const AddCustomChain = () => {
       )}
       <div>
         <textarea
-          onChange={e => setChainsJson(e.target.value)}
-          placeholder={JSON.stringify(jsonPlaceholder)}
+          onChange={e => setChainJson(e.target.value)}
+          placeholder={jsonPlaceholder}
           className="min-h-[100px] w-full rounded-lg p-1 text-black"
         />
       </div>
