@@ -1,4 +1,5 @@
 import useLocalStorage from '@rehooks/local-storage'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
@@ -8,7 +9,6 @@ import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 import { Tooltip } from './Tooltip'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <div className="heading mb-4 text-lg">{children}</div>

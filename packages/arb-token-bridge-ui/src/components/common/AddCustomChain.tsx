@@ -7,12 +7,7 @@ import { ChainId, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
 
-const jsonPlaceholder = {
-  chainID: 0,
-  name: 'MyChain',
-  partnerChainID: 0,
-  otherProperties: '. . .'
-}
+const jsonPlaceholder = `{ chainID: 0, name: 'MyChain', partnerChainID: 0, ...other_properties }`
 
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
 const allowedParentChainIds = [
