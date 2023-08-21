@@ -16,7 +16,12 @@ import {
 } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
-import { sanitizeTokenName, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumGoerliNativeUSDC,
+  sanitizeTokenName,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
@@ -25,6 +30,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
+import { useAccountType } from '../../hooks/useAccountType'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -79,6 +85,7 @@ export function TokenRow({
       isDepositMode
     }
   } = useAppState()
+  const { isSmartContractWallet } = useAccountType()
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
@@ -107,6 +114,14 @@ export function TokenRow({
     [token, isDepositMode, l2Network, l1Network]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  const tokenIsArbOneNativeUSDC = useMemo(
+    () => isTokenArbitrumOneNativeUSDC(token?.address),
+    [token]
+  )
+  const tokenIsArbGoerliNativeUSDC = useMemo(
+    () => isTokenArbitrumGoerliNativeUSDC(token?.address),
+    [token]
+  )
 
   const {
     eth: [ethL1Balance],
@@ -176,6 +191,14 @@ export function TokenRow({
       return null
     }
 
+    if (tokenIsArbOneNativeUSDC) {
+      return 'Native USDC on Arbitrum One'
+    }
+
+    if (tokenIsArbGoerliNativeUSDC) {
+      return 'Native USDC on Arbitrum Goerli'
+    }
+
     const listIds: Set<number> = token.listIds
     const listIdsSize = listIds.size
     if (listIdsSize === 0) {
@@ -194,7 +217,7 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token])
+  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -206,8 +229,12 @@ export function TokenRow({
       return true
     }
 
+    if (tokenIsArbOneNativeUSDC || tokenIsArbGoerliNativeUSDC) {
+      return true
+    }
+
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [token, bridgeTokens])
+  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
@@ -247,6 +274,18 @@ export function TokenRow({
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
 
+    // We don't want users to be able to click on USDC before we know whether or not they are SCW users
+    if (
+      typeof isSmartContractWallet === 'undefined' &&
+      (tokenIsArbGoerliNativeUSDC || tokenIsArbOneNativeUSDC)
+    ) {
+      return (
+        <div className="mr-2">
+          <Loader color="#28A0F0" size="small" />
+        </div>
+      )
+    }
+
     return (
       <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
         {tokenBalance ? (
@@ -261,7 +300,15 @@ export function TokenRow({
         )}
       </span>
     )
-  }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
+  }, [
+    isSmartContractWallet,
+    token?.decimals,
+    tokenBalance,
+    tokenIsAddedToTheBridge,
+    tokenIsArbGoerliNativeUSDC,
+    tokenIsArbOneNativeUSDC,
+    tokenSymbol
+  ])
 
   return (
     <button

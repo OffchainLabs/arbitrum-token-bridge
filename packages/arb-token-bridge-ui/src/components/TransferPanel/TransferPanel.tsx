@@ -39,12 +39,16 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
+  getTokenAllowanceForSpender,
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
+  isTokenGoerliUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { warningToast } from '../common/atoms/Toast'
+import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { GET_HELP_LINK } from '../../constants'
@@ -53,6 +57,18 @@ import {
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
+import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { formatAmount } from '../../util/NumberUtils'
+import {
+  getUsdcTokenAddressFromSourceChainId,
+  useCctpState
+} from '../../state/cctpState'
+import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { DepositStatus } from '../../state/app/state'
+import { getStandardizedTimestamp } from '../../state/app/utils'
+import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {
@@ -74,10 +90,12 @@ const isAllowedL2 = async ({
   l2Provider: JsonRpcProvider
 }) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
+
   const gatewayAddress = await getL2GatewayAddress({
     erc20L1Address: l1TokenAddress,
     l2Provider
   })
+
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
@@ -150,7 +168,6 @@ export function TransferPanel() {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
-  const { isArbitrumOne } = isNetwork(l2Network.id)
 
   const { isEOA = false, isSmartContractWallet = false } = useAccountType()
 
@@ -160,6 +177,8 @@ export function TransferPanel() {
   const { data: l2Signer } = useSigner({
     chainId: l2Network.id
   })
+
+  const { setPendingTransfer, updateTransfer } = useCctpState()
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
@@ -184,6 +203,12 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
+  const { approveForBurn, depositForBurn } = useCCTP({
+    sourceChainId: isDepositMode
+      ? latestNetworksAndSigners.current.l1.network.id
+      : latestNetworksAndSigners.current.l2.network.id
+  })
+
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
@@ -191,9 +216,14 @@ export function TransferPanel() {
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
   const [
+    usdcWithdrawalConfirmationDialogProps,
+    openUSDCWithdrawalConfirmationDialog
+  ] = useDialog()
+  const [
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
+
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -208,6 +238,7 @@ export function TransferPanel() {
   }, [ethL1Balance, ethL2Balance, isDepositMode])
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
+  const [isCctp, setIsCctp] = useState(false)
 
   const { error: destinationAddressError, destinationAddress } =
     useDestinationAddressStore()
@@ -279,10 +310,15 @@ export function TransferPanel() {
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
-      const balanceL2 = selectedToken.l2Address
-        ? erc20L2Balances?.[selectedToken.l2Address.toLowerCase()]
-        : undefined
+      const addressLookup =
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+        isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+          ? selectedToken.address.toLowerCase()
+          : (selectedToken.l2Address || '').toLowerCase()
+
+      const balanceL2 = erc20L2Balances?.[addressLookup]
       const { decimals } = selectedToken
+
       if (!balanceL2) {
         return null
       }
@@ -343,7 +379,7 @@ export function TransferPanel() {
       setTokenDepositCheckDialogType(dialogType)
 
       const waitForInput = openTokenCheckDialog()
-      const confirmed = await waitForInput()
+      const [confirmed] = await waitForInput()
 
       if (confirmed) {
         transfer()
@@ -353,7 +389,226 @@ export function TransferPanel() {
     }
   }
 
+  const amountBigNumber = useMemo(() => {
+    try {
+      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
+    } catch (error) {
+      return constants.Zero
+    }
+  }, [amount, selectedToken])
+
+  const transferCctp = async (type: 'deposits' | 'withdrawals') => {
+    if (!selectedToken) {
+      return
+    }
+    if (!l1Signer || !l2Signer) {
+      throw 'Signer is undefined'
+    }
+
+    const isDeposit = type === 'deposits'
+
+    setTransferring(true)
+    let currentNetwork = isDeposit
+      ? latestNetworksAndSigners.current.l1.network
+      : latestNetworksAndSigners.current.l2.network
+
+    const currentNetworkName = getNetworkName(currentNetwork.id)
+    const isConnectedToTheWrongChain =
+      (isDeposit && isConnectedToArbitrum.current) ||
+      (type === 'withdrawals' && !isConnectedToArbitrum.current)
+
+    if (isConnectedToTheWrongChain) {
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent('Switch Network and Transfer', {
+          type: isDeposit ? 'Deposit' : 'Withdrawal',
+          tokenSymbol: 'USDC',
+          assetType: 'ERC-20',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount)
+        })
+      }
+      const switchTargetChainId = isDeposit
+        ? latestNetworksAndSigners.current.l1.network.id
+        : latestNetworksAndSigners.current.l2.network.id
+      try {
+        await switchNetworkAsync?.(switchTargetChainId)
+        currentNetwork = isDeposit
+          ? latestNetworksAndSigners.current.l1.network
+          : latestNetworksAndSigners.current.l2.network
+      } catch (e) {
+        if (isUserRejectedError(e)) {
+          return
+        }
+      }
+    }
+
+    try {
+      const l1ChainID = latestNetworksAndSigners.current.l1.network.id
+      const l2ChainID = latestNetworksAndSigners.current.l2.network.id
+      const sourceChainId = isDeposit ? l1ChainID : l2ChainID
+
+      const waitForInput = isDeposit
+        ? openUSDCDepositConfirmationDialog()
+        : openUSDCWithdrawalConfirmationDialog()
+      const [confirmed, primaryButtonClicked] = await waitForInput()
+
+      if (!confirmed) {
+        return
+      }
+      if (isDeposit && primaryButtonClicked === 'bridged') {
+        // User has selected normal bridge (USDC.e)
+        depositToken()
+        return
+      }
+
+      // CCTP has an upper limit for transfer
+      const burnLimit = await fetchPerMessageBurnLimit({
+        sourceChainId
+      })
+
+      if (burnLimit.lte(amountBigNumber)) {
+        const formatedLimit = formatAmount(burnLimit, {
+          decimals: selectedToken.decimals,
+          symbol: 'USDC'
+        })
+        errorToast(
+          `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
+        )
+        return
+      }
+
+      const recipient = destinationAddress || walletAddress
+      const { usdcContractAddress, tokenMessengerContractAddress } =
+        getContracts(sourceChainId)
+
+      const allowance = await getTokenAllowanceForSpender({
+        account: walletAddress,
+        erc20Address: usdcContractAddress,
+        provider: type === 'deposits' ? l1Provider : l2Provider,
+        spender: tokenMessengerContractAddress
+      })
+
+      if (allowance.lt(amountBigNumber)) {
+        setAllowance(allowance)
+        setIsCctp(true)
+        const waitForInput = openTokenApprovalDialog()
+        const [confirmed] = await waitForInput()
+
+        if (!confirmed) {
+          return
+        }
+
+        try {
+          const tx = await approveForBurn(
+            amountBigNumber,
+            isDeposit ? l1Signer : l2Signer
+          )
+          await tx.wait()
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          Sentry.captureException(error)
+          errorToast(
+            `USDC approval transaction failed: ${
+              (error as Error)?.message ?? error
+            }`
+          )
+          return
+        }
+      }
+
+      let depositForBurnTx
+      try {
+        depositForBurnTx = await depositForBurn({
+          amount: amountBigNumber,
+          signer: isDeposit ? l1Signer : l2Signer,
+          recipient: destinationAddress || walletAddress
+        })
+      } catch (error) {
+        if (isUserRejectedError(error)) {
+          return
+        }
+        Sentry.captureException(error)
+        errorToast(
+          `USDC deposit transaction failed: ${
+            (error as Error)?.message ?? error
+          }`
+        )
+      }
+
+      if (!depositForBurnTx || !account) {
+        return
+      }
+
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount),
+          complete: false
+        })
+      }
+
+      setPendingTransfer({
+        txId: depositForBurnTx.hash,
+        asset: 'USDC',
+        blockNum: null,
+        createdAt: getStandardizedTimestamp(new Date().toString()),
+        direction: isDeposit ? 'deposit' : 'withdraw',
+        isWithdrawal: !isDeposit,
+        resolvedAt: null,
+        status: 'pending',
+        uniqueId: null,
+        value: amount,
+        depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
+        destination: recipient,
+        sender: account,
+        isCctp: true,
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        cctpData: {
+          sourceChainId,
+          attestationHash: null,
+          messageBytes: null,
+          receiveMessageTransactionHash: null,
+          receiveMessageTimestamp: null
+        }
+      })
+      openTransactionHistoryPanel()
+      setTransferring(false)
+      clearAmountInput()
+
+      const depositTxReceipt = await depositForBurnTx.wait()
+      const { messageBytes, attestationHash } =
+        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
+
+      if (depositTxReceipt.status === 0) {
+        errorToast('USDC deposit transaction failed')
+        return
+      }
+
+      if (messageBytes && attestationHash) {
+        updateTransfer({
+          txId: depositForBurnTx.hash,
+          blockNum: depositTxReceipt.blockNumber,
+          status: 'Unconfirmed',
+          cctpData: {
+            attestationHash,
+            messageBytes
+          }
+        })
+      }
+    } catch (e) {
+    } finally {
+      setTransferring(false)
+      setIsCctp(false)
+    }
+  }
+
   const transfer = async () => {
+    const signerUndefinedError = 'Signer is undefined'
+
     if (!isConnected) {
       return
     }
@@ -363,8 +618,9 @@ export function TransferPanel() {
       return
     }
 
-    if (!l1Signer || !l2Signer) {
-      throw 'Signer is undefined'
+    const hasBothSigners = l1Signer && l2Signer
+    if (isEOA && !hasBothSigners) {
+      throw signerUndefinedError
     }
 
     const destinationAddressError = await getDestinationAddressError({
@@ -395,6 +651,10 @@ export function TransferPanel() {
 
     try {
       if (isDepositMode) {
+        if (!l1Signer) {
+          throw signerUndefinedError
+        }
+
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -470,23 +730,13 @@ export function TransferPanel() {
 
           if (isNonCanonicalToken) {
             const waitForInput = openDepositConfirmationDialog()
-            const confirmed = await waitForInput()
+            const [confirmed] = await waitForInput()
 
             if (!confirmed) {
               return
             }
           }
 
-          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
-            const waitForInput = openUSDCDepositConfirmationDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-          }
-
-          // Check token allowance & show modal if needed
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
@@ -497,12 +747,11 @@ export function TransferPanel() {
           if (!allowance.gte(amountRaw)) {
             setAllowance(allowance)
             const waitForInput = openTokenApprovalDialog()
-            const confirmed = await waitForInput()
+            const [confirmed] = await waitForInput()
 
             if (!confirmed) {
-              return
+              return false
             }
-
             await latestToken.current.approve({
               erc20L1Address: selectedToken.address,
               l1Signer
@@ -577,6 +826,10 @@ export function TransferPanel() {
           })
         }
       } else {
+        if (!l2Signer) {
+          throw signerUndefinedError
+        }
+
         if (!isConnectedToArbitrum.current) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
@@ -605,7 +858,7 @@ export function TransferPanel() {
 
         if (!isSmartContractWallet) {
           const waitForInput = openWithdrawalConfirmationDialog()
-          const confirmed = await waitForInput()
+          const [confirmed] = await waitForInput()
 
           if (!confirmed) {
             return
@@ -723,14 +976,6 @@ export function TransferPanel() {
     }
   }
 
-  const amountBigNumber = useMemo(() => {
-    try {
-      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
-    } catch (error) {
-      return constants.Zero
-    }
-  }, [amount, selectedToken])
-
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(
     () =>
@@ -833,48 +1078,63 @@ export function TransferPanel() {
     ]
   )
 
-  const disableDeposit = useMemo(() => {
+  const disableDepositAndWithdrawal = useMemo(() => {
+    if (!amountNum) return true
+    if (isTransferring) return true
+    if (isSwitchingL2Chain) return true
+    if (destinationAddressError) return true
+
+    if (isSmartContractWallet && !selectedToken) {
+      return true
+    }
+
+    // Keep the button disabled while loading gas summary
     if (
-      isDepositMode &&
+      !ethBalance ||
+      (gasSummary.status !== 'success' && gasSummary.status !== 'unavailable')
+    ) {
+      return true
+    }
+
+    return false
+  }, [
+    amountNum,
+    destinationAddressError,
+    isSmartContractWallet,
+    ethBalance,
+    requiredGasFees,
+    gasSummary.status,
+    isSwitchingL2Chain,
+    isTransferring,
+    selectedToken
+  ])
+
+  const disableDeposit = useMemo(() => {
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
+
+    if (
       selectedToken &&
       isWithdrawOnlyToken(selectedToken.address, l2Network.id)
     ) {
       return true
     }
 
-    return (
-      isTransferring ||
-      !amountNum ||
-      (isDepositMode &&
-        !isBridgingANewStandardToken &&
-        (!amountNum || !l1Balance || amountNum > +l1Balance)) ||
-      // allow 0-amount deposits when bridging new token
-      (isDepositMode &&
-        isBridgingANewStandardToken &&
-        (l1Balance === null || amountNum > +l1Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    l2Network,
-    amountNum,
-    l1Balance,
-    isBridgingANewStandardToken,
-    selectedToken,
-    isSmartContractWallet,
-    destinationAddressError
-  ])
-
-  // TODO: Refactor this and the property above
-  const disableDepositV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableDeposit || gasSummary.status !== 'success') {
-      return true
+    if (isBridgingANewStandardToken) {
+      if (l1Balance === null || amountNum > Number(l1Balance)) {
+        return true
+      }
+    } else {
+      if (!l1Balance || amountNum > Number(l1Balance)) {
+        return true
+      }
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -882,49 +1142,39 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l1Balance)
   }, [
-    ethBalance,
-    disableDeposit,
+    disableDepositAndWithdrawal,
     selectedToken,
-    gasSummary,
+    l2Network.id,
+    isBridgingANewStandardToken,
     amount,
+    requiredGasFees,
     l1Balance,
-    requiredGasFees
+    amountNum,
+    ethBalance
   ])
 
   const disableWithdrawal = useMemo(() => {
-    return (
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x0e192d382a36de7011f795acc4391cd302003606'.toLowerCase()) ||
-      (selectedToken &&
-        selectedToken.address &&
-        selectedToken.address.toLowerCase() ===
-          '0x488cc08935458403a0458e45E20c0159c8AB2c92'.toLowerCase()) ||
-      isTransferring ||
-      (!isDepositMode &&
-        (!amountNum || !l2Balance || amountNum > +l2Balance)) ||
-      (isSmartContractWallet && !selectedToken) ||
-      destinationAddressError
-    )
-  }, [
-    isTransferring,
-    isDepositMode,
-    amountNum,
-    l2Balance,
-    selectedToken,
-    isSmartContractWallet,
-    destinationAddressError
-  ])
+    if (disableDepositAndWithdrawal) {
+      return true
+    }
 
-  // TODO: Refactor this and the property above
-  const disableWithdrawalV2 = useMemo(() => {
-    // Keep the button disabled while loading gas summary
-    if (!ethBalance || disableWithdrawal || gasSummary.status !== 'success') {
+    if (!l2Balance) return true
+    if (amountNum > Number(l2Balance)) return true
+
+    if (
+      selectedToken &&
+      [
+        '0x0e192d382a36de7011f795acc4391cd302003606',
+        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+      ].includes(selectedToken.address.toLowerCase())
+    ) {
       return true
     }
 
     if (selectedToken) {
+      if (!ethBalance) {
+        return true
+      }
       // We checked if there's enough tokens, but let's check if there's enough ETH for gas
       const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
       return requiredGasFees > ethBalanceFloat
@@ -932,13 +1182,13 @@ export function TransferPanel() {
 
     return Number(amount) + requiredGasFees > Number(l2Balance)
   }, [
-    ethBalance,
-    disableWithdrawal,
-    selectedToken,
-    gasSummary,
-    amount,
+    disableDepositAndWithdrawal,
     l2Balance,
-    requiredGasFees
+    amountNum,
+    selectedToken,
+    amount,
+    requiredGasFees,
+    ethBalance
   ])
 
   const isSummaryVisible = useMemo(() => {
@@ -967,6 +1217,7 @@ export function TransferPanel() {
         amount={amount}
         allowance={allowance}
         token={selectedToken}
+        isCctp={isCctp}
       />
 
       <WithdrawalConfirmationDialog
@@ -976,6 +1227,11 @@ export function TransferPanel() {
 
       <DepositConfirmationDialog
         {...depositConfirmationDialogProps}
+        amount={amount}
+      />
+
+      <USDCWithdrawalConfirmationDialog
+        {...usdcWithdrawalConfirmationDialogProps}
         amount={amount}
       />
 
@@ -1035,9 +1291,17 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableDepositV2}
+              disabled={disableDeposit}
               onClick={() => {
-                if (selectedToken) {
+                if (
+                  isEOA &&
+                  selectedToken &&
+                  (isTokenMainnetUSDC(selectedToken.address) ||
+                    isTokenGoerliUSDC(selectedToken.address)) &&
+                  !isArbitrumNova
+                ) {
+                  transferCctp('deposits')
+                } else if (selectedToken) {
                   depositToken()
                 } else {
                   transfer()
@@ -1056,8 +1320,19 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={isSwitchingL2Chain || disableWithdrawalV2}
-              onClick={transfer}
+              disabled={disableWithdrawal}
+              onClick={() => {
+                if (
+                  isEOA &&
+                  selectedToken &&
+                  (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                ) {
+                  transferCctp('withdrawals')
+                } else {
+                  transfer()
+                }
+              }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring

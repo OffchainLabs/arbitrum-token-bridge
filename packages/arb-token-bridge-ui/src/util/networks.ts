@@ -14,6 +14,7 @@ if (typeof INFURA_KEY === 'undefined') {
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export function getL2ChainIds(l1ChainId: number): ChainId[] {
   if (l1ChainId === ChainId.Mainnet) {
@@ -22,6 +23,10 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
 
   if (l1ChainId === ChainId.Goerli) {
     return [ChainId.ArbitrumGoerli]
+  }
+
+  if (l1ChainId === ChainId.Sepolia) {
+    return [ChainId.ArbitrumSepolia]
   }
 
   if (l1ChainId === ChainId.Local) {
@@ -51,6 +56,7 @@ export enum ChainId {
    */
   ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613,
+  ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346
 }
 
@@ -65,11 +71,16 @@ export const rpcURLs: { [chainId: number]: string } = {
     env: process.env.NEXT_PUBLIC_GOERLI_RPC_URL,
     fallback: GOERLI_INFURA_RPC_URL
   }),
+  [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
+    env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
+    fallback: SEPOLIA_INFURA_RPC_URL
+  }),
   // L2
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc'
+  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
+  [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -77,11 +88,13 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.Mainnet]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
+  [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io'
+  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
+  [ChainId.ArbitrumSepolia]: 'https://sepolia-explorer.arbitrum.io'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -107,6 +120,12 @@ export const getConfirmPeriodBlocks = (chainId: ChainId) => {
   return network.confirmPeriodBlocks
 }
 
+export const l2ArbReverseGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumOne]: '0xCaD7828a19b363A2B44717AFB1786B5196974D8E',
+  [ChainId.ArbitrumNova]: '0xbf544970E6BD77b21C6492C281AB60d0770451F4',
+  [ChainId.ArbitrumGoerli]: '0x584d4D9bED1bEb39f02bb51dE07F493D3A5CdaA0'
+}
+
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x467194771dAe2967Aef3ECbEDD3Bf9a310C76C65',
   [ChainId.ArbitrumNova]: '0x10E6593CDda8c58a1d0f14C5164B376352a55f2F'
@@ -126,11 +145,13 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   [ChainId.Mainnet]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
   // L1 Testnets
   [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.Sepolia]: [ChainId.ArbitrumSepolia],
   // L2
   [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli]
+  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli],
+  [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia]
 }
 
 const defaultL1Network: L1Network = {
@@ -227,6 +248,7 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
   const isArbitrumNova = chainId === ChainId.ArbitrumNova
   const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
+  const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
@@ -235,13 +257,25 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumNova ||
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
-    isArbitrumLocal
+    isArbitrumLocal ||
+    isArbitrumSepolia
 
   const isTestnet =
-    isRinkeby || isGoerli || isArbitrumGoerli || isArbitrumRinkeby || isSepolia
+    isRinkeby ||
+    isGoerli ||
+    isArbitrumGoerli ||
+    isArbitrumRinkeby ||
+    isSepolia ||
+    isArbitrumSepolia
 
   const isSupported =
-    isArbitrumOne || isArbitrumNova || isMainnet || isGoerli || isArbitrumGoerli // is network supported on bridge
+    isArbitrumOne ||
+    isArbitrumNova ||
+    isMainnet ||
+    isGoerli ||
+    isArbitrumGoerli ||
+    isSepolia ||
+    isArbitrumSepolia // is network supported on bridge
 
   return {
     // L1
@@ -258,6 +292,7 @@ export function isNetwork(chainId: ChainId) {
     // L2 Testnets
     isArbitrumRinkeby,
     isArbitrumGoerli,
+    isArbitrumSepolia,
     // Testnet
     isTestnet,
     // General
@@ -273,6 +308,9 @@ export function getNetworkName(chainId: number) {
     case ChainId.Goerli:
       return 'Goerli'
 
+    case ChainId.Sepolia:
+      return 'Sepolia'
+
     case ChainId.Local:
       return 'Ethereum'
 
@@ -284,6 +322,9 @@ export function getNetworkName(chainId: number) {
 
     case ChainId.ArbitrumGoerli:
       return 'Arbitrum Goerli'
+
+    case ChainId.ArbitrumSepolia:
+      return 'Arbitrum Sepolia'
 
     case ChainId.ArbitrumLocal:
       return 'Arbitrum'
@@ -298,11 +339,13 @@ export function getNetworkLogo(chainId: number) {
     // L1 networks
     case ChainId.Mainnet:
     case ChainId.Goerli:
+    case ChainId.Sepolia:
       return '/images/EthereumLogo.svg'
 
     // L2 networks
     case ChainId.ArbitrumOne:
     case ChainId.ArbitrumGoerli:
+    case ChainId.ArbitrumSepolia:
     case ChainId.ArbitrumLocal:
       return '/images/ArbitrumOneLogo.svg'
 
@@ -316,6 +359,11 @@ export function getNetworkLogo(chainId: number) {
 
 export function getSupportedNetworks(chainId = 0) {
   return isNetwork(chainId).isTestnet
-    ? [ChainId.Goerli, ChainId.ArbitrumGoerli]
+    ? [
+        ChainId.Goerli,
+        ChainId.ArbitrumGoerli,
+        ChainId.Sepolia,
+        ChainId.ArbitrumSepolia
+      ]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
 }

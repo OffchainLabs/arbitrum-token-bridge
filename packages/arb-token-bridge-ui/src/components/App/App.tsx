@@ -138,7 +138,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-
   const networksAndSigners = useNetworksAndSigners()
 
   const [tokenBridgeParams, setTokenBridgeParams] =

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import Image from 'next/image'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
@@ -13,7 +14,6 @@ import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
-import Image from 'next/image'
 
 export function DepositL1TxStatus({
   tx

@@ -5,7 +5,9 @@ import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
+  sepolia,
   arbitrumNova,
+  arbitrumSepolia,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from './wagmiAdditionalNetworks'
@@ -21,11 +23,22 @@ const chainList = isTestingEnvironment
       // goerli & arb goerli are for tx history panel tests
       goerli,
       arbitrumGoerli,
+      // sepolia
+      sepolia,
+      arbitrumSepolia,
       // add local environments during testing
       local,
       arbitrumLocal
     ]
-  : [mainnet, arbitrum, arbitrumNova, goerli, arbitrumGoerli]
+  : [
+      mainnet,
+      arbitrum,
+      arbitrumNova,
+      goerli,
+      arbitrumGoerli,
+      sepolia,
+      arbitrumSepolia
+    ]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
@@ -39,7 +52,9 @@ enum TargetChainKey {
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli'
+  ArbitrumGoerli = 'arbitrum-goerli',
+  Sepolia = 'sepolia',
+  ArbitrumSepolia = 'arbitrum-sepolia'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -72,6 +87,12 @@ function getChainId(targetChainKey: TargetChainKey): number {
 
     case TargetChainKey.ArbitrumGoerli:
       return ChainId.ArbitrumGoerli
+
+    case TargetChainKey.Sepolia:
+      return ChainId.Sepolia
+
+    case TargetChainKey.ArbitrumSepolia:
+      return ChainId.ArbitrumSepolia
   }
 }
 

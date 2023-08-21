@@ -13,7 +13,8 @@ import {
   NonCanonicalTokenNames,
   NonCanonicalTokenSupportedBridges,
   FastBridgeNames,
-  USDCBridgeInfo
+  USDCBridgeInfo,
+  SpecialTokenSymbol
 } from './fastBridges'
 import { ProviderName } from '../hooks/useNetworksAndSigners'
 import { getNetworkName } from './networks'
@@ -83,6 +84,8 @@ export type FathomEventMap =
   //
   | `Tx Error: Get Help Click on ${AnalyticsNetworkName}`
   | `Multiple Tx Error: Get Help Click on ${AnalyticsNetworkName}`
+  | 'CCTP Deposit'
+  | 'CCTP Withdrawal'
 
 const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   [key in FathomEventNonCanonicalTokens | FathomEventUSDC]: string
@@ -204,7 +207,10 @@ const fathomEventToEventId: { [key in FathomEventMap]: string } & {
   'Tx Error: Get Help Click on Arbitrum One': 'HT1BWVVI',
   'Tx Error: Get Help Click on Arbitrum Nova': 'XD5VYLPU',
   'Multiple Tx Error: Get Help Click on Arbitrum One': 'CWMVRSXW',
-  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB'
+  'Multiple Tx Error: Get Help Click on Arbitrum Nova': '2VOXN4FB',
+  //
+  'CCTP Deposit': '',
+  'CCTP Withdrawal': ''
 }
 
 type AnalyticsEventMap = {
@@ -231,7 +237,7 @@ type AnalyticsEventMap = {
     bridge:
       | FastBridgeName
       | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
-    tokenSymbol?: NonCanonicalTokenName
+    tokenSymbol?: NonCanonicalTokenName | SpecialTokenSymbol.USDC
   }
   'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName | 'USDC' }
   'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
@@ -252,6 +258,18 @@ type AnalyticsEventMap = {
   'Move More Funds Click': undefined
   'Explore: Randomize Click': undefined
   'Add to Google Calendar Click': undefined
+  'CCTP Deposit': {
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+    complete: boolean
+  }
+  'CCTP Withdrawal': {
+    accountType: AccountType
+    network: AnalyticsNetworkName
+    amount: number
+    complete: boolean
+  }
 }
 
 type AnalyticsEvent = keyof AnalyticsEventMap
@@ -259,7 +277,7 @@ type AnalyticsEvent = keyof AnalyticsEventMap
 function payloadToFathomEvent<T extends AnalyticsEvent>(
   event: T,
   properties?: AnalyticsEventMap[T]
-): FathomEventMap | FathomEventNonCanonicalTokens {
+): FathomEventMap | FathomEventNonCanonicalTokens | FathomEventUSDC {
   switch (event) {
     case 'Deposit':
       const depositProps = properties as AnalyticsEventMap['Deposit']
@@ -291,6 +309,11 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
       const fastBridgeProps =
         properties as AnalyticsEventMap['Fast Bridge Click']
       if (fastBridgeProps.tokenSymbol) {
+        if (fastBridgeProps.tokenSymbol === SpecialTokenSymbol.USDC) {
+          return `${SpecialTokenSymbol.USDC}: Fast Bridge Click: ${
+            fastBridgeProps.bridge as (typeof USDCBridgeInfo)['supportedBridges'][number]
+          }`
+        }
         // FRAX: Fast Bridge Click: Celer
         return `${fastBridgeProps.tokenSymbol}: Fast Bridge Click: ${
           fastBridgeProps.bridge as NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
@@ -330,6 +353,9 @@ function payloadToFathomEvent<T extends AnalyticsEvent>(
         // tx history from the header
         return event
       }
+    case 'CCTP Deposit':
+      return event
+
     default:
       // events w/o properties in fathom
       return event
