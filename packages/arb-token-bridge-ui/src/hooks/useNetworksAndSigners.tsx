@@ -50,7 +50,7 @@ export type UseNetworksAndSignersNotSupportedStatus =
   UseNetworksAndSignersStatus.NOT_SUPPORTED
 
 const defaultStatus =
-  typeof window.ethereum === 'undefined'
+  typeof global.window?.ethereum === 'undefined'
     ? UseNetworksAndSignersStatus.NOT_CONNECTED
     : UseNetworksAndSignersStatus.LOADING
 

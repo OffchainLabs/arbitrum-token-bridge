@@ -37,7 +37,7 @@ import {
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -46,6 +46,8 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC,
   sanitizeTokenSymbol
@@ -54,6 +56,7 @@ import { USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 
 enum NetworkType {
   l1 = 'l1',
@@ -329,7 +332,7 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
-  const { walletAddress } = arbTokenBridge
+  const { walletAddress, token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -357,25 +360,35 @@ export function TransferPanelMain({
     provider: l2.provider,
     walletAddress: l2WalletAddress
   })
+  const { updateUSDCBalances } = useUpdateUSDCBalances({
+    walletAddress: destinationAddressOrWalletAddress
+  })
 
   useEffect(() => {
-    if (selectedToken && utils.isAddress(destinationAddressOrWalletAddress)) {
-      updateErc20L1Balances([selectedToken.address])
-      if (selectedToken.l2Address) {
-        updateErc20L2Balances([selectedToken.l2Address])
-      }
-      if (isTokenMainnetUSDC(selectedToken.address)) {
-        updateErc20L2Balances([CommonAddress.ArbitrumOne.USDC])
-      }
-      if (isTokenGoerliUSDC(selectedToken.address)) {
-        updateErc20L2Balances([CommonAddress.ArbitrumGoerli.USDC])
-      }
+    if (!selectedToken || !utils.isAddress(destinationAddressOrWalletAddress)) {
+      return
+    }
+
+    if (
+      isTokenMainnetUSDC(selectedToken.address) ||
+      isTokenGoerliUSDC(selectedToken.address) ||
+      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+    ) {
+      updateUSDCBalances(selectedToken.address)
+      return
+    }
+
+    updateErc20L1Balances([selectedToken.address])
+    if (selectedToken.l2Address) {
+      updateErc20L2Balances([selectedToken.l2Address])
     }
   }, [
     selectedToken,
     updateErc20L1Balances,
     updateErc20L2Balances,
-    destinationAddressOrWalletAddress
+    destinationAddressOrWalletAddress,
+    updateUSDCBalances
   ])
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
@@ -399,6 +412,27 @@ export function TransferPanelMain({
 
     if (erc20L2Balances && selectedToken.l2Address) {
       result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    }
+
+    if (
+      isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+      erc20L1Balances &&
+      erc20L2Balances
+    ) {
+      return {
+        l1: erc20L1Balances[CommonAddress.Mainnet.USDC] ?? null,
+        l2: erc20L2Balances[selectedToken.address] ?? null
+      }
+    }
+    if (
+      isTokenArbitrumGoerliNativeUSDC(selectedToken.address) &&
+      erc20L1Balances &&
+      erc20L2Balances
+    ) {
+      return {
+        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l2: erc20L2Balances[selectedToken.address] ?? null
+      }
     }
 
     return result
@@ -540,7 +574,7 @@ export function TransferPanelMain({
     if (!selectedToken) {
       setDestinationAddress(undefined)
     }
-  }, [selectedToken])
+  }, [selectedToken, setDestinationAddress])
 
   const maxButtonVisible = useMemo(() => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
@@ -623,6 +657,46 @@ export function TransferPanelMain({
 
     actions.app.setIsDepositMode(!app.isDepositMode)
   }, [actions.app, app.isDepositMode, from, to])
+
+  useEffect(() => {
+    const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
+    const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
+      selectedToken?.address
+    )
+    // If user select native USDC on L2, when switching to deposit mode,
+    // we need to default to set the corresponding USDC on L1
+    if (!isDepositMode) {
+      return
+    }
+
+    // When switching network, token might be undefined
+    if (!token) {
+      return
+    }
+
+    const commonUSDC = {
+      name: 'USD Coin',
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      decimals: 6,
+      listIds: new Set<number>()
+    }
+    if (isArbOneUSDC) {
+      token.updateTokenData(CommonAddress.Mainnet.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.Mainnet.USDC,
+        l2Address: CommonAddress.ArbitrumOne['USDC.e']
+      })
+    } else if (isArbGoerliUSDC) {
+      token.updateTokenData(CommonAddress.Goerli.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.Goerli.USDC,
+        l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
+      })
+    }
+  }, [actions.app, isDepositMode, selectedToken, token])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>
