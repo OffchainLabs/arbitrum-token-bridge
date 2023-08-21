@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import { addCustomChain } from '@arbitrum/sdk'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -52,6 +53,7 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
+import { getCustomChainsFromLocalStorage } from '../common/AddCustomChain'
 
 declare global {
   interface Window {
@@ -165,6 +167,21 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     },
     [address]
   )
+
+  useEffect(() => {
+    // user added custom chains do not persists between sessions
+    // we add locally stored custom chains
+    try {
+      getCustomChainsFromLocalStorage().forEach(chains =>
+        addCustomChain({
+          customParentChain: chains.parentChain,
+          customChain: chains.chain
+        })
+      )
+    } catch (error: any) {
+      //
+    }
+  }, [])
 
   // Listen for account and network changes
   useEffect(() => {

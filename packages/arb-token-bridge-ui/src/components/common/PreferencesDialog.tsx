@@ -3,7 +3,7 @@ import useLocalStorage from '@rehooks/local-storage'
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
-import { AddCustomNetwork } from './AddCustomNetwork'
+import { AddCustomChain } from './AddCustomChain'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
@@ -75,10 +75,10 @@ export const PreferencesDialog = () => {
           />
         </div>
 
-        {/* Add custom network */}
+        {/* Add custom chain */}
         <div className="w-full">
-          <SectionTitle>Add Custom Network</SectionTitle>
-          <AddCustomNetwork />
+          <SectionTitle>Add Custom Chain</SectionTitle>
+          <AddCustomChain />
         </div>
       </div>
     </SidePanel>
