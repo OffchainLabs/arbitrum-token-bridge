@@ -172,11 +172,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     // user added custom chains do not persists between sessions
     // we add locally stored custom chains
     try {
-      getCustomChainsFromLocalStorage().forEach(chains =>
-        addCustomChain({
-          customParentChain: chains.parentChain,
-          customChain: chains.chain
-        })
+      getCustomChainsFromLocalStorage().forEach(chain =>
+        addCustomChain({ customChain: chain })
       )
     } catch (error: any) {
       //
