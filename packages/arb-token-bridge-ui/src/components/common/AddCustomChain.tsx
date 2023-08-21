@@ -1,17 +1,30 @@
 import { useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Chain, ParentChain, addCustomChain } from '@arbitrum/sdk'
+import { Chain, addCustomChain } from '@arbitrum/sdk'
 
 import { Button } from './Button'
+import { ChainId, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
 
-type CustomChains = {
-  parentChain?: ParentChain
-  chain: Chain
+const jsonPlaceholder = {
+  chainID: 0,
+  name: 'MyChain',
+  partnerChainID: 0,
+  otherProperties: '. . .'
 }
 
-export function getCustomChainsFromLocalStorage(): CustomChains[] {
+// allow only Ethereum testnets and Arbitrum testnets as parent chains
+const allowedParentChainIds = [
+  ChainId.Goerli,
+  ChainId.Sepolia,
+  ChainId.Local,
+  ChainId.ArbitrumGoerli,
+  ChainId.ArbitrumSepolia,
+  ChainId.ArbitrumLocal
+]
+
+export function getCustomChainsFromLocalStorage(): Chain[] {
   const customNetworksFromLocalStorage = localStorage.getItem(localStorageKey)
 
   if (customNetworksFromLocalStorage) {
@@ -22,7 +35,7 @@ export function getCustomChainsFromLocalStorage(): CustomChains[] {
 }
 
 export const AddCustomChain = () => {
-  const [customChains, setCustomChains] = useState<CustomChains[]>(
+  const [customChains, setCustomChains] = useState<Chain[]>(
     getCustomChainsFromLocalStorage()
   )
   const [chainsJson, setChainsJson] = useState<string>('')
@@ -33,41 +46,38 @@ export const AddCustomChain = () => {
     setError(null)
 
     try {
-      const chains = (
+      const chain = (
         chainsJson.trim()
           ? JSON.parse(chainsJson.replace(/[\r\n]+/g, ''))
           : undefined
-      ) as CustomChains
+      ) as Chain
 
-      if (!chains) {
-        throw new Error('JSON input is empty')
+      if (!chain) {
+        throw new Error('JSON input is empty.')
       }
 
-      if (chains.parentChain) {
-        chains.parentChain.isCustom = true
+      if (!allowedParentChainIds.includes(Number(chain.partnerChainID))) {
+        throw new Error(
+          `Invalid partnerChainID ${chain.partnerChainID}. Only Ethereum testnet and Arbitrum testnet parent chains are allowed.`
+        )
       }
 
-      if (!chains.chain) {
-        throw new Error("'chain' property is missing")
-      }
-
-      chains.chain.isCustom = true
+      chain.isCustom = true
 
       addCustomChain({
-        customParentChain: chains.parentChain,
-        customChain: chains.chain
+        customChain: chain
       })
 
-      saveCustomChainToLocalStorage(chains)
+      saveCustomChainToLocalStorage(chain)
     } catch (error: any) {
-      setError(error.message ?? 'Something went wrong')
+      setError(error.message ?? 'Something went wrong.')
     }
   }
 
-  function saveCustomChainToLocalStorage(customNetwork: CustomChains) {
+  function saveCustomChainToLocalStorage(newCustomChain: Chain) {
     const newCustomChains = [
       ...getCustomChainsFromLocalStorage(),
-      customNetwork
+      newCustomChain
     ]
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
     setCustomChains(newCustomChains)
@@ -75,7 +85,7 @@ export const AddCustomChain = () => {
 
   function removeCustomChainFromLocalStorage(chainId: number) {
     const newCustomChains = getCustomChainsFromLocalStorage().filter(
-      chains => chains.chain.chainID !== chainId
+      chain => chain.chainID !== chainId
     )
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
     setCustomChains(newCustomChains)
@@ -91,35 +101,31 @@ export const AddCustomChain = () => {
             <span className="w-5/12">Parent Chain</span>
             <span className="w-5/12">Chain</span>
           </div>
-          {customChains.map(chains => (
+          {customChains.map(chain => (
             <div
-              key={`chain-${chains.chain.chainID}`}
+              key={`chain-${chain.chainID}`}
               className="relative flex w-full flex-col border-b border-gray-700"
             >
               <div>
                 <div className="flex w-full">
                   <span className="w-2/12 opacity-40">Name:</span>
                   <span className="w-5/12 opacity-40">
-                    {chains.parentChain?.name ?? '-'}
+                    {getNetworkName(Number(chain.partnerChainID))}
                   </span>
-                  <span className="w-5/12 opacity-40">
-                    {chains.chain.name ?? '-'}
-                  </span>
+                  <span className="w-5/12 opacity-40">{chain.name ?? '-'}</span>
                 </div>
                 <div className="flex w-full">
                   <span className="w-2/12 opacity-40">Chain ID:</span>
                   <span className="w-5/12 opacity-40">
-                    {chains.parentChain?.chainID ?? '-'}
+                    {chain.partnerChainID}
                   </span>
                   <span className="w-5/12 opacity-40">
-                    {chains.chain.chainID ?? '-'}
+                    {chain.chainID ?? '-'}
                   </span>
                 </div>
               </div>
               <button
-                onClick={() =>
-                  removeCustomChainFromLocalStorage(chains.chain.chainID)
-                }
+                onClick={() => removeCustomChainFromLocalStorage(chain.chainID)}
                 className="arb-hover absolute bottom-4 right-0 text-error"
               >
                 <XMarkIcon width={16} />
@@ -138,6 +144,7 @@ export const AddCustomChain = () => {
       <div>
         <textarea
           onChange={e => setChainsJson(e.target.value)}
+          placeholder={JSON.stringify(jsonPlaceholder)}
           className="min-h-[100px] w-full rounded-lg p-1 text-black"
         />
       </div>
