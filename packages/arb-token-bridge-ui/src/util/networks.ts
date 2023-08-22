@@ -428,6 +428,13 @@ export function getNetworkLogo(chainId: number) {
       return '/images/ArbitrumNovaLogo.svg'
 
     default:
+      const { isArbitrum, isOrbitChain } = isNetwork(chainId)
+      if (isArbitrum) {
+        return '/images/ArbitrumOneLogo'
+      }
+      if (isOrbitChain) {
+        return '/images/OrbitLogo.svg'
+      }
       return '/images/EthereumLogo.svg'
   }
 }
