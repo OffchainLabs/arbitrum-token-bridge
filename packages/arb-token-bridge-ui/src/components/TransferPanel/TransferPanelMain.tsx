@@ -153,7 +153,7 @@ function NetworkContainer({
 
     if (isOrbitChain) {
       return {
-        backgroundImage: `url('/images/OrbitLogo.svg')`,
+        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
         backgroundClassName: 'bg-orbit-dark'
       }
     }

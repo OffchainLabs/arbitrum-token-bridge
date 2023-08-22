@@ -409,7 +409,10 @@ export function getNetworkName(chainId: number) {
   }
 }
 
-export function getNetworkLogo(chainId: number) {
+export function getNetworkLogo(
+  chainId: number,
+  variant: 'light' | 'dark' = 'dark'
+) {
   switch (chainId) {
     // L1 networks
     case ChainId.Mainnet:
@@ -433,7 +436,9 @@ export function getNetworkLogo(chainId: number) {
         return '/images/ArbitrumOneLogo'
       }
       if (isOrbitChain) {
-        return '/images/OrbitLogo.svg'
+        return variant === 'dark'
+          ? '/images/OrbitLogo.svg'
+          : '/images/OrbitLogoWhite.svg'
       }
       return '/images/EthereumLogo.svg'
   }
