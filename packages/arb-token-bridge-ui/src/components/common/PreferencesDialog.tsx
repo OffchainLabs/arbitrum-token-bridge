@@ -1,10 +1,14 @@
 import useLocalStorage from '@rehooks/local-storage'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
+import { AddCustomChain } from './AddCustomChain'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
+import { Tooltip } from './Tooltip'
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <div className="heading mb-4 text-lg">{children}</div>
@@ -71,6 +75,17 @@ export const PreferencesDialog = () => {
               isArbitrumStatsVisible ? closeArbitrumStats : openArbitrumStats
             }
           />
+        </div>
+
+        {/* Add custom chain */}
+        <div className="w-full">
+          <div className="flex">
+            <SectionTitle>Add Custom Chain (testnet only)</SectionTitle>
+            <Tooltip content="Only include 'chain' object (an L2 network or an Orbit chain).">
+              <InformationCircleIcon className="text-white" width={12} />
+            </Tooltip>
+          </div>
+          <AddCustomChain />
         </div>
       </div>
     </SidePanel>
