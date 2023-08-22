@@ -74,6 +74,46 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
   messageReceived: MessageReceived
 }
 
+function getMessageSents({
+  sender,
+  recipient,
+  searchString,
+  pageSize,
+  pageNumber
+}: Pick<
+  NextApiRequestWithCCTPParams['query'],
+  'searchString' | 'pageSize' | 'pageNumber'
+> & {
+  sender?: `0x${string}`
+  recipient?: `0x${string}`
+}) {
+  return gql(`{
+    messageSents(
+      where: {
+        ${sender ? `sender: "${sender}"` : ''}
+        ${recipient ? `recipient: "${recipient}"` : ''}
+        ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
+      }
+      orderDirection: "desc"
+      orderBy: "blockTimestamp"
+      first: ${Number(pageSize)}
+      skip: ${Number(pageNumber) * Number(pageSize)}
+    ) {
+      attestationHash
+      blockNumber
+      blockTimestamp
+      id
+      message
+      nonce
+      sender
+      recipient
+      sourceDomain
+      transactionHash
+      amount
+    }
+  }`)
+}
+
 export type Response =
   | {
       data: {
@@ -154,53 +194,70 @@ export default async function handler(
       l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
-    const messagesSentQuery = gql(`{
-        messageSents(
-          where: {
-            sender: "${walletAddress}"
-            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
-          }
-          orderDirection: "desc"
-          orderBy: "blockTimestamp"
-          first: ${Number(pageSize)}
-          skip: ${Number(pageNumber) * Number(pageSize)}
-        ) {
-          attestationHash
-          blockNumber
-          blockTimestamp
-          id
-          message
-          nonce
-          sender
-          recipient
-          sourceDomain
-          transactionHash
-          amount
-        }
-      }`)
-
-    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
+    const messagesSentQueryFromWalletAddress = getMessageSents({
+      sender: walletAddress,
+      searchString,
+      pageSize,
+      pageNumber
+    })
+    const messagesSentQueryToWalletAddress = getMessageSents({
+      recipient: walletAddress,
+      searchString,
+      pageSize,
+      pageNumber
+    })
+    let messagesSentToWalletAddressResult: ApolloQueryResult<{
+      messageSents: MessageSent[]
+    }>
+    let messagesSentFromWalletAddressResult: ApolloQueryResult<{
+      messageSents: MessageSent[]
+    }>
     if (type === 'deposits') {
-      messagesSentResult = await l1Subgraph.query({ query: messagesSentQuery })
+      ;[
+        messagesSentToWalletAddressResult,
+        messagesSentFromWalletAddressResult
+      ] = await Promise.all([
+        l1Subgraph.query({
+          query: messagesSentQueryToWalletAddress
+        }),
+        l1Subgraph.query({
+          query: messagesSentQueryFromWalletAddress
+        })
+      ])
     } else {
-      messagesSentResult = await l2Subgraph.query({ query: messagesSentQuery })
+      ;[
+        messagesSentToWalletAddressResult,
+        messagesSentFromWalletAddressResult
+      ] = await Promise.all([
+        l2Subgraph.query({
+          query: messagesSentQueryToWalletAddress
+        }),
+        l2Subgraph.query({
+          query: messagesSentQueryFromWalletAddress
+        })
+      ])
     }
-    const { messageSents } = messagesSentResult.data
-    const messagesSentIds = messageSents.map(messageSent => messageSent.id)
-    const formatedIds = messagesSentIds.map(
-      messageSentId => `"${messageSentId}"`
-    )
+
+    const formattedMessagesSentToIds =
+      messagesSentToWalletAddressResult.data.messageSents.map(
+        messageSent => `"${messageSent.id}"`
+      )
+    const formattedMessagesSentFromIds =
+      messagesSentFromWalletAddressResult.data.messageSents.map(
+        messageSent => `"${messageSent.id}"`
+      )
 
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {id_in: [${formatedIds.join(',')}]}
+          where: {id_in: [${formattedMessagesSentToIds
+            .concat(formattedMessagesSentFromIds)
+            .join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
         ) {
           id
           caller
           sourceDomain
-          nonce
           blockTimestamp
           blockNumber
           messageBody
@@ -237,27 +294,30 @@ export default async function handler(
       ])
     )
 
-    const { pending, completed } = messageSents.reduce(
-      (acc, messageSent) => {
-        // If the MessageSent has a corresponding MessageReceived
-        const messageReceived = messagesReceivedMap.get(messageSent.id)
-        if (messageReceived) {
-          acc.completed.push({
-            messageReceived,
-            messageSent
-          })
-        } else {
-          acc.pending.push({
-            messageSent
-          })
-        }
-        return acc
-      },
-      { completed: [], pending: [] } as {
-        completed: CompletedCCTPTransfer[]
-        pending: PendingCCTPTransfer[]
-      }
-    )
+    const { pending, completed } =
+      messagesSentToWalletAddressResult.data.messageSents
+        .concat(messagesSentFromWalletAddressResult.data.messageSents)
+        .reduce(
+          (acc, messageSent) => {
+            // If the MessageSent has a corresponding MessageReceived
+            const messageReceived = messagesReceivedMap.get(messageSent.id)
+            if (messageReceived) {
+              acc.completed.push({
+                messageReceived,
+                messageSent
+              })
+            } else {
+              acc.pending.push({
+                messageSent
+              })
+            }
+            return acc
+          },
+          { completed: [], pending: [] } as {
+            completed: CompletedCCTPTransfer[]
+            pending: PendingCCTPTransfer[]
+          }
+        )
 
     res.status(200).json({
       data: {
