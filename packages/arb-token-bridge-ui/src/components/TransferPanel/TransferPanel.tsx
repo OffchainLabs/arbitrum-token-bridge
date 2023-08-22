@@ -185,7 +185,7 @@ export function TransferPanel() {
     useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
-  const { isArbitrumNova, isOrbitChain } = isNetwork(l2Network.id)
+  const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -688,10 +688,14 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
+
         const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
         // Only switch to L1 if the selected L1 network is Ethereum.
-        // Arbitrum can also be an L1, and then it would be a valid parent to an Orbit chain.
-        if (isConnectedToArbitrum.current && isParentChainEthereum) {
+        // Or if connected to an Orbit chain as it can't make deposits.
+        if (
+          (isConnectedToArbitrum.current && isParentChainEthereum) ||
+          isConnectedToOrbitChain.current
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -707,7 +711,8 @@ export function TransferPanel() {
           )
 
           while (
-            isConnectedToArbitrum.current ||
+            (isConnectedToArbitrum.current && isParentChainEthereum) ||
+            isConnectedToOrbitChain.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -722,9 +727,8 @@ export function TransferPanel() {
           latestConnectedProvider.current?.network?.chainId
         const l1ChainEqualsConnectedChain =
           l1ChainID && connectedChainID && l1ChainID === connectedChainID
-        const isConnectedToOrbitChain = isNetwork(connectedChainID).isOrbitChain
 
-        if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain) {
+        if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
           // Deposit is invalid if the connected chain doesn't match L1...
           // ...or if connected to an Orbit chain, as it can't make deposits.
           return networkConnectionWarningToast()
@@ -855,8 +859,12 @@ export function TransferPanel() {
 
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+        const { isOrbitChain } = isNetwork(l2Network.id)
 
-        if (isConnectedToEthereum) {
+        if (
+          isConnectedToEthereum ||
+          (isConnectedToArbitrum.current && isOrbitChain)
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -872,7 +880,8 @@ export function TransferPanel() {
           )
 
           while (
-            !isConnectedToArbitrum.current ||
+            isConnectedToEthereum ||
+            (isConnectedToArbitrum.current && isOrbitChain) ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {

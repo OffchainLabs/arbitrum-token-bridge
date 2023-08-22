@@ -134,7 +134,7 @@ export const getBlockTime = (chainId: ChainId) => {
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
-  return (network as L1Network).blockTime
+  return (network as L1Network).blockTime ?? 12
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {

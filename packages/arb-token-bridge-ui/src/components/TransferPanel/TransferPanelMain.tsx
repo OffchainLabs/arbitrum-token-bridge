@@ -481,7 +481,8 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-  }, [externalFrom, externalTo])
+    setQueryParams({ l2ChainId: l2.network.id })
+  }, [externalFrom, externalTo, l2.network.id, setQueryParams])
 
   const estimateGas = useCallback(
     async (
