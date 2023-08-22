@@ -185,7 +185,7 @@ export function TransferPanel() {
     useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
-  const { isArbitrumNova } = isNetwork(l2Network.id)
+  const { isArbitrumNova, isOrbitChain } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -1335,7 +1335,8 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark'
+                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark',
+                isOrbitChain ? 'bg-eth-dark' : 'bg-arb-one-dark'
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -1359,7 +1360,10 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full py-4 text-lg lg:text-2xl',
+                isOrbitChain ? 'bg-arb-one-dark' : 'bg-eth-dark'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'

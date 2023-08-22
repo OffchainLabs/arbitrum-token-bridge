@@ -2,6 +2,7 @@ import { Chain } from 'wagmi'
 import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
 
 import {
+  chainToWagmiChain,
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
@@ -9,8 +10,17 @@ import {
   localL2Network
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
+import { getCustomChainsFromLocalStorage } from '../../components/common/AddCustomChain'
 
 export function getWagmiChain(chainId: number): Chain {
+  const customChain = getCustomChainsFromLocalStorage().filter(
+    chain => chain.chainID === chainId
+  )[0]
+
+  if (customChain) {
+    return chainToWagmiChain(customChain)
+  }
+
   switch (chainId) {
     case ChainId.Mainnet:
       return mainnet

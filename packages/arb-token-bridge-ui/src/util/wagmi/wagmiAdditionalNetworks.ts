@@ -1,5 +1,22 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
-import { ChainId, explorerUrls, rpcURLs } from '../networks'
+import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+
+export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  return {
+    id: chain.chainID,
+    name: chain.name,
+    network: chain.name.toLowerCase().split(' ').join('-'),
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    rpcUrls: {
+      default: {
+        http: [chain.rpcUrl]
+      },
+      public: {
+        http: [chain.rpcUrl]
+      }
+    }
+  }
+}
 
 export const sepolia: Chain = {
   ...sepoliaDefault,

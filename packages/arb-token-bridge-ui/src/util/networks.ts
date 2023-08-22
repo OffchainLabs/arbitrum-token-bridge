@@ -1,11 +1,14 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import {
+  Chain,
   ParentChain,
   l2Networks,
+  chains,
   parentChains
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import { getCustomChainsFromLocalStorage } from '../components/common/AddCustomChain'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -17,24 +20,47 @@ const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
+export type ChainWithRpcUrl = Chain & {
+  rpcUrl: string
+}
+
+function getCustomChainIds(l2ChainID: number): ChainId[] {
+  // gets custom chain IDs where l2ChainID matches the partnerChainID
+  return getCustomChainsFromLocalStorage()
+    .filter(chain => chain.partnerChainID === l2ChainID)
+    .map(chain => chain.chainID)
+}
+
 export function getL2ChainIds(l1ChainId: number): ChainId[] {
-  if (l1ChainId === ChainId.Mainnet) {
-    return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+  // Ethereum as the parent chain
+  switch (l1ChainId) {
+    case ChainId.Mainnet:
+      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+    case ChainId.Goerli:
+      return [
+        ChainId.ArbitrumGoerli,
+        ...getCustomChainIds(ChainId.ArbitrumGoerli)
+      ]
+    case ChainId.Sepolia:
+      return [
+        ChainId.ArbitrumSepolia,
+        ...getCustomChainIds(ChainId.ArbitrumSepolia)
+      ]
+    case ChainId.Local:
+      return [
+        ChainId.ArbitrumLocal,
+        ...getCustomChainIds(ChainId.ArbitrumLocal)
+      ]
+    // Arbitrum as the parent chain
+    case ChainId.ArbitrumGoerli:
+      return [ChainId.Goerli, ...getCustomChainIds(ChainId.ArbitrumGoerli)]
+    case ChainId.ArbitrumSepolia:
+      return [ChainId.Sepolia, ...getCustomChainIds(ChainId.ArbitrumSepolia)]
+    case ChainId.ArbitrumLocal:
+      return [ChainId.Local, ...getCustomChainIds(ChainId.ArbitrumLocal)]
+    default:
+      return []
   }
-
-  if (l1ChainId === ChainId.Goerli) {
-    return [ChainId.ArbitrumGoerli]
-  }
-
-  if (l1ChainId === ChainId.Sepolia) {
-    return [ChainId.ArbitrumSepolia]
-  }
-
-  if (l1ChainId === ChainId.Local) {
-    return [ChainId.ArbitrumLocal]
-  }
-
-  return []
 }
 
 export enum ChainId {
@@ -112,7 +138,7 @@ export const getBlockTime = (chainId: ChainId) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = l2Networks[chainId]
+  const network = l2Networks[chainId] || chains[chainId]
   if (!network) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
@@ -243,11 +269,16 @@ export function registerLocalNetwork(
 }
 
 export function isNetwork(chainId: ChainId) {
+  const customChains = getCustomChainsFromLocalStorage().filter(
+    chain => chain.chainID === chainId
+  )
+
   const isMainnet = chainId === ChainId.Mainnet
 
   const isRinkeby = chainId === ChainId.Rinkeby
   const isGoerli = chainId === ChainId.Goerli
   const isSepolia = chainId === ChainId.Sepolia
+  const isLocal = chainId === ChainId.Local
 
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
   const isArbitrumNova = chainId === ChainId.ArbitrumNova
@@ -256,24 +287,51 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
+  const ethereumChainIds = [
+    ChainId.Mainnet,
+    ChainId.Rinkeby,
+    ChainId.Goerli,
+    ChainId.Sepolia,
+    ChainId.Local
+  ]
+
+  const isEthereum = ethereumChainIds.includes(chainId)
+
+  const customArbitrumChainIds = customChains
+    .filter(chain => ethereumChainIds.includes(chain.partnerChainID))
+    .map(chain => chain.chainID)
+
+  const arbitrumChainIds = [
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova,
+    ChainId.ArbitrumGoerli,
+    ChainId.ArbitrumRinkeby,
+    ChainId.ArbitrumLocal,
+    ChainId.ArbitrumSepolia
+  ]
+
   const isArbitrum =
     isArbitrumOne ||
     isArbitrumNova ||
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isArbitrumLocal ||
-    isArbitrumSepolia
+    isArbitrumSepolia ||
+    customArbitrumChainIds.includes(chainId)
 
-  // No Orbit chains for now. Setting to false.
-  const isOrbitChain = false
+  const customOrbitChains = customChains
+    .filter(chain => arbitrumChainIds.includes(chain.partnerChainID))
+    .map(chain => chain.chainID)
 
   const isTestnet =
     isRinkeby ||
     isGoerli ||
+    isLocal ||
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isSepolia ||
-    isArbitrumSepolia
+    isArbitrumSepolia ||
+    customOrbitChains.includes(chainId)
 
   const isSupported =
     isArbitrumOne ||
@@ -287,7 +345,7 @@ export function isNetwork(chainId: ChainId) {
   return {
     // L1
     isMainnet,
-    isEthereum: !isArbitrum && !isOrbitChain,
+    isEthereum,
     // L1 Testnets
     isRinkeby,
     isGoerli,
@@ -301,7 +359,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
-    isOrbitChain,
+    isOrbitChain: !isEthereum && !isArbitrum,
     // Testnet
     isTestnet,
     // General
@@ -310,6 +368,14 @@ export function isNetwork(chainId: ChainId) {
 }
 
 export function getNetworkName(chainId: number) {
+  const customChain = getCustomChainsFromLocalStorage().filter(
+    chain => chain.chainID === chainId
+  )[0]
+
+  if (customChain) {
+    return customChain.name
+  }
+
   switch (chainId) {
     case ChainId.Mainnet:
       return 'Mainnet'
@@ -372,7 +438,27 @@ export function getSupportedNetworks(chainId = 0) {
         ChainId.Goerli,
         ChainId.ArbitrumGoerli,
         ChainId.Sepolia,
-        ChainId.ArbitrumSepolia
+        ChainId.ArbitrumSepolia,
+        ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
       ]
     : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+}
+
+export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
+  // custom chain details need to be added to various objects to make it work with the UI
+  //
+  // update default L2 Chain ID; it allows us to pair the Chain with its Parent Chain
+  chainIdToDefaultL2ChainId[chain.partnerChainID] = [
+    ...(chainIdToDefaultL2ChainId[chain.partnerChainID] || []),
+    chain.chainID
+  ]
+  // also set Chain's default chain to point to its own chain ID
+  chainIdToDefaultL2ChainId[chain.chainID] = [
+    ...(chainIdToDefaultL2ChainId[chain.chainID] || []),
+    chain.chainID
+  ]
+  // add RPC
+  rpcURLs[chain.chainID] = chain.rpcUrl
+  // explorer URL
+  explorerUrls[chain.chainID] = chain.explorerUrl
 }

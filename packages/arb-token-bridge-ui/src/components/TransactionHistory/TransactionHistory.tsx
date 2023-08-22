@@ -22,6 +22,7 @@ import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
 import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
+import { CustomMessageWarning } from './CustomMessageWarning'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -154,6 +155,12 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col justify-around gap-6">
+      {isNetwork(l2.network.id).isOrbitChain && (
+        <CustomMessageWarning>
+          Fetching transaction history data and transaction execution might be
+          slower for Orbit chains compared to other layers.
+        </CustomMessageWarning>
+      )}
       {/* Pending transactions cards */}
       <PendingTransactions
         loading={isLoading}

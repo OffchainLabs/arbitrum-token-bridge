@@ -50,9 +50,25 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
   const networkName = getNetworkName(toNetworkId)
 
-  const currentChainIsValid =
-    (isSourceChainIdEthereum && isArbitrum) ||
-    (isSourceChainIdArbitrum && isEthereum)
+  const currentChainIsValid = useMemo(() => {
+    const isWithdrawalSourceOrbitChain = isNetwork(l2.network.id).isOrbitChain
+
+    if (isWithdrawalSourceOrbitChain) {
+      // Enable claim if withdrawn from an Orbit chain and is connected to L2
+      return isArbitrum
+    }
+
+    return (
+      (isSourceChainIdEthereum && isArbitrum) ||
+      (isSourceChainIdArbitrum && isEthereum)
+    )
+  }, [
+    l2.network.id,
+    isSourceChainIdEthereum,
+    isArbitrum,
+    isSourceChainIdArbitrum,
+    isEthereum
+  ])
 
   const isClaimButtonDisabled = useMemo(() => {
     return !!(

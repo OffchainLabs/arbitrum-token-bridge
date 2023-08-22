@@ -1,29 +1,33 @@
 import { useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Chain, addCustomChain } from '@arbitrum/sdk'
+import { Chain, L2Network, addCustomChain } from '@arbitrum/sdk'
 
 import { Button } from './Button'
-import { ChainId, getNetworkName } from '../../util/networks'
+import { ChainWithRpcUrl, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
 
 const jsonPlaceholder = `{ chainID: 0, name: 'MyChain', partnerChainID: 0, ...other_properties }`
 
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
-const allowedParentChainIds = [
-  ChainId.Goerli,
-  ChainId.Sepolia,
-  ChainId.Local,
-  ChainId.ArbitrumGoerli,
-  ChainId.ArbitrumSepolia,
-  ChainId.ArbitrumLocal
-]
+const allowedParentChainIds = [5, 11155111, 1337, 421613, 421614, 412346]
 
-export function getCustomChainsFromLocalStorage(): Chain[] {
+export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   const customNetworksFromLocalStorage = localStorage.getItem(localStorageKey)
 
   if (customNetworksFromLocalStorage) {
-    return JSON.parse(customNetworksFromLocalStorage)
+    return (JSON.parse(customNetworksFromLocalStorage) as ChainWithRpcUrl[])
+      .filter(
+        // filter again in case local storage is compromized
+        chain => !allowedParentChainIds.includes(Number(chain.chainID))
+      )
+      .map(chain => {
+        return {
+          ...chain,
+          // make sure chainID is numeric
+          chainID: Number(chain.chainID)
+        }
+      })
   }
 
   return []
@@ -34,6 +38,7 @@ export const AddCustomChain = () => {
     getCustomChainsFromLocalStorage()
   )
   const [chainJson, setChainJson] = useState<string>('')
+  const [rpcUrl, setRpcUrl] = useState<string>('')
   const [needsReload, setNeedsReload] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,14 +46,37 @@ export const AddCustomChain = () => {
     setError(null)
 
     try {
-      const chain = (
+      const data = (
         chainJson.trim()
           ? JSON.parse(chainJson.replace(/[\r\n]+/g, ''))
           : undefined
       ) as Chain
 
-      if (!chain) {
+      if (!data) {
         throw new Error('JSON input is empty.')
+      }
+
+      if (!rpcUrl) {
+        throw new Error('RPC URL is required.')
+      }
+
+      // we assume provided json a Chain object
+      let chain = data
+
+      // however, users might want to just copy the result of genNetwork which has a nested 'l2Network' property
+      // in that case we want to read 'l2Network'
+      if ((data as unknown as { l2Network: L2Network }).l2Network) {
+        chain = (data as unknown as { l2Network: L2Network }).l2Network
+      }
+
+      // also looking for an 'l3Network'
+      if ((data as unknown as { l3Network: L2Network }).l3Network) {
+        chain = (data as unknown as { l3Network: L2Network }).l3Network
+      }
+
+      // same case but in case user provided a 'chain'
+      if ((data as unknown as { chain: Chain }).chain) {
+        chain = (data as unknown as { chain: Chain }).chain
       }
 
       if (!allowedParentChainIds.includes(Number(chain.partnerChainID))) {
@@ -60,13 +88,14 @@ export const AddCustomChain = () => {
       chain.isCustom = true
 
       addCustomChain({ customChain: chain })
-      saveCustomChainToLocalStorage(chain)
+      saveCustomChainToLocalStorage({ ...chain, rpcUrl })
+      setNeedsReload(true)
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
     }
   }
 
-  function saveCustomChainToLocalStorage(newCustomChain: Chain) {
+  function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
     const newCustomChains = [
       ...getCustomChainsFromLocalStorage(),
       newCustomChain
@@ -128,16 +157,22 @@ export const AddCustomChain = () => {
       )}
       {needsReload && (
         <div className="mb-2 text-xs text-yellow-400">
-          <span>
-            To apply the removal of the custom chain, please reload the page.
-          </span>
+          <span>To apply the changes, please reload the page.</span>
         </div>
       )}
-      <div>
+      <div className="flex flex-col">
+        <h3>JSON Config</h3>
         <textarea
           onChange={e => setChainJson(e.target.value)}
           placeholder={jsonPlaceholder}
           className="min-h-[100px] w-full rounded-lg p-1 text-black"
+        />
+      </div>
+      <div className="mt-2 flex flex-col">
+        <h3>RPC URL</h3>
+        <input
+          onChange={e => setRpcUrl(e.target.value)}
+          className="w-full rounded-lg p-1 text-black"
         />
       </div>
       {error && <span className="text-sm text-error">{error}</span>}
