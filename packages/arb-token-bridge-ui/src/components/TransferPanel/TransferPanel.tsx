@@ -11,7 +11,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { ConnectionState } from '../../util'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -1236,6 +1236,39 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
+  const depositButtonColorClassName = useMemo(() => {
+    const { isArbitrum, isArbitrumNova } = isNetwork(l2Network.id)
+
+    if (isArbitrumNova) {
+      return 'bg-arb-nova-dark'
+    }
+
+    if (isArbitrum) {
+      return 'bg-arb-one-dark'
+    }
+
+    // is Orbit chain
+    return 'bg-orbit-dark'
+  }, [l2Network.id])
+
+  const withdrawalButtonColorClassName = useMemo(() => {
+    const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
+      l1Network.id
+    )
+    const { isArbitrum } = isNetwork(l2Network.id)
+
+    if (isArbitrum) {
+      return 'bg-eth-dark'
+    }
+
+    // is Orbit chain
+    if (isParentChainArbitrumNova) {
+      return 'bg-arb-nova-dark'
+    }
+
+    return 'bg-arb-one-dark'
+  }, [l1Network.id, l2Network.id])
+
   return (
     <>
       <TokenApprovalDialog
@@ -1335,8 +1368,7 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark',
-                isOrbitChain ? 'bg-eth-dark' : 'bg-arb-one-dark'
+                depositButtonColorClassName
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -1362,7 +1394,7 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full py-4 text-lg lg:text-2xl',
-                isOrbitChain ? 'bg-arb-one-dark' : 'bg-eth-dark'
+                withdrawalButtonColorClassName
               )}
             >
               {isSmartContractWallet && isTransferring

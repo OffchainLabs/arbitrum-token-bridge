@@ -43,6 +43,8 @@ module.exports = {
         'arb-nova-dark': '#743600',
         'eth-primary': '#454A75',
         'eth-dark': '#1A1C33',
+        'orbit-primary': '#12AAFF',
+        'orbit-dark': '#006EC3',
         'ocl-blue': '#243145'
       },
       fontFamily: {
