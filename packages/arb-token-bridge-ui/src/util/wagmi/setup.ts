@@ -17,7 +17,7 @@ import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../../components/common/AddCustomChain'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  chainToWagmiChain(chain, 'https://testnet.xai-chain.net/rpc')
+  chainToWagmiChain(chain)
 )
 
 const chainList = isTestingEnvironment
