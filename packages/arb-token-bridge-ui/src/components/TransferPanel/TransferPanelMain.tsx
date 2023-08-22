@@ -149,7 +149,14 @@ function NetworkContainer({
 }) {
   const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+    const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+
+    if (isOrbitChain) {
+      return {
+        backgroundImage: `url('/images/OrbitLogo.svg')`,
+        backgroundClassName: 'bg-eth-dark'
+      }
+    }
 
     if (!isArbitrum) {
       return {
