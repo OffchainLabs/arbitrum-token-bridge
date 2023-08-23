@@ -74,22 +74,29 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
 }
 
 function getMessageSents({
-  sender,
-  recipient,
+  walletAddress,
   pageSize,
-  pageNumber
-}: Pick<NextApiRequestWithCCTPParams['query'], 'pageSize' | 'pageNumber'> & {
-  sender?: `0x${string}`
-  recipient?: `0x${string}`
+  pageNumber,
+  incoming
+}: Pick<
+  NextApiRequestWithCCTPParams['query'],
+  'pageSize' | 'pageNumber' | 'walletAddress'
+> & {
+  incoming: boolean
 }) {
+  let filter: string
+  if (incoming) {
+    // Get all incoming messages from other wallets
+    filter = `recipient: "${walletAddress}" sender_not: "${walletAddress}"`
+  } else {
+    // Get all messages sent from this address to any address
+    filter = `sender: "${walletAddress}"`
+  }
+
   return gql(`{
     messageSents(
       where: {
-        # If sender is defined, get all messages sent from this address to the same or a different address
-        ${sender ? `sender: "${sender}"` : ''}
-        # If recipient is defined, get all messages sent to this address (from another wallet)
-        ${recipient ? `recipient: "${recipient}"` : ''}
-        ${recipient ? `sender_not: "${recipient}"` : ''}
+        ${filter}
       }
       orderDirection: "desc"
       orderBy: "blockTimestamp"
@@ -191,14 +198,16 @@ export default async function handler(
     )
 
     const messagesSentQueryFromWalletAddress = getMessageSents({
-      sender: walletAddress,
+      walletAddress,
       pageSize,
-      pageNumber
+      pageNumber,
+      incoming: false
     })
     const messagesSentQueryToWalletAddress = getMessageSents({
-      recipient: walletAddress,
+      walletAddress,
       pageSize,
-      pageNumber
+      pageNumber,
+      incoming: true
     })
     let messagesSentToWalletAddressResult: ApolloQueryResult<{
       messageSents: MessageSent[]
