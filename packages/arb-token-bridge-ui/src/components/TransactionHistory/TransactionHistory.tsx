@@ -17,7 +17,7 @@ import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppContextActions } from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
@@ -49,8 +49,16 @@ export const TransactionHistory = ({
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
   const { isSmartContractWallet, isEOA } = useAccountType()
-  const { showSentTransactions, showReceivedTransactions } =
-    useAppContextActions()
+  const {
+    showSentTransactions,
+    showReceivedTransactions,
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions,
+    setTransactionHistoryTab
+  } = useAppContextActions()
+  const {
+    layout: { transactionHistorySelectedTab }
+  } = useAppContextState()
   const {
     pendingIds: pendingIdsCctp,
     transfers: transfersCctp,
@@ -134,7 +142,8 @@ export const TransactionHistory = ({
         // - sent txs if connected to L1
         showSentTransactions()
       }
-    } else {
+    } else if (index === 1) {
+      // Withdrawal tab
       // if showing withdrawals, we always show:
       if (isConnectedToArbitrum) {
         // - sent txs if connected to L2
@@ -142,6 +151,13 @@ export const TransactionHistory = ({
       } else {
         // - received txs if connected to L1
         showReceivedTransactions()
+      }
+    } else {
+      // Cctp tab
+      if (isConnectedToArbitrum) {
+        showCctpDepositsTransactions()
+      } else {
+        showCctpWithdrawalsTransactions()
       }
     }
   }
@@ -166,11 +182,18 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group onChange={handleSentOrReceivedTxForSCW} key={address}>
+        <Tab.Group
+          onChange={index => {
+            handleSentOrReceivedTxForSCW(index)
+            setTransactionHistoryTab(index)
+          }}
+          key={address}
+          selectedIndex={transactionHistorySelectedTab}
+        >
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
-              className={`${roundedTabClasses}`}
+              className={roundedTabClasses}
             >
               {/* Deposits */}
               <Image
@@ -196,7 +219,7 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            {!!transfersIds.length && (
+            {transfersIds.length && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={`${roundedTabClasses} roundedTabLeft`}
@@ -238,7 +261,8 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {!!transfersIds.length && (
+
+          {transfersIds.length && (
             <Tab.Panel className="overflow-auto">
               <TransactionsTableCctp />
             </Tab.Panel>

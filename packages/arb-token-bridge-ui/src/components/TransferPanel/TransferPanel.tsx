@@ -26,7 +26,11 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import {
+  TransactionHistoryTab,
+  useAppContextActions,
+  useAppContextState
+} from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
@@ -180,8 +184,13 @@ export function TransferPanel() {
 
   const { setPendingTransfer, updateTransfer } = useCctpState()
 
-  const { openTransactionHistoryPanel, setTransferring } =
-    useAppContextActions()
+  const {
+    openTransactionHistoryPanel,
+    setTransferring,
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions,
+    setTransactionHistoryTab
+  } = useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
   const { isArbitrumNova } = isNetwork(l2Network.id)
@@ -589,6 +598,13 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         }
       })
+
+      if (isDeposit) {
+        showCctpDepositsTransactions()
+      } else {
+        showCctpWithdrawalsTransactions()
+      }
+      setTransactionHistoryTab(TransactionHistoryTab.CCTP)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()

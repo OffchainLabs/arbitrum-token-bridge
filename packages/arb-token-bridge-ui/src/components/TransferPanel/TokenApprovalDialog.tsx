@@ -123,7 +123,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         ? 'the CCTP L2 deposit fee.'
         : 'the standard L2 deposit fee.'
     }
-    return isCctp ? 'the CCTP L1 deposit fee.' : 'the standard L1 deposit fee.'
+    return isCctp
+      ? 'the CCTP L1 withdrawal fee.'
+      : 'the standard L1 withdrawal fee.'
   })()
 
   return (

@@ -17,10 +17,16 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { getNetworkName } from '../../../util/networks'
+import { useAppContextActions, useAppContextState } from '../../App/AppContext'
 
 export function TransactionsTableCctp() {
   const { address } = useAccount()
-  const [type, setType] = useState<'deposits' | 'withdrawals'>('deposits')
+  const {
+    layout: { isTransactionHistoryShowingCctpDeposits }
+  } = useAppContextState()
+  const { showCctpDepositsTransactions, showCctpWithdrawalsTransactions } =
+    useAppContextActions()
+
   const { isSmartContractWallet } = useAccountType()
   const [pageParams, setPageParams] = useState<PageParams>({
     searchString: '',
@@ -39,11 +45,14 @@ export function TransactionsTableCctp() {
     walletAddress: address,
     pageSize: pageParams.pageSize,
     pageNumber: pageParams.pageNumber,
-    type
+    type: isTransactionHistoryShowingCctpDeposits ? 'deposits' : 'withdrawals'
   })
-  const isLoading =
-    type === 'deposits' ? isLoadingDeposits : isLoadingWithdrawals
-  const hasError = type === 'deposits' ? depositsError : withdrawalsError
+  const isLoading = isTransactionHistoryShowingCctpDeposits
+    ? isLoadingDeposits
+    : isLoadingWithdrawals
+  const hasError = isTransactionHistoryShowingCctpDeposits
+    ? depositsError
+    : withdrawalsError
 
   const status = useMemo(() => {
     if (isLoading) return TableStatus.LOADING
@@ -53,7 +62,9 @@ export function TransactionsTableCctp() {
 
   const transactions = useMemo(() => {
     const startIndex = pageParams.pageNumber * pageParams.pageSize
-    const ids = type === 'deposits' ? depositIds : withdrawalIds
+    const ids = isTransactionHistoryShowingCctpDeposits
+      ? depositIds
+      : withdrawalIds
     return ids
       .map(id => transfers[id])
       .slice(
@@ -65,7 +76,7 @@ export function TransactionsTableCctp() {
     pageParams.pageNumber,
     pageParams.pageSize,
     transfers,
-    type,
+    isTransactionHistoryShowingCctpDeposits,
     withdrawalIds
   ])
 
@@ -74,22 +85,28 @@ export function TransactionsTableCctp() {
       ...prevPageParams,
       pageNumber: 0
     }))
-  }, [setPageParams, type])
+  }, [setPageParams, isTransactionHistoryShowingCctpDeposits])
 
   const tabs = useMemo(() => {
     return [
       {
-        handleClick: () => setType('deposits'),
-        isActive: type === 'deposits',
+        handleClick: () => showCctpDepositsTransactions(),
+        isActive: isTransactionHistoryShowingCctpDeposits,
         text: `To ${getNetworkName(l2.network.id)}`
       },
       {
-        handleClick: () => setType('withdrawals'),
-        isActive: type === 'withdrawals',
+        handleClick: () => showCctpWithdrawalsTransactions(),
+        isActive: !isTransactionHistoryShowingCctpDeposits,
         text: `To ${getNetworkName(l1.network.id)}`
       }
     ]
-  }, [type, l1.network.id, l2.network.id])
+  }, [
+    isTransactionHistoryShowingCctpDeposits,
+    l1.network.id,
+    l2.network.id,
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions
+  ])
 
   return (
     <>
