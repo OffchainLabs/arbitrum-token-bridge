@@ -31,7 +31,6 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
-    searchString?: string
   }
 }
 
@@ -77,22 +76,20 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
 function getMessageSents({
   sender,
   recipient,
-  searchString,
   pageSize,
   pageNumber
-}: Pick<
-  NextApiRequestWithCCTPParams['query'],
-  'searchString' | 'pageSize' | 'pageNumber'
-> & {
+}: Pick<NextApiRequestWithCCTPParams['query'], 'pageSize' | 'pageNumber'> & {
   sender?: `0x${string}`
   recipient?: `0x${string}`
 }) {
   return gql(`{
     messageSents(
       where: {
+        # If sender is defined, get all messages sent from this address to a different address
         ${sender ? `sender: "${sender}"` : ''}
+        ${sender ? `recipient_not: "${sender}"` : ''}
+        # If recipient is defined, get all messages sent to this address (from another wallet or this one)
         ${recipient ? `recipient: "${recipient}"` : ''}
-        ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
       }
       orderDirection: "desc"
       orderBy: "blockTimestamp"
@@ -140,8 +137,7 @@ export default async function handler(
       l1ChainId: l1ChainIdString,
       pageNumber = '0',
       pageSize = '10',
-      type,
-      searchString = ''
+      type
     } = req.query
     const l1ChainId = parseInt(l1ChainIdString, 10)
 
@@ -196,13 +192,11 @@ export default async function handler(
 
     const messagesSentQueryFromWalletAddress = getMessageSents({
       sender: walletAddress,
-      searchString,
       pageSize,
       pageNumber
     })
     const messagesSentQueryToWalletAddress = getMessageSents({
       recipient: walletAddress,
-      searchString,
       pageSize,
       pageNumber
     })
