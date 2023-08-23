@@ -85,11 +85,11 @@ function getMessageSents({
   return gql(`{
     messageSents(
       where: {
-        # If sender is defined, get all messages sent from this address to a different address
+        # If sender is defined, get all messages sent from this address to the same or a different address
         ${sender ? `sender: "${sender}"` : ''}
-        ${sender ? `recipient_not: "${sender}"` : ''}
-        # If recipient is defined, get all messages sent to this address (from another wallet or this one)
+        # If recipient is defined, get all messages sent to this address (from another wallet)
         ${recipient ? `recipient: "${recipient}"` : ''}
+        ${recipient ? `sender_not: "${recipient}"` : ''}
       }
       orderDirection: "desc"
       orderBy: "blockTimestamp"
