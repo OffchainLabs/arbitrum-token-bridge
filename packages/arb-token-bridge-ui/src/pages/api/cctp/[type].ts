@@ -238,14 +238,16 @@ export default async function handler(
       ])
     }
 
-    const formattedMessagesSentToIds =
-      messagesSentToWalletAddressResult.data.messageSents.map(
-        messageSent => `"${messageSent.id}"`
-      )
-    const formattedMessagesSentFromIds =
-      messagesSentFromWalletAddressResult.data.messageSents.map(
-        messageSent => `"${messageSent.id}"`
-      )
+    const { messageSents: messagesSentToWalletAddress } =
+      messagesSentToWalletAddressResult.data
+    const { messageSents: messagesSentFromWalletAddress } =
+      messagesSentFromWalletAddressResult.data
+    const formattedMessagesSentToIds = messagesSentToWalletAddress.map(
+      messageSent => `"${messageSent.id}"`
+    )
+    const formattedMessagesSentFromIds = messagesSentFromWalletAddress.map(
+      messageSent => `"${messageSent.id}"`
+    )
 
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
@@ -294,30 +296,30 @@ export default async function handler(
       ])
     )
 
-    const { pending, completed } =
-      messagesSentToWalletAddressResult.data.messageSents
-        .concat(messagesSentFromWalletAddressResult.data.messageSents)
-        .reduce(
-          (acc, messageSent) => {
-            // If the MessageSent has a corresponding MessageReceived
-            const messageReceived = messagesReceivedMap.get(messageSent.id)
-            if (messageReceived) {
-              acc.completed.push({
-                messageReceived,
-                messageSent
-              })
-            } else {
-              acc.pending.push({
-                messageSent
-              })
-            }
-            return acc
-          },
-          { completed: [], pending: [] } as {
-            completed: CompletedCCTPTransfer[]
-            pending: PendingCCTPTransfer[]
-          }
-        )
+    const messages = messagesSentToWalletAddress.concat(
+      messagesSentFromWalletAddress
+    )
+    const { pending, completed } = messages.reduce(
+      (acc, messageSent) => {
+        // If the MessageSent has a corresponding MessageReceived
+        const messageReceived = messagesReceivedMap.get(messageSent.id)
+        if (messageReceived) {
+          acc.completed.push({
+            messageReceived,
+            messageSent
+          })
+        } else {
+          acc.pending.push({
+            messageSent
+          })
+        }
+        return acc
+      },
+      { completed: [], pending: [] } as {
+        completed: CompletedCCTPTransfer[]
+        pending: PendingCCTPTransfer[]
+      }
+    )
 
     res.status(200).json({
       data: {
