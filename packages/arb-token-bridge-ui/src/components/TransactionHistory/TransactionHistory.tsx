@@ -196,7 +196,7 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            {isEOA && !!transfersIds.length && (
+            {!!transfersIds.length && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={`${roundedTabClasses} roundedTabLeft`}
@@ -238,7 +238,7 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {isEOA && !!transfersIds.length && (
+          {!!transfersIds.length && (
             <Tab.Panel className="overflow-auto">
               <TransactionsTableCctp />
             </Tab.Panel>
