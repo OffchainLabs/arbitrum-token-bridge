@@ -51,10 +51,10 @@ type OrbitConfig = {
   }
 }
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
-  const customNetworksFromLocalStorage = localStorage.getItem(localStorageKey)
+  const customChainsFromLocalStorage = localStorage.getItem(localStorageKey)
 
-  if (customNetworksFromLocalStorage) {
-    return (JSON.parse(customNetworksFromLocalStorage) as ChainWithRpcUrl[])
+  if (customChainsFromLocalStorage) {
+    return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
       .filter(
         // filter again in case local storage is compromized
         chain => !allowedParentChainIds.includes(Number(chain.chainID))
