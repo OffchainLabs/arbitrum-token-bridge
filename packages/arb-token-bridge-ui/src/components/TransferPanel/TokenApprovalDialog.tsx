@@ -20,6 +20,7 @@ import {
   approveCctpEstimateGas,
   approveTokenEstimateGas
 } from '../../util/TokenApprovalUtils'
+import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -202,7 +203,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               After approval, you&apos;ll see a second prompt in your wallet for{' '}
               {noteMessage}{' '}
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+                href={TOKEN_APPROVAL_ARTICLE_LINK}
                 className="underline"
               >
                 Learn more.
