@@ -9,7 +9,7 @@ import { ChainWithRpcUrl, getNetworkName } from '../../util/networks'
 export const localStorageKey = 'arbitrum-custom-chains'
 
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
-const allowedParentChainIds = [5, 11155111, 1337, 421613, 421614, 412346]
+const allowedParentChainIds = [421613, 421614, 412346]
 
 type Contracts = {
   customGateway: string
@@ -137,7 +137,7 @@ export const AddCustomChain = () => {
 
       if (!allowedParentChainIds.includes(Number(customChain.partnerChainID))) {
         throw new Error(
-          `Invalid partnerChainID ${customChain.partnerChainID}. Only Ethereum testnet and Arbitrum testnet parent chains are allowed.`
+          `Invalid partnerChainID ${customChain.partnerChainID}. Only Arbitrum testnet parent chains are allowed.`
         )
       }
 
@@ -157,7 +157,6 @@ export const AddCustomChain = () => {
       newCustomChain
     ]
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
-    setCustomChains(newCustomChains)
   }
 
   function removeCustomChainFromLocalStorage(chainId: number) {
@@ -165,7 +164,6 @@ export const AddCustomChain = () => {
       chain => chain.chainID !== chainId
     )
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
-    setCustomChains(newCustomChains)
   }
 
   return (
