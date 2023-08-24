@@ -965,7 +965,7 @@ export function TransferPanelMain({
               transactions.
               <br />
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                href="https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213854684699"
                 className="arb-hover underline"
               >
                 Learn more

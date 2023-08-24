@@ -150,7 +150,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </p>
 
             <ExternalLink
-              href="https://consensys.zendesk.com/hc/en-us/articles/7277875099547"
+              href="https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213771832987"
               className="arb-hover font-light underline"
             >
               Learn more.

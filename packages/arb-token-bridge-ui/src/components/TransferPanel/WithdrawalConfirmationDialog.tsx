@@ -140,7 +140,7 @@ export function WithdrawalConfirmationDialog(
                   Get your funds in ~{confirmationPeriod} and pay a small fee
                   twice.{' '}
                   <ExternalLink
-                    href="https://consensys.zendesk.com/hc/en-us/articles/7311862385947"
+                    href="https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213843096091"
                     className="underline"
                   >
                     Learn more.

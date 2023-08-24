@@ -202,7 +202,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               After approval, you&apos;ll see a second prompt in your wallet for{' '}
               {noteMessage}{' '}
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+                href="https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213893952923"
                 className="underline"
               >
                 Learn more.

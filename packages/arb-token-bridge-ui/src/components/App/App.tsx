@@ -101,7 +101,7 @@ const AppContent = (): JSX.Element => {
         <a
           rel="noreferrer"
           target="_blank"
-          href="https://support.arbitrum.io/hc/en-us/requests/new"
+          href="https://arbitrumfoundation.zendesk.com/hc/en-us/requests/new"
         >
           <u>support</u>
         </a>{' '}
