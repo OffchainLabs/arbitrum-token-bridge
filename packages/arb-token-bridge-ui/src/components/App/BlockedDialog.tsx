@@ -21,7 +21,7 @@ export function BlockedDialog(props: UseDialogProps & { address: string }) {
           <span>
             If you think this was an error, you can request a review by filing a{' '}
             <ExternalLink
-              href="https://arbitrumfoundation.zendesk.com/hc/en-us/requests/new"
+              href="https://arbitrumfoundation.zendesk.com/hc/en-gb/requests/new?ticket_form_id=18155929976987"
               className="arb-hover underline"
             >
               support ticket
