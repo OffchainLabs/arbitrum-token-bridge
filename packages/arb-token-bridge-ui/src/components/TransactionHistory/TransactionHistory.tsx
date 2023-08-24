@@ -157,8 +157,7 @@ export const TransactionHistory = ({
     <div className="flex flex-col justify-around gap-6">
       {isNetwork(l2.network.id).isOrbitChain && (
         <CustomMessageWarning>
-          Fetching transaction history data and transaction execution might be
-          slower for Orbit chains compared to other layers.
+          Fetching transaction history details might be slower for Orbit chains.
         </CustomMessageWarning>
       )}
       {/* Pending transactions cards */}

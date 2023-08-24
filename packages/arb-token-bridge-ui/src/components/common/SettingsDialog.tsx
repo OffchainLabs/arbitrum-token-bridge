@@ -1,23 +1,19 @@
 import useLocalStorage from '@rehooks/local-storage'
 
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
 import { AddCustomChain } from './AddCustomChain'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <div className="heading mb-4 text-lg">{children}</div>
 )
 
-export const PreferencesDialog = () => {
-  const {
-    layout: { isPreferencesPanelVisible }
-  } = useAppContextState()
-
-  const { closePreferences } = useAppContextActions()
+export const SettingsDialog = () => {
+  const [{ settingsOpen }, setQueryParams] = useArbQueryParams()
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
@@ -36,9 +32,9 @@ export const PreferencesDialog = () => {
 
   return (
     <SidePanel
-      isOpen={isPreferencesPanelVisible}
-      heading="Preferences"
-      onClose={closePreferences}
+      isOpen={settingsOpen}
+      heading="Settings"
+      onClose={() => setQueryParams({ settingsOpen: false })}
       panelClassNameOverrides="lg:!w-[600px] !min-w-[350px]" // custom width
     >
       <div className="flex w-full flex-col items-center gap-8 text-white">
@@ -77,7 +73,7 @@ export const PreferencesDialog = () => {
 
         {/* Add custom chain */}
         <div className="w-full">
-          <SectionTitle>Add Custom Chain (testnet only)</SectionTitle>
+          <SectionTitle>Add Testnet Orbit Chain</SectionTitle>
 
           <AddCustomChain />
         </div>

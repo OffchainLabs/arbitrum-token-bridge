@@ -1,17 +1,55 @@
 import { useState } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Chain, L2Network, addCustomChain } from '@arbitrum/sdk'
+import Tippy from '@tippyjs/react'
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
+import { Chain } from '@arbitrum/sdk'
 
 import { Button } from './Button'
 import { ChainWithRpcUrl, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
 
-const jsonPlaceholder = `{ chainID: 0, name: 'MyChain', partnerChainID: 0, ...other_properties }`
-
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
 const allowedParentChainIds = [5, 11155111, 1337, 421613, 421614, 412346]
 
+type Contracts = {
+  customGateway: string
+  multicall: string
+  proxyAdmin: string
+  router: string
+  standardGateway: string
+  weth: string
+  wethGateway: string
+}
+
+type OrbitConfig = {
+  chainInfo: {
+    minL2BaseFee: number
+    networkFeeReceiver: string
+    infrastructureFeeCollector: string
+    batchPoster: string
+    staker: string
+    chainOwner: string
+    chainName: string
+    chainId: number
+    parentChainId: number
+    rpcUrl: string
+    explorerUrl: string
+  }
+  coreContracts: {
+    rollup: string
+    inbox: string
+    outbox: string
+    adminProxy: string
+    sequencerInbox: string
+    bridge: string
+    utils: string
+    validatorWalletCreator: string
+  }
+  tokenBridgeContracts: {
+    l2Contracts: Contracts
+    l3Contracts: Contracts
+  }
+}
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   const customNetworksFromLocalStorage = localStorage.getItem(localStorageKey)
 
@@ -33,14 +71,53 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   return []
 }
 
+function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
+  return {
+    chainID: data.chainInfo.chainId,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: data.coreContracts.bridge,
+      inbox: data.coreContracts.inbox,
+      outbox: data.coreContracts.outbox,
+      rollup: data.coreContracts.rollup,
+      sequencerInbox: data.coreContracts.sequencerInbox
+    },
+    rpcUrl: data.chainInfo.rpcUrl,
+    explorerUrl: data.chainInfo.explorerUrl,
+    isCustom: true,
+    name: data.chainInfo.chainName,
+    partnerChainID: data.chainInfo.parentChainId,
+    retryableLifetimeSeconds: 604800,
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 900000,
+    isArbitrum: true,
+    tokenBridge: {
+      l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
+      l1ERC20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
+      l1GatewayRouter: data.tokenBridgeContracts.l2Contracts.router,
+      l1MultiCall: data.tokenBridgeContracts.l2Contracts.multicall,
+      l1ProxyAdmin: data.tokenBridgeContracts.l2Contracts.proxyAdmin,
+      l1Weth: data.tokenBridgeContracts.l2Contracts.weth,
+      l1WethGateway: data.tokenBridgeContracts.l2Contracts.wethGateway,
+      l2CustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
+      l2ERC20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
+      l2GatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
+      l2Multicall: data.tokenBridgeContracts.l3Contracts.multicall,
+      l2ProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
+      l2Weth: data.tokenBridgeContracts.l3Contracts.weth,
+      l2WethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway
+    }
+  }
+}
+
 export const AddCustomChain = () => {
   const [customChains, setCustomChains] = useState<Chain[]>(
     getCustomChainsFromLocalStorage()
   )
   const [chainJson, setChainJson] = useState<string>('')
-  const [rpcUrl, setRpcUrl] = useState<string>('')
-  const [needsReload, setNeedsReload] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDeleteConfirmation, setIsDeleteConfirmation] = useState(false)
 
   function onAddChain() {
     setError(null)
@@ -50,46 +127,25 @@ export const AddCustomChain = () => {
         chainJson.trim()
           ? JSON.parse(chainJson.replace(/[\r\n]+/g, ''))
           : undefined
-      ) as Chain
+      ) as OrbitConfig
 
       if (!data) {
         throw new Error('JSON input is empty.')
       }
 
-      if (!rpcUrl) {
-        throw new Error('RPC URL is required.')
-      }
+      const customChain = mapOrbitConfigToOrbitChain(data)
 
-      // we assume provided json a Chain object
-      let chain = data
-
-      // however, users might want to just copy the result of genNetwork which has a nested 'l2Network' property
-      // in that case we want to read 'l2Network'
-      if ((data as unknown as { l2Network: L2Network }).l2Network) {
-        chain = (data as unknown as { l2Network: L2Network }).l2Network
-      }
-
-      // also looking for an 'l3Network'
-      if ((data as unknown as { l3Network: L2Network }).l3Network) {
-        chain = (data as unknown as { l3Network: L2Network }).l3Network
-      }
-
-      // same case but in case user provided a 'chain'
-      if ((data as unknown as { chain: Chain }).chain) {
-        chain = (data as unknown as { chain: Chain }).chain
-      }
-
-      if (!allowedParentChainIds.includes(Number(chain.partnerChainID))) {
+      if (!allowedParentChainIds.includes(Number(customChain.partnerChainID))) {
         throw new Error(
-          `Invalid partnerChainID ${chain.partnerChainID}. Only Ethereum testnet and Arbitrum testnet parent chains are allowed.`
+          `Invalid partnerChainID ${customChain.partnerChainID}. Only Ethereum testnet and Arbitrum testnet parent chains are allowed.`
         )
       }
 
-      chain.isCustom = true
+      customChain.isCustom = true
 
-      addCustomChain({ customChain: chain })
-      saveCustomChainToLocalStorage({ ...chain, rpcUrl })
-      setNeedsReload(true)
+      saveCustomChainToLocalStorage(customChain)
+      // reload to apply changes
+      location.reload()
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
     }
@@ -110,77 +166,104 @@ export const AddCustomChain = () => {
     )
     localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
     setCustomChains(newCustomChains)
-    setNeedsReload(true)
   }
 
   return (
     <>
-      {customChains.length > 0 && (
-        <div className="mb-4 w-full">
-          <div className="flex w-full">
-            <span className="w-2/12" />
-            <span className="w-5/12">Parent Chain</span>
-            <span className="w-5/12">Chain</span>
-          </div>
-          {customChains.map(chain => (
-            <div
-              key={`chain-${chain.chainID}`}
-              className="relative flex w-full flex-col border-b border-gray-700"
-            >
-              <div>
-                <div className="flex w-full">
-                  <span className="w-2/12 opacity-40">Name:</span>
-                  <span className="w-5/12 opacity-40">
-                    {getNetworkName(Number(chain.partnerChainID))}
-                  </span>
-                  <span className="w-5/12 opacity-40">{chain.name ?? '-'}</span>
-                </div>
-                <div className="flex w-full">
-                  <span className="w-2/12 opacity-40">Chain ID:</span>
-                  <span className="w-5/12 opacity-40">
-                    {chain.partnerChainID}
-                  </span>
-                  <span className="w-5/12 opacity-40">
-                    {chain.chainID ?? '-'}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => removeCustomChainFromLocalStorage(chain.chainID)}
-                className="arb-hover absolute bottom-4 right-0 text-error"
-              >
-                <XMarkIcon width={16} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      {needsReload && (
-        <div className="mb-2 text-xs text-yellow-400">
-          <span>To apply the changes, please reload the page.</span>
-        </div>
-      )}
-      <div className="flex flex-col">
-        <h3>JSON Config</h3>
-        <textarea
-          onChange={e => setChainJson(e.target.value)}
-          placeholder={jsonPlaceholder}
-          className="min-h-[100px] w-full rounded-lg p-1 text-black"
-        />
-      </div>
-      <div className="mt-2 flex flex-col">
-        <h3>RPC URL</h3>
-        <input
-          onChange={e => setRpcUrl(e.target.value)}
-          className="w-full rounded-lg p-1 text-black"
-        />
-      </div>
+      <textarea
+        onChange={e => setChainJson(e.target.value)}
+        placeholder="Insert your Orbit JSON Config"
+        className="min-h-[100px] w-full rounded-lg p-1 text-black"
+      />
       {error && <span className="text-sm text-error">{error}</span>}
-      <div>
-        <Button onClick={onAddChain} variant="primary">
+      <div className="flex w-full justify-end">
+        <Button
+          onClick={onAddChain}
+          variant="primary"
+          className="bg-white text-black"
+        >
           Add Chain
         </Button>
       </div>
+
+      {/* Custom chain list */}
+      {customChains.length > 0 && (
+        <div className="mt-4">
+          <div className="heading mb-4 text-lg">Live Orbit Chains</div>
+          <table className="w-full text-left">
+            <thead className="border-b border-gray-600">
+              <tr>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN</th>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN ID</th>
+                <th className="pb-1 text-xs font-normal">ORBIT CHAIN</th>
+                <th className="pb-1 text-xs font-normal">ORBIT CHAIN ID</th>
+                <th className="pb-1 text-xs font-normal"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {customChains.map(customChain => (
+                <tr
+                  key={customChain.chainID}
+                  className="border-b border-gray-600"
+                >
+                  <th className="py-3 text-sm font-normal">
+                    {getNetworkName(customChain.partnerChainID)}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {customChain.partnerChainID}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {customChain.name}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {customChain.chainID}
+                  </th>
+                  <th className="py-3 ">
+                    <Tippy
+                      arrow={false}
+                      interactive
+                      onHidden={() => setIsDeleteConfirmation(false)}
+                      content={
+                        <div className="flex flex-col font-normal">
+                          <a
+                            className="py-2 text-left"
+                            href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                              JSON.stringify(customChain)
+                            )}`}
+                            download={`${customChain.name
+                              .split(' ')
+                              .join('')}.json`}
+                          >
+                            Download config
+                          </a>
+                          <button
+                            className="py-2 text-left text-red-500"
+                            onClick={
+                              isDeleteConfirmation
+                                ? () => {
+                                    removeCustomChainFromLocalStorage(
+                                      customChain.chainID
+                                    )
+                                    // reload to apply changes
+                                    location.reload()
+                                  }
+                                : () => setIsDeleteConfirmation(true)
+                            }
+                          >
+                            {isDeleteConfirmation ? 'Sure?' : 'Delete'}
+                          </button>
+                        </div>
+                      }
+                    >
+                      <EllipsisHorizontalIcon width={20} />
+                    </Tippy>
+                  </th>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   )
 }
