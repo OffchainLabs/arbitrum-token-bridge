@@ -209,37 +209,19 @@ export default async function handler(
       pageNumber,
       incoming: true
     })
-    let messagesSentToWalletAddressResult: ApolloQueryResult<{
-      messageSents: MessageSent[]
-    }>
-    let messagesSentFromWalletAddressResult: ApolloQueryResult<{
-      messageSents: MessageSent[]
-    }>
-    if (type === 'deposits') {
-      ;[
-        messagesSentToWalletAddressResult,
-        messagesSentFromWalletAddressResult
-      ] = await Promise.all([
-        l1Subgraph.query({
-          query: messagesSentQueryToWalletAddress
-        }),
-        l1Subgraph.query({
-          query: messagesSentQueryFromWalletAddress
-        })
-      ])
-    } else {
-      ;[
-        messagesSentToWalletAddressResult,
-        messagesSentFromWalletAddressResult
-      ] = await Promise.all([
-        l2Subgraph.query({
-          query: messagesSentQueryToWalletAddress
-        }),
-        l2Subgraph.query({
-          query: messagesSentQueryFromWalletAddress
-        })
-      ])
-    }
+
+    const sourceSubgraph = type === 'deposits' ? l1Subgraph : l2Subgraph
+    const [
+      messagesSentToWalletAddressResult,
+      messagesSentFromWalletAddressResult
+    ] = await Promise.all([
+      sourceSubgraph.query<{ messageSents: MessageSent[] }>({
+        query: messagesSentQueryToWalletAddress
+      }),
+      sourceSubgraph.query<{ messageSents: MessageSent[] }>({
+        query: messagesSentQueryFromWalletAddress
+      })
+    ])
 
     const { messageSents: messagesSentToWalletAddress } =
       messagesSentToWalletAddressResult.data
@@ -272,18 +254,12 @@ export default async function handler(
       }
     `)
 
-    let messagesReceivedResult: ApolloQueryResult<{
+    const targetSubgraph = type === 'deposits' ? l2Subgraph : l1Subgraph
+    const messagesReceivedResult = await targetSubgraph.query<{
       messageReceiveds: MessageReceived[]
-    }>
-    if (type === 'deposits') {
-      messagesReceivedResult = await l2Subgraph.query({
-        query: messagesReceivedQuery
-      })
-    } else {
-      messagesReceivedResult = await l1Subgraph.query({
-        query: messagesReceivedQuery
-      })
-    }
+    }>({
+      query: messagesReceivedQuery
+    })
 
     const { messageReceiveds } = messagesReceivedResult.data
 
