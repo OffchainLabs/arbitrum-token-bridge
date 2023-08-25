@@ -52,7 +52,7 @@ import {
   isTokenMainnetUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { USDC_LEARN_MORE_LINK } from '../../constants'
+import { ETH_BALANCE_ARTICLE_LINK, USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
@@ -999,7 +999,7 @@ export function TransferPanelMain({
               transactions.
               <br />
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                href={ETH_BALANCE_ARTICLE_LINK}
                 className="arb-hover underline"
               >
                 Learn more

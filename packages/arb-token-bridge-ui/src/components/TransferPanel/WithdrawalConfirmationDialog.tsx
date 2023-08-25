@@ -25,6 +25,7 @@ import {
 } from '../../util/networks'
 import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -140,7 +141,7 @@ export function WithdrawalConfirmationDialog(
                   Get your funds in ~{confirmationPeriod} and pay a small fee
                   twice.{' '}
                   <ExternalLink
-                    href="https://consensys.zendesk.com/hc/en-us/articles/7311862385947"
+                    href={CONFIRMATION_PERIOD_ARTICLE_LINK}
                     className="underline"
                   >
                     Learn more.

@@ -47,7 +47,7 @@ import {
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
 import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
-import { TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
@@ -98,11 +98,7 @@ const AppContent = (): JSX.Element => {
     return (
       <Alert type="red">
         Error: unable to connect to network. Try again soon and contact{' '}
-        <a
-          rel="noreferrer"
-          target="_blank"
-          href="https://support.arbitrum.io/hc/en-us/requests/new"
-        >
+        <a rel="noreferrer" target="_blank" href={GET_HELP_LINK}>
           <u>support</u>
         </a>{' '}
         if problem persists.
