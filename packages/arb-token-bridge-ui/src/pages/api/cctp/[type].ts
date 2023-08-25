@@ -1,10 +1,4 @@
-import {
-  ApolloClient,
-  ApolloQueryResult,
-  gql,
-  HttpLink,
-  InMemoryCache
-} from '@apollo/client'
+import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
 
