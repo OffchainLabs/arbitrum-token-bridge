@@ -73,51 +73,6 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
   messageReceived: MessageReceived
 }
 
-function getMessageSents({
-  walletAddress,
-  pageSize,
-  pageNumber,
-  incoming
-}: Pick<
-  NextApiRequestWithCCTPParams['query'],
-  'pageSize' | 'pageNumber' | 'walletAddress'
-> & {
-  incoming: boolean
-}) {
-  let filter: string
-  if (incoming) {
-    // Get all incoming messages from other wallets
-    filter = `recipient: "${walletAddress}" sender_not: "${walletAddress}"`
-  } else {
-    // Get all messages sent from this address to any address
-    filter = `sender: "${walletAddress}"`
-  }
-
-  return gql(`{
-    messageSents(
-      where: {
-        ${filter}
-      }
-      orderDirection: "desc"
-      orderBy: "blockTimestamp"
-      first: ${Number(pageSize)}
-      skip: ${Number(pageNumber) * Number(pageSize)}
-    ) {
-      attestationHash
-      blockNumber
-      blockTimestamp
-      id
-      message
-      nonce
-      sender
-      recipient
-      sourceDomain
-      transactionHash
-      amount
-    }
-  }`)
-}
-
 export type Response =
   | {
       data: {
@@ -197,48 +152,44 @@ export default async function handler(
       l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
-    const messagesSentQueryFromWalletAddress = getMessageSents({
-      walletAddress,
-      pageSize,
-      pageNumber,
-      incoming: false
-    })
-    const messagesSentQueryToWalletAddress = getMessageSents({
-      walletAddress,
-      pageSize,
-      pageNumber,
-      incoming: true
-    })
+    const messagesSentQuery = gql(`{
+      messageSents(
+        where: {
+          or: [
+            { sender: "${walletAddress}" },
+            { recipient: "${walletAddress}" }
+          ]
+        }
+        orderDirection: "desc"
+        orderBy: "blockTimestamp"
+        first: ${Number(pageSize)}
+        skip: ${Number(pageNumber) * Number(pageSize)}
+      ) {
+        attestationHash
+        blockNumber
+        blockTimestamp
+        id
+        message
+        sender
+        recipient
+        sourceDomain
+        transactionHash
+        amount
+      }
+    }`)
 
     const sourceSubgraph = type === 'deposits' ? l1Subgraph : l2Subgraph
-    const [
-      messagesSentToWalletAddressResult,
-      messagesSentFromWalletAddressResult
-    ] = await Promise.all([
-      sourceSubgraph.query<{ messageSents: MessageSent[] }>({
-        query: messagesSentQueryToWalletAddress
-      }),
-      sourceSubgraph.query<{ messageSents: MessageSent[] }>({
-        query: messagesSentQueryFromWalletAddress
-      })
-    ])
-
-    const { messageSents: messagesSentToWalletAddress } =
-      messagesSentToWalletAddressResult.data
-    const { messageSents: messagesSentFromWalletAddress } =
-      messagesSentFromWalletAddressResult.data
-    const formattedMessagesSentToIds = messagesSentToWalletAddress.map(
-      messageSent => `"${messageSent.id}"`
-    )
-    const formattedMessagesSentFromIds = messagesSentFromWalletAddress.map(
-      messageSent => `"${messageSent.id}"`
-    )
+    const messagesSentResult = await sourceSubgraph.query<{
+      messageSents: MessageSent[]
+    }>({
+      query: messagesSentQuery
+    })
+    const { messageSents } = messagesSentResult.data
+    const formattedIds = messageSents.map(messageSent => `"${messageSent.id}"`)
 
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {id_in: [${formattedMessagesSentToIds
-            .concat(formattedMessagesSentFromIds)
-            .join(',')}]}
+          where: {id_in: [${formattedIds.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
         ) {
@@ -275,10 +226,7 @@ export default async function handler(
       ])
     )
 
-    const messages = messagesSentToWalletAddress.concat(
-      messagesSentFromWalletAddress
-    )
-    const { pending, completed } = messages.reduce(
+    const { pending, completed } = messageSents.reduce(
       (acc, messageSent) => {
         // If the MessageSent has a corresponding MessageReceived
         const messageReceived = messagesReceivedMap.get(messageSent.id)
