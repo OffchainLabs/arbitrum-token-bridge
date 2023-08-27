@@ -8,7 +8,10 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
-import { getCustomChainsFromLocalStorage } from '../components/common/AddCustomChain'
+import {
+  getCustomChainFromLocalStorageById,
+  getCustomChainsFromLocalStorage
+} from '../components/common/AddCustomChain'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -269,9 +272,7 @@ export function registerLocalNetwork(
 }
 
 export function isNetwork(chainId: ChainId) {
-  const customChains = getCustomChainsFromLocalStorage().filter(
-    chain => chain.chainID === chainId
-  )
+  const customChains = getCustomChainsFromLocalStorage()
 
   const isMainnet = chainId === ChainId.Mainnet
 
@@ -368,9 +369,7 @@ export function isNetwork(chainId: ChainId) {
 }
 
 export function getNetworkName(chainId: number) {
-  const customChain = getCustomChainsFromLocalStorage().filter(
-    chain => chain.chainID === chainId
-  )[0]
+  const customChain = getCustomChainFromLocalStorageById(chainId)
 
   if (customChain) {
     return customChain.name
@@ -433,7 +432,7 @@ export function getNetworkLogo(
     default:
       const { isArbitrum, isOrbitChain } = isNetwork(chainId)
       if (isArbitrum) {
-        return '/images/ArbitrumOneLogo'
+        return '/images/ArbitrumOneLogo.svg'
       }
       if (isOrbitChain) {
         return variant === 'dark'
@@ -461,12 +460,12 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   //
   // update default L2 Chain ID; it allows us to pair the Chain with its Parent Chain
   chainIdToDefaultL2ChainId[chain.partnerChainID] = [
-    ...(chainIdToDefaultL2ChainId[chain.partnerChainID] || []),
+    ...(chainIdToDefaultL2ChainId[chain.partnerChainID] ?? []),
     chain.chainID
   ]
   // also set Chain's default chain to point to its own chain ID
   chainIdToDefaultL2ChainId[chain.chainID] = [
-    ...(chainIdToDefaultL2ChainId[chain.chainID] || []),
+    ...(chainIdToDefaultL2ChainId[chain.chainID] ?? []),
     chain.chainID
   ]
   // add RPC

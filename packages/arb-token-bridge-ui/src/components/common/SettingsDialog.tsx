@@ -30,11 +30,15 @@ export const SettingsDialog = () => {
     setIsArbitrumStatsVisible(false)
   }
 
+  function closeSettings() {
+    setQueryParams({ settingsOpen: false })
+  }
+
   return (
     <SidePanel
       isOpen={settingsOpen}
       heading="Settings"
-      onClose={() => setQueryParams({ settingsOpen: false })}
+      onClose={closeSettings}
       panelClassNameOverrides="lg:!w-[600px] !min-w-[350px]" // custom width
     >
       <div className="flex w-full flex-col items-center gap-8 text-white">

@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import Tippy from '@tippyjs/react'
+import { Popover } from '@headlessui/react'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
-import { Chain } from '@arbitrum/sdk'
 
 import { Button } from './Button'
-import { ChainWithRpcUrl, getNetworkName } from '../../util/networks'
+import { ChainId, ChainWithRpcUrl, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
 
@@ -50,25 +49,58 @@ type OrbitConfig = {
     l3Contracts: Contracts
   }
 }
+
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   const customChainsFromLocalStorage = localStorage.getItem(localStorageKey)
 
-  if (customChainsFromLocalStorage) {
-    return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
-      .filter(
-        // filter again in case local storage is compromized
-        chain => !allowedParentChainIds.includes(Number(chain.chainID))
-      )
-      .map(chain => {
-        return {
-          ...chain,
-          // make sure chainID is numeric
-          chainID: Number(chain.chainID)
-        }
-      })
+  if (!customChainsFromLocalStorage) {
+    return []
   }
 
-  return []
+  return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
+    .filter(
+      // filter again in case local storage is compromized
+      chain => !allowedParentChainIds.includes(Number(chain.chainID))
+    )
+    .map(chain => {
+      return {
+        ...chain,
+        // make sure chainID is numeric
+        chainID: Number(chain.chainID)
+      }
+    })
+}
+
+export function getCustomChainFromLocalStorageById(chainId: ChainId) {
+  const customChains = getCustomChainsFromLocalStorage()
+
+  if (!customChains) {
+    return undefined
+  }
+
+  return customChains.find(chain => chain.chainID === chainId)
+}
+
+function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
+  const customChains = getCustomChainsFromLocalStorage()
+
+  if (
+    customChains.findIndex(chain => chain.chainID === newCustomChain.chainID) >
+    -1
+  ) {
+    // chain already exists
+    return
+  }
+
+  const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
+  localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
+}
+
+function removeCustomChainFromLocalStorage(chainId: number) {
+  const newCustomChains = getCustomChainsFromLocalStorage().filter(
+    chain => chain.chainID !== chainId
+  )
+  localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
 }
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
@@ -112,21 +144,18 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
 }
 
 export const AddCustomChain = () => {
-  const [customChains, setCustomChains] = useState<Chain[]>(
-    getCustomChainsFromLocalStorage()
-  )
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [isDeleteConfirmation, setIsDeleteConfirmation] = useState(false)
+
+  const customChains = getCustomChainsFromLocalStorage()
 
   function onAddChain() {
     setError(null)
 
     try {
-      const data = (
-        chainJson.trim()
-          ? JSON.parse(chainJson.replace(/[\r\n]+/g, ''))
-          : undefined
+      const data = JSON.parse(
+        chainJson.trim().replace(/[\r\n]+/g, '')
       ) as OrbitConfig
 
       if (!data) {
@@ -141,29 +170,12 @@ export const AddCustomChain = () => {
         )
       }
 
-      customChain.isCustom = true
-
       saveCustomChainToLocalStorage(customChain)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
     }
-  }
-
-  function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
-    const newCustomChains = [
-      ...getCustomChainsFromLocalStorage(),
-      newCustomChain
-    ]
-    localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
-  }
-
-  function removeCustomChainFromLocalStorage(chainId: number) {
-    const newCustomChains = getCustomChainsFromLocalStorage().filter(
-      chain => chain.chainID !== chainId
-    )
-    localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
   }
 
   return (
@@ -179,6 +191,7 @@ export const AddCustomChain = () => {
           onClick={onAddChain}
           variant="primary"
           className="bg-white text-black"
+          disabled={!chainJson.trim()}
         >
           Add Chain
         </Button>
@@ -216,45 +229,41 @@ export const AddCustomChain = () => {
                   <th className="py-3 text-sm font-normal">
                     {customChain.chainID}
                   </th>
-                  <th className="py-3 ">
-                    <Tippy
-                      arrow={false}
-                      interactive
-                      onHidden={() => setIsDeleteConfirmation(false)}
-                      content={
-                        <div className="flex flex-col font-normal">
-                          <a
-                            className="py-2 text-left"
-                            href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                              JSON.stringify(customChain)
-                            )}`}
-                            download={`${customChain.name
-                              .split(' ')
-                              .join('')}.json`}
-                          >
-                            Download config
-                          </a>
-                          <button
-                            className="py-2 text-left text-red-500"
-                            onClick={
-                              isDeleteConfirmation
-                                ? () => {
-                                    removeCustomChainFromLocalStorage(
-                                      customChain.chainID
-                                    )
-                                    // reload to apply changes
-                                    location.reload()
-                                  }
-                                : () => setIsDeleteConfirmation(true)
-                            }
-                          >
-                            {isDeleteConfirmation ? 'Sure?' : 'Delete'}
-                          </button>
-                        </div>
-                      }
-                    >
-                      <EllipsisHorizontalIcon width={20} />
-                    </Tippy>
+                  <th className="py-3">
+                    <Popover className="relative">
+                      <Popover.Button>
+                        <EllipsisHorizontalIcon width={20} />
+                      </Popover.Button>
+                      <Popover.Panel className="absolute bottom-6 right-0 flex w-28 flex-col rounded-lg bg-gray-800 text-xs font-normal">
+                        <a
+                          className="p-2 text-left"
+                          href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                            JSON.stringify(customChain)
+                          )}`}
+                          download={`${customChain.name
+                            .split(' ')
+                            .join('')}.json`}
+                        >
+                          Download config
+                        </a>
+                        <button
+                          className="p-2 text-left text-red-500"
+                          onClick={
+                            isDeleteConfirmation
+                              ? () => {
+                                  removeCustomChainFromLocalStorage(
+                                    customChain.chainID
+                                  )
+                                  // reload to apply changes
+                                  location.reload()
+                                }
+                              : () => setIsDeleteConfirmation(true)
+                          }
+                        >
+                          {isDeleteConfirmation ? 'Sure?' : 'Delete'}
+                        </button>
+                      </Popover.Panel>
+                    </Popover>
                   </th>
                 </tr>
               ))}

@@ -10,6 +10,7 @@ These can be used to answer and access the following use-cases across the app -
 */
 
 import React, {
+  useRef,
   useCallback,
   useEffect,
   useState,
@@ -184,6 +185,8 @@ export function NetworksAndSignersProvider(
     }
   }, [isTosAccepted, openConnectModal])
 
+  const invocationCounter = useRef(0)
+
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
     if (
@@ -195,11 +198,18 @@ export function NetworksAndSignersProvider(
       return
     }
 
+    // making sure the latest state is applied
+    invocationCounter.current += 1
+    const thisInvocation = invocationCounter.current
+
     const providerChainId = chain.id
     const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
 
     if (chainNotSupported) {
       console.error(`Chain ${providerChainId} not supported`)
+      if (thisInvocation !== invocationCounter.current) {
+        return
+      }
       setResult({
         status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
         chainId: providerChainId
@@ -219,6 +229,9 @@ export function NetworksAndSignersProvider(
 
     // Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId'. Need to set 'preferredL2ChainId' to an Orbit chain.
     if (isConnectedToOrbitChain && isSelectedL2ChainArbitrum) {
+      if (thisInvocation !== invocationCounter.current) {
+        return
+      }
       setQueryParams({ l2ChainId: providerChainId })
       return
     }
@@ -279,6 +292,9 @@ export function NetworksAndSignersProvider(
           rpcURLs[parentChain.chainID]
         )
 
+        if (thisInvocation !== invocationCounter.current) {
+          return
+        }
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
@@ -314,6 +330,9 @@ export function NetworksAndSignersProvider(
               rpcURLs[chain.chainID]
             )
 
+            if (thisInvocation !== invocationCounter.current) {
+              return
+            }
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
@@ -327,6 +346,9 @@ export function NetworksAndSignersProvider(
             })
           })
           .catch(() => {
+            if (thisInvocation !== invocationCounter.current) {
+              return
+            }
             setResult({
               status: UseNetworksAndSignersStatus.NOT_SUPPORTED,
               chainId: providerChainId
