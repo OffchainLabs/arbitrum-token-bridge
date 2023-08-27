@@ -880,7 +880,8 @@ export function TransferPanel() {
           )
 
           while (
-            isConnectedToEthereum ||
+            (!isConnectedToArbitrum.current &&
+              !isConnectedToOrbitChain.current) ||
             (isConnectedToArbitrum.current && isOrbitChain) ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
