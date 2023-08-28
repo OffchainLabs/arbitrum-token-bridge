@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { addCustomChain } from '@arbitrum/sdk'
+import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import { getCustomChainsFromLocalStorage } from '../components/common/AddCustomChain'
+import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -22,14 +22,21 @@ export default function Index() {
   useEffect(() => {
     // user-added custom chains do not persists between sessions
     // we add locally stored custom chains
-    try {
-      getCustomChainsFromLocalStorage().forEach(chain => {
+    getCustomChainsFromLocalStorage().forEach(chain => {
+      try {
         addCustomChain({ customChain: chain })
         mapCustomChainToNetworkData(chain)
-      })
-    } catch {
-      // already added
-    }
+      } catch {
+        // already added
+      }
+
+      try {
+        // adding to L2 networks too to be fully compatible with the sdk
+        addCustomNetwork({ customL2Network: chain })
+      } catch {
+        // already added
+      }
+    })
   }, [])
 
   return <App />
