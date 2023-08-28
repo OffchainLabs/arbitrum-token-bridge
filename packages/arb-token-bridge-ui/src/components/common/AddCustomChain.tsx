@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Popover } from '@headlessui/react'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
 
-import { Button } from './Button'
 import { ChainId, ChainWithRpcUrl, getNetworkName } from '../../util/networks'
 
 export const localStorageKey = 'arbitrum-custom-chains'
@@ -146,7 +145,6 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
-  const [isDeleteConfirmation, setIsDeleteConfirmation] = useState(false)
 
   const customChains = getCustomChainsFromLocalStorage()
 
@@ -182,19 +180,19 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert your Orbit JSON Config"
-        className="min-h-[100px] w-full rounded-lg p-1 text-black"
+        placeholder="Insert your Orbit JSON Config here."
+        className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
       />
       {error && <span className="text-sm text-error">{error}</span>}
       <div className="flex w-full justify-end">
-        <Button
+        {/* Need to replace with an atom */}
+        <button
           onClick={onAddChain}
-          variant="primary"
-          className="bg-white text-black"
+          className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:pointer-events-none	"
           disabled={!chainJson.trim()}
         >
           Add Chain
-        </Button>
+        </button>
       </div>
 
       {/* Custom chain list */}
@@ -234,9 +232,21 @@ export const AddCustomChain = () => {
                       <Popover.Button>
                         <EllipsisHorizontalIcon width={20} />
                       </Popover.Button>
-                      <Popover.Panel className="absolute bottom-6 right-0 flex w-28 flex-col rounded-lg bg-gray-800 text-xs font-normal">
+                      <Popover.Panel className="absolute bottom-6 right-0 flex w-52 flex-col rounded bg-white text-xs font-normal text-black">
+                        <button
+                          className="rounded p-4 text-left hover:bg-gray-3"
+                          onClick={() => {
+                            removeCustomChainFromLocalStorage(
+                              customChain.chainID
+                            )
+                            // reload to apply changes
+                            location.reload()
+                          }}
+                        >
+                          Delete this chain
+                        </button>
                         <a
-                          className="p-2 text-left"
+                          className="rounded p-4 text-left hover:bg-gray-3"
                           href={`data:text/json;charset=utf-8,${encodeURIComponent(
                             JSON.stringify(customChain)
                           )}`}
@@ -244,24 +254,8 @@ export const AddCustomChain = () => {
                             .split(' ')
                             .join('')}.json`}
                         >
-                          Download config
+                          Download config for this chain
                         </a>
-                        <button
-                          className="p-2 text-left text-red-500"
-                          onClick={
-                            isDeleteConfirmation
-                              ? () => {
-                                  removeCustomChainFromLocalStorage(
-                                    customChain.chainID
-                                  )
-                                  // reload to apply changes
-                                  location.reload()
-                                }
-                              : () => setIsDeleteConfirmation(true)
-                          }
-                        >
-                          {isDeleteConfirmation ? 'Sure?' : 'Delete'}
-                        </button>
                       </Popover.Panel>
                     </Popover>
                   </th>
