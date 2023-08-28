@@ -4,7 +4,8 @@ import {
   ParentChain,
   l2Networks,
   chains,
-  parentChains
+  parentChains,
+  addCustomChain
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -390,6 +391,11 @@ export function registerLocalNetwork(
   } catch (error: any) {
     console.error(`Failed to register Xai Testnet: ${error.message}`)
   }
+  try {
+    addCustomChain({ customChain: xaiTestnet })
+  } catch (error: any) {
+    console.error(`Failed to register Xai Testnet: ${error.message}`)
+  }
 }
 
 export function isNetwork(chainId: ChainId) {
@@ -581,6 +587,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.ArbitrumGoerli,
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
+    ChainId.XaiTestnet,
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 
