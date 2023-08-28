@@ -90,6 +90,8 @@ export const TransactionHistory = ({
     cctpDepositsError ||
     cctpWithdrawalsError
 
+  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+
   const pendingTransactions = useMemo(() => {
     const pendingCctpTransactions = pendingIdsCctp
       .map(pendingId => {
@@ -244,7 +246,7 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {isEOA && !!transfersIds.length && (
+          {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
             <Tab.Panel className="overflow-auto">
               <TransactionsTableCctp />
             </Tab.Panel>
