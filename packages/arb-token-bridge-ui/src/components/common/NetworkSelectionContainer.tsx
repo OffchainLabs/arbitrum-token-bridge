@@ -79,14 +79,14 @@ export const NetworkSelectionContainer = ({
       </Popover.Button>
 
       <Transition>
-        <Popover.Panel className="relative flex w-full -translate-x-12 flex-col justify-between rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:w-max lg:flex-row lg:gap-3 lg:bg-white lg:p-2 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative flex w-full flex-col justify-between rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:w-max lg:-translate-x-12 lg:flex-row lg:gap-3 lg:bg-white lg:p-2 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) => (
             <>
               {finalNetworks.map(networkType => (
                 <div key={networkType.id} className="shrink-0">
                   {finalNetworks.length > 1 && (
                     // don't show the network type header if it's the only column
-                    <div className="p-2 px-12 text-xl lg:px-4">
+                    <div className="p-2 px-12 text-xl text-white lg:px-4 lg:text-dark">
                       {networkType.title}
                     </div>
                   )}
