@@ -314,7 +314,7 @@ const defaultL2Network: ParentChain = {
   }
 }
 
-const xaiTestnet: Chain = {
+export const xaiTestnet: Chain = {
   chainID: 47279324479,
   confirmPeriodBlocks: 20,
   ethBridge: {
@@ -385,16 +385,6 @@ export function registerLocalNetwork(
     addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
-  }
-  try {
-    addCustomNetwork({ customL2Network: xaiTestnet })
-  } catch (error: any) {
-    console.error(`Failed to register Xai Testnet: ${error.message}`)
-  }
-  try {
-    addCustomChain({ customChain: xaiTestnet })
-  } catch (error: any) {
-    console.error(`Failed to register Xai Testnet: ${error.message}`)
   }
 }
 
