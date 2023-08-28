@@ -149,7 +149,15 @@ function NetworkContainer({
 }) {
   const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+    const { isArbitrum, isArbitrumNova, isOrbitChain, isXaiTestnet } =
+      isNetwork(network.id)
+
+    if (isXaiTestnet) {
+      return {
+        backgroundImage: `url('/images/XaiLogo.svg')`,
+        backgroundClassName: `bg-xai-dark`
+      }
+    }
 
     if (isOrbitChain) {
       return {
@@ -806,10 +814,12 @@ export function TransferPanelMain({
               return
             }
 
-            const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+            const isOrbitChainCurrentlySelected = isNetwork(
+              l2.network.id
+            ).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereum && isOrbitChainSelected) {
+            if (isEthereum && isOrbitChainCurrentlySelected) {
               updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
               return
             }
@@ -817,7 +827,9 @@ export function TransferPanelMain({
             // If Orbit chain is selected, we want to change network to Arbitrum One or Arbitrum Goerli.
             if (isOrbitChain) {
               try {
-                await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                if (!isConnectedToArbitrum) {
+                  await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                }
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
                   Sentry.captureException(error)
@@ -914,6 +926,16 @@ export function TransferPanelMain({
               // We can't deposit from Ethereum to an Orbit chain.
               await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
             }
+
+            const isOrbitChainCurrentlySelected = isNetwork(
+              l2.network.id
+            ).isOrbitChain
+            if (isOrbitChainCurrentlySelected) {
+              // long-term we will have to change to Orbit chain's parent network
+              // right now only Arbitrum Goerli is support so it's fine
+              await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+            }
+
             updatePreferredL2Chain(network.id)
           }
 

@@ -71,6 +71,31 @@ export const arbitrumNova: Chain = {
   }
 }
 
+export const xaiTestnet: Chain = {
+  id: ChainId.XaiTestnet,
+  name: 'Xai Orbit Testnet',
+  network: 'xai-testnet',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.XaiTestnet]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.XaiTestnet]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Blockscout',
+      url: 'https://testnet-explorer.xai-chain.net'
+    },
+    default: {
+      name: 'Blockscout',
+      url: 'https://testnet-explorer.xai-chain.net'
+    }
+  }
+}
+
 /**
  * For e2e testing
  */

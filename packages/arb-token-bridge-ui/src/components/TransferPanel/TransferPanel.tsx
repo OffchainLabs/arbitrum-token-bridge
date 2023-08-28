@@ -640,17 +640,15 @@ export function TransferPanel() {
       return
     }
 
-    // Make sure Ethereum and an Orbit chain are not selected as a pair.
-    const isEthereumAndOrbitChainPair = [l1Network.id, l2Network.id].every(
+    // Make sure Ethereum and/or Orbit chains are not selected as a pair.
+    const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
       id => {
         const { isEthereum, isOrbitChain } = isNetwork(id)
         return isEthereum || isOrbitChain
       }
     )
-    if (isEthereumAndOrbitChainPair) {
-      console.error(
-        "Transfers between L1 and Orbit chains aren't supported yet."
-      )
+    if (ethereumOrOrbitPairsSelected) {
+      console.error('Cannot transfer funds between L1 and/or Orbit chains.')
       return
     }
 
@@ -880,7 +878,8 @@ export function TransferPanel() {
           )
 
           while (
-            isConnectedToEthereum ||
+            (!isConnectedToArbitrum.current &&
+              !isConnectedToOrbitChain.current) ||
             (isConnectedToArbitrum.current && isOrbitChain) ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
@@ -1246,7 +1245,7 @@ export function TransferPanel() {
   ])
 
   const depositButtonColorClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(l2Network.id)
+    const { isArbitrum, isArbitrumNova, isXaiTestnet } = isNetwork(l2Network.id)
 
     if (isArbitrumNova) {
       return 'bg-arb-nova-dark'
@@ -1254,6 +1253,10 @@ export function TransferPanel() {
 
     if (isArbitrum) {
       return 'bg-arb-one-dark'
+    }
+
+    if (isXaiTestnet) {
+      return 'bg-xai-dark'
     }
 
     // is Orbit chain
