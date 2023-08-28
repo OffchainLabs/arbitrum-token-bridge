@@ -174,21 +174,27 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     const { l1, l2 } = networksAndSigners
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+    const isConnectedToOrbitChain = isNetwork(chain.id).isOrbitChain
 
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
 
+    const isParentChainEthereum = isNetwork(l1NetworkChainId).isEthereum
+
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
 
-    if (!isConnectedToArbitrum) {
-      console.info('Deposit mode detected:')
-      actions.app.setIsDepositMode(true)
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    } else {
+    if (
+      (isParentChainEthereum && isConnectedToArbitrum) ||
+      isConnectedToOrbitChain
+    ) {
       console.info('Withdrawal mode detected:')
       actions.app.setIsDepositMode(false)
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+    } else {
+      console.info('Deposit mode detected:')
+      actions.app.setIsDepositMode(true)
+      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     }
 
     initBridge(networksAndSigners)
