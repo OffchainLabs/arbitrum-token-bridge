@@ -11,6 +11,7 @@ import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { isNetwork } from '../../util/networks'
+import { warningToast } from './atoms/Toast'
 
 export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
@@ -50,6 +51,8 @@ export const SettingsDialog = () => {
     // can't turn test mode off if connected to testnet
     if (!isConnectedToTestnet) {
       setIsTestnetMode(false)
+    } else {
+      warningToast('Cannot disable Testnet mode while connected to a testnet.')
     }
   }, [isConnectedToTestnet, setIsTestnetMode])
 
@@ -109,7 +112,7 @@ export const SettingsDialog = () => {
         <div
           className={twMerge(
             'w-full',
-            isConnectedToTestnet ? 'cursor-not-allowed' : ''
+            isConnectedToTestnet ? 'cursor-not-allowed opacity-20' : ''
           )}
         >
           <SectionTitle>Developer Mode</SectionTitle>
