@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Popover } from '@headlessui/react'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, ChainWithRpcUrl, getNetworkName } from '../../util/networks'
-
-export const localStorageKey = 'arbitrum-custom-chains'
-
-// allow only Ethereum testnets and Arbitrum testnets as parent chains
-const allowedParentChainIds = [421613, 421614, 412346]
+import {
+  ChainWithRpcUrl,
+  allowedParentChainIds,
+  getCustomChainsFromLocalStorage,
+  getNetworkName,
+  removeCustomChainFromLocalStorage,
+  saveCustomChainToLocalStorage
+} from '../../util/networks'
 
 type Contracts = {
   customGateway: string
@@ -47,59 +49,6 @@ type OrbitConfig = {
     l2Contracts: Contracts
     l3Contracts: Contracts
   }
-}
-
-export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
-  const customChainsFromLocalStorage = localStorage.getItem(localStorageKey)
-
-  if (!customChainsFromLocalStorage) {
-    return []
-  }
-
-  return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
-    .filter(
-      // filter again in case local storage is compromized
-      chain => !allowedParentChainIds.includes(Number(chain.chainID))
-    )
-    .map(chain => {
-      return {
-        ...chain,
-        // make sure chainID is numeric
-        chainID: Number(chain.chainID)
-      }
-    })
-}
-
-export function getCustomChainFromLocalStorageById(chainId: ChainId) {
-  const customChains = getCustomChainsFromLocalStorage()
-
-  if (!customChains) {
-    return undefined
-  }
-
-  return customChains.find(chain => chain.chainID === chainId)
-}
-
-function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
-  const customChains = getCustomChainsFromLocalStorage()
-
-  if (
-    customChains.findIndex(chain => chain.chainID === newCustomChain.chainID) >
-    -1
-  ) {
-    // chain already exists
-    return
-  }
-
-  const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
-  localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
-}
-
-function removeCustomChainFromLocalStorage(chainId: number) {
-  const newCustomChains = getCustomChainsFromLocalStorage().filter(
-    chain => chain.chainID !== chainId
-  )
-  localStorage.setItem(localStorageKey, JSON.stringify(newCustomChains))
 }
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
