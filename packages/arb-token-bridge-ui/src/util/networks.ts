@@ -443,16 +443,24 @@ export function getNetworkLogo(
   }
 }
 
-export function getSupportedNetworks(chainId = 0) {
+export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
+  const testnetNetworks = [
+    ChainId.Goerli,
+    ChainId.ArbitrumGoerli,
+    ChainId.Sepolia,
+    ChainId.ArbitrumSepolia,
+    ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
+  ]
+
+  const mainnetNetworks = [
+    ChainId.Mainnet,
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova
+  ]
+
   return isNetwork(chainId).isTestnet
-    ? [
-        ChainId.Goerli,
-        ChainId.ArbitrumGoerli,
-        ChainId.Sepolia,
-        ChainId.ArbitrumSepolia,
-        ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
-      ]
-    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+    ? [...mainnetNetworks, ...testnetNetworks]
+    : [...mainnetNetworks, ...(includeTestnets ? testnetNetworks : [])]
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {

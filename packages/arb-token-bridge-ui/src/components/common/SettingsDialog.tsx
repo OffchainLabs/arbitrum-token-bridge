@@ -1,3 +1,4 @@
+import { twMerge } from 'tailwind-merge'
 import useLocalStorage from '@rehooks/local-storage'
 
 import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
@@ -8,6 +9,8 @@ import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
+export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
+
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <div className="heading mb-4 text-lg">{children}</div>
 )
@@ -17,6 +20,9 @@ export const SettingsDialog = () => {
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
+  const [isTestnetMode, setIsTestnetMode] = useLocalStorage<boolean>(
+    testnetModeLocalStorageKey
+  )
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =
@@ -28,6 +34,14 @@ export const SettingsDialog = () => {
 
   const closeArbitrumStats = () => {
     setIsArbitrumStatsVisible(false)
+  }
+
+  const enableTestnetMode = () => {
+    setIsTestnetMode(true)
+  }
+
+  const disableTestnetMode = () => {
+    setIsTestnetMode(false)
   }
 
   function closeSettings() {
@@ -75,8 +89,25 @@ export const SettingsDialog = () => {
           />
         </div>
 
-        {/* Add custom chain */}
+        {/* Show testnets toggle */}
         <div className="w-full">
+          <SectionTitle>Developer Mode</SectionTitle>
+
+          <Switch
+            label="Turn on testnet mode"
+            description="Show testnet networks and enable other testnet features."
+            checked={!!isTestnetMode}
+            onChange={isTestnetMode ? disableTestnetMode : enableTestnetMode}
+          />
+        </div>
+
+        {/* Add custom chain */}
+        <div
+          className={twMerge(
+            'w-full',
+            isTestnetMode ? '' : 'pointer-events-none opacity-20'
+          )}
+        >
           <SectionTitle>Add Testnet Orbit Chain</SectionTitle>
 
           <AddCustomChain />
