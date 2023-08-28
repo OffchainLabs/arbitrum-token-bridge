@@ -1,5 +1,22 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
-import { ChainId, explorerUrls, rpcURLs } from '../networks'
+import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+
+export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  return {
+    id: chain.chainID,
+    name: chain.name,
+    network: chain.name.toLowerCase().split(' ').join('-'),
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    rpcUrls: {
+      default: {
+        http: [chain.rpcUrl]
+      },
+      public: {
+        http: [chain.rpcUrl]
+      }
+    }
+  }
+}
 
 export const sepolia: Chain = {
   ...sepoliaDefault,
@@ -51,6 +68,31 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
+  }
+}
+
+export const xaiTestnet: Chain = {
+  id: ChainId.XaiTestnet,
+  name: 'Xai Orbit Testnet',
+  network: 'xai-testnet',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.XaiTestnet]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.XaiTestnet]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Blockscout',
+      url: 'https://testnet-explorer.xai-chain.net'
+    },
+    default: {
+      name: 'Blockscout',
+      url: 'https://testnet-explorer.xai-chain.net'
+    }
   }
 }
 

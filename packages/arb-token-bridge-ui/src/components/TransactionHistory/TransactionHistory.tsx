@@ -22,6 +22,7 @@ import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
 import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
+import { CustomMessageWarning } from './CustomMessageWarning'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -89,6 +90,8 @@ export const TransactionHistory = ({
     cctpDepositsError ||
     cctpWithdrawalsError
 
+  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+
   const pendingTransactions = useMemo(() => {
     const pendingCctpTransactions = pendingIdsCctp
       .map(pendingId => {
@@ -154,6 +157,11 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col justify-around gap-6">
+      {isNetwork(l2.network.id).isOrbitChain && (
+        <CustomMessageWarning>
+          Fetching transaction history details might be slower for Orbit chains.
+        </CustomMessageWarning>
+      )}
       {/* Pending transactions cards */}
       <PendingTransactions
         loading={isLoading}
@@ -196,7 +204,7 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            {isEOA && !!transfersIds.length && (
+            {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={`${roundedTabClasses} roundedTabLeft`}
@@ -238,7 +246,7 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {isEOA && !!transfersIds.length && (
+          {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
             <Tab.Panel className="overflow-auto">
               <TransactionsTableCctp />
             </Tab.Panel>

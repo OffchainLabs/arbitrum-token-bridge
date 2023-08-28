@@ -12,7 +12,7 @@ import { PageParams } from '../TransactionHistory/TransactionsTable/Transactions
 import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
-import { PreferencesDialog } from '../common/PreferencesDialog'
+import { SettingsDialog } from '../common/SettingsDialog'
 
 export const motionDivProps = {
   layout: true,
@@ -128,8 +128,8 @@ export function MainContent() {
         />
       </SidePanel>
 
-      {/* Preferences panel */}
-      <PreferencesDialog />
+      {/* Settings panel */}
+      <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
       {isArbitrumStatsVisible && <ArbitrumStats />}
