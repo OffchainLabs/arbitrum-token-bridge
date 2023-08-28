@@ -49,6 +49,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   }
 
   const networkName = getNetworkName(toNetworkId)
+  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
 
   const currentChainIsValid = useMemo(() => {
     const isWithdrawalSourceOrbitChain = isNetwork(l2.network.id).isOrbitChain
@@ -104,6 +105,10 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
       }),
     [tx, isSourceChainIdEthereum, l1, l2]
   )
+
+  if (isOrbitChainSelected && tx.isCctp) {
+    return null
+  }
 
   return (
     <WithdrawalCardContainer tx={tx}>

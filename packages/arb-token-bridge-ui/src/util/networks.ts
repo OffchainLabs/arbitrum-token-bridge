@@ -8,10 +8,8 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
-import {
-  getCustomChainFromLocalStorageById,
-  getCustomChainsFromLocalStorage
-} from '../components/common/AddCustomChain'
+
+export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
 
@@ -25,6 +23,67 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
+}
+
+export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  const customChainsFromLocalStorage = localStorage.getItem(
+    customChainLocalStorageKey
+  )
+
+  if (!customChainsFromLocalStorage) {
+    return []
+  }
+
+  return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
+    .filter(
+      // filter again in case local storage is compromized
+      chain => !allowedParentChainIds.includes(Number(chain.chainID))
+    )
+    .map(chain => {
+      return {
+        ...chain,
+        // make sure chainID is numeric
+        chainID: Number(chain.chainID)
+      }
+    })
+}
+
+export function getCustomChainFromLocalStorageById(chainId: ChainId) {
+  const customChains = getCustomChainsFromLocalStorage()
+
+  if (!customChains) {
+    return undefined
+  }
+
+  return customChains.find(chain => chain.chainID === chainId)
+}
+
+export function saveCustomChainToLocalStorage(newCustomChain: ChainWithRpcUrl) {
+  const customChains = getCustomChainsFromLocalStorage()
+
+  if (
+    customChains.findIndex(chain => chain.chainID === newCustomChain.chainID) >
+    -1
+  ) {
+    // chain already exists
+    return
+  }
+
+  const newCustomChains = [...getCustomChainsFromLocalStorage(), newCustomChain]
+  localStorage.setItem(
+    customChainLocalStorageKey,
+    JSON.stringify(newCustomChains)
+  )
+}
+
+export function removeCustomChainFromLocalStorage(chainId: number) {
+  const newCustomChains = getCustomChainsFromLocalStorage().filter(
+    chain => chain.chainID !== chainId
+  )
+  localStorage.setItem(
+    customChainLocalStorageKey,
+    JSON.stringify(newCustomChains)
+  )
 }
 
 function getCustomChainIds(l2ChainID: number): ChainId[] {
@@ -96,6 +155,13 @@ export enum ChainId {
   // Orbit Testnets
   XaiTestnet = 47279324479
 }
+
+// allow only Ethereum testnets and Arbitrum testnets as parent chains
+export const allowedParentChainIds = [
+  ChainId.ArbitrumGoerli,
+  ChainId.ArbitrumNova,
+  ChainId.ArbitrumLocal
+]
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
@@ -509,17 +575,24 @@ export function getNetworkLogo(
   }
 }
 
-export function getSupportedNetworks(chainId = 0) {
+export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
+  const testnetNetworks = [
+    ChainId.Goerli,
+    ChainId.ArbitrumGoerli,
+    ChainId.Sepolia,
+    ChainId.ArbitrumSepolia,
+    ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
+  ]
+
+  const mainnetNetworks = [
+    ChainId.Mainnet,
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova
+  ]
+
   return isNetwork(chainId).isTestnet
-    ? [
-        ChainId.Goerli,
-        ChainId.Sepolia,
-        ChainId.ArbitrumGoerli,
-        ChainId.ArbitrumSepolia,
-        ChainId.XaiTestnet,
-        ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
-      ]
-    : [ChainId.Mainnet, ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+    ? [...mainnetNetworks, ...testnetNetworks]
+    : [...mainnetNetworks, ...(includeTestnets ? testnetNetworks : [])]
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {

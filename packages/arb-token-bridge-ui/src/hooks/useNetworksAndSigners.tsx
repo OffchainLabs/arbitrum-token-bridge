@@ -189,12 +189,7 @@ export function NetworksAndSignersProvider(
 
   // TODO: Don't run all of this when an account switch happens. Just derive signers from networks?
   const update = useCallback(async () => {
-    if (
-      !address ||
-      !chain ||
-      typeof isConnectedToArbitrum === 'undefined' ||
-      typeof isConnectedToOrbitChain === 'undefined'
-    ) {
+    if (!address || !chain) {
       return
     }
 
@@ -208,6 +203,7 @@ export function NetworksAndSignersProvider(
     if (chainNotSupported) {
       console.error(`Chain ${providerChainId} not supported`)
       if (thisInvocation !== invocationCounter.current) {
+        // don't apply if the iteration is not the latest
         return
       }
       setResult({
@@ -230,6 +226,7 @@ export function NetworksAndSignersProvider(
     // Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId'. Need to set 'preferredL2ChainId' to an Orbit chain.
     if (isConnectedToOrbitChain && isSelectedL2ChainArbitrum) {
       if (thisInvocation !== invocationCounter.current) {
+        // don't apply if the iteration is not the latest
         return
       }
       setQueryParams({ l2ChainId: providerChainId })
@@ -293,6 +290,7 @@ export function NetworksAndSignersProvider(
         )
 
         if (thisInvocation !== invocationCounter.current) {
+          // don't apply if the iteration is not the latest
           return
         }
         setResult({
@@ -331,6 +329,7 @@ export function NetworksAndSignersProvider(
             )
 
             if (thisInvocation !== invocationCounter.current) {
+              // don't apply if the iteration is not the latest
               return
             }
             setResult({
@@ -347,6 +346,7 @@ export function NetworksAndSignersProvider(
           })
           .catch(() => {
             if (thisInvocation !== invocationCounter.current) {
+              // don't apply if the iteration is not the latest
               return
             }
             setResult({

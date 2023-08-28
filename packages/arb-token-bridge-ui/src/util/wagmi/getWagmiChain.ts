@@ -11,7 +11,7 @@ import {
   localL2Network
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
-import { getCustomChainFromLocalStorageById } from '../../components/common/AddCustomChain'
+import { getCustomChainFromLocalStorageById } from '../networks'
 
 export function getWagmiChain(chainId: number): Chain {
   const customChain = getCustomChainFromLocalStorageById(chainId)

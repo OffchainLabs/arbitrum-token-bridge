@@ -15,7 +15,7 @@ import {
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../../components/common/AddCustomChain'
+import { getCustomChainsFromLocalStorage } from '../networks'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   chainToWagmiChain(chain)
