@@ -84,7 +84,7 @@ export const NetworkSelectionContainer = ({
                   <div key={networkType.id} className="shrink-0">
                     {/* Only show the L1/L2/L3 title if testnet is connected */}
                     {isTestnet && (
-                      <div className="p-2 px-12 text-xl lg:px-4">
+                      <div className="p-2 px-12 text-xl text-white lg:px-4 lg:text-dark">
                         {networkType.title}
                       </div>
                     )}
