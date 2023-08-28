@@ -6,6 +6,7 @@ import { AppConnectionFallbackContainer } from '../components/App/AppConnectionF
 import { Loader } from '../components/common/atoms/Loader'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
+import { xaiTestnet } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -37,6 +38,17 @@ export default function Index() {
         // already added
       }
     })
+
+    try {
+      addCustomNetwork({ customL2Network: xaiTestnet })
+    } catch (error: any) {
+      console.error(`Failed to register Xai Testnet: ${error.message}`)
+    }
+    try {
+      addCustomChain({ customChain: xaiTestnet })
+    } catch (error: any) {
+      console.error(`Failed to register Xai Testnet: ${error.message}`)
+    }
   }, [])
 
   return <App />

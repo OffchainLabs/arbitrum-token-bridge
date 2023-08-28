@@ -45,6 +45,8 @@ module.exports = {
         'eth-dark': '#1A1C33',
         'orbit-primary': '#12AAFF',
         'orbit-dark': '#0C4260',
+        'xai-primary': '#F30019',
+        'xai-dark': '#87000E',
         'ocl-blue': '#243145'
       },
       fontFamily: {
