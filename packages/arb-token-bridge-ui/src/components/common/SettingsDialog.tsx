@@ -9,6 +9,7 @@ import { AddCustomChain } from './AddCustomChain'
 import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
+import { Tooltip } from './Tooltip'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { isNetwork } from '../../util/networks'
 
@@ -109,17 +110,27 @@ export const SettingsDialog = () => {
         <div
           className={twMerge(
             'w-full',
-            isConnectedToTestnet ? 'pointer-events-none' : ''
+            isConnectedToTestnet ? 'cursor-not-allowed' : ''
           )}
         >
           <SectionTitle>Developer Mode</SectionTitle>
 
-          <Switch
-            label="Turn on testnet mode"
-            description="Show testnet networks and enable other testnet features."
-            checked={!!isTestnetMode}
-            onChange={isTestnetMode ? disableTestnetMode : enableTestnetMode}
-          />
+          <Tooltip
+            content={
+              isConnectedToTestnet ? (
+                <span>
+                  Cannot disable Testnet mode if already connected to a testnet.
+                </span>
+              ) : null
+            }
+          >
+            <Switch
+              label="Turn on Testnet mode"
+              description="Show testnet networks and enable other testnet features."
+              checked={!!isTestnetMode}
+              onChange={isTestnetMode ? disableTestnetMode : enableTestnetMode}
+            />
+          </Tooltip>
         </div>
 
         {/* Add custom chain */}
