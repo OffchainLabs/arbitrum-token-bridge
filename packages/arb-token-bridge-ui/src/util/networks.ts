@@ -326,7 +326,7 @@ export const xaiTestnet: Chain = {
   },
   explorerUrl: 'https://testnet-explorer.xai-chain.net',
   isArbitrum: true,
-  isCustom: false,
+  isCustom: true,
   name: 'Xai Orbit Testnet',
   partnerChainID: 421613,
   retryableLifetimeSeconds: 604800,
