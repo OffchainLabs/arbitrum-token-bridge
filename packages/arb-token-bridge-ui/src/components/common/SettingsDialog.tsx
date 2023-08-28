@@ -52,7 +52,9 @@ export const SettingsDialog = () => {
     if (!isConnectedToTestnet) {
       setIsTestnetMode(false)
     } else {
-      warningToast('Cannot disable Testnet mode while connected to a testnet.')
+      warningToast(
+        'Cannot disable Testnet mode while connected to a testnet network'
+      )
     }
   }, [isConnectedToTestnet, setIsTestnetMode])
 
