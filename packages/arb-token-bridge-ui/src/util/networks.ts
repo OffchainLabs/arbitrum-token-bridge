@@ -386,6 +386,11 @@ export function registerLocalNetwork(
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
+  try {
+    addCustomChain({ customParentChain: l1Network, customChain: l2Network })
+  } catch (error: any) {
+    //
+  }
 }
 
 export function isNetwork(chainId: ChainId) {
