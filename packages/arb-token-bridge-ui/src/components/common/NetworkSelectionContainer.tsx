@@ -35,7 +35,6 @@ export const NetworkSelectionContainer = ({
   const l2Networks = supportedNetworks.filter(
     network => isNetwork(network).isArbitrum
   )
-
   const orbitNetworks = supportedNetworks.filter(
     network => isNetwork(network).isOrbitChain
   )
@@ -45,11 +44,9 @@ export const NetworkSelectionContainer = ({
   if (l1Networks.length > 0) {
     finalNetworks.push({ id: 'l1', title: 'L1', networks: l1Networks })
   }
-
   if (l2Networks.length > 0) {
     finalNetworks.push({ id: 'l2', title: 'L2', networks: l2Networks })
   }
-
   if (orbitNetworks.length > 0) {
     finalNetworks.push({ id: 'orbit', title: 'Orbit', networks: orbitNetworks })
   }
