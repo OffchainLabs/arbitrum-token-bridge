@@ -48,7 +48,7 @@ export function useAccountIsBlocked() {
     }
 
     if (chain && isNetwork(chain?.id).isTestnet) {
-      // Don't fetch if users connected to testnet as well
+      // Don't fetch
       return null
     }
 
