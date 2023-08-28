@@ -1,3 +1,5 @@
+import { useCallback, useEffect } from 'react'
+import { useChainId } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 import useLocalStorage from '@rehooks/local-storage'
 
@@ -8,6 +10,7 @@ import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { isNetwork } from '../../util/networks'
 
 export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
@@ -16,6 +19,9 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 )
 
 export const SettingsDialog = () => {
+  const chainId = useChainId()
+  const isConnectedToTestnet = isNetwork(chainId).isTestnet
+
   const [{ settingsOpen }, setQueryParams] = useArbQueryParams()
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
@@ -36,17 +42,27 @@ export const SettingsDialog = () => {
     setIsArbitrumStatsVisible(false)
   }
 
-  const enableTestnetMode = () => {
+  const enableTestnetMode = useCallback(() => {
     setIsTestnetMode(true)
-  }
+  }, [setIsTestnetMode])
 
-  const disableTestnetMode = () => {
-    setIsTestnetMode(false)
-  }
+  const disableTestnetMode = useCallback(() => {
+    // can't turn test mode off if connected to testnet
+    if (!isConnectedToTestnet) {
+      setIsTestnetMode(false)
+    }
+  }, [isConnectedToTestnet, setIsTestnetMode])
 
   function closeSettings() {
     setQueryParams({ settingsOpen: false })
   }
+
+  useEffect(() => {
+    // force test mode if connected to testnet
+    if (isConnectedToTestnet) {
+      enableTestnetMode()
+    }
+  }, [isConnectedToTestnet, enableTestnetMode])
 
   return (
     <SidePanel
@@ -90,7 +106,12 @@ export const SettingsDialog = () => {
         </div>
 
         {/* Show testnets toggle */}
-        <div className="w-full">
+        <div
+          className={twMerge(
+            'w-full',
+            isConnectedToTestnet ? 'pointer-events-none' : ''
+          )}
+        >
           <SectionTitle>Developer Mode</SectionTitle>
 
           <Switch
