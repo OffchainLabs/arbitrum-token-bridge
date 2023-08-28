@@ -204,7 +204,7 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            {isEOA && !!transfersIds.length && (
+            {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={`${roundedTabClasses} roundedTabLeft`}
