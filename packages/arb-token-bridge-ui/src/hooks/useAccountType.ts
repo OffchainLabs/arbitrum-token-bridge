@@ -1,46 +1,25 @@
-import { useState, useEffect } from 'react'
 import { useAccount, useProvider } from 'wagmi'
+import useSWRImmutable from 'swr/immutable'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 
 type Result = {
-  isEOA: boolean | undefined
-  isSmartContractWallet: boolean | undefined
+  isEOA: boolean
+  isSmartContractWallet: boolean
 }
 
-const defaultResult: Result = {
-  isEOA: undefined,
-  isSmartContractWallet: undefined
-}
-
-export function useAccountType() {
-  const provider = useProvider()
+export function useAccountType(): Result {
   const { address } = useAccount()
+  const provider = useProvider()
 
-  const [result, setResult] = useState<Result>(defaultResult)
+  const { data: isSmartContractWallet = false } = useSWRImmutable(
+    address ? [address, provider, 'useAccountType'] : null,
+    ([_address, _provider]) => addressIsSmartContract(_address, _provider)
+  )
 
-  useEffect(() => {
-    async function update() {
-      if (typeof address === 'undefined') {
-        setResult(defaultResult)
-        return
-      }
-
-      // TODO: Try to detect counterfactual/just-in-time deployed smart contract wallets
-
-      const isSmartContractWallet = await addressIsSmartContract(
-        address,
-        provider
-      )
-
-      setResult({
-        isEOA: !isSmartContractWallet,
-        isSmartContractWallet
-      })
-    }
-
-    update()
-  }, [address, provider])
-
-  return result
+  // By default, assume it's an EOA
+  return {
+    isEOA: !isSmartContractWallet,
+    isSmartContractWallet
+  }
 }
