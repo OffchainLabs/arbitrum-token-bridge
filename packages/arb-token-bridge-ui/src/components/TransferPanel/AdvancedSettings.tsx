@@ -114,7 +114,7 @@ export const AdvancedSettings = () => {
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const { address } = useAccount()
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isEOA, isSmartContractWallet } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
   const [inputLocked, setInputLocked] = useState(true)

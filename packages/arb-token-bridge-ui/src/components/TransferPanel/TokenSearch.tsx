@@ -462,7 +462,8 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -491,7 +492,7 @@ export function TokenSearch({
         isTokenArbitrumGoerliNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
-        if (typeof isSmartContractWallet === 'undefined') {
+        if (isLoadingAccountType) {
           return
         }
 
