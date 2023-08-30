@@ -28,6 +28,7 @@ import { formatAmount } from '../../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../../state/cctpState'
+import { useChainLayers } from '../../../hooks/useChainLayers'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -35,11 +36,12 @@ type CommonProps = {
 }
 
 function ClaimableRowStatus({ tx, isSourceChainArbitrum }: CommonProps) {
+  const { parentLayer, layer } = useChainLayers()
   const matchingL1Tx = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
     : findMatchingL1TxForWithdrawal(tx)
-  const fromNetwork = isSourceChainArbitrum ? 'L2' : 'L1'
-  const toNetwork = isSourceChainArbitrum ? 'L1' : 'L2'
+  const fromNetwork = isSourceChainArbitrum ? layer : parentLayer
+  const toNetwork = isSourceChainArbitrum ? parentLayer : layer
 
   switch (tx.status) {
     case 'pending':
@@ -158,8 +160,9 @@ function ClaimableRowStatus({ tx, isSourceChainArbitrum }: CommonProps) {
 }
 
 function ClaimableRowTime({ tx, isSourceChainArbitrum }: CommonProps) {
-  const fromNetwork = isSourceChainArbitrum ? 'L2' : 'L1'
-  const toNetwork = isSourceChainArbitrum ? 'L1' : 'L2'
+  const { parentLayer, layer } = useChainLayers()
+  const fromNetwork = isSourceChainArbitrum ? layer : parentLayer
+  const toNetwork = isSourceChainArbitrum ? parentLayer : layer
   const { remainingTime } = useRemainingTime(tx)
 
   if (tx.status === 'Unconfirmed') {
@@ -237,6 +240,7 @@ function ClaimableRowTime({ tx, isSourceChainArbitrum }: CommonProps) {
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
 
   const isExecuted = tx.status === 'Executed'
@@ -263,7 +267,9 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   return (
     <span
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-      aria-label={`${isSourceChainArbitrum ? 'L1' : 'L2'} Transaction Link`}
+      aria-label={`${
+        isSourceChainArbitrum ? parentLayer : layer
+      } Transaction Link`}
     >
       <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
       {getNetworkName(toNetworkId)}:{' '}
@@ -279,13 +285,16 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
 
   return (
     <div className="flex flex-col space-y-3">
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label={`${isSourceChainArbitrum ? 'L2' : 'L1'} Transaction Link`}
+        aria-label={`${
+          isSourceChainArbitrum ? layer : parentLayer
+        } Transaction Link`}
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
         {getNetworkName(fromNetworkId)}:{' '}

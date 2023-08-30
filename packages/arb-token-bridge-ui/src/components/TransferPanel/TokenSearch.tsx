@@ -39,6 +39,7 @@ import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum Panel {
   TOKENS,
@@ -158,6 +159,7 @@ function TokensPanel({
     l1: { provider: L1Provider },
     l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
@@ -373,8 +375,8 @@ function TokensPanel({
                 setErrorMessage('')
                 setNewToken(e.target.value)
               }}
-              placeholder="Search by token name, symbol, L1 or L2 address"
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
+              placeholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
             />
           </div>
 

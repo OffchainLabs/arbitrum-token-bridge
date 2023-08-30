@@ -19,9 +19,11 @@ import {
   getTargetChainIdFromSourceChain,
   useRemainingTime
 } from '../../state/cctpState'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
 
   let toNetworkId
   if (tx.isCctp) {
@@ -74,10 +76,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             {isWithdrawal ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                  {layer} transaction: <WithdrawalL2TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction:{' '}
+                  {parentLayer} transaction:{' '}
                   {tx.status === 'Failure'
                     ? 'Failed'
                     : 'Will show after claiming'}
@@ -86,10 +88,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             ) : (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                  {parentLayer} transaction: <WithdrawalL1TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction:{' '}
+                  {layer} transaction:{' '}
                   {tx.status === 'Failure'
                     ? 'Failed'
                     : 'Will show after claiming'}

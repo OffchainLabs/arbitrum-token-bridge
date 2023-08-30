@@ -21,6 +21,7 @@ import {
   approveTokenEstimateGas
 } from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -40,6 +41,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const { isMainnet, isTestnet } = isNetwork(l1.network.id)
   const provider = isDepositMode ? l1.provider : l2.provider
   const gasPrice = useGasPrice({ provider })
@@ -121,10 +123,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const noteMessage = (() => {
     if (isDepositMode) {
       return isCctp
-        ? 'the CCTP L2 deposit fee.'
-        : 'the standard L2 deposit fee.'
+        ? `the CCTP ${layer} deposit fee.`
+        : `the standard ${layer} deposit fee.`
     }
-    return isCctp ? 'the CCTP L1 deposit fee.' : 'the standard L1 deposit fee.'
+    return isCctp
+      ? `the CCTP ${parentLayer} deposit fee.`
+      : `the standard ${parentLayer} deposit fee.`
   })()
 
   return (
