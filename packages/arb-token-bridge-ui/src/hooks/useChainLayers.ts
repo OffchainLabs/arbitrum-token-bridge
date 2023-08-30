@@ -3,7 +3,7 @@ import { useNetworksAndSigners } from './useNetworksAndSigners'
 
 export type ChainLayer = 'L1' | 'L2' | 'Orbit'
 
-function getLayerTypeByChainId(chainId: number): ChainLayer {
+function getChainLayerByChainId(chainId: number): ChainLayer {
   const { isEthereum, isArbitrum } = isNetwork(chainId)
 
   if (isEthereum) {
@@ -19,7 +19,7 @@ export const useChainLayers = () => {
   const { l1, l2 } = useNetworksAndSigners()
 
   return {
-    parentLayer: getLayerTypeByChainId(l1.network.id),
-    layer: getLayerTypeByChainId(l2.network.id)
+    parentLayer: getChainLayerByChainId(l1.network.id),
+    layer: getChainLayerByChainId(l2.network.id)
   }
 }
