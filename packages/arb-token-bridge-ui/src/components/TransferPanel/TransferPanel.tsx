@@ -52,6 +52,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -200,6 +201,7 @@ export function TransferPanel() {
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
+  const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -668,6 +670,18 @@ export function TransferPanel() {
       return
     }
 
+    // Make sure Ethereum and/or Orbit chains are not selected as a pair.
+    const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
+      id => {
+        const { isEthereum, isOrbitChain } = isNetwork(id)
+        return isEthereum || isOrbitChain
+      }
+    )
+    if (ethereumOrOrbitPairsSelected) {
+      console.error('Cannot transfer funds between L1 and/or Orbit chains.')
+      return
+    }
+
     const l2NetworkName = getNetworkName(l2Network.id)
 
     setTransferring(true)
@@ -695,7 +709,14 @@ export function TransferPanel() {
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
           )
         }
-        if (isConnectedToArbitrum.current) {
+
+        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
+        // Only switch to L1 if the selected L1 network is Ethereum.
+        // Or if connected to an Orbit chain as it can't make deposits.
+        if (
+          (isConnectedToArbitrum.current && isParentChainEthereum) ||
+          isConnectedToOrbitChain.current
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Deposit',
@@ -711,7 +732,8 @@ export function TransferPanel() {
           )
 
           while (
-            isConnectedToArbitrum.current ||
+            (isConnectedToArbitrum.current && isParentChainEthereum) ||
+            isConnectedToOrbitChain.current ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -724,9 +746,12 @@ export function TransferPanel() {
         const l1ChainID = latestNetworksAndSigners.current.l1.network.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
-        if (
-          !(l1ChainID && connectedChainID && l1ChainID === connectedChainID)
-        ) {
+        const l1ChainEqualsConnectedChain =
+          l1ChainID && connectedChainID && l1ChainID === connectedChainID
+
+        if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
+          // Deposit is invalid if the connected chain doesn't match L1...
+          // ...or if connected to an Orbit chain, as it can't make deposits.
           return networkConnectionWarningToast()
         }
         if (selectedToken) {
@@ -853,7 +878,14 @@ export function TransferPanel() {
           throw signerUndefinedError
         }
 
-        if (!isConnectedToArbitrum.current) {
+        const isConnectedToEthereum =
+          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+        const { isOrbitChain } = isNetwork(l2Network.id)
+
+        if (
+          isConnectedToEthereum ||
+          (isConnectedToArbitrum.current && isOrbitChain)
+        ) {
           if (shouldTrackAnalytics(l2NetworkName)) {
             trackEvent('Switch Network and Transfer', {
               type: 'Withdrawal',
@@ -869,7 +901,9 @@ export function TransferPanel() {
           )
 
           while (
-            !isConnectedToArbitrum.current ||
+            (!isConnectedToArbitrum.current &&
+              !isConnectedToOrbitChain.current) ||
+            (isConnectedToArbitrum.current && isOrbitChain) ||
             !latestEth.current ||
             !arbTokenBridgeLoaded
           ) {
@@ -1233,6 +1267,43 @@ export function TransferPanel() {
     disableWithdrawal
   ])
 
+  const depositButtonColorClassName = useMemo(() => {
+    const { isArbitrum, isArbitrumNova, isXaiTestnet } = isNetwork(l2Network.id)
+
+    if (isArbitrumNova) {
+      return 'bg-arb-nova-dark'
+    }
+
+    if (isArbitrum) {
+      return 'bg-arb-one-dark'
+    }
+
+    if (isXaiTestnet) {
+      return 'bg-xai-dark'
+    }
+
+    // is Orbit chain
+    return 'bg-orbit-dark'
+  }, [l2Network.id])
+
+  const withdrawalButtonColorClassName = useMemo(() => {
+    const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
+      l1Network.id
+    )
+    const { isArbitrum } = isNetwork(l2Network.id)
+
+    if (isArbitrum) {
+      return 'bg-eth-dark'
+    }
+
+    // is Orbit chain
+    if (isParentChainArbitrumNova) {
+      return 'bg-arb-nova-dark'
+    }
+
+    return 'bg-arb-one-dark'
+  }, [l1Network.id, l2Network.id])
+
   return (
     <>
       <TokenApprovalDialog
@@ -1331,7 +1402,7 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                isArbitrumNova ? 'bg-arb-nova-dark' : 'bg-arb-one-dark'
+                depositButtonColorClassName
               )}
             >
               {isSmartContractWallet && isTransferring
@@ -1354,7 +1425,10 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full py-4 text-lg lg:text-2xl',
+                withdrawalButtonColorClassName
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'

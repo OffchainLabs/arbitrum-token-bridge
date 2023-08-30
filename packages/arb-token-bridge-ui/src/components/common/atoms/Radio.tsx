@@ -26,7 +26,7 @@ export const Radio = ({
       {label && <RadioGroup.Label className="mb-4">{label}</RadioGroup.Label>}
 
       <div
-        className={`flex gap-2 ${
+        className={`flex gap-6 ${
           orientation === 'vertical' && 'flex-col items-start'
         }`}
       >
@@ -34,18 +34,21 @@ export const Radio = ({
           <RadioGroup.Option key={option.id} value={option.value}>
             {({ checked }: { checked: boolean }) => (
               <>
-                <div className="flex w-full cursor-pointer gap-4">
+                <div className="flex w-full cursor-pointer gap-3">
                   {/* radio checkmark */}
                   {checked ? (
-                    <div className="radio-selected mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-3 bg-blue-link shadow-[inset_0_0_0_3px_rgba(0,0,0,0.5)]"></div>
+                    <div className="radio-selected mb-1 mt-[3px] h-4 w-4 shrink-0 rounded-full border border-white bg-white shadow-[inset_0_0_0_2px_rgba(0,0,0,1)]"></div>
                   ) : (
-                    <div className="mx-2 my-1 h-5 w-5 shrink-0 rounded-full border-2 border-gray-3"></div>
+                    <div className="mb-1 mt-[3px] h-4 w-4 shrink-0 rounded-full border border-white"></div>
                   )}
 
                   {/* radio option text */}
                   <div className="flex flex-col">
                     {/* option label */}
-                    <RadioGroup.Label as="p" className={`heading mr-4`}>
+                    <RadioGroup.Label
+                      as="p"
+                      className={`heading mb-1 mr-4 text-sm`}
+                    >
                       {option.label}
                     </RadioGroup.Label>
 
@@ -53,7 +56,7 @@ export const Radio = ({
                     {option.description && (
                       <RadioGroup.Description
                         as="span"
-                        className="text-sm opacity-40"
+                        className="text-sm text-gray-3"
                       >
                         <span>{option.description}</span>
                       </RadioGroup.Description>

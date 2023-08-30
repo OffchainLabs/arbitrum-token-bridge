@@ -23,7 +23,16 @@ export function NetworkListbox({
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
+    const { isArbitrum, isArbitrumNova, isOrbitChain, isXaiTestnet } =
+      isNetwork(value.id)
+
+    if (isXaiTestnet) {
+      return 'bg-xai-primary'
+    }
+
+    if (isOrbitChain) {
+      return 'bg-orbit-primary'
+    }
 
     if (!isArbitrum) {
       return 'bg-eth-primary'
