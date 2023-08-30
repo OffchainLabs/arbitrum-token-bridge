@@ -33,6 +33,8 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const networkName = getNetworkName(toNetworkId)
   const { isEthereum: isWithdrawal } = isNetwork(toNetworkId)
 
+  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
@@ -43,6 +45,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   )
 
   const { remainingTime } = useRemainingTime(tx)
+
+  if (isOrbitChainSelected && tx.isCctp) {
+    return null
+  }
 
   return (
     <WithdrawalCardContainer tx={tx}>

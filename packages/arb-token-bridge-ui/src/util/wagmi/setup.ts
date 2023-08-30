@@ -8,11 +8,18 @@ import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
+  xaiTestnet,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  chainToWagmiChain
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
+import { getCustomChainsFromLocalStorage } from '../networks'
+
+const customChains = getCustomChainsFromLocalStorage().map(chain =>
+  chainToWagmiChain(chain)
+)
 
 const chainList = isTestingEnvironment
   ? [
@@ -26,9 +33,13 @@ const chainList = isTestingEnvironment
       // sepolia
       sepolia,
       arbitrumSepolia,
+      // Orbit chains
+      xaiTestnet,
       // add local environments during testing
       local,
-      arbitrumLocal
+      arbitrumLocal,
+      // user-added custom chains
+      ...customChains
     ]
   : [
       mainnet,
@@ -37,7 +48,9 @@ const chainList = isTestingEnvironment
       goerli,
       arbitrumGoerli,
       sepolia,
-      arbitrumSepolia
+      arbitrumSepolia,
+      xaiTestnet,
+      ...customChains
     ]
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!

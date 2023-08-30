@@ -40,6 +40,7 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
@@ -51,7 +52,7 @@ import {
   isTokenMainnetUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { USDC_LEARN_MORE_LINK } from '../../constants'
+import { ETH_BALANCE_ARTICLE_LINK, USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
@@ -148,7 +149,22 @@ function NetworkContainer({
 }) {
   const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+    const { isArbitrum, isArbitrumNova, isOrbitChain, isXaiTestnet } =
+      isNetwork(network.id)
+
+    if (isXaiTestnet) {
+      return {
+        backgroundImage: `url('/images/XaiLogo.svg')`,
+        backgroundClassName: `bg-xai-dark`
+      }
+    }
+
+    if (isOrbitChain) {
+      return {
+        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
+        backgroundClassName: 'bg-orbit-dark'
+      }
+    }
 
     if (!isArbitrum) {
       return {
@@ -318,6 +334,7 @@ export function TransferPanelMain({
 
   const { l1, l2 } = useNetworksAndSigners()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet = false } = useAccountType()
 
@@ -436,8 +453,20 @@ export function TransferPanelMain({
     return result
   }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
-  const externalFrom = isConnectedToArbitrum ? l2.network : l1.network
-  const externalTo = isConnectedToArbitrum ? l1.network : l2.network
+  const [externalFrom, externalTo] = useMemo(() => {
+    const isParentChainArbitrum = isNetwork(l1.network.id).isArbitrum
+
+    if (isParentChainArbitrum) {
+      return isConnectedToArbitrum
+        ? [l1.network, l2.network]
+        : [l2.network, l1.network]
+    }
+
+    // Parent chain is Ethereum.
+    return isConnectedToArbitrum
+      ? [l2.network, l1.network]
+      : [l1.network, l2.network]
+  }, [l1, l2, isConnectedToArbitrum])
 
   const [from, setFrom] = useState<Chain>(externalFrom)
   const [to, setTo] = useState<Chain>(externalTo)
@@ -458,21 +487,10 @@ export function TransferPanelMain({
   const [, setQueryParams] = useArbQueryParams()
 
   useEffect(() => {
-    const l2ChainId = isConnectedToArbitrum ? externalFrom.id : externalTo.id
-
     setFrom(externalFrom)
     setTo(externalTo)
-
-    // Keep the connected L2 chain id in search params, so it takes preference in any L1 => L2 actions
-    setQueryParams({ l2ChainId })
-  }, [
-    isConnectedToArbitrum,
-    externalFrom,
-    externalTo,
-    setQueryParams,
-    l1.provider,
-    l2.provider
-  ])
+    setQueryParams({ l2ChainId: l2.network.id })
+  }, [externalFrom, externalTo, l2.network.id, setQueryParams])
 
   const estimateGas = useCallback(
     async (
@@ -704,6 +722,14 @@ export function TransferPanelMain({
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     const options = getListboxOptionsFromL1Network(l1.network)
 
+    const arbitrumOneOrArbitrumGoerli = (() => {
+      const { isTestnet } = isNetwork(l1.network.id)
+      if (isTestnet) {
+        return ChainId.ArbitrumGoerli
+      }
+      return ChainId.ArbitrumOne
+    })()
+
     function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
     }
@@ -744,27 +770,25 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
+            const { isEthereum } = isNetwork(network.id)
+
             if (shouldOpenOneNovaDialog([network.id, to.id])) {
               setOneNovaTransferDestinationNetworkId(to.id)
               openOneNovaTransferDialog()
               return
             }
 
-            const { isEthereum } = isNetwork(network.id)
-
-            // Selecting the same chain or L1 network
-            if (from.id === network.id || isEthereum) {
-              return
-            }
-
             try {
               await switchNetworkAsync?.(network.id)
-              updatePreferredL2Chain(network.id)
 
-              // If L2 selected, change to withdraw mode and set new selections
-              switchNetworksOnTransferPanel()
-              setFrom(network)
-              setTo(l1.network)
+              const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+              // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
+              // Otherwise we want to keep the current chain, in case it's Nova.
+              if (isEthereum && isOrbitChainSelected) {
+                updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+                return
+              }
+              updatePreferredL2Chain(network.id)
             } catch (error: any) {
               if (!isUserRejectedError(error)) {
                 Sentry.captureException(error)
@@ -777,8 +801,10 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            // Selecting the same chain
-            if (to.id === network.id) {
+            const { isEthereum, isOrbitChain } = isNetwork(network.id)
+
+            if (network.id === from.id) {
+              switchNetworksOnTransferPanel()
               return
             }
 
@@ -788,30 +814,32 @@ export function TransferPanelMain({
               return
             }
 
-            const { isEthereum } = isNetwork(network.id)
-
-            // Switch networks if selecting L1 network
-            if (isEthereum) {
-              return switchNetworksOnTransferPanel()
+            const isOrbitChainCurrentlySelected = isNetwork(
+              l2.network.id
+            ).isOrbitChain
+            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
+            // Otherwise we want to keep the current chain, in case it's Nova.
+            if (isEthereum && isOrbitChainCurrentlySelected) {
+              updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+              return
             }
 
-            if (isConnectedToArbitrum) {
-              // In deposit mode, if we are connected to a different L2 network
-              //
-              // 1) Switch to the L1 network (to be able to initiate a deposit)
-              // 2) Select the preferred L2 network
+            // If Orbit chain is selected, we want to change network to Arbitrum One or Arbitrum Goerli.
+            if (isOrbitChain) {
               try {
-                await switchNetworkAsync?.(l1.network.id)
-                updatePreferredL2Chain(network.id)
+                if (!isConnectedToArbitrum) {
+                  await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                }
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
                   Sentry.captureException(error)
                 }
+                return
               }
-            } else {
-              // If we are connected to an L1 network, we can just select the preferred L2 network
-              updatePreferredL2Chain(network.id)
             }
+
+            updatePreferredL2Chain(network.id)
+            setTo(network)
           }
         }
       }
@@ -826,10 +854,7 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          // Selecting the same chain
-          if (from.id === network.id) {
-            return
-          }
+          const { isEthereum } = isNetwork(network.id)
 
           if (shouldOpenOneNovaDialog([network.id, to.id])) {
             setOneNovaTransferDestinationNetworkId(to.id)
@@ -837,16 +862,17 @@ export function TransferPanelMain({
             return
           }
 
-          const { isEthereum } = isNetwork(network.id)
-
-          // Switch networks if selecting L1 network
-          if (isEthereum) {
-            return switchNetworksOnTransferPanel()
-          }
-
-          // In withdraw mode we always switch to the L2 network
           try {
+            // In withdraw mode we always switch to the L2 network.
             await switchNetworkAsync?.(network.id)
+
+            const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
+            // Otherwise we want to keep the current chain, in case it's Nova.
+            if (isEthereum && isOrbitChainSelected) {
+              updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+              return
+            }
             updatePreferredL2Chain(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -860,10 +886,10 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network.id)
+          const { isEthereum, isOrbitChain } = isNetwork(network.id)
 
-          // Selecting the same chain or L1 network
-          if (to.id === network.id || isEthereum) {
+          if (network.id === from.id) {
+            switchNetworksOnTransferPanel()
             return
           }
 
@@ -873,25 +899,53 @@ export function TransferPanelMain({
             return
           }
 
-          // Destination network is L2, connect to L1
-          try {
-            await switchNetworkAsync?.(l1.network.id)
-            updatePreferredL2Chain(network.id)
-
-            // Change to withdraw mode and set new selections
-            switchNetworksOnTransferPanel()
-            setFrom(l1.network)
-            setTo(network)
-          } catch (error: any) {
-            if (!isUserRejectedError(error)) {
-              Sentry.captureException(error)
+          if (isEthereum) {
+            if (isConnectedToOrbitChain) {
+              try {
+                // If connected to an Orbit chain, we need to change network to Arbitrum.
+                // We can't withdraw from an Orbit chain to Ethereum.
+                await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                return
+              } catch (error: any) {
+                if (!isUserRejectedError(error)) {
+                  Sentry.captureException(error)
+                }
+                return
+              }
             }
+            // Connected to Arbitrum.
+            updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
           }
+
+          if (isOrbitChain) {
+            const isConnectedToEthereum =
+              !isConnectedToArbitrum && !isConnectedToOrbitChain
+
+            if (isConnectedToEthereum) {
+              // If connected to Ethereum, we need to change network to Arbitrum.
+              // We can't deposit from Ethereum to an Orbit chain.
+              await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+            }
+
+            const isOrbitChainCurrentlySelected = isNetwork(
+              l2.network.id
+            ).isOrbitChain
+            if (isOrbitChainCurrentlySelected) {
+              // long-term we will have to change to Orbit chain's parent network
+              // right now only Arbitrum Goerli is support so it's fine
+              await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+            }
+
+            updatePreferredL2Chain(network.id)
+          }
+
+          setTo(network)
         }
       }
     }
   }, [
     l1.network,
+    l2.network,
     from,
     to,
     isSmartContractWallet,
@@ -899,7 +953,9 @@ export function TransferPanelMain({
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
-    isConnectedToArbitrum
+    openOneNovaTransferDialog,
+    isConnectedToArbitrum,
+    isConnectedToOrbitChain
   ])
 
   return (
@@ -965,7 +1021,7 @@ export function TransferPanelMain({
               transactions.
               <br />
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7536324817435"
+                href={ETH_BALANCE_ARTICLE_LINK}
                 className="arb-hover underline"
               >
                 Learn more
