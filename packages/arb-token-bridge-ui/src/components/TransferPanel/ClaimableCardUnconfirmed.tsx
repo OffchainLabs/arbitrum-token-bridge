@@ -9,8 +9,6 @@ import {
   WithdrawalL1TxStatus,
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
-import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
@@ -59,16 +57,6 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             {networkName}
           </span>
 
-          <span className="animate-pulse text-sm text-gray-dark">
-            {tx.nodeBlockDeadline ? (
-              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
-            ) : tx.isCctp ? (
-              <>{remainingTime}</>
-            ) : (
-              <span>Calculating...</span>
-            )}
-          </span>
-
           <div className="h-2" />
           <div className="flex flex-col font-light">
             {isWithdrawal ? (
@@ -107,22 +95,17 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip content={<span>Funds aren&apos;t ready to claim yet</span>}>
-          <Button
-            variant="primary"
-            className="absolute bottom-0 right-0 text-sm lg:my-4 lg:text-lg"
-            disabled
-          >
-            <div className="flex flex-nowrap whitespace-pre">
-              Claim{' '}
-              <span className="hidden lg:flex">
-                {formatAmount(Number(tx.value), {
-                  symbol: tokenSymbol
-                })}
-              </span>
-            </div>
-          </Button>
-        </Tooltip>
+        <span className="absolute bottom-0 right-0 max-w-[100px] animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-sm font-semibold text-ocl-blue lg:max-w-full lg:text-lg">
+          <span className="whitespace-nowrap">
+            {tx.nodeBlockDeadline ? (
+              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
+            ) : tx.isCctp ? (
+              <>{remainingTime}</>
+            ) : (
+              <span>Calculating...</span>
+            )}
+          </span>
+        </span>
       </div>
     </WithdrawalCardContainer>
   )
