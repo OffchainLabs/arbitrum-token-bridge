@@ -1,10 +1,4 @@
-import {
-  ApolloClient,
-  ApolloQueryResult,
-  gql,
-  HttpLink,
-  InMemoryCache
-} from '@apollo/client'
+import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
 
@@ -31,7 +25,6 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
-    searchString?: string
   }
 }
 
@@ -100,8 +93,7 @@ export default async function handler(
       l1ChainId: l1ChainIdString,
       pageNumber = '0',
       pageSize = '10',
-      type,
-      searchString = ''
+      type
     } = req.query
     const l1ChainId = parseInt(l1ChainIdString, 10)
 
@@ -155,52 +147,49 @@ export default async function handler(
     )
 
     const messagesSentQuery = gql(`{
-        messageSents(
-          where: {
-            sender: "${walletAddress}"
-            ${searchString ? `transactionHash_contains: "${searchString}"` : ''}
-          }
-          orderDirection: "desc"
-          orderBy: "blockTimestamp"
-          first: ${Number(pageSize)}
-          skip: ${Number(pageNumber) * Number(pageSize)}
-        ) {
-          attestationHash
-          blockNumber
-          blockTimestamp
-          id
-          message
-          nonce
-          sender
-          recipient
-          sourceDomain
-          transactionHash
-          amount
+      messageSents(
+        where: {
+          or: [
+            { sender: "${walletAddress}" },
+            { recipient: "${walletAddress}" }
+          ]
         }
-      }`)
+        orderDirection: "desc"
+        orderBy: "blockTimestamp"
+        first: ${Number(pageSize)}
+        skip: ${Number(pageNumber) * Number(pageSize)}
+      ) {
+        attestationHash
+        blockNumber
+        blockTimestamp
+        id
+        message
+        sender
+        recipient
+        sourceDomain
+        transactionHash
+        amount
+      }
+    }`)
 
-    let messagesSentResult: ApolloQueryResult<{ messageSents: MessageSent[] }>
-    if (type === 'deposits') {
-      messagesSentResult = await l1Subgraph.query({ query: messagesSentQuery })
-    } else {
-      messagesSentResult = await l2Subgraph.query({ query: messagesSentQuery })
-    }
+    const sourceSubgraph = type === 'deposits' ? l1Subgraph : l2Subgraph
+    const messagesSentResult = await sourceSubgraph.query<{
+      messageSents: MessageSent[]
+    }>({
+      query: messagesSentQuery
+    })
     const { messageSents } = messagesSentResult.data
-    const messagesSentIds = messageSents.map(messageSent => messageSent.id)
-    const formatedIds = messagesSentIds.map(
-      messageSentId => `"${messageSentId}"`
-    )
+    const formattedIds = messageSents.map(messageSent => `"${messageSent.id}"`)
 
     const messagesReceivedQuery = gql(`{
         messageReceiveds(
-          where: {id_in: [${formatedIds.join(',')}]}
+          where: {id_in: [${formattedIds.join(',')}]}
           orderDirection: "desc"
           orderBy: "blockTimestamp"
         ) {
           id
           caller
           sourceDomain
-          nonce
           blockTimestamp
           blockNumber
           messageBody
@@ -210,18 +199,12 @@ export default async function handler(
       }
     `)
 
-    let messagesReceivedResult: ApolloQueryResult<{
+    const targetSubgraph = type === 'deposits' ? l2Subgraph : l1Subgraph
+    const messagesReceivedResult = await targetSubgraph.query<{
       messageReceiveds: MessageReceived[]
-    }>
-    if (type === 'deposits') {
-      messagesReceivedResult = await l2Subgraph.query({
-        query: messagesReceivedQuery
-      })
-    } else {
-      messagesReceivedResult = await l1Subgraph.query({
-        query: messagesReceivedQuery
-      })
-    }
+    }>({
+      query: messagesReceivedQuery
+    })
 
     const { messageReceiveds } = messagesReceivedResult.data
 

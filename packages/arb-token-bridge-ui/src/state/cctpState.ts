@@ -243,26 +243,29 @@ const useCctpStore = create<CctpStore>((set, get) => ({
     })
   },
   setTransfers: transfers => {
-    const pendings = transfers.pending
-    const completeds = transfers.completed
+    const { pending, completed } = transfers
 
-    const transfersMap = get().transfers
-    const ids = [...get().transfersIds]
+    const previousTransfersMap = get().transfers
 
-    const transactions = [...pendings, ...completeds]
-      .concat(Object.values(transfersMap))
-      .sort((t1, t2) => (t2.blockNum || 0) - (t1.blockNum || 0))
+    const transactions = [...pending, ...completed]
+      .concat(Object.values(previousTransfersMap))
+      .sort((t1, t2) => (dayjs(t2.createdAt).isAfter(t1.createdAt) ? 1 : -1))
 
-    for (const transfer of transactions) {
-      if (!transfersMap[transfer.txId]) {
-        transfersMap[transfer.txId] = transfer
-        ids.push(transfer.txId)
+    const ids = new Set<string>()
+    const transfersMap = transactions.reduce(
+      (acc, transaction) => {
+        acc[transaction.txId] = transaction
+        ids.add(transaction.txId)
+        return acc
+      },
+      {} as {
+        [txId: string]: MergedTransaction
       }
-    }
+    )
 
     return set({
       transfers: transfersMap,
-      transfersIds: ids
+      transfersIds: [...ids]
     })
   },
   setPendingTransfer: async transfer => {
