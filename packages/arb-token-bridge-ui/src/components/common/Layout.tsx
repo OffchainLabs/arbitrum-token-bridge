@@ -44,8 +44,9 @@ export function Layout(props: LayoutProps) {
           href="https://docs.arbitrum.io/stylus/"
           className="arb-hover underline"
         >
-          Stylus docs.
+          Stylus docs
         </ExternalLink>
+        .
       </SiteBanner>
 
       <Header />
