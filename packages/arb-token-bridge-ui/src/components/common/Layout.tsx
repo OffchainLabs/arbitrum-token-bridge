@@ -41,7 +41,7 @@ export function Layout(props: LayoutProps) {
         The Stylus testnet is officially live! You can now build EVM-compatible
         apps in Rust by visiting the{' '}
         <ExternalLink
-          href="https://docs.arbitrum.io/stylus/"
+          href="https://docs.arbitrum.io/stylus/stylus-gentle-introduction"
           className="arb-hover underline"
         >
           Stylus docs
