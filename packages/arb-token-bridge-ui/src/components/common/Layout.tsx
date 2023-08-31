@@ -8,6 +8,7 @@ import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 
 import 'react-toastify/dist/ReactToastify.css'
+import { SiteBanner } from './SiteBanner'
 
 function Moon() {
   const { width } = useWindowSize()
@@ -36,6 +37,17 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
+      <SiteBanner>
+        The Stylus testnet is officially live, build EVM-compatible apps in Rust
+        by visiting the{' '}
+        <ExternalLink
+          href="https://docs.arbitrum.io/stylus/"
+          className="arb-hover underline"
+        >
+          Stylus docs
+        </ExternalLink>
+        .
+      </SiteBanner>
       <Header />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
