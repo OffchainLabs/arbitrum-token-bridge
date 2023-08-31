@@ -370,7 +370,7 @@ export const stylusTestnet: Chain = {
     rollup: '0x94db9E36d9336cD6F9FfcAd399dDa6Cc05299898',
     sequencerInbox: '0x00A0F15b79d1D3e5991929FaAbCF2AA65623530c'
   },
-  explorerUrl: '',
+  explorerUrl: 'https://stylus-testnet-explorer.arbitrum.io',
   isArbitrum: true,
   isCustom: false,
   name: 'Stylus Testnet',
