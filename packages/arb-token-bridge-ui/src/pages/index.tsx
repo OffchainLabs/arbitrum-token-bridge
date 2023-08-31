@@ -55,10 +55,14 @@ export default function Index() {
 
     try {
       addCustomNetwork({ customL2Network: stylusTestnet })
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error(`Failed to register Stylus Testnet: ${error.message}`)
+    }
     try {
       addCustomChain({ customChain: stylusTestnet })
-    } catch (error: any) {}
+    } catch (error: any) {
+      console.error(`Failed to register Stylus Testnet: ${error.message}`)
+    }
   }, [])
 
   return <App />

@@ -85,10 +85,6 @@ export const xaiTestnet: Chain = {
     }
   },
   blockExplorers: {
-    etherscan: {
-      name: 'Blockscout',
-      url: 'https://testnet-explorer.xai-chain.net'
-    },
     default: {
       name: 'Blockscout',
       url: 'https://testnet-explorer.xai-chain.net'
@@ -110,10 +106,6 @@ export const stylusTestnet: Chain = {
     }
   },
   blockExplorers: {
-    etherscan: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
-    },
     default: {
       name: 'Blockscout',
       url: 'https://stylus-testnet-explorer.arbitrum.io'
