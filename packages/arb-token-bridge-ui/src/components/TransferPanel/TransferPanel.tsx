@@ -1268,7 +1268,8 @@ export function TransferPanel() {
   ])
 
   const depositButtonColorClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova, isXaiTestnet } = isNetwork(l2Network.id)
+    const { isArbitrum, isArbitrumNova, isXaiTestnet, isStylusTestnet } =
+      isNetwork(l2Network.id)
 
     if (isArbitrumNova) {
       return 'bg-arb-nova-dark'
@@ -1280,6 +1281,10 @@ export function TransferPanel() {
 
     if (isXaiTestnet) {
       return 'bg-xai-dark'
+    }
+
+    if (isStylusTestnet) {
+      return 'bg-stylus-dark'
     }
 
     // is Orbit chain
