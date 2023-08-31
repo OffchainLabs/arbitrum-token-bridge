@@ -47,6 +47,8 @@ module.exports = {
         'orbit-dark': '#0C4260',
         'xai-primary': '#F30019',
         'xai-dark': '#87000E',
+        'stylus-primary': '#E3066E',
+        'stylus-dark': '#7E0028',
         'ocl-blue': '#243145'
       },
       fontFamily: {
