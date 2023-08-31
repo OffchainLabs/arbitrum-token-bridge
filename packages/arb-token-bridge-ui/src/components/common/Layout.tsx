@@ -38,8 +38,8 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        The Stylus testnet is officially live, build EVM-compatible apps in Rust
-        by visiting the{' '}
+        The Stylus testnet is officially live! You can now build EVM-compatible
+        apps in Rust by visiting the{' '}
         <ExternalLink
           href="https://docs.arbitrum.io/stylus/"
           className="arb-hover underline"
