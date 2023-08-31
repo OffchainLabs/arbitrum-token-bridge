@@ -26,10 +26,10 @@ export function DepositCountdown({
   const whenCreated = dayjs(createdAt)
 
   // check the transaction belongs to which network, and on basis of that show the deposit timer
-  const { chainId, parentChainId } = tx
+  const { parentChainId } = tx
   let timerMinutes = 15 // default to 15 mins
 
-  if (chainId && parentChainId && !isNetwork(parentChainId).isMainnet) {
+  if (parentChainId && !isNetwork(parentChainId).isMainnet) {
     timerMinutes = 1 // show only 1 minute deposit timer if this tx has nothing to do with mainnet - eg. L2 and orbit chains
   }
 
