@@ -6,9 +6,9 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
+import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
-import { SiteBanner } from './SiteBanner'
 
 function Moon() {
   const { width } = useWindowSize()
