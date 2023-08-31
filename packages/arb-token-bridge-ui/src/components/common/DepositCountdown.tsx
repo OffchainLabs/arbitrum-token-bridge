@@ -29,8 +29,18 @@ export function DepositCountdown({
   const { parentChainId } = tx
   let timerMinutes = 15 // default to 15 mins
 
-  if (parentChainId && !isNetwork(parentChainId).isMainnet) {
-    timerMinutes = 1 // show only 1 minute deposit timer if this tx has nothing to do with mainnet - eg. L2 and orbit chains
+  if (parentChainId) {
+    const { isEthereum, isTestnet } = isNetwork(parentChainId)
+
+    if (isEthereum && isTestnet) {
+      // Ethereum testnets
+      timerMinutes = 10
+    }
+
+    if (!isEthereum) {
+      // Any deposit not originating from L1
+      timerMinutes = 1
+    }
   }
 
   if (
