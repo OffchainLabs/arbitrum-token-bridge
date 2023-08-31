@@ -78,8 +78,8 @@ export const transformDeposits = (
       l1ToL2MsgData: tx.l1ToL2MsgData,
       l2ToL1MsgData: tx.l2ToL1MsgData,
       depositStatus: getDepositStatus(tx),
-      chainId: Number(tx.l1NetworkID),
-      parentChainId: Number(tx.l2NetworkID)
+      chainId: Number(tx.l2NetworkID),
+      parentChainId: Number(tx.l1NetworkID)
     }
   })
 }

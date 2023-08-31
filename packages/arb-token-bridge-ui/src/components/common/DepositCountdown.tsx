@@ -25,7 +25,7 @@ export function DepositCountdown({
   const depositStatus = tx.depositStatus
   const whenCreated = dayjs(createdAt)
 
-  // check the transaction belongs to which network, and on basis of that show the deposit timer
+  // check which network the tx belongs to, and on basis of that show the deposit timer
   const { parentChainId } = tx
   let timerMinutes = 15 // default to 15 mins
 
