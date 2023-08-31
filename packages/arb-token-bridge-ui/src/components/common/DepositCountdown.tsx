@@ -47,7 +47,7 @@ export function DepositCountdown({
     depositStatus === DepositStatus.L1_PENDING ||
     depositStatus === DepositStatus.L2_PENDING
   ) {
-    // We expect the deposit to be completed within 15 minutes in most cases, so we subtract the diff from 15 minutes
+    // Subtract the diff from the initial deposit time
     const minutesRemaining = timerMinutes - now.diff(whenCreated, 'minutes')
     return (
       <span className="whitespace-nowrap">
