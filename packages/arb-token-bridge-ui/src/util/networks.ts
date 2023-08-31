@@ -108,6 +108,7 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
     case ChainId.Sepolia:
       return [
         ChainId.ArbitrumSepolia,
+        ChainId.StylusTestnet,
         ...getCustomChainIds(ChainId.ArbitrumSepolia)
       ]
     case ChainId.Local:
@@ -123,7 +124,11 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
         ...getCustomChainIds(ChainId.ArbitrumGoerli)
       ]
     case ChainId.ArbitrumSepolia:
-      return [ChainId.Sepolia, ...getCustomChainIds(ChainId.ArbitrumSepolia)]
+      return [
+        ChainId.Sepolia,
+        ChainId.StylusTestnet,
+        ...getCustomChainIds(ChainId.ArbitrumSepolia)
+      ]
     case ChainId.ArbitrumLocal:
       return [ChainId.Local, ...getCustomChainIds(ChainId.ArbitrumLocal)]
     default:
@@ -154,7 +159,8 @@ export enum ChainId {
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
   // Orbit Testnets
-  XaiTestnet = 47279324479
+  XaiTestnet = 47279324479,
+  StylusTestnet = 23011913
 }
 
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
@@ -186,7 +192,8 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
   [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
   // Orbit Testnets
-  [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc'
+  [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc',
+  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -202,7 +209,8 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
   [ChainId.ArbitrumSepolia]: 'https://sepolia-explorer.arbitrum.io',
   // Orbit Testnets
-  [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net'
+  [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
+  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -259,9 +267,10 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli, ChainId.XaiTestnet],
-  [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia],
+  [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia, ChainId.StylusTestnet],
   // Orbit Testnets
-  [ChainId.XaiTestnet]: [ChainId.XaiTestnet]
+  [ChainId.XaiTestnet]: [ChainId.XaiTestnet],
+  [ChainId.StylusTestnet]: [ChainId.StylusTestnet]
 }
 
 const defaultL1Network: L1Network = {
@@ -411,6 +420,7 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
   const isXaiTestnet = chainId === ChainId.XaiTestnet
+  const isStylusTestnet = chainId === ChainId.StylusTestnet
 
   const ethereumChainIds = [
     ChainId.Mainnet,
@@ -457,6 +467,7 @@ export function isNetwork(chainId: ChainId) {
     isSepolia ||
     isArbitrumSepolia ||
     isXaiTestnet ||
+    isStylusTestnet ||
     customOrbitChains.includes(chainId)
 
   const isSupported =
@@ -467,6 +478,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli ||
     isSepolia ||
     isArbitrumSepolia ||
+    isStylusTestnet ||
     isXaiTestnet // is network supported on bridge
 
   return {
@@ -488,6 +500,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain: !isEthereum && !isArbitrum,
     isXaiTestnet,
+    isStylusTestnet,
     // Testnet
     isTestnet,
     // General
@@ -533,6 +546,9 @@ export function getNetworkName(chainId: number) {
     case ChainId.XaiTestnet:
       return 'Xai Testnet'
 
+    case ChainId.StylusTestnet:
+      return 'Stylus Testnet'
+
     default:
       return 'Unknown'
   }
@@ -564,6 +580,9 @@ export function getNetworkLogo(
     case ChainId.XaiTestnet:
       return '/images/XaiLogo.svg'
 
+    case ChainId.StylusTestnet:
+      return '/images/StylusLogo.svg'
+
     default:
       const { isArbitrum, isOrbitChain } = isNetwork(chainId)
       if (isArbitrum) {
@@ -585,6 +604,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
     ChainId.XaiTestnet,
+    ChainId.StylusTestnet,
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 

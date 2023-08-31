@@ -96,6 +96,31 @@ export const xaiTestnet: Chain = {
   }
 }
 
+export const stylusTestnet: Chain = {
+  id: ChainId.StylusTestnet,
+  name: 'Stylus Testnet',
+  network: 'stylus-testnet',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.StylusTestnet]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.StylusTestnet]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Blockscout',
+      url: 'https://stylus-testnet-explorer.arbitrum.io'
+    },
+    default: {
+      name: 'Blockscout',
+      url: 'https://stylus-testnet-explorer.arbitrum.io'
+    }
+  }
+}
+
 /**
  * For e2e testing
  */
