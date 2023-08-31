@@ -4,7 +4,7 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import { getCustomChainsFromLocalStorage } from '../util/networks'
+import { getCustomChainsFromLocalStorage, stylusTestnet } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 import { xaiTestnet } from '../util/networks'
 
@@ -49,6 +49,13 @@ export default function Index() {
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
     }
+
+    try {
+      addCustomNetwork({ customL2Network: stylusTestnet })
+    } catch (error: any) {}
+    try {
+      addCustomChain({ customChain: stylusTestnet })
+    } catch (error: any) {}
   }, [])
 
   return <App />
