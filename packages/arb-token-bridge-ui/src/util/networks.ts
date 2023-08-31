@@ -372,7 +372,7 @@ export const stylusTestnet: Chain = {
   },
   explorerUrl: 'https://stylus-testnet-explorer.arbitrum.io',
   isArbitrum: true,
-  isCustom: false,
+  isCustom: true,
   name: 'Stylus Testnet',
   partnerChainID: 421614,
   retryableLifetimeSeconds: 604800,
