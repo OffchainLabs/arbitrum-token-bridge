@@ -98,7 +98,26 @@ function validateString(str: string, key: string) {
   }
 }
 
+function validateObjectProperty(value: any, key: string) {
+  if (typeof value === 'undefined') {
+    throw new Error(`Cannot read properties of undefined (reading '${key}')`)
+  }
+}
+
 function validateOrbitConfig(data: OrbitConfig) {
+  // validate object properties individually for better error messages
+  validateObjectProperty(data.chainInfo, 'chainInfo')
+  validateObjectProperty(data.coreContracts, 'coreContracts')
+  validateObjectProperty(data.tokenBridgeContracts, 'tokenBridgeContracts')
+  validateObjectProperty(
+    data.tokenBridgeContracts.l2Contracts,
+    'tokenBridgeContracts[l2Contracts]'
+  )
+  validateObjectProperty(
+    data.tokenBridgeContracts.l3Contracts,
+    'tokenBridgeContracts[l3Contracts]'
+  )
+
   // chainInfo
   validateChainId(data.chainInfo.chainId, 'chainInfo[chainId]')
   validateParentChainId(
