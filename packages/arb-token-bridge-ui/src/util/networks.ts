@@ -558,7 +558,7 @@ export function getNetworkName(chainId: number, shorten = false) {
   const customChain = getCustomChainFromLocalStorageById(chainId)
 
   if (customChain) {
-    // shorten and add ellipsis to the custom network name could break the UI
+    // shorten and add ellipsis to the custom network name if it could break the UI
     return shorten ? shortenNetworkName(customChain.name) : customChain.name
   }
 
