@@ -14,7 +14,7 @@ export function HeaderNetworkInformation() {
     return null
   }
 
-  const networkName = getNetworkName(chain.id)
+  const networkName = getNetworkName(chain.id, true)
 
   return (
     <div

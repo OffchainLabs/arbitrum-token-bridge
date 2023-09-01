@@ -81,7 +81,7 @@ export function NetworkListbox({
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
         <span>
-          {label} {getNetworkName(value.id)}
+          {label} {getNetworkName(value.id, true)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
@@ -112,7 +112,7 @@ export function NetworkListbox({
                     height={36}
                   />
                 </div>
-                <span>{getNetworkName(option.id)}</span>
+                <span>{getNetworkName(option.id, true)}</span>
               </Listbox.Option>
             )
           })}

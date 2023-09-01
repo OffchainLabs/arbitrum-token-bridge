@@ -1390,7 +1390,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.id)}`}
+                : `Move funds to ${getNetworkName(l2Network.id, true)}`}
             </Button>
           ) : (
             <Button
@@ -1416,7 +1416,7 @@ export function TransferPanel() {
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.id)}`}
+                : `Move funds to ${getNetworkName(l1Network.id, true)}`}
             </Button>
           )}
         </div>

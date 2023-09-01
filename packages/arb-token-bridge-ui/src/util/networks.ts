@@ -545,11 +545,21 @@ export function isNetwork(chainId: ChainId) {
   }
 }
 
-export function getNetworkName(chainId: number) {
+export function shortenNetworkName(networkName: string) {
+  const maxLength = 20
+
+  if (networkName.length <= maxLength) {
+    return networkName
+  }
+  return `${networkName.slice(0, maxLength - 3)}...`
+}
+
+export function getNetworkName(chainId: number, shorten = false) {
   const customChain = getCustomChainFromLocalStorageById(chainId)
 
   if (customChain) {
-    return customChain.name
+    // shorten and add ellipsis to the custom network name could break the UI
+    return shorten ? shortenNetworkName(customChain.name) : customChain.name
   }
 
   switch (chainId) {

@@ -110,7 +110,8 @@ export const NetworkSelectionContainer = ({
                       }}
                       type="button"
                       aria-label={`Switch to ${getNetworkName(
-                        Number(chainId)
+                        Number(chainId),
+                        true
                       )}`}
                     >
                       <div className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
@@ -126,7 +127,7 @@ export const NetworkSelectionContainer = ({
                         />
                       </div>
                       <span className="whitespace-nowrap">
-                        {getNetworkName(Number(chainId))}
+                        {getNetworkName(Number(chainId), true)}
                       </span>
                     </button>
                   ))}
