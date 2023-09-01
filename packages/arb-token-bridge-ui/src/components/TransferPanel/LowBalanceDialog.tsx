@@ -21,6 +21,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
+import { FAST_BRIDGE_ARTICLE_LINK } from '../../constants'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -150,7 +151,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </p>
 
             <ExternalLink
-              href="https://consensys.zendesk.com/hc/en-us/articles/7277875099547"
+              href={FAST_BRIDGE_ARTICLE_LINK}
               className="arb-hover font-light underline"
             >
               Learn more.
