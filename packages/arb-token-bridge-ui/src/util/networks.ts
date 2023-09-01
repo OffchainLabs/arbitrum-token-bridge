@@ -38,7 +38,7 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
     .filter(
       // filter again in case local storage is compromized
-      chain => !allowedParentChainIds.includes(Number(chain.chainID))
+      chain => !validCustomOrbitParentChains.includes(Number(chain.chainID))
     )
     .map(chain => {
       return {
@@ -164,7 +164,7 @@ export enum ChainId {
 }
 
 // allow only Ethereum testnets and Arbitrum testnets as parent chains
-export const allowedParentChainIds = [
+export const validCustomOrbitParentChains = [
   ChainId.ArbitrumGoerli,
   ChainId.ArbitrumNova,
   ChainId.ArbitrumLocal

@@ -1,14 +1,17 @@
 import { useState } from 'react'
+import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
 
 import {
+  ChainId,
   ChainWithRpcUrl,
-  allowedParentChainIds,
   getCustomChainsFromLocalStorage,
+  getCustomChainFromLocalStorageById,
   getNetworkName,
   removeCustomChainFromLocalStorage,
-  saveCustomChainToLocalStorage
+  saveCustomChainToLocalStorage,
+  validCustomOrbitParentChains
 } from '../../util/networks'
 
 type Contracts = {
@@ -49,6 +52,128 @@ type OrbitConfig = {
     l2Contracts: Contracts
     l3Contracts: Contracts
   }
+}
+
+function validateAddress(value: string, key: string) {
+  if (typeof value !== 'string') {
+    throw new Error(`Expected '${key}' to be a string, got ${typeof value}.`)
+  }
+  if (!isAddress(value)) {
+    throw new Error(`'${key}' is not a valid address.`)
+  }
+}
+
+function validateChainId(chainId: number, key: string) {
+  if (typeof chainId !== 'number') {
+    throw new Error(`Expected '${key}' to be a number, got ${typeof chainId}.`)
+  }
+  if (Object.values(ChainId).includes(chainId)) {
+    throw new Error(`'${key}' ${chainId} is not a valid custom Orbit chain.`)
+  }
+  if (getCustomChainFromLocalStorageById(chainId)) {
+    throw new Error(
+      `'${key}' ${chainId} already added to the custom Orbit chains.`
+    )
+  }
+}
+
+function validateParentChainId(chainId: number, key: string) {
+  if (typeof chainId !== 'number') {
+    throw new Error(`Expected '${key}' to be a number, got ${typeof chainId}.`)
+  }
+  if (!validCustomOrbitParentChains.includes(chainId)) {
+    throw new Error(
+      `'${key}' ${chainId} is not a valid parent chain. Valid parent chains are: ${JSON.stringify(
+        validCustomOrbitParentChains
+      )}`
+    )
+  }
+}
+
+function validateString(str: string, key: string) {
+  if (typeof str !== 'string') {
+    throw new Error(`Expected '${key}' to be a string, got ${typeof str}.`)
+  }
+}
+
+function validateOrbitConfig(data: OrbitConfig) {
+  // chainInfo
+  validateChainId(data.chainInfo.chainId, 'chainInfo[chainId]')
+  validateParentChainId(
+    data.chainInfo.parentChainId,
+    'chainInfo[parentChainId]'
+  )
+  validateString(data.chainInfo.rpcUrl, 'chainInfo[rpcUrl]')
+  validateString(data.chainInfo.explorerUrl, 'chainInfo[explorerUrl]')
+  validateString(data.chainInfo.chainName, 'chainInfo[chainName]')
+
+  // coreContracts
+  validateAddress(data.coreContracts.bridge, 'coreContracts[bridge]')
+  validateAddress(data.coreContracts.inbox, 'coreContracts[inbox]')
+  validateAddress(data.coreContracts.outbox, 'coreContracts[outbox]')
+  validateAddress(data.coreContracts.rollup, 'coreContracts[rollup]')
+  validateAddress(
+    data.coreContracts.sequencerInbox,
+    'coreContracts[sequencerInbox]'
+  )
+
+  // tokenBridgeContracts
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.customGateway,
+    'tokenBridgeContracts[l2Contracts][customGateway]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.standardGateway,
+    'tokenBridgeContracts[l2Contracts][standardGateway]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.router,
+    'tokenBridgeContracts[l2Contracts][router]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.multicall,
+    'tokenBridgeContracts[l2Contracts][multicall]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.proxyAdmin,
+    'tokenBridgeContracts[l2Contracts][proxyAdmin]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.weth,
+    'tokenBridgeContracts[l2Contracts][weth]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l2Contracts.wethGateway,
+    'tokenBridgeContracts[l2Contracts][wethGateway]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.customGateway,
+    'tokenBridgeContracts[l3Contracts][customGateway]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.standardGateway,
+    'tokenBridgeContracts[l3Contracts][standardGateway]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.router,
+    'tokenBridgeContracts[l3Contracts][router]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.multicall,
+    'tokenBridgeContracts[l3Contracts][multicall]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.proxyAdmin,
+    'tokenBridgeContracts[l3Contracts][proxyAdmin]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.weth,
+    'tokenBridgeContracts[l3Contracts][weth]'
+  )
+  validateAddress(
+    data.tokenBridgeContracts.l3Contracts.wethGateway,
+    'tokenBridgeContracts[l3Contracts][wethGateway]'
+  )
 }
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
@@ -109,15 +234,8 @@ export const AddCustomChain = () => {
         throw new Error('JSON input is empty.')
       }
 
-      const customChain = mapOrbitConfigToOrbitChain(data)
-
-      if (!allowedParentChainIds.includes(Number(customChain.partnerChainID))) {
-        throw new Error(
-          `Invalid partnerChainID ${customChain.partnerChainID}. Only Arbitrum testnet parent chains are allowed.`
-        )
-      }
-
-      saveCustomChainToLocalStorage(customChain)
+      validateOrbitConfig(data)
+      saveCustomChainToLocalStorage(mapOrbitConfigToOrbitChain(data))
       // reload to apply changes
       location.reload()
     } catch (error: any) {

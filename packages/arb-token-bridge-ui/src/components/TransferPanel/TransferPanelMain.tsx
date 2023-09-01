@@ -736,11 +736,23 @@ export function TransferPanelMain({
 
     // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
     // we can have a more dynamic solution in the future with more Orbit chains
-    const chainToDefaultPartnerChain: { [key in ChainId]?: ChainId } = {
-      [ChainId.XaiTestnet]: ChainId.ArbitrumGoerli,
-      [ChainId.StylusTestnet]: ChainId.ArbitrumSepolia,
-      [ChainId.Goerli]: ChainId.ArbitrumGoerli,
-      [ChainId.Sepolia]: ChainId.ArbitrumSepolia
+    function mapChainToDefaultPartnerChain(chainId: ChainId) {
+      switch (chainId) {
+        case ChainId.Goerli:
+          return ChainId.ArbitrumGoerli
+
+        case ChainId.Sepolia:
+          return ChainId.ArbitrumSepolia
+
+        case ChainId.XaiTestnet:
+          return ChainId.ArbitrumGoerli
+
+        case ChainId.StylusTestnet:
+          return ChainId.ArbitrumSepolia
+
+        default:
+          return ChainId.ArbitrumGoerli
+      }
     }
 
     function updatePreferredL2Chain(l2ChainId: number) {
@@ -799,7 +811,7 @@ export function TransferPanelMain({
               // Otherwise we want to keep the current chain, in case it's Nova.
               if (isEthereum && isOrbitChainSelected) {
                 updatePreferredL2Chain(
-                  chainToDefaultPartnerChain[network.id as ChainId]!
+                  mapChainToDefaultPartnerChain(network.id)
                 )
                 return
               }
@@ -817,8 +829,9 @@ export function TransferPanelMain({
           value: to,
           onChange: async network => {
             const { isEthereum, isOrbitChain } = isNetwork(network.id)
-            const defaultPartnerChain =
-              chainToDefaultPartnerChain[network.id as ChainId]!
+            const defaultPartnerChain = mapChainToDefaultPartnerChain(
+              network.id
+            )
 
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
@@ -887,9 +900,7 @@ export function TransferPanelMain({
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainSelected) {
-              updatePreferredL2Chain(
-                chainToDefaultPartnerChain[network.id as ChainId]!
-              )
+              updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
               return
             }
             updatePreferredL2Chain(network.id)
@@ -906,8 +917,7 @@ export function TransferPanelMain({
         value: to,
         onChange: async network => {
           const { isEthereum, isOrbitChain } = isNetwork(network.id)
-          const defaultPartnerChain =
-            chainToDefaultPartnerChain[network.id as ChainId]!
+          const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
 
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
