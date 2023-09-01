@@ -501,8 +501,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-    setQueryParams({ l2ChainId: l2.network.id })
-  }, [externalFrom, externalTo, l2.network.id, setQueryParams])
+  }, [externalFrom, externalTo])
 
   const estimateGas = useCallback(
     async (
@@ -738,15 +737,7 @@ export function TransferPanelMain({
     // we can have a more dynamic solution in the future with more Orbit chains
     function mapChainToDefaultPartnerChain(chainId: ChainId) {
       switch (chainId) {
-        case ChainId.Goerli:
-          return ChainId.ArbitrumGoerli
-
         case ChainId.Sepolia:
-          return ChainId.ArbitrumSepolia
-
-        case ChainId.XaiTestnet:
-          return ChainId.ArbitrumGoerli
-
         case ChainId.StylusTestnet:
           return ChainId.ArbitrumSepolia
 

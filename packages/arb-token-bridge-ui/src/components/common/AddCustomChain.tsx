@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
+import { addCustomChain } from '@arbitrum/sdk'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
 
 import {
@@ -13,6 +14,7 @@ import {
   saveCustomChainToLocalStorage,
   validCustomOrbitParentChains
 } from '../../util/networks'
+import { Loader } from './atoms/Loader'
 
 type Contracts = {
   customGateway: string
@@ -219,10 +221,12 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [addingChain, setAddingChain] = useState(false)
 
   const customChains = getCustomChainsFromLocalStorage()
 
   function onAddChain() {
+    setAddingChain(true)
     setError(null)
 
     try {
@@ -235,11 +239,18 @@ export const AddCustomChain = () => {
       }
 
       validateOrbitConfig(data)
-      saveCustomChainToLocalStorage(mapOrbitConfigToOrbitChain(data))
+      const customChain = mapOrbitConfigToOrbitChain(data)
+
+      // Orbit config has been validated and will be added to the custom list after page refreshes
+      // let's still try to add it here to handle eventual errors
+      addCustomChain({ customChain: customChain })
+
+      saveCustomChainToLocalStorage(customChain)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
+      setAddingChain(false)
     }
   }
 
@@ -252,14 +263,18 @@ export const AddCustomChain = () => {
       />
       {error && <span className="text-sm text-error">{error}</span>}
       <div className="flex w-full justify-end">
-        {/* Need to replace with an atom */}
-        <button
-          onClick={onAddChain}
-          className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:pointer-events-none	"
-          disabled={!chainJson.trim()}
-        >
-          Add Chain
-        </button>
+        {addingChain ? (
+          <Loader size="small" />
+        ) : (
+          // Need to replace with an atom
+          <button
+            onClick={onAddChain}
+            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:pointer-events-none	"
+            disabled={!chainJson.trim()}
+          >
+            Add Chain
+          </button>
+        )}
       </div>
 
       {/* Custom chain list */}
@@ -269,10 +284,10 @@ export const AddCustomChain = () => {
           <table className="w-full text-left">
             <thead className="border-b border-gray-600">
               <tr>
-                <th className="pb-1 text-xs font-normal">PARENT CHAIN</th>
-                <th className="pb-1 text-xs font-normal">PARENT CHAIN ID</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN ID</th>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN</th>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN ID</th>
                 <th className="pb-1 text-xs font-normal"></th>
               </tr>
             </thead>
@@ -283,16 +298,16 @@ export const AddCustomChain = () => {
                   className="border-b border-gray-600"
                 >
                   <th className="py-3 text-sm font-normal">
-                    {getNetworkName(customChain.partnerChainID)}
-                  </th>
-                  <th className="py-3 text-sm font-normal">
-                    {customChain.partnerChainID}
-                  </th>
-                  <th className="py-3 text-sm font-normal">
                     {customChain.name}
                   </th>
                   <th className="py-3 text-sm font-normal">
                     {customChain.chainID}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {getNetworkName(customChain.partnerChainID)}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {customChain.partnerChainID}
                   </th>
                   <th className="py-3">
                     <Popover className="relative">
