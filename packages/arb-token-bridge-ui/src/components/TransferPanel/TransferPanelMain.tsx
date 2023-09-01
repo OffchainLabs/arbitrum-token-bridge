@@ -741,6 +741,9 @@ export function TransferPanelMain({
         case ChainId.StylusTestnet:
           return ChainId.ArbitrumSepolia
 
+        // defaulting to Arbitrum Goerli also covers custom Orbit chains
+        // this may require a smarter solution if more parent chains are allowed for custom Orbit chains
+        // however we restrict those parent chains locally so it will require FE changes regardless
         default:
           return ChainId.ArbitrumGoerli
       }
