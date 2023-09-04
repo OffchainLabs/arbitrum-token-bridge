@@ -15,6 +15,23 @@ function getMinutesRemainingText(minutesRemaining: number): string {
   return `~${minutesRemaining} mins remaining`
 }
 
+function getEstimatedDepositDurationInMinutes(
+  parentChainId: number | undefined
+) {
+  if (!parentChainId) {
+    return 15
+  }
+
+  const { isEthereum, isTestnet } = isNetwork(parentChainId)
+
+  // this covers orbit chains
+  if (!isEthereum) {
+    return 1
+  }
+
+  return isTestnet ? 10 : 15
+}
+
 export function DepositCountdown({
   tx
 }: {
@@ -25,30 +42,14 @@ export function DepositCountdown({
   const depositStatus = tx.depositStatus
   const whenCreated = dayjs(createdAt)
 
-  // check which network the tx belongs to, and on basis of that show the deposit timer
-  const { parentChainId } = tx
-  let timerMinutes = 15 // default to 15 mins
-
-  if (parentChainId) {
-    const { isEthereum, isTestnet } = isNetwork(parentChainId)
-
-    if (isEthereum && isTestnet) {
-      // Ethereum testnets
-      timerMinutes = 10
-    }
-
-    if (!isEthereum) {
-      // Any deposit not originating from L1
-      timerMinutes = 1
-    }
-  }
-
   if (
     depositStatus === DepositStatus.L1_PENDING ||
     depositStatus === DepositStatus.L2_PENDING
   ) {
     // Subtract the diff from the initial deposit time
-    const minutesRemaining = timerMinutes - now.diff(whenCreated, 'minutes')
+    const minutesRemaining =
+      getEstimatedDepositDurationInMinutes(tx.parentChainId) -
+      now.diff(whenCreated, 'minutes')
     return (
       <span className="whitespace-nowrap">
         {getMinutesRemainingText(minutesRemaining)}
