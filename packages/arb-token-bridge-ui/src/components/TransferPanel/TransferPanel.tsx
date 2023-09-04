@@ -551,6 +551,15 @@ export function TransferPanel() {
       }
 
       if (isSmartContractWallet) {
+        // For SCW, we assume that the transaction went through
+        if (shouldTrackAnalytics(currentNetworkName)) {
+          trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+            accountType: 'Smart Contract',
+            network: currentNetworkName,
+            amount: Number(amount),
+            complete: false
+          })
+        }
         return
       }
 
@@ -560,13 +569,12 @@ export function TransferPanel() {
 
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          accountType: 'EOA',
           network: currentNetworkName,
           amount: Number(amount),
           complete: false
         })
       }
-
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',
