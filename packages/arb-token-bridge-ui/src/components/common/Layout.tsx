@@ -6,6 +6,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
+import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -26,23 +27,6 @@ function Moon() {
   )
 }
 
-export const DAOBanner = () => {
-  return (
-    <div className="bg-gradient px-4 py-4 text-center text-white">
-      <span>
-        Arbitrum One and Arbitrum Nova are now under decentralized governance.
-        Learn more about Arbitrum DAO{' '}
-        <ExternalLink
-          href="https://arbitrum.foundation"
-          className="arb-hover underline"
-        >
-          here.
-        </ExternalLink>
-      </span>
-    </div>
-  )
-}
-
 export type LayoutProps = {
   children: React.ReactNode
 }
@@ -53,7 +37,17 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      <DAOBanner />
+      <SiteBanner>
+        The Stylus testnet is officially live! You can now build EVM-compatible
+        apps in Rust by visiting the{' '}
+        <ExternalLink
+          href="https://docs.arbitrum.io/stylus/stylus-gentle-introduction"
+          className="arb-hover underline"
+        >
+          Stylus docs
+        </ExternalLink>
+        .
+      </SiteBanner>
       <Header />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">

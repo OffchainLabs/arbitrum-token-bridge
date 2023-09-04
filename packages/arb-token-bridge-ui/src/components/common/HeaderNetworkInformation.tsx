@@ -28,7 +28,7 @@ export function HeaderNetworkInformation() {
         )}
       >
         <Image
-          src={getNetworkLogo(chain.id)}
+          src={getNetworkLogo(chain.id, 'light')}
           alt={`${networkName} logo`}
           className="h-full w-auto"
           width={40}

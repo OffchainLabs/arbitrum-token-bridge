@@ -3,6 +3,7 @@ import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
+import { GET_HELP_LINK } from '../../constants'
 
 export function BlockedDialog(props: UseDialogProps & { address: string }) {
   return (
@@ -20,10 +21,7 @@ export function BlockedDialog(props: UseDialogProps & { address: string }) {
           <span>This address is affiliated with a blocked activity.</span>
           <span>
             If you think this was an error, you can request a review by filing a{' '}
-            <ExternalLink
-              href="https://support.arbitrum.io/hc/en-us/requests/new"
-              className="arb-hover underline"
-            >
+            <ExternalLink href={GET_HELP_LINK} className="arb-hover underline">
               support ticket
             </ExternalLink>
             .

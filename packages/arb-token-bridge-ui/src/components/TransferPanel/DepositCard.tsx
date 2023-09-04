@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import Image from 'next/image'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
@@ -10,11 +11,9 @@ import { DepositCardPending } from './DepositCardPending'
 import { DepositCardL1Failure } from './DepositCardL1Failure'
 import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
-import { DepositCardSuccess } from './DepositCardSuccess'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
-import Image from 'next/image'
 
 export function DepositL1TxStatus({
   tx
@@ -166,9 +165,6 @@ export function DepositCard({ tx }: { tx: MergedTransaction }) {
 
     case DepositStatus.L2_FAILURE:
       return <DepositCardL2Failure tx={tx} />
-
-    case DepositStatus.L2_SUCCESS:
-      return <DepositCardSuccess tx={tx} />
 
     // Deposits with an expired retryable don't have a card and will show up in the tx history table.
     default:

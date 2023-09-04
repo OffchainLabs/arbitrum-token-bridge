@@ -1,11 +1,17 @@
-import { ChainId } from './networks'
-import { ImageProps } from 'next/image'
+import { StaticImageData } from 'next/image'
+
 import Hop from '@/images/bridge/hop.png'
 import Celer from '@/images/bridge/celer.png'
 import Connext from '@/images/bridge/connext.png'
 import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
+import Wormhole from '@/images/bridge/wormhole.svg'
+import LIFI from '@/images/bridge/lifi.webp'
+import Router from '@/images/bridge/router.webp'
+
+import { ChainId } from './networks'
+import { USDC_LEARN_MORE_LINK } from '../constants'
 
 export enum FastBridgeNames {
   Hop = 'Hop',
@@ -13,7 +19,14 @@ export enum FastBridgeNames {
   Connext = 'Connext',
   Across = 'Across',
   Stargate = 'Stargate',
-  Synapse = 'Synapse'
+  Synapse = 'Synapse',
+  Wormhole = 'Wormhole',
+  LIFI = 'LI.FI',
+  Router = 'Router'
+}
+
+export enum SpecialTokenSymbol {
+  USDC = 'USDC'
 }
 
 export enum NonCanonicalTokenNames {
@@ -30,16 +43,21 @@ export type NonCanonicalTokenSupportedBridges<
 
 export type FastBridgeInfo = {
   name: FastBridgeNames
-  imageSrc: ImageProps['src']
+  imageSrc: StaticImageData
   href: string
 }
 
-export function getFastBridges(
-  from: ChainId,
-  to: ChainId,
+export function getFastBridges({
+  from,
+  to,
   tokenSymbol = 'ETH',
+  amount
+}: {
+  from: ChainId
+  to: ChainId
+  tokenSymbol?: string
   amount: string
-): FastBridgeInfo[] {
+}): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
       case ChainId.Mainnet:
@@ -81,8 +99,11 @@ export function getFastBridges(
   }
 
   const bridgeInfo: {
-    [bridge in FastBridgeNames]: {
-      imageSrc: ImageProps['src']
+    [bridge in Exclude<
+      FastBridgeNames,
+      FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+    >]: {
+      imageSrc: StaticImageData
       href: string
     }
   } = {
@@ -112,14 +133,29 @@ export function getFastBridges(
     }
   }
 
-  return Object.keys(FastBridgeNames).map<FastBridgeInfo>(bridge => {
-    const name = bridge as FastBridgeNames
-    return {
-      name,
-      imageSrc: bridgeInfo[name].imageSrc,
-      href: bridgeInfo[name].href
-    }
-  })
+  return Object.values(FastBridgeNames)
+    .filter(fastBridgeName => {
+      // exclude these fast bridges for now
+      switch (fastBridgeName) {
+        case FastBridgeNames.LIFI:
+        case FastBridgeNames.Wormhole:
+        case FastBridgeNames.Router:
+          return false
+        default:
+          return true
+      }
+    })
+    .map<FastBridgeInfo>(bridge => {
+      const name = bridge as Exclude<
+        FastBridgeNames,
+        FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+      >
+      return {
+        name,
+        imageSrc: bridgeInfo[name].imageSrc,
+        href: bridgeInfo[name].href
+      }
+    })
 }
 
 export const NonCanonicalTokensBridgeInfo = {
@@ -131,3 +167,90 @@ export const NonCanonicalTokensBridgeInfo = {
     bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
   }
 } as const
+
+export const USDCBridgeInfo = {
+  tokenSymbol: 'USDC',
+  tokenSymbolOnArbitrum: 'USDC.e',
+  supportedBridges: [
+    FastBridgeNames.Celer,
+    FastBridgeNames.LIFI,
+    FastBridgeNames.Wormhole,
+    FastBridgeNames.Router
+  ],
+  learnMoreUrl: USDC_LEARN_MORE_LINK
+} as const
+
+type getHrefParams = {
+  from: ChainId
+  to: ChainId
+  fromTokenAddress: string
+  toTokenAddress: string
+  amount?: string
+  transferMode: 'deposit' | 'withdraw'
+}
+
+type USDCFastBridgeInfo = {
+  name: FastBridgeNames
+  imageSrc: StaticImageData
+  getHref: (params: getHrefParams) => string
+}
+
+export const USDCFastBridges: USDCFastBridgeInfo[] = [
+  {
+    name: FastBridgeNames.Celer,
+    imageSrc: Celer,
+    getHref: ({ transferMode }) => {
+      switch (transferMode) {
+        case 'deposit':
+          return 'https://cbridge.celer.network/bridge/ethereum-arbitrum/'
+        case 'withdraw':
+        default:
+          return 'https://cbridge.celer.network/bridge/arbitrum-ethereum/'
+      }
+    }
+  },
+  {
+    name: FastBridgeNames.LIFI,
+    imageSrc: LIFI,
+    getHref: ({
+      from,
+      to,
+      fromTokenAddress,
+      toTokenAddress,
+      amount,
+      transferMode
+    }: getHrefParams) => {
+      switch (transferMode) {
+        case 'deposit':
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+        case 'withdraw':
+        default:
+          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+      }
+    }
+  },
+  {
+    name: FastBridgeNames.Wormhole,
+    imageSrc: Wormhole,
+    getHref: () => 'https://www.portalbridge.com/usdc-bridge/'
+  },
+  {
+    name: FastBridgeNames.Router,
+    imageSrc: Router,
+    getHref: ({
+      from,
+      to,
+      fromTokenAddress,
+      toTokenAddress,
+      transferMode
+    }: getHrefParams) => {
+      switch (transferMode) {
+        case 'deposit':
+          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+        case 'withdraw':
+        default:
+          return `https://app.thevoyager.io/swap?fromChain=${from}&toChain=${to}&fromToken=${fromTokenAddress}&toToken=${toTokenAddress}`
+      }
+    }
+  }
+]
