@@ -15,6 +15,7 @@ import {
   HeaderMenuProps
 } from './HeaderMenu'
 import { GET_HELP_LINK } from '../../constants'
+import { ChainId, getExplorerUrl } from '../../util/networks'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -47,15 +48,19 @@ const learnMenuProps = toHeaderMenuProps([
 const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum One',
-    link: 'https://arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumOne)
   },
   {
     title: 'Arbitrum Nova',
-    link: 'https://nova.arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumNova)
   },
   {
     title: 'Arbitrum Goerli',
-    link: 'https://goerli.arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumGoerli)
+  },
+  {
+    title: 'Arbitrum Sepolia',
+    link: getExplorerUrl(ChainId.ArbitrumSepolia)
   }
 ])
 
