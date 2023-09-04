@@ -1,6 +1,7 @@
-import dayjs, { ConfigType as DayJSConfigType } from 'dayjs'
+import dayjs from 'dayjs'
 
-import { DepositStatus } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
+import { isNetwork } from '../../util/networks'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
@@ -14,22 +15,41 @@ function getMinutesRemainingText(minutesRemaining: number): string {
   return `~${minutesRemaining} mins remaining`
 }
 
+function getEstimatedDepositDurationInMinutes(
+  parentChainId: number | undefined
+) {
+  if (!parentChainId) {
+    return 15
+  }
+
+  const { isEthereum, isTestnet } = isNetwork(parentChainId)
+
+  // this covers orbit chains
+  if (!isEthereum) {
+    return 1
+  }
+
+  return isTestnet ? 10 : 15
+}
+
 export function DepositCountdown({
-  createdAt,
-  depositStatus
+  tx
 }: {
-  createdAt: DayJSConfigType
-  depositStatus?: DepositStatus
+  tx: MergedTransaction
 }): JSX.Element | null {
   const now = dayjs()
+  const createdAt = tx.createdAt
+  const depositStatus = tx.depositStatus
   const whenCreated = dayjs(createdAt)
 
   if (
     depositStatus === DepositStatus.L1_PENDING ||
     depositStatus === DepositStatus.L2_PENDING
   ) {
-    // We expect the deposit to be completed within 15 minutes in most cases, so we subtract the diff from 15 minutes
-    const minutesRemaining = 15 - now.diff(whenCreated, 'minutes')
+    // Subtract the diff from the initial deposit time
+    const minutesRemaining =
+      getEstimatedDepositDurationInMinutes(tx.parentChainId) -
+      now.diff(whenCreated, 'minutes')
     return (
       <span className="whitespace-nowrap">
         {getMinutesRemainingText(minutesRemaining)}
