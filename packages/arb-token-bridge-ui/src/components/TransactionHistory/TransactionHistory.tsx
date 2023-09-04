@@ -49,7 +49,7 @@ export const TransactionHistory = ({
 }) => {
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
-  const { isSmartContractWallet, isEOA } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
   const {
