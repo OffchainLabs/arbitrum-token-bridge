@@ -10,7 +10,7 @@ type FooterLink = {
 const footerLinks: FooterLink[] = [
   {
     title: 'Documentation',
-    href: 'https://developer.offchainlabs.com/docs/developer_quickstart',
+    href: 'https://docs.arbitrum.io',
     lgOrder: 1
   },
   {

@@ -33,15 +33,15 @@ function toHeaderMenuProps(
 const learnMenuProps = toHeaderMenuProps([
   {
     title: 'Dev docs',
-    link: 'https://developer.offchainlabs.com'
+    link: 'https://docs.arbitrum.io/'
   },
   {
     title: 'About bridging',
-    link: 'https://developer.arbitrum.io/getting-started-users'
+    link: 'https://docs.arbitrum.io/getting-started-users'
   },
   {
     title: 'About Arbitrum',
-    link: 'https://developer.offchainlabs.com/docs/inside_arbitrum'
+    link: 'https://docs.arbitrum.io/inside-arbitrum-nitro'
   }
 ])
 

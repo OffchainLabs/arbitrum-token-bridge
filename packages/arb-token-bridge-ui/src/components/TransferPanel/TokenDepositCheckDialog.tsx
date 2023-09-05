@@ -28,7 +28,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
               <li>
                 •{' '}
                 <a
-                  href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
+                  href="https://docs.arbitrum.io/for-devs/concepts/token-bridge/token-bridge-erc20#the-arbitrum-generic-custom-gateway"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -73,7 +73,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
               <li>
                 •{' '}
                 <a
-                  href="https://developer.offchainlabs.com/docs/bridging_assets#the-arbitrum-generic-custom-gateway"
+                  href="https://docs.arbitrum.io/for-devs/concepts/token-bridge/token-bridge-erc20#the-arbitrum-generic-custom-gateway"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
