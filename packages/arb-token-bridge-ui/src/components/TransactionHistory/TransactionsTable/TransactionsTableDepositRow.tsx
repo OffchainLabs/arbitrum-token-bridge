@@ -108,12 +108,7 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
     tx.depositStatus === DepositStatus.L1_PENDING ||
     tx.depositStatus === DepositStatus.L2_PENDING
   ) {
-    return (
-      <DepositCountdown
-        createdAt={tx.createdAt}
-        depositStatus={tx.depositStatus}
-      />
-    )
+    return <DepositCountdown tx={tx} />
   }
 
   return (
