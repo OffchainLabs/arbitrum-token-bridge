@@ -163,12 +163,7 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
-// allow only Ethereum testnets and Arbitrum testnets as parent chains
-export const supportedCustomOrbitParentChains = [
-  ChainId.ArbitrumGoerli,
-  ChainId.ArbitrumNova,
-  ChainId.ArbitrumLocal
-]
+export const supportedCustomOrbitParentChains = [ChainId.ArbitrumGoerli]
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
