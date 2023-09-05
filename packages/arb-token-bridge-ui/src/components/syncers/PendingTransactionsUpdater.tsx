@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { TransactionReceipt } from '@ethersproject/providers'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
@@ -20,7 +20,12 @@ export function PendingTransactionsUpdater(): JSX.Element {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const { address } = useAccount()
+  const { chain } = useNetwork()
   const { resetTransfers } = useCctpState()
+
+  useEffect(() => {
+    resetTransfers()
+  }, [chain?.id, resetTransfers])
 
   useEffect(() => {
     resetTransfers()

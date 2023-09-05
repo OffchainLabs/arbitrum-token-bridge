@@ -439,6 +439,7 @@ export function useUpdateCctpTransactions() {
 
 type useCctpFetchingParams = {
   l1ChainId: ChainId
+  l2ChainId: ChainId
   walletAddress: `0x${string}` | undefined
   pageSize: number
   pageNumber: number
@@ -446,11 +447,17 @@ type useCctpFetchingParams = {
 }
 export function useCctpFetching({
   l1ChainId,
+  l2ChainId,
   walletAddress,
   pageSize = 10,
   pageNumber,
   type
 }: useCctpFetchingParams) {
+  const { isMainnet, isGoerli } = isNetwork(l1ChainId)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2ChainId)
+  const isValidChain =
+    (isMainnet || isGoerli) && (isArbitrumOne || isArbitrumGoerli)
+
   const {
     data: deposits,
     isLoading: isLoadingDeposits,
@@ -460,8 +467,9 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'withdrawals'
+    enabled: type !== 'withdrawals' && isValidChain
   })
+
   const {
     data: withdrawals,
     isLoading: isLoadingWithdrawals,
@@ -471,7 +479,7 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'deposits'
+    enabled: type !== 'deposits' && isValidChain
   })
   const { setTransfers } = useCctpState()
 
