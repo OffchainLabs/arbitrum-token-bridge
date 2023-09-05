@@ -49,6 +49,7 @@ export const fetchWithdrawals = async ({
     return []
   }
 
+  const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
 
   if (!fromBlock) {
@@ -174,5 +175,11 @@ export const fetchWithdrawals = async ({
     )
   )
 
-  return finalL2ToL1Txns
+  return finalL2ToL1Txns.map(tx => ({
+    ...tx,
+
+    // attach the chain ids to the withdrawal object
+    chainId: l2ChainID,
+    parentChainId: l1ChainID
+  }))
 }
