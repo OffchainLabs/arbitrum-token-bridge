@@ -454,28 +454,12 @@ export function isNetwork(chainId: ChainId) {
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const ethereumChainIds = [
-    ChainId.Mainnet,
-    ChainId.Rinkeby,
-    ChainId.Goerli,
-    ChainId.Sepolia,
+  const isEthereum =
+    ChainId.Mainnet ||
+    ChainId.Rinkeby ||
+    ChainId.Goerli ||
+    ChainId.Sepolia ||
     ChainId.Local
-  ]
-
-  const isEthereum = ethereumChainIds.includes(chainId)
-
-  const customArbitrumChainIds = customChains
-    .filter(chain => ethereumChainIds.includes(chain.partnerChainID))
-    .map(chain => chain.chainID)
-
-  const arbitrumChainIds = [
-    ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova,
-    ChainId.ArbitrumGoerli,
-    ChainId.ArbitrumRinkeby,
-    ChainId.ArbitrumLocal,
-    ChainId.ArbitrumSepolia
-  ]
 
   const isArbitrum =
     isArbitrumOne ||
@@ -483,12 +467,10 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isArbitrumLocal ||
-    isArbitrumSepolia ||
-    customArbitrumChainIds.includes(chainId)
+    isArbitrumSepolia
 
-  const customOrbitChains = customChains
-    .filter(chain => arbitrumChainIds.includes(chain.partnerChainID))
-    .map(chain => chain.chainID)
+  const customChainIds = customChains.map(chain => chain.chainID)
+  const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isTestnet =
     isRinkeby ||
@@ -500,7 +482,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia ||
     isXaiTestnet ||
     isStylusTestnet ||
-    customOrbitChains.includes(chainId)
+    isCustomOrbitChain
 
   const isSupported =
     isArbitrumOne ||
@@ -531,6 +513,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain: !isEthereum && !isArbitrum,
+    isCustomOrbitChain,
     isXaiTestnet,
     isStylusTestnet,
     // Testnet
@@ -678,4 +661,8 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   rpcURLs[chain.chainID] = chain.rpcUrl
   // explorer URL
   explorerUrls[chain.chainID] = chain.explorerUrl
+}
+
+export function getCustomOrbitParentChain(chainId: ChainId) {
+  return getCustomChainFromLocalStorageById(chainId)?.partnerChainID
 }
