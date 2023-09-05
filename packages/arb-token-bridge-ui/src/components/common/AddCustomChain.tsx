@@ -3,6 +3,7 @@ import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import { addCustomChain } from '@arbitrum/sdk'
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
+import { z } from 'zod'
 
 import {
   ChainId,
@@ -57,146 +58,67 @@ type OrbitConfig = {
   }
 }
 
-function validateAddress(value: string, key: string) {
-  if (typeof value !== 'string') {
-    throw new Error(`Expected '${key}' to be a string, got ${typeof value}.`)
-  }
-  if (!isAddress(value)) {
-    throw new Error(`'${key}' is not a valid address.`)
-  }
-}
+const zAddress = z
+  .string()
+  .refine(address => isAddress(address), 'Invalid address')
 
-function validateChainId(chainId: number, key: string) {
-  if (typeof chainId !== 'number') {
-    throw new Error(`Expected '${key}' to be a number, got ${typeof chainId}.`)
-  }
-  if (Object.values(ChainId).includes(chainId)) {
-    throw new Error(`'${key}' ${chainId} is not a valid custom Orbit chain.`)
-  }
-  if (getCustomChainFromLocalStorageById(chainId)) {
-    throw new Error(
-      `'${key}' ${chainId} already added to the custom Orbit chains.`
-    )
-  }
-}
-
-function validateParentChainId(chainId: number, key: string) {
-  if (typeof chainId !== 'number') {
-    throw new Error(`Expected '${key}' to be a number, got ${typeof chainId}.`)
-  }
-  if (!validCustomOrbitParentChains.includes(chainId)) {
-    throw new Error(
-      `'${key}' ${chainId} is not a valid parent chain. Valid parent chains are: ${JSON.stringify(
-        validCustomOrbitParentChains
-      )}`
-    )
-  }
-}
-
-function validateString(str: string, key: string) {
-  if (typeof str !== 'string') {
-    throw new Error(`Expected '${key}' to be a string, got ${typeof str}.`)
-  }
-}
-
-function validateObjectProperty(value: any, key: string) {
-  if (typeof value === 'undefined') {
-    throw new Error(`Cannot read properties of undefined (reading '${key}')`)
-  }
-}
-
-function validateOrbitConfig(data: OrbitConfig) {
-  // validate object properties individually for better error messages
-  validateObjectProperty(data.chainInfo, 'chainInfo')
-  validateObjectProperty(data.coreContracts, 'coreContracts')
-  validateObjectProperty(data.tokenBridgeContracts, 'tokenBridgeContracts')
-  validateObjectProperty(
-    data.tokenBridgeContracts.l2Contracts,
-    'tokenBridgeContracts[l2Contracts]'
+const zChainId = z
+  .number()
+  .refine(
+    chainId => !Object.values(ChainId).includes(chainId),
+    'Invalid custom Orbit chain ID'
   )
-  validateObjectProperty(
-    data.tokenBridgeContracts.l3Contracts,
-    'tokenBridgeContracts[l3Contracts]'
+  .refine(
+    chainId => !getCustomChainFromLocalStorageById(chainId),
+    'Custom chain already added'
   )
 
-  // chainInfo
-  validateChainId(data.chainInfo.chainId, 'chainInfo[chainId]')
-  validateParentChainId(
-    data.chainInfo.parentChainId,
-    'chainInfo[parentChainId]'
-  )
-  validateString(data.chainInfo.rpcUrl, 'chainInfo[rpcUrl]')
-  validateString(data.chainInfo.explorerUrl, 'chainInfo[explorerUrl]')
-  validateString(data.chainInfo.chainName, 'chainInfo[chainName]')
-
-  // coreContracts
-  validateAddress(data.coreContracts.bridge, 'coreContracts[bridge]')
-  validateAddress(data.coreContracts.inbox, 'coreContracts[inbox]')
-  validateAddress(data.coreContracts.outbox, 'coreContracts[outbox]')
-  validateAddress(data.coreContracts.rollup, 'coreContracts[rollup]')
-  validateAddress(
-    data.coreContracts.sequencerInbox,
-    'coreContracts[sequencerInbox]'
+const zParentChainId = z
+  .number()
+  .refine(
+    chainId => validCustomOrbitParentChains.includes(chainId),
+    'Unsupported parent chain ID'
   )
 
-  // tokenBridgeContracts
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.customGateway,
-    'tokenBridgeContracts[l2Contracts][customGateway]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.standardGateway,
-    'tokenBridgeContracts[l2Contracts][standardGateway]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.router,
-    'tokenBridgeContracts[l2Contracts][router]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.multicall,
-    'tokenBridgeContracts[l2Contracts][multicall]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.proxyAdmin,
-    'tokenBridgeContracts[l2Contracts][proxyAdmin]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.weth,
-    'tokenBridgeContracts[l2Contracts][weth]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l2Contracts.wethGateway,
-    'tokenBridgeContracts[l2Contracts][wethGateway]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.customGateway,
-    'tokenBridgeContracts[l3Contracts][customGateway]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.standardGateway,
-    'tokenBridgeContracts[l3Contracts][standardGateway]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.router,
-    'tokenBridgeContracts[l3Contracts][router]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.multicall,
-    'tokenBridgeContracts[l3Contracts][multicall]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.proxyAdmin,
-    'tokenBridgeContracts[l3Contracts][proxyAdmin]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.weth,
-    'tokenBridgeContracts[l3Contracts][weth]'
-  )
-  validateAddress(
-    data.tokenBridgeContracts.l3Contracts.wethGateway,
-    'tokenBridgeContracts[l3Contracts][wethGateway]'
-  )
-}
+const zContract = z.object({
+  customGateway: zAddress,
+  multicall: zAddress,
+  proxyAdmin: zAddress,
+  router: zAddress,
+  standardGateway: zAddress,
+  weth: zAddress,
+  wethGateway: zAddress
+})
+
+const ZodOrbitConfig = z.object({
+  chainInfo: z.object({
+    minL2BaseFee: z.number().nonnegative(),
+    networkFeeReceiver: zAddress,
+    infrastructureFeeCollector: zAddress,
+    batchPoster: zAddress,
+    staker: zAddress,
+    chainOwner: zAddress,
+    chainName: z.string(),
+    chainId: zChainId,
+    parentChainId: zParentChainId,
+    rpcUrl: z.string().url(),
+    explorerUrl: z.string().url()
+  }),
+  coreContracts: z.object({
+    rollup: zAddress,
+    inbox: zAddress,
+    outbox: zAddress,
+    adminProxy: zAddress,
+    sequencerInbox: zAddress,
+    bridge: zAddress,
+    utils: zAddress,
+    validatorWalletCreator: zAddress
+  }),
+  tokenBridgeContracts: z.object({
+    l2Contracts: zContract,
+    l3Contracts: zContract
+  })
+})
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   return {
@@ -258,9 +180,10 @@ export const AddCustomChain = () => {
         throw new Error('JSON input is empty.')
       }
 
-      validateOrbitConfig(data)
-      const customChain = mapOrbitConfigToOrbitChain(data)
+      // validate config
+      ZodOrbitConfig.parse(data)
 
+      const customChain = mapOrbitConfigToOrbitChain(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
       addCustomChain({ customChain: customChain })
@@ -298,7 +221,7 @@ export const AddCustomChain = () => {
       </div>
 
       {/* Custom chain list */}
-      {customChains.length > 0 && (
+      {customChains.length > 0 && !addingChain && (
         <div className="mt-4">
           <div className="heading mb-4 text-lg">Live Orbit Chains</div>
           <table className="w-full text-left">
