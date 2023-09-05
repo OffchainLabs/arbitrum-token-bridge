@@ -278,7 +278,7 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert your Orbit JSON Config here."
+        placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
         className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
       />
       {error && <span className="text-sm text-error">{error}</span>}
@@ -289,7 +289,7 @@ export const AddCustomChain = () => {
           // Need to replace with an atom
           <button
             onClick={onAddChain}
-            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:pointer-events-none	"
+            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!chainJson.trim()}
           >
             Add Chain
