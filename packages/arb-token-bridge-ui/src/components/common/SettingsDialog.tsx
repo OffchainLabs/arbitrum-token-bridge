@@ -13,6 +13,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { isNetwork } from '../../util/networks'
 import { warningToast } from './atoms/Toast'
 import { ExternalLink } from './ExternalLink'
+import { ORBIT_QUICKSTART_LINK } from '../../constants'
 
 export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
@@ -148,7 +149,7 @@ export const SettingsDialog = () => {
             Testnet to the bridge in{' '}
             <ExternalLink
               className="arb-hover text-blue-400 underline"
-              href="https://docs.arbitrum.io/launch-orbit-chain/orbit-quickstart"
+              href={ORBIT_QUICKSTART_LINK}
             >
               Arbitrum Orbit Quickstart
             </ExternalLink>
