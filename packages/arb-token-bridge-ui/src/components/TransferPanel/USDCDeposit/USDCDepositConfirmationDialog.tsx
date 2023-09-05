@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -38,6 +38,12 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const from = l1.network
   const to = l2.network
   const toNetworkName = getNetworkName(to.id)
+
+  useEffect(() => {
+    if (!props.isOpen) {
+      setAllCheckboxesChecked(false)
+    }
+  }, [props.isOpen])
 
   if (!selectedToken) {
     return null
