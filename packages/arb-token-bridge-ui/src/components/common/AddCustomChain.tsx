@@ -13,7 +13,7 @@ import {
   getNetworkName,
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
-  validCustomOrbitParentChains,
+  supportedCustomOrbitParentChains,
   shortenNetworkName
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
@@ -76,7 +76,7 @@ const zChainId = z
 const zParentChainId = z
   .number()
   .refine(
-    chainId => validCustomOrbitParentChains.includes(chainId),
+    chainId => supportedCustomOrbitParentChains.includes(chainId),
     'Unsupported parent chain ID'
   )
 
