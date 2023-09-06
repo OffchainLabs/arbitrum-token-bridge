@@ -40,9 +40,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const toNetworkName = getNetworkName(to.id)
 
   useEffect(() => {
-    if (!props.isOpen) {
-      setAllCheckboxesChecked(false)
-    }
+    setAllCheckboxesChecked(false)
   }, [props.isOpen])
 
   if (!selectedToken) {
