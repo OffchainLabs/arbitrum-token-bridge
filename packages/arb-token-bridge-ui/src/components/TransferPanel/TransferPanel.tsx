@@ -64,10 +64,11 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   getUsdcTokenAddressFromSourceChainId,
+  useCctpFetching,
   useCctpState
 } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { DepositStatus } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 
@@ -179,8 +180,13 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { setPendingTransfer, updateTransfer } = useCctpState()
-
+  const { setPendingDeposit, setPendingWithdrawal } = useCctpFetching({
+    l1ChainId: l1Network.id,
+    walletAddress: account,
+    pageSize: 10,
+    pageNumber: 0,
+    type: 'all'
+  })
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
 
@@ -553,7 +559,7 @@ export function TransferPanel() {
         })
       }
 
-      setPendingTransfer({
+      const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
         asset: 'USDC',
         blockNum: null,
@@ -576,7 +582,10 @@ export function TransferPanel() {
           receiveMessageTransactionHash: null,
           receiveMessageTimestamp: null
         }
-      })
+      }
+      const mutate = isDeposit ? setPendingDeposit : setPendingWithdrawal
+      mutate(newTransfer)
+
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
@@ -591,7 +600,7 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        updateTransfer({
+        mutate({
           txId: depositForBurnTx.hash,
           blockNum: depositTxReceipt.blockNumber,
           status: 'Unconfirmed',
