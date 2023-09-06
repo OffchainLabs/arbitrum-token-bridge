@@ -1388,9 +1388,11 @@ export function TransferPanel() {
                 depositButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.id, true)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l2Network.id)}`}
+              </span>
             </Button>
           ) : (
             <Button
@@ -1414,9 +1416,11 @@ export function TransferPanel() {
                 withdrawalButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.id, true)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l1Network.id)}`}
+              </span>
             </Button>
           )}
         </div>

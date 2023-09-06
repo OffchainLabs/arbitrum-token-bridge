@@ -14,7 +14,7 @@ export function HeaderNetworkInformation() {
     return null
   }
 
-  const networkName = getNetworkName(chain.id, true)
+  const networkName = getNetworkName(chain.id)
 
   return (
     <div
@@ -38,7 +38,7 @@ export function HeaderNetworkInformation() {
 
       <span
         className={twMerge(
-          'text-2xl font-medium lg:text-base lg:font-normal',
+          'max-w-[180px] truncate text-2xl font-medium lg:text-base lg:font-normal',
           isSmartContractWallet ? 'pr-2' : ''
         )}
       >

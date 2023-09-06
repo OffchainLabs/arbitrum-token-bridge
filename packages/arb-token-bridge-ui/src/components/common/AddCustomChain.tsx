@@ -13,8 +13,7 @@ import {
   getNetworkName,
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
-  supportedCustomOrbitParentChains,
-  shortenNetworkName
+  supportedCustomOrbitParentChains
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
 
@@ -240,8 +239,8 @@ export const AddCustomChain = () => {
                   key={customChain.chainID}
                   className="border-b border-gray-600"
                 >
-                  <th className="py-3 text-sm font-normal">
-                    {shortenNetworkName(customChain.name)}
+                  <th className="max-w-[100px] truncate py-3 text-sm font-normal">
+                    {customChain.name}
                   </th>
                   <th className="py-3 text-sm font-normal">
                     {customChain.chainID}
