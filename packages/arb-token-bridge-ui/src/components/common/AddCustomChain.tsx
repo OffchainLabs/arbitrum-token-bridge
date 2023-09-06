@@ -186,7 +186,7 @@ export const AddCustomChain = () => {
       const customChain = mapOrbitConfigToOrbitChain(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomChain({ customChain: customChain })
+      addCustomChain({ customChain })
 
       saveCustomChainToLocalStorage(customChain)
       // reload to apply changes
