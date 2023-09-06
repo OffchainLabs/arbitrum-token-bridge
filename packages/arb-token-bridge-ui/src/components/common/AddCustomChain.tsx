@@ -63,6 +63,8 @@ const zAddress = z
 
 const zChainId = z
   .number()
+  .int()
+  .positive()
   .refine(
     chainId => !Object.values(ChainId).includes(chainId),
     'Invalid custom Orbit chain ID'
@@ -74,6 +76,8 @@ const zChainId = z
 
 const zParentChainId = z
   .number()
+  .int()
+  .positive()
   .refine(
     chainId => supportedCustomOrbitParentChains.includes(chainId),
     'Unsupported parent chain ID'
@@ -91,7 +95,7 @@ const zContract = z.object({
 
 const ZodOrbitConfig = z.object({
   chainInfo: z.object({
-    minL2BaseFee: z.number().nonnegative(),
+    minL2BaseFee: z.number().nonnegative().int(),
     networkFeeReceiver: zAddress,
     infrastructureFeeCollector: zAddress,
     batchPoster: zAddress,
