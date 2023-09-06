@@ -454,12 +454,7 @@ export function isNetwork(chainId: ChainId) {
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const isEthereum =
-    ChainId.Mainnet ||
-    ChainId.Rinkeby ||
-    ChainId.Goerli ||
-    ChainId.Sepolia ||
-    ChainId.Local
+  const isEthereum = isMainnet || isRinkeby || isGoerli || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne ||
