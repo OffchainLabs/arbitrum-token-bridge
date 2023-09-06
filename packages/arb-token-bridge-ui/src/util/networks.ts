@@ -662,7 +662,3 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   // explorer URL
   explorerUrls[chain.chainID] = chain.explorerUrl
 }
-
-export function getCustomOrbitParentChain(chainId: ChainId) {
-  return getCustomChainFromLocalStorageById(chainId)?.partnerChainID
-}

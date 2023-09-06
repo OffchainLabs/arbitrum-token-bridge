@@ -12,7 +12,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
-  getCustomOrbitParentChain,
+  getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
   isNetwork
@@ -738,7 +738,10 @@ export function TransferPanelMain({
     // we can have a more dynamic solution in the future with more Orbit chains
     function mapChainToDefaultPartnerChain(chainId: ChainId) {
       if (isNetwork(chainId).isCustomOrbitChain) {
-        return getCustomOrbitParentChain(chainId) ?? ChainId.ArbitrumGoerli
+        return (
+          getCustomChainFromLocalStorageById(chainId)?.partnerChainID ??
+          ChainId.ArbitrumGoerli
+        )
       }
 
       switch (chainId) {
