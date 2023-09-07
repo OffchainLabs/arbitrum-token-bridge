@@ -453,10 +453,10 @@ export function useCctpFetching({
   pageNumber,
   type
 }: useCctpFetchingParams) {
-  const { isMainnet, isGoerli } = isNetwork(l1ChainId)
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2ChainId)
-  const isValidChain =
-    (isMainnet || isGoerli) && (isArbitrumOne || isArbitrumGoerli)
+  const { isMainnet: isL1Mainnet, isGoerli: isL1Goerli } = isNetwork(l1ChainId)
+  const { isArbitrumOne: isL2ArbitrumOne, isArbitrumGoerli: isL2ArbitrumGoerli } = isNetwork(l2ChainId)
+  const isValidChainPair =
+    (isL1Mainnet && isL2ArbitrumOne) || (isL1Goerli && isL2ArbitrumGoerli)
 
   const {
     data: deposits,
