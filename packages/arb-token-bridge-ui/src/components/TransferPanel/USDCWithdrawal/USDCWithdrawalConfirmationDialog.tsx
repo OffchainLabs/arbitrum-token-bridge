@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -31,6 +31,10 @@ export function USDCWithdrawalConfirmationDialog(
   const to = l1.network
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
+
+  useEffect(() => {
+    setAllCheckboxesChecked(false)
+  }, [props.isOpen])
 
   const fastBridges: FastBridgeInfo[] = USDCFastBridges.map(USDCFastBridge => ({
     name: USDCFastBridge.name,
