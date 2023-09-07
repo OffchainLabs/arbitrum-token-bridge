@@ -163,7 +163,10 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
-export const supportedCustomOrbitParentChains = [ChainId.ArbitrumGoerli]
+export const supportedCustomOrbitParentChains = [
+  ChainId.ArbitrumGoerli,
+  ChainId.ArbitrumSepolia
+]
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
