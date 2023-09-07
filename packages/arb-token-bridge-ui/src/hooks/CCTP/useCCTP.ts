@@ -29,7 +29,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.Mainnet.USDC,
     messageTransmitterContractAddress:
       '0xc30362313fbba5cf9163f0bb16a0e01f01a896ca',
-    attestationApiUrl: 'https://iris-api.circle.com',
+    attestationApiUrl: 'https://iris-api.circle.com/v1',
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
   [ChainId.Goerli]: {
@@ -39,7 +39,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.Goerli.USDC,
     messageTransmitterContractAddress:
       '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
-    attestationApiUrl: 'https://iris-api-sandbox.circle.com',
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
     tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
   },
   [ChainId.ArbitrumOne]: {
@@ -49,7 +49,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
     messageTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
-    attestationApiUrl: 'https://iris-api.circle.com',
+    attestationApiUrl: 'https://iris-api.circle.com/v1',
     tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
   },
   [ChainId.ArbitrumGoerli]: {
@@ -59,7 +59,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
     messageTransmitterContractAddress:
       '0x26413e8157cd32011e726065a5462e97dd4d03d9',
-    attestationApiUrl: 'https://iris-api-sandbox.circle.com',
+    attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
     tokenMinterContractAddress: '0xe997d7d2f6e065a9a93fa2175e878fb9081f1f0a'
   }
 }
@@ -126,7 +126,8 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const fetchAttestation = useCallback(
     async (attestationHash: `0x${string}`) => {
       const response = await fetch(
-        `${attestationApiUrl}/attestations/${attestationHash}`
+        `${attestationApiUrl}/attestations/${attestationHash}`,
+        { method: 'GET', headers: { accept: 'application/json' } }
       )
 
       const attestationResponse: AttestationResponse = await response.json()
