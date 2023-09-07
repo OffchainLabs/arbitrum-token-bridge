@@ -62,8 +62,14 @@ export function MainContent() {
 
   useEffect(() => {
     const pageSize = isNetwork(l2.network.id).isOrbitChain ? 5 : 10
-    setWithdrawalsPageParams({ ...withdrawalsPageParams, pageSize })
-    setDepositsPageParams({ ...depositsPageParams, pageSize })
+    setWithdrawalsPageParams(prevWithdrawalPageParams => ({
+      ...prevWithdrawalPageParams,
+      pageSize
+    }))
+    setDepositsPageParams(prevDepositsPageParams => ({
+      ...prevDepositsPageParams,
+      pageSize
+    }))
   }, [l2.network.id])
 
   const {
