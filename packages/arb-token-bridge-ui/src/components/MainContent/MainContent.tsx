@@ -10,9 +10,11 @@ import { useAppState } from '../../state'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
+import { isNetwork } from '../../util/networks'
 
 export const motionDivProps = {
   layout: true,
@@ -43,17 +45,21 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
+  const { l2 } = useNetworksAndSigners()
+  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+  const pageSize = isOrbitChainSelected ? 5 : 10
+
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
-    pageSize: 10
+    pageSize
   })
 
   const [withdrawalsPageParams, setWithdrawalsPageParams] =
     useState<PageParams>({
       searchString: '',
       pageNumber: 0,
-      pageSize: 10
+      pageSize
     })
 
   const {
