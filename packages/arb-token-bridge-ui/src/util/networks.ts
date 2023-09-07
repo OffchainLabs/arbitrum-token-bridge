@@ -511,7 +511,6 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain: !isEthereum && !isArbitrum,
-    isCustomOrbitChain,
     isXaiTestnet,
     isStylusTestnet,
     // Testnet

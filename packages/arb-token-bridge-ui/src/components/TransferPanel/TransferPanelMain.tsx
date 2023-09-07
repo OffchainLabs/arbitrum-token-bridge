@@ -737,11 +737,10 @@ export function TransferPanelMain({
     // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
     // we can have a more dynamic solution in the future with more Orbit chains
     function mapChainToDefaultPartnerChain(chainId: ChainId) {
-      if (isNetwork(chainId).isCustomOrbitChain) {
-        return (
-          getCustomChainFromLocalStorageById(chainId)?.partnerChainID ??
-          ChainId.ArbitrumGoerli
-        )
+      const customOrbitChain = getCustomChainFromLocalStorageById(chainId)
+
+      if (customOrbitChain) {
+        return customOrbitChain.partnerChainID
       }
 
       switch (chainId) {
