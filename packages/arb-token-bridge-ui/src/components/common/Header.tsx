@@ -14,7 +14,7 @@ import {
   HeaderMenuMobile,
   HeaderMenuProps
 } from './HeaderMenu'
-import { GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { ChainId, getExplorerUrl } from '../../util/networks'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
@@ -33,15 +33,15 @@ function toHeaderMenuProps(
 const learnMenuProps = toHeaderMenuProps([
   {
     title: 'Dev docs',
-    link: 'https://docs.arbitrum.io/'
+    link: DOCS_DOMAIN
   },
   {
     title: 'About bridging',
-    link: 'https://docs.arbitrum.io/getting-started-users'
+    link: `${DOCS_DOMAIN}/getting-started-users`
   },
   {
     title: 'About Arbitrum',
-    link: 'https://docs.arbitrum.io/inside-arbitrum-nitro'
+    link: `${DOCS_DOMAIN}/inside-arbitrum-nitro`
   }
 ])
 

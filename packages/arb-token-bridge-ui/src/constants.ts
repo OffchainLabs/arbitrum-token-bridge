@@ -5,8 +5,9 @@ export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
 export const GET_HELP_LINK =
   'https://arbitrumfoundation.zendesk.com/hc/en-us/requests/new?ticket_form_id=18155929976987'
 
-export const USDC_LEARN_MORE_LINK =
-  'https://docs.arbitrum.io/bridge-tokens/concepts/usdc-concept'
+export const DOCS_DOMAIN = 'https://docs.arbitrum.io'
+
+export const USDC_LEARN_MORE_LINK = `${DOCS_DOMAIN}/bridge-tokens/concepts/usdc-concept`
 
 export const FAST_BRIDGE_ARTICLE_LINK =
   'https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213771832987'
