@@ -139,8 +139,8 @@ export const fetchWithdrawals = async ({
     .slice(currentPageStart, currentPageEnd)
 
   const mappedTokenWithdrawalsFromEventLogs = (
-    await Promise.all([
-      ...partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
+    await Promise.all(
+      partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
         mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
           withdrawal,
           l1Provider,
@@ -148,7 +148,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       )
-    ])
+    )
   )
     // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
     .filter(withdrawal => {

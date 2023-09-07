@@ -46,21 +46,27 @@ export function MainContent() {
   } = useAppState()
 
   const { l2 } = useNetworksAndSigners()
-  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
-  const pageSize = isOrbitChainSelected ? 5 : 10
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
-    pageSize
+    pageSize: 10
   })
 
   const [withdrawalsPageParams, setWithdrawalsPageParams] =
     useState<PageParams>({
       searchString: '',
       pageNumber: 0,
-      pageSize
+      pageSize: 10
     })
+
+  useEffect(() => {
+    let pageSize = 10
+    if (isNetwork(l2.network.id).isOrbitChain) {
+      pageSize = 5
+    }
+    setWithdrawalsPageParams({ ...withdrawalsPageParams, pageSize })
+  }, [l2.network.id])
 
   const {
     data: depositsData = {
