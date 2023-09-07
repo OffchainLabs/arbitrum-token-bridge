@@ -64,11 +64,6 @@ module.exports = {
         // shadow used for input fields across the app
         input:
           '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)'
-      },
-      truncate: {
-        whiteSpace: 'noWrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis'
       }
     }
   }
