@@ -40,7 +40,7 @@ export const fetchWithdrawals = async ({
   l2Provider,
   gatewayAddresses,
   pageNumber = 0,
-  pageSize,
+  pageSize = 10,
   searchString,
   fromBlock,
   toBlock
@@ -124,9 +124,23 @@ export const fetchWithdrawals = async ({
     })
   ])
 
+  // get txs to be displayed on the current page (event logs)
+  const currentPageStart = pageNumber * pageSize
+  const currentPageEnd = currentPageStart + pageSize
+
+  const partialEthWithdrawalsFromEventLogs = [...ethWithdrawalsFromEventLogs]
+    // event logs start from the earliest, we need to reverse them
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+  const partialTokenWithdrawalsFromEventLogs = [
+    ...tokenWithdrawalsFromEventLogs
+  ]
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+
   const mappedTokenWithdrawalsFromEventLogs = (
-    await Promise.all([
-      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+    await Promise.all(
+      partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
         mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
           withdrawal,
           l1Provider,
@@ -134,7 +148,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       )
-    ])
+    )
   )
     // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
     .filter(withdrawal => {
@@ -155,7 +169,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+      ...partialEthWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
           withdrawal,
           l1Provider,
