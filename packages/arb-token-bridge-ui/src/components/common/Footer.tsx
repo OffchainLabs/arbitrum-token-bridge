@@ -42,7 +42,7 @@ export function Footer() {
         <div className="flex flex-col items-center space-y-2 px-8 text-center lg:items-start lg:px-0">
           <span className="text-4xl">The most decentralized L2</span>
           <ExternalLink
-            href="https://developer.arbitrum.io"
+            href="https://docs.arbitrum.io/"
             className="text-2xl underline"
           >
             Learn more.

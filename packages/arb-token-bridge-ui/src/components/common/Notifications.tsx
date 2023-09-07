@@ -46,7 +46,7 @@ function NitroDevnetNotification() {
   return (
     <Notification infoIcon>
       <ExternalLink
-        href="https://developer.arbitrum.io/for-devs/troubleshooting-building#what-is-a-testnet-or-a-devnet"
+        href="https://docs.arbitrum.io/for-devs/troubleshooting-building#what-is-a-testnet-or-a-devnet"
         className="arb-hover"
       >
         What is Nitro Testnet?

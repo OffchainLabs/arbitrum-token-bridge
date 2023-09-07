@@ -6,7 +6,7 @@ export const GET_HELP_LINK =
   'https://arbitrumfoundation.zendesk.com/hc/en-us/requests/new?ticket_form_id=18155929976987'
 
 export const USDC_LEARN_MORE_LINK =
-  'https://developer.arbitrum.io/bridge-tokens/concepts/usdc-concept'
+  'https://docs.arbitrum.io/bridge-tokens/concepts/usdc-concept'
 
 export const FAST_BRIDGE_ARTICLE_LINK =
   'https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213771832987'
