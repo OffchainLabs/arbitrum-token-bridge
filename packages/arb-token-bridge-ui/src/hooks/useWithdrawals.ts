@@ -9,7 +9,6 @@ import {
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAppContextState } from '../components/App/AppContext'
 import {
@@ -65,8 +64,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
 
-  const gatewaysToUse = useL2Gateways({ l2Provider })
-
   const {
     app: {
       arbTokenBridge: { walletAddress }
@@ -84,7 +81,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       walletAddress,
       l1Provider,
       l2Provider,
-      gatewaysToUse,
       isTransactionHistoryShowingSentTx,
       withdrawalPageParams.pageNumber,
       withdrawalPageParams.pageSize,
@@ -95,7 +91,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
-      _gatewayAddresses,
       _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
@@ -104,7 +99,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       fetchCompleteWithdrawalData({
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
-        gatewayAddresses: _gatewayAddresses,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,

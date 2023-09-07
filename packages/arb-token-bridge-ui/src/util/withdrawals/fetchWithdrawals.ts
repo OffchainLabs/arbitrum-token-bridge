@@ -13,6 +13,7 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
+import { fetchL2Gateways } from '../fetchL2Gateways'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -23,7 +24,6 @@ export type FetchWithdrawalsParams = {
   toBlock?: number
   l1Provider: Provider
   l2Provider: Provider
-  gatewayAddresses: string[]
   pageNumber?: number
   pageSize?: number
   searchString?: string
@@ -38,7 +38,6 @@ export const fetchWithdrawals = async ({
   receiverNot,
   l1Provider,
   l2Provider,
-  gatewayAddresses,
   pageNumber = 0,
   pageSize,
   searchString,
@@ -51,6 +50,8 @@ export const fetchWithdrawals = async ({
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
+
+  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -120,7 +121,7 @@ export const fetchWithdrawals = async ({
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
-      l2GatewayAddresses: gatewayAddresses
+      l2GatewayAddresses
     })
   ])
 
