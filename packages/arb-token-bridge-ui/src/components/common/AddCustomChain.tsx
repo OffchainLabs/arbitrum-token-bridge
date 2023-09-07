@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import { addCustomChain } from '@arbitrum/sdk'
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
+import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { z } from 'zod'
 
 import {
@@ -207,7 +207,19 @@ export const AddCustomChain = () => {
         placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
         className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
       />
-      {error && <span className="text-sm text-error">{error}</span>}
+      {error && (
+        <div className="relative">
+          <pre className="scroll mb-2 max-h-[400px] overflow-scroll rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
+            <button
+              onClick={() => setError(null)}
+              className="arb-hover absolute right-4 top-4 text-white"
+            >
+              <XMarkIcon width={24} />
+            </button>
+            {error}
+          </pre>
+        </div>
+      )}
       <div className="flex w-full justify-end">
         {addingChain ? (
           <Loader size="small" />
