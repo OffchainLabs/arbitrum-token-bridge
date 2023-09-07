@@ -126,7 +126,8 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
   const fetchAttestation = useCallback(
     async (attestationHash: `0x${string}`) => {
       const response = await fetch(
-        `${attestationApiUrl}/attestations/${attestationHash}`
+        `${attestationApiUrl}/attestations/${attestationHash}`,
+        { method: 'GET', headers: { accept: 'application/json' } }
       )
 
       const attestationResponse: AttestationResponse = await response.json()
