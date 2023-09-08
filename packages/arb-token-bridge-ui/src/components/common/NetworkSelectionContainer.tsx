@@ -32,7 +32,8 @@ export const NetworkSelectionContainer = ({
     chain?.id,
     !!isTestnetMode
   ).filter(chainId => chainId !== chain?.id)
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereum
@@ -75,9 +76,7 @@ export const NetworkSelectionContainer = ({
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button
-        disabled={
-          isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
-        }
+        disabled={isSmartContractWallet || isLoadingAccountType}
         className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
       >
         {children}

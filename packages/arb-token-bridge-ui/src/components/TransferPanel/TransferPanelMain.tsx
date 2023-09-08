@@ -67,14 +67,16 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const {
+    isEOA,
+    isSmartContractWallet,
+    isLoading: isLoadingAccountType
+  } = useAccountType()
 
   return (
     <button
       type="button"
-      disabled={
-        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
-      }
+      disabled={isSmartContractWallet || isLoadingAccountType}
       className={twMerge(
         'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
         isEOA
@@ -349,7 +351,7 @@ export function TransferPanelMain({
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true

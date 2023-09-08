@@ -513,7 +513,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { waitForAttestation, receiveMessage } = useCCTP({
     sourceChainId: tx.cctpData?.sourceChainId
   })
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { updateTransfer } = useCctpState()
   const { data: signer } = useSigner()
