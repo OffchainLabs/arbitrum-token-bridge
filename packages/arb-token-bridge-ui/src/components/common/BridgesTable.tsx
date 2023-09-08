@@ -1,4 +1,5 @@
 import useLocalStorage from '@rehooks/local-storage'
+import Image from 'next/image'
 import {
   StarIcon as StarIconOutline,
   ArrowTopRightOnSquareIcon
@@ -9,14 +10,14 @@ import { ExternalLink } from './ExternalLink'
 import {
   NonCanonicalTokenNames,
   FastBridgeInfo,
-  FastBridgeNames
+  FastBridgeNames,
+  SpecialTokenSymbol
 } from '../../util/fastBridges'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import Image from 'next/image'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
-  selectedNonCanonicalToken?: NonCanonicalTokenNames
+  selectedNonCanonicalToken?: NonCanonicalTokenNames | SpecialTokenSymbol.USDC
 }) {
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',

@@ -5,7 +5,7 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
-    isPreferencesPanelVisible: boolean
+    isTransactionHistoryShowingSentTx: boolean
   }
 }
 
@@ -14,7 +14,7 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-    isPreferencesPanelVisible: false
+    isTransactionHistoryShowingSentTx: true
   }
 }
 
@@ -27,7 +27,7 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
-  | { type: 'layout.set_preferences_panel_visible'; payload: boolean }
+  | { type: 'layout.set_txhistory_show_sent_tx'; payload: boolean }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -46,12 +46,12 @@ function reducer(state: AppContextState, action: Action) {
         }
       }
 
-    case 'layout.set_preferences_panel_visible':
+    case 'layout.set_txhistory_show_sent_tx':
       return {
         ...state,
         layout: {
           ...state.layout,
-          isPreferencesPanelVisible: action.payload
+          isTransactionHistoryShowingSentTx: action.payload
         }
       }
 
@@ -99,23 +99,23 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
+  const showSentTransactions = () => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
+  }
+
+  const showReceivedTransactions = () => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: false })
+  }
+
   const closeTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
-  }
-
-  const openPreferences = () => {
-    dispatch({ type: 'layout.set_preferences_panel_visible', payload: true })
-  }
-
-  const closePreferences = () => {
-    dispatch({ type: 'layout.set_preferences_panel_visible', payload: false })
   }
 
   return {
     setTransferring,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
-    openPreferences,
-    closePreferences
+    showSentTransactions,
+    showReceivedTransactions
   }
 }

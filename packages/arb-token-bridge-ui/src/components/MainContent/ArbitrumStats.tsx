@@ -4,9 +4,9 @@ import { useBlockNumber } from 'wagmi'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useAppContextState } from '../App/AppContext'
 import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 import { useGasPrice } from '../../hooks/useGasPrice'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -25,9 +25,7 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 export const ArbitrumStats = () => {
   const [, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const {
-    layout: { isPreferencesPanelVisible }
-  } = useAppContextState()
+  const [{ settingsOpen }] = useArbQueryParams()
 
   const { l1, l2 } = useNetworksAndSigners()
 
@@ -111,8 +109,8 @@ export const ArbitrumStats = () => {
         )}
       </div>
 
-      {/* Don't show the close button if the preferences panel is visible */}
-      {!isPreferencesPanelVisible && (
+      {/* Don't show the close button if the settings panel is visible */}
+      {!settingsOpen && (
         <button
           className="absolute right-4 top-4 cursor-pointer"
           onClick={closeArbitrumStats}

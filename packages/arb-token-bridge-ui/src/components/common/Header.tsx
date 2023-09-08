@@ -14,7 +14,8 @@ import {
   HeaderMenuMobile,
   HeaderMenuProps
 } from './HeaderMenu'
-import { GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { ChainId, getExplorerUrl } from '../../util/networks'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -32,30 +33,34 @@ function toHeaderMenuProps(
 const learnMenuProps = toHeaderMenuProps([
   {
     title: 'Dev docs',
-    link: 'https://developer.offchainlabs.com'
+    link: DOCS_DOMAIN
   },
   {
     title: 'About bridging',
-    link: 'https://developer.arbitrum.io/getting-started-users'
+    link: `${DOCS_DOMAIN}/getting-started-users`
   },
   {
     title: 'About Arbitrum',
-    link: 'https://developer.offchainlabs.com/docs/inside_arbitrum'
+    link: `${DOCS_DOMAIN}/inside-arbitrum-nitro`
   }
 ])
 
 const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum One',
-    link: 'https://arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumOne)
   },
   {
     title: 'Arbitrum Nova',
-    link: 'https://nova.arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumNova)
   },
   {
     title: 'Arbitrum Goerli',
-    link: 'https://goerli.arbiscan.io'
+    link: getExplorerUrl(ChainId.ArbitrumGoerli)
+  },
+  {
+    title: 'Arbitrum Sepolia',
+    link: getExplorerUrl(ChainId.ArbitrumSepolia)
   }
 ])
 
@@ -210,7 +215,7 @@ export function Header() {
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
-          <a href="/" className="arb-hover flex flex-col items-center">
+          <a href="/" className="arb-hover flex shrink-0 flex-col items-center">
             <HeaderImageElement
               src={HeaderLogoMainnetSVG}
               alt="Arbitrum logo"

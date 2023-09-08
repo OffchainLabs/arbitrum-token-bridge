@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { useAppState } from '../state'
+import { useAppContextState } from '../components/App/AppContext'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformDeposits } from '../state/app/utils'
 import {
@@ -10,6 +11,10 @@ import {
 } from '../util/deposits/fetchDeposits'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
+import {
+  getQueryParamsForFetchingReceivedFunds,
+  getQueryParamsForFetchingSentFunds
+} from '../util/SubgraphUtils'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -48,10 +53,18 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
+
+  const {
     app: {
       arbTokenBridge: { walletAddress }
     }
   } = useAppState()
+
+  const additionalSubgraphQueryParams = isTransactionHistoryShowingSentTx
+    ? getQueryParamsForFetchingSentFunds(walletAddress)
+    : getQueryParamsForFetchingReceivedFunds(walletAddress)
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
@@ -60,6 +73,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
       walletAddress,
       l1Provider,
       l2Provider,
+      isTransactionHistoryShowingSentTx,
       depositPageParams.pageNumber,
       depositPageParams.pageSize,
       depositPageParams.searchString
@@ -69,17 +83,18 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
+      _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteDepositData({
-        walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        searchString: _searchString
+        searchString: _searchString,
+        ...additionalSubgraphQueryParams
       })
   )
 }

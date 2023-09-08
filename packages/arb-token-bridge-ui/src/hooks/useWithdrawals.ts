@@ -11,6 +11,11 @@ import {
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { useAppContextState } from '../components/App/AppContext'
+import {
+  getQueryParamsForFetchingReceivedFunds,
+  getQueryParamsForFetchingSentFunds
+} from '../util/SubgraphUtils'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -56,6 +61,10 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
+  const {
+    layout: { isTransactionHistoryShowingSentTx }
+  } = useAppContextState()
+
   const gatewaysToUse = useL2Gateways({ l2Provider })
 
   const {
@@ -63,6 +72,10 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       arbTokenBridge: { walletAddress }
     }
   } = useAppState()
+
+  const additionalSubgraphQueryParams = isTransactionHistoryShowingSentTx
+    ? getQueryParamsForFetchingSentFunds(walletAddress)
+    : getQueryParamsForFetchingReceivedFunds(walletAddress)
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
@@ -72,6 +85,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       l1Provider,
       l2Provider,
       gatewaysToUse,
+      isTransactionHistoryShowingSentTx,
       withdrawalPageParams.pageNumber,
       withdrawalPageParams.pageSize,
       withdrawalPageParams.searchString
@@ -82,18 +96,19 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _l1Provider,
       _l2Provider,
       _gatewayAddresses,
+      _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
-        walletAddress: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         gatewayAddresses: _gatewayAddresses,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        searchString: _searchString
+        searchString: _searchString,
+        ...additionalSubgraphQueryParams
       })
   )
 }

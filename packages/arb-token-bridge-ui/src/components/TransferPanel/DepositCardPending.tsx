@@ -9,7 +9,9 @@ import {
   DepositL2TxStatus
 } from './DepositCard'
 import { formatAmount } from '../../util/NumberUtils'
+import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
@@ -46,14 +48,19 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
             <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
               L2 transaction: <DepositL2TxStatus tx={tx} />
             </span>
+            {isCustomDestinationAddressTx(tx) && (
+              <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
+                <CustomAddressTxExplorer
+                  tx={tx}
+                  explorerClassName="arb-hover text-blue-link"
+                />
+              </span>
+            )}
           </div>
         </div>
 
         <span className="absolute bottom-0 right-0 max-w-[100px] animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-sm font-semibold text-ocl-blue lg:max-w-full lg:text-lg">
-          <DepositCountdown
-            createdAt={tx.createdAt}
-            depositStatus={tx.depositStatus}
-          />
+          <DepositCountdown tx={tx} />
         </span>
       </div>
     </DepositCardContainer>
