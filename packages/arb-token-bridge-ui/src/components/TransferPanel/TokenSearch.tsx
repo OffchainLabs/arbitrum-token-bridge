@@ -445,12 +445,10 @@ function TokensPanel({
 
 export function TokenSearch({
   close,
-  onImportToken,
-  onNativeUSDCSelected
+  onImportToken
 }: {
   close: () => void
   onImportToken: (address: string) => void
-  onNativeUSDCSelected: () => void
 }) {
   const {
     app: {
@@ -492,11 +490,6 @@ export function TokenSearch({
 
       if (isNativeUSDC) {
         if (typeof isSmartContractWallet === 'undefined') {
-          return
-        }
-
-        if (isSmartContractWallet) {
-          onNativeUSDCSelected()
           return
         }
 
