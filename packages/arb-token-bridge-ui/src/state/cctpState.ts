@@ -640,7 +640,6 @@ export function useRemainingTime(tx: MergedTransaction) {
 
     if (dayjs().isAfter(canBeClaimedDate)) {
       setIsConfirmed(true)
-      setRemainingTime('')
     } else {
       setRemainingTime(canBeClaimedDate.fromNow().toString())
     }
