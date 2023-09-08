@@ -1,5 +1,11 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
@@ -129,47 +135,58 @@ export const TransactionHistory = ({
   const roundedTabClasses =
     'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
 
-  function handleSentOrReceivedTxForSCW(index: number) {
-    if (!isSmartContractWallet || !chain) {
-      return
-    }
-    const isDepositsTab = index === 0
-    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
-    // SCW address is tied to a specific network, so we must ensure that:
-    if (isDepositsTab) {
-      // if showing deposits, we always show:
-      if (isConnectedToArbitrum) {
-        // - received txs if connected to L2
-        showReceivedTransactions()
-      } else {
-        // - sent txs if connected to L1
-        showSentTransactions()
+  const handleSmartContractWalletTxHistoryTab = useCallback(
+    (index: number) => {
+      if (!isSmartContractWallet || !chain) {
+        return
       }
-    } else if (index === 1) {
-      // Withdrawal tab
-      // if showing withdrawals, we always show:
-      if (isConnectedToArbitrum) {
-        // - sent txs if connected to L2
-        showSentTransactions()
+      const isDepositsTab = index === 0
+      const isWithdrawalsTab = index === 1
+      const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+      // SCW address is tied to a specific network, so we must ensure that:
+      if (isDepositsTab) {
+        // if showing deposits, we always show:
+        if (isConnectedToArbitrum) {
+          // - received txs if connected to L2
+          showReceivedTransactions()
+        } else {
+          // - sent txs if connected to L1
+          showSentTransactions()
+        }
+      } else if (isWithdrawalsTab) {
+        // Withdrawal tab
+        // if showing withdrawals, we always show:
+        if (isConnectedToArbitrum) {
+          // - sent txs if connected to L2
+          showSentTransactions()
+        } else {
+          // - received txs if connected to L1
+          showReceivedTransactions()
+        }
       } else {
-        // - received txs if connected to L1
-        showReceivedTransactions()
+        // Cctp tab
+        if (isConnectedToArbitrum) {
+          showCctpDepositsTransactions()
+        } else {
+          showCctpWithdrawalsTransactions()
+        }
       }
-    } else {
-      // Cctp tab
-      if (isConnectedToArbitrum) {
-        showCctpDepositsTransactions()
-      } else {
-        showCctpWithdrawalsTransactions()
-      }
-    }
-  }
+    },
+    [
+      chain,
+      isSmartContractWallet,
+      showCctpDepositsTransactions,
+      showCctpWithdrawalsTransactions,
+      showReceivedTransactions,
+      showSentTransactions
+    ]
+  )
 
   useEffect(() => {
     // this function runs every time the network tab is changed, and here it is also triggered when the page loads
     // it sets the tab to 0 (deposits), which is the default tab
-    handleSentOrReceivedTxForSCW(0)
-  }, [isSmartContractWallet, chain])
+    handleSmartContractWalletTxHistoryTab(0)
+  }, [isSmartContractWallet, chain, handleSmartContractWalletTxHistoryTab])
 
   return (
     <div className="flex flex-col justify-around gap-6">
@@ -192,7 +209,7 @@ export const TransactionHistory = ({
       <div>
         <Tab.Group
           onChange={index => {
-            handleSentOrReceivedTxForSCW(index)
+            handleSmartContractWalletTxHistoryTab(index)
             setTransactionHistoryTab(index)
           }}
           key={address}
