@@ -428,6 +428,7 @@ export function TransferPanelMain({
       l1: null,
       l2: null
     }
+    const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
 
     if (!selectedToken) {
       return result
@@ -446,8 +447,11 @@ export function TransferPanelMain({
       erc20L1Balances &&
       erc20L2Balances
     ) {
+      const usdcAddress = isOrbitChainSelected
+        ? CommonAddress.ArbitrumOne.USDC
+        : CommonAddress.Mainnet.USDC
       return {
-        l1: erc20L1Balances[CommonAddress.Mainnet.USDC] ?? null,
+        l1: erc20L1Balances[usdcAddress] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
@@ -456,14 +460,17 @@ export function TransferPanelMain({
       erc20L1Balances &&
       erc20L2Balances
     ) {
+      const usdcAddress = isOrbitChainSelected
+        ? CommonAddress.ArbitrumGoerli.USDC
+        : CommonAddress.Goerli.USDC
       return {
-        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l1: erc20L1Balances[usdcAddress] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [erc20L1Balances, erc20L2Balances, selectedToken, l2.network.id])
 
   const [externalFrom, externalTo] = useMemo(() => {
     const isParentChainArbitrum = isNetwork(l1.network.id).isArbitrum
@@ -691,6 +698,9 @@ export function TransferPanelMain({
     const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
       selectedToken?.address
     )
+    const isGoerliUSDC = isTokenGoerliUSDC(selectedToken?.address)
+    const isMainnetUSDC = isTokenMainnetUSDC(selectedToken?.address)
+    const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
     // If user select native USDC on L2, when switching to deposit mode,
     // we need to default to set the corresponding USDC on L1
     if (!isDepositMode) {
@@ -709,14 +719,15 @@ export function TransferPanelMain({
       decimals: 6,
       listIds: new Set<number>()
     }
-    if (isArbOneUSDC) {
+    if (!isOrbitChainSelected && isArbOneUSDC) {
       token.updateTokenData(CommonAddress.Mainnet.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
         address: CommonAddress.Mainnet.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
-    } else if (isArbGoerliUSDC) {
+    }
+    if (!isOrbitChainSelected && isArbGoerliUSDC) {
       token.updateTokenData(CommonAddress.Goerli.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
@@ -724,7 +735,23 @@ export function TransferPanelMain({
         l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
       })
     }
-  }, [actions.app, isDepositMode, selectedToken, token])
+    // can happen when USDC was selected with Ethereum as L1
+    // we need to update to Arbitrum USDC since that's the parent chain now
+    if (isOrbitChainSelected && isGoerliUSDC) {
+      token.updateTokenData(CommonAddress.ArbitrumGoerli.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.ArbitrumGoerli.USDC
+      })
+    }
+    if (isOrbitChainSelected && isMainnetUSDC) {
+      token.updateTokenData(CommonAddress.ArbitrumOne.USDC)
+      actions.app.setSelectedToken({
+        ...commonUSDC,
+        address: CommonAddress.ArbitrumOne.USDC
+      })
+    }
+  }, [actions.app, isDepositMode, selectedToken, token, l2.network.id])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>
