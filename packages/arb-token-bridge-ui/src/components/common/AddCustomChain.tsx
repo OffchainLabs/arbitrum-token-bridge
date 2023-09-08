@@ -209,7 +209,7 @@ export const AddCustomChain = () => {
       />
       {error && (
         <div className="relative">
-          <pre className="scroll mb-2 max-h-[400px] overflow-scroll rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
+          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
             <button
               onClick={() => setError(null)}
               className="arb-hover absolute right-4 top-4 text-white"
