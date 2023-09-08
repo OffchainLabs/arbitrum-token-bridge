@@ -3,6 +3,7 @@ import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useNetwork } from 'wagmi'
+import { useWindowSize } from 'react-use'
 
 import {
   ChainId,
@@ -23,6 +24,10 @@ export const NetworkSelectionContainer = ({
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetworkWithConfig()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
+
+  const windowSize = useWindowSize()
+  const isLgScreen = windowSize.width >= 1024
+
   const supportedNetworks = getSupportedNetworks(
     chain?.id,
     !!isTestnetMode
@@ -109,14 +114,17 @@ export const NetworkSelectionContainer = ({
                     >
                       <div className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
                         <Image
-                          src={getNetworkLogo(Number(chainId))}
+                          src={getNetworkLogo(
+                            Number(chainId),
+                            isLgScreen ? 'dark' : 'light'
+                          )}
                           alt={`${getNetworkName(Number(chainId))} logo`}
                           className="h-full w-auto"
                           width={24}
                           height={24}
                         />
                       </div>
-                      <span className="whitespace-nowrap">
+                      <span className="max-w-[140px] truncate">
                         {getNetworkName(Number(chainId))}
                       </span>
                     </button>
