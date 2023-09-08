@@ -454,7 +454,10 @@ export function useCctpFetching({
   type
 }: useCctpFetchingParams) {
   const { isMainnet: isL1Mainnet, isGoerli: isL1Goerli } = isNetwork(l1ChainId)
-  const { isArbitrumOne: isL2ArbitrumOne, isArbitrumGoerli: isL2ArbitrumGoerli } = isNetwork(l2ChainId)
+  const {
+    isArbitrumOne: isL2ArbitrumOne,
+    isArbitrumGoerli: isL2ArbitrumGoerli
+  } = isNetwork(l2ChainId)
   const isValidChainPair =
     (isL1Mainnet && isL2ArbitrumOne) || (isL1Goerli && isL2ArbitrumGoerli)
 
@@ -467,7 +470,7 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'withdrawals' && isValidChain
+    enabled: type !== 'withdrawals' && isValidChainPair
   })
 
   const {
@@ -479,7 +482,7 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'deposits' && isValidChain
+    enabled: type !== 'deposits' && isValidChainPair
   })
   const { setTransfers } = useCctpState()
 
