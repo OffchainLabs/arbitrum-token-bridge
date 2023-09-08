@@ -49,7 +49,7 @@ export const TransactionHistory = ({
 }) => {
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
-  const { isSmartContractWallet, isEOA } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
   const { showSentTransactions, showReceivedTransactions } =
     useAppContextActions()
   const {
@@ -61,6 +61,7 @@ export const TransactionHistory = ({
   const { isLoadingDeposits, depositsError: cctpDepositsError } =
     useCctpFetching({
       l1ChainId: l1.network.id,
+      l2ChainId: l2.network.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -69,6 +70,7 @@ export const TransactionHistory = ({
   const { isLoadingWithdrawals, withdrawalsError: cctpWithdrawalsError } =
     useCctpFetching({
       l1ChainId: l1.network.id,
+      l2ChainId: l2.network.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -204,7 +206,7 @@ export const TransactionHistory = ({
               />
               {`To ${getNetworkName(l1.network.id)}`}
             </TabButton>
-            {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
+            {transfersIds.length > 0 && !isOrbitChainSelected && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={`${roundedTabClasses} roundedTabLeft`}
@@ -246,7 +248,7 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {isEOA && !!transfersIds.length && !isOrbitChainSelected && (
+          {transfersIds.length > 0 && !isOrbitChainSelected && (
             <Tab.Panel className="overflow-auto">
               <TransactionsTableCctp />
             </Tab.Panel>

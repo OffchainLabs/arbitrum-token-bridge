@@ -17,7 +17,6 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
-import { useAccountType } from '../../../hooks/useAccountType'
 import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 export function USDCWithdrawalConfirmationDialog(
@@ -25,7 +24,6 @@ export function USDCWithdrawalConfirmationDialog(
 ) {
   const { l1, l2 } = useNetworksAndSigners()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { isEOA } = useAccountType()
 
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
@@ -75,7 +73,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a fast bridge</TabButton>
-            {isEOA && <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>}
+            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
@@ -107,57 +105,52 @@ export function USDCWithdrawalConfirmationDialog(
             </div>
           </Tab.Panel>
 
-          {isEOA && (
-            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <div className="flex flex-col space-y-3">
-                <p className="font-light">
-                  Receive{' '}
-                  <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
-                    USDC
-                  </USDCTokenExplorerLink>{' '}
-                  on {toNetworkName} with Circle&apos;s{' '}
-                  <ExternalLink
-                    className="arb-hover text-blue-link underline"
-                    href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                  >
-                    Cross-Chain Transfer Protocol
-                  </ExternalLink>{' '}
-                  within the Arbitrum Bridge.
-                </p>
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <p className="font-light">
+                Receive{' '}
+                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
+                  USDC
+                </USDCTokenExplorerLink>{' '}
+                on {toNetworkName} with Circle&apos;s{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                >
+                  Cross-Chain Transfer Protocol
+                </ExternalLink>{' '}
+                within the Arbitrum Bridge.
+              </p>
 
-                <div className="flex flex-col space-y-6">
-                  <USDCWithdrawalConfirmationDialogCheckbox
-                    onAllCheckboxesCheched={() => {
-                      setAllCheckboxesChecked(true)
-                    }}
-                    onChange={checked => {
-                      if (!checked) {
-                        setAllCheckboxesChecked(false)
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="mt-2 flex flex-row justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={!allCheckboxesCheched}
-                  onClick={() => {
-                    props.onClose(true)
-                    setAllCheckboxesChecked(false)
+              <div className="flex flex-col space-y-6">
+                <USDCWithdrawalConfirmationDialogCheckbox
+                  onAllCheckboxesCheched={() => {
+                    setAllCheckboxesChecked(true)
                   }}
-                >
-                  Confirm
-                </Button>
+                  onChange={checked => {
+                    if (!checked) {
+                      setAllCheckboxesChecked(false)
+                    }
+                  }}
+                />
               </div>
-            </Tab.Panel>
-          )}
+            </div>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!allCheckboxesCheched}
+                onClick={() => {
+                  props.onClose(true)
+                  setAllCheckboxesChecked(false)
+                }}
+              >
+                Confirm
+              </Button>
+            </div>
+          </Tab.Panel>
         </Tab.Group>
       </div>
     </Dialog>
