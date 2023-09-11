@@ -42,6 +42,7 @@ export function TransactionsTableCctp() {
     isLoadingWithdrawals
   } = useCctpFetching({
     l1ChainId: l1.network.id,
+    l2ChainId: l2.network.id,
     walletAddress: address,
     pageSize: pageParams.pageSize,
     pageNumber: pageParams.pageNumber,

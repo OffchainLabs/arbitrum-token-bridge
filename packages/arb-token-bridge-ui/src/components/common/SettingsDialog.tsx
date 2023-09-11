@@ -12,11 +12,19 @@ import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { isNetwork } from '../../util/networks'
 import { warningToast } from './atoms/Toast'
+import { ExternalLink } from './ExternalLink'
+import { ORBIT_QUICKSTART_LINK } from '../../constants'
 
 export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <div className="heading mb-4 text-lg">{children}</div>
+const SectionTitle = ({
+  className,
+  children
+}: {
+  className?: string
+  children: React.ReactNode
+}) => (
+  <div className={twMerge('heading mb-4 text-lg', className)}>{children}</div>
 )
 
 export const SettingsDialog = () => {
@@ -134,7 +142,19 @@ export const SettingsDialog = () => {
             isTestnetMode ? '' : 'pointer-events-none opacity-20'
           )}
         >
-          <SectionTitle>Add Testnet Orbit Chain</SectionTitle>
+          <SectionTitle className="mb-1">Add Testnet Orbit Chain</SectionTitle>
+          <p className="mb-4 text-sm text-gray-3">
+            Add in your own Orbit Testnet to the bridge. This will only be for
+            local testing. Learn more about how to create and add your Orbit
+            Testnet to the bridge in{' '}
+            <ExternalLink
+              className="arb-hover text-blue-400 underline"
+              href={ORBIT_QUICKSTART_LINK}
+            >
+              Arbitrum Orbit Quickstart
+            </ExternalLink>
+            .
+          </p>
 
           <AddCustomChain />
         </div>

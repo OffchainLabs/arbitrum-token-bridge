@@ -174,7 +174,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -560,6 +560,15 @@ export function TransferPanel() {
       }
 
       if (isSmartContractWallet) {
+        // For SCW, we assume that the transaction went through
+        if (shouldTrackAnalytics(currentNetworkName)) {
+          trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+            accountType: 'Smart Contract',
+            network: currentNetworkName,
+            amount: Number(amount),
+            complete: false
+          })
+        }
         return
       }
 
@@ -569,13 +578,12 @@ export function TransferPanel() {
 
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          accountType: 'EOA',
           network: currentNetworkName,
           amount: Number(amount),
           complete: false
         })
       }
-
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',
@@ -642,11 +650,6 @@ export function TransferPanel() {
     const signerUndefinedError = 'Signer is undefined'
 
     if (!isConnected) {
-      return
-    }
-
-    if (!isEOA && !isSmartContractWallet) {
-      console.error('Account type is undefined')
       return
     }
 
@@ -1410,9 +1413,11 @@ export function TransferPanel() {
                 depositButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.id)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l2Network.id)}`}
+              </span>
             </Button>
           ) : (
             <Button
@@ -1435,9 +1440,11 @@ export function TransferPanel() {
                 withdrawalButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.id)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l1Network.id)}`}
+              </span>
             </Button>
           )}
         </div>

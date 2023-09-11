@@ -38,7 +38,7 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
     .filter(
       // filter again in case local storage is compromized
-      chain => !allowedParentChainIds.includes(Number(chain.chainID))
+      chain => !supportedCustomOrbitParentChains.includes(Number(chain.chainID))
     )
     .map(chain => {
       return {
@@ -163,11 +163,9 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
-// allow only Ethereum testnets and Arbitrum testnets as parent chains
-export const allowedParentChainIds = [
+export const supportedCustomOrbitParentChains = [
   ChainId.ArbitrumGoerli,
-  ChainId.ArbitrumNova,
-  ChainId.ArbitrumLocal
+  ChainId.ArbitrumSepolia
 ]
 
 export const rpcURLs: { [chainId: number]: string } = {
@@ -459,28 +457,7 @@ export function isNetwork(chainId: ChainId) {
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const ethereumChainIds = [
-    ChainId.Mainnet,
-    ChainId.Rinkeby,
-    ChainId.Goerli,
-    ChainId.Sepolia,
-    ChainId.Local
-  ]
-
-  const isEthereum = ethereumChainIds.includes(chainId)
-
-  const customArbitrumChainIds = customChains
-    .filter(chain => ethereumChainIds.includes(chain.partnerChainID))
-    .map(chain => chain.chainID)
-
-  const arbitrumChainIds = [
-    ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova,
-    ChainId.ArbitrumGoerli,
-    ChainId.ArbitrumRinkeby,
-    ChainId.ArbitrumLocal,
-    ChainId.ArbitrumSepolia
-  ]
+  const isEthereum = isMainnet || isRinkeby || isGoerli || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne ||
@@ -488,12 +465,10 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isArbitrumLocal ||
-    isArbitrumSepolia ||
-    customArbitrumChainIds.includes(chainId)
+    isArbitrumSepolia
 
-  const customOrbitChains = customChains
-    .filter(chain => arbitrumChainIds.includes(chain.partnerChainID))
-    .map(chain => chain.chainID)
+  const customChainIds = customChains.map(chain => chain.chainID)
+  const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isTestnet =
     isRinkeby ||
@@ -505,7 +480,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia ||
     isXaiTestnet ||
     isStylusTestnet ||
-    customOrbitChains.includes(chainId)
+    isCustomOrbitChain
 
   const isSupported =
     isArbitrumOne ||
