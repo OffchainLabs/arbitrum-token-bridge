@@ -23,12 +23,14 @@ const confirmedMessagesLocalStorageKey = 'arbitrum:bridge:confirmed-messages'
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
   l1Provider: Provider,
-  l2Provider: Provider
+  l2Provider: Provider,
+  l2ChainID: number
 ) => {
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
     withdrawalTx as L2ToL1EventResultPlus,
     l1Provider,
-    l2Provider
+    l2Provider,
+    l2ChainID
   )
 
   return l2toL1TxWithDeadline
@@ -171,7 +173,8 @@ export async function getOutgoingMessageState(
 export async function attachNodeBlockDeadlineToEvent(
   event: L2ToL1EventResultPlus,
   l1Provider: Provider,
-  l2Provider: Provider
+  l2Provider: Provider,
+  l2ChainID: number
 ) {
   if (
     event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
@@ -180,17 +183,15 @@ export async function attachNodeBlockDeadlineToEvent(
     return event
   }
 
-  if (event.chainId) {
-    const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
-      event,
-      l2ChainID: event.chainId
-    })
+  const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
+    event,
+    l2ChainID
+  })
 
-    if (firstExecutableBlockFromCache) {
-      return {
-        ...event,
-        nodeBlockDeadline: firstExecutableBlockFromCache
-      }
+  if (firstExecutableBlockFromCache) {
+    return {
+      ...event,
+      nodeBlockDeadline: firstExecutableBlockFromCache
     }
   }
 
@@ -200,12 +201,10 @@ export async function attachNodeBlockDeadlineToEvent(
     const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
       l2Provider
     )
-    const firstExecutableBlockCacheKey = event.chainId
-      ? getFirstExecutableBlockCacheKey({
-          event,
-          l2ChainID: event.chainId
-        })
-      : undefined
+    const firstExecutableBlockCacheKey = getFirstExecutableBlockCacheKey({
+      event,
+      l2ChainID
+    })
 
     if (firstExecutableBlockCacheKey && firstExecutableBlock) {
       saveFirstExecutableBlockToCache(
