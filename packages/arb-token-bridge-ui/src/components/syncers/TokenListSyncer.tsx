@@ -28,7 +28,7 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    if (typeof walletAddress === 'undefined') {
+    if (!walletAddress) {
       return
     }
 
