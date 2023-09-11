@@ -186,9 +186,11 @@ export async function attachNodeBlockDeadlineToEvent(
       l2ChainID: event.chainId
     })
 
-    return {
-      ...event,
-      nodeBlockDeadline: firstExecutableBlockFromCache
+    if (firstExecutableBlockFromCache) {
+      return {
+        ...event,
+        nodeBlockDeadline: firstExecutableBlockFromCache
+      }
     }
   }
 
