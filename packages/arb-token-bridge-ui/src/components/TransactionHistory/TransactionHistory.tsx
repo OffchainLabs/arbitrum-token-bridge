@@ -23,7 +23,11 @@ import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import {
+  TransactionHistoryTab,
+  useAppContextActions,
+  useAppContextState
+} from '../App/AppContext'
 import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
@@ -142,8 +146,8 @@ export const TransactionHistory = ({
       if (!isSmartContractWallet || !chain) {
         return
       }
-      const isDepositsTab = index === 0
-      const isWithdrawalsTab = index === 1
+      const isDepositsTab = index === TransactionHistoryTab.DEPOSITS
+      const isWithdrawalsTab = index === TransactionHistoryTab.WITHDRAWALS
       const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
       // SCW address is tied to a specific network, so we must ensure that:
       if (isDepositsTab) {
