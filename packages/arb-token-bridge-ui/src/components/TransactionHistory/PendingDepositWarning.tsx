@@ -5,6 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
+import { DOCS_DOMAIN } from '../../constants'
 
 export function PendingDepositWarning() {
   return (
@@ -42,7 +43,7 @@ export function PendingDepositWarning() {
           <p>
             Learn more about{' '}
             <ExternalLink
-              href="https://developer.arbitrum.io/arbos/l1-to-l2-messaging"
+              href={`${DOCS_DOMAIN}/arbos/l1-to-l2-messaging`}
               className="arb-hover text-blue-link underline"
             >
               retryable tickets

@@ -12,14 +12,44 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
+import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
-  if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
+  if (isNetwork(chainId).isEthereum) {
     console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
   }
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
     : ChainId.ArbitrumOne
+}
+
+const MergedTransactionCard = ({
+  transaction
+}: {
+  transaction: MergedTransaction
+}) => {
+  if (transaction.isCctp) {
+    return (
+      <motion.div key={transaction.txId} {...motionDivProps}>
+        {transaction.status === 'Confirmed' ? (
+          <ClaimableCardConfirmed tx={transaction} />
+        ) : (
+          <ClaimableCardUnconfirmed tx={transaction} />
+        )}
+      </motion.div>
+    )
+  }
+
+  return isDeposit(transaction) ? (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <DepositCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  ) : (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <WithdrawalCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  )
 }
 
 export const PendingTransactions = ({
@@ -75,7 +105,7 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && !transactions.length && (
+      {!error && !loading && transactions.length === 0 && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
@@ -87,17 +117,9 @@ export const PendingTransactions = ({
         )}
 
       {/* Transaction cards */}
-      {transactions?.map(tx =>
-        isDeposit(tx) ? (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <DepositCard key={tx.txId} tx={tx} />
-          </motion.div>
-        ) : (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <WithdrawalCard key={tx.txId} tx={tx} />
-          </motion.div>
-        )
-      )}
+      {transactions.map(tx => (
+        <MergedTransactionCard transaction={tx} key={tx.txId} />
+      ))}
     </div>
   )
 }

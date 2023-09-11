@@ -2,6 +2,8 @@
  * When user wants to bridge ETH from L1 to L2
  */
 
+import { optimism } from 'wagmi/chains'
+
 describe('Switch Networks', () => {
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
@@ -122,7 +124,13 @@ describe('Switch Networks', () => {
         // wrong network UI flaky right after login, cy.wait fixes the flaky test
         // eslint-disable-next-line
         cy.wait(5000)
-        cy.changeMetamaskNetwork('Sepolia test network').then(() => {
+        cy.addMetamaskNetwork({
+          networkName: optimism.name,
+          rpcUrl: optimism.rpcUrls.default.http[0],
+          chainId: String(optimism.id),
+          symbol: optimism.nativeCurrency.symbol,
+          isTestnet: false
+        }).then(() => {
           cy.waitUntil(
             () =>
               cy
@@ -137,14 +145,14 @@ describe('Switch Networks', () => {
           ).then(() => {
             context('Allow Network change from wrong network UI list', () => {
               cy.findByRole('button', {
-                name: /Switch to Arbitrum Goerli/i
+                name: /Switch to Mainnet/i
               })
                 .should('be.visible')
                 .click()
 
-              cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
+              cy.allowMetamaskToSwitchNetwork().then(() => {
                 cy.findByRole('button', {
-                  name: /Selected Network : Arbitrum Goerli/i
+                  name: /Selected Network : Mainnet/i
                 }).should('be.visible')
               })
             })
