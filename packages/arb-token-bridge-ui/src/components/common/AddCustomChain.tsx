@@ -1,15 +1,21 @@
 import { useState } from 'react'
+import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
+import { addCustomChain } from '@arbitrum/sdk'
+import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { z } from 'zod'
 
 import {
+  ChainId,
   ChainWithRpcUrl,
-  allowedParentChainIds,
   getCustomChainsFromLocalStorage,
+  getCustomChainFromLocalStorageById,
   getNetworkName,
   removeCustomChainFromLocalStorage,
-  saveCustomChainToLocalStorage
+  saveCustomChainToLocalStorage,
+  supportedCustomOrbitParentChains
 } from '../../util/networks'
+import { Loader } from './atoms/Loader'
 
 type Contracts = {
   customGateway: string
@@ -50,6 +56,72 @@ type OrbitConfig = {
     l3Contracts: Contracts
   }
 }
+
+const zAddress = z
+  .string()
+  .refine(address => isAddress(address), 'Invalid address')
+
+const zChainId = z
+  .number()
+  .int()
+  .positive()
+  .refine(
+    chainId => !Object.values(ChainId).includes(chainId),
+    'Invalid custom Orbit chain ID'
+  )
+  .refine(
+    chainId => !getCustomChainFromLocalStorageById(chainId),
+    'Custom chain already added'
+  )
+
+const zParentChainId = z
+  .number()
+  .int()
+  .positive()
+  .refine(
+    chainId => supportedCustomOrbitParentChains.includes(chainId),
+    'Unsupported parent chain ID'
+  )
+
+const zContract = z.object({
+  customGateway: zAddress,
+  multicall: zAddress,
+  proxyAdmin: zAddress,
+  router: zAddress,
+  standardGateway: zAddress,
+  weth: zAddress,
+  wethGateway: zAddress
+})
+
+const ZodOrbitConfig = z.object({
+  chainInfo: z.object({
+    minL2BaseFee: z.number().nonnegative().int(),
+    networkFeeReceiver: zAddress,
+    infrastructureFeeCollector: zAddress,
+    batchPoster: zAddress,
+    staker: zAddress,
+    chainOwner: zAddress,
+    chainName: z.string(),
+    chainId: zChainId,
+    parentChainId: zParentChainId,
+    rpcUrl: z.string().url(),
+    explorerUrl: z.string().url()
+  }),
+  coreContracts: z.object({
+    rollup: zAddress,
+    inbox: zAddress,
+    outbox: zAddress,
+    adminProxy: zAddress,
+    sequencerInbox: zAddress,
+    bridge: zAddress,
+    utils: zAddress,
+    validatorWalletCreator: zAddress
+  }),
+  tokenBridgeContracts: z.object({
+    l2Contracts: zContract,
+    l3Contracts: zContract
+  })
+})
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   return {
@@ -94,10 +166,12 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [addingChain, setAddingChain] = useState(false)
 
   const customChains = getCustomChainsFromLocalStorage()
 
   function onAddChain() {
+    setAddingChain(true)
     setError(null)
 
     try {
@@ -109,19 +183,20 @@ export const AddCustomChain = () => {
         throw new Error('JSON input is empty.')
       }
 
-      const customChain = mapOrbitConfigToOrbitChain(data)
+      // validate config
+      ZodOrbitConfig.parse(data)
 
-      if (!allowedParentChainIds.includes(Number(customChain.partnerChainID))) {
-        throw new Error(
-          `Invalid partnerChainID ${customChain.partnerChainID}. Only Arbitrum testnet parent chains are allowed.`
-        )
-      }
+      const customChain = mapOrbitConfigToOrbitChain(data)
+      // Orbit config has been validated and will be added to the custom list after page refreshes
+      // let's still try to add it here to handle eventual errors
+      addCustomChain({ customChain })
 
       saveCustomChainToLocalStorage(customChain)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
       setError(error.message ?? 'Something went wrong.')
+      setAddingChain(false)
     }
   }
 
@@ -129,32 +204,48 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert your Orbit JSON Config here."
+        placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
         className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
       />
-      {error && <span className="text-sm text-error">{error}</span>}
+      {error && (
+        <div className="relative">
+          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
+            <button
+              onClick={() => setError(null)}
+              className="arb-hover absolute right-4 top-4 text-white"
+            >
+              <XMarkIcon width={24} />
+            </button>
+            {error}
+          </pre>
+        </div>
+      )}
       <div className="flex w-full justify-end">
-        {/* Need to replace with an atom */}
-        <button
-          onClick={onAddChain}
-          className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:pointer-events-none	"
-          disabled={!chainJson.trim()}
-        >
-          Add Chain
-        </button>
+        {addingChain ? (
+          <Loader size="small" />
+        ) : (
+          // Need to replace with an atom
+          <button
+            onClick={onAddChain}
+            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!chainJson.trim()}
+          >
+            Add Chain
+          </button>
+        )}
       </div>
 
       {/* Custom chain list */}
-      {customChains.length > 0 && (
+      {customChains.length > 0 && !addingChain && (
         <div className="mt-4">
           <div className="heading mb-4 text-lg">Live Orbit Chains</div>
           <table className="w-full text-left">
             <thead className="border-b border-gray-600">
               <tr>
-                <th className="pb-1 text-xs font-normal">PARENT CHAIN</th>
-                <th className="pb-1 text-xs font-normal">PARENT CHAIN ID</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN ID</th>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN</th>
+                <th className="pb-1 text-xs font-normal">PARENT CHAIN ID</th>
                 <th className="pb-1 text-xs font-normal"></th>
               </tr>
             </thead>
@@ -164,17 +255,17 @@ export const AddCustomChain = () => {
                   key={customChain.chainID}
                   className="border-b border-gray-600"
                 >
+                  <th className="max-w-[100px] truncate py-3 text-sm font-normal">
+                    {customChain.name}
+                  </th>
+                  <th className="py-3 text-sm font-normal">
+                    {customChain.chainID}
+                  </th>
                   <th className="py-3 text-sm font-normal">
                     {getNetworkName(customChain.partnerChainID)}
                   </th>
                   <th className="py-3 text-sm font-normal">
                     {customChain.partnerChainID}
-                  </th>
-                  <th className="py-3 text-sm font-normal">
-                    {customChain.name}
-                  </th>
-                  <th className="py-3 text-sm font-normal">
-                    {customChain.chainID}
                   </th>
                   <th className="py-3">
                     <Popover className="relative">

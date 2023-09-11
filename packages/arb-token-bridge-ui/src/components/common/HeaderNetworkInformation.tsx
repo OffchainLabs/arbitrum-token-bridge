@@ -38,7 +38,7 @@ export function HeaderNetworkInformation() {
 
       <span
         className={twMerge(
-          'text-2xl font-medium lg:text-base lg:font-normal',
+          'max-w-[200px] truncate text-2xl font-medium lg:text-base lg:font-normal',
           isSmartContractWallet ? 'pr-2' : ''
         )}
       >

@@ -20,3 +20,6 @@ export const ETH_BALANCE_ARTICLE_LINK =
 
 export const CONFIRMATION_PERIOD_ARTICLE_LINK =
   'https://arbitrumfoundation.zendesk.com/hc/en-us/articles/18213843096091'
+
+export const ORBIT_QUICKSTART_LINK =
+  'https://docs.arbitrum.io/launch-orbit-chain/orbit-quickstart'
