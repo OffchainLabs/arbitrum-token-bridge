@@ -54,7 +54,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
           borderClassName
         )}
       >
-        <TokenButton amount={value} />
+        <TokenButton />
         <div className="h-full border-r border-gray-2" />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input
