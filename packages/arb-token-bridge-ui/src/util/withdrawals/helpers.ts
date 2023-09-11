@@ -124,7 +124,7 @@ export async function getOutgoingMessageState(
   currentParentChainBlock: number
 ) {
   // see if there's first executable block cache
-  // if it's below the current block then we know the status is unconfirmed
+  // if the current block is below it then we know the status is unconfirmed
   const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
     event,
     l2ChainID
