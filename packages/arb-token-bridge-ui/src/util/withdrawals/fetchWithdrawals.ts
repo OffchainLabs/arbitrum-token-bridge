@@ -51,6 +51,7 @@ export const fetchWithdrawals = async ({
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
+  const currentParentChainBlock = await l1Provider.getBlockNumber()
 
   if (!fromBlock) {
     fromBlock = 0
@@ -145,7 +146,8 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID
+          l2ChainID,
+          currentParentChainBlock
         )
       )
     )
@@ -166,7 +168,8 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID
+          l2ChainID,
+          currentParentChainBlock
         )
       ),
       ...partialEthWithdrawalsFromEventLogs.map(withdrawal =>
@@ -174,7 +177,8 @@ export const fetchWithdrawals = async ({
           withdrawal,
           l1Provider,
           l2Provider,
-          l2ChainID
+          l2ChainID,
+          currentParentChainBlock
         )
       )
     ])),

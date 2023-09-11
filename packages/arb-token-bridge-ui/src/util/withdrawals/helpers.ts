@@ -15,6 +15,11 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 
+const firstExecutableBlockLocalStorageKey =
+  'arbitrum:bridge:first-executable-block'
+const executedMessagesLocalStorageKey = 'arbitrum:bridge:executed-messages'
+const confirmedMessagesLocalStorageKey = 'arbitrum:bridge:confirmed-messages'
+
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
   l1Provider: Provider,
@@ -35,14 +40,16 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainId: number
+  l2ChainId: number,
+  currentParentChainBlock: number
 ): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    l2ChainId,
+    currentParentChainBlock
   )
 
   return {
@@ -58,28 +65,104 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   }
 }
 
+function getFirstExecutableBlockCacheKey({
+  event,
+  l2ChainID
+}: {
+  event: L2ToL1EventResult
+  l2ChainID: number
+}) {
+  return `${l2ChainID}-${event.timestamp}-${event.caller}`
+}
+
+function getFirstExecutableBlockFromCache({
+  event,
+  l2ChainID
+}: {
+  event: L2ToL1EventResult
+  l2ChainID: number
+}) {
+  const cacheKey = getFirstExecutableBlockCacheKey({ event, l2ChainID })
+  const firstExecutableBlockCache = JSON.parse(
+    localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
+  )
+  const result = firstExecutableBlockCache[cacheKey]
+
+  if (!result) {
+    return undefined
+  }
+  return Number(result)
+}
+
+function saveFirstExecutableBlockToCache(key: string, value: number) {
+  const currentCache = JSON.parse(
+    localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
+  )
+  localStorage.setItem(
+    firstExecutableBlockLocalStorageKey,
+    JSON.stringify({ ...currentCache, [key]: value })
+  )
+}
+
+function saveConfirmedMessageToCache(key: string) {
+  const currentCache = JSON.parse(
+    localStorage.getItem(confirmedMessagesLocalStorageKey) || '{}'
+  )
+  localStorage.setItem(
+    confirmedMessagesLocalStorageKey,
+    JSON.stringify({ ...currentCache, [key]: true })
+  )
+}
+
 export async function getOutgoingMessageState(
   event: L2ToL1EventResult,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainID: number
+  l2ChainID: number,
+  currentParentChainBlock: number
 ) {
+  // see if there's first executable block cache
+  // if it's below the current block then we know the status is unconfirmed
+  const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
+    event,
+    l2ChainID
+  })
+  if (
+    firstExecutableBlockFromCache &&
+    currentParentChainBlock < firstExecutableBlockFromCache
+  ) {
+    return OutgoingMessageState.UNCONFIRMED
+  }
+
   const cacheKey = getExecutedMessagesCacheKey({
     event,
     l2ChainId: l2ChainID
   })
 
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
+    localStorage.getItem(executedMessagesLocalStorageKey) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
   }
 
+  const confirmedMessagesCache = JSON.parse(
+    localStorage.getItem(confirmedMessagesLocalStorageKey) || '{}'
+  )
+  if (confirmedMessagesCache[cacheKey]) {
+    return OutgoingMessageState.CONFIRMED
+  }
+
   const messageReader = new L2ToL1MessageReader(l1Provider, event)
 
   try {
-    return await messageReader.status(l2Provider)
+    const status = await messageReader.status(l2Provider)
+
+    if (status === OutgoingMessageState.CONFIRMED) {
+      saveConfirmedMessageToCache(cacheKey)
+    }
+
+    return status
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
   }
@@ -97,12 +180,37 @@ export async function attachNodeBlockDeadlineToEvent(
     return event
   }
 
+  if (event.chainId) {
+    const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
+      event,
+      l2ChainID: event.chainId
+    })
+
+    return {
+      ...event,
+      nodeBlockDeadline: firstExecutableBlockFromCache
+    }
+  }
+
   const messageReader = L2ToL1MessageReader.fromEvent(l1Provider, event)
 
   try {
     const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
       l2Provider
     )
+    const firstExecutableBlockCacheKey = event.chainId
+      ? getFirstExecutableBlockCacheKey({
+          event,
+          l2ChainID: event.chainId
+        })
+      : undefined
+
+    if (firstExecutableBlockCacheKey && firstExecutableBlock) {
+      saveFirstExecutableBlockToCache(
+        firstExecutableBlockCacheKey,
+        firstExecutableBlock.toNumber()
+      )
+    }
 
     return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
   } catch (e) {
@@ -138,7 +246,8 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainID: number
+  l2ChainID: number,
+  currentParentChainBlock: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
     // we don't care about allowance in this call, so we're just using vitalik.eth
@@ -163,7 +272,8 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainID
+    l2ChainID,
+    currentParentChainBlock
   )
 
   // We cannot access sender and destination from the withdrawal object.
@@ -216,7 +326,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,
-  l2ChainId: number
+  l2ChainId: number,
+  currentParentChainBlock: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
 
@@ -234,7 +345,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    l2ChainId,
+    currentParentChainBlock
   )
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
