@@ -3,6 +3,7 @@ import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useNetwork } from 'wagmi'
+import { useWindowSize } from 'react-use'
 
 import {
   ChainId,
@@ -23,11 +24,16 @@ export const NetworkSelectionContainer = ({
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetworkWithConfig()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
+
+  const windowSize = useWindowSize()
+  const isLgScreen = windowSize.width >= 1024
+
   const supportedNetworks = getSupportedNetworks(
     chain?.id,
     !!isTestnetMode
   ).filter(chainId => chainId !== chain?.id)
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereum
@@ -70,9 +76,7 @@ export const NetworkSelectionContainer = ({
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button
-        disabled={
-          isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
-        }
+        disabled={isSmartContractWallet || isLoadingAccountType}
         className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
       >
         {children}
@@ -110,14 +114,17 @@ export const NetworkSelectionContainer = ({
                     >
                       <div className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
                         <Image
-                          src={getNetworkLogo(Number(chainId))}
+                          src={getNetworkLogo(
+                            Number(chainId),
+                            isLgScreen ? 'dark' : 'light'
+                          )}
                           alt={`${getNetworkName(Number(chainId))} logo`}
                           className="h-full w-auto"
                           width={24}
                           height={24}
                         />
                       </div>
-                      <span className="whitespace-nowrap">
+                      <span className="max-w-[140px] truncate">
                         {getNetworkName(Number(chainId))}
                       </span>
                     </button>

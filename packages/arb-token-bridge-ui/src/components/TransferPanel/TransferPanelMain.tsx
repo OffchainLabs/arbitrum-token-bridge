@@ -12,6 +12,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
   isNetwork
@@ -67,14 +68,16 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const {
+    isEOA,
+    isSmartContractWallet,
+    isLoading: isLoadingAccountType
+  } = useAccountType()
 
   return (
     <button
       type="button"
-      disabled={
-        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
-      }
+      disabled={isSmartContractWallet || isLoadingAccountType}
       className={twMerge(
         'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
         isEOA
@@ -150,13 +153,25 @@ function NetworkContainer({
 }) {
   const { address } = useAccount()
   const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const { isArbitrum, isArbitrumNova, isOrbitChain, isXaiTestnet } =
-      isNetwork(network.id)
+    const {
+      isArbitrum,
+      isArbitrumNova,
+      isOrbitChain,
+      isXaiTestnet,
+      isStylusTestnet
+    } = isNetwork(network.id)
 
     if (isXaiTestnet) {
       return {
         backgroundImage: `url('/images/XaiLogo.svg')`,
-        backgroundClassName: `bg-xai-dark`
+        backgroundClassName: 'bg-xai-dark'
+      }
+    }
+
+    if (isStylusTestnet) {
+      return {
+        backgroundImage: `url('/images/StylusLogo.svg')`,
+        backgroundClassName: 'bg-stylus-dark'
       }
     }
 
@@ -338,7 +353,7 @@ export function TransferPanelMain({
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -491,8 +506,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-    setQueryParams({ l2ChainId: l2.network.id })
-  }, [externalFrom, externalTo, l2.network.id, setQueryParams])
+  }, [externalFrom, externalTo])
 
   const estimateGas = useCallback(
     async (
@@ -724,13 +738,23 @@ export function TransferPanelMain({
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     const options = getListboxOptionsFromL1Network(l1.network)
 
-    const arbitrumOneOrArbitrumGoerli = (() => {
-      const { isTestnet } = isNetwork(l1.network.id)
-      if (isTestnet) {
-        return ChainId.ArbitrumGoerli
+    // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
+    // we can have a more dynamic solution in the future with more Orbit chains
+    function mapChainToDefaultPartnerChain(chainId: ChainId) {
+      const customOrbitChain = getCustomChainFromLocalStorageById(chainId)
+
+      if (customOrbitChain) {
+        return customOrbitChain.partnerChainID
       }
-      return ChainId.ArbitrumOne
-    })()
+
+      switch (chainId) {
+        case ChainId.Sepolia:
+        case ChainId.StylusTestnet:
+          return ChainId.ArbitrumSepolia
+        default:
+          return ChainId.ArbitrumGoerli
+      }
+    }
 
     function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
@@ -787,7 +811,9 @@ export function TransferPanelMain({
               // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
               // Otherwise we want to keep the current chain, in case it's Nova.
               if (isEthereum && isOrbitChainSelected) {
-                updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+                updatePreferredL2Chain(
+                  mapChainToDefaultPartnerChain(network.id)
+                )
                 return
               }
               updatePreferredL2Chain(network.id)
@@ -804,6 +830,9 @@ export function TransferPanelMain({
           value: to,
           onChange: async network => {
             const { isEthereum, isOrbitChain } = isNetwork(network.id)
+            const defaultPartnerChain = mapChainToDefaultPartnerChain(
+              network.id
+            )
 
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
@@ -822,7 +851,7 @@ export function TransferPanelMain({
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainCurrentlySelected) {
-              updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+              updatePreferredL2Chain(defaultPartnerChain)
               return
             }
 
@@ -830,7 +859,7 @@ export function TransferPanelMain({
             if (isOrbitChain) {
               try {
                 if (!isConnectedToArbitrum) {
-                  await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                  await switchNetworkAsync?.(defaultPartnerChain)
                 }
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -872,7 +901,7 @@ export function TransferPanelMain({
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainSelected) {
-              updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+              updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
               return
             }
             updatePreferredL2Chain(network.id)
@@ -889,6 +918,7 @@ export function TransferPanelMain({
         value: to,
         onChange: async network => {
           const { isEthereum, isOrbitChain } = isNetwork(network.id)
+          const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
 
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
@@ -906,7 +936,8 @@ export function TransferPanelMain({
               try {
                 // If connected to an Orbit chain, we need to change network to Arbitrum.
                 // We can't withdraw from an Orbit chain to Ethereum.
-                await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+                await switchNetworkAsync?.(defaultPartnerChain)
+                updatePreferredL2Chain(defaultPartnerChain)
                 return
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -916,7 +947,7 @@ export function TransferPanelMain({
               }
             }
             // Connected to Arbitrum.
-            updatePreferredL2Chain(arbitrumOneOrArbitrumGoerli)
+            updatePreferredL2Chain(defaultPartnerChain)
           }
 
           if (isOrbitChain) {
@@ -926,7 +957,7 @@ export function TransferPanelMain({
             if (isConnectedToEthereum) {
               // If connected to Ethereum, we need to change network to Arbitrum.
               // We can't deposit from Ethereum to an Orbit chain.
-              await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+              await switchNetworkAsync?.(defaultPartnerChain)
             }
 
             const isOrbitChainCurrentlySelected = isNetwork(
@@ -935,7 +966,7 @@ export function TransferPanelMain({
             if (isOrbitChainCurrentlySelected) {
               // long-term we will have to change to Orbit chain's parent network
               // right now only Arbitrum Goerli is support so it's fine
-              await switchNetworkAsync?.(arbitrumOneOrArbitrumGoerli)
+              await switchNetworkAsync?.(defaultPartnerChain)
             }
 
             updatePreferredL2Chain(network.id)

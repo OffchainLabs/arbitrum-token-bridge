@@ -6,6 +6,7 @@ import {
 
 import { ExternalLink } from '../common/ExternalLink'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { DOCS_DOMAIN } from '../../constants'
 
 export function PendingDepositWarning() {
   const { parentLayer, layer } = useChainLayers()
@@ -46,7 +47,7 @@ export function PendingDepositWarning() {
           <p>
             Learn more about{' '}
             <ExternalLink
-              href="https://developer.arbitrum.io/arbos/l1-to-l2-messaging"
+              href={`${DOCS_DOMAIN}/arbos/l1-to-l2-messaging`}
               className="arb-hover text-blue-link underline"
             >
               retryable tickets

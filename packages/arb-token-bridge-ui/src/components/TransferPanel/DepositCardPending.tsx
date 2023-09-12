@@ -62,10 +62,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
         </div>
 
         <span className="absolute bottom-0 right-0 max-w-[100px] animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-sm font-semibold text-ocl-blue lg:max-w-full lg:text-lg">
-          <DepositCountdown
-            createdAt={tx.createdAt}
-            depositStatus={tx.depositStatus}
-          />
+          <DepositCountdown tx={tx} />
         </span>
       </div>
     </DepositCardContainer>
