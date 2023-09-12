@@ -13,12 +13,12 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
-import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { getMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { CONFIRMATION_BUFFER_BLOCKS } from '../../components/common/WithdrawalCountdown'
 
 const firstExecutableBlockLocalStorageKey =
   'arbitrum:bridge:first-executable-block'
 const executedMessagesLocalStorageKey = 'arbitrum:bridge:executed-messages'
-const confirmedMessagesLocalStorageKey = 'arbitrum:bridge:confirmed-messages'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
@@ -67,16 +67,6 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   }
 }
 
-function getFirstExecutableBlockCacheKey({
-  event,
-  l2ChainID
-}: {
-  event: L2ToL1EventResult
-  l2ChainID: number
-}) {
-  return `${l2ChainID}-${event.timestamp}-${event.caller}`
-}
-
 function getFirstExecutableBlockFromCache({
   event,
   l2ChainID
@@ -84,7 +74,7 @@ function getFirstExecutableBlockFromCache({
   event: L2ToL1EventResult
   l2ChainID: number
 }) {
-  const cacheKey = getFirstExecutableBlockCacheKey({ event, l2ChainID })
+  const cacheKey = getMessagesCacheKey({ event, l2ChainId: l2ChainID })
   const firstExecutableBlockCache = JSON.parse(
     localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
   )
@@ -96,7 +86,7 @@ function getFirstExecutableBlockFromCache({
   return Number(result)
 }
 
-function saveFirstExecutableBlockToCache(key: string, value: number) {
+export function saveFirstExecutableBlockToCache(key: string, value: number) {
   const currentCache = JSON.parse(
     localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
   )
@@ -106,12 +96,12 @@ function saveFirstExecutableBlockToCache(key: string, value: number) {
   )
 }
 
-function saveConfirmedMessageToCache(key: string) {
+function saveExecutedMessageToCache(key: string) {
   const currentCache = JSON.parse(
-    localStorage.getItem(confirmedMessagesLocalStorageKey) || '{}'
+    localStorage.getItem(executedMessagesLocalStorageKey) || '{}'
   )
   localStorage.setItem(
-    confirmedMessagesLocalStorageKey,
+    executedMessagesLocalStorageKey,
     JSON.stringify({ ...currentCache, [key]: true })
   )
 }
@@ -131,12 +121,13 @@ export async function getOutgoingMessageState(
   })
   if (
     firstExecutableBlockFromCache &&
-    currentParentChainBlock < firstExecutableBlockFromCache
+    currentParentChainBlock <
+      firstExecutableBlockFromCache + CONFIRMATION_BUFFER_BLOCKS
   ) {
     return OutgoingMessageState.UNCONFIRMED
   }
 
-  const cacheKey = getExecutedMessagesCacheKey({
+  const cacheKey = getMessagesCacheKey({
     event,
     l2ChainId: l2ChainID
   })
@@ -148,20 +139,13 @@ export async function getOutgoingMessageState(
     return OutgoingMessageState.EXECUTED
   }
 
-  const confirmedMessagesCache = JSON.parse(
-    localStorage.getItem(confirmedMessagesLocalStorageKey) || '{}'
-  )
-  if (confirmedMessagesCache[cacheKey]) {
-    return OutgoingMessageState.CONFIRMED
-  }
-
   const messageReader = new L2ToL1MessageReader(l1Provider, event)
 
   try {
     const status = await messageReader.status(l2Provider)
 
-    if (status === OutgoingMessageState.CONFIRMED) {
-      saveConfirmedMessageToCache(cacheKey)
+    if (status === OutgoingMessageState.EXECUTED) {
+      saveExecutedMessageToCache(cacheKey)
     }
 
     return status
@@ -201,9 +185,9 @@ export async function attachNodeBlockDeadlineToEvent(
     const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
       l2Provider
     )
-    const firstExecutableBlockCacheKey = getFirstExecutableBlockCacheKey({
+    const firstExecutableBlockCacheKey = getMessagesCacheKey({
       event,
-      l2ChainID
+      l2ChainId: l2ChainID
     })
 
     if (firstExecutableBlockCacheKey && firstExecutableBlock) {

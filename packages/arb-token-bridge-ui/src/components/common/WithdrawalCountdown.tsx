@@ -9,6 +9,9 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Tooltip } from './Tooltip'
 
+// Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
+export const CONFIRMATION_BUFFER_BLOCKS = 120
+
 export function WithdrawalCountdown({
   nodeBlockDeadline
 }: {
@@ -49,10 +52,8 @@ export function WithdrawalCountdown({
     return <span>Failure</span>
   }
 
-  // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
-  const confirmationBufferBlocks = 120
   const blocksRemaining = Math.max(
-    nodeBlockDeadline + confirmationBufferBlocks - currentL1BlockNumber,
+    nodeBlockDeadline + CONFIRMATION_BUFFER_BLOCKS - currentL1BlockNumber,
     0
   )
 
