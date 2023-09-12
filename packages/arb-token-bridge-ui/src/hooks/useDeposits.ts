@@ -87,7 +87,7 @@ export const useDeposits = (depositPageParams: PageParams) => {
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,
-        ...(isTransactionHistoryShowingSentTx
+        ...(_isTransactionHistoryShowingSentTx
           ? getQueryParamsForFetchingSentFunds(_walletAddress)
           : getQueryParamsForFetchingReceivedFunds(_walletAddress))
       })
