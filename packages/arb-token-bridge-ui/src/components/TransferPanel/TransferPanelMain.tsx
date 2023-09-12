@@ -1050,8 +1050,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your L2 wallet, you’ll need it to power
-              transactions.
+              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              power transactions.
               <br />
               <ExternalLink
                 href={ETH_BALANCE_ARTICLE_LINK}
