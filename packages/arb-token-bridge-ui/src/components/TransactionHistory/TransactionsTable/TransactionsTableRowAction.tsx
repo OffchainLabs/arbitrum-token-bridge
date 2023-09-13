@@ -57,8 +57,7 @@ export function TransactionsTableRowAction({
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereum, isArbitrumOne, isArbitrum, isArbitrumGoerli } =
-    isNetwork(chainId)
+  const { isEthereum, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
     const isWithdrawalSourceOrbitChain = isNetwork(l2Network.id).isOrbitChain
@@ -69,17 +68,10 @@ export function TransactionsTableRowAction({
     }
 
     return (
-      (type === 'deposits' && (isArbitrumOne || isArbitrumGoerli)) ||
+      (type === 'deposits' && isArbitrum) ||
       (type === 'withdrawals' && isEthereum)
     )
-  }, [
-    isArbitrum,
-    isArbitrumGoerli,
-    isArbitrumOne,
-    isEthereum,
-    l2Network.id,
-    type
-  ])
+  }, [isArbitrum, isEthereum, l2Network.id, type])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed
