@@ -27,6 +27,10 @@ export type ChainWithRpcUrl = Chain & {
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  if (!global.localStorage) {
+    return []
+  }
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
