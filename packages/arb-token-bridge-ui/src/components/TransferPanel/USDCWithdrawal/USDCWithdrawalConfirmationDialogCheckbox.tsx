@@ -2,6 +2,7 @@ import { useChainId } from 'wagmi'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
+import { useChainLayers } from '../../../hooks/useChainLayers'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange,
@@ -12,6 +13,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
   const chainId = useChainId()
+  const { parentLayer } = useChainLayers()
   const { isTestnet } = isNetwork(chainId)
 
   useEffect(() => {
@@ -26,8 +28,10 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
         label={
           <span className="select-none font-light">
             I understand that I&apos;ll have to send{' '}
-            <span className="font-medium">a second transaction on L1</span> and
-            pay another L1 fee to claim my USDC.
+            <span className="font-medium">
+              a second transaction on {parentLayer}
+            </span>{' '}
+            and pay another {parentLayer} fee to claim my USDC.
           </span>
         }
         checked={checkboxesChecked[0] ?? false}

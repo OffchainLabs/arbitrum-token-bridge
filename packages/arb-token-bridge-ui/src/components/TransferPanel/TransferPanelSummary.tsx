@@ -22,6 +22,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
+import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
+
 export type GasEstimationStatus =
   | 'idle'
   | 'loading'
@@ -40,6 +42,13 @@ export type UseGasSummaryResult = {
   estimatedL1GasFees: number
   estimatedL2GasFees: number
   estimatedTotalGasFees: number
+}
+
+const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
+  L1: 'L1 fees go to Ethereum Validators.',
+  L2: "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded.",
+  Orbit:
+    "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded."
 }
 
 export function useGasSummary(
@@ -277,6 +286,7 @@ export function TransferPanelSummary({
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
 
   const { isMainnet } = isNetwork(l1.network.id)
 
@@ -377,8 +387,8 @@ export function TransferPanelSummary({
       <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light">L1 gas</span>
-            <Tooltip content="L1 fees go to Ethereum Validators.">
+            <span className="pl-4 font-light">{parentLayer} gas</span>
+            <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
               <InformationCircleIcon className="h-4 w-4" />
             </Tooltip>
           </div>
@@ -397,8 +407,8 @@ export function TransferPanelSummary({
         </div>
         <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light ">L2 gas</span>
-            <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
+            <span className="pl-4 font-light ">{layer} gas</span>
+            <Tooltip content={layerToGasFeeTooltip[layer]}>
               <InformationCircleIcon className="h-4 w-4 " />
             </Tooltip>
           </div>

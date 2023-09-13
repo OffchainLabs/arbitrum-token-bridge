@@ -5,9 +5,12 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
+import { useChainLayers } from '../../hooks/useChainLayers'
 import { DOCS_DOMAIN } from '../../constants'
 
 export function PendingDepositWarning() {
+  const { parentLayer, layer } = useChainLayers()
+
   return (
     <Disclosure
       as="div"
@@ -18,7 +21,7 @@ export function PendingDepositWarning() {
           <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-orange-dark" />
           <p>
             Deposit might fail if the gas fee provided was too low. Stay on this
-            page until the L2 transaction succeeds.
+            page until the {layer} transaction succeeds.
           </p>
         </div>
         <ChevronRightIcon className="ml-auto h-4 w-4 shrink-0 ui-open:rotate-90 ui-open:transform" />
@@ -36,9 +39,10 @@ export function PendingDepositWarning() {
             If you must leave, check back <strong>within a week</strong>. In
             most cases, your deposits should go through successfully.
             <br />
-            However, if it failed, re-execute on L2{' '}
-            <strong>within a week</strong> from the time of the L1 transaction,
-            or else <strong>your funds could be lost forever!</strong>
+            However, if it failed, re-execute on {layer}{' '}
+            <strong>within a week</strong> from the time of the {parentLayer}{' '}
+            transaction, or else{' '}
+            <strong>your funds could be lost forever!</strong>
           </p>
           <p>
             Learn more about{' '}
