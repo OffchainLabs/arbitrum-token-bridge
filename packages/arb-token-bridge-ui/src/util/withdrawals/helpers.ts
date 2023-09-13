@@ -13,12 +13,12 @@ import {
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
-import { getMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { getL2ToL1MessageCacheKey } from '../../hooks/useArbTokenBridge'
 import { CONFIRMATION_BUFFER_BLOCKS } from '../../components/common/WithdrawalCountdown'
 
-const firstExecutableBlockLocalStorageKey =
+const FIRST_EXECUTABLE_BLOCK_LOCAL_STORAGE_KEY =
   'arbitrum:bridge:first-executable-block'
-const executedMessagesLocalStorageKey = 'arbitrum:bridge:executed-messages'
+const EXECUTED_MESSAGES_LOCAL_STORAGE_KEY = 'arbitrum:bridge:executed-messages'
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
@@ -74,34 +74,34 @@ function getFirstExecutableBlockFromCache({
   event: L2ToL1EventResult
   l2ChainID: number
 }) {
-  const cacheKey = getMessagesCacheKey({ event, l2ChainId: l2ChainID })
+  const cacheKey = getL2ToL1MessageCacheKey({ event, l2ChainId: l2ChainID })
   const firstExecutableBlockCache = JSON.parse(
-    localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
+    localStorage.getItem(FIRST_EXECUTABLE_BLOCK_LOCAL_STORAGE_KEY) || '{}'
   )
   const result = firstExecutableBlockCache[cacheKey]
 
   if (!result) {
-    return undefined
+    return -1
   }
   return Number(result)
 }
 
-export function saveFirstExecutableBlockToCache(key: string, value: number) {
+export function saveFirstExecutableBlockToCache(key: string, value: string) {
   const currentCache = JSON.parse(
-    localStorage.getItem(firstExecutableBlockLocalStorageKey) || '{}'
+    localStorage.getItem(FIRST_EXECUTABLE_BLOCK_LOCAL_STORAGE_KEY) || '{}'
   )
   localStorage.setItem(
-    firstExecutableBlockLocalStorageKey,
+    FIRST_EXECUTABLE_BLOCK_LOCAL_STORAGE_KEY,
     JSON.stringify({ ...currentCache, [key]: value })
   )
 }
 
 function saveExecutedMessageToCache(key: string) {
   const currentCache = JSON.parse(
-    localStorage.getItem(executedMessagesLocalStorageKey) || '{}'
+    localStorage.getItem(EXECUTED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
   )
   localStorage.setItem(
-    executedMessagesLocalStorageKey,
+    EXECUTED_MESSAGES_LOCAL_STORAGE_KEY,
     JSON.stringify({ ...currentCache, [key]: true })
   )
 }
@@ -113,6 +113,18 @@ export async function getOutgoingMessageState(
   l2ChainID: number,
   currentParentChainBlock: number
 ) {
+  const cacheKey = getL2ToL1MessageCacheKey({
+    event,
+    l2ChainId: l2ChainID
+  })
+
+  const executedMessagesCache = JSON.parse(
+    localStorage.getItem(EXECUTED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
+  )
+  if (executedMessagesCache[cacheKey]) {
+    return OutgoingMessageState.EXECUTED
+  }
+
   // see if there's first executable block cache
   // if the current block is below it then we know the status is unconfirmed
   const firstExecutableBlockFromCache = getFirstExecutableBlockFromCache({
@@ -120,23 +132,10 @@ export async function getOutgoingMessageState(
     l2ChainID
   })
   if (
-    firstExecutableBlockFromCache &&
     currentParentChainBlock <
-      firstExecutableBlockFromCache + CONFIRMATION_BUFFER_BLOCKS
+    firstExecutableBlockFromCache + CONFIRMATION_BUFFER_BLOCKS
   ) {
     return OutgoingMessageState.UNCONFIRMED
-  }
-
-  const cacheKey = getMessagesCacheKey({
-    event,
-    l2ChainId: l2ChainID
-  })
-
-  const executedMessagesCache = JSON.parse(
-    localStorage.getItem(executedMessagesLocalStorageKey) || '{}'
-  )
-  if (executedMessagesCache[cacheKey]) {
-    return OutgoingMessageState.EXECUTED
   }
 
   const messageReader = new L2ToL1MessageReader(l1Provider, event)
@@ -172,7 +171,7 @@ export async function attachNodeBlockDeadlineToEvent(
     l2ChainID
   })
 
-  if (firstExecutableBlockFromCache) {
+  if (firstExecutableBlockFromCache > 0) {
     return {
       ...event,
       nodeBlockDeadline: firstExecutableBlockFromCache
@@ -185,15 +184,15 @@ export async function attachNodeBlockDeadlineToEvent(
     const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
       l2Provider
     )
-    const firstExecutableBlockCacheKey = getMessagesCacheKey({
+    const firstExecutableBlockCacheKey = getL2ToL1MessageCacheKey({
       event,
       l2ChainId: l2ChainID
     })
 
-    if (firstExecutableBlockCacheKey && firstExecutableBlock) {
+    if (firstExecutableBlock) {
       saveFirstExecutableBlockToCache(
         firstExecutableBlockCacheKey,
-        firstExecutableBlock.toNumber()
+        firstExecutableBlock.toString()
       )
     }
 

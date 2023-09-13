@@ -9,7 +9,9 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Tooltip } from './Tooltip'
 
-// Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
+/**
+ * Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice.
+ */
 export const CONFIRMATION_BUFFER_BLOCKS = 120
 
 export function WithdrawalCountdown({

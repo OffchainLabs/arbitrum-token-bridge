@@ -57,7 +57,7 @@ function isClassicL2ToL1TransactionEvent(
   return typeof (event as any).batchNumber !== 'undefined'
 }
 
-export function getMessagesCacheKey({
+export function getL2ToL1MessageCacheKey({
   event,
   l2ChainId
 }: {
@@ -990,7 +990,7 @@ export const useArbTokenBridge = (
     const added: { [cacheKey: string]: boolean } = {}
 
     events.forEach((event: L2ToL1EventResult) => {
-      const cacheKey = getMessagesCacheKey({
+      const cacheKey = getL2ToL1MessageCacheKey({
         event,
         l2ChainId: l2.network.id
       })
