@@ -23,9 +23,10 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
+import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -52,6 +53,7 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l1.network.id)
   const {
@@ -148,7 +150,7 @@ export function WithdrawalConfirmationDialog(
                   </ExternalLink>
                 </p>
 
-                {!isOrbitChain && (
+                {parentLayer === 'L1' && (
                   <div className="flex flex-row items-center space-x-1">
                     <CheckIcon className="h-6 w-6 text-lime-dark" />
                     <span className="font-medium text-lime-dark">
@@ -164,7 +166,7 @@ export function WithdrawalConfirmationDialog(
                     <span className="font-light">
                       I understand that it will take ~{confirmationPeriod}{' '}
                       before I can claim my funds on{' '}
-                      {isOrbitChain ? '' : 'Ethereum '}
+                      {parentLayer === 'L1' ? 'Ethereum ' : ''}
                       {networkName}
                     </span>
                   }
@@ -178,9 +180,9 @@ export function WithdrawalConfirmationDialog(
                       I understand that after claiming my funds, I’ll have to
                       send{' '}
                       <span className="font-medium">
-                        another transaction on {isOrbitChain ? 'L2' : 'L1'}
+                        another transaction on {parentLayer}
                       </span>{' '}
-                      and pay another {isOrbitChain ? 'L2' : 'L1'} fee
+                      and pay another {parentLayer} fee
                     </span>
                   }
                   checked={checkbox2Checked}
