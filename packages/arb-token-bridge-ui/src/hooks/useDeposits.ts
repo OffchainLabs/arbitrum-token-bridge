@@ -68,16 +68,20 @@ export const useDeposits = (depositPageParams: PageParams) => {
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
-    [
-      'deposits',
-      walletAddress,
-      l1Provider,
-      l2Provider,
-      isTransactionHistoryShowingSentTx,
-      depositPageParams.pageNumber,
-      depositPageParams.pageSize,
-      depositPageParams.searchString
-    ],
+    // `walletAddress` can actually be `undefined`, so the type is wrong
+    // remove comment once we switch to `useAccount`
+    walletAddress
+      ? [
+          'deposits',
+          walletAddress,
+          l1Provider,
+          l2Provider,
+          isTransactionHistoryShowingSentTx,
+          depositPageParams.pageNumber,
+          depositPageParams.pageSize,
+          depositPageParams.searchString
+        ]
+      : null,
     ([
       ,
       _walletAddress,
