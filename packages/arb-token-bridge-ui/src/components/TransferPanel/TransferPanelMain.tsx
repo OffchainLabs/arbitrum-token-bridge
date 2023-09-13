@@ -58,6 +58,7 @@ import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum NetworkType {
   l1 = 'l1',
@@ -348,6 +349,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
@@ -674,9 +676,9 @@ export function TransferPanelMain({
     }
 
     return `Insufficient balance, please add more to ${
-      isDepositMode ? 'L1' : 'L2'
+      isDepositMode ? parentLayer : layer
     }.`
-  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
+  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -1048,8 +1050,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your L2 wallet, you’ll need it to power
-              transactions.
+              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              power transactions.
               <br />
               <ExternalLink
                 href={ETH_BALANCE_ARTICLE_LINK}
