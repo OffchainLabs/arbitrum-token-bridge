@@ -76,16 +76,20 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
-    [
-      'withdrawals',
-      walletAddress,
-      l1Provider,
-      l2Provider,
-      isTransactionHistoryShowingSentTx,
-      withdrawalPageParams.pageNumber,
-      withdrawalPageParams.pageSize,
-      withdrawalPageParams.searchString
-    ],
+    // `walletAddress` can actually be `undefined`, so the type is wrong
+    // remove comment once we switch to `useAccount`
+    walletAddress
+      ? [
+          'withdrawals',
+          walletAddress,
+          l1Provider,
+          l2Provider,
+          isTransactionHistoryShowingSentTx,
+          withdrawalPageParams.pageNumber,
+          withdrawalPageParams.pageSize,
+          withdrawalPageParams.searchString
+        ]
+      : null,
     ([
       ,
       _walletAddress,
