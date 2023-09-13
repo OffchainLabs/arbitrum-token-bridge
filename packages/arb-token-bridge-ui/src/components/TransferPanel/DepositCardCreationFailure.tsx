@@ -8,10 +8,12 @@ import { DepositCardContainer } from './DepositCard'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
   return (
@@ -31,9 +33,9 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${getExplorerUrl(l1.network.id)}/tx/${
+            `${parentLayer} transaction: ${getExplorerUrl(l1.network.id)}/tx/${
               tx.txId
-            }\nL2 transaction: ${getExplorerUrl(l2.network.id)}/tx/${
+            }\n${layer} transaction: ${getExplorerUrl(l2.network.id)}/tx/${
               tx.l1ToL2MsgData?.retryableCreationTxID
             }`
           )
@@ -41,11 +43,11 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
       >
         <div className="flex flex-col">
           <span className="text-base text-brick-dark">
-            L1 transaction:{' '}
+            {parentLayer} transaction:{' '}
             <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
           </span>
           <span className="text-base text-brick-dark">
-            L2 transaction:{' '}
+            {layer} transaction:{' '}
             <span className="text-blue-link">
               {shortenTxHash(tx.l1ToL2MsgData?.retryableCreationTxID || '')}
             </span>
