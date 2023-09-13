@@ -69,7 +69,7 @@ Interested in contributing to this repo? We welcome your contribution.
 
    2. In `.env` created, add `NEXT_PUBLIC_INFURA_KEY=my-infura-key`
 
-   3. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to your WalletConnect project ID. You can a new project on the [WalletConnect dashboard](https://cloud.walletconnect.com/app).
+   3. Set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to your WalletConnect project ID. You can create a new project on the [WalletConnect dashboard](https://cloud.walletconnect.com/app).
 
    4. For custom urls, set optional vars:
 
