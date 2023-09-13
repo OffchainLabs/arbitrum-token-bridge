@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 
@@ -60,17 +60,10 @@ export function MainContent() {
       pageSize: 10
     })
 
-  useEffect(() => {
-    const pageSize = isNetwork(l2.network.id).isOrbitChain ? 5 : 10
-    setWithdrawalsPageParams(prevWithdrawalPageParams => ({
-      ...prevWithdrawalPageParams,
-      pageSize
-    }))
-    setDepositsPageParams(prevDepositsPageParams => ({
-      ...prevDepositsPageParams,
-      pageSize
-    }))
-  }, [l2.network.id])
+  const pageSize = useMemo(
+    () => (isNetwork(l2.network.id).isOrbitChain ? 5 : 10),
+    [l2.network.id]
+  )
 
   const {
     data: depositsData = {
@@ -80,7 +73,7 @@ export function MainContent() {
     },
     isValidating: depositsLoading,
     error: depositsError
-  } = useDeposits(depositsPageParams)
+  } = useDeposits({ ...depositsPageParams, pageSize })
 
   const {
     data: withdrawalsData = {
@@ -90,7 +83,7 @@ export function MainContent() {
     },
     isValidating: withdrawalsLoading,
     error: withdrawalsError
-  } = useWithdrawals(withdrawalsPageParams)
+  } = useWithdrawals({ ...withdrawalsPageParams, pageSize })
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
@@ -130,8 +123,8 @@ export function MainContent() {
         {/* Transaction history - pending transactions + history table */}
         <TransactionHistory
           {...{
-            depositsPageParams,
-            withdrawalsPageParams,
+            depositsPageParams: { ...depositsPageParams, pageSize },
+            withdrawalsPageParams: { ...withdrawalsPageParams, pageSize },
             depositsData,
             depositsLoading,
             depositsError,
