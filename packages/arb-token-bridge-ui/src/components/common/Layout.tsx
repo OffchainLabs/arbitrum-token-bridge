@@ -8,6 +8,8 @@ import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
 
+import { DOCS_DOMAIN } from '../../constants'
+
 import 'react-toastify/dist/ReactToastify.css'
 
 function Moon() {
@@ -41,7 +43,7 @@ export function Layout(props: LayoutProps) {
         The Stylus testnet is officially live! You can now build EVM-compatible
         apps in Rust by visiting the{' '}
         <ExternalLink
-          href="https://docs.arbitrum.io/stylus/stylus-gentle-introduction"
+          href={`${DOCS_DOMAIN}/stylus/stylus-gentle-introduction`}
           className="arb-hover underline"
         >
           Stylus docs

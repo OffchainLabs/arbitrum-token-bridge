@@ -12,6 +12,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
   isNetwork
@@ -57,6 +58,7 @@ import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum NetworkType {
   l1 = 'l1',
@@ -66,14 +68,16 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const { isEOA, isSmartContractWallet } = useAccountType()
+  const {
+    isEOA,
+    isSmartContractWallet,
+    isLoading: isLoadingAccountType
+  } = useAccountType()
 
   return (
     <button
       type="button"
-      disabled={
-        isSmartContractWallet || typeof isSmartContractWallet === 'undefined'
-      }
+      disabled={isSmartContractWallet || isLoadingAccountType}
       className={twMerge(
         'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
         isEOA
@@ -345,10 +349,11 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -501,8 +506,7 @@ export function TransferPanelMain({
   useEffect(() => {
     setFrom(externalFrom)
     setTo(externalTo)
-    setQueryParams({ l2ChainId: l2.network.id })
-  }, [externalFrom, externalTo, l2.network.id, setQueryParams])
+  }, [externalFrom, externalTo])
 
   const estimateGas = useCallback(
     async (
@@ -672,9 +676,9 @@ export function TransferPanelMain({
     }
 
     return `Insufficient balance, please add more to ${
-      isDepositMode ? 'L1' : 'L2'
+      isDepositMode ? parentLayer : layer
     }.`
-  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
+  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -736,11 +740,20 @@ export function TransferPanelMain({
 
     // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
     // we can have a more dynamic solution in the future with more Orbit chains
-    const chainToDefaultPartnerChain: { [key in ChainId]?: ChainId } = {
-      [ChainId.XaiTestnet]: ChainId.ArbitrumGoerli,
-      [ChainId.StylusTestnet]: ChainId.ArbitrumSepolia,
-      [ChainId.Goerli]: ChainId.ArbitrumGoerli,
-      [ChainId.Sepolia]: ChainId.ArbitrumSepolia
+    function mapChainToDefaultPartnerChain(chainId: ChainId) {
+      const customOrbitChain = getCustomChainFromLocalStorageById(chainId)
+
+      if (customOrbitChain) {
+        return customOrbitChain.partnerChainID
+      }
+
+      switch (chainId) {
+        case ChainId.Sepolia:
+        case ChainId.StylusTestnet:
+          return ChainId.ArbitrumSepolia
+        default:
+          return ChainId.ArbitrumGoerli
+      }
     }
 
     function updatePreferredL2Chain(l2ChainId: number) {
@@ -799,7 +812,7 @@ export function TransferPanelMain({
               // Otherwise we want to keep the current chain, in case it's Nova.
               if (isEthereum && isOrbitChainSelected) {
                 updatePreferredL2Chain(
-                  chainToDefaultPartnerChain[network.id as ChainId]!
+                  mapChainToDefaultPartnerChain(network.id)
                 )
                 return
               }
@@ -817,8 +830,9 @@ export function TransferPanelMain({
           value: to,
           onChange: async network => {
             const { isEthereum, isOrbitChain } = isNetwork(network.id)
-            const defaultPartnerChain =
-              chainToDefaultPartnerChain[network.id as ChainId]!
+            const defaultPartnerChain = mapChainToDefaultPartnerChain(
+              network.id
+            )
 
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
@@ -887,9 +901,7 @@ export function TransferPanelMain({
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainSelected) {
-              updatePreferredL2Chain(
-                chainToDefaultPartnerChain[network.id as ChainId]!
-              )
+              updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
               return
             }
             updatePreferredL2Chain(network.id)
@@ -906,8 +918,7 @@ export function TransferPanelMain({
         value: to,
         onChange: async network => {
           const { isEthereum, isOrbitChain } = isNetwork(network.id)
-          const defaultPartnerChain =
-            chainToDefaultPartnerChain[network.id as ChainId]!
+          const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
 
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
@@ -1039,8 +1050,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your L2 wallet, you’ll need it to power
-              transactions.
+              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              power transactions.
               <br />
               <ExternalLink
                 href={ETH_BALANCE_ARTICLE_LINK}

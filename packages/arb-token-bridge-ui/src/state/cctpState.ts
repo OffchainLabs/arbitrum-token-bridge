@@ -439,6 +439,7 @@ export function useUpdateCctpTransactions() {
 
 type useCctpFetchingParams = {
   l1ChainId: ChainId
+  l2ChainId: ChainId
   walletAddress: `0x${string}` | undefined
   pageSize: number
   pageNumber: number
@@ -446,11 +447,20 @@ type useCctpFetchingParams = {
 }
 export function useCctpFetching({
   l1ChainId,
+  l2ChainId,
   walletAddress,
   pageSize = 10,
   pageNumber,
   type
 }: useCctpFetchingParams) {
+  const { isMainnet: isL1Mainnet, isGoerli: isL1Goerli } = isNetwork(l1ChainId)
+  const {
+    isArbitrumOne: isL2ArbitrumOne,
+    isArbitrumGoerli: isL2ArbitrumGoerli
+  } = isNetwork(l2ChainId)
+  const isValidChainPair =
+    (isL1Mainnet && isL2ArbitrumOne) || (isL1Goerli && isL2ArbitrumGoerli)
+
   const {
     data: deposits,
     isLoading: isLoadingDeposits,
@@ -460,8 +470,9 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'withdrawals'
+    enabled: type !== 'withdrawals' && isValidChainPair
   })
+
   const {
     data: withdrawals,
     isLoading: isLoadingWithdrawals,
@@ -471,7 +482,7 @@ export function useCctpFetching({
     walletAddress,
     pageNumber,
     pageSize,
-    enabled: type !== 'deposits'
+    enabled: type !== 'deposits' && isValidChainPair
   })
   const { setTransfers } = useCctpState()
 
@@ -502,7 +513,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { waitForAttestation, receiveMessage } = useCCTP({
     sourceChainId: tx.cctpData?.sourceChainId
   })
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   const { updateTransfer } = useCctpState()
   const { data: signer } = useSigner()
@@ -640,7 +651,6 @@ export function useRemainingTime(tx: MergedTransaction) {
 
     if (dayjs().isAfter(canBeClaimedDate)) {
       setIsConfirmed(true)
-      setRemainingTime('')
     } else {
       setRemainingTime(canBeClaimedDate.fromNow().toString())
     }

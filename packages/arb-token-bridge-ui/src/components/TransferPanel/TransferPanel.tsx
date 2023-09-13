@@ -52,7 +52,7 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   getDestinationAddressError,
   useDestinationAddressStore
@@ -170,7 +170,7 @@ export function TransferPanel() {
     l2: { network: l2Network, provider: l2Provider }
   } = networksAndSigners
 
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
@@ -399,15 +399,22 @@ export function TransferPanel() {
     }
   }, [amount, selectedToken])
 
+  // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
+  const showDelayedSCTxRequest = () =>
+    setTimeout(() => {
+      setTransferring(false)
+      setShowSCWalletTooltip(true)
+    }, 3000)
+
   const transferCctp = async (type: 'deposits' | 'withdrawals') => {
     if (!selectedToken) {
       return
     }
-    if (!l1Signer || !l2Signer) {
+    const isDeposit = type === 'deposits'
+    const signer = isDeposit ? l1Signer : l2Signer
+    if (!signer) {
       throw 'Signer is undefined'
     }
-
-    const isDeposit = type === 'deposits'
 
     setTransferring(true)
     let currentNetwork = isDeposit
@@ -502,10 +509,10 @@ export function TransferPanel() {
         }
 
         try {
-          const tx = await approveForBurn(
-            amountBigNumber,
-            isDeposit ? l1Signer : l2Signer
-          )
+          if (isSmartContractWallet) {
+            showDelayedSCTxRequest()
+          }
+          const tx = await approveForBurn(amountBigNumber, signer)
           await tx.wait()
         } catch (error) {
           if (isUserRejectedError(error)) {
@@ -523,9 +530,12 @@ export function TransferPanel() {
 
       let depositForBurnTx
       try {
+        if (isSmartContractWallet) {
+          showDelayedSCTxRequest()
+        }
         depositForBurnTx = await depositForBurn({
           amount: amountBigNumber,
-          signer: isDeposit ? l1Signer : l2Signer,
+          signer,
           recipient: destinationAddress || walletAddress
         })
       } catch (error) {
@@ -540,19 +550,31 @@ export function TransferPanel() {
         )
       }
 
+      if (isSmartContractWallet) {
+        // For SCW, we assume that the transaction went through
+        if (shouldTrackAnalytics(currentNetworkName)) {
+          trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+            accountType: 'Smart Contract',
+            network: currentNetworkName,
+            amount: Number(amount),
+            complete: false
+          })
+        }
+        return
+      }
+
       if (!depositForBurnTx || !account) {
         return
       }
 
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          accountType: 'EOA',
           network: currentNetworkName,
           amount: Number(amount),
           complete: false
         })
       }
-
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',
@@ -615,11 +637,6 @@ export function TransferPanel() {
       return
     }
 
-    if (!isEOA && !isSmartContractWallet) {
-      console.error('Account type is undefined')
-      return
-    }
-
     const hasBothSigners = l1Signer && l2Signer
     if (isEOA && !hasBothSigners) {
       throw signerUndefinedError
@@ -654,13 +671,6 @@ export function TransferPanel() {
 
     const l2NetworkName = getNetworkName(l2Network.id)
 
-    // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
-    const showDelayedSCTxRequest = () =>
-      setTimeout(() => {
-        setTransferring(false)
-        setShowSCWalletTooltip(true)
-      }, 3000)
-
     setTransferring(true)
 
     try {
@@ -683,7 +693,7 @@ export function TransferPanel() {
             }
           })()
           return window.alert(
-            `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See https://developer.offchainlabs.com/docs/bridging_assets for more info.)`
+            `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
           )
         }
 
@@ -1370,7 +1380,6 @@ export function TransferPanel() {
               disabled={disableDeposit}
               onClick={() => {
                 if (
-                  isEOA &&
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
                     isTokenGoerliUSDC(selectedToken.address)) &&
@@ -1388,9 +1397,11 @@ export function TransferPanel() {
                 depositButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l2Network.id)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l2Network.id)}`}
+              </span>
             </Button>
           ) : (
             <Button
@@ -1399,7 +1410,6 @@ export function TransferPanel() {
               disabled={disableWithdrawal}
               onClick={() => {
                 if (
-                  isEOA &&
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
@@ -1414,9 +1424,11 @@ export function TransferPanel() {
                 withdrawalButtonColorClassName
               )}
             >
-              {isSmartContractWallet && isTransferring
-                ? 'Sending request...'
-                : `Move funds to ${getNetworkName(l1Network.id)}`}
+              <span className="block w-[360px] truncate">
+                {isSmartContractWallet && isTransferring
+                  ? 'Sending request...'
+                  : `Move funds to ${getNetworkName(l1Network.id)}`}
+              </span>
             </Button>
           )}
         </div>
