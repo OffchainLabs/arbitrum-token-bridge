@@ -13,13 +13,6 @@ export default function Document() {
           name="description"
           content="Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup."
         />
-
-        {/* Fathom Analytics */}
-        <script
-          src="https://cdn.usefathom.com/script.js"
-          data-site="SKOIAJUL"
-          defer
-        />
       </Head>
       <body>
         <Main />

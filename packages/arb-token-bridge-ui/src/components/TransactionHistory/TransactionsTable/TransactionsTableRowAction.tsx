@@ -14,6 +14,7 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
+import { useChainLayers } from '../../../hooks/useChainLayers'
 
 const GetHelpButton = ({
   variant,
@@ -46,6 +47,7 @@ export function TransactionsTableRowAction({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const l1NetworkName = getNetworkName(l1Network.id)
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
@@ -55,10 +57,21 @@ export function TransactionsTableRowAction({
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereum, isArbitrumOne, isArbitrumGoerli } = isNetwork(chainId)
-  const currentChainIsValid =
-    (type === 'deposits' && (isArbitrumOne || isArbitrumGoerli)) ||
-    (type === 'withdrawals' && isEthereum)
+  const { isEthereum, isArbitrum } = isNetwork(chainId)
+
+  const currentChainIsValid = useMemo(() => {
+    const isWithdrawalSourceOrbitChain = isNetwork(l2Network.id).isOrbitChain
+
+    if (isWithdrawalSourceOrbitChain) {
+      // Enable claim if withdrawn from an Orbit chain and is connected to L2
+      return isArbitrum
+    }
+
+    return (
+      (type === 'deposits' && isArbitrum) ||
+      (type === 'withdrawals' && isEthereum)
+    )
+  }, [isArbitrum, isEthereum, l2Network.id, type])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed
@@ -98,7 +111,7 @@ export function TransactionsTableRowAction({
         content={
           <span>
             {`Please connect to the ${
-              type === 'deposits' ? 'L2' : 'L1'
+              type === 'deposits' ? layer : parentLayer
             } network to claim your ${
               type === 'deposits' ? 'deposit' : 'withdrawal'
             }.`}

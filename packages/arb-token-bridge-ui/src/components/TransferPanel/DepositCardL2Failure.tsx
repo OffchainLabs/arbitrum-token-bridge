@@ -16,6 +16,7 @@ import { Tooltip } from '../common/Tooltip'
 import { Button } from '../common/Button'
 import { getRetryableTicketExpiration } from '../../util/RetryableUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
@@ -27,6 +28,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     l1: { provider: l1Provider },
     l2: { provider: l2Provider }
   } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -110,10 +112,10 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
           <div className="h-2" />
           <div className="flex flex-col font-light">
             <span className="text-base text-orange-dark">
-              L1 transaction: <DepositL1TxStatus tx={tx} />
+              {parentLayer} transaction: <DepositL1TxStatus tx={tx} />
             </span>
             <span className="text-base text-orange-dark">
-              L2 transaction:{' '}
+              {layer} transaction:{' '}
               {isRedeeming ? 'Pending...' : 'Failed. Try re-executing.'}
             </span>
           </div>
