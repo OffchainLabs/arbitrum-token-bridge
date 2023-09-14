@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -38,6 +39,7 @@ import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum Panel {
   TOKENS,
@@ -147,9 +149,10 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, walletAddress, bridgeTokens },
+      arbTokenBridge: { token, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -157,6 +160,7 @@ function TokensPanel({
     l1: { provider: L1Provider },
     l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
@@ -322,6 +326,10 @@ function TokensPanel({
   ])
 
   const storeNewToken = useCallback(async () => {
+    if (!walletAddress) {
+      return
+    }
+
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -347,7 +355,7 @@ function TokensPanel({
     if (!isSuccessful) {
       setErrorMessage(error)
     }
-  }, [newToken, token])
+  }, [newToken, token, walletAddress])
 
   const tokenSearchFieldChangeHandler = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -410,8 +418,8 @@ function TokensPanel({
               type="search"
               value={newToken}
               onChange={tokenSearchFieldChangeHandler}
-              placeholder="Search by token name, symbol, L1 or L2 address"
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
+              placeholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
             />
           </div>
         </div>
@@ -487,9 +495,10 @@ export function TokenSearch({
   close: () => void
   onImportToken: (address: string) => void
 }) {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens, walletAddress }
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
@@ -546,6 +555,10 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)
+        return
+      }
+
+      if (!walletAddress) {
         return
       }
 

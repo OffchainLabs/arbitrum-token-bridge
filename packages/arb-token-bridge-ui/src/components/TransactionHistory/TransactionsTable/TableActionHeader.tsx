@@ -8,6 +8,7 @@ import {
 import { TransactionsTableProps } from './TransactionsTable'
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue'
 import { Loader } from '../../common/atoms/Loader'
+import { useChainLayers } from '../../../hooks/useChainLayers'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
@@ -26,7 +27,8 @@ export const TableActionHeader = ({
   isSmartContractWallet,
   showSearch
 }: TableActionHeaderProps) => {
-  const layerType = type === 'deposits' ? 'L1' : 'L2'
+  const { parentLayer, layer } = useChainLayers()
+  const layerType = type === 'deposits' ? parentLayer : layer
 
   const [searchString, setSearchString] = useState(pageParams.searchString)
 

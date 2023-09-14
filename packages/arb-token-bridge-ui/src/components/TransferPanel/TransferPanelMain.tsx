@@ -45,6 +45,7 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
   isTokenArbitrumGoerliNativeUSDC,
@@ -58,6 +59,7 @@ import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum NetworkType {
   l1 = 'l1',
@@ -348,6 +350,7 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
@@ -361,8 +364,9 @@ export function TransferPanelMain({
   const l2GasPrice = useGasPrice({ provider: l2.provider })
 
   const { app } = useAppState()
+  const { address: walletAddress } = useAccount()
   const { arbTokenBridge, isDepositMode, selectedToken } = app
-  const { walletAddress, token } = arbTokenBridge
+  const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -395,7 +399,11 @@ export function TransferPanelMain({
   })
 
   useEffect(() => {
-    if (!selectedToken || !utils.isAddress(destinationAddressOrWalletAddress)) {
+    if (
+      !selectedToken ||
+      !destinationAddressOrWalletAddress ||
+      !utils.isAddress(destinationAddressOrWalletAddress)
+    ) {
       return
     }
 
@@ -509,11 +517,19 @@ export function TransferPanelMain({
   const estimateGas = useCallback(
     async (
       weiValue: BigNumber
-    ): Promise<{
-      estimatedL1Gas: BigNumber
-      estimatedL2Gas: BigNumber
-      estimatedL2SubmissionCost: BigNumber
-    }> => {
+    ): Promise<
+      | GasEstimates & {
+          estimatedL2SubmissionCost: BigNumber
+        }
+    > => {
+      if (!walletAddress) {
+        return {
+          estimatedL1Gas: constants.Zero,
+          estimatedL2Gas: constants.Zero,
+          estimatedL2SubmissionCost: constants.Zero
+        }
+      }
+
       if (isDepositMode) {
         const result = await depositEthEstimateGas({
           amount: weiValue,
@@ -674,9 +690,9 @@ export function TransferPanelMain({
     }
 
     return `Insufficient balance, please add more to ${
-      isDepositMode ? 'L1' : 'L2'
+      isDepositMode ? parentLayer : layer
     }.`
-  }, [errorMessage, isDepositMode, openWithdrawOnlyDialog])
+  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -1048,8 +1064,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your L2 wallet, you’ll need it to power
-              transactions.
+              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              power transactions.
               <br />
               <ExternalLink
                 href={ETH_BALANCE_ARTICLE_LINK}
@@ -1077,6 +1093,7 @@ export function TransferPanelMain({
             {isSwitchingL2Chain ? (
               <StyledLoader />
             ) : (
+              destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
                 <>
                   <TokenBalance

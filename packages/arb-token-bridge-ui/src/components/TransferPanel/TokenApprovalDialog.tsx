@@ -4,6 +4,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
+import { useAccount } from 'wagmi'
+
 import { useChainId, useSigner } from 'wagmi'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -21,6 +23,7 @@ import {
   approveTokenEstimateGas
 } from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -30,9 +33,10 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { allowance, amount, isOpen, token, isCctp } = props
+  const { address: walletAddress } = useAccount()
+  const { allowance, isOpen, amount, token, isCctp } = props
   const {
-    app: { arbTokenBridge, isDepositMode }
+    app: { isDepositMode }
   } = useAppState()
 
   const allowanceParsed =
@@ -40,6 +44,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const { isMainnet, isTestnet } = isNetwork(l1.network.id)
   const provider = isDepositMode ? l1.provider : l2.provider
   const gasPrice = useGasPrice({ provider })
@@ -69,28 +74,32 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (token?.address) {
-        let gasEstimate
+      if (!token?.address) {
+        return
+      }
 
-        if (isCctp) {
-          if (!signer) {
-            gasEstimate = constants.Zero
-          } else {
-            gasEstimate = await approveCctpEstimateGas(
-              chainId,
-              constants.MaxUint256,
-              signer
-            )
-          }
+      let gasEstimate
+
+      if (isCctp) {
+        if (!signer) {
+          gasEstimate = constants.Zero
         } else {
-          gasEstimate = await approveTokenEstimateGas({
-            erc20L1Address: token.address,
-            address: arbTokenBridge.walletAddress,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
-          })
+          gasEstimate = await approveCctpEstimateGas(
+            chainId,
+            constants.MaxUint256,
+            signer
+          )
         }
+      } else if (walletAddress) {
+        gasEstimate = await approveTokenEstimateGas({
+          erc20L1Address: token.address,
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
+      }
 
+      if (gasEstimate) {
         setEstimatedGas(gasEstimate)
       }
     }
@@ -101,14 +110,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isOpen,
     l1.provider,
     l2.provider,
-    arbTokenBridge.walletAddress,
     token?.address,
     token?.l2Address,
     isDepositMode,
     isTestnet,
     chainId,
-    amount,
-    signer
+    signer,
+    walletAddress
   ])
 
   function closeWithReset(confirmed: boolean) {
@@ -121,10 +129,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const noteMessage = (() => {
     if (isDepositMode) {
       return isCctp
-        ? 'the CCTP L2 deposit fee.'
-        : 'the standard L2 deposit fee.'
+        ? `the CCTP ${layer} deposit fee.`
+        : `the standard ${layer} deposit fee.`
     }
-    return isCctp ? 'the CCTP L1 deposit fee.' : 'the standard L1 deposit fee.'
+    return isCctp
+      ? `the CCTP ${parentLayer} deposit fee.`
+      : `the standard ${parentLayer} deposit fee.`
   })()
 
   return (
