@@ -93,6 +93,7 @@ export type AppState = {
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
+  verifying: WhiteListState
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
   failedRetryablesToRedeem: MergedTransaction[]
@@ -110,6 +111,7 @@ export const defaultState: AppState = {
   connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
+  verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
