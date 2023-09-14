@@ -58,6 +58,10 @@ const chainList = isTestingEnvironment
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
+if (!projectId) {
+  console.error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID variable missing.')
+}
+
 const appInfo = {
   appName: 'Bridge to Arbitrum',
   projectId

@@ -4,8 +4,7 @@ import { ChainId } from '../../../util/networks'
 
 const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
 if (!subgraphUrl) {
-  console.error('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
-  throw new Error('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
+  console.warn('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
 }
 
 export function getSubgraphClient(subgraph: string) {

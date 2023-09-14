@@ -9,7 +9,6 @@ import {
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { useL2Gateways } from './useL2Gateways'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAppContextState } from '../components/App/AppContext'
 import {
@@ -65,8 +64,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
 
-  const gatewaysToUse = useL2Gateways({ l2Provider })
-
   const {
     app: {
       arbTokenBridge: { walletAddress }
@@ -79,23 +76,25 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
-    [
-      'withdrawals',
-      walletAddress,
-      l1Provider,
-      l2Provider,
-      gatewaysToUse,
-      isTransactionHistoryShowingSentTx,
-      withdrawalPageParams.pageNumber,
-      withdrawalPageParams.pageSize,
-      withdrawalPageParams.searchString
-    ],
+    // `walletAddress` can actually be `undefined`, so the type is wrong
+    // remove comment once we switch to `useAccount`
+    walletAddress
+      ? [
+          'withdrawals',
+          walletAddress,
+          l1Provider,
+          l2Provider,
+          isTransactionHistoryShowingSentTx,
+          withdrawalPageParams.pageNumber,
+          withdrawalPageParams.pageSize,
+          withdrawalPageParams.searchString
+        ]
+      : null,
     ([
       ,
       _walletAddress,
       _l1Provider,
       _l2Provider,
-      _gatewayAddresses,
       _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
@@ -104,7 +103,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       fetchCompleteWithdrawalData({
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
-        gatewayAddresses: _gatewayAddresses,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,
