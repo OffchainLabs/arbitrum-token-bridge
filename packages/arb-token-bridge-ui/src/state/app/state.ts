@@ -5,15 +5,16 @@ import {
 } from 'lodash-es'
 import { derived } from 'overmind'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { getAccount } from '@wagmi/core'
+import { BigNumber } from 'ethers'
+import dayjs from 'dayjs'
 
-import { ConnectionState } from '../../util'
 import {
   filterTransactions,
   transformDeposits,
   transformWithdrawals
 } from './utils'
-import { BigNumber } from 'ethers'
-import dayjs from 'dayjs'
+
 import {
   ArbTokenBridge,
   ERC20BridgeToken,
@@ -26,6 +27,7 @@ import {
   Transaction,
   TxnType
 } from '../../hooks/useTransactions'
+import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 
 export enum WhiteListState {
@@ -88,10 +90,10 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
+  verifying: WhiteListState
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
   failedRetryablesToRedeem: MergedTransaction[]
@@ -114,9 +116,14 @@ export const defaultState: AppState = {
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    const account = getAccount()
+    if (!account.address) {
+      return []
+    }
+
     return filterTransactions(
       [...transactions],
-      s.arbTokenBridge.walletAddress,
+      account.address,
       s.l1NetworkChainId,
       s.l2NetworkChainId
     )

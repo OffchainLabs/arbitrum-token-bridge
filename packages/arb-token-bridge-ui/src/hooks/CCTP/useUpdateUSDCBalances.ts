@@ -26,7 +26,7 @@ function getL1AddressFromAddress(address: string) {
 export function useUpdateUSDCBalances({
   walletAddress
 }: {
-  walletAddress: string
+  walletAddress: string | undefined
 }) {
   const { l1, l2 } = useNetworksAndSigners()
   const {

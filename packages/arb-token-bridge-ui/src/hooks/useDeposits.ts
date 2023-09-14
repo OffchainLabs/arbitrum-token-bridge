@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
+
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
-import { useAppState } from '../state'
 import { useAppContextState } from '../components/App/AppContext'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformDeposits } from '../state/app/utils'
@@ -27,7 +28,6 @@ export const fetchCompleteDepositData = async (
 ): Promise<CompleteDepositData> => {
   // get the original deposits
   const deposits = await fetchDeposits(depositParams)
-
   // filter out pending deposits
   const pendingDepositsMap = new Map<string, boolean>()
   // get their complete transformed data (so that we get their exact status)
@@ -52,24 +52,13 @@ export const useDeposits = (depositPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
+  const { address: walletAddress } = useAccount()
   const {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
 
-  const {
-    app: {
-      arbTokenBridge: { walletAddress }
-    }
-  } = useAppState()
-
-  const additionalSubgraphQueryParams = isTransactionHistoryShowingSentTx
-    ? getQueryParamsForFetchingSentFunds(walletAddress)
-    : getQueryParamsForFetchingReceivedFunds(walletAddress)
-
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
-    // `walletAddress` can actually be `undefined`, so the type is wrong
-    // remove comment once we switch to `useAccount`
     walletAddress
       ? [
           'deposits',
@@ -98,7 +87,9 @@ export const useDeposits = (depositPageParams: PageParams) => {
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,
-        ...additionalSubgraphQueryParams
+        ...(_isTransactionHistoryShowingSentTx
+          ? getQueryParamsForFetchingSentFunds(_walletAddress)
+          : getQueryParamsForFetchingReceivedFunds(_walletAddress))
       })
   )
 }

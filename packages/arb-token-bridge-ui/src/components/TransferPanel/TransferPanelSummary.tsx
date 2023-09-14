@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useLatest } from 'react-use'
+import { useAccount } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -61,7 +62,7 @@ export function useGasSummary(
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
-  const walletAddress = arbTokenBridge.walletAddress
+  const { address: walletAddress } = useAccount()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -122,6 +123,10 @@ export function useGasSummary(
       // Don't run gas estimation if the value is zero or the flag is not set
       if (amountDebounced.isZero() || !shouldRunGasEstimation) {
         setStatus('idle')
+        return
+      }
+
+      if (!walletAddress) {
         return
       }
 
@@ -221,7 +226,7 @@ export function useGasSummary(
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
     l1.network.id, // when L1 and L2 network id changes
     l2.network.id,
-    walletAddress // when user switches account
+    walletAddress // when user switches account or if user is not connected
   ])
 
   return {
