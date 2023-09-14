@@ -154,7 +154,7 @@ export const useArbTokenBridge = (
     }
 
     /**
-     * https://github.com/wagmi-dev/wagmi/blob/main/packages/connectors/src/base.ts#L8
+     * https://github.com/wagmi-dev/references/blob/7d02972803714e47a24ea9f5de33d91f384025b9/packages/connectors/src/base.ts#L13
      * Handler is called whenever network or account change
      */
     connector.on('change', resetPendingWithdrawalMap)
