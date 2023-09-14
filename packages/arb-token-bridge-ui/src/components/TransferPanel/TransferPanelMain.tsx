@@ -324,7 +324,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-row flex-nowrap items-center justify-between gap-1 whitespace-nowrap">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-1 gap-y-2.5 whitespace-nowrap">
       {children}
     </div>
   )
