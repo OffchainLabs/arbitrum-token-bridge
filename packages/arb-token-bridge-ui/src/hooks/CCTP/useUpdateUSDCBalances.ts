@@ -3,6 +3,8 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
 import { useNetworksAndSigners } from '../useNetworksAndSigners'
+import { isNetwork } from '../../util/networks'
+import { useAppState } from '../../state'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
@@ -28,6 +30,9 @@ export function useUpdateUSDCBalances({
 }) {
   const { l1, l2 } = useNetworksAndSigners()
   const {
+    app: { selectedToken }
+  } = useAppState()
+  const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
@@ -42,7 +47,18 @@ export function useUpdateUSDCBalances({
 
   const updateUSDCBalances = useCallback(
     (address: `0x${string}` | string) => {
+      if (!selectedToken) {
+        return
+      }
+
       const l1Address = getL1AddressFromAddress(address)
+      const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+
+      if (isOrbitChainSelected) {
+        const tokenAddress = selectedToken.l2Address ?? selectedToken.address
+        updateErc20L2Balance([tokenAddress])
+        return
+      }
 
       updateErc20L1Balance([l1Address.toLowerCase()])
       if (isTokenMainnetUSDC(l1Address)) {
@@ -57,7 +73,7 @@ export function useUpdateUSDCBalances({
         ])
       }
     },
-    [updateErc20L1Balance, updateErc20L2Balance]
+    [l2.network.id, selectedToken, updateErc20L1Balance, updateErc20L2Balance]
   )
 
   return { updateUSDCBalances }
