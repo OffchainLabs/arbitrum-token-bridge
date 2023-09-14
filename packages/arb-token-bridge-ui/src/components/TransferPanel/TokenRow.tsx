@@ -6,7 +6,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -79,9 +79,10 @@ export function TokenRow({
   onClick,
   token
 }: TokenRowProps): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, walletAddress },
+      arbTokenBridge: { bridgeTokens },
       isDepositMode
     }
   } = useAppState()

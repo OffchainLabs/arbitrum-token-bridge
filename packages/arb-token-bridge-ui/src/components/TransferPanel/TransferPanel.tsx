@@ -153,14 +153,14 @@ export function TransferPanel() {
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token, walletAddress },
+      arbTokenBridge: { eth, token },
       arbTokenBridge,
       warningTokens
     }
   } = useAppState()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
-  const { address: account, isConnected } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const provider = useProvider()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -183,7 +183,7 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { setPendingTransfer, updateTransfer } = useCctpState()
+  const { updateTransfer, setPendingTransfer } = useCctpState()
 
   const {
     openTransactionHistoryPanel,
@@ -274,15 +274,7 @@ export function TransferPanel() {
 
   useEffect(() => {
     // Check in case of an account switch or network switch
-    if (
-      typeof account === 'undefined' ||
-      typeof arbTokenBridge.walletAddress === 'undefined'
-    ) {
-      return
-    }
-
-    // Wait for the bridge object to be in sync
-    if (account.toLowerCase() !== arbTokenBridge.walletAddress.toLowerCase()) {
+    if (typeof walletAddress === 'undefined') {
       return
     }
 
@@ -296,7 +288,7 @@ export function TransferPanel() {
     }
   }, [
     ethL1Balance,
-    account,
+    walletAddress,
     isMainnet,
     isDepositMode,
     arbTokenBridge,
@@ -417,6 +409,9 @@ export function TransferPanel() {
 
   const transferCctp = async (type: 'deposits' | 'withdrawals') => {
     if (!selectedToken) {
+      return
+    }
+    if (!walletAddress) {
       return
     }
     const isDeposit = type === 'deposits'
@@ -572,7 +567,7 @@ export function TransferPanel() {
         return
       }
 
-      if (!depositForBurnTx || !account) {
+      if (!depositForBurnTx) {
         return
       }
 
@@ -597,7 +592,7 @@ export function TransferPanel() {
         value: amount,
         depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
         destination: recipient,
-        sender: account,
+        sender: walletAddress,
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
         cctpData: {
@@ -650,6 +645,9 @@ export function TransferPanel() {
     const signerUndefinedError = 'Signer is undefined'
 
     if (!isConnected) {
+      return
+    }
+    if (!walletAddress) {
       return
     }
 
@@ -1455,7 +1453,7 @@ export function TransferPanel() {
             onClose={() =>
               setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
             }
-            address={tokenFromSearchParams}
+            tokenAddress={tokenFromSearchParams}
           />
         )}
 

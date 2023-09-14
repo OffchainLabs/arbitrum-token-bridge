@@ -256,7 +256,6 @@ export type ArbTokenBridgeTransactions = {
 >
 
 export interface ArbTokenBridge {
-  walletAddress: string
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
