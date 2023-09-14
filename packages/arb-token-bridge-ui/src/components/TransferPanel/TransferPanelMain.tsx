@@ -518,14 +518,18 @@ export function TransferPanelMain({
     async (
       weiValue: BigNumber
     ): Promise<
-      | (GasEstimates & {
+      | GasEstimates & {
           estimatedL2SubmissionCost: BigNumber
-        })
-      | null
+        }
     > => {
       if (!walletAddress) {
-        return null
+        return {
+          estimatedL1Gas: constants.Zero,
+          estimatedL2Gas: constants.Zero,
+          estimatedL2SubmissionCost: constants.Zero
+        }
       }
+
       if (isDepositMode) {
         const result = await depositEthEstimateGas({
           amount: weiValue,
