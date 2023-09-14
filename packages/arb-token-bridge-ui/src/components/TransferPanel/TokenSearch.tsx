@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -149,9 +150,10 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, walletAddress, bridgeTokens },
+      arbTokenBridge: { token, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -315,6 +317,10 @@ function TokensPanel({
   ])
 
   const storeNewToken = async () => {
+    if (!walletAddress) {
+      return
+    }
+
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -452,9 +458,10 @@ export function TokenSearch({
   close: () => void
   onImportToken: (address: string) => void
 }) {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens, walletAddress }
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
@@ -511,6 +518,10 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)
+        return
+      }
+
+      if (!walletAddress) {
         return
       }
 

@@ -4,6 +4,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
+import { useAccount } from 'wagmi'
+
 import { useChainId, useSigner } from 'wagmi'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -31,9 +33,10 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { allowance, amount, isOpen, token, isCctp } = props
+  const { address: walletAddress } = useAccount()
+  const { allowance, isOpen, amount, token, isCctp } = props
   const {
-    app: { arbTokenBridge, isDepositMode }
+    app: { isDepositMode }
   } = useAppState()
 
   const allowanceParsed =
@@ -71,28 +74,32 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (token?.address) {
-        let gasEstimate
+      if (!token?.address) {
+        return
+      }
 
-        if (isCctp) {
-          if (!signer) {
-            gasEstimate = constants.Zero
-          } else {
-            gasEstimate = await approveCctpEstimateGas(
-              chainId,
-              constants.MaxUint256,
-              signer
-            )
-          }
+      let gasEstimate
+
+      if (isCctp) {
+        if (!signer) {
+          gasEstimate = constants.Zero
         } else {
-          gasEstimate = await approveTokenEstimateGas({
-            erc20L1Address: token.address,
-            address: arbTokenBridge.walletAddress,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
-          })
+          gasEstimate = await approveCctpEstimateGas(
+            chainId,
+            constants.MaxUint256,
+            signer
+          )
         }
+      } else if (walletAddress) {
+        gasEstimate = await approveTokenEstimateGas({
+          erc20L1Address: token.address,
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
+      }
 
+      if (gasEstimate) {
         setEstimatedGas(gasEstimate)
       }
     }
@@ -103,14 +110,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isOpen,
     l1.provider,
     l2.provider,
-    arbTokenBridge.walletAddress,
     token?.address,
     token?.l2Address,
     isDepositMode,
     isTestnet,
     chainId,
-    amount,
-    signer
+    signer,
+    walletAddress
   ])
 
   function closeWithReset(confirmed: boolean) {
