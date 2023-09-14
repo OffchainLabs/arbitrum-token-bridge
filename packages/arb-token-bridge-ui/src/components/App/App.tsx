@@ -148,7 +148,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
 
       setTokenBridgeParams({
-        walletAddress: address,
         l1: {
           network: l1.network,
           provider: l1.provider
@@ -198,7 +197,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     }
 
     initBridge(networksAndSigners)
-  }, [networksAndSigners, chain, isConnected, initBridge])
+  }, [networksAndSigners, chain, isConnected, initBridge, address])
 
   useEffect(() => {
     axios
