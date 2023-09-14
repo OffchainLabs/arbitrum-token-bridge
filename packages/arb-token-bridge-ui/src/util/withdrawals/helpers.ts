@@ -171,7 +171,8 @@ export async function attachNodeBlockDeadlineToEvent(
     l2ChainID
   })
 
-  if (firstExecutableBlockFromCache > 0) {
+  // if the return value is -1 it means it's not in the cache
+  if (firstExecutableBlockFromCache !== -1) {
     return {
       ...event,
       nodeBlockDeadline: firstExecutableBlockFromCache
