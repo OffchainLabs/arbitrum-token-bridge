@@ -576,10 +576,6 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(ethBalance)
 
-      if (!result) {
-        return
-      }
-
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
         l1GasPrice
