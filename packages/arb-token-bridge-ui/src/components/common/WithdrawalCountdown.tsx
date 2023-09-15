@@ -74,7 +74,7 @@ export function WithdrawalCountdown({
   const hoursLeft = Math.floor(minutesLeft / 60)
   const daysLeft = Math.floor(hoursLeft / 24)
 
-  let timeLeftText = ''
+  let timeLeftText = 'Almost there...'
 
   if (minutesLeft === -1) {
     timeLeftText = 'Estimation failed'
@@ -88,8 +88,6 @@ export function WithdrawalCountdown({
       'minute',
       remainingTextOrEmpty
     )
-  } else {
-    timeLeftText = 'Almost there...'
   }
 
   return <span>{timeLeftText}</span>
