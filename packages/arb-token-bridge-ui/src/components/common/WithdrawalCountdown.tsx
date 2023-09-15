@@ -45,6 +45,14 @@ function chainIdToConfirmNodeMinutes(parentChainId: ChainId) {
   return 60
 }
 
+function getRemainingTimeText(
+  value: number,
+  unit: 'minute' | 'hour' | 'day',
+  remainingText: string
+) {
+  return `~${value} ${unit}${value === 1 ? '' : 's'}${remainingText}`
+}
+
 export function WithdrawalCountdown({
   createdAt
 }: {
@@ -66,23 +74,20 @@ export function WithdrawalCountdown({
   const hoursLeft = Math.floor(minutesLeft / 60)
   const daysLeft = Math.floor(hoursLeft / 24)
 
-  let timeLeftText
+  let timeLeftText = ''
 
   if (minutesLeft === -1) {
-    // There was a date error, e.g. invalid local storage
-    timeLeftText = `Estimation failed`
+    timeLeftText = 'Estimation failed'
   } else if (daysLeft > 0) {
-    timeLeftText = `~${daysLeft} day${
-      daysLeft === 1 ? '' : 's'
-    }${remainingTextOrEmpty}`
+    timeLeftText = getRemainingTimeText(daysLeft, 'day', remainingTextOrEmpty)
   } else if (hoursLeft > 0) {
-    timeLeftText = `~${hoursLeft} hour${
-      hoursLeft === 1 ? '' : 's'
-    }${remainingTextOrEmpty}`
+    timeLeftText = getRemainingTimeText(hoursLeft, 'hour', remainingTextOrEmpty)
   } else if (minutesLeft > 0) {
-    timeLeftText = `~${minutesLeft} minute${
-      minutesLeft === 1 ? '' : 's'
-    }${remainingTextOrEmpty}`
+    timeLeftText = getRemainingTimeText(
+      minutesLeft,
+      'minute',
+      remainingTextOrEmpty
+    )
   } else {
     timeLeftText = 'Almost there...'
   }
