@@ -1,100 +1,82 @@
-import dayjs from 'dayjs'
-import { useBlockNumber } from 'wagmi'
+import dayjs, { Dayjs } from 'dayjs'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getBlockTime, getConfirmPeriodBlocks } from '../../util/networks'
-import {
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes
-} from '../../hooks/arbTokenBridge.types'
-import { Tooltip } from './Tooltip'
+import { ChainId } from '../../util/networks'
 
-export function WithdrawalCountdown({
-  nodeBlockDeadline
+/**
+ * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should be usually/always be less in practice.
+ */
+const CONFIRMATION_BUFFER_MINUTES = 30
+
+function getTxRemainingMinutes({
+  createdAt,
+  parentChainId
 }: {
-  nodeBlockDeadline: NodeBlockDeadlineStatus
-}): JSX.Element {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const { data: currentL1BlockNumber = 0 } = useBlockNumber({
-    chainId: l1Network.id,
-    watch: true
-  })
-
-  if (
-    typeof nodeBlockDeadline === 'undefined' ||
-    typeof l2Network === 'undefined'
-  ) {
-    return <span>Calculating...</span>
+  createdAt: string | Dayjs
+  parentChainId: number
+}) {
+  if (typeof createdAt === 'string') {
+    createdAt = dayjs(createdAt)
+  }
+  if (!createdAt.isValid()) {
+    return -1
   }
 
-  const blockTime = getBlockTime(l1Network.id) ?? 15
-  const confirmPeriodBlocks = getConfirmPeriodBlocks(l2Network.id)
+  const confirmNodeMinutes = chainIdToConfirmNodeMinutes(parentChainId)
 
-  if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
-    const withdrawalTimeInSeconds = confirmPeriodBlocks * blockTime
-    const withdrawalDate = dayjs().add(withdrawalTimeInSeconds, 'second')
-    const remainingTime = dayjs().to(withdrawalDate, true)
-
-    return (
-      <span className="animate-pulse whitespace-nowrap">
-        ~{remainingTime} remaining
-      </span>
-    )
-  }
-
-  if (nodeBlockDeadline === NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED) {
-    return <span>Failure</span>
-  }
-
-  // Buffer for after a node is confirmable but isn't yet confirmed; we give ~30 minutes, should be usually/always be less in practice
-  const confirmationBufferBlocks = 120
-  const blocksRemaining = Math.max(
-    nodeBlockDeadline + confirmationBufferBlocks - currentL1BlockNumber,
+  return Math.max(
+    createdAt
+      .add(confirmNodeMinutes, 'minute')
+      .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
+      .diff(dayjs(), 'minute'),
     0
   )
+}
 
-  const minutesLeft = Math.round((blocksRemaining * blockTime) / 60)
-  const hoursLeft = Math.round(minutesLeft / 60)
-  const daysLeft = Math.round(hoursLeft / 24)
+function chainIdToConfirmNodeMinutes(parentChainId: ChainId) {
+  const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
-  if (daysLeft > 0) {
-    return (
-      <Tooltip
-        content={<span> {`~${blocksRemaining} blocks remaining`} </span>}
-      >
-        <span className="animate-pulse whitespace-nowrap">
-          {`~${daysLeft} day${daysLeft === 1 ? '' : 's'}`} remaining
-        </span>
-      </Tooltip>
-    )
+  if (parentChainId === ChainId.Mainnet) {
+    return SEVEN_DAYS_IN_MINUTES
   }
 
-  if (hoursLeft > 0) {
-    return (
-      <Tooltip
-        content={<span> {`~${blocksRemaining} blocks remaining`} </span>}
-      >
-        <span className="animate-pulse whitespace-nowrap">
-          {`~${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`} remaining
-        </span>
-      </Tooltip>
-    )
+  // Node is created every ~1h for all other chains
+  return 60
+}
+
+export function WithdrawalCountdown({
+  createdAt
+}: {
+  createdAt: string | null
+}): JSX.Element {
+  const {
+    l1: { network: l1Network }
+  } = useNetworksAndSigners()
+
+  // For new txs createAt won't be defined yet, we default to the current time in that case
+  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+
+  const minutesLeft = getTxRemainingMinutes({
+    createdAt: createdAtDate,
+    parentChainId: l1Network.id
+  })
+  const hoursLeft = Math.floor(minutesLeft / 60)
+  const daysLeft = Math.floor(hoursLeft / 24)
+
+  let timeLeftText
+
+  if (minutesLeft === -1) {
+    // There was a date error, e.g. invalid local storage
+    timeLeftText = `Estimation failed`
+  } else if (daysLeft > 0) {
+    timeLeftText = `~${daysLeft} day${daysLeft === 1 ? '' : 's'}`
+  } else if (hoursLeft > 0) {
+    timeLeftText = `~${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`
+  } else if (minutesLeft > 0) {
+    timeLeftText = `~${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}`
+  } else {
+    timeLeftText = 'Almost there...'
   }
 
-  if (minutesLeft === 0) {
-    return (
-      <span className="animate-pulse whitespace-nowrap">About an hour</span>
-    )
-  }
-
-  return (
-    <Tooltip content={<span> {`~${blocksRemaining} blocks remaining`} </span>}>
-      <span className="animate-pulse whitespace-nowrap">
-        {`~${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}`} remaining
-      </span>
-    </Tooltip>
-  )
+  return <span>{timeLeftText}</span>
 }
