@@ -5,7 +5,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChainId } from '../../util/networks'
 
 /**
- * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should be usually/always be less in practice.
+ * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should usually/always be less in practice.
  */
 const CONFIRMATION_BUFFER_MINUTES = 30
 
