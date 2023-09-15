@@ -1,8 +1,8 @@
 import { Popover, Transition } from '@headlessui/react'
 import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
-import { useCallback } from 'react'
-import { useNetwork } from 'wagmi'
+import { useCallback, useEffect, useState } from 'react'
+import { mainnet, useAccount, useNetwork } from 'wagmi'
 import { useWindowSize } from 'react-use'
 
 import {
@@ -15,33 +15,43 @@ import {
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { TargetChainKey } from '../../util/wagmi/setup'
+import { HeaderNetworkInformation } from './HeaderNetworkInformation'
+import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
 
-export const NetworkSelectionContainer = ({
-  children
-}: {
-  children: React.ReactNode
-}) => {
-  const { chain } = useNetwork()
+export const NetworkSelectionContainer = () => {
+  const { chain = { ...mainnet, unsupported: false } } = useNetwork()
+  const { isConnected } = useAccount()
+  const [selectedChainId, setSelectedChainId] = useState(chain.id)
   const { switchNetwork } = useSwitchNetworkWithConfig()
+  const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
 
   const supportedNetworks = getSupportedNetworks(
-    chain?.id,
+    selectedChainId,
     !!isTestnetMode
-  ).filter(chainId => chainId !== chain?.id)
+  )
+
+  const supportedNetworksWithoutCurrentChain = supportedNetworks.filter(
+    chainId => chainId !== selectedChainId
+  )
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const l1Networks = supportedNetworks.filter(
+  const connectedToSupportedChain =
+    supportedNetworks.findIndex(chainId => chainId === selectedChainId) !== -1
+
+  const l1Networks = supportedNetworksWithoutCurrentChain.filter(
     network => isNetwork(network).isEthereum
   )
-  const l2Networks = supportedNetworks.filter(
+  const l2Networks = supportedNetworksWithoutCurrentChain.filter(
     network => isNetwork(network).isArbitrum
   )
-  const orbitNetworks = supportedNetworks.filter(
+  const orbitNetworks = supportedNetworksWithoutCurrentChain.filter(
     network => isNetwork(network).isOrbitChain
   )
 
@@ -57,6 +67,16 @@ export const NetworkSelectionContainer = ({
     finalNetworks.push({ id: 'orbit', title: 'Orbit', networks: orbitNetworks })
   }
 
+  const setWalletConnectChain = useCallback(
+    (chainId: ChainId) => {
+      const chainName = ChainId[chainId] as keyof typeof ChainId
+      setQueryParams({
+        walletConnectChain: TargetChainKey[chainName]
+      })
+    },
+    [setQueryParams]
+  )
+
   const handleClick = useCallback(
     (
       chainId: ChainId,
@@ -67,11 +87,19 @@ export const NetworkSelectionContainer = ({
           | undefined
       ) => void
     ) => {
+      setSelectedChainId(chainId)
       switchNetwork?.(Number(chainId))
       close?.() //close the popover after option-click
     },
     [switchNetwork]
   )
+
+  useEffect(() => {
+    if (isConnected) {
+      setSelectedChainId(chain.id)
+    }
+    setWalletConnectChain(selectedChainId)
+  }, [chain, isConnected, selectedChainId, setWalletConnectChain])
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -79,7 +107,11 @@ export const NetworkSelectionContainer = ({
         disabled={isSmartContractWallet || isLoadingAccountType}
         className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
       >
-        {children}
+        {connectedToSupportedChain ? (
+          <HeaderNetworkInformation chainId={selectedChainId} />
+        ) : (
+          <HeaderNetworkNotSupported />
+        )}
       </Popover.Button>
 
       <Transition>

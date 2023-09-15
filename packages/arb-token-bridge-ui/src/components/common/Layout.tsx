@@ -2,7 +2,6 @@ import React from 'react'
 import { useWindowSize } from 'react-use'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-import { Header } from './Header'
 import { Footer } from './Footer'
 import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
@@ -50,11 +49,8 @@ export function Layout(props: LayoutProps) {
         </ExternalLink>
         .
       </SiteBanner>
-      <Header />
 
-      <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
-        <main>{props.children}</main>
-      </div>
+      {props.children}
 
       <Toast />
 

@@ -140,7 +140,6 @@ function getWalletName(connectorName: string): ProviderName {
     case 'Ledger':
       return connectorName
 
-    case 'WalletConnectLegacy':
     case 'WalletConnect':
       return 'WalletConnect'
 

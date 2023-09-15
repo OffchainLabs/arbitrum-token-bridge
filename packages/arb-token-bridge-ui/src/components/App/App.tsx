@@ -30,12 +30,12 @@ import {
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
 import {
+  Header,
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps
 } from '../common/Header'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
-import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
@@ -45,7 +45,6 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
-import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
@@ -85,15 +84,6 @@ const AppContent = (): JSX.Element => {
     return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
   }, [chain])
 
-  if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
-    return (
-      <Alert type="red">
-        Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
-        maintenance. Thanks for your patience!
-      </Alert>
-    )
-  }
-
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
       <Alert type="red">
@@ -111,10 +101,6 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer>
-          <HeaderNetworkInformation />
-        </NetworkSelectionContainer>
-
         <HeaderAccountPopover />
       </HeaderContent>
 
@@ -289,10 +275,6 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer>
-              <HeaderNetworkNotSupported />
-            </NetworkSelectionContainer>
-
             <HeaderAccountPopover isCorrectNetworkConnected={false} />
           </HeaderContent>
 
@@ -360,12 +342,17 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
+            <Header />
+            <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
+              <main>
+                <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+                <NetworkReady>
+                  <AppContextProvider>
+                    <Injector>{isTosAccepted && <AppContent />}</Injector>
+                  </AppContextProvider>
+                </NetworkReady>
+              </main>
+            </div>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>

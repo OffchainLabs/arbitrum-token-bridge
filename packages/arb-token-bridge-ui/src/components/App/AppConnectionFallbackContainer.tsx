@@ -1,7 +1,6 @@
 import Image, { ImageProps } from 'next/image'
 import ThreeArbinautsImg from '@/images/three-arbinauts.webp'
 import { ExternalLink } from '../common/ExternalLink'
-import { WalletConnectWarning } from '../common/WalletConnectWarning'
 
 export function AppConnectionFallbackContainer({
   layout = 'col',
@@ -19,8 +18,6 @@ export function AppConnectionFallbackContainer({
 }) {
   return (
     <div className="flex flex-col">
-      <WalletConnectWarning />
-
       <div className="my-24 flex items-center justify-center px-8">
         <div
           className={`flex flex-col items-center md:flex-${layout} md:items-${

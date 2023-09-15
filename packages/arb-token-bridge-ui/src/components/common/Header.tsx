@@ -16,6 +16,7 @@ import {
 } from './HeaderMenu'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { ChainId, getExplorerUrl } from '../../util/networks'
+import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -269,10 +270,10 @@ export function Header() {
           )}
         </Disclosure>
         <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
-          <div
-            id="header-content-root"
-            className="flex space-x-2 xl:space-x-4"
-          ></div>
+          <div className="flex space-x-2 xl:space-x-4">
+            <NetworkSelectionContainer />
+            <div id="header-content-root"></div>
+          </div>
           <div className="flex flex-row space-x-2 xl:space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"

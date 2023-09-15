@@ -67,14 +67,20 @@ const appInfo = {
   projectId
 }
 
-enum TargetChainKey {
+export enum TargetChainKey {
   Mainnet = 'mainnet',
+  Rinkeby = 'rinkeby',
+  ArbitrumRinkeby = 'arbitrum-rinkeby',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',
   ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia'
+  ArbitrumSepolia = 'arbitrum-sepolia',
+  Local = 'local',
+  ArbitrumLocal = 'arbitrum-local',
+  XaiTestnet = 'xai-testnet',
+  StylusTestnet = 'stylus-testnet'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -94,6 +100,7 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
     case TargetChainKey.Mainnet:
+    default:
       return ChainId.Mainnet
 
     case TargetChainKey.ArbitrumOne:
