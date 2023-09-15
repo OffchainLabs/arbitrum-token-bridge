@@ -1,3 +1,4 @@
+import { useMedia } from 'react-use'
 import dayjs, { Dayjs } from 'dayjs'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -52,6 +53,8 @@ export function WithdrawalCountdown({
   const {
     l1: { network: l1Network }
   } = useNetworksAndSigners()
+  const isLargeScreen = useMedia('(min-width: 1024px)')
+  const remainingTextOrEmpty = isLargeScreen ? ' remaining' : ''
 
   // For new txs createAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
@@ -69,11 +72,17 @@ export function WithdrawalCountdown({
     // There was a date error, e.g. invalid local storage
     timeLeftText = `Estimation failed`
   } else if (daysLeft > 0) {
-    timeLeftText = `~${daysLeft} day${daysLeft === 1 ? '' : 's'}`
+    timeLeftText = `~${daysLeft} day${
+      daysLeft === 1 ? '' : 's'
+    }${remainingTextOrEmpty}`
   } else if (hoursLeft > 0) {
-    timeLeftText = `~${hoursLeft} hour${hoursLeft === 1 ? '' : 's'}`
+    timeLeftText = `~${hoursLeft} hour${
+      hoursLeft === 1 ? '' : 's'
+    }${remainingTextOrEmpty}`
   } else if (minutesLeft > 0) {
-    timeLeftText = `~${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}`
+    timeLeftText = `~${minutesLeft} minute${
+      minutesLeft === 1 ? '' : 's'
+    }${remainingTextOrEmpty}`
   } else {
     timeLeftText = 'Almost there...'
   }
