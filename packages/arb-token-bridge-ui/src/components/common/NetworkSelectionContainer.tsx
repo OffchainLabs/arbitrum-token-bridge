@@ -98,8 +98,19 @@ export const NetworkSelectionContainer = () => {
     if (isConnected) {
       setSelectedChainId(chain.id)
     }
+    // When user was connected to an unsupported chain and disconnected
+    // set mainnet as selected chain
+    if (!isConnected && !connectedToSupportedChain) {
+      setSelectedChainId(ChainId.Mainnet)
+    }
     setWalletConnectChain(selectedChainId)
-  }, [chain, isConnected, selectedChainId, setWalletConnectChain])
+  }, [
+    chain,
+    connectedToSupportedChain,
+    isConnected,
+    selectedChainId,
+    setWalletConnectChain
+  ])
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
@@ -107,10 +118,10 @@ export const NetworkSelectionContainer = () => {
         disabled={isSmartContractWallet || isLoadingAccountType}
         className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
       >
-        {connectedToSupportedChain ? (
-          <HeaderNetworkInformation chainId={selectedChainId} />
-        ) : (
+        {isConnected && chain.unsupported ? (
           <HeaderNetworkNotSupported />
+        ) : (
+          <HeaderNetworkInformation chainId={selectedChainId} />
         )}
       </Popover.Button>
 
