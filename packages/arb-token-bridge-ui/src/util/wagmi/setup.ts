@@ -83,11 +83,9 @@ export enum TargetChainKey {
   StylusTestnet = 'stylus-testnet'
 }
 
-function sanitizeTargetChainKey(
-  targetChainKey: string | null | undefined
-): TargetChainKey {
+function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
-  if (!targetChainKey) {
+  if (targetChainKey === null) {
     return TargetChainKey.Mainnet
   }
 
@@ -141,7 +139,7 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others]
 }
 
-export function getWalletConnectChain(targetChainKey?: string | null) {
+export function getWalletConnectChain(targetChainKey: string | null) {
   return getChainId(sanitizeTargetChainKey(targetChainKey))
 }
 
