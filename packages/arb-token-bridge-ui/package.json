@@ -10,7 +10,7 @@
     "@headlessui/react": "^1.7.8",
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.18",
-    "@rainbow-me/rainbowkit": "0.12.18",
+    "@rainbow-me/rainbowkit": "^0.12.18",
     "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.45.0",
     "@sentry/tracing": "^7.45.0",
@@ -43,7 +43,7 @@
     "swr": "^2.1.2",
     "tailwind-merge": "^1.14.0",
     "use-query-params": "^2.1.1",
-    "wagmi": "0.12.19",
+    "wagmi": "^0.12.19",
     "zod": "^3.22.2",
     "zustand": "^4.3.9"
   },

@@ -293,12 +293,14 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
   }
 }
+
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('walletConnectChain')
+
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.

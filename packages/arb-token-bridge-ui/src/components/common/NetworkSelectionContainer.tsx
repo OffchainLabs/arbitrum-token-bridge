@@ -36,24 +36,18 @@ export const NetworkSelectionContainer = () => {
   const supportedNetworks = getSupportedNetworks(
     selectedChainId,
     !!isTestnetMode
-  )
+  ).filter(chainId => chainId !== selectedChainId)
 
-  const supportedNetworksWithoutCurrentChain = supportedNetworks.filter(
-    chainId => chainId !== selectedChainId
-  )
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const connectedToSupportedChain =
-    supportedNetworks.findIndex(chainId => chainId === selectedChainId) !== -1
-
-  const l1Networks = supportedNetworksWithoutCurrentChain.filter(
+  const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereum
   )
-  const l2Networks = supportedNetworksWithoutCurrentChain.filter(
+  const l2Networks = supportedNetworks.filter(
     network => isNetwork(network).isArbitrum
   )
-  const orbitNetworks = supportedNetworksWithoutCurrentChain.filter(
+  const orbitNetworks = supportedNetworks.filter(
     network => isNetwork(network).isOrbitChain
   )
 
@@ -109,13 +103,12 @@ export const NetworkSelectionContainer = () => {
     }
     // When user was connected to an unsupported chain and disconnected
     // set mainnet as selected chain
-    if (!isConnected && !connectedToSupportedChain && !walletConnectChain) {
+    if (!isConnected && !walletConnectChain) {
       setSelectedChainId(ChainId.Mainnet)
     }
     setWalletConnectChain(selectedChainId)
   }, [
     chain,
-    connectedToSupportedChain,
     isConnected,
     selectedChainId,
     setWalletConnectChain,
