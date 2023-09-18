@@ -43,11 +43,7 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
       )
     }
 
-    return (
-      <>
-        <TabButtonInner {...props} ref={ref} />
-      </>
-    )
+    return <TabButtonInner {...props} ref={ref} />
   }
 )
 
