@@ -264,7 +264,7 @@ export function Header() {
         <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
           <div className="flex space-x-2 xl:space-x-4">
             <NetworkSelectionContainer />
-            <div id="header-content-root"></div>
+            <div id="header-content-root" />
           </div>
           <div className="flex flex-row space-x-2 xl:space-x-4">
             <ExternalLink
@@ -318,7 +318,7 @@ function HeaderMobile() {
       </div>
       <div className="flex min-h-screen flex-col items-center gap-1 bg-dark">
         <div className="flex w-full flex-col items-start pt-4">
-          <div id="header-content-root"></div>
+          <div id="header-content-root" />
           <NetworkSelectionContainer />
         </div>
         <HeaderMenuMobile {...learnMenuProps}>
