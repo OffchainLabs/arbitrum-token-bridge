@@ -73,7 +73,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px]">
+      <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group
           onChange={() => {
             setAllCheckboxesChecked(false)
@@ -93,7 +93,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
             </button>
           </div>
 
-          <Tab.List className="bg-ocl-blue">
+          <Tab.List className="flex bg-ocl-blue">
             <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
             <TabButton>Use a fast bridge (USDC)</TabButton>
             <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>

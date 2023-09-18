@@ -55,7 +55,7 @@ export function USDCWithdrawalConfirmationDialog(
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px]">
+      <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
@@ -71,7 +71,7 @@ export function USDCWithdrawalConfirmationDialog(
             </button>
           </div>
 
-          <Tab.List className="bg-ocl-blue">
+          <Tab.List className="flex bg-ocl-blue">
             <TabButton>Use a fast bridge</TabButton>
             <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
           </Tab.List>
