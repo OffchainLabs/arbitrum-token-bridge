@@ -27,7 +27,7 @@ import {
   UseNetworksAndSignersConnectedResult,
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
-import { Header, HeaderContent, HeaderOverrides } from '../common/Header'
+import { Header, HeaderContent } from '../common/Header'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
@@ -70,8 +70,6 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
-      <HeaderOverrides />
-
       <HeaderContent>
         <HeaderAccountPopover />
       </HeaderContent>

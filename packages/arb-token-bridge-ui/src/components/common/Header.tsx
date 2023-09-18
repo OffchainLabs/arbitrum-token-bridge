@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
-import { twMerge } from 'tailwind-merge'
+import { twJoin, twMerge } from 'tailwind-merge'
 import Image, { ImageProps } from 'next/image'
 import { useNetwork } from 'wagmi'
 import Link from 'next/link'
 
 import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
+import HeaderLogoTestnetWebp from '@/images/HeaderArbitrumLogoTestnet.webp'
 import Discord from '@/icons/discord.webp'
 import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
@@ -136,42 +137,6 @@ function DesktopExternalLink({
   )
 }
 
-export type HeaderOverridesProps = {
-  imageSrc?: string
-  className?: string
-}
-
-export function HeaderOverrides() {
-  const { chain } = useNetwork()
-  const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
-  const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
-  const imageSrc = useMemo(() => {
-    if (isGoerli) {
-      return 'images/HeaderArbitrumLogoGoerli.webp'
-    }
-
-    return 'images/HeaderArbitrumLogoMainnet.svg'
-  }, [isGoerli])
-
-  const header = document.getElementById('header')
-
-  if (header) {
-    if (className) {
-      // Reset back to defaults and then add overrides on top of that
-      header.className = defaultHeaderClassName
-      header.classList.add(...className.split(' '))
-    }
-
-    const image = document.getElementById('header-image') as HTMLImageElement
-
-    if (image && imageSrc) {
-      image.src = imageSrc
-    }
-  }
-
-  return null
-}
-
 function HeaderImageElement({ ...props }: ImageProps) {
   return (
     <Image
@@ -225,8 +190,19 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
 }
 
 export function Header() {
+  const { chain } = useNetwork()
+  const { isTestnet } = isNetwork(chain?.id ?? 0)
+
   return (
-    <header id="header" className={defaultHeaderClassName}>
+    <header
+      id="header"
+      className={twMerge(
+        twJoin(
+          defaultHeaderClassName,
+          isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
+        )
+      )}
+    >
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <Link
@@ -234,7 +210,7 @@ export function Header() {
             className="arb-hover flex shrink-0 flex-col items-center"
           >
             <HeaderImageElement
-              src={HeaderLogoMainnetSVG}
+              src={isTestnet ? HeaderLogoTestnetWebp : HeaderLogoMainnetSVG}
               alt="Arbitrum logo"
             />
           </Link>
@@ -341,10 +317,10 @@ function HeaderMobile() {
         </Disclosure.Button>
       </div>
       <div className="flex min-h-screen flex-col items-center gap-1 bg-dark">
-        <div
-          id="header-content-root"
-          className="flex w-full flex-col-reverse items-center pt-4"
-        ></div>
+        <div className="flex w-full flex-col items-start pt-4">
+          <div id="header-content-root"></div>
+          <NetworkSelectionContainer />
+        </div>
         <HeaderMenuMobile {...learnMenuProps}>
           <HeaderItemLogo
             src="/images/header/headerLogo_learn.svg"
