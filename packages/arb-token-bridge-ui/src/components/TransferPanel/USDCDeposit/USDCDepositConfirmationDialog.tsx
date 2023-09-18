@@ -19,7 +19,6 @@ import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
-import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 type Props = UseDialogProps & {
   amount: string
@@ -102,10 +101,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC.e" networkId={l2.network.id}>
-                  Bridged USDC (USDC.e)
-                </USDCTokenExplorerLink>{' '}
+                Receive <span className="font-bold">Bridged USDC (USDC.e)</span>{' '}
                 on {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
@@ -141,11 +137,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                Receive <span className="font-bold">Native USDC</span> on
+                Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -170,11 +163,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} with Circle&apos;s{' '}
+                Receive <span className="font-bold">Native USDC</span> on{' '}
+                {toNetworkName} with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"

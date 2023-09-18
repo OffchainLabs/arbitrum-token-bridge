@@ -1,8 +1,7 @@
 import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
-import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
-import { ChainId, isNetwork } from '../../../util/networks'
+import { isNetwork } from '../../../util/networks'
 import { useChainId } from 'wagmi'
 
 export function USDCDepositConfirmationDialogCheckbox({
@@ -82,29 +81,8 @@ export function USDCDepositConfirmationDialogCheckbox({
       <Checkbox
         label={
           <span className="select-none font-light">
-            I understand{' '}
-            <USDCTokenExplorerLink
-              token="USDC.e"
-              className={externalLinkClassnames}
-              onClick={linksOnClickHandler}
-              networkId={
-                isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
-              }
-            >
-              USDC.e
-            </USDCTokenExplorerLink>{' '}
-            is different from{' '}
-            <USDCTokenExplorerLink
-              token="USDC"
-              className={externalLinkClassnames}
-              onClick={linksOnClickHandler}
-              networkId={
-                isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
-              }
-            >
-              USDC
-            </USDCTokenExplorerLink>
-            .{' '}
+            I understand <span className="font-bold">USDC.e</span> is different
+            from <span className="font-bold">USDC</span>.{' '}
             <ExternalLink
               className={externalLinkClassnames}
               href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"

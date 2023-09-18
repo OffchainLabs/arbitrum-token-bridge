@@ -17,7 +17,6 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
-import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -79,11 +78,8 @@ export function USDCWithdrawalConfirmationDialog(
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3 font-light">
               <p>
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
-                  USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
+                Receive <span className="font-bold">USDC</span> on{' '}
+                {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -108,11 +104,8 @@ export function USDCWithdrawalConfirmationDialog(
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
-                  USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} with Circle&apos;s{' '}
+                Receive <span className="font-bold">USDC</span> on{' '}
+                {toNetworkName} with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
