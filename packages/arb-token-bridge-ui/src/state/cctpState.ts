@@ -657,7 +657,7 @@ export function useRemainingTime(tx: MergedTransaction) {
   }, 2000)
 
   return {
-    remainingTime,
-    isConfirmed
+    remainingTime: 'Calculating...',
+    isConfirmed: false
   }
 }

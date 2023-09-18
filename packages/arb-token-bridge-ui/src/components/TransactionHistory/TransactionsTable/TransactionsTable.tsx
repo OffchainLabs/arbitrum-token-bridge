@@ -273,7 +273,7 @@ export function TransactionsTable({
     <>
       {!isSmartContractWallet && (
         <TableSentOrReceivedFundsSwitch
-          className={type !== 'deposits' ? 'rounded-tl-lg' : ''}
+          className={type === 'withdrawals' ? 'rounded-tl-lg' : ''}
         />
       )}
 

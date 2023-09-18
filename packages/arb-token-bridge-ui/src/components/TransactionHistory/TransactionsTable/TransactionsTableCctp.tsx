@@ -94,7 +94,12 @@ export function TransactionsTableCctp() {
 
   return (
     <>
-      {!isSmartContractWallet && <TransactionsTableSwitch tabs={tabs} />}
+      {!isSmartContractWallet && (
+        <TransactionsTableSwitch
+          tabs={tabs}
+          className="rounded-tl-lg rounded-tr-none md:rounded-tr-lg"
+        />
+      )}
 
       {/* search and pagination buttons */}
       <TableActionHeader
