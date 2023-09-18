@@ -94,9 +94,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
           </div>
 
           <Tab.List className="flex bg-ocl-blue">
-            <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
-            <TabButton>Use a fast bridge (USDC)</TabButton>
-            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
+            <TabButton>Arbitrum&apos;s bridge (USDC.e)</TabButton>
+            <TabButton>Third party (USDC)</TabButton>
+            <TabButton>Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
