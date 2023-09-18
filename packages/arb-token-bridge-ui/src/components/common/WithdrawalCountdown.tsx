@@ -9,29 +9,29 @@ import { ChainId } from '../../util/networks'
  */
 const CONFIRMATION_BUFFER_MINUTES = 30
 
+function getTxConfirmationDate({
+  createdAt,
+  parentChainId
+}: {
+  createdAt: Dayjs
+  parentChainId: number
+}) {
+  const confirmNodeMinutes = chainIdToConfirmNodeMinutes(parentChainId)
+
+  return createdAt
+    .add(confirmNodeMinutes, 'minute')
+    .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
+}
+
 function getTxRemainingMinutes({
   createdAt,
   parentChainId
 }: {
-  createdAt: string | Dayjs
+  createdAt: Dayjs
   parentChainId: number
 }) {
-  if (typeof createdAt === 'string') {
-    createdAt = dayjs(createdAt)
-  }
-  if (!createdAt.isValid()) {
-    return -1
-  }
-
-  const confirmNodeMinutes = chainIdToConfirmNodeMinutes(parentChainId)
-
-  return Math.max(
-    createdAt
-      .add(confirmNodeMinutes, 'minute')
-      .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
-      .diff(dayjs(), 'minute'),
-    0
-  )
+  const txConfirmationDate = getTxConfirmationDate({ createdAt, parentChainId })
+  return Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 }
 
 function chainIdToConfirmNodeMinutes(parentChainId: ChainId) {
@@ -45,14 +45,6 @@ function chainIdToConfirmNodeMinutes(parentChainId: ChainId) {
   return 60
 }
 
-function getRemainingTimeText(
-  value: number,
-  unit: 'minute' | 'hour' | 'day',
-  remainingText: string
-) {
-  return `~${value} ${unit}${value === 1 ? '' : 's'}${remainingText}`
-}
-
 export function WithdrawalCountdown({
   createdAt
 }: {
@@ -62,33 +54,24 @@ export function WithdrawalCountdown({
     l1: { network: l1Network }
   } = useNetworksAndSigners()
   const isLargeScreen = useMedia('(min-width: 1024px)')
-  const remainingTextOrEmpty = isLargeScreen ? ' remaining' : ''
 
   // For new txs createAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+  const txConfirmationDate = getTxConfirmationDate({
+    createdAt: createdAtDate,
+    parentChainId: l1Network.id
+  })
 
   const minutesLeft = getTxRemainingMinutes({
     createdAt: createdAtDate,
     parentChainId: l1Network.id
   })
-  const hoursLeft = Math.floor(minutesLeft / 60)
-  const daysLeft = Math.floor(hoursLeft / 24)
 
-  let timeLeftText = 'Almost there...'
+  const remainingTextOrEmpty =
+    isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
 
-  if (minutesLeft === -1) {
-    timeLeftText = 'Estimation failed'
-  } else if (daysLeft > 0) {
-    timeLeftText = getRemainingTimeText(daysLeft, 'day', remainingTextOrEmpty)
-  } else if (hoursLeft > 0) {
-    timeLeftText = getRemainingTimeText(hoursLeft, 'hour', remainingTextOrEmpty)
-  } else if (minutesLeft > 0) {
-    timeLeftText = getRemainingTimeText(
-      minutesLeft,
-      'minute',
-      remainingTextOrEmpty
-    )
-  }
+  const timeLeftText =
+    minutesLeft === 0 ? 'Almost there...' : dayjs().to(txConfirmationDate, true)
 
-  return <span>{timeLeftText}</span>
+  return <span>{timeLeftText + remainingTextOrEmpty}</span>
 }
