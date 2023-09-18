@@ -92,6 +92,10 @@ export const NetworkSelectionContainer = () => {
       setSelectedChainId(chainId)
       if (isConnected) {
         switchNetwork?.(Number(chainId))
+      } else {
+        // this is to make sure it's run after `setSelectedChainId,
+        // otherwise there'll be a race condition where the previous chain is used on reload
+        setTimeout(() => window.location.reload(), 0)
       }
       close?.() //close the popover after option-click
     },

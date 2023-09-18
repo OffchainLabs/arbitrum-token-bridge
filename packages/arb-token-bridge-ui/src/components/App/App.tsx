@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-
+import React, { useCallback, useEffect, useState } from 'react'
 import { WagmiConfig, useAccount, useNetwork } from 'wagmi'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
+import merge from 'lodash-es/merge'
+
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { Loader } from '../common/atoms/Loader'
@@ -42,14 +43,23 @@ import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { WalletProvider } from './WalletProvider'
 import { getProps } from '../../util/wagmi/setup'
+import { RainbowKitProvider, Theme, darkTheme } from '@rainbow-me/rainbowkit'
 
 declare global {
   interface Window {
     Cypress?: any
   }
 }
+
+const rainbowkitTheme = merge(darkTheme(), {
+  colors: {
+    accentColor: 'var(--blue-link)'
+  },
+  fonts: {
+    body: "'Space Grotesk', sans-serif"
+  }
+} as Theme)
 
 const AppContent = (): JSX.Element => {
   const {
@@ -194,14 +204,35 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
 function NetworkReady({ children }: { children: React.ReactNode }) {
   const [{ l2ChainId }] = useArbQueryParams()
+  const [tosAccepted, setTosAccepted] =
+    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+  const isTosAccepted = tosAccepted !== undefined
+
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  function onClose(confirmed: boolean) {
+    // Only close after confirming (agreeing to terms)
+    if (confirmed) {
+      setTosAccepted('true')
+      welcomeDialogProps.onClose(confirmed)
+    }
+  }
 
   return (
-    <NetworksAndSignersProvider
-      selectedL2ChainId={l2ChainId || undefined}
-      fallback={fallbackProps => <ConnectionFallback {...fallbackProps} />}
-    >
-      {children}
-    </NetworksAndSignersProvider>
+    <>
+      <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+      <NetworksAndSignersProvider
+        selectedL2ChainId={l2ChainId || undefined}
+        fallback={fallbackProps => <ConnectionFallback {...fallbackProps} />}
+      >
+        {children}
+      </NetworksAndSignersProvider>
+    </>
   )
 }
 
@@ -262,8 +293,13 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       )
   }
 }
-
-const { wagmiConfigProps } = getProps()
+// We're doing this as a workaround so users can select their preferred chain on WalletConnect.
+//
+// https://github.com/orgs/WalletConnect/discussions/2733
+// https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
+const searchParams = new URLSearchParams(window.location.search)
+const targetChainKey = searchParams.get('walletConnectChain')
+const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -277,43 +313,27 @@ Object.keys(localStorage).forEach(key => {
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
-  const [tosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
-
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
         <WagmiConfig {...wagmiConfigProps}>
-          <WalletProvider>
+          <RainbowKitProvider
+            theme={rainbowkitTheme}
+            {...rainbowKitProviderProps}
+          >
             <Header />
             <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
               <main>
-                <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
                 <NetworkReady>
                   <AppContextProvider>
-                    <Injector>{isTosAccepted && <AppContent />}</Injector>
+                    <Injector>
+                      <AppContent />
+                    </Injector>
                   </AppContextProvider>
                 </NetworkReady>
               </main>
             </div>
-          </WalletProvider>
+          </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>
     </Provider>

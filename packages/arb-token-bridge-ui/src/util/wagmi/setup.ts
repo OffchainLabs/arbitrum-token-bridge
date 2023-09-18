@@ -145,7 +145,7 @@ export function getWalletConnectChain(targetChainKey?: string | null) {
   return getChainId(sanitizeTargetChainKey(targetChainKey))
 }
 
-export function getProps(targetChainKey?: string | null) {
+export function getProps(targetChainKey: string | null) {
   const { chains, provider } = configureChains(
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
