@@ -16,14 +16,14 @@ function getTxConfirmationDate({
   createdAt: Dayjs
   parentChainId: number
 }) {
-  const confirmNodeMinutes = chainIdToConfirmNodeMinutes(parentChainId)
+  const confirmNodeMinutes = getNodeConfirmationTimeInMinutes(parentChainId)
 
   return createdAt
     .add(confirmNodeMinutes, 'minute')
     .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
 }
 
-function getTxRemainingMinutes({
+function getTxConfirmationRemainingMinutes({
   createdAt,
   parentChainId
 }: {
@@ -34,7 +34,7 @@ function getTxRemainingMinutes({
   return Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 }
 
-function chainIdToConfirmNodeMinutes(parentChainId: ChainId) {
+function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
   const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
   if (parentChainId === ChainId.Mainnet) {
@@ -55,14 +55,14 @@ export function WithdrawalCountdown({
   } = useNetworksAndSigners()
   const isLargeScreen = useMedia('(min-width: 1024px)')
 
-  // For new txs createAt won't be defined yet, we default to the current time in that case
+  // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
     parentChainId: l1Network.id
   })
 
-  const minutesLeft = getTxRemainingMinutes({
+  const minutesLeft = getTxConfirmationRemainingMinutes({
     createdAt: createdAtDate,
     parentChainId: l1Network.id
   })
