@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo, useEffect } from 'react'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -31,8 +31,9 @@ import {
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  L2ContractCallTransactionLifecycle,
-  NodeBlockDeadlineStatusTypes
+  NodeBlockDeadlineStatusTypes,
+  ArbTokenBridgeEth,
+  ArbTokenBridgeToken
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
@@ -91,7 +92,6 @@ class TokenDisabledError extends Error {
 }
 
 export interface TokenBridgeParams {
-  walletAddress: string
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
 }
@@ -99,7 +99,8 @@ export interface TokenBridgeParams {
 export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
-  const { walletAddress, l1, l2 } = params
+  const { l1, l2 } = params
+  const { address: walletAddress, connector } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -144,8 +145,24 @@ export const useArbTokenBridge = (
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
-    setPendingWithdrawalMap({})
-  }, [l1.provider, l2.provider, walletAddress])
+    if (!connector) {
+      return
+    }
+
+    const resetPendingWithdrawalMap = () => {
+      setPendingWithdrawalMap({})
+    }
+
+    /**
+     * https://github.com/wagmi-dev/references/blob/7d02972803714e47a24ea9f5de33d91f384025b9/packages/connectors/src/base.ts#L13
+     * Handler is called whenever network or account change
+     */
+    connector.on('change', resetPendingWithdrawalMap)
+
+    return () => {
+      connector.off('change', resetPendingWithdrawalMap)
+    }
+  }, [connector])
 
   const [
     transactions,
@@ -163,7 +180,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
-
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])
 
@@ -176,6 +192,10 @@ export const useArbTokenBridge = (
     l1Signer: Signer
     txLifecycle?: L1EthDepositTransactionLifecycle
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
     let tx: L1EthDepositTransaction
@@ -233,18 +253,17 @@ export const useArbTokenBridge = (
     updateEthBalances()
   }
 
-  async function withdrawEth({
+  const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
     amount,
     l2Signer,
     txLifecycle
-  }: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-  }) {
+  }) => {
+    if (!walletAddress) {
+      return
+    }
+
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
@@ -328,6 +347,10 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l1Signer: Signer
   }) => {
+    if (!walletAddress) {
+      return
+    }
+
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     const tx = await erc20Bridger.approveToken({
@@ -366,7 +389,7 @@ export const useArbTokenBridge = (
     erc20L1Address: string
     l2Signer: Signer
   }) => {
-    if (typeof bridgeTokens === 'undefined') {
+    if (typeof bridgeTokens === 'undefined' || !walletAddress) {
       return
     }
     const bridgeToken = bridgeTokens[erc20L1Address]
@@ -417,6 +440,9 @@ export const useArbTokenBridge = (
     txLifecycle?: L1ContractCallTransactionLifecycle
     destinationAddress?: string
   }) {
+    if (!walletAddress) {
+      return
+    }
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     try {
@@ -487,22 +513,19 @@ export const useArbTokenBridge = (
     }
   }
 
-  async function withdrawToken({
+  const withdrawToken: ArbTokenBridgeToken['withdraw'] = async ({
     erc20L1Address,
     amount,
     l2Signer,
     txLifecycle,
     destinationAddress
-  }: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) {
+  }) => {
+    if (!walletAddress) {
+      return
+    }
+
     try {
       const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-
       const provider = l2Signer.provider
       const isSmartContractAddress =
         provider && (await provider.getCode(String(erc20L1Address))).length < 2
@@ -763,6 +786,10 @@ export const useArbTokenBridge = (
     let l1Address: string
     let l2Address: string | undefined
 
+    if (!walletAddress) {
+      return
+    }
+
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
     const maybeL1Address = await getL1ERC20Address({
       erc20L2Address: lowercasedErc20L1orL2Address,
@@ -867,6 +894,10 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
+    if (!walletAddress) {
+      return
+    }
+
     const { tokenAddress, value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
@@ -947,6 +978,10 @@ export const useArbTokenBridge = (
       throw new Error('Outbox message not found')
     }
 
+    if (!walletAddress) {
+      return
+    }
+
     const { value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
@@ -1007,11 +1042,13 @@ export const useArbTokenBridge = (
       const id = getUniqueIdOrHashFromEvent(tx).toString()
       pwMap[id] = tx
     })
-    setPendingWithdrawalMap({ ...pendingWithdrawalsMap, ...pwMap })
+    setPendingWithdrawalMap(previousPendingWithdrawalsMap => ({
+      ...previousPendingWithdrawalsMap,
+      ...pwMap
+    }))
   }
 
   return {
-    walletAddress,
     bridgeTokens,
     eth: {
       deposit: depositEth,
