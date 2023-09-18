@@ -5,6 +5,7 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import merge from 'lodash-es/merge'
+import { RainbowKitProvider, Theme, darkTheme } from '@rainbow-me/rainbowkit'
 
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
@@ -44,7 +45,6 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { getProps } from '../../util/wagmi/setup'
-import { RainbowKitProvider, Theme, darkTheme } from '@rainbow-me/rainbowkit'
 
 declare global {
   interface Window {
