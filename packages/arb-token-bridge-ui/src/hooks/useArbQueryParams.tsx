@@ -25,6 +25,8 @@ import {
   withDefault
 } from 'use-query-params'
 
+import { TargetChainKey } from '../util/wagmi/setup'
+
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
@@ -41,7 +43,7 @@ export const useArbQueryParams = () => {
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false),
-    walletConnectChain: StringParam
+    walletConnectChain: withDefault(StringParam, TargetChainKey.Mainnet)
   })
 }
 
