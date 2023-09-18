@@ -866,9 +866,14 @@ export function TransferPanelMain({
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainCurrentlySelected) {
               updatePreferredL2Chain(defaultPartnerChain)
+              // Selected ERC-20 won't correspond to the same address. Reset to ETH.
+              actions.app.setSelectedToken(null)
               return
             }
 
+            const isEthereumCurrentlySelected = isNetwork(
+              l1.network.id
+            ).isEthereum
             // If Orbit chain is selected, we want to change network to Arbitrum One or Arbitrum Goerli.
             if (isOrbitChain) {
               try {
@@ -880,6 +885,10 @@ export function TransferPanelMain({
                   Sentry.captureException(error)
                 }
                 return
+              }
+              if (isEthereumCurrentlySelected) {
+                // Selected ERC-20 won't correspond to the same address. Reset to ETH.
+                actions.app.setSelectedToken(null)
               }
             }
 
@@ -962,6 +971,8 @@ export function TransferPanelMain({
             }
             // Connected to Arbitrum.
             updatePreferredL2Chain(defaultPartnerChain)
+            // Selected ERC-20 won't correspond to the same address. Reset to ETH.
+            actions.app.setSelectedToken(null)
           }
 
           if (isOrbitChain) {
@@ -978,12 +989,12 @@ export function TransferPanelMain({
               l2.network.id
             ).isOrbitChain
             if (isOrbitChainCurrentlySelected) {
-              // long-term we will have to change to Orbit chain's parent network
-              // right now only Arbitrum Goerli is support so it's fine
               await switchNetworkAsync?.(defaultPartnerChain)
             }
 
             updatePreferredL2Chain(network.id)
+            // Selected ERC-20 won't correspond to the same address. Reset to ETH.
+            actions.app.setSelectedToken(null)
           }
 
           setTo(network)
@@ -991,6 +1002,7 @@ export function TransferPanelMain({
       }
     }
   }, [
+    actions,
     l1.network,
     l2.network,
     from,

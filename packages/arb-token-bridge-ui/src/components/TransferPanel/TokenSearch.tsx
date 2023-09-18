@@ -271,7 +271,7 @@ function TokensPanel({
           return 'ethereumeth'.includes(tokenSearch)
         }
 
-        if (!token) {
+        if (!token || typeof getBalance(address) === 'undefined') {
           return false
         }
 
@@ -469,8 +469,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isLoading: isLoadingAccountType } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
