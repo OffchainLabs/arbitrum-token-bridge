@@ -16,16 +16,18 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TargetChainKey } from '../../util/wagmi/setup'
+import { TargetChainKey, getWalletConnectChain } from '../../util/wagmi/setup'
 import { HeaderNetworkInformation } from './HeaderNetworkInformation'
 import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
 
 export const NetworkSelectionContainer = () => {
   const { chain = { ...mainnet, unsupported: false } } = useNetwork()
   const { isConnected } = useAccount()
-  const [selectedChainId, setSelectedChainId] = useState(chain.id)
+  const [{ walletConnectChain }, setQueryParams] = useArbQueryParams()
+  const [selectedChainId, setSelectedChainId] = useState(
+    getWalletConnectChain(walletConnectChain) ?? chain.id
+  )
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
 
   const windowSize = useWindowSize()
@@ -88,19 +90,22 @@ export const NetworkSelectionContainer = () => {
       ) => void
     ) => {
       setSelectedChainId(chainId)
-      switchNetwork?.(Number(chainId))
+      if (isConnected) {
+        switchNetwork?.(Number(chainId))
+      }
       close?.() //close the popover after option-click
     },
-    [switchNetwork]
+    [isConnected, switchNetwork]
   )
 
   useEffect(() => {
     if (isConnected) {
+      // when user is connected, use wallet's chain
       setSelectedChainId(chain.id)
     }
     // When user was connected to an unsupported chain and disconnected
     // set mainnet as selected chain
-    if (!isConnected && !connectedToSupportedChain) {
+    if (!isConnected && !connectedToSupportedChain && !walletConnectChain) {
       setSelectedChainId(ChainId.Mainnet)
     }
     setWalletConnectChain(selectedChainId)
@@ -109,7 +114,8 @@ export const NetworkSelectionContainer = () => {
     connectedToSupportedChain,
     isConnected,
     selectedChainId,
-    setWalletConnectChain
+    setWalletConnectChain,
+    walletConnectChain
   ])
 
   return (

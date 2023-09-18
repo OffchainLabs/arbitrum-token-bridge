@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
-import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
-import merge from 'lodash-es/merge'
+import { WagmiConfig, useAccount, useNetwork } from 'wagmi'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
@@ -29,12 +27,7 @@ import {
   UseNetworksAndSignersConnectedResult,
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
-import {
-  Header,
-  HeaderContent,
-  HeaderOverrides,
-  HeaderOverridesProps
-} from '../common/Header'
+import { Header, HeaderContent, HeaderOverrides } from '../common/Header'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
@@ -45,12 +38,12 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
-import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
+import { WalletProvider } from './WalletProvider'
+import { getProps } from '../../util/wagmi/setup'
 
 declare global {
   interface Window {
@@ -58,31 +51,10 @@ declare global {
   }
 }
 
-const rainbowkitTheme = merge(darkTheme(), {
-  colors: {
-    accentColor: 'var(--blue-link)'
-  },
-  fonts: {
-    body: "'Space Grotesk', sans-serif"
-  }
-} as Theme)
-
 const AppContent = (): JSX.Element => {
-  const { chain } = useNetwork()
   const {
     app: { connectionState }
   } = useAppState()
-
-  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
-    const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
-
-    if (isGoerli) {
-      return { imageSrc: 'images/HeaderArbitrumLogoGoerli.webp', className }
-    }
-
-    return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [chain])
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
@@ -98,7 +70,7 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
-      <HeaderOverrides {...headerOverridesProps} />
+      <HeaderOverrides />
 
       <HeaderContent>
         <HeaderAccountPopover />
@@ -293,14 +265,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
   }
 }
 
-// We're doing this as a workaround so users can select their preferred chain on WalletConnect.
-//
-// https://github.com/orgs/WalletConnect/discussions/2733
-// https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('walletConnectChain')
-
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+const { wagmiConfigProps } = getProps()
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -338,10 +303,7 @@ export default function App() {
     <Provider value={overmind}>
       <ArbQueryParamProvider>
         <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
+          <WalletProvider>
             <Header />
             <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
               <main>
@@ -353,7 +315,7 @@ export default function App() {
                 </NetworkReady>
               </main>
             </div>
-          </RainbowKitProvider>
+          </WalletProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>
     </Provider>

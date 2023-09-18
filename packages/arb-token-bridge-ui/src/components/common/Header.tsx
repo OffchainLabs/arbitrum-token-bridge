@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import Image, { ImageProps } from 'next/image'
+import { useNetwork } from 'wagmi'
+import Link from 'next/link'
 
 import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
 import Discord from '@/icons/discord.webp'
@@ -15,7 +17,7 @@ import {
   HeaderMenuProps
 } from './HeaderMenu'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { ChainId, getExplorerUrl } from '../../util/networks'
+import { ChainId, getExplorerUrl, isNetwork } from '../../util/networks'
 import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
@@ -139,7 +141,18 @@ export type HeaderOverridesProps = {
   className?: string
 }
 
-export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
+export function HeaderOverrides() {
+  const { chain } = useNetwork()
+  const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
+  const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
+  const imageSrc = useMemo(() => {
+    if (isGoerli) {
+      return 'images/HeaderArbitrumLogoGoerli.webp'
+    }
+
+    return 'images/HeaderArbitrumLogoMainnet.svg'
+  }, [isGoerli])
+
   const header = document.getElementById('header')
 
   if (header) {
@@ -216,12 +229,15 @@ export function Header() {
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
-          <a href="/" className="arb-hover flex shrink-0 flex-col items-center">
+          <Link
+            href="/"
+            className="arb-hover flex shrink-0 flex-col items-center"
+          >
             <HeaderImageElement
               src={HeaderLogoMainnetSVG}
               alt="Arbitrum logo"
             />
-          </a>
+          </Link>
           <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
             <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
             <HeaderMenuDesktop

@@ -83,9 +83,11 @@ export enum TargetChainKey {
   StylusTestnet = 'stylus-testnet'
 }
 
-function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
+function sanitizeTargetChainKey(
+  targetChainKey: string | null | undefined
+): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
-  if (targetChainKey === null) {
+  if (!targetChainKey) {
     return TargetChainKey.Mainnet
   }
 
@@ -120,6 +122,12 @@ function getChainId(targetChainKey: TargetChainKey): number {
 
     case TargetChainKey.ArbitrumSepolia:
       return ChainId.ArbitrumSepolia
+
+    case TargetChainKey.StylusTestnet:
+      return ChainId.StylusTestnet
+
+    case TargetChainKey.XaiTestnet:
+      return ChainId.XaiTestnet
   }
 }
 
@@ -133,7 +141,11 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others]
 }
 
-export function getProps(targetChainKey: string | null) {
+export function getWalletConnectChain(targetChainKey?: string | null) {
+  return getChainId(sanitizeTargetChainKey(targetChainKey))
+}
+
+export function getProps(targetChainKey?: string | null) {
   const { chains, provider } = configureChains(
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
@@ -164,10 +176,13 @@ export function getProps(targetChainKey: string | null) {
     provider
   })
 
+  const initialChain = getWalletConnectChain(targetChainKey)
+
   return {
     rainbowKitProviderProps: {
       appInfo,
-      chains
+      chains,
+      initialChain
     },
     wagmiConfigProps: {
       client
