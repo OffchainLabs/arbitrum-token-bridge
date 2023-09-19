@@ -474,6 +474,7 @@ export function isNetwork(chainId: ChainId) {
     isRinkeby ||
     isGoerli ||
     isLocal ||
+    isArbitrumLocal ||
     isArbitrumGoerli ||
     isArbitrumRinkeby ||
     isSepolia ||
