@@ -10,7 +10,7 @@
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
 
-import { TargetChainKey } from '../../src/util/wagmi/setup'
+import { TargetChainKey } from '../../src/util'
 import {
   NetworkType,
   NetworkName,

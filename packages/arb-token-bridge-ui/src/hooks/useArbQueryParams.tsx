@@ -25,7 +25,7 @@ import {
   withDefault
 } from 'use-query-params'
 
-import { TargetChainKey } from '../util/wagmi/setup'
+import { TargetChainKey } from '../util'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'

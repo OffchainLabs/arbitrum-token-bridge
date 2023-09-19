@@ -5,6 +5,22 @@ export enum ConnectionState {
   NETWORK_ERROR
 }
 
+export enum TargetChainKey {
+  Mainnet = 'mainnet',
+  Rinkeby = 'rinkeby',
+  ArbitrumRinkeby = 'arbitrum-rinkeby',
+  ArbitrumOne = 'arbitrum-one',
+  ArbitrumNova = 'arbitrum-nova',
+  Goerli = 'goerli',
+  ArbitrumGoerli = 'arbitrum-goerli',
+  Sepolia = 'sepolia',
+  ArbitrumSepolia = 'arbitrum-sepolia',
+  Local = 'localhost',
+  ArbitrumLocal = 'arbitrum-localhost',
+  XaiTestnet = 'xai-testnet',
+  StylusTestnet = 'stylus-testnet'
+}
+
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
     return `https://ipfs.io/ipfs/${url.substring(7)}`

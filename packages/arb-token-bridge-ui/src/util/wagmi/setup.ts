@@ -17,10 +17,12 @@ import {
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
+import { TargetChainKey } from '..'
 
-const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  chainToWagmiChain(chain)
-)
+const customChains =
+  typeof window !== 'undefined'
+    ? getCustomChainsFromLocalStorage().map(chain => chainToWagmiChain(chain))
+    : []
 
 const chainList = isTestingEnvironment
   ? [
@@ -65,22 +67,6 @@ if (!projectId) {
 const appInfo = {
   appName: 'Bridge to Arbitrum',
   projectId
-}
-
-export enum TargetChainKey {
-  Mainnet = 'mainnet',
-  Rinkeby = 'rinkeby',
-  ArbitrumRinkeby = 'arbitrum-rinkeby',
-  ArbitrumOne = 'arbitrum-one',
-  ArbitrumNova = 'arbitrum-nova',
-  Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli',
-  Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia',
-  Local = 'localhost',
-  ArbitrumLocal = 'arbitrum-localhost',
-  XaiTestnet = 'xai-testnet',
-  StylusTestnet = 'stylus-testnet'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {

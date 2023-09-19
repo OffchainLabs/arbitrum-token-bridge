@@ -16,7 +16,8 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TargetChainKey, getWalletConnectChain } from '../../util/wagmi/setup'
+import { TargetChainKey } from '../../util'
+import { getWalletConnectChain } from '../../util/wagmi/setup'
 import { HeaderNetworkInformation } from './HeaderNetworkInformation'
 import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
 
