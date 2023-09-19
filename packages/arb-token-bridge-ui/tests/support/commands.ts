@@ -9,6 +9,8 @@
 
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
+
+import { TargetChainKey } from '../../src/util/wagmi/setup'
 import {
   NetworkType,
   NetworkName,
@@ -39,8 +41,19 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
+  const connectToChain = () => {
+    if (!networkName) {
+      if (networkType === 'L1') {
+        return TargetChainKey.Local
+      } else {
+        return TargetChainKey.ArbitrumLocal
+      }
+    }
+    return networkName
+  }
+
   function _startWebApp() {
-    startWebApp(url, query)
+    startWebApp(url, { ...query, walletConnectchain: connectToChain() })
   }
 
   // if networkName is not specified we connect to default network from config

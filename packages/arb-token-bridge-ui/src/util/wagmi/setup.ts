@@ -77,8 +77,8 @@ export enum TargetChainKey {
   ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
   ArbitrumSepolia = 'arbitrum-sepolia',
-  Local = 'local',
-  ArbitrumLocal = 'arbitrum-local',
+  Local = 'localhost',
+  ArbitrumLocal = 'arbitrum-localhost',
   XaiTestnet = 'xai-testnet',
   StylusTestnet = 'stylus-testnet'
 }

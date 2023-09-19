@@ -13,7 +13,7 @@ export type NetworkName =
   | 'arbitrum-localhost'
   | 'mainnet'
   | 'goerli'
-  | 'Sepolia test network'
+  | 'sepolia'
 
 export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
 
