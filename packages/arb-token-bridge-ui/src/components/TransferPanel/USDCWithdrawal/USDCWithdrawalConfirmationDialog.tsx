@@ -78,7 +78,7 @@ export function USDCWithdrawalConfirmationDialog(
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3 font-light">
               <p>
-                Receive <span className="font-bold">USDC</span> on{' '}
+                Receive <span className="font-medium">USDC</span> on{' '}
                 {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -102,9 +102,9 @@ export function USDCWithdrawalConfirmationDialog(
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <p className="font-light">
-                Receive <span className="font-bold">USDC</span> on{' '}
+                Receive <span className="font-medium">USDC</span> on{' '}
                 {toNetworkName} with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -115,7 +115,7 @@ export function USDCWithdrawalConfirmationDialog(
                 within the Arbitrum Bridge.
               </p>
 
-              <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-4">
                 <USDCWithdrawalConfirmationDialogCheckbox
                   onAllCheckboxesCheched={() => {
                     setAllCheckboxesChecked(true)

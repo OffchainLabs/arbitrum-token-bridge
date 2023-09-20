@@ -99,13 +99,14 @@ export function USDCDepositConfirmationDialog(props: Props) {
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <p className="font-light">
-                Receive <span className="font-bold">Bridged USDC (USDC.e)</span>{' '}
-                on {toNetworkName} using Arbitrum&apos;s native bridge.
+                Receive{' '}
+                <span className="font-medium">Bridged USDC (USDC.e)</span> on{' '}
+                {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
-              <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-4">
                 <USDCDepositConfirmationDialogCheckbox
                   onChange={checked => {
                     setAllCheckboxesChecked(checked)
@@ -137,7 +138,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive <span className="font-bold">Native USDC</span> on
+                Receive <span className="font-medium">Native USDC</span> on
                 Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -161,9 +162,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <p className="font-light">
-                Receive <span className="font-bold">Native USDC</span> on{' '}
+                Receive <span className="font-medium">Native USDC</span> on{' '}
                 {toNetworkName} with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
@@ -174,7 +175,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 within the Arbitrum Bridge.
               </p>
 
-              <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-4">
                 <USDCDepositConfirmationDialogCheckbox
                   onAllCheckboxesCheched={() => {
                     setAllCheckboxesChecked(true)

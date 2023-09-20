@@ -81,8 +81,8 @@ export function USDCDepositConfirmationDialogCheckbox({
       <Checkbox
         label={
           <span className="select-none font-light">
-            I understand <span className="font-bold">USDC.e</span> is different
-            from <span className="font-bold">USDC</span>.{' '}
+            I understand <span className="font-medium">USDC.e</span> is
+            different from <span className="font-medium">USDC</span>.{' '}
             <ExternalLink
               className={externalLinkClassnames}
               href="https://arbitrumfoundation.medium.com/usdc-to-come-natively-to-arbitrum-f751a30e3d83"
