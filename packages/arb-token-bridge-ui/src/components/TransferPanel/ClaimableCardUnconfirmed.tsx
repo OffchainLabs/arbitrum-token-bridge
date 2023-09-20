@@ -98,24 +98,22 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <div>
-          <span
-            className={twMerge(
-              'bottom-0 right-0 mt-2 max-w-[100px] animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-sm font-semibold text-ocl-blue md:absolute lg:max-w-full lg:text-lg',
-              'md:mt-2'
+        <span
+          className={twMerge(
+            'bottom-0 right-0 mt-2 w-full animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-center text-sm font-semibold text-ocl-blue',
+            'md:absolute md:mt-2 md:w-auto md:text-lg'
+          )}
+        >
+          <span className="whitespace-nowrap">
+            {tx.nodeBlockDeadline ? (
+              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
+            ) : tx.isCctp ? (
+              <>{remainingTime}</>
+            ) : (
+              <span>Calculating...</span>
             )}
-          >
-            <span className="whitespace-nowrap">
-              {tx.nodeBlockDeadline ? (
-                <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
-              ) : tx.isCctp ? (
-                <>{remainingTime}</>
-              ) : (
-                <span>Calculating...</span>
-              )}
-            </span>
           </span>
-        </div>
+        </span>
       </div>
     </WithdrawalCardContainer>
   )

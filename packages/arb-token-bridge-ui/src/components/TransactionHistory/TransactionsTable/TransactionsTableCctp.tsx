@@ -94,12 +94,7 @@ export function TransactionsTableCctp() {
 
   return (
     <>
-      {!isSmartContractWallet && (
-        <TransactionsTableSwitch
-          tabs={tabs}
-          className="rounded-tl-lg rounded-tr-none md:rounded-tr-lg"
-        />
-      )}
+      {!isSmartContractWallet && <TransactionsTableSwitch tabs={tabs} />}
 
       {/* search and pagination buttons */}
       <TableActionHeader
@@ -107,7 +102,6 @@ export function TransactionsTableCctp() {
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={transactions}
-        isSmartContractWallet={isSmartContractWallet}
         loading={isLoading}
         showSearch={false}
       />

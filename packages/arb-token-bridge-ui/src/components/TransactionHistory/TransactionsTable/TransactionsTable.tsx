@@ -271,11 +271,7 @@ export function TransactionsTable({
 
   return (
     <>
-      {!isSmartContractWallet && (
-        <TableSentOrReceivedFundsSwitch
-          className={type === 'withdrawals' ? 'rounded-tl-lg' : ''}
-        />
-      )}
+      {!isSmartContractWallet && <TableSentOrReceivedFundsSwitch />}
 
       {/* search and pagination buttons */}
       <TableActionHeader
@@ -283,7 +279,6 @@ export function TransactionsTable({
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={transactionsBySentOrReceivedFunds}
-        isSmartContractWallet={isSmartContractWallet}
         loading={loading}
         showSearch
       />

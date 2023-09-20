@@ -37,7 +37,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
   // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
-    // updateCctpTransactions()
+    updateCctpTransactions()
     const pendingTransactions = actions.app.getPendingTransactions()
     if (pendingTransactions.length) {
       console.info(

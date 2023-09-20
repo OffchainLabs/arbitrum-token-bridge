@@ -158,6 +158,8 @@ export const TransactionHistory = ({
     handleSentOrReceivedTxForSCW(0)
   }, [isSmartContractWallet, chain])
 
+  const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {isNetwork(l2.network.id).isOrbitChain && (
@@ -200,7 +202,8 @@ export const TransactionHistory = ({
               className={twMerge(
                 roundedTabClasses,
                 'roundedTabLeft',
-                'roundedTabRight'
+                // Withdrawal tab only has rounded right border on large screens or on small screen if there is CCTP
+                displayCctp ? 'roundedTabRight' : 'md:roundedTabRight'
               )}
             >
               {/* Withdrawals */}
@@ -215,7 +218,7 @@ export const TransactionHistory = ({
                 l1.network.id
               )}`}</span>
             </TabButton>
-            {transfersIds.length > 0 && !isOrbitChainSelected && (
+            {displayCctp && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
                 className={twMerge(
@@ -239,7 +242,9 @@ export const TransactionHistory = ({
               </TabButton>
             )}
           </Tab.List>
+
           <Tab.Panel className="overflow-auto">
+            <div className="sticky h-2 rounded-tr-lg bg-white" />
             <TransactionsTable
               type="deposits"
               pageParams={depositsPageParams}
@@ -251,6 +256,12 @@ export const TransactionHistory = ({
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
+            <div
+              className={twMerge(
+                'sticky h-2 rounded-tl-lg bg-white',
+                displayCctp ? 'rounded-tr-lg' : 'md:rounded-tr-lg'
+              )}
+            />
             <TransactionsTable
               type="withdrawals"
               pageParams={withdrawalsPageParams}
@@ -261,8 +272,9 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {transfersIds.length > 0 && !isOrbitChainSelected && (
+          {displayCctp && (
             <Tab.Panel className="overflow-auto">
+              <div className="sticky h-2 rounded-tl-lg bg-white md:rounded-tr-lg" />
               <TransactionsTableCctp />
             </Tab.Panel>
           )}
