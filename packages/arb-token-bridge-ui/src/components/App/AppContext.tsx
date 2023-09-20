@@ -40,7 +40,6 @@ type Action =
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
   | { type: 'layout.set_txhistory_show_sent_tx'; payload: boolean }
   | { type: 'layout.set_txhistory_show_cctp_deposits'; payload: boolean }
-  | { type: 'layout.set_preferences_panel_visible'; payload: boolean }
   | { type: 'layout.set_txhistory_default_tab'; payload: TransactionHistoryTab }
 
 function reducer(state: AppContextState, action: Action) {
@@ -75,15 +74,6 @@ function reducer(state: AppContextState, action: Action) {
         layout: {
           ...state.layout,
           isTransactionHistoryShowingCctpDeposits: action.payload
-        }
-      }
-
-    case 'layout.set_preferences_panel_visible':
-      return {
-        ...state,
-        layout: {
-          ...state.layout,
-          isPreferencesPanelVisible: action.payload
         }
       }
 
@@ -163,14 +153,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
 
-  const openPreferences = () => {
-    dispatch({ type: 'layout.set_preferences_panel_visible', payload: true })
-  }
-
-  const closePreferences = () => {
-    dispatch({ type: 'layout.set_preferences_panel_visible', payload: false })
-  }
-
   const setTransactionHistoryTab = (payload: TransactionHistoryTab) => {
     dispatch({ type: 'layout.set_txhistory_default_tab', payload })
   }
@@ -183,8 +165,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     showReceivedTransactions,
     showCctpDepositsTransactions,
     showCctpWithdrawalsTransactions,
-    openPreferences,
-    closePreferences,
     setTransactionHistoryTab
   }
 }
