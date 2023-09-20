@@ -118,9 +118,9 @@ describe('Switch Networks', () => {
             cy.findByRole('button', { name: /Selected Network : /i })
               .should('be.visible')
               .click()
-  
+
             cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
-  
+
             cy.allowMetamaskToSwitchNetwork().then(() => {
               cy.findByRole('button', {
                 name: /Selected Network : Mainnet/i
