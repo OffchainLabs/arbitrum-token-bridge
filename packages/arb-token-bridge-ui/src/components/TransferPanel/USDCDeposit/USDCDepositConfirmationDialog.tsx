@@ -36,7 +36,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const { data: isCctpBlocked, isLoading: isLoadingIsCctpBlocked } =
     useCCTPIsBlocked()
 
-  console.log({ isCctpBlocked, isLoadingIsCctpBlocked })
   const from = l1.network
   const to = l2.network
   const toNetworkName = getNetworkName(to.id)
