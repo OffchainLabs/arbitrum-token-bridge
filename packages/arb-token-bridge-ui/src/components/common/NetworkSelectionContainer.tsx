@@ -98,7 +98,7 @@ export const NetworkSelectionContainer = () => {
   )
 
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && chain.id !== selectedChainId) {
       // when user is connected, use wallet's chain
       setSelectedChainId(chain.id)
     }
