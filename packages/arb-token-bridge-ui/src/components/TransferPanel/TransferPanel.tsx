@@ -70,7 +70,6 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
-import { useIsCctpAllowed } from '../../hooks/CCTP/useIsCctpAllowed'
 
 const onTxError = (error: any) => {
   if (error.code !== 'ACTION_REJECTED') {

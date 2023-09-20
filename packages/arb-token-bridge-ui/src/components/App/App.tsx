@@ -52,7 +52,7 @@ import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { useIsCctpAllowed } from '../../hooks/CCTP/useIsCctpAllowed'
+import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 
 declare global {
   interface Window {
@@ -138,7 +138,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const networksAndSigners = useNetworksAndSigners()
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
-  useIsCctpAllowed({ sourceChainId: networksAndSigners.l1.network.id })
+  useCCTPIsBlocked()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)

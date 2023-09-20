@@ -20,7 +20,7 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
-import { useIsCctpAllowed } from '../../../hooks/CCTP/useIsCctpAllowed'
+import { useCCTPIsBlocked } from '../../../hooks/CCTP/useCCTPIsBlocked'
 
 type Props = UseDialogProps & {
   amount: string
@@ -33,9 +33,10 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { data: isCctpAllowed, isLoading: isLoadingIsCctpAllowed } =
-    useIsCctpAllowed({ sourceChainId: l1.network.id })
+  const { data: isCctpBlocked, isLoading: isLoadingIsCctpBlocked } =
+    useCCTPIsBlocked()
 
+  console.log({ isCctpBlocked, isLoadingIsCctpBlocked })
   const from = l1.network
   const to = l2.network
   const toNetworkName = getNetworkName(to.id)
@@ -98,7 +99,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
             <TabButton>Use a fast bridge (USDC)</TabButton>
-            <TabButton disabled={isLoadingIsCctpAllowed || !isCctpAllowed}>
+            <TabButton disabled={isLoadingIsCctpBlocked || isCctpBlocked}>
               Use Circle&apos;s bridge (USDC)
             </TabButton>
           </Tab.List>

@@ -18,15 +18,15 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
-import { useIsCctpAllowed } from '../../../hooks/CCTP/useIsCctpAllowed'
+import { useCCTPIsBlocked } from '../../../hooks/CCTP/useCCTPIsBlocked'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { data: isCctpAllowed, isLoading: isLoadingIsCctpAllowed } =
-    useIsCctpAllowed({ sourceChainId: l1.network.id })
+  const { data: isCctpBlocked, isLoading: isLoadingIsCctpBlocked } =
+    useCCTPIsBlocked()
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
   const from = l2.network
@@ -75,7 +75,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             <TabButton>Use a fast bridge</TabButton>
-            <TabButton disabled={isLoadingIsCctpAllowed || !isCctpAllowed}>
+            <TabButton disabled={isLoadingIsCctpBlocked || isCctpBlocked}>
               Use Circle&apos;s bridge (USDC)
             </TabButton>
           </Tab.List>
