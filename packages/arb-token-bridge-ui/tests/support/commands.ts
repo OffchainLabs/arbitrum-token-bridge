@@ -44,9 +44,9 @@ export function login({
   const connectToChain = () => {
     if (!networkName) {
       if (networkType === 'L1') {
-        return TargetChainKey.Local
+        return getL1NetworkConfig().networkName
       } else {
-        return TargetChainKey.ArbitrumLocal
+        return getL2NetworkConfig().networkName
       }
     }
     return networkName
