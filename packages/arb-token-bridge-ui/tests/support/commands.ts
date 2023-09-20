@@ -53,7 +53,7 @@ export function login({
   }
 
   function _startWebApp() {
-    startWebApp(url, { ...query, walletConnectchain: connectToChain() })
+    startWebApp(url, { ...query, walletConnectChain: connectToChain() })
   }
 
   // if networkName is not specified we connect to default network from config
