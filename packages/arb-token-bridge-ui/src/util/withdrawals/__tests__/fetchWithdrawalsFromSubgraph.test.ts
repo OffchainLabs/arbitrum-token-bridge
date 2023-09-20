@@ -1,15 +1,11 @@
 // Covers both ETH and Token withdrawals from subgraph
 import { fetchWithdrawalsFromSubgraph } from '../fetchWithdrawalsFromSubgraph'
-import {
-  getQueryCoveringClassicOnlyWithoutResults,
-  getQueryCoveringClassicOnlyWithResults,
-  getQueryCoveringClassicAndNitroWithResults
-} from './fetchWithdrawalsTestHelpers'
+import { getQueryForBlock } from './fetchWithdrawalsTestHelpers'
 
 describe('fetchTokenWithdrawalsFromSubgraph', () => {
   it('fetches no withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchWithdrawalsFromSubgraph(
-      getQueryCoveringClassicOnlyWithoutResults()
+      getQueryForBlock(19416905)
     )
 
     expect(result).toHaveLength(0)
@@ -17,7 +13,7 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some withdrawals from subgraph pre-nitro', async () => {
     const result = await fetchWithdrawalsFromSubgraph(
-      getQueryCoveringClassicOnlyWithResults()
+      getQueryForBlock(20961064)
     )
 
     expect(result).toHaveLength(1)
@@ -33,7 +29,7 @@ describe('fetchTokenWithdrawalsFromSubgraph', () => {
 
   it('fetches some withdrawals from subgraph pre-nitro and post-nitro', async () => {
     const result = await fetchWithdrawalsFromSubgraph(
-      getQueryCoveringClassicAndNitroWithResults()
+      getQueryForBlock(31946015)
     )
 
     expect(result).toHaveLength(1)

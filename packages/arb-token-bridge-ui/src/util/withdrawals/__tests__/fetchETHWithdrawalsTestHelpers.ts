@@ -8,15 +8,6 @@ const baseQuery = {
   l2Provider
 }
 
-export function getQueryCoveringClassicOnlyWithoutResults() {
-  // keeping the block range low (not fetching from 0) to make sure we don't run into event-log deadline-exceeded error #904
-  return { ...baseQuery, fromBlock: 20780771, toBlock: 20785771 }
-}
-
-export function getQueryCoveringClassicOnlyWithResults() {
-  return { ...baseQuery, fromBlock: 20785772, toBlock: 22207816 }
-}
-
-export function getQueryCoveringClassicAndNitroWithResults() {
-  return { ...baseQuery, fromBlock: 20785772, toBlock: 21005369 }
+export function getQueryForBlock(block: number) {
+  return { ...baseQuery, fromBlock: block - 1, toBlock: block + 1 }
 }
