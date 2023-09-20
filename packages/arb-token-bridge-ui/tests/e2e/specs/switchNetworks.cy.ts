@@ -45,15 +45,28 @@ describe('Switch Networks', () => {
       })
 
       // TODO: fix Arb1 network switch:
-      // Disclaimer pops up in the Metamask notification, need to find a way to click it.
+      // Disclaimer pops up in the Metamask notification, need to add it on Synpress
       // it('should change network to Arbitrum One successfully', () => {
+      //   cy.login({
+      //     networkType: 'L1',
+      //     networkName: 'mainnet'
+      //   })
+      //   cy.waitUntil(
+      //     () =>
+      //       cy
+      //         .findByRole('button', { name: /From: Mainnet/i })
+      //         .should('be.visible'),
+      //     {
+      //       errorMsg: "Can't find /From: Mainnet/i",
+      //       timeout: 10000,
+      //       interval: 500
+      //     }
+      //   )
       //   cy.findByRole('button', { name: /Selected Network : /i })
       //     .should('be.visible')
       //     .click()
 
-      //   cy.findByRole('button', { name: /Switch to Arbitrum One/i })
-      //     .should('be.visible')
-      //     .click()
+      //   cy.findByRole('button', { name: /Switch to Arbitrum One/i }).click()
 
       //   cy.allowMetamaskToAddAndSwitchNetwork().then(() => {
       //     cy.findByRole('button', {
@@ -64,15 +77,16 @@ describe('Switch Networks', () => {
 
       it('should change network to Arbitrum Nova successfully', () => {
         cy.login({
-          networkType: 'L1'
+          networkType: 'L1',
+          networkName: 'mainnet'
         })
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Ethereum/i })
+              .findByRole('button', { name: /From: Mainnet/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Ethereum/i",
+            errorMsg: "Can't find /From: Mainnet/i",
             timeout: 10000,
             interval: 500
           }
@@ -88,31 +102,30 @@ describe('Switch Networks', () => {
             name: /Selected Network : Arbitrum Nova/i
           }).should('be.visible')
         })
-      })
 
-      it('should change network to Ethereum mainnet successfully', () => {
-        cy.login({ networkType: 'L1' })
-        cy.waitUntil(
-          () =>
-            cy
-              .findByRole('button', { name: /From: Arbitrum Nova/i })
-              .should('be.visible'),
-          {
-            errorMsg: "Can't find /From: Arbitrum Nova/i",
-            timeout: 10000,
-            interval: 500
-          }
-        ).then(() => {
-          cy.findByRole('button', { name: /Selected Network : /i })
-            .should('be.visible')
-            .click()
-
-          cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
-
-          cy.allowMetamaskToSwitchNetwork().then(() => {
-            cy.findByRole('button', {
-              name: /Selected Network : Mainnet/i
-            }).should('be.visible')
+        it('should change network to Ethereum mainnet successfully', () => {
+          cy.waitUntil(
+            () =>
+              cy
+                .findByRole('button', { name: /From: Arbitrum Nova/i })
+                .should('be.visible'),
+            {
+              errorMsg: "Can't find /From: Arbitrum Nova/i",
+              timeout: 10000,
+              interval: 500
+            }
+          ).then(() => {
+            cy.findByRole('button', { name: /Selected Network : /i })
+              .should('be.visible')
+              .click()
+  
+            cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
+  
+            cy.allowMetamaskToSwitchNetwork().then(() => {
+              cy.findByRole('button', {
+                name: /Selected Network : Mainnet/i
+              }).should('be.visible')
+            })
           })
         })
       })
