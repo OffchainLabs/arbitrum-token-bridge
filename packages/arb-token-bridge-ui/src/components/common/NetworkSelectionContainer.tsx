@@ -84,21 +84,21 @@ export const NetworkSelectionContainer = () => {
           | undefined
       ) => void
     ) => {
-      setSelectedChainId(chainId)
       if (isConnected) {
-        switchNetwork?.(Number(chainId))
+        switchNetwork?.(chainId)
       } else {
+        setSelectedChainId(chainId)
         // this is to make sure it's run after `setSelectedChainId,
         // otherwise there'll be a race condition where the previous chain is used on reload
         setTimeout(() => window.location.reload(), 0)
       }
-      close?.() //close the popover after option-click
+      close?.() // close the popover after option-click
     },
     [isConnected, switchNetwork]
   )
 
   useEffect(() => {
-    if (isConnected && chain.id !== selectedChainId) {
+    if (isConnected) {
       // when user is connected, use wallet's chain
       setSelectedChainId(chain.id)
     }
@@ -107,9 +107,10 @@ export const NetworkSelectionContainer = () => {
     if (!isConnected && !walletConnectChain) {
       setSelectedChainId(ChainId.Mainnet)
     }
+    // sync query param with network dropdown
     setWalletConnectChain(selectedChainId)
   }, [
-    chain,
+    chain.id,
     isConnected,
     selectedChainId,
     setWalletConnectChain,
