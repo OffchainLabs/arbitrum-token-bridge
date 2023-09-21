@@ -8,26 +8,13 @@ import {
   AssetType,
   L2ToL1EventResult,
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState,
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
-import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { getL2ToL1MessageCacheKey } from '../../hooks/useArbTokenBridge'
 
-export const updateAdditionalWithdrawalData = async (
-  withdrawalTx: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) => {
-  const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
-    withdrawalTx as L2ToL1EventResultPlus,
-    l1Provider,
-    l2Provider
-  )
-
-  return l2toL1TxWithDeadline
-}
+const FAILED_MESSAGES_LOCAL_STORAGE_KEY = 'arbitrum:bridge:failed-messages'
+const EXECUTED_MESSAGES_LOCAL_STORAGE_KEY = 'arbitrum:bridge:executed-messages'
 
 export async function mapETHWithdrawalToL2ToL1EventResult(
   // `l2TxHash` exists on result from subgraph
@@ -58,19 +45,50 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   }
 }
 
+function saveFailedMessageToCache(key: string, failed: boolean) {
+  const currentCache = JSON.parse(
+    localStorage.getItem(FAILED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
+  )
+  localStorage.setItem(
+    FAILED_MESSAGES_LOCAL_STORAGE_KEY,
+    JSON.stringify({ ...currentCache, [key]: failed })
+  )
+}
+
+function saveExecutedMessageToCache(key: string) {
+  const currentCache = JSON.parse(
+    localStorage.getItem(EXECUTED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
+  )
+  localStorage.setItem(
+    EXECUTED_MESSAGES_LOCAL_STORAGE_KEY,
+    JSON.stringify({ ...currentCache, [key]: true })
+  )
+}
+
 export async function getOutgoingMessageState(
   event: L2ToL1EventResult,
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  const cacheKey = getExecutedMessagesCacheKey({
+  // TODO: check if tx remaining time is greater than X, then return UNCONFIRMED.
+
+  const cacheKey = getL2ToL1MessageCacheKey({
     event,
     l2ChainId: l2ChainID
   })
 
+  // cached status is failure
+  const failedMessagesCache = JSON.parse(
+    localStorage.getItem(FAILED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
+  )
+  if (failedMessagesCache[cacheKey] === true) {
+    return OutgoingMessageState.FAILURE
+  }
+
+  // cached status is executed
   const executedMessagesCache = JSON.parse(
-    localStorage.getItem('arbitrum:bridge:executed-messages') || '{}'
+    localStorage.getItem(EXECUTED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
   )
   if (executedMessagesCache[cacheKey]) {
     return OutgoingMessageState.EXECUTED
@@ -78,59 +96,37 @@ export async function getOutgoingMessageState(
 
   const messageReader = new L2ToL1MessageReader(l1Provider, event)
 
+  // no cached status for this tx
+  // we check if the transaction has failed
+  if (typeof failedMessagesCache[cacheKey] === 'undefined') {
+    try {
+      await messageReader.getFirstExecutableBlock(l2Provider)
+      saveFailedMessageToCache(cacheKey, false)
+    } catch (error) {
+      const err = error as Error & { error: Error }
+      const errorMessage = err && (err.message || err.error?.message)
+
+      if (errorMessage.includes('CALL_EXCEPTION')) {
+        // in classic we simulate `executeTransaction` in `hasExecuted`
+        // which might revert if the L2 to L1 call fail
+        saveFailedMessageToCache(cacheKey, true)
+        return OutgoingMessageState.FAILURE
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // finally get other possible status
   try {
-    return await messageReader.status(l2Provider)
+    const status = await messageReader.status(l2Provider)
+
+    if (status === OutgoingMessageState.EXECUTED) {
+      saveExecutedMessageToCache(cacheKey)
+    }
+    return status
   } catch (error) {
     return OutgoingMessageState.UNCONFIRMED
-  }
-}
-
-export async function attachNodeBlockDeadlineToEvent(
-  event: L2ToL1EventResultPlus,
-  l1Provider: Provider,
-  l2Provider: Provider
-) {
-  if (
-    event.outgoingMessageState === OutgoingMessageState.EXECUTED ||
-    event.outgoingMessageState === OutgoingMessageState.CONFIRMED
-  ) {
-    return event
-  }
-
-  const messageReader = L2ToL1MessageReader.fromEvent(l1Provider, event)
-
-  try {
-    const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
-      l2Provider
-    )
-
-    return { ...event, nodeBlockDeadline: firstExecutableBlock?.toNumber() }
-  } catch (e) {
-    const expectedError = "batch doesn't exist"
-    const expectedError2 = 'CALL_EXCEPTION'
-
-    const err = e as Error & { error: Error }
-    const errorMessage = err && (err.message || err.error?.message)
-
-    if (errorMessage.includes(expectedError)) {
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else if (errorMessage.includes(expectedError2)) {
-      // in classic we simulate `executeTransaction` in `hasExecuted`
-      // which might revert if the L2 to L1 call fail
-      const nodeBlockDeadline: NodeBlockDeadlineStatus =
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-      return {
-        ...event,
-        nodeBlockDeadline
-      }
-    } else {
-      throw e
-    }
   }
 }
 

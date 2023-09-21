@@ -64,7 +64,6 @@ export interface MergedTransaction {
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
-  nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus

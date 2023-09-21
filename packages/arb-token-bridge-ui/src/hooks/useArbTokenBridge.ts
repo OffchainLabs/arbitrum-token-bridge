@@ -58,7 +58,7 @@ function isClassicL2ToL1TransactionEvent(
   return typeof (event as any).batchNumber !== 'undefined'
 }
 
-export function getExecutedMessagesCacheKey({
+export function getL2ToL1MessageCacheKey({
   event,
   l2ChainId
 }: {
@@ -319,7 +319,6 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: 'ETH',
           decimals: 18,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
 
@@ -607,7 +606,6 @@ export const useArbTokenBridge = (
           outgoingMessageState,
           symbol: symbol,
           decimals: decimals,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
 
@@ -1025,7 +1023,7 @@ export const useArbTokenBridge = (
     const added: { [cacheKey: string]: boolean } = {}
 
     events.forEach((event: L2ToL1EventResult) => {
-      const cacheKey = getExecutedMessagesCacheKey({
+      const cacheKey = getL2ToL1MessageCacheKey({
         event,
         l2ChainId: l2.network.id
       })

@@ -6,8 +6,7 @@ import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEvent
 import {
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalToL2ToL1EventResult,
-  updateAdditionalWithdrawalData
+  mapWithdrawalToL2ToL1EventResult
 } from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
@@ -184,13 +183,7 @@ export const fetchWithdrawals = async ({
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
     .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
-  const finalL2ToL1Txns: L2ToL1EventResultPlus[] = await Promise.all(
-    l2ToL1Txns.map(withdrawal =>
-      updateAdditionalWithdrawalData(withdrawal, l1Provider, l2Provider)
-    )
-  )
-
-  return finalL2ToL1Txns.map(tx => ({
+  return l2ToL1Txns.map(tx => ({
     ...tx,
 
     // attach the chain ids to the withdrawal object

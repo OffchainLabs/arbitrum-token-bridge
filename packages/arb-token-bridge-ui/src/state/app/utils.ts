@@ -5,7 +5,6 @@ import { ethers, BigNumber } from 'ethers'
 import { DepositStatus, MergedTransaction } from './state'
 import {
   L2ToL1EventResultPlus,
-  NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
@@ -17,7 +16,8 @@ export const TX_TIME_FORMAT = 'hh:mm A (z)'
 export const outgoingStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
-  [OutgoingMessageState.EXECUTED]: 'Executed'
+  [OutgoingMessageState.EXECUTED]: 'Executed',
+  [OutgoingMessageState.FAILURE]: 'Failure'
 }
 
 export const getDepositStatus = (tx: Transaction) => {
@@ -94,11 +94,7 @@ export const transformWithdrawals = (
       sender: tx.sender,
       destination: tx.destinationAddress,
       direction: 'outbox',
-      status:
-        tx.nodeBlockDeadline ===
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-          ? 'Failure'
-          : outgoingStateToString[tx.outgoingMessageState],
+      status: outgoingStateToString[tx.outgoingMessageState],
       createdAt: getStandardizedTimestamp(
         String(BigNumber.from(tx.timestamp).toNumber() * 1000)
       ),
@@ -110,7 +106,6 @@ export const transformWithdrawals = (
       isWithdrawal: true,
       blockNum: tx.ethBlockNum.toNumber(),
       tokenAddress: tx.tokenAddress || null,
-      nodeBlockDeadline: tx.nodeBlockDeadline,
       chainId: tx.chainId,
       parentChainId: tx.parentChainId
     }
@@ -181,9 +176,7 @@ export const isFailed = (tx: MergedTransaction) => {
       (tx.status === 'failure' ||
         tx.depositStatus == DepositStatus.L1_FAILURE ||
         tx.depositStatus === DepositStatus.L2_FAILURE)) ||
-    (isWithdrawal(tx) &&
-      tx.nodeBlockDeadline ==
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION)
+    (isWithdrawal(tx) && tx.status === 'failure')
   )
 }
 
