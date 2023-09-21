@@ -16,8 +16,7 @@ export const TX_TIME_FORMAT = 'hh:mm A (z)'
 export const outgoingStateToString = {
   [OutgoingMessageState.UNCONFIRMED]: 'Unconfirmed',
   [OutgoingMessageState.CONFIRMED]: 'Confirmed',
-  [OutgoingMessageState.EXECUTED]: 'Executed',
-  [OutgoingMessageState.FAILURE]: 'Failure'
+  [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
 export const getDepositStatus = (tx: Transaction) => {
@@ -94,7 +93,9 @@ export const transformWithdrawals = (
       sender: tx.sender,
       destination: tx.destinationAddress,
       direction: 'outbox',
-      status: outgoingStateToString[tx.outgoingMessageState],
+      status: tx.failed
+        ? 'Failure'
+        : outgoingStateToString[tx.outgoingMessageState],
       createdAt: getStandardizedTimestamp(
         String(BigNumber.from(tx.timestamp).toNumber() * 1000)
       ),

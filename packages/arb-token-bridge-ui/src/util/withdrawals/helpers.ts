@@ -29,12 +29,16 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   l2ChainId: number
 ): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
-  const outgoingMessageState = await getOutgoingMessageState(
+  const failed = await isWithdrawalFailed({
     event,
     l1Provider,
     l2Provider,
     l2ChainId
-  )
+  })
+
+  const outgoingMessageState = failed
+    ? OutgoingMessageState.UNCONFIRMED
+    : await getOutgoingMessageState(event, l1Provider, l2Provider, l2ChainId)
 
   return {
     ...event,
@@ -45,8 +49,60 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     symbol: 'ETH',
     outgoingMessageState,
     decimals: 18,
-    l2TxHash: event.l2TxHash || event.transactionHash
+    l2TxHash: event.l2TxHash || event.transactionHash,
+    failed
   }
+}
+
+async function isWithdrawalFailed({
+  event,
+  l1Provider,
+  l2Provider,
+  l2ChainId
+}: {
+  event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string }
+  l1Provider: Provider
+  l2Provider: Provider
+  l2ChainId: number
+}) {
+  const cacheKey = getL2ToL1MessageCacheKey({
+    event,
+    l2ChainId
+  })
+
+  // cached status is failure
+  const failedMessagesCache = JSON.parse(
+    localStorage.getItem(FAILED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
+  )
+  if (failedMessagesCache[cacheKey] === true) {
+    return true
+  }
+
+  const messageReader = new L2ToL1MessageReader(l1Provider, event)
+
+  // no cached status for this tx
+  // we check if the transaction has failed
+  if (typeof failedMessagesCache[cacheKey] === 'undefined') {
+    try {
+      await messageReader.getFirstExecutableBlock(l2Provider)
+      saveFailedMessageToCache(cacheKey, false)
+      return false
+    } catch (error) {
+      const err = error as Error & { error: Error }
+      const errorMessage = err && (err.message || err.error?.message)
+
+      if (errorMessage.includes('CALL_EXCEPTION')) {
+        // in classic we simulate `executeTransaction` in `hasExecuted`
+        // which might revert if the L2 to L1 call fail
+        saveFailedMessageToCache(cacheKey, true)
+        return true
+      } else {
+        throw error
+      }
+    }
+  }
+
+  return false
 }
 
 function saveFailedMessageToCache(key: string, failed: boolean) {
@@ -82,14 +138,6 @@ export async function getOutgoingMessageState(
     l2ChainId: l2ChainID
   })
 
-  // cached status is failure
-  const failedMessagesCache = JSON.parse(
-    localStorage.getItem(FAILED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
-  )
-  if (failedMessagesCache[cacheKey] === true) {
-    return OutgoingMessageState.FAILURE
-  }
-
   // cached status is executed
   const executedMessagesCache = JSON.parse(
     localStorage.getItem(EXECUTED_MESSAGES_LOCAL_STORAGE_KEY) || '{}'
@@ -99,27 +147,6 @@ export async function getOutgoingMessageState(
   }
 
   const messageReader = new L2ToL1MessageReader(l1Provider, event)
-
-  // no cached status for this tx
-  // we check if the transaction has failed
-  if (typeof failedMessagesCache[cacheKey] === 'undefined') {
-    try {
-      await messageReader.getFirstExecutableBlock(l2Provider)
-      saveFailedMessageToCache(cacheKey, false)
-    } catch (error) {
-      const err = error as Error & { error: Error }
-      const errorMessage = err && (err.message || err.error?.message)
-
-      if (errorMessage.includes('CALL_EXCEPTION')) {
-        // in classic we simulate `executeTransaction` in `hasExecuted`
-        // which might revert if the L2 to L1 call fail
-        saveFailedMessageToCache(cacheKey, true)
-        return OutgoingMessageState.FAILURE
-      } else {
-        throw error
-      }
-    }
-  }
 
   const l1Network = await l1Provider.getNetwork()
   const { isMainnet } = isNetwork(l1Network.chainId)

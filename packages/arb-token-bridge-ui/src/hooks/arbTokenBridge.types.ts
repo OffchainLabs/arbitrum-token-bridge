@@ -88,6 +88,7 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   outgoingMessageState: OutgoingMessageState
   symbol: string
   decimals: number
+  failed?: boolean
   chainId?: number
   parentChainId?: number
 }
