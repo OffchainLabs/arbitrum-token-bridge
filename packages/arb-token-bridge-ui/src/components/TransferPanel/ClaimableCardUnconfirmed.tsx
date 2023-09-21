@@ -105,12 +105,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           )}
         >
           <span className="whitespace-nowrap">
-            {tx.nodeBlockDeadline ? (
-              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
-            ) : tx.isCctp ? (
+            {tx.isCctp ? (
               <>{remainingTime}</>
             ) : (
-              <span>Calculating...</span>
+              <WithdrawalCountdown createdAt={tx.createdAt} />
             )}
           </span>
         </span>

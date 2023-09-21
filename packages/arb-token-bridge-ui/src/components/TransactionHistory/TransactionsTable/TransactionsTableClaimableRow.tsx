@@ -170,12 +170,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
         {tx.isCctp ? (
           <>{remainingTime}</>
         ) : (
-          <WithdrawalCountdown
-            nodeBlockDeadline={
-              tx.nodeBlockDeadline ||
-              NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
-            }
-          />
+          <WithdrawalCountdown createdAt={tx.createdAt} />
         )}
       </div>
     )
