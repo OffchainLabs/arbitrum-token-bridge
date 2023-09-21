@@ -23,3 +23,6 @@ export const CONFIRMATION_PERIOD_ARTICLE_LINK =
 
 export const ORBIT_QUICKSTART_LINK =
   'https://docs.arbitrum.io/launch-orbit-chain/orbit-quickstart'
+
+export const CCTP_DOCUMENTATION =
+  'https://www.circle.com/en/cross-chain-transfer-protocol'

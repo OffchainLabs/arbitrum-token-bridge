@@ -20,7 +20,8 @@ import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
-import { useCCTPIsBlocked } from '../../../hooks/CCTP/useCCTPIsBlocked'
+import { CctpTabContent } from '../CctpTabContent'
+import { CCTP_DOCUMENTATION } from '../../../constants'
 
 type Props = UseDialogProps & {
   amount: string
@@ -33,8 +34,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { data: isCctpBlocked, isLoading: isLoadingIsCctpBlocked } =
-    useCCTPIsBlocked()
 
   const from = l1.network
   const to = l2.network
@@ -96,12 +95,75 @@ export function USDCDepositConfirmationDialog(props: Props) {
             </button>
           </div>
           <Tab.List className="bg-ocl-blue">
-            <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
             <TabButton>Use a fast bridge (USDC)</TabButton>
-            <TabButton disabled={isLoadingIsCctpBlocked || isCctpBlocked}>
-              Use Circle&apos;s bridge (USDC)
-            </TabButton>
+            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
+            <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
           </Tab.List>
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <p className="font-light">
+                Receive{' '}
+                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
+                  Native USDC
+                </USDCTokenExplorerLink>{' '}
+                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                <ExternalLink
+                  className="arb-hover text-blue-link underline"
+                  href={CCTP_DOCUMENTATION}
+                >
+                  Cross-Chain Transfer Protocol
+                </ExternalLink>{' '}
+                integrated.
+              </p>
+            </div>
+
+            <BridgesTable
+              bridgeList={fastBridges}
+              selectedNonCanonicalToken={tokenSymbol}
+            />
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+            </div>
+          </Tab.Panel>
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-3">
+              <CctpTabContent toNetworkName={toNetworkName}>
+                <div className="flex flex-col space-y-6">
+                  <USDCDepositConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                    isBridgingNativeUSDC
+                  />
+                </div>
+              </CctpTabContent>
+            </div>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!allCheckboxesCheched}
+                onClick={() => {
+                  props.onClose(true, 'cctp')
+                  setAllCheckboxesChecked(false)
+                  trackEvent('Use Arbitrum Bridge Click', {
+                    tokenSymbol
+                  })
+                }}
+              >
+                Confirm
+              </Button>
+            </div>
+          </Tab.Panel>
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
@@ -130,84 +192,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 disabled={!allCheckboxesCheched}
                 onClick={() => {
                   props.onClose(true, 'bridged')
-                  setAllCheckboxesChecked(false)
-                  trackEvent('Use Arbitrum Bridge Click', {
-                    tokenSymbol
-                  })
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </Tab.Panel>
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                >
-                  Cross-Chain Transfer Protocol
-                </ExternalLink>{' '}
-                integrated.
-              </p>
-            </div>
-
-            <BridgesTable
-              bridgeList={fastBridges}
-              selectedNonCanonicalToken={tokenSymbol}
-            />
-            <div className="mt-2 flex flex-row justify-end space-x-2">
-              <Button variant="secondary" onClick={() => props.onClose(false)}>
-                Cancel
-              </Button>
-            </div>
-          </Tab.Panel>
-          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} with Circle&apos;s{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                >
-                  Cross-Chain Transfer Protocol
-                </ExternalLink>{' '}
-                within the Arbitrum Bridge.
-              </p>
-
-              <div className="flex flex-col space-y-6">
-                <USDCDepositConfirmationDialogCheckbox
-                  onAllCheckboxesCheched={() => {
-                    setAllCheckboxesChecked(true)
-                  }}
-                  onChange={checked => {
-                    if (!checked) {
-                      setAllCheckboxesChecked(false)
-                    }
-                  }}
-                  isBridgingNativeUSDC
-                />
-              </div>
-            </div>
-            <div className="mt-2 flex flex-row justify-end space-x-2">
-              <Button variant="secondary" onClick={() => props.onClose(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={!allCheckboxesCheched}
-                onClick={() => {
-                  props.onClose(true, 'cctp')
                   setAllCheckboxesChecked(false)
                   trackEvent('Use Arbitrum Bridge Click', {
                     tokenSymbol
