@@ -44,7 +44,7 @@ import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { getProps } from '../../util/wagmi/setup'
+import { getWalletProvidersConfigProps } from '../../util/wagmi/setup'
 
 declare global {
   interface Window {
@@ -301,7 +301,8 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 const searchParams = new URLSearchParams(window.location.search)
 const targetChainKey = searchParams.get('walletConnectChain')
 
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+const { wagmiConfigProps, rainbowKitProviderProps } =
+  getWalletProvidersConfigProps(targetChainKey)
 
 // Clear cache for everything related to WalletConnect v2.
 //
@@ -324,17 +325,15 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <Header />
-            <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
-              <main>
-                <NetworkReady>
-                  <AppContextProvider>
-                    <Injector>
-                      <AppContent />
-                    </Injector>
-                  </AppContextProvider>
-                </NetworkReady>
-              </main>
-            </div>
+            <main className="bg-gradient-overlay min-h-[calc(100vh-80px)]">
+              <NetworkReady>
+                <AppContextProvider>
+                  <Injector>
+                    <AppContent />
+                  </Injector>
+                </AppContextProvider>
+              </NetworkReady>
+            </main>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>

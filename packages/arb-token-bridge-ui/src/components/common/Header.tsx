@@ -318,7 +318,7 @@ function HeaderMobile() {
       </div>
       <div className="flex min-h-screen flex-col items-center gap-1 bg-dark">
         <div className="flex w-full flex-col items-start pt-4">
-          <div id="header-content-root" />
+          <div id="header-content-root" className="self-stretch" />
           <NetworkSelectionContainer />
         </div>
         <HeaderMenuMobile {...learnMenuProps}>

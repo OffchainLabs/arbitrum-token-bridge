@@ -25,13 +25,7 @@ type NetworkConfig = {
   multiCall: string
 }
 
-export const getNetworkNameForE2E = (
-  networkType: NetworkType,
-  networkName?: NetworkName
-) => {
-  if (networkName) {
-    return networkName
-  }
+export const getNetworkNameForE2E = (networkType: NetworkType) => {
   if (networkType === 'L1') {
     return getL1NetworkConfig().networkName
   }

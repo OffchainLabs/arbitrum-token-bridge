@@ -40,7 +40,7 @@ export function login({
   query?: { [s: string]: string }
 }) {
   // if networkName is not specified we connect to default network from config
-  networkName = getNetworkNameForE2E(networkType, networkName)
+  networkName = networkName ?? getNetworkNameForE2E(networkType)
 
   function _startWebApp() {
     startWebApp(url, {

@@ -1,5 +1,7 @@
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { twJoin } from 'tailwind-merge'
+
 import { HeaderAccountPopover } from './HeaderAccountPopover'
 
 function NetworkButtonAndConnectButton({
@@ -38,7 +40,7 @@ function HeaderConnectWalletButtonWrapper({
 }) {
   return (
     <div
-      className={!ready ? 'pointer-events-none select-none opacity-0' : ''}
+      className={twJoin(!ready && 'pointer-events-none select-none opacity-0')}
       aria-hidden={!ready}
     >
       {children}

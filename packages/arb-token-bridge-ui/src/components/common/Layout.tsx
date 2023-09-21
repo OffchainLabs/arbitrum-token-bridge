@@ -22,7 +22,7 @@ function Moon() {
     <motion.img
       src="/images/moon.webp"
       alt="Moon"
-      className="absolute bottom-[-10%] z-0 lg:bottom-[-65%] lg:right-0 lg:max-w-[75vw]"
+      className="absolute bottom-[-10%] z-0 lg:bottom-[-700px] lg:right-0 lg:max-w-[1200px]"
       style={{ scale }}
     />
   )

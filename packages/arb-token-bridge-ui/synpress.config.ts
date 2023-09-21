@@ -113,12 +113,10 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (
-    process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL === 'http://localhost:8545'
-  ) {
-    return 'http://localhost:8545/'
+  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL!.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
   }
-  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
 })()
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 
