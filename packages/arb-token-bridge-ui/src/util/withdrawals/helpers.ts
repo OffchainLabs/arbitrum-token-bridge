@@ -131,8 +131,6 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  // TODO: check if tx remaining time is greater than X, then return UNCONFIRMED.
-
   const cacheKey = getL2ToL1MessageCacheKey({
     event,
     l2ChainId: l2ChainID
