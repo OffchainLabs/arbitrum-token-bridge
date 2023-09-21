@@ -114,7 +114,6 @@ function getChainId(targetChainKey: TargetChainKey): number {
       return ChainId.XaiTestnet
 
     case TargetChainKey.Local:
-    case TargetChainKey.CustomLocal:
       return ChainId.Local
 
     case TargetChainKey.ArbitrumLocal:

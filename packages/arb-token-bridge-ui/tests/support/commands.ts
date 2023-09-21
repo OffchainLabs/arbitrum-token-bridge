@@ -10,13 +10,11 @@
 import '@testing-library/cypress/add-commands'
 import { recurse } from 'cypress-recurse'
 
-import { TargetChainKey } from '../../src/util'
 import {
   NetworkType,
   NetworkName,
   startWebApp,
-  getL1NetworkConfig,
-  getL2NetworkConfig
+  getNetworkNameForE2E
 } from './common'
 
 function shouldChangeNetwork(networkName: NetworkName) {
@@ -41,26 +39,15 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
-  const connectToChain = () => {
-    if (!networkName) {
-      if (networkType === 'L1') {
-        return getL1NetworkConfig().networkName
-      } else {
-        return getL2NetworkConfig().networkName
-      }
-    }
-    return networkName
-  }
+  // if networkName is not specified we connect to default network from config
+  networkName = getNetworkNameForE2E(networkType, networkName)
 
   function _startWebApp() {
-    startWebApp(url, { ...query, walletConnectChain: connectToChain() })
+    startWebApp(url, {
+      ...query,
+      walletConnectChain: networkName
+    })
   }
-
-  // if networkName is not specified we connect to default network from config
-  networkName =
-    networkName ||
-    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
-      .networkName
 
   shouldChangeNetwork(networkName).then(changeNetwork => {
     if (changeNetwork) {

@@ -3,9 +3,12 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { getInitialETHBalance } from '../../support/common'
+import {
+  getInitialETHBalance,
+  getNetworkNameForE2E
+} from '../../support/common'
 
-const walletConnectChain = 'localhost'
+const walletConnectChain = getNetworkNameForE2E('L1')
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
