@@ -155,7 +155,7 @@ export async function getOutgoingMessageState(
   })
   const FOUR_HOURS_IN_MINUTES = 4 * 60
 
-  // assume tx is unconfirmed if the confirmation time is a long time way
+  // assume tx is unconfirmed if the confirmation time is a long time away
   const isUnconfirmedMainnet = isMainnet && minutesLeft > FOUR_HOURS_IN_MINUTES
   const isUnconfirmedNotMainnet = !isMainnet && minutesLeft > 30
 
