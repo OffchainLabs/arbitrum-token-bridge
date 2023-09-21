@@ -2,6 +2,8 @@ import { utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
+import dayjs from 'dayjs'
+
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 import { getL1TokenData } from '../TokenUtils'
 import {
@@ -12,6 +14,8 @@ import {
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getL2ToL1MessageCacheKey } from '../../hooks/useArbTokenBridge'
+import { isNetwork } from '../networks'
+import { getTxConfirmationRemainingMinutes } from '../../components/common/WithdrawalCountdown'
 
 const FAILED_MESSAGES_LOCAL_STORAGE_KEY = 'arbitrum:bridge:failed-messages'
 const EXECUTED_MESSAGES_LOCAL_STORAGE_KEY = 'arbitrum:bridge:executed-messages'
@@ -115,6 +119,23 @@ export async function getOutgoingMessageState(
         throw error
       }
     }
+  }
+
+  const l1Network = await l1Provider.getNetwork()
+  const { isMainnet } = isNetwork(l1Network.chainId)
+
+  const minutesLeft = getTxConfirmationRemainingMinutes({
+    createdAt: dayjs(event.timestamp.toNumber() * 1000),
+    parentChainId: l1Network.chainId
+  })
+  const FOUR_HOURS_IN_MINUTES = 4 * 60
+
+  // assume tx is unconfirmed if the confirmation time is a long time way
+  const isUnconfirmedMainnet = isMainnet && minutesLeft > FOUR_HOURS_IN_MINUTES
+  const isUnconfirmedNotMainnet = !isMainnet && minutesLeft > 30
+
+  if (isUnconfirmedMainnet || isUnconfirmedNotMainnet) {
+    return OutgoingMessageState.UNCONFIRMED
   }
 
   // finally get other possible status

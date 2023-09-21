@@ -23,7 +23,7 @@ function getTxConfirmationDate({
     .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
 }
 
-function getTxConfirmationRemainingMinutes({
+export function getTxConfirmationRemainingMinutes({
   createdAt,
   parentChainId
 }: {

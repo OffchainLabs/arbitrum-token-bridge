@@ -176,7 +176,7 @@ export const isFailed = (tx: MergedTransaction) => {
       (tx.status === 'failure' ||
         tx.depositStatus == DepositStatus.L1_FAILURE ||
         tx.depositStatus === DepositStatus.L2_FAILURE)) ||
-    (isWithdrawal(tx) && tx.status === 'failure')
+    (isWithdrawal(tx) && tx.status === 'Failure')
   )
 }
 
