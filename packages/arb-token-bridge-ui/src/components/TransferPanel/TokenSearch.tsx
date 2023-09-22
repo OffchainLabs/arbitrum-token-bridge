@@ -39,6 +39,7 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum Panel {
@@ -468,6 +469,8 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -496,6 +499,10 @@ export function TokenSearch({
         isTokenArbitrumGoerliNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
+        if (isLoadingAccountType) {
+          return
+        }
+
         updateUSDCBalances(_token.address)
         setSelectedToken({
           name: 'USD Coin',

@@ -14,7 +14,7 @@ export const CctpTabContent = ({
 
   if (isLoadingIsCctpBlocked || isCctpBlocked) {
     return (
-      <>
+      <p className="font-light">
         Access to Circle&apos;s bridge is restricted in certain jurisdictions.
         For more details, please consult Circle&apos;s{' '}
         <ExternalLink
@@ -23,7 +23,7 @@ export const CctpTabContent = ({
         >
           documentation.
         </ExternalLink>{' '}
-      </>
+      </p>
     )
   }
 
