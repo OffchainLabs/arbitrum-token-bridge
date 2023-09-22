@@ -227,11 +227,15 @@ export function Header() {
               items={[
                 {
                   title: 'Arbitrum One Portal',
-                  anchorProps: { href: 'https://portal.arbitrum.one' }
+                  anchorProps: {
+                    href: 'https://portal.arbitrum.io/projects?chains=arbitrum-one'
+                  }
                 },
                 {
                   title: 'Arbitrum Nova Portal',
-                  anchorProps: { href: 'https://portal-nova.arbitrum.io' }
+                  anchorProps: {
+                    href: 'https://portal.arbitrum.io/projects?chains=arbitrum-nova'
+                  }
                 },
                 {
                   title: 'Explorers',
