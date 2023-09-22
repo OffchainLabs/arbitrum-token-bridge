@@ -11,11 +11,6 @@ import {
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { useAppContextState } from '../components/App/AppContext'
-import {
-  getQueryParamsForFetchingReceivedFunds,
-  getQueryParamsForFetchingSentFunds
-} from '../util/SubgraphUtils'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -61,10 +56,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
-
   const { address: walletAddress } = useAccount()
 
   /* return the cached response for the complete pending transactions */
@@ -77,7 +68,6 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
           walletAddress,
           l1Provider,
           l2Provider,
-          isTransactionHistoryShowingSentTx,
           withdrawalPageParams.pageNumber,
           withdrawalPageParams.pageSize,
           withdrawalPageParams.searchString
@@ -88,20 +78,17 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _walletAddress,
       _l1Provider,
       _l2Provider,
-      _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
+        address: _walletAddress,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        searchString: _searchString,
-        ...(_isTransactionHistoryShowingSentTx
-          ? getQueryParamsForFetchingSentFunds(_walletAddress)
-          : getQueryParamsForFetchingReceivedFunds(_walletAddress))
+        searchString: _searchString
       })
   )
 }

@@ -8,10 +8,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
   query: {
     l2ChainId: string
     search?: string
-    sender?: string
-    senderNot?: string
-    receiver?: string
-    receiverNot?: string
+    address: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -32,10 +29,7 @@ export default async function handler(
     const {
       search = '',
       l2ChainId,
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
+      address,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -53,8 +47,7 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-    if (!sender && !receiver)
-      errorMessage.push('<sender> or <receiver> is required')
+    if (!address) errorMessage.push('<address> is required')
 
     if (errorMessage.length) {
       res.status(400).json({
@@ -66,27 +59,27 @@ export default async function handler(
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
             withdrawals(
-                where: {
-                ${sender ? `sender: "${sender}",` : ''}
-                ${senderNot ? `sender_not: "${senderNot}",` : ''}
-                ${receiver ? `receiver: "${receiver}",` : ''}
-                ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}
+              where: {            
+                or: [
+                  { sender: "${address}" },
+                  { receiver: "${address}" }
+                ]
+              }
+              ${
+                typeof fromBlock !== 'undefined'
+                  ? `l2BlockNum_gte: ${Number(fromBlock)}`
+                  : ''
+              }
                 ${
-                  typeof fromBlock !== 'undefined'
-                    ? `l2BlockNum_gte: ${Number(fromBlock)}`
+                  typeof toBlock !== 'undefined'
+                    ? `l2BlockNum_lte: ${Number(toBlock)}`
                     : ''
-                }
-                  ${
-                    typeof toBlock !== 'undefined'
-                      ? `l2BlockNum_lte: ${Number(toBlock)}`
-                      : ''
-                  }  
-                  ${search ? `l2TxHash_contains: "${search}"` : ''}
-                }
-                orderBy: l2BlockTimestamp
-                orderDirection: desc
-                first: ${Number(pageSize)},
-                skip: ${Number(page) * Number(pageSize)}
+                }  
+                ${search ? `l2TxHash_contains: "${search}"` : ''}
+              orderBy: l2BlockTimestamp
+              orderDirection: desc
+              first: ${Number(pageSize)},
+              skip: ${Number(page) * Number(pageSize)}
             ) {
                 id,
                 type,

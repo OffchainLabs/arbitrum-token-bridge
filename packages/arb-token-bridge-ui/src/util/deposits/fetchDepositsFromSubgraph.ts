@@ -35,10 +35,7 @@ export type FetchDepositsFromSubgraphResult = {
  */
 
 export const fetchDepositsFromSubgraph = async ({
-  sender,
-  senderNot,
-  receiver,
-  receiverNot,
+  address,
   fromBlock,
   toBlock,
   l2ChainId,
@@ -46,10 +43,7 @@ export const fetchDepositsFromSubgraph = async ({
   pageNumber = 0,
   searchString = ''
 }: {
-  sender?: string
-  senderNot?: string
-  receiver?: string
-  receiverNot?: string
+  address: string
   fromBlock: number
   toBlock: number
   l2ChainId: number
@@ -64,10 +58,7 @@ export const fetchDepositsFromSubgraph = async ({
 
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
+      address,
       fromBlock,
       toBlock,
       l2ChainId,
