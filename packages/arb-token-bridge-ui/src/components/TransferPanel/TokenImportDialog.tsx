@@ -3,7 +3,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import Tippy from '@tippyjs/react'
-
+import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
@@ -43,16 +43,17 @@ type TokenListSearchResult =
       status: ImportStatus
     }
 
-export type TokenImportDialogProps = UseDialogProps & { address: string }
+export type TokenImportDialogProps = UseDialogProps & { tokenAddress: string }
 
 export function TokenImportDialog({
   isOpen,
   onClose,
-  address
+  tokenAddress
 }: TokenImportDialogProps): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token, walletAddress },
+      arbTokenBridge: { bridgeTokens, token },
       selectedToken
     }
   } = useAppState()
@@ -71,7 +72,7 @@ export function TokenImportDialog({
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
-    eitherL1OrL2Address: address,
+    eitherL1OrL2Address: tokenAddress,
     l2Provider: l2.provider
   })
 
@@ -94,7 +95,7 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
-    if (!l1Address) {
+    if (!l1Address || !walletAddress) {
       return
     }
 
@@ -191,7 +192,7 @@ export function TokenImportDialog({
         setStatus(ImportStatus.ERROR)
       })
   }, [
-    address,
+    tokenAddress,
     bridgeTokens,
     getL1TokenDataFromL1Address,
     isL1AddressLoading,
@@ -209,7 +210,7 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[l1Address || address]
+    const foundToken = tokensFromUser[l1Address || tokenAddress]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -222,7 +223,7 @@ export function TokenImportDialog({
     }
   }, [
     isL1AddressLoading,
-    address,
+    tokenAddress,
     isOpen,
     l1Address,
     onClose,

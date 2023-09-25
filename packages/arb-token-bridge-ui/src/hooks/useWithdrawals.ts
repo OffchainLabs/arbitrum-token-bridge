@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
+import { useAccount } from 'wagmi'
+
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
-import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isPending, transformWithdrawals } from '../state/app/utils'
 import {
@@ -64,15 +65,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
 
-  const {
-    app: {
-      arbTokenBridge: { walletAddress }
-    }
-  } = useAppState()
-
-  const additionalSubgraphQueryParams = isTransactionHistoryShowingSentTx
-    ? getQueryParamsForFetchingSentFunds(walletAddress)
-    : getQueryParamsForFetchingReceivedFunds(walletAddress)
+  const { address: walletAddress } = useAccount()
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
@@ -106,7 +99,9 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,
-        ...additionalSubgraphQueryParams
+        ...(_isTransactionHistoryShowingSentTx
+          ? getQueryParamsForFetchingSentFunds(_walletAddress)
+          : getQueryParamsForFetchingReceivedFunds(_walletAddress))
       })
   )
 }
