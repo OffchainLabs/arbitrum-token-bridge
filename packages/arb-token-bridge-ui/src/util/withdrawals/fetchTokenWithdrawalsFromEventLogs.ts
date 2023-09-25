@@ -50,7 +50,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   return (
     (await Promise.all(promises))
       .flat()
-      // when getting funds received by this address we will also get duplicate txs that are overlapping with the previous query
+      // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
       // we have to filter them out
       .filter(
         (item, index, self) =>
