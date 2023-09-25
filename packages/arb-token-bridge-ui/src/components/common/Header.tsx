@@ -226,12 +226,10 @@ export function Header() {
             <HeaderMenuDesktop
               items={[
                 {
-                  title: 'Arbitrum One Portal',
-                  anchorProps: { href: 'https://portal.arbitrum.one' }
-                },
-                {
-                  title: 'Arbitrum Nova Portal',
-                  anchorProps: { href: 'https://portal-nova.arbitrum.io' }
+                  title: 'Arbitrum Portal',
+                  anchorProps: {
+                    href: 'https://portal.arbitrum.io/projects'
+                  }
                 },
                 {
                   title: 'Explorers',
