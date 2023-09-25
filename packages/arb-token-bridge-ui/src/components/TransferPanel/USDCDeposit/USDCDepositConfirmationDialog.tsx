@@ -19,7 +19,6 @@ import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
-import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
 
 type Props = UseDialogProps & {
   amount: string
@@ -73,7 +72,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px]">
+      <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group
           onChange={() => {
             setAllCheckboxesChecked(false)
@@ -93,23 +92,21 @@ export function USDCDepositConfirmationDialog(props: Props) {
             </button>
           </div>
 
-          <Tab.List className="bg-ocl-blue">
-            <TabButton>Use Arbitrum&apos;s bridge (USDC.e)</TabButton>
-            <TabButton>Use a fast bridge (USDC)</TabButton>
-            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
+          <Tab.List className="flex bg-ocl-blue">
+            <TabButton>Arbitrum&apos;s bridge (USDC.e)</TabButton>
+            <TabButton>Third party (USDC)</TabButton>
+            <TabButton>Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <p className="font-light">
                 Receive{' '}
-                <USDCTokenExplorerLink token="USDC.e" networkId={l2.network.id}>
-                  Bridged USDC (USDC.e)
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} using Arbitrum&apos;s native bridge.
+                <span className="font-medium">Bridged USDC (USDC.e)</span> on{' '}
+                {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
-              <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-4">
                 <USDCDepositConfirmationDialogCheckbox
                   onChange={checked => {
                     setAllCheckboxesChecked(checked)
@@ -141,11 +138,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                Receive <span className="font-medium">Native USDC</span> on
+                Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -168,13 +162,10 @@ export function USDCDepositConfirmationDialog(props: Props) {
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l2.network.id}>
-                  Native USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} with Circle&apos;s{' '}
+                Receive <span className="font-medium">Native USDC</span> on{' '}
+                {toNetworkName} with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href="https://www.circle.com/en/cross-chain-transfer-protocol"
@@ -184,7 +175,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 within the Arbitrum Bridge.
               </p>
 
-              <div className="flex flex-col space-y-6">
+              <div className="flex flex-col space-y-4">
                 <USDCDepositConfirmationDialogCheckbox
                   onAllCheckboxesCheched={() => {
                     setAllCheckboxesChecked(true)
