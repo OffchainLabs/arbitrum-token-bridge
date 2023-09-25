@@ -1,7 +1,7 @@
-const sender = '0x5d64a0fd6af0d76a7ed189d4061ffa6823fbf97e'
+const address = '0x5d64a0fd6af0d76a7ed189d4061ffa6823fbf97e'
 
 const baseQuery = {
-  sender,
+  address,
   l2ChainId: 42161,
   pageSize: 100
 }

@@ -56,26 +56,28 @@ export default async function handler(
       })
     }
 
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `l2BlockNum_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `l2BlockNum_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `l2TxHash_contains: "${search}"` : ''}
+    `
+
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
             withdrawals(
               where: {            
                 or: [
-                  { sender: "${address}" },
-                  { receiver: "${address}" }
+                  { sender: "${address}", ${additionalFilters} },
+                  { receiver: "${address}", ${additionalFilters} }
                 ]
               }
-              ${
-                typeof fromBlock !== 'undefined'
-                  ? `l2BlockNum_gte: ${Number(fromBlock)}`
-                  : ''
-              }
-                ${
-                  typeof toBlock !== 'undefined'
-                    ? `l2BlockNum_lte: ${Number(toBlock)}`
-                    : ''
-                }  
-                ${search ? `l2TxHash_contains: "${search}"` : ''}
               orderBy: l2BlockTimestamp
               orderDirection: desc
               first: ${Number(pageSize)},

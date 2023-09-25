@@ -56,26 +56,28 @@ export default async function handler(
       })
     }
 
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `blockCreatedAt_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `blockCreatedAt_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `transactionHash_contains: "${search}"` : ''}
+    `
+
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql(`{
         deposits(
           where: {            
             or: [
-              { sender: "${address}" },
-              { receiver: "${address}" }
+              { sender: "${address}", ${additionalFilters} },
+              { receiver: "${address}", ${additionalFilters} }
             ]
           }
-          ${
-            typeof fromBlock !== 'undefined'
-              ? `blockCreatedAt_gte: ${Number(fromBlock)}`
-              : ''
-          }
-          ${
-            typeof toBlock !== 'undefined'
-              ? `blockCreatedAt_lte: ${Number(toBlock)}`
-              : ''
-          }  
-          ${search ? `transactionHash_contains: "${search}"` : ''}
           orderBy: blockCreatedAt
           orderDirection: desc
           first: ${Number(pageSize)},

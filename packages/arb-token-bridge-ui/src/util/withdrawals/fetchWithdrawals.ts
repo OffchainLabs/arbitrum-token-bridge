@@ -75,8 +75,8 @@ export const fetchWithdrawals = async ({
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
       address,
-      fromBlock: fromBlock,
-      toBlock: toBlock,
+      fromBlock,
+      toBlock,
       l2ChainId: l2ChainID,
       pageNumber,
       pageSize,
