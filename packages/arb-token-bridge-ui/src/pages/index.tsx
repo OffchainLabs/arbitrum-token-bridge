@@ -11,15 +11,9 @@ import {
 } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
-const App = dynamic(() => import('../components/App/App'), {
+const App = dynamic(() => import('./experiment'), {
   ssr: false,
-  loading: () => (
-    <AppConnectionFallbackContainer>
-      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
-        <Loader size="large" color="white" />
-      </div>
-    </AppConnectionFallbackContainer>
-  )
+  loading: () => null
 })
 
 export default function Index() {
