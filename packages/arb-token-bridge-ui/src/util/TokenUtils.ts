@@ -221,6 +221,20 @@ export async function getL1ERC20Address({
 }
 
 /*
+ Retrieves the L1 gateway of an ERC-20 token using its L1 address.
+*/
+export async function getL1GatewayAddress({
+  erc20L1Address,
+  l1Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+}): Promise<string> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(l1Provider)
+  return erc20Bridger.getL1GatewayAddress(erc20L1Address, l1Provider)
+}
+
+/*
  Retrieves the L2 gateway of an ERC-20 token using its L1 address.
 */
 export async function getL2GatewayAddress({

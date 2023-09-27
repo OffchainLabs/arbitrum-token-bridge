@@ -24,6 +24,8 @@ import {
 } from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { getContracts } from '../../hooks/CCTP/useCCTP'
+import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -67,6 +69,22 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     const usd = formatUSD(ethToUSD(estimatedGasFees))
     return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, ethToUSD, isMainnet])
+
+  const contractAddress = useMemo(() => {
+    if (isCctp) {
+      return getContracts(chainId)?.tokenMessengerContractAddress
+    }
+    if (isDepositMode) {
+      return getL1GatewayAddress({
+        erc20L1Address: token?.address ?? '',
+        l1Provider: l1.provider
+      })
+    }
+    return getL2GatewayAddress({
+      erc20L1Address: token?.address ?? '',
+      l2Provider: l2.provider
+    })
+  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
 
   useEffect(() => {
     if (!isOpen) {
@@ -182,7 +200,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="font-medium">
                 approval fee of {approvalFeeText}*
               </span>{' '}
-              for each new token I add to my wallet.
+              for each new token or spending cap. This transaction gives
+              permission to the ${contractAddress} contract to transfer a capped
+              amount of a specific token.
             </span>
           }
           checked={checked}
