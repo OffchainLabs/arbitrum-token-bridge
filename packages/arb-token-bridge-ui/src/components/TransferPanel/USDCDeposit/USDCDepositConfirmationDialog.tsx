@@ -107,7 +107,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-3">
                 <USDCDepositConfirmationDialogCheckbox
                   onChange={checked => {
                     setAllCheckboxesChecked(checked)
@@ -163,9 +163,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <CctpTabContent toNetworkName={toNetworkName}>
-                <div className="flex flex-col space-y-6">
+                <div className="flex flex-col space-y-3">
                   <USDCDepositConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {
                       setAllCheckboxesChecked(true)

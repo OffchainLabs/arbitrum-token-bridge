@@ -103,9 +103,9 @@ export function USDCWithdrawalConfirmationDialog(
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-6">
               <CctpTabContent toNetworkName={toNetworkName}>
-                <div className="flex flex-col space-y-6">
+                <div className="flex flex-col space-y-3">
                   <USDCWithdrawalConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {
                       setAllCheckboxesChecked(true)
