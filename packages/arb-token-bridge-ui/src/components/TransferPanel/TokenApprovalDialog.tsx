@@ -222,6 +222,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
                 href={`${getExplorerUrl(
                   isDepositMode ? l1.network.id : l2.network.id
                 )}/address/${contractAddress}`}
+                onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+                  event.stopPropagation()
+                }}
               >
                 {shortenTxHash(contractAddress)}
               </ExternalLink>{' '}
