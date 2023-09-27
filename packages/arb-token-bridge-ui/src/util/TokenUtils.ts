@@ -225,12 +225,14 @@ export async function getL1ERC20Address({
 */
 export async function getL1GatewayAddress({
   erc20L1Address,
-  l1Provider
+  l1Provider,
+  l2Provider
 }: {
   erc20L1Address: string
   l1Provider: Provider
+  l2Provider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l1Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   return erc20Bridger.getL1GatewayAddress(erc20L1Address, l1Provider)
 }
 

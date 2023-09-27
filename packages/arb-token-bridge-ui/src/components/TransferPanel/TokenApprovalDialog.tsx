@@ -26,6 +26,7 @@ import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
 import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -57,6 +58,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
+  const [contractAddress, setContractAddress] = useState<string>('')
 
   // Estimated gas fees, denominated in Ether, represented as a floating point number
   const estimatedGasFees = useMemo(
@@ -69,22 +71,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     const usd = formatUSD(ethToUSD(estimatedGasFees))
     return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, ethToUSD, isMainnet])
-
-  const contractAddress = useMemo(() => {
-    if (isCctp) {
-      return getContracts(chainId)?.tokenMessengerContractAddress
-    }
-    if (isDepositMode) {
-      return getL1GatewayAddress({
-        erc20L1Address: token?.address ?? '',
-        l1Provider: l1.provider
-      })
-    }
-    return getL2GatewayAddress({
-      erc20L1Address: token?.address ?? '',
-      l2Provider: l2.provider
-    })
-  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
 
   useEffect(() => {
     if (!isOpen) {
@@ -126,16 +112,45 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }, [
     isCctp,
     isOpen,
-    l1.provider,
-    l2.provider,
-    token?.address,
-    token?.l2Address,
     isDepositMode,
     isTestnet,
     chainId,
     signer,
-    walletAddress
+    walletAddress,
+    token?.address,
+    l1.provider,
+    l2.provider
   ])
+
+  useEffect(() => {
+    const getContractAddress = async function () {
+      if (isCctp) {
+        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
+        return
+      }
+      if (!token?.address) {
+        setContractAddress('')
+        return
+      }
+      if (isDepositMode) {
+        setContractAddress(
+          await getL1GatewayAddress({
+            erc20L1Address: token.address,
+            l1Provider: l1.provider,
+            l2Provider: l2.provider
+          })
+        )
+        return
+      }
+      setContractAddress(
+        await getL2GatewayAddress({
+          erc20L1Address: token.address,
+          l2Provider: l2.provider
+        })
+      )
+    }
+    getContractAddress()
+  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -201,8 +216,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
                 approval fee of {approvalFeeText}*
               </span>{' '}
               for each new token or spending cap. This transaction gives
-              permission to the ${contractAddress} contract to transfer a capped
-              amount of a specific token.
+              permission to the{' '}
+              <ExternalLink
+                className="text-blue-link underline"
+                href={`${getExplorerUrl(
+                  isDepositMode ? l1.network.id : l2.network.id
+                )}/address/${contractAddress}`}
+              >
+                {shortenTxHash(contractAddress)}
+              </ExternalLink>{' '}
+              contract to transfer a capped amount of a specific token.
             </span>
           }
           checked={checked}
