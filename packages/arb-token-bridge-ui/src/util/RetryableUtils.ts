@@ -78,7 +78,7 @@ export const getRetryableTicketExpiration = async ({
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
 
     if (daysUntilExpired >= 0) isExpired = false
-  } catch {
+  } catch (_) {
     isLoadingError = true
   }
 
