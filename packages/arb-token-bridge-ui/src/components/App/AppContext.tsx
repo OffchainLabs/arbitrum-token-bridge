@@ -1,4 +1,10 @@
-import { createContext, useContext, useReducer, Dispatch } from 'react'
+import {
+  createContext,
+  useContext,
+  useReducer,
+  Dispatch,
+  useCallback
+} from 'react'
 
 export enum TransactionHistoryTab {
   DEPOSITS = 0,
@@ -130,32 +136,35 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
-  const showCctpDepositsTransactions = () => {
+  const showCctpDepositsTransactions = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_show_cctp_deposits', payload: true })
-  }
+  }, [dispatch])
 
-  const showCctpWithdrawalsTransactions = () => {
+  const showCctpWithdrawalsTransactions = useCallback(() => {
     dispatch({
       type: 'layout.set_txhistory_show_cctp_deposits',
       payload: false
     })
-  }
+  }, [dispatch])
 
-  const showSentTransactions = () => {
+  const showSentTransactions = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
-  }
+  }, [dispatch])
 
-  const showReceivedTransactions = () => {
+  const showReceivedTransactions = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: false })
-  }
+  }, [dispatch])
 
   const closeTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
 
-  const setTransactionHistoryTab = (payload: TransactionHistoryTab) => {
-    dispatch({ type: 'layout.set_txhistory_default_tab', payload })
-  }
+  const setTransactionHistoryTab = useCallback(
+    (payload: TransactionHistoryTab) => {
+      dispatch({ type: 'layout.set_txhistory_default_tab', payload })
+    },
+    [dispatch]
+  )
 
   return {
     setTransferring,

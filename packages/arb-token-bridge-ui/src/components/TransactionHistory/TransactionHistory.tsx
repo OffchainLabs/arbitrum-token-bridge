@@ -194,6 +194,12 @@ export const TransactionHistory = ({
     handleSmartContractWalletTxHistoryTab(0)
   }, [isSmartContractWallet, chain, handleSmartContractWalletTxHistoryTab])
 
+  useEffect(() => {
+    // this function runs every time the network tab is changed, and here it is also triggered when the page loads
+    // it sets the tab to 0 (deposits), which is the default tab
+    setTransactionHistoryTab(0)
+  }, [address, chain, setTransactionHistoryTab])
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {isNetwork(l2.network.id).isOrbitChain && (
@@ -218,7 +224,6 @@ export const TransactionHistory = ({
             handleSmartContractWalletTxHistoryTab(index)
             setTransactionHistoryTab(index)
           }}
-          key={address}
           selectedIndex={transactionHistorySelectedTab}
         >
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
