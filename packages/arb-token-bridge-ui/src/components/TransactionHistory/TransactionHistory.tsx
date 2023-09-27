@@ -195,10 +195,11 @@ export const TransactionHistory = ({
   }, [handleSmartContractWalletTxHistoryTab])
 
   useEffect(() => {
-    // this function runs every time the network tab is changed, and here it is also triggered when the page loads
-    // it sets the tab to 0 (deposits), which is the default tab
-    setTransactionHistoryTab(0)
-  }, [address, chain, setTransactionHistoryTab])
+    // This check avoid the situation when we open the transaction history on CCTP tab after a transfer, but it would go back to "To Arbitrum" tab
+    if (transfersIds.length === 0) {
+      setTransactionHistoryTab(0)
+    }
+  }, [address, chain, setTransactionHistoryTab, transfersIds])
 
   return (
     <div className="flex flex-col justify-around gap-6">
