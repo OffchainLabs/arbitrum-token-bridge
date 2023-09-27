@@ -41,10 +41,6 @@ export default defineConfig({
     // @ts-ignore
     async setupNodeEvents(on, config) {
       registerLocalNetwork()
-
-      if (!ethRpcUrl) {
-        throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
-      }
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
@@ -113,7 +109,10 @@ const ethRpcUrl = (() => {
   // For consistency purpose, we would be using 'custom-localhost'
   // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
   // so we have to add a / to the end of the rpc url
-  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL!.endsWith('/')) {
+  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+    throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
+  }
+  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
     return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
   }
   return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
