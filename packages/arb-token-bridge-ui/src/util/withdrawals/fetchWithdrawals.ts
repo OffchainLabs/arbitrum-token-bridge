@@ -1,4 +1,5 @@
 import { Provider } from '@ethersproject/providers'
+import { constants as arbitrumConstants } from '@arbitrum/sdk'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
@@ -12,6 +13,7 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
+import { fetchL2Gateways } from '../fetchL2Gateways'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -22,7 +24,6 @@ export type FetchWithdrawalsParams = {
   toBlock?: number
   l1Provider: Provider
   l2Provider: Provider
-  gatewayAddresses: string[]
   pageNumber?: number
   pageSize?: number
   searchString?: string
@@ -37,19 +38,20 @@ export const fetchWithdrawals = async ({
   receiverNot,
   l1Provider,
   l2Provider,
-  gatewayAddresses,
   pageNumber = 0,
-  pageSize,
+  pageSize = 10,
   searchString,
   fromBlock,
   toBlock
 }: FetchWithdrawalsParams) => {
-  const address = sender ?? receiver
+  if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
+    return []
+  }
 
-  if (typeof address === 'undefined') return []
-  if (!l1Provider || !l2Provider) return []
-
+  const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
+
+  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -64,6 +66,31 @@ export const fetchWithdrawals = async ({
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
+  }
+
+  // todo: update when eth withdrawals to a custom destination address are enabled (requires https://github.com/OffchainLabs/arbitrum-sdk/issues/325)
+  function getETHWithdrawalsFromEventLogsQuery() {
+    // give me all the eth withdrawals that someone else initiated, but the funds are sent to me
+    if (receiver) {
+      // since we don't do eth withdrawals to a custom destination address, we don't expect any results here
+      // however, if we pass in `undefined`, it will skip the filter and give us everything, which is why we use the node interface address that should never return any results
+      return { toAddress: arbitrumConstants.NODE_INTERFACE_ADDRESS }
+    }
+
+    // give me all the eth withdrawals that i initiated
+    // since we don't do eth withdrawals to a custom destination address, we set `toAddress` to be the sender, giving us all withdrawals sent to the same address
+    return { toAddress: sender }
+  }
+
+  function getTokenWithdrawalsFromEventLogsQuery() {
+    // give me all the token withdrawals that someone else initiated, but the funds are sent to me
+    // because we can't exclude withdrawals that were sent from the same address, we have to filter them out later, see `mappedTokenWithdrawalsFromEventLogs`
+    if (receiver) {
+      return { fromAddress: undefined, toAddress: receiver }
+    }
+
+    // give me all the token withdrawals that i initiated
+    return { fromAddress: sender, toAddress: undefined }
   }
 
   const [
@@ -84,22 +111,57 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address,
+      ...getETHWithdrawalsFromEventLogsQuery(),
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address,
+      ...getTokenWithdrawalsFromEventLogsQuery(),
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
-      l2GatewayAddresses: gatewayAddresses
+      l2GatewayAddresses
     })
   ])
 
-  const l2ToL1Txns = (
-    await Promise.all([
+  // get txs to be displayed on the current page (event logs)
+  const currentPageStart = pageNumber * pageSize
+  const currentPageEnd = currentPageStart + pageSize
+
+  const partialEthWithdrawalsFromEventLogs = [...ethWithdrawalsFromEventLogs]
+    // event logs start from the earliest, we need to reverse them
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+  const partialTokenWithdrawalsFromEventLogs = [
+    ...tokenWithdrawalsFromEventLogs
+  ]
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+
+  const mappedTokenWithdrawalsFromEventLogs = (
+    await Promise.all(
+      partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
+        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+          withdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
+        )
+      )
+    )
+  )
+    // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
+    .filter(withdrawal => {
+      if (senderNot && receiver && withdrawal) {
+        return withdrawal.sender?.toLowerCase() !== senderNot.toLowerCase()
+      }
+
+      return true
+    })
+
+  const l2ToL1Txns = [
+    ...(await Promise.all([
       ...withdrawalsFromSubgraph.map(withdrawal =>
         mapWithdrawalToL2ToL1EventResult(
           withdrawal,
@@ -108,25 +170,17 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+      ...partialEthWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
           withdrawal,
           l1Provider,
           l2Provider,
           l2ChainID
         )
-      ),
-      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
-        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID,
-          address
-        )
       )
-    ])
-  )
+    ])),
+    ...mappedTokenWithdrawalsFromEventLogs
+  ]
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
     .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
 
@@ -136,5 +190,11 @@ export const fetchWithdrawals = async ({
     )
   )
 
-  return finalL2ToL1Txns
+  return finalL2ToL1Txns.map(tx => ({
+    ...tx,
+
+    // attach the chain ids to the withdrawal object
+    chainId: l2ChainID,
+    parentChainId: l1ChainID
+  }))
 }

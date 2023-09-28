@@ -8,7 +8,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
-  const { isSmartContractWallet = false } = useAccountType()
+  const { isSmartContractWallet } = useAccountType()
 
   if (!chain || chain.unsupported) {
     return null
@@ -28,7 +28,7 @@ export function HeaderNetworkInformation() {
         )}
       >
         <Image
-          src={getNetworkLogo(chain.id)}
+          src={getNetworkLogo(chain.id, 'light')}
           alt={`${networkName} logo`}
           className="h-full w-auto"
           width={40}
@@ -38,7 +38,7 @@ export function HeaderNetworkInformation() {
 
       <span
         className={twMerge(
-          'text-2xl font-medium lg:text-base lg:font-normal',
+          'max-w-[200px] truncate text-2xl font-medium lg:text-base lg:font-normal',
           isSmartContractWallet ? 'pr-2' : ''
         )}
       >

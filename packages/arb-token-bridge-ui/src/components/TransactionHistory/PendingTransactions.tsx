@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -13,15 +12,44 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
-import { CustomMessageWarning } from './CustomMessageWarning'
+import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
+import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
-  if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
+  if (isNetwork(chainId).isEthereum) {
     console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
   }
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
     : ChainId.ArbitrumOne
+}
+
+const MergedTransactionCard = ({
+  transaction
+}: {
+  transaction: MergedTransaction
+}) => {
+  if (transaction.isCctp) {
+    return (
+      <motion.div key={transaction.txId} {...motionDivProps}>
+        {transaction.status === 'Confirmed' ? (
+          <ClaimableCardConfirmed tx={transaction} />
+        ) : (
+          <ClaimableCardUnconfirmed tx={transaction} />
+        )}
+      </motion.div>
+    )
+  }
+
+  return isDeposit(transaction) ? (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <DepositCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  ) : (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <WithdrawalCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  )
 }
 
 export const PendingTransactions = ({
@@ -42,11 +70,6 @@ export const PendingTransactions = ({
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
-
-  // Show from 13th August 2023
-  const showSubgraphMaintenanceMessage = dayjs()
-    .startOf('day')
-    .isAfter(dayjs('2023-08-12').startOf('day'))
 
   return (
     <div
@@ -82,7 +105,7 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && !transactions.length && (
+      {!error && !loading && transactions.length === 0 && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
@@ -93,36 +116,10 @@ export const PendingTransactions = ({
           <PendingDepositWarning />
         )}
 
-      {showSubgraphMaintenanceMessage && (
-        <CustomMessageWarning>
-          <span>
-            The Graph is expected to undergo scheduled database maintenance
-            beginning August 14, 2023, 07:00 UTC. Transaction history may not
-            appear between 07:00-13:00 UTC on August 14, 2023. Please check back
-            later or visit{' '}
-            <ExternalLink
-              href="https://status.thegraph.com"
-              className="arb-hover text-blue-link underline"
-            >
-              The Graph&apos;s status page
-            </ExternalLink>{' '}
-            for the latest.
-          </span>
-        </CustomMessageWarning>
-      )}
-
       {/* Transaction cards */}
-      {transactions?.map(tx =>
-        isDeposit(tx) ? (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <DepositCard key={tx.txId} tx={tx} />
-          </motion.div>
-        ) : (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <WithdrawalCard key={tx.txId} tx={tx} />
-          </motion.div>
-        )
-      )}
+      {transactions.map(tx => (
+        <MergedTransactionCard transaction={tx} key={tx.txId} />
+      ))}
     </div>
   )
 }

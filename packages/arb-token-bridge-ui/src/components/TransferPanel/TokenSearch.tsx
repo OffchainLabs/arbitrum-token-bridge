@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -30,7 +31,6 @@ import {
 } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
-import { useUSDCWithdrawalConfirmationDialogStore } from './TransferPanel'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
@@ -39,6 +39,9 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useCustomFeeToken } from './CustomFeeTokenUtils'
+import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 enum Panel {
   TOKENS,
@@ -148,9 +151,10 @@ function TokensPanel({
 }: {
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, walletAddress, bridgeTokens },
+      arbTokenBridge: { token, bridgeTokens },
       isDepositMode
     }
   } = useAppState()
@@ -158,6 +162,7 @@ function TokensPanel({
     l1: { provider: L1Provider },
     l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
@@ -314,9 +319,21 @@ function TokensPanel({
         }
         return bal1.gt(bal2) ? -1 : 1
       })
-  }, [tokensFromLists, tokensFromUser, newToken, getBalance, l2Network])
+  }, [
+    newToken,
+    tokensFromUser,
+    tokensFromLists,
+    isDepositMode,
+    isArbitrumOne,
+    isArbitrumGoerli,
+    getBalance
+  ])
 
   const storeNewToken = async () => {
+    if (!walletAddress) {
+      return
+    }
+
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -377,8 +394,8 @@ function TokensPanel({
                 setErrorMessage('')
                 setNewToken(e.target.value)
               }}
-              placeholder="Search by token name, symbol, L1 or L2 address"
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-gray-dark"
+              placeholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
+              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
             />
           </div>
 
@@ -456,17 +473,19 @@ export function TokenSearch({
   close: () => void
   onImportToken: (address: string) => void
 }) {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens, walletAddress }
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
-  const { openDialog: openUSDCWithdrawalConfirmationDialog } =
-    useUSDCWithdrawalConfirmationDialogStore()
+  const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -489,17 +508,35 @@ export function TokenSearch({
     }
 
     try {
-      if (
+      // Native USDC on L2 won't have a corresponding L1 address
+      const isNativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
         isTokenArbitrumGoerliNativeUSDC(_token.address)
-      ) {
-        openUSDCWithdrawalConfirmationDialog()
+
+      if (isNativeUSDC) {
+        if (isLoadingAccountType) {
+          return
+        }
+
+        updateUSDCBalances(_token.address)
+        setSelectedToken({
+          name: 'USD Coin',
+          type: TokenType.ERC20,
+          symbol: 'USDC',
+          address: _token.address,
+          decimals: 6,
+          listIds: new Set()
+        })
         return
       }
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)
+        return
+      }
+
+      if (!walletAddress) {
         return
       }
 

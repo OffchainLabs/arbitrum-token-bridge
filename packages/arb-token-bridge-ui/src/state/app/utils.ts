@@ -77,7 +77,9 @@ export const transformDeposits = (
       tokenAddress: tx.tokenAddress || null,
       l1ToL2MsgData: tx.l1ToL2MsgData,
       l2ToL1MsgData: tx.l2ToL1MsgData,
-      depositStatus: getDepositStatus(tx)
+      depositStatus: getDepositStatus(tx),
+      chainId: Number(tx.l2NetworkID),
+      parentChainId: Number(tx.l1NetworkID)
     }
   })
 }
@@ -108,7 +110,9 @@ export const transformWithdrawals = (
       isWithdrawal: true,
       blockNum: tx.ethBlockNum.toNumber(),
       tokenAddress: tx.tokenAddress || null,
-      nodeBlockDeadline: tx.nodeBlockDeadline
+      nodeBlockDeadline: tx.nodeBlockDeadline,
+      chainId: tx.chainId,
+      parentChainId: tx.parentChainId
     }
   })
 }
@@ -157,6 +161,9 @@ export const isWithdrawal = (tx: MergedTransaction) => {
 }
 
 export const isPending = (tx: MergedTransaction) => {
+  if (tx.isCctp && !tx.resolvedAt && tx.status !== 'Failure') {
+    return true
+  }
   return (
     (isDeposit(tx) &&
       (tx.status === 'pending' ||
@@ -180,7 +187,9 @@ export const isFailed = (tx: MergedTransaction) => {
   )
 }
 
-export function isCustomDestinationAddressTx(tx: MergedTransaction) {
+export function isCustomDestinationAddressTx(
+  tx: Pick<MergedTransaction, 'sender' | 'destination'>
+) {
   if (!tx.sender || !tx.destination) {
     return false
   }

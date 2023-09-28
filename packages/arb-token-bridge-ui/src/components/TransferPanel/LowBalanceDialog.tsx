@@ -5,9 +5,9 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import Image from 'next/image'
+import { useAccount } from 'wagmi'
 
 import { useBalance } from '../../hooks/useBalance'
-import { useAppState } from '../../state'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
@@ -21,6 +21,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
+import { FAST_BRIDGE_ARTICLE_LINK } from '../../constants'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -79,9 +80,9 @@ function ExternalLinkCard({
 }
 
 export function LowBalanceDialog(props: UseDialogProps) {
-  const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1 } = useNetworksAndSigners()
+  const { address: walletAddress } = useAccount()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -90,7 +91,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
     eth: [ethBalance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: app.arbTokenBridge.walletAddress
+    walletAddress
   })
 
   const balance = useMemo(() => ethBalance ?? constants.Zero, [ethBalance])
@@ -150,7 +151,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </p>
 
             <ExternalLink
-              href="https://consensys.zendesk.com/hc/en-us/articles/7277875099547"
+              href={FAST_BRIDGE_ARTICLE_LINK}
               className="arb-hover font-light underline"
             >
               Learn more.

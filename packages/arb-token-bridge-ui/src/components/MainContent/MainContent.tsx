@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 
@@ -10,9 +10,11 @@ import { useAppState } from '../../state'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
+import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
-import { PreferencesDialog } from '../common/PreferencesDialog'
+import { SettingsDialog } from '../common/SettingsDialog'
+import { isNetwork } from '../../util/networks'
 
 export const motionDivProps = {
   layout: true,
@@ -43,6 +45,8 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
+  const { l2 } = useNetworksAndSigners()
+
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
     pageNumber: 0,
@@ -56,6 +60,11 @@ export function MainContent() {
       pageSize: 10
     })
 
+  const pageSize = useMemo(
+    () => (isNetwork(l2.network.id).isOrbitChain ? 5 : 10),
+    [l2.network.id]
+  )
+
   const {
     data: depositsData = {
       deposits: [],
@@ -64,7 +73,7 @@ export function MainContent() {
     },
     isValidating: depositsLoading,
     error: depositsError
-  } = useDeposits(depositsPageParams)
+  } = useDeposits({ ...depositsPageParams, pageSize })
 
   const {
     data: withdrawalsData = {
@@ -74,7 +83,7 @@ export function MainContent() {
     },
     isValidating: withdrawalsLoading,
     error: withdrawalsError
-  } = useWithdrawals(withdrawalsPageParams)
+  } = useWithdrawals({ ...withdrawalsPageParams, pageSize })
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
@@ -114,8 +123,8 @@ export function MainContent() {
         {/* Transaction history - pending transactions + history table */}
         <TransactionHistory
           {...{
-            depositsPageParams,
-            withdrawalsPageParams,
+            depositsPageParams: { ...depositsPageParams, pageSize },
+            withdrawalsPageParams: { ...withdrawalsPageParams, pageSize },
             depositsData,
             depositsLoading,
             depositsError,
@@ -128,8 +137,8 @@ export function MainContent() {
         />
       </SidePanel>
 
-      {/* Preferences panel */}
-      <PreferencesDialog />
+      {/* Settings panel */}
+      <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
       {isArbitrumStatsVisible && <ArbitrumStats />}

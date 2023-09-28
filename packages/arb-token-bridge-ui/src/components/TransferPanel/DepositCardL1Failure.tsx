@@ -8,9 +8,11 @@ import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCardContainer } from './DepositCard'
 import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
   const { l1 } = useNetworksAndSigners()
+  const { parentLayer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
   return (
@@ -30,12 +32,14 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `L1 transaction: ${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`
+            `${parentLayer} transaction: ${getExplorerUrl(l1.network.id)}/tx/${
+              tx.txId
+            }`
           )
         }}
       >
         <span className="text-base text-brick-dark">
-          L1 transaction:{' '}
+          {parentLayer} transaction:{' '}
           <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
         </span>
         <DocumentDuplicateIcon className="h-6 w-6 text-brick-dark" />

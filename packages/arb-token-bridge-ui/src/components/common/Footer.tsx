@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { ExternalLink } from './ExternalLink'
+import { DOCS_DOMAIN } from '../../constants'
 
 type FooterLink = {
   title: string
@@ -10,7 +11,7 @@ type FooterLink = {
 const footerLinks: FooterLink[] = [
   {
     title: 'Documentation',
-    href: 'https://developer.offchainlabs.com/docs/developer_quickstart',
+    href: DOCS_DOMAIN,
     lgOrder: 1
   },
   {
@@ -41,10 +42,7 @@ export function Footer() {
       <div className="flex w-full max-w-[1440px] flex-col space-y-8 py-20 text-white lg:px-8 lg:py-8">
         <div className="flex flex-col items-center space-y-2 px-8 text-center lg:items-start lg:px-0">
           <span className="text-4xl">The most decentralized L2</span>
-          <ExternalLink
-            href="https://developer.arbitrum.io"
-            className="text-2xl underline"
-          >
+          <ExternalLink href={DOCS_DOMAIN} className="text-2xl underline">
             Learn more.
           </ExternalLink>
         </div>

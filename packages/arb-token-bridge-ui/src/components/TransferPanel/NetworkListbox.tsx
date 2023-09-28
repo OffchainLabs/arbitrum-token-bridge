@@ -23,7 +23,25 @@ export function NetworkListbox({
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
+    const {
+      isArbitrum,
+      isArbitrumNova,
+      isOrbitChain,
+      isXaiTestnet,
+      isStylusTestnet
+    } = isNetwork(value.id)
+
+    if (isXaiTestnet) {
+      return 'bg-xai-primary'
+    }
+
+    if (isStylusTestnet) {
+      return 'bg-stylus-primary'
+    }
+
+    if (isOrbitChain) {
+      return 'bg-orbit-primary'
+    }
 
     if (!isArbitrum) {
       return 'bg-eth-primary'
@@ -62,7 +80,7 @@ export function NetworkListbox({
       <Listbox.Button
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
-        <span>
+        <span className="max-w-[220px] truncate md:max-w-[250px]">
           {label} {getNetworkName(value.id)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
@@ -94,7 +112,9 @@ export function NetworkListbox({
                     height={36}
                   />
                 </div>
-                <span>{getNetworkName(option.id)}</span>
+                <span className="max-w-[140px] truncate">
+                  {getNetworkName(option.id)}
+                </span>
               </Listbox.Option>
             )
           })}

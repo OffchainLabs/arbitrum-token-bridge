@@ -90,7 +90,7 @@ export function TokenButton(): JSX.Element {
         <TokenImportDialog
           {...tokenImportDialogProps}
           onClose={closeWithReset}
-          address={tokenToImport}
+          tokenAddress={tokenToImport}
         />
       )}
 

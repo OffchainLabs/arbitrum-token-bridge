@@ -5,15 +5,16 @@ import {
 } from 'lodash-es'
 import { derived } from 'overmind'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { getAccount } from '@wagmi/core'
+import { BigNumber } from 'ethers'
+import dayjs from 'dayjs'
 
-import { ConnectionState } from '../../util'
 import {
   filterTransactions,
   transformDeposits,
   transformWithdrawals
 } from './utils'
-import { BigNumber } from 'ethers'
-import dayjs from 'dayjs'
+
 import {
   ArbTokenBridge,
   ERC20BridgeToken,
@@ -26,6 +27,8 @@ import {
   Transaction,
   TxnType
 } from '../../hooks/useTransactions'
+import { ConnectionState } from '../../util'
+import { CCTPSupportedChainId } from '../cctpState'
 
 export enum WhiteListState {
   VERIFYING,
@@ -40,7 +43,8 @@ export enum DepositStatus {
   L2_SUCCESS = 4,
   L2_FAILURE = 5,
   CREATION_FAILED = 6,
-  EXPIRED = 7
+  EXPIRED = 7,
+  CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
 }
 
 export interface MergedTransaction {
@@ -49,7 +53,7 @@ export interface MergedTransaction {
   sender?: string
   destination?: string
   direction: TxnType
-  status: string
+  status: string // TODO: Use enums
   createdAt: string | null
   resolvedAt: string | null
   txId: string
@@ -59,10 +63,20 @@ export interface MergedTransaction {
   isWithdrawal: boolean
   blockNum: number | null
   tokenAddress: string | null
+  isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
+  chainId?: number
+  parentChainId?: number
+  cctpData?: {
+    sourceChainId: CCTPSupportedChainId
+    attestationHash: `0x${string}` | null
+    messageBytes: string | null
+    receiveMessageTransactionHash: `0x${string}` | null
+    receiveMessageTimestamp: string | null
+  }
 }
 
 export interface WarningTokens {
@@ -76,10 +90,10 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  verifying: WhiteListState
   selectedToken: ERC20BridgeToken | null
   isDepositMode: boolean
   sortedTransactions: Transaction[]
+  verifying: WhiteListState
   pendingTransactions: Transaction[]
   l1DepositsWithUntrackedL2Messages: Transaction[]
   failedRetryablesToRedeem: MergedTransaction[]
@@ -102,9 +116,14 @@ export const defaultState: AppState = {
   isDepositMode: true,
   sortedTransactions: derived((s: AppState) => {
     const transactions = s.arbTokenBridge?.transactions?.transactions || []
+    const account = getAccount()
+    if (!account.address) {
+      return []
+    }
+
     return filterTransactions(
       [...transactions],
-      s.arbTokenBridge.walletAddress,
+      account.address,
       s.l1NetworkChainId,
       s.l2NetworkChainId
     )

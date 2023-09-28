@@ -89,6 +89,8 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
+  chainId?: number
+  parentChainId?: number
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
@@ -254,7 +256,6 @@ export type ArbTokenBridgeTransactions = {
 >
 
 export interface ArbTokenBridge {
-  walletAddress: string
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
