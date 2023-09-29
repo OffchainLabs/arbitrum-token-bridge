@@ -11,21 +11,24 @@ import { L2ToL1MessageReader } from '@arbitrum/sdk'
  * @param query.l2Provider Provider for the L2 network
  */
 export async function fetchETHWithdrawalsFromEventLogs({
-  address,
+  sender,
   fromBlock,
   toBlock,
   l2Provider
 }: {
-  address?: string
+  sender?: string
   fromBlock: BlockTag
   toBlock: BlockTag
   l2Provider: Provider
 }) {
-  // gets txs to the same address
+  if (typeof sender === 'undefined') {
+    return []
+  }
+  // funds sent by this address
   return L2ToL1MessageReader.getL2ToL1Events(
     l2Provider,
     { fromBlock, toBlock },
     undefined,
-    address
+    sender
   )
 }

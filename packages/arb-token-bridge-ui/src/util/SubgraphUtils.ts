@@ -118,3 +118,41 @@ export const tryFetchLatestSubgraphBlockNumber = async (
     return 0
   }
 }
+
+export const shouldShowSentTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposit' | 'withdrawal'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent from this account for:
+    // 1. deposits if we are connected to the parent chain, or
+    // 2. withdrawals if we are connected to the child chain
+    return isConnectedToParentChain ? type === 'deposit' : type === 'withdrawal'
+  }
+  // always show for EOA
+  return true
+}
+
+export const shouldShowReceivedTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposit' | 'withdrawal'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent from this account for:
+    // 1. withdrawals if we are connected to the parent chain, or
+    // 2. deposits if we are connected to the child chain
+    return isConnectedToParentChain ? type === 'withdrawal' : type === 'deposit'
+  }
+  // always show for EOA
+  return true
+}

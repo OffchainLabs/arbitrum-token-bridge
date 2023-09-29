@@ -6,9 +6,10 @@ import { getL1SubgraphClient } from '../../util/SubgraphUtils'
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
+    sender?: string
+    receiver?: string
     l2ChainId: string
     search?: string
-    address?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -27,9 +28,10 @@ export default async function handler(
 ) {
   try {
     const {
+      sender,
+      receiver,
       search = '',
       l2ChainId,
-      address,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -47,7 +49,8 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
-    if (!address) errorMessage.push('<address> is required')
+    if (!sender && !receiver)
+      errorMessage.push('<sender> or <receiver> is required')
 
     if (errorMessage.length) {
       res.status(400).json({
@@ -74,8 +77,12 @@ export default async function handler(
         deposits(
           where: {            
             or: [
-              { sender: "${address}", ${additionalFilters} },
-              { receiver: "${address}", ${additionalFilters} }
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
+              }
             ]
           }
           orderBy: blockCreatedAt

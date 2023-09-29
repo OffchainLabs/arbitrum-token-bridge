@@ -12,13 +12,15 @@ import { Erc20Bridger } from '@arbitrum/sdk'
  * @param query.l2GatewayAddresses L2 gateway addresses to use
  */
 export async function fetchTokenWithdrawalsFromEventLogs({
-  address,
+  sender,
+  receiver,
   fromBlock,
   toBlock,
   l2Provider,
   l2GatewayAddresses = []
 }: {
-  address: string
+  sender?: string
+  receiver?: string
   fromBlock: BlockTag
   toBlock: BlockTag
   l2Provider: Provider
@@ -26,26 +28,39 @@ export async function fetchTokenWithdrawalsFromEventLogs({
 }) {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
-  const promises = l2GatewayAddresses.flatMap(gatewayAddress => [
+  const promises = l2GatewayAddresses.flatMap(gatewayAddress => {
+    const events = []
+
     // funds sent by this address
-    erc20Bridger.getL2WithdrawalEvents(
-      l2Provider,
-      gatewayAddress,
-      { fromBlock, toBlock },
-      undefined,
-      address,
-      undefined
-    ),
+    if (sender) {
+      events.push(
+        erc20Bridger.getL2WithdrawalEvents(
+          l2Provider,
+          gatewayAddress,
+          { fromBlock, toBlock },
+          undefined,
+          sender,
+          undefined
+        )
+      )
+    }
+
     // funds received by this address
-    erc20Bridger.getL2WithdrawalEvents(
-      l2Provider,
-      gatewayAddress,
-      { fromBlock, toBlock },
-      undefined,
-      undefined,
-      address
-    )
-  ])
+    if (receiver) {
+      events.push(
+        erc20Bridger.getL2WithdrawalEvents(
+          l2Provider,
+          gatewayAddress,
+          { fromBlock, toBlock },
+          undefined,
+          undefined,
+          receiver
+        )
+      )
+    }
+
+    return events
+  })
 
   return (
     (await Promise.all(promises))

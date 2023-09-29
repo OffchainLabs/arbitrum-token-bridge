@@ -22,7 +22,8 @@ import { fetchL2Gateways } from '../fetchL2Gateways'
 import { constants } from 'ethers'
 
 export type FetchWithdrawalsParams = {
-  address: string
+  sender?: string
+  receiver?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -35,7 +36,8 @@ export type FetchWithdrawalsParams = {
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
-  address,
+  sender,
+  receiver,
   l1Provider,
   l2Provider,
   pageNumber = 0,
@@ -44,7 +46,7 @@ export const fetchWithdrawals = async ({
   fromBlock,
   toBlock
 }: FetchWithdrawalsParams) => {
-  if (typeof address === 'undefined') {
+  if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
   }
 
@@ -74,7 +76,8 @@ export const fetchWithdrawals = async ({
     tokenWithdrawalsFromEventLogs
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
-      address,
+      sender,
+      receiver,
       fromBlock,
       toBlock,
       l2ChainId: l2ChainID,
@@ -83,13 +86,14 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      address,
+      sender,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      address,
+      sender,
+      receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
