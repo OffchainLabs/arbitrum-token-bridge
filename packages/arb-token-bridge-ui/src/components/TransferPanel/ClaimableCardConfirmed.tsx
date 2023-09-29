@@ -157,7 +157,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
         {tx.status !== 'Failure' ? (
           <Tooltip
-            wrapperClassName=""
+            wrapperClassName="w-full md:w-auto"
             show={!currentChainIsValid}
             content={
               <span>
@@ -190,7 +190,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
                   )
                 }
               }}
-              className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
+              className="bottom-0 right-0 mt-2 flex w-full flex-nowrap justify-center text-center text-sm md:absolute md:mt-0 md:w-auto  lg:my-4 lg:text-lg"
             >
               <div className="flex flex-nowrap whitespace-pre">
                 Claim{' '}

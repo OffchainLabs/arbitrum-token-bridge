@@ -259,7 +259,6 @@ export function TransactionsTable({
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={_transactions}
-        isSmartContractWallet={isSmartContractWallet}
         loading={loading}
         showSearch
       />
