@@ -119,7 +119,7 @@ export const tryFetchLatestSubgraphBlockNumber = async (
   }
 }
 
-export const shouldShowSentTxs = ({
+export const shouldIncludeSentTxs = ({
   type,
   isSmartContractWallet,
   isConnectedToParentChain
@@ -138,7 +138,7 @@ export const shouldShowSentTxs = ({
   return true
 }
 
-export const shouldShowReceivedTxs = ({
+export const shouldIncludeReceivedTxs = ({
   type,
   isSmartContractWallet,
   isConnectedToParentChain

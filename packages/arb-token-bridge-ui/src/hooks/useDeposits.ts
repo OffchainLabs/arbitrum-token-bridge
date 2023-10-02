@@ -12,7 +12,10 @@ import {
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
 import { useAccountType } from './useAccountType'
-import { shouldShowReceivedTxs, shouldShowSentTxs } from '../util/SubgraphUtils'
+import {
+  shouldIncludeSentTxs,
+  shouldIncludeReceivedTxs
+} from '../util/SubgraphUtils'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -56,17 +59,18 @@ export const useDeposits = (depositPageParams: PageParams) => {
 
   const { address: walletAddress } = useAccount()
 
-  const showSentTxs = isAccountTypeLoading
+  // sent and received txs are always displayed for EOA but not for SCW
+  const includeSentTxs = isAccountTypeLoading
     ? false
-    : shouldShowSentTxs({
+    : shouldIncludeSentTxs({
         type: 'deposit',
         isSmartContractWallet,
         isConnectedToParentChain
       })
 
-  const showReceivedTxs = isAccountTypeLoading
+  const includeReceivedTxs = isAccountTypeLoading
     ? false
-    : shouldShowReceivedTxs({
+    : shouldIncludeReceivedTxs({
         type: 'deposit',
         isSmartContractWallet,
         isConnectedToParentChain
@@ -96,8 +100,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
       _searchString
     ]) =>
       fetchCompleteDepositData({
-        sender: showSentTxs ? _walletAddress : undefined,
-        receiver: showReceivedTxs ? _walletAddress : undefined,
+        sender: includeSentTxs ? _walletAddress : undefined,
+        receiver: includeReceivedTxs ? _walletAddress : undefined,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         pageNumber: _pageNumber,

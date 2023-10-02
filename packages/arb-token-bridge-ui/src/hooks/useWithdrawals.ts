@@ -12,7 +12,10 @@ import {
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAccountType } from './useAccountType'
-import { shouldShowReceivedTxs, shouldShowSentTxs } from '../util/SubgraphUtils'
+import {
+  shouldIncludeSentTxs,
+  shouldIncludeReceivedTxs
+} from '../util/SubgraphUtils'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -65,17 +68,18 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   const { address: walletAddress } = useAccount()
 
-  const showSentTxs = isAccountTypeLoading
+  // sent and received txs are always displayed for EOA but not for SCW
+  const includeSentTxs = isAccountTypeLoading
     ? false
-    : shouldShowSentTxs({
+    : shouldIncludeSentTxs({
         type: 'withdrawal',
         isSmartContractWallet,
         isConnectedToParentChain
       })
 
-  const showReceivedTxs = isAccountTypeLoading
+  const includeReceivedTxs = isAccountTypeLoading
     ? false
-    : shouldShowReceivedTxs({
+    : shouldIncludeReceivedTxs({
         type: 'withdrawal',
         isSmartContractWallet,
         isConnectedToParentChain
@@ -107,8 +111,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
-        sender: showSentTxs ? _walletAddress : undefined,
-        receiver: showReceivedTxs ? _walletAddress : undefined,
+        sender: includeSentTxs ? _walletAddress : undefined,
+        receiver: includeReceivedTxs ? _walletAddress : undefined,
         l1Provider: _l1Provider,
         l2Provider: _l2Provider,
         pageNumber: _pageNumber,
