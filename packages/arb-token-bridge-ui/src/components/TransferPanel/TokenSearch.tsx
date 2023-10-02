@@ -430,7 +430,6 @@ function TokensPanel({
                       key="TokenRowEther"
                       onClick={() => onTokenSelected(null)}
                       token={null}
-                      customFeeToken={customFeeToken}
                     />
                   )
                 }
@@ -451,7 +450,6 @@ function TokensPanel({
                     style={virtualizedProps.style}
                     onClick={() => onTokenSelected(token)}
                     token={token}
-                    customFeeToken={customFeeToken}
                   />
                 )
               }}
@@ -481,8 +479,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isLoading: isLoadingAccountType } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 

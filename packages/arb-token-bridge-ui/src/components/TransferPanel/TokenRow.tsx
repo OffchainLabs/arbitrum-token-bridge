@@ -31,6 +31,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -72,14 +73,12 @@ interface TokenRowProps {
   style?: React.CSSProperties
   onClick: React.MouseEventHandler<HTMLButtonElement>
   token: ERC20BridgeToken | null
-  customFeeToken: ERC20BridgeToken | null | undefined
 }
 
 export function TokenRow({
   style,
   onClick,
-  token,
-  customFeeToken
+  token
 }: TokenRowProps): React.ReactNode {
   const { address: walletAddress } = useAccount()
   const {
@@ -93,6 +92,7 @@ export function TokenRow({
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
+  const customFeeToken = useCustomFeeToken({ chainProvider: l2Provider })
 
   const isSmallScreen = useMedia('(max-width: 419px)')
 
@@ -125,6 +125,7 @@ export function TokenRow({
 
     return 'ETH'
   }, [token, customFeeToken, isDepositMode, l2Network, l1Network])
+
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
@@ -240,7 +241,12 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
+  }, [
+    token,
+    customFeeToken,
+    tokenIsArbGoerliNativeUSDC,
+    tokenIsArbOneNativeUSDC
+  ])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
