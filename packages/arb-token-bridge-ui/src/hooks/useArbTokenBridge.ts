@@ -2,7 +2,7 @@ import { useCallback, useState, useMemo, useEffect } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { JsonRpcProvider, Provider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
@@ -83,6 +83,25 @@ export function getUniqueIdOrHashFromEvent(
 
   // Classic
   return anyEvent.uniqueId as BigNumber
+}
+
+async function getNativeTokenSymbol({
+  nativeToken,
+  parentChainProvider
+}: {
+  nativeToken?: string
+  parentChainProvider: Provider
+}): Promise<string> {
+  if (typeof nativeToken === 'undefined') {
+    return 'ETH'
+  }
+
+  return (
+    await fetchErc20Info({
+      erc20Address: nativeToken,
+      provider: parentChainProvider
+    })
+  ).symbol
 }
 
 class TokenDisabledError extends Error {
@@ -198,16 +217,6 @@ export const useArbTokenBridge = (
     }
 
     const ethBridger = await EthBridger.fromProvider(l2.provider)
-    let nativeTokenSymbol = 'ETH'
-
-    if (ethBridger.nativeToken) {
-      nativeTokenSymbol = (
-        await fetchErc20Info({
-          erc20Address: ethBridger.nativeToken,
-          provider: l1.provider
-        })
-      ).symbol
-    }
 
     let tx: L1EthDepositTransaction
 
@@ -226,6 +235,11 @@ export const useArbTokenBridge = (
       }
       return error.message
     }
+
+    const nativeTokenSymbol = await getNativeTokenSymbol({
+      nativeToken: ethBridger.nativeToken,
+      parentChainProvider: l1.provider
+    })
 
     addTransaction({
       type: 'deposit-l1',
@@ -275,16 +289,6 @@ export const useArbTokenBridge = (
 
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-      let nativeTokenSymbol = 'ETH'
-
-      if (ethBridger.nativeToken) {
-        nativeTokenSymbol = (
-          await fetchErc20Info({
-            erc20Address: ethBridger.nativeToken,
-            provider: l1.provider
-          })
-        ).symbol
-      }
 
       const tx = await ethBridger.withdraw({
         amount,
@@ -296,6 +300,12 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
+
+      const nativeTokenSymbol = await getNativeTokenSymbol({
+        nativeToken: ethBridger.nativeToken,
+        parentChainProvider: l1.provider
+      })
+
       addTransaction({
         type: 'withdraw',
         status: 'pending',
