@@ -12,7 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useCustomFeeToken } from './CustomFeeTokenUtils'
+import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -28,10 +28,7 @@ export function TokenButton(): JSX.Element {
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
-  const customFeeToken = useCustomFeeToken({
-    chainProvider: l2.provider,
-    parentChainProvider: l1.provider
-  })
+  const customFeeToken = useCustomFeeToken({ chainProvider: l2.provider })
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address

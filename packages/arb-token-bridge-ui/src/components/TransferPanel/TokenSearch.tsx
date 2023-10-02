@@ -38,10 +38,10 @@ import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
-import { useCustomFeeToken } from './CustomFeeTokenUtils'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 
 enum Panel {
   TOKENS,
@@ -173,10 +173,7 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
-  const customFeeToken = useCustomFeeToken({
-    chainProvider: L2Provider,
-    parentChainProvider: L1Provider
-  })
+  const customFeeToken = useCustomFeeToken({ chainProvider: L2Provider })
 
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 

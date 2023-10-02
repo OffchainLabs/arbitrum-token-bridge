@@ -60,7 +60,7 @@ import { ETH_BALANCE_ARTICLE_LINK, USDC_LEARN_MORE_LINK } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
-import { useCustomFeeToken } from './CustomFeeTokenUtils'
+import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
 
@@ -359,10 +359,7 @@ export function TransferPanelMain({
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet } = useAccountType()
 
-  const customFeeToken = useCustomFeeToken({
-    chainProvider: l2.provider,
-    parentChainProvider: l1.provider
-  })
+  const customFeeToken = useCustomFeeToken({ chainProvider: l2.provider })
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true

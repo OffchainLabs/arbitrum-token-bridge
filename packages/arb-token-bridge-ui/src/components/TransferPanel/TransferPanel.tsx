@@ -60,7 +60,7 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { useCustomFeeToken } from './CustomFeeTokenUtils'
+import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
@@ -209,10 +209,7 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const customFeeToken = useCustomFeeToken({
-    chainProvider: l2Provider,
-    parentChainProvider: l1Provider
-  })
+  const customFeeToken = useCustomFeeToken({ chainProvider: l2Provider })
 
   const { approveForBurn, depositForBurn } = useCCTP({
     sourceChainId: isDepositMode
@@ -417,6 +414,7 @@ export function TransferPanel() {
       provider: l1Provider
     })
 
+    // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
     if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
@@ -466,6 +464,7 @@ export function TransferPanel() {
       provider: l1Provider
     })
 
+    // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
     if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
@@ -956,6 +955,7 @@ export function TransferPanel() {
             }
           })
         } else {
+          // todo: decimals != 18
           const amountRaw = utils.parseUnits(amount, 18)
 
           if (customFeeToken) {
