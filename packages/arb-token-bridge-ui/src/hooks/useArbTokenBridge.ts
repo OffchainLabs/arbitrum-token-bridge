@@ -289,7 +289,6 @@ export const useArbTokenBridge = (
 
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-
       const tx = await ethBridger.withdraw({
         amount,
         l2Signer,
