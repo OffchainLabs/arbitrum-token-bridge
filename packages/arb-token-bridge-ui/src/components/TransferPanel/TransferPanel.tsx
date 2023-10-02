@@ -404,10 +404,10 @@ export function TransferPanel() {
     const l2Network = ethBridger.l2Network
 
     if (typeof l2Network.nativeToken === 'undefined') {
-      throw new Error('failed to read custom fee token addres from l2 network')
+      throw new Error('l2 network does not use custom fee token')
     }
 
-    const feeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+    const customFeeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
       account: walletAddress,
       spender: l2Network.ethBridge.inbox,
       erc20Address: l2Network.nativeToken,
@@ -417,7 +417,7 @@ export function TransferPanel() {
     // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
-    if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
+    if (!customFeeTokenAllowanceForInbox.gte(amountRaw)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
 
@@ -425,8 +425,10 @@ export function TransferPanel() {
         return false
       }
 
-      const approveFeeTokenTx = await ethBridger.approveFeeToken({ l1Signer })
-      await approveFeeTokenTx.wait()
+      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+        l1Signer
+      })
+      await approveCustomFeeTokenTx.wait()
     }
 
     return true
@@ -449,7 +451,7 @@ export function TransferPanel() {
     const l2Network = erc20Bridger.l2Network
 
     if (typeof l2Network.nativeToken === 'undefined') {
-      throw new Error('failed to read custom fee token addres from l2 network')
+      throw new Error('l2 network does not use custom fee token')
     }
 
     const gateway = await erc20Bridger.getL1GatewayAddress(
@@ -457,7 +459,7 @@ export function TransferPanel() {
       l1Provider
     )
 
-    const feeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+    const customFeeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
       account: walletAddress,
       spender: gateway,
       erc20Address: l2Network.nativeToken,
@@ -467,7 +469,7 @@ export function TransferPanel() {
     // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
-    if (!feeTokenAllowanceForInbox.gte(amountRaw)) {
+    if (!customFeeTokenAllowanceForInbox.gte(amountRaw)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
 
@@ -475,11 +477,11 @@ export function TransferPanel() {
         return false
       }
 
-      const approveFeeTokenTx = await erc20Bridger.approveFeeToken({
+      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
         erc20L1Address: selectedToken.address,
         l1Signer
       })
-      await approveFeeTokenTx.wait()
+      await approveCustomFeeTokenTx.wait()
     }
 
     return true
