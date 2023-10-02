@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { EthBridger } from '@arbitrum/sdk'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { fetchErc20Info } from '../../util/TokenUtils'
 
 export async function approveCustomFeeTokenForInboxEstimateGas(params: {
   chainProvider: Provider
@@ -18,25 +18,25 @@ export async function approveCustomFeeTokenForInboxEstimateGas(params: {
   return parentChainSigner.estimateGas(approveFeeTokenTxRequest)
 }
 
-export async function fetchCustomFeeToken(params: {
+export async function fetchCustomFeeToken({
+  chainProvider,
+  parentChainProvider
+}: {
   chainProvider: Provider
   parentChainProvider: Provider
 }): Promise<ERC20BridgeToken> {
-  const { chainProvider, parentChainProvider } = params
   const ethBridger = await EthBridger.fromProvider(chainProvider)
 
   if (typeof ethBridger.nativeToken === 'undefined') {
-    throw new Error('native token is eth')
+    throw new Error('[fetchCustomFeeToken] native token is eth')
   }
 
   const address = ethBridger.nativeToken.toLowerCase()
-  const contract = ERC20__factory.connect(address, parentChainProvider)
 
-  const [name, symbol, decimals] = await Promise.all([
-    contract.name(),
-    contract.symbol(),
-    contract.decimals()
-  ])
+  const { name, symbol, decimals } = await fetchErc20Info({
+    erc20Address: address,
+    provider: parentChainProvider
+  })
 
   return {
     type: TokenType.ERC20,

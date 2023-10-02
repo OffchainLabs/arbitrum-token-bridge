@@ -41,12 +41,12 @@ import {
   getL1ERC20Address,
   getL2GatewayAddress,
   getL2ERC20Address,
-  l1TokenIsDisabled
+  l1TokenIsDisabled,
+  fetchErc20Info
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { fetchCustomFeeToken } from '../components/TransferPanel/CustomFeeTokenUtils'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 
 export const wait = (ms = 0) => {
@@ -202,9 +202,9 @@ export const useArbTokenBridge = (
 
     if (ethBridger.nativeToken) {
       nativeTokenSymbol = (
-        await fetchCustomFeeToken({
-          chainProvider: l2.provider,
-          parentChainProvider: l1.provider
+        await fetchErc20Info({
+          erc20Address: ethBridger.nativeToken,
+          provider: l1.provider
         })
       ).symbol
     }
@@ -279,9 +279,9 @@ export const useArbTokenBridge = (
 
       if (ethBridger.nativeToken) {
         nativeTokenSymbol = (
-          await fetchCustomFeeToken({
-            chainProvider: l2.provider,
-            parentChainProvider: l1.provider
+          await fetchErc20Info({
+            erc20Address: ethBridger.nativeToken,
+            provider: l1.provider
           })
         ).symbol
       }

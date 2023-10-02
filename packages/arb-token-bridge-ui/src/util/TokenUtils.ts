@@ -1,6 +1,6 @@
 import { BigNumber, constants } from 'ethers'
 import { Chain } from 'wagmi'
-import { JsonRpcProvider, Provider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -8,6 +8,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
+import { defaultErc20Decimals } from '../defaults'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -43,6 +44,30 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
   l1TokenDataCache[erc20L1Address] = tokenData
 
   sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+}
+
+export type FetchErc20InfoProps = {
+  erc20Address: string
+  provider: Provider
+}
+
+export async function fetchErc20Info({
+  erc20Address,
+  provider
+}: FetchErc20InfoProps) {
+  const multiCaller = await MultiCaller.fromProvider(provider)
+
+  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
+    name: true,
+    symbol: true,
+    decimals: true
+  })
+
+  return {
+    name: tokenData?.name ?? getDefaultTokenName(erc20Address),
+    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20Address),
+    decimals: tokenData?.decimals ?? defaultErc20Decimals
+  }
 }
 
 /**
@@ -94,7 +119,7 @@ export async function getL1TokenData({
   const finalTokenData = {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
-    decimals: tokenData?.decimals ?? 0,
+    decimals: tokenData?.decimals ?? defaultErc20Decimals,
     address: contract.address
   }
 
