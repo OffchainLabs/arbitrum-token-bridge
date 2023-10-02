@@ -276,7 +276,6 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const isNativeToken = token === null
   const {
     status,
     estimatedL1GasFees,
@@ -290,7 +289,10 @@ export function TransferPanelSummary({
   const { parentLayer, layer } = useChainLayers()
   const customFeeToken = useCustomFeeToken({ chainProvider: l2.provider })
 
-  const { isMainnet } = isNetwork(l1.network.id)
+  const { isTestnet } = isNetwork(l1.network.id)
+
+  const isNativeToken = token === null
+  const showPrice = isNativeToken && !customFeeToken && !isTestnet
 
   const nativeTokenSymbol = useMemo(
     () => customFeeToken?.symbol ?? 'ETH',
@@ -366,8 +368,7 @@ export function TransferPanelSummary({
               symbol: tokenSymbol
             })}
           </span>
-          {/* Only show USD price for ETH */}
-          {isNativeToken && isMainnet && (
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(amount))}
             </span>
@@ -383,7 +384,7 @@ export function TransferPanelSummary({
               symbol: nativeTokenSymbol
             })}
           </span>
-          {isMainnet && (
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(estimatedTotalGasFees))}
             </span>
@@ -405,7 +406,7 @@ export function TransferPanelSummary({
                 symbol: nativeTokenSymbol
               })}
             </span>
-            {isMainnet && (
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL1GasFees))}
               </span>
@@ -425,7 +426,7 @@ export function TransferPanelSummary({
                 symbol: nativeTokenSymbol
               })}
             </span>
-            {isMainnet && (
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL2GasFees))}
               </span>
@@ -451,7 +452,7 @@ export function TransferPanelSummary({
                   symbol: nativeTokenSymbol
                 })}
               </span>
-              {isMainnet && (
+              {showPrice && (
                 <span className="font-medium text-dark">
                   {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
                 </span>
