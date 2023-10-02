@@ -189,7 +189,7 @@ export function TransferPanel() {
     useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
-  const { isArbitrumOne, isArbitrumNova } = isNetwork(l2Network.id)
+  const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
