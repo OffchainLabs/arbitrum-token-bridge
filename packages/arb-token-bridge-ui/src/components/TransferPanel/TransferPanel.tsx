@@ -875,15 +875,6 @@ export function TransferPanel() {
             }
           }
 
-          if (isArbitrumOne && isTokenMainnetUSDC(selectedToken.address)) {
-            const waitForInput = openUSDCDepositConfirmationDialog()
-            const confirmed = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-          }
-
           if (customFeeToken) {
             const approved = await approveCustomFeeTokenForGateway()
 
@@ -892,7 +883,6 @@ export function TransferPanel() {
             }
           }
 
-          // Check token allowance & show modal if needed
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
