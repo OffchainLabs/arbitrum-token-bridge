@@ -40,7 +40,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+    <div className="flex h-8 w-8 min-w-[2rem] items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
