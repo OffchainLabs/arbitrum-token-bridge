@@ -73,6 +73,7 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
+import { defaultErc20Decimals } from '../../defaults'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -487,7 +488,10 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
+      return utils.parseUnits(
+        amount ?? '0',
+        selectedToken?.decimals ?? defaultErc20Decimals
+      )
     } catch (error) {
       return constants.Zero
     }

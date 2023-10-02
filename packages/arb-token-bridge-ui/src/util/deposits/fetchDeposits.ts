@@ -8,6 +8,7 @@ import {
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
+import { defaultErc20Decimals } from '../../defaults'
 
 export type FetchDepositParams = {
   sender?: string
@@ -104,8 +105,8 @@ export const fetchDeposits = async ({
         type: 'deposit-l1',
         status: 'pending',
         value: utils.formatUnits(
-          (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
-          isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
+          (isEthDeposit ? tx.ethValue : tx.tokenAmount) ?? 0,
+          isEthDeposit ? 18 : tx?.l1Token?.decimals ?? defaultErc20Decimals
         ),
         txID: tx.transactionHash,
         tokenAddress: assetDetails.tokenAddress,

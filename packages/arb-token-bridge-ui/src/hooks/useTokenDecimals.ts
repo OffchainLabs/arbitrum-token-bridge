@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { ArbTokenBridge } from './arbTokenBridge.types'
+import { defaultErc20Decimals } from '../defaults'
 
 const useTokenDecimals = (
   bridgeTokens: ArbTokenBridge['bridgeTokens'],
@@ -7,14 +8,14 @@ const useTokenDecimals = (
 ) => {
   return useMemo(() => {
     if (typeof bridgeTokens === 'undefined') {
-      return 18
+      return defaultErc20Decimals
     }
 
     if (!tokenAddress) {
-      return 18
+      return defaultErc20Decimals
     }
 
-    return bridgeTokens[tokenAddress]?.decimals ?? 18
+    return bridgeTokens[tokenAddress]?.decimals ?? defaultErc20Decimals
   }, [bridgeTokens, tokenAddress])
 }
 
