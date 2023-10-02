@@ -79,7 +79,7 @@ export function TokenRow({
   style,
   onClick,
   token
-}: TokenRowProps): React.ReactNode {
+}: TokenRowProps): JSX.Element | null {
   const { address: walletAddress } = useAccount()
   const {
     app: {
