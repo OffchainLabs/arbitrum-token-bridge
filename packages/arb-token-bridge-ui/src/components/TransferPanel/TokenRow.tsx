@@ -80,7 +80,7 @@ export function TokenRow({
   onClick,
   token,
   customFeeToken
-}: TokenRowProps): JSX.Element {
+}: TokenRowProps): React.ReactNode {
   const { address: walletAddress } = useAccount()
   const {
     app: {
@@ -338,6 +338,15 @@ export function TokenRow({
     tokenIsArbOneNativeUSDC,
     tokenSymbol
   ])
+
+  // If there's a custom fee token, we only display it as native token, not as an erc-20 in the list
+  if (
+    token &&
+    customFeeToken &&
+    token.address.toLowerCase() === customFeeToken.address.toLowerCase()
+  ) {
+    return null
+  }
 
   return (
     <button
