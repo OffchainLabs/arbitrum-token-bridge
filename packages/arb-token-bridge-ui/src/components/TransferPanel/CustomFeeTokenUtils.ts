@@ -29,7 +29,7 @@ export async function fetchCustomFeeToken(params: {
     throw new Error('native token is eth')
   }
 
-  const address = ethBridger.nativeToken
+  const address = ethBridger.nativeToken.toLowerCase()
   const contract = ERC20__factory.connect(address, parentChainProvider)
 
   const [name, symbol, decimals] = await Promise.all([
