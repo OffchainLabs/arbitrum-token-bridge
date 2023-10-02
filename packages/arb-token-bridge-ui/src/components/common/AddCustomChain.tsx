@@ -40,6 +40,7 @@ type OrbitConfig = {
     parentChainId: number
     rpcUrl: string
     explorerUrl: string
+    nativeToken?: string
   }
   coreContracts: {
     rollup: string
@@ -105,7 +106,8 @@ const ZodOrbitConfig = z.object({
     chainId: zChainId,
     parentChainId: zParentChainId,
     rpcUrl: z.string().url(),
-    explorerUrl: z.string().url()
+    explorerUrl: z.string().url(),
+    nativeToken: zAddress.optional()
   }),
   coreContracts: z.object({
     rollup: zAddress,
@@ -143,6 +145,7 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 900000,
+    nativeToken: data.chainInfo.nativeToken,
     isArbitrum: true,
     tokenBridge: {
       l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
