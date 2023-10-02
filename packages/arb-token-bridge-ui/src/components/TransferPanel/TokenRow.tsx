@@ -257,7 +257,13 @@ export function TokenRow({
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [bridgeTokens, token, customFeeToken, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
+  }, [
+    bridgeTokens,
+    token,
+    customFeeToken,
+    tokenIsArbOneNativeUSDC,
+    tokenIsArbGoerliNativeUSDC
+  ])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
