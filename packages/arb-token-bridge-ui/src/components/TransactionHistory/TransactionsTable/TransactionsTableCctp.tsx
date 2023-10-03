@@ -119,7 +119,6 @@ export function TransactionsTableCctp() {
         pageParams={pageParams}
         setPageParams={setPageParams}
         transactions={transactions}
-        isSmartContractWallet={isSmartContractWallet}
         loading={isLoading}
         showSearch={false}
       />

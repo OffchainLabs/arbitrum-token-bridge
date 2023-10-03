@@ -8,7 +8,7 @@ import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
 
-import { DOCS_DOMAIN } from '../../constants'
+import { PORTAL_DOMAIN } from '../../constants'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -40,13 +40,13 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        The Stylus testnet is officially live! You can now build EVM-compatible
-        apps in Rust by visiting the{' '}
+        The Arbitrum Odyssey has officially returned! Complete missions and
+        start collecting badges by visiting the{' '}
         <ExternalLink
-          href={`${DOCS_DOMAIN}/stylus/stylus-gentle-introduction`}
+          href={`${PORTAL_DOMAIN}/odyssey`}
           className="arb-hover underline"
         >
-          Stylus docs
+          Arbitrum Portal
         </ExternalLink>
         .
       </SiteBanner>

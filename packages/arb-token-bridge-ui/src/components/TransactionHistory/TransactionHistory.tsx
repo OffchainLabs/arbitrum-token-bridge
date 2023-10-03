@@ -7,6 +7,7 @@ import {
   useMemo
 } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -139,7 +140,7 @@ export const TransactionHistory = ({
   }, [mergedTransactions])
 
   const roundedTabClasses =
-    'roundedTab ui-not-selected:arb-hover roundedTabRight relative flex flex-row flex-nowrap items-center gap-2 rounded-tl-lg rounded-tr-lg px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white'
+    'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
   const handleSmartContractWalletTxHistoryTab = useCallback(
     (index: number) => {
@@ -201,6 +202,8 @@ export const TransactionHistory = ({
     }
   }, [address, chain, setTransactionHistoryTab, transfersIds])
 
+  const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
+
   return (
     <div className="flex flex-col justify-around gap-6">
       {isNetwork(l2.network.id).isOrbitChain && (
@@ -230,53 +233,68 @@ export const TransactionHistory = ({
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
-              className={roundedTabClasses}
+              className={twMerge(roundedTabClasses, 'roundedTabRight')}
             >
               {/* Deposits */}
               <Image
                 src={getNetworkLogo(l2.network.id)}
-                className="h-6 w-auto"
+                className="hidden h-6 w-auto md:block"
                 alt="Deposit"
                 height={24}
                 width={24}
               />
-              {`To ${getNetworkName(l2.network.id)}`}
+              <span className="text-xs md:text-base">{`To ${getNetworkName(
+                l2.network.id
+              )}`}</span>
             </TabButton>
             <TabButton
               aria-label="show withdrawal transactions"
-              className={`${roundedTabClasses} roundedTabLeft`}
+              className={twMerge(
+                roundedTabClasses,
+                'roundedTabLeft',
+                // Withdrawal tab only has rounded right border on large screens or on small screen if there is CCTP
+                displayCctp ? 'roundedTabRight' : 'md:roundedTabRight'
+              )}
             >
               {/* Withdrawals */}
               <Image
                 src={getNetworkLogo(l1.network.id)}
-                className="h-6 w-auto"
+                className="hidden h-6 w-auto md:block"
                 alt="Withdraw"
                 width={24}
                 height={24}
               />
-              {`To ${getNetworkName(l1.network.id)}`}
+              <span className="text-xs md:text-base">{`To ${getNetworkName(
+                l1.network.id
+              )}`}</span>
             </TabButton>
-            {transfersIds.length > 0 && !isOrbitChainSelected && (
+            {displayCctp && (
               <TabButton
                 aria-label="show CCTP (Native USDC) transactions"
-                className={`${roundedTabClasses} roundedTabLeft`}
+                className={twMerge(
+                  roundedTabClasses,
+                  'roundedTabLeft',
+                  'md:roundedTabRight'
+                )}
               >
                 {/* CCTP */}
                 <Image
                   src="/icons/cctp.svg"
-                  className="h-6 w-auto"
+                  className="hidden h-6 w-auto md:block"
                   alt="Cross-Chain Transfer Protocol (Native USDC)"
                   width={24}
                   height={24}
                 />
-                <span className="hidden md:block">
+                <span className="hidden text-base md:block">
                   Cross-Chain Transfer Protocol (Native USDC)
                 </span>
-                <span className="md:hidden">CCTP (Native USDC)</span>
+                <span className="text-xs md:hidden">CCTP (Native USDC)</span>
               </TabButton>
             )}
           </Tab.List>
+
           <Tab.Panel className="overflow-auto">
+            <div className="sticky h-2 rounded-tr-lg bg-white" />
             <TransactionsTable
               type="deposits"
               pageParams={depositsPageParams}
@@ -288,6 +306,12 @@ export const TransactionHistory = ({
             />
           </Tab.Panel>
           <Tab.Panel className="overflow-auto">
+            <div
+              className={twMerge(
+                'sticky h-2 rounded-tl-lg bg-white',
+                displayCctp ? 'rounded-tr-lg' : 'md:rounded-tr-lg'
+              )}
+            />
             <TransactionsTable
               type="withdrawals"
               pageParams={withdrawalsPageParams}
@@ -298,8 +322,9 @@ export const TransactionHistory = ({
               error={withdrawalsError}
             />
           </Tab.Panel>
-          {transfersIds.length > 0 && !isOrbitChainSelected && (
+          {displayCctp && (
             <Tab.Panel className="overflow-auto">
+              <div className="sticky h-2 rounded-tl-lg bg-white md:rounded-tr-lg" />
               <TransactionsTableCctp />
             </Tab.Panel>
           )}

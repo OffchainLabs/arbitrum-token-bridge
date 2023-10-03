@@ -8,6 +8,11 @@
     // Used by at least
     // wagmi > @wagmi/core > @wagmi/connectors > @coinbase/wallet-sdk > eth-block-tracker > @metamask/utils>semver
     // It's not used in user facing code
-    "GHSA-c2qf-rxjj-qqgw"
+    "GHSA-c2qf-rxjj-qqgw",
+    // https://github.com/advisories/GHSA-m95q-7qp3-xv42
+    // Zod version 3.22.2 allows an attacker to perform a denial of service while validating emails.
+    // Used by at least next>zod, zod
+    // Not used anywhere in our code base
+    "GHSA-m95q-7qp3-xv42"
   ]
 }

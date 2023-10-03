@@ -3,11 +3,7 @@ import { useMemo } from 'react'
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
 import { TransactionsTableSwitch } from './TransactionsTableSwitch'
 
-export const TableSentOrReceivedFundsSwitch = ({
-  className
-}: {
-  className: string
-}) => {
+export const TableSentOrReceivedFundsSwitch = () => {
   const {
     layout: { isTransactionHistoryShowingSentTx }
   } = useAppContextState()
@@ -33,5 +29,5 @@ export const TableSentOrReceivedFundsSwitch = ({
     showSentTransactions
   ])
 
-  return <TransactionsTableSwitch className={className} tabs={tabs} />
+  return <TransactionsTableSwitch tabs={tabs} />
 }
