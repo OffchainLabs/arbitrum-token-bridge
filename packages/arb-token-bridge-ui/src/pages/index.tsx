@@ -30,14 +30,14 @@ export default function Index() {
       try {
         addCustomChain({ customChain: chain })
         mapCustomChainToNetworkData(chain)
-      } catch {
+      } catch (_) {
         // already added
       }
 
       try {
         // adding to L2 networks too to be fully compatible with the sdk
         addCustomNetwork({ customL2Network: chain })
-      } catch {
+      } catch (_) {
         // already added
       }
     })
