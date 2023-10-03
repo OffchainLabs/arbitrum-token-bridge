@@ -19,6 +19,8 @@ import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
+import { CctpTabContent } from '../CctpTabContent'
+import { CCTP_DOCUMENTATION } from '../../../constants'
 
 type Props = UseDialogProps & {
   amount: string
@@ -91,7 +93,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
               <XMarkIcon className="h-6 w-6 text-white" />
             </button>
           </div>
-
           <Tab.List className="flex bg-ocl-blue">
             <TabButton>Arbitrum&apos;s bridge (USDC.e)</TabButton>
             <TabButton>Third party (USDC)</TabButton>
@@ -106,7 +107,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 {toNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
-              <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-3">
                 <USDCDepositConfirmationDialogCheckbox
                   onChange={checked => {
                     setAllCheckboxesChecked(checked)
@@ -142,7 +143,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 Arbitrum One using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                  href={CCTP_DOCUMENTATION}
                 >
                   Cross-Chain Transfer Protocol
                 </ExternalLink>{' '}
@@ -163,31 +164,21 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-6">
-              <p className="font-light">
-                Receive <span className="font-medium">Native USDC</span> on{' '}
-                {toNetworkName} with Circle&apos;s{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                >
-                  Cross-Chain Transfer Protocol
-                </ExternalLink>{' '}
-                within the Arbitrum Bridge.
-              </p>
-
-              <div className="flex flex-col space-y-4">
-                <USDCDepositConfirmationDialogCheckbox
-                  onAllCheckboxesCheched={() => {
-                    setAllCheckboxesChecked(true)
-                  }}
-                  onChange={checked => {
-                    if (!checked) {
-                      setAllCheckboxesChecked(false)
-                    }
-                  }}
-                  isBridgingNativeUSDC
-                />
-              </div>
+              <CctpTabContent toNetworkName={toNetworkName}>
+                <div className="flex flex-col space-y-3">
+                  <USDCDepositConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                    isBridgingNativeUSDC
+                  />
+                </div>
+              </CctpTabContent>
             </div>
             <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
