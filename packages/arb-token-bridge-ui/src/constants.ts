@@ -6,6 +6,8 @@ const SUPPORT_LINK_BASE = 'https://support.arbitrum.io'
 
 export const GET_HELP_LINK = `${SUPPORT_LINK_BASE}/hc/en-us/requests/new?ticket_form_id=18155929976987`
 
+export const PORTAL_DOMAIN = 'https://portal.arbitrum.io'
+
 export const DOCS_DOMAIN = 'https://docs.arbitrum.io'
 
 export const USDC_LEARN_MORE_LINK = `${DOCS_DOMAIN}/bridge-tokens/concepts/usdc-concept`
