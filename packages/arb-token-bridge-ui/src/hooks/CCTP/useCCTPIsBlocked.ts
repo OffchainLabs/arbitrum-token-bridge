@@ -12,7 +12,7 @@ export function useCCTPIsBlocked() {
     try {
       await fetchAttestation('0x')
       return false
-    } catch {
+    } catch (_) {
       return true
     }
   })
