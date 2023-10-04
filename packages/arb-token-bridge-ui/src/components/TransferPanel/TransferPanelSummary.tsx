@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useLatest } from 'react-use'
+import { useAccount } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -16,9 +17,19 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumOneNativeUSDC,
+  sanitizeTokenSymbol
+} from '../../util/TokenUtils'
+import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 
-export type GasEstimationStatus = 'idle' | 'loading' | 'success' | 'error'
+export type GasEstimationStatus =
+  | 'idle'
+  | 'loading'
+  | 'success'
+  | 'error'
+  | 'unavailable'
 
 export type GasEstimationResult = {
   estimatedL1Gas: BigNumber
@@ -33,6 +44,13 @@ export type UseGasSummaryResult = {
   estimatedTotalGasFees: number
 }
 
+const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
+  L1: 'L1 fees go to Ethereum Validators.',
+  L2: "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded.",
+  Orbit:
+    "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded."
+}
+
 export function useGasSummary(
   amount: BigNumber,
   token: TransferPanelSummaryToken | null,
@@ -41,11 +59,10 @@ export function useGasSummary(
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
-  const walletAddress = arbTokenBridge.walletAddress
+  const { address: walletAddress } = useAccount()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -109,6 +126,10 @@ export function useGasSummary(
         return
       }
 
+      if (!walletAddress) {
+        return
+      }
+
       try {
         setStatus('loading')
 
@@ -148,6 +169,16 @@ export function useGasSummary(
                 estimatedL1Gas: BigNumber.from(5_000),
                 estimatedL2Gas: BigNumber.from(10_000)
               }
+            } else if (
+              isTokenArbitrumOneNativeUSDC(token.address) ||
+              isTokenArbitrumGoerliNativeUSDC(token.address)
+            ) {
+              estimateGasResult = {
+                estimatedL1Gas: constants.Zero,
+                estimatedL2Gas: constants.Zero
+              }
+              setStatus('unavailable')
+              return
             } else {
               estimateGasResult = await withdrawTokenEstimateGas({
                 amount: amountDebounced,
@@ -195,7 +226,7 @@ export function useGasSummary(
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
     l1.network.id, // when L1 and L2 network id changes
     l2.network.id,
-    walletAddress // when user switches account
+    walletAddress // when user switches account or if user is not connected
   ])
 
   return {
@@ -255,6 +286,7 @@ export function TransferPanelSummary({
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
 
   const { isMainnet } = isNetwork(l1.network.id)
 
@@ -297,10 +329,30 @@ export function TransferPanelSummary({
     )
   }
 
+  if (status === 'unavailable') {
+    return (
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+          Gas estimates are not available for this action.
+        </div>
+        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+          <span className="w-2/5 font-light">You&apos;re moving</span>
+          <div className="flex w-3/5 flex-row justify-between">
+            <span>
+              {formatAmount(amount, {
+                symbol: tokenSymbol
+              })}
+            </span>
+          </div>
+        </div>
+      </TransferPanelSummaryContainer>
+    )
+  }
+
   return (
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You’re moving</span>
+        <span className="w-2/5 font-light">You&apos;re moving</span>
         <div className="flex w-3/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
@@ -317,7 +369,7 @@ export function TransferPanelSummary({
       </div>
 
       <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You’ll pay in gas fees</span>
+        <span className="w-2/5 font-light">You&apos;ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
           <span>
             {formatAmount(estimatedTotalGasFees, {
@@ -335,8 +387,8 @@ export function TransferPanelSummary({
       <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light">L1 gas</span>
-            <Tooltip content="L1 fees go to Ethereum Validators.">
+            <span className="pl-4 font-light">{parentLayer} gas</span>
+            <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
               <InformationCircleIcon className="h-4 w-4" />
             </Tooltip>
           </div>
@@ -355,8 +407,8 @@ export function TransferPanelSummary({
         </div>
         <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light ">L2 gas</span>
-            <Tooltip content="L2 fees go to L2 validators to track chain state and execute transactions. This is actually an estimated fee. If the true fee is lower, you will be refunded.">
+            <span className="pl-4 font-light ">{layer} gas</span>
+            <Tooltip content={layerToGasFeeTooltip[layer]}>
               <InformationCircleIcon className="h-4 w-4 " />
             </Tooltip>
           </div>

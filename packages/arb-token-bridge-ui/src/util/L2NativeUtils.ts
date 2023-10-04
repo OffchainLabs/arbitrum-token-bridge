@@ -1,4 +1,5 @@
 import { ChainId } from '../util/networks'
+import { CommonAddress } from './CommonAddressUtils'
 
 export type L2NativeToken = {
   name: string
@@ -6,6 +7,14 @@ export type L2NativeToken = {
   address: string
   decimals: number
   logoURI: string
+}
+
+export const ArbOneNativeUSDC = {
+  name: 'USD Coin',
+  symbol: 'USDC',
+  address: CommonAddress.ArbitrumOne.USDC,
+  decimals: 6,
+  logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png'
 }
 
 const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {
@@ -23,13 +32,6 @@ const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {
       address: '0xD22a58f79e9481D1a88e00c343885A588b34b68B',
       decimals: 2,
       logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2989.png'
-    },
-    {
-      name: 'USD Coin',
-      symbol: 'USDC',
-      address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      decimals: 6,
-      logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png'
     }
   ],
   [ChainId.ArbitrumNova]: [],
@@ -44,10 +46,6 @@ function find(erc20L2Address: string, l2ChainId: number) {
         token => token.address.toLowerCase() === erc20L2Address.toLowerCase()
       )
   )
-}
-
-export function tokenIsL2Native(erc20L2Address: string, l2ChainId: number) {
-  return typeof find(erc20L2Address, l2ChainId) !== 'undefined'
 }
 
 export function getL2NativeToken(

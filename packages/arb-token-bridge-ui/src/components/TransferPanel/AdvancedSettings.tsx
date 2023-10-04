@@ -13,7 +13,6 @@ import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
-import { getAPIBaseUrl } from '../../util'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
@@ -115,7 +114,7 @@ export const AdvancedSettings = () => {
   } = useAppState()
   const { l1, l2 } = useNetworksAndSigners()
   const { address } = useAccount()
-  const { isEOA = false, isSmartContractWallet = false } = useAccountType()
+  const { isEOA, isSmartContractWallet } = useAccountType()
 
   const [collapsed, setCollapsed] = useState(true)
   const [inputLocked, setInputLocked] = useState(true)

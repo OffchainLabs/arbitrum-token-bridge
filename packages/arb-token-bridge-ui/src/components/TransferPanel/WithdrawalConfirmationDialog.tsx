@@ -23,8 +23,10 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
+import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -51,6 +53,7 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l1.network.id)
   const {
@@ -65,16 +68,6 @@ export function WithdrawalConfirmationDialog(
     to: to.id,
     tokenSymbol: selectedToken?.symbol,
     amount: props.amount
-  }).filter(fastBridge => {
-    // exclude these fast bridges for now
-    switch (fastBridge.name) {
-      case FastBridgeNames.LIFI:
-      case FastBridgeNames.Wormhole:
-      case FastBridgeNames.Router:
-        return false
-      default:
-        return true
-    }
   })
 
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
@@ -97,7 +90,7 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -150,19 +143,21 @@ export function WithdrawalConfirmationDialog(
                   Get your funds in ~{confirmationPeriod} and pay a small fee
                   twice.{' '}
                   <ExternalLink
-                    href="https://consensys.zendesk.com/hc/en-us/articles/7311862385947"
+                    href={CONFIRMATION_PERIOD_ARTICLE_LINK}
                     className="underline"
                   >
                     Learn more.
                   </ExternalLink>
                 </p>
 
-                <div className="flex flex-row items-center space-x-1">
-                  <CheckIcon className="h-6 w-6 text-lime-dark" />
-                  <span className="font-medium text-lime-dark">
-                    Security guaranteed by Ethereum
-                  </span>
-                </div>
+                {parentLayer === 'L1' && (
+                  <div className="flex flex-row items-center space-x-1">
+                    <CheckIcon className="h-6 w-6 text-lime-dark" />
+                    <span className="font-medium text-lime-dark">
+                      Security guaranteed by Ethereum
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col space-y-6">
@@ -170,7 +165,9 @@ export function WithdrawalConfirmationDialog(
                   label={
                     <span className="font-light">
                       I understand that it will take ~{confirmationPeriod}{' '}
-                      before I can claim my funds on Ethereum {networkName}
+                      before I can claim my funds on{' '}
+                      {parentLayer === 'L1' ? 'Ethereum ' : ''}
+                      {networkName}
                     </span>
                   }
                   checked={checkbox1Checked}
@@ -183,9 +180,9 @@ export function WithdrawalConfirmationDialog(
                       I understand that after claiming my funds, I’ll have to
                       send{' '}
                       <span className="font-medium">
-                        another transaction on L1
+                        another transaction on {parentLayer}
                       </span>{' '}
-                      and pay another L1 fee
+                      and pay another {parentLayer} fee
                     </span>
                   }
                   checked={checkbox2Checked}

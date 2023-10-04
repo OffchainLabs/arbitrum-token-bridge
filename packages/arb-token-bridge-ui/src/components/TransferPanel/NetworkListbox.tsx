@@ -5,18 +5,12 @@ import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
 import Image from 'next/image'
 
-import { Tooltip } from '../common/Tooltip'
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
-
-type OptionsExtraProps = {
-  disabled?: boolean
-  disabledTooltip?: string
-}
 
 export type NetworkListboxProps = {
   disabled?: boolean
   label: string
-  options: (Chain & OptionsExtraProps)[]
+  options: Chain[]
   value: Chain
   onChange: (value: Chain) => void
 }
@@ -29,7 +23,25 @@ export function NetworkListbox({
   onChange
 }: NetworkListboxProps) {
   const buttonClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova } = isNetwork(value.id)
+    const {
+      isArbitrum,
+      isArbitrumNova,
+      isOrbitChain,
+      isXaiTestnet,
+      isStylusTestnet
+    } = isNetwork(value.id)
+
+    if (isXaiTestnet) {
+      return 'bg-xai-primary'
+    }
+
+    if (isStylusTestnet) {
+      return 'bg-stylus-primary'
+    }
+
+    if (isOrbitChain) {
+      return 'bg-orbit-primary'
+    }
 
     if (!isArbitrum) {
       return 'bg-eth-primary'
@@ -68,7 +80,7 @@ export function NetworkListbox({
       <Listbox.Button
         className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
       >
-        <span>
+        <span className="max-w-[220px] truncate md:max-w-[250px]">
           {label} {getNetworkName(value.id)}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
@@ -83,35 +95,27 @@ export function NetworkListbox({
         <Listbox.Options className="absolute z-20 ml-2 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
           {options.map((option, index) => {
             return (
-              <Tooltip
+              <Listbox.Option
                 key={option.id}
-                show={option.disabled}
-                content={option.disabledTooltip}
-                wrapperClassName="w-full"
-                theme="dark"
+                value={option}
+                className={twMerge(
+                  'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer select-none items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
+                  getOptionClassName(index)
+                )}
               >
-                <Listbox.Option
-                  key={option.id}
-                  value={option}
-                  className={twMerge(
-                    'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer select-none items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
-                    getOptionClassName(index),
-                    option.disabled ? 'pointer-events-none opacity-40' : ''
-                  )}
-                  disabled={option.disabled}
-                >
-                  <div className="flex h-8 w-8 items-center justify-center">
-                    <Image
-                      src={getNetworkLogo(option.id)}
-                      alt={`${getNetworkName(option.id)} logo`}
-                      className="max-h-7 w-auto"
-                      width={36}
-                      height={36}
-                    />
-                  </div>
-                  <span>{getNetworkName(option.id)}</span>
-                </Listbox.Option>
-              </Tooltip>
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <Image
+                    src={getNetworkLogo(option.id)}
+                    alt={`${getNetworkName(option.id)} logo`}
+                    className="max-h-7 w-auto"
+                    width={36}
+                    height={36}
+                  />
+                </div>
+                <span className="max-w-[140px] truncate">
+                  {getNetworkName(option.id)}
+                </span>
+              </Listbox.Option>
             )
           })}
         </Listbox.Options>

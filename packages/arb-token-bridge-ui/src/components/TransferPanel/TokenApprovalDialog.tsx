@@ -4,6 +4,9 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
+import { useAccount } from 'wagmi'
+
+import { useChainId, useSigner } from 'wagmi'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -15,18 +18,28 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
+import {
+  approveCctpEstimateGas,
+  approveTokenEstimateGas
+} from '../../util/TokenApprovalUtils'
+import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
+import { getContracts } from '../../hooks/CCTP/useCCTP'
+import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
+import { shortenTxHash } from '../../util/CommonUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
   allowance: BigNumber | null
   amount: string
+  isCctp: boolean
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
-  const { allowance, amount, isOpen, token } = props
+  const { address: walletAddress } = useAccount()
+  const { allowance, isOpen, amount, token, isCctp } = props
   const {
-    app: { arbTokenBridge }
+    app: { isDepositMode }
   } = useAppState()
 
   const allowanceParsed =
@@ -34,17 +47,23 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network.id)
-
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const { parentLayer, layer } = useChainLayers()
+  const { isMainnet, isTestnet } = isNetwork(l1.network.id)
+  const provider = isDepositMode ? l1.provider : l2.provider
+  const gasPrice = useGasPrice({ provider })
+  const chainId = useChainId()
+  const { data: signer } = useSigner({
+    chainId
+  })
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
+  const [contractAddress, setContractAddress] = useState<string>('')
 
   // Estimated gas fees, denominated in Ether, represented as a floating point number
   const estimatedGasFees = useMemo(
-    () => parseFloat(utils.formatEther(estimatedGas.mul(l1GasPrice))),
-    [estimatedGas, l1GasPrice]
+    () => parseFloat(utils.formatEther(estimatedGas.mul(gasPrice))),
+    [estimatedGas, gasPrice]
   )
 
   const approvalFeeText = useMemo(() => {
@@ -59,26 +78,79 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
 
     async function getEstimatedGas() {
-      if (token?.address) {
-        setEstimatedGas(
-          await approveTokenEstimateGas({
-            erc20L1Address: token.address,
-            address: arbTokenBridge.walletAddress,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
-          })
-        )
+      if (!token?.address) {
+        return
+      }
+
+      let gasEstimate
+
+      if (isCctp) {
+        if (!signer) {
+          gasEstimate = constants.Zero
+        } else {
+          gasEstimate = await approveCctpEstimateGas(
+            chainId,
+            constants.MaxUint256,
+            signer
+          )
+        }
+      } else if (walletAddress) {
+        gasEstimate = await approveTokenEstimateGas({
+          erc20L1Address: token.address,
+          address: walletAddress,
+          l1Provider: l1.provider,
+          l2Provider: l2.provider
+        })
+      }
+
+      if (gasEstimate) {
+        setEstimatedGas(gasEstimate)
       }
     }
 
     getEstimatedGas()
   }, [
+    isCctp,
     isOpen,
+    isDepositMode,
+    isTestnet,
+    chainId,
+    signer,
+    walletAddress,
     token?.address,
     l1.provider,
-    l2.provider,
-    arbTokenBridge.walletAddress
+    l2.provider
   ])
+
+  useEffect(() => {
+    const getContractAddress = async function () {
+      if (isCctp) {
+        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
+        return
+      }
+      if (!token?.address) {
+        setContractAddress('')
+        return
+      }
+      if (isDepositMode) {
+        setContractAddress(
+          await getL1GatewayAddress({
+            erc20L1Address: token.address,
+            l1Provider: l1.provider,
+            l2Provider: l2.provider
+          })
+        )
+        return
+      }
+      setContractAddress(
+        await getL2GatewayAddress({
+          erc20L1Address: token.address,
+          l2Provider: l2.provider
+        })
+      )
+    }
+    getContractAddress()
+  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -87,6 +159,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }
 
   const displayAllowanceWarning = allowance && !allowance.isZero()
+  const noteMessage = (() => {
+    if (isDepositMode) {
+      return isCctp
+        ? `the CCTP ${layer} deposit fee.`
+        : `the standard ${layer} deposit fee.`
+    }
+    return isCctp
+      ? `the CCTP ${parentLayer} deposit fee.`
+      : `the standard ${parentLayer} deposit fee.`
+  })()
 
   return (
     <Dialog
@@ -116,7 +198,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(l1.network.id)}/token/${token?.address}`}
+              href={`${getExplorerUrl(
+                isDepositMode ? l1.network.id : l2.network.id
+              )}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
@@ -131,7 +215,20 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="font-medium">
                 approval fee of {approvalFeeText}*
               </span>{' '}
-              for each new token I add to my wallet.
+              for each new token or spending cap. This transaction gives
+              permission to the{' '}
+              <ExternalLink
+                className="text-blue-link underline"
+                href={`${getExplorerUrl(
+                  isDepositMode ? l1.network.id : l2.network.id
+                )}/address/${contractAddress}`}
+                onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+                  event.stopPropagation()
+                }}
+              >
+                {shortenTxHash(contractAddress)}
+              </ExternalLink>{' '}
+              contract to transfer a capped amount of a specific token.
             </span>
           }
           checked={checked}
@@ -159,10 +256,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           >
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
             <span className="text-sm font-light text-cyan-dark">
-              After approval, you’ll see a second prompt in your wallet for the
-              standard L2 deposit fee.{' '}
+              After approval, you&apos;ll see a second prompt in your wallet for{' '}
+              {noteMessage}{' '}
               <ExternalLink
-                href="https://consensys.zendesk.com/hc/en-us/articles/7276949409819"
+                href={TOKEN_APPROVAL_ARTICLE_LINK}
                 className="underline"
               >
                 Learn more.
