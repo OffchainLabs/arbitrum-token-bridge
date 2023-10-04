@@ -12,7 +12,7 @@ import { useChainLayers } from '../../../hooks/useChainLayers'
 
 type TableActionHeaderProps = Omit<
   TransactionsTableProps,
-  'error' | 'pendingTransactions' | 'type'
+  'error' | 'pendingTransactions' | 'type' | 'isSmartContractWallet'
 > & {
   type: 'deposits' | 'withdrawals' | 'cctp'
   showSearch: boolean
@@ -24,7 +24,6 @@ export const TableActionHeader = ({
   setPageParams,
   transactions,
   loading,
-  isSmartContractWallet,
   showSearch
 }: TableActionHeaderProps) => {
   const { parentLayer, layer } = useChainLayers()
@@ -80,13 +79,7 @@ export const TableActionHeader = ({
     (searchString && loading) || pageParams.searchString !== trimmedSearchString // for immediate UX feedback of search results fetching while typing
 
   return (
-    <div
-      className={twMerge(
-        'sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 bg-white p-3 text-sm',
-        isSmartContractWallet ? 'rounded-t-lg' : '',
-        type === 'deposits' ? 'rounded-tl-none' : ''
-      )}
-    >
+    <div className="sticky left-0 top-0 flex w-auto flex-nowrap items-center justify-between gap-4 bg-white p-3 text-sm">
       {/* Search bar */}
       {showSearch && (
         <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">

@@ -72,7 +72,7 @@ import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 
 const onTxError = (error: any) => {
-  if (error.code !== 'ACTION_REJECTED') {
+  if (!isUserRejectedError(error)) {
     Sentry.captureException(error)
   }
 }

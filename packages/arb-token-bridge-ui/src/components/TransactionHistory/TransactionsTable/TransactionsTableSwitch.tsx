@@ -1,11 +1,8 @@
 import React, { ReactEventHandler } from 'react'
-import { twMerge } from 'tailwind-merge'
 
 export function TransactionsTableSwitch({
-  className,
   tabs
 }: {
-  className?: string
   tabs: {
     handleClick: ReactEventHandler<HTMLButtonElement>
     isActive: boolean
@@ -13,12 +10,7 @@ export function TransactionsTableSwitch({
   }[]
 }) {
   return (
-    <div
-      className={twMerge(
-        'sticky left-0 top-0 rounded-tr-lg bg-white p-4 pt-6 text-lg',
-        className
-      )}
-    >
+    <div className="sticky left-0 top-0 bg-white p-4 pt-4 text-lg">
       {tabs.map(({ handleClick, isActive, text }, index) => (
         <button
           key={index}

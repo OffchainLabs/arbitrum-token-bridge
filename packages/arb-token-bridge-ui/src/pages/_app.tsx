@@ -34,6 +34,7 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
+  maxValueLength: 0,
   beforeSend: event => {
     if (event.message) {
       if (

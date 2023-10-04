@@ -17,14 +17,14 @@ import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
-import { USDCTokenExplorerLink } from '../USDCTokenExplorerLink'
+import { CctpTabContent } from '../CctpTabContent'
+import { CCTP_DOCUMENTATION } from '../../../constants'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
   const from = l2.network
@@ -55,7 +55,7 @@ export function USDCWithdrawalConfirmationDialog(
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px]">
+      <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
@@ -71,22 +71,19 @@ export function USDCWithdrawalConfirmationDialog(
             </button>
           </div>
 
-          <Tab.List className="bg-ocl-blue">
-            <TabButton>Use a fast bridge</TabButton>
-            <TabButton>Use Circle&apos;s bridge (USDC)</TabButton>
+          <Tab.List className="flex bg-ocl-blue">
+            <TabButton>Third party (USDC)</TabButton>
+            <TabButton>Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3 font-light">
               <p>
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
-                  USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
+                Receive <span className="font-medium">USDC</span> on{' '}
+                {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
+                  href={CCTP_DOCUMENTATION}
                 >
                   Cross-Chain Transfer Protocol
                 </ExternalLink>{' '}
@@ -106,34 +103,21 @@ export function USDCWithdrawalConfirmationDialog(
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-            <div className="flex flex-col space-y-3">
-              <p className="font-light">
-                Receive{' '}
-                <USDCTokenExplorerLink token="USDC" networkId={l1.network.id}>
-                  USDC
-                </USDCTokenExplorerLink>{' '}
-                on {toNetworkName} with Circle&apos;s{' '}
-                <ExternalLink
-                  className="arb-hover text-blue-link underline"
-                  href="https://www.circle.com/en/cross-chain-transfer-protocol"
-                >
-                  Cross-Chain Transfer Protocol
-                </ExternalLink>{' '}
-                within the Arbitrum Bridge.
-              </p>
-
-              <div className="flex flex-col space-y-6">
-                <USDCWithdrawalConfirmationDialogCheckbox
-                  onAllCheckboxesCheched={() => {
-                    setAllCheckboxesChecked(true)
-                  }}
-                  onChange={checked => {
-                    if (!checked) {
-                      setAllCheckboxesChecked(false)
-                    }
-                  }}
-                />
-              </div>
+            <div className="flex flex-col space-y-6">
+              <CctpTabContent toNetworkName={toNetworkName}>
+                <div className="flex flex-col space-y-3">
+                  <USDCWithdrawalConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                  />
+                </div>
+              </CctpTabContent>
             </div>
             <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
