@@ -118,5 +118,8 @@
     "next": {
       "zod": "$zod"
     }
+  },
+  "resolutions": {
+    "zod": "$zod"
   }
 }
