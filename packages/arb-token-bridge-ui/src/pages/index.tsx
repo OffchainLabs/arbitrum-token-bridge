@@ -4,11 +4,7 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import {
-  getCustomChainsFromLocalStorage,
-  stylusTestnet,
-  xaiTestnet
-} from '../util/networks'
+import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
