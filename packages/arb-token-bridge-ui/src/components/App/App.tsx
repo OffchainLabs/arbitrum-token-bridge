@@ -44,6 +44,7 @@ import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
+import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { getWalletProvidersConfigProps } from '../../util/wagmi/setup'
 
 declare global {
@@ -101,6 +102,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const networksAndSigners = useNetworksAndSigners()
+
+  // We want to be sure this fetch is completed by the time we open the USDC modals
+  useCCTPIsBlocked()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
