@@ -39,14 +39,15 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.1.10-beta.0":
-  version "3.1.10-beta.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.10-beta.0.tgz#70fc8c9bd8fce737ffae8498d4987e2eea5ad93f"
-  integrity sha512-ezWIIuAy6OPeSNjHM6Rhz9d5WFnsU0tYZ9WZDhMDKGZZopnyRXB8fCY2GhqVINU9v940TQeZpwZxJfvq4vUKpQ==
+"@arbitrum/sdk@^3.1.12-orbit.1":
+  version "3.1.12-orbit.1"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.12-orbit.1.tgz#e0c0deecf36ae0f4c45f16111d29e35b66038bee"
+  integrity sha512-paRmiqUSXCRWXIkxiBBrIEcrxqfJaMc5bGV5d7doVhhQvyWRNE05pbQUHZoNQrKpdLN+gmS2lnD1dRXM6azFpw==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
     "@ethersproject/bytes" "^5.0.8"
+    async-mutex "^0.4.0"
     ethers "^5.1.0"
 
 "@babel/code-frame@7.12.11":
@@ -3314,6 +3315,13 @@ async-mutex@^0.2.6:
   integrity sha512-Hs4R+4SPgamu6rSGW8C7cV9gaWUKEHykfzCCvIRuaVv636Ju10ZdeUbvb4TBEW0INuq2DHZqXbK4Nd3yG4RaRw==
   dependencies:
     tslib "^2.0.0"
+
+async-mutex@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/async-mutex/-/async-mutex-0.4.0.tgz#ae8048cd4d04ace94347507504b3cf15e631c25f"
+  integrity sha512-eJFZ1YhRR8UN8eBLoNzcDPcy/jqjsg6I1AP+KvWQX80BqOSW1oJPJXDylPUEeMr2ZQvHgnQ//Lp6f3RQ1zI7HA==
+  dependencies:
+    tslib "^2.4.0"
 
 async@^2.6.1:
   version "2.6.4"
