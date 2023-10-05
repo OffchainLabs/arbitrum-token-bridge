@@ -52,17 +52,6 @@ export default function Index() {
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
     }
-
-    try {
-      addCustomNetwork({ customL2Network: stylusTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Stylus Testnet: ${error.message}`)
-    }
-    try {
-      addCustomChain({ customChain: stylusTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Stylus Testnet: ${error.message}`)
-    }
   }, [])
 
   return <App />
