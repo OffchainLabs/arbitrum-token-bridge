@@ -42,7 +42,7 @@ export async function attachTimestampToTokenWithdrawals({
   l2Provider: Provider
 }) {
   return Promise.all(
-    [...withdrawals].map(async withdrawal => {
+    withdrawals.map(async withdrawal => {
       const txReceipt = await l2Provider.getTransactionReceipt(
         withdrawal.txHash
       )
