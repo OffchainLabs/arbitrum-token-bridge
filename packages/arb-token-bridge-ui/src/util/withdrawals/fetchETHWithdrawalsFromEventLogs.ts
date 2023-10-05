@@ -10,7 +10,7 @@ import { L2ToL1MessageReader } from '@arbitrum/sdk'
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
  */
-export async function fetchETHWithdrawalsFromEventLogs({
+export function fetchETHWithdrawalsFromEventLogs({
   sender,
   fromBlock,
   toBlock,

@@ -74,41 +74,37 @@ export default async function handler(
 
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
-            withdrawals(
-              where: {            
-                or: [
-                  ${
-                    sender
-                      ? `{ sender: "${sender}", ${additionalFilters} },`
-                      : ''
-                  }
-                  ${
-                    receiver
-                      ? `{ receiver: "${receiver}", ${additionalFilters} },`
-                      : ''
-                  }
-                ]
+        withdrawals(
+          where: {            
+            or: [
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
               }
-              orderBy: l2BlockTimestamp
-              orderDirection: desc
-              first: ${Number(pageSize)},
-              skip: ${Number(page) * Number(pageSize)}
-            ) {
-                id,
-                type,
-                sender,
-                receiver,
-                ethValue,
-                l1Token {
-                    id
-                },
-                tokenAmount,
-                isClassic,
-                l2BlockTimestamp,
-                l2TxHash,
-                l2BlockNum
-            }
-        }`
+            ]
+          }
+          orderBy: l2BlockTimestamp
+          orderDirection: desc
+          first: ${Number(pageSize)},
+          skip: ${Number(page) * Number(pageSize)}
+        ) {
+          id,
+          type,
+          sender,
+          receiver,
+          ethValue,
+          l1Token {
+            id
+          },
+          tokenAmount,
+          isClassic,
+          l2BlockTimestamp,
+          l2TxHash,
+          l2BlockNum
+        }
+    }`
     })
 
     const transactions: FetchWithdrawalsFromSubgraphResult[] =

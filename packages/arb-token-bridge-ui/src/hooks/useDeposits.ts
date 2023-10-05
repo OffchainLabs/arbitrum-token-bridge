@@ -59,7 +59,9 @@ export const useDeposits = (depositPageParams: PageParams) => {
 
   const { address: walletAddress } = useAccount()
 
-  // sent and received txs are always displayed for EOA but not for SCW
+  // SCW address is tied to a specific network
+  // that's why we need to limit shown txs either to sent or received funds
+  // otherwise we'd display funds for a different network, which could be someone else's account
   const includeSentTxs = isAccountTypeLoading
     ? false
     : shouldIncludeSentTxs({

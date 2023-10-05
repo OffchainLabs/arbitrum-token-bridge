@@ -1,6 +1,6 @@
 import { Tab } from '@headlessui/react'
 import { Dispatch, SetStateAction, useMemo } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
@@ -17,7 +17,6 @@ import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
-import { useAccountType } from '../../hooks/useAccountType'
 import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
@@ -48,7 +47,6 @@ export const TransactionHistory = ({
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
   const { l1, l2 } = useNetworksAndSigners()
-  const { isSmartContractWallet } = useAccountType()
   const {
     pendingIds: pendingIdsCctp,
     transfers: transfersCctp,
@@ -212,7 +210,6 @@ export const TransactionHistory = ({
               pageParams={depositsPageParams}
               setPageParams={setDepositsPageParams}
               transactions={depositsData.transformedDeposits}
-              isSmartContractWallet={isSmartContractWallet}
               loading={depositsLoading}
               error={depositsError}
             />
@@ -229,7 +226,6 @@ export const TransactionHistory = ({
               pageParams={withdrawalsPageParams}
               setPageParams={setWithdrawalsPageParams}
               transactions={withdrawalsData.transformedWithdrawals}
-              isSmartContractWallet={isSmartContractWallet}
               loading={withdrawalsLoading}
               error={withdrawalsError}
             />

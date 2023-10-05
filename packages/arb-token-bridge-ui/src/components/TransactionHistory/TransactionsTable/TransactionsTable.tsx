@@ -164,7 +164,6 @@ export type TransactionsTableProps = {
   pageParams: PageParams
   setPageParams: Dispatch<SetStateAction<PageParams>>
   transactions: MergedTransaction[]
-  isSmartContractWallet?: boolean
   loading: boolean
   error: boolean
 }
@@ -174,7 +173,6 @@ export function TransactionsTable({
   pageParams,
   setPageParams,
   transactions,
-  isSmartContractWallet,
   loading,
   error
 }: TransactionsTableProps) {
