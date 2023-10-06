@@ -1,3 +1,4 @@
+import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
@@ -19,7 +20,6 @@ import {
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-import { constants } from 'ethers'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -86,7 +86,7 @@ export const fetchWithdrawals = async ({
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      sender,
+      receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
@@ -113,7 +113,7 @@ export const fetchWithdrawals = async ({
     })
 
   // get ETH and token withdrawals that will be displayed on the current page
-  const partialWithdrawalsFromEventLogs = [
+  const paginatedWithdrawalsFromEventLogs = [
     ...ethWithdrawalsFromEventLogs,
     ...tokenWithdrawalsFromEventLogsWithTimestamp
   ]
@@ -121,7 +121,7 @@ export const fetchWithdrawals = async ({
     .slice(currentPageStart, currentPageEnd)
 
   const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
-    partialWithdrawalsFromEventLogs
+    paginatedWithdrawalsFromEventLogs
       .filter(withdrawal => !isEthWithdrawal(withdrawal))
       .map(withdrawal =>
         mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
@@ -143,7 +143,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...partialWithdrawalsFromEventLogs
+      ...paginatedWithdrawalsFromEventLogs
         .filter(isEthWithdrawal)
         .map(withdrawal =>
           mapETHWithdrawalToL2ToL1EventResult(
