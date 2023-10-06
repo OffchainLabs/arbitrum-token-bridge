@@ -8,11 +8,12 @@ import {
 
 import { getProps } from '../util/wagmi/setup'
 import { PropsWithChildren, useEffect, useState } from 'react'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { Loader } from '../components/common/atoms/Loader'
 import { BridgeTransfer } from '../__experiments__/BridgeTransfer'
 import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
+import { Erc20Deposit } from '../__experiments__/Erc20Deposit'
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
 
@@ -29,23 +30,22 @@ function Connected(props: PropsWithChildren<{ fallback: React.ReactNode }>) {
 type SmolChain = {
   name: string
   provider: StaticJsonRpcProvider
+  blockExplorer: string
 }
 
 const goerli: SmolChain = {
   name: 'Goerli',
   provider: new StaticJsonRpcProvider(
     `https://goerli.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
-  )
+  ),
+  blockExplorer: 'https://goerli.etherscan.io'
 }
 
 const arbitrumGoerli = {
   name: 'Arbitrum Goerli',
-  provider: new StaticJsonRpcProvider(`https://goerli-rollup.arbitrum.io/rpc	`)
+  provider: new StaticJsonRpcProvider(`https://goerli-rollup.arbitrum.io/rpc`),
+  blockExplorer: 'https://goerli.arbiscan.io'
 }
-
-const ethDepositsHistory = [
-  '0xa03d288446a8aa077df378ca11b4adebc9bca84cdf522d13358bd9beaaa3bcec'
-]
 
 type Balance = BigNumber | null
 
@@ -71,26 +71,81 @@ function Balance({ provider }: { provider: StaticJsonRpcProvider }) {
 
 type TxHistoryEntry = {
   type: `${'eth' | 'erc-20'}-${'deposit' | 'withdrawal'}`
-  txHash: string
+  sourceChainTxHash: string
+}
+
+const txHistory: TxHistoryEntry[] = [
+  {
+    type: 'erc-20-deposit',
+    sourceChainTxHash:
+      '0xffd303a28eb156fd95ae4b424c00944d672a5737ec93c2b93f772e490ba7a6b8'
+  },
+  {
+    type: 'erc-20-deposit',
+    sourceChainTxHash:
+      '0x9228d80ee1da15301755de4a577a4baa21614250d6c78d97ad4ca72dbfccdb06'
+  },
+  {
+    type: 'erc-20-deposit',
+    sourceChainTxHash:
+      '0x79136479c42ca7f96e6eed6018e4ca015f76270fcf904598eae4e97081a8e509'
+  }
+]
+
+async function loadTxHistory(props: {
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+}): Promise<BridgeTransfer[]> {
+  return Promise.all(
+    Object.values(txHistory).map(async tx =>
+      Erc20Deposit.fromSourceChainTxHash({
+        sourceChainTxHash: tx.sourceChainTxHash,
+        sourceChainProvider: props.sourceChainProvider,
+        destinationChainProvider: props.destinationChainProvider
+      })
+    )
+  )
 }
 
 function BridgeTransferListItem({
-  bridgeTransfer
+  bridgeTransfer,
+  sourceChainBlockExplorer,
+  destinationChainBlockExplorer
 }: {
   bridgeTransfer: BridgeTransfer
+  sourceChainBlockExplorer: string
+  destinationChainBlockExplorer: string
 }) {
   return (
-    <li key={bridgeTransfer.sourceChainTx.hash}>
-      <div className="flex flex-row items-center gap-2">
-        <span className="font-medium">
-          sourceChainTxHash: {bridgeTransfer.sourceChainTx.hash}
-        </span>
-        <span className="font-medium">
-          destinationChainTxHash:{' '}
-          {bridgeTransfer.destinationChainTxReceipt?.transactionHash ?? '?'}
-        </span>
-        <span className="font-medium">status: {bridgeTransfer.status}</span>
-      </div>
+    <li
+      key={bridgeTransfer.sourceChainTx.hash}
+      className="flex flex-col gap-2 border p-2"
+    >
+      <span className="font-medium">
+        sourceChainTxHash:{' '}
+        <a
+          href={`${sourceChainBlockExplorer}/tx/${bridgeTransfer.sourceChainTx.hash}`}
+          target="_blank"
+          className="underline"
+        >
+          {bridgeTransfer.sourceChainTx.hash}
+        </a>
+      </span>
+      <span className="font-medium">
+        destinationChainTxHash:{' '}
+        {bridgeTransfer.destinationChainTxReceipt ? (
+          <a
+            href={`${destinationChainBlockExplorer}/tx/${bridgeTransfer.destinationChainTxReceipt.transactionHash}`}
+            target="_blank"
+            className="underline"
+          >
+            {bridgeTransfer.destinationChainTxReceipt.transactionHash}
+          </a>
+        ) : (
+          '??'
+        )}
+      </span>
+      <span className="font-medium">status: {bridgeTransfer.status}</span>
     </li>
   )
 }
@@ -104,9 +159,22 @@ function App() {
   const [fromChain, setFromChain] = useState<SmolChain>(goerli)
   const [toChain, setToChain] = useState<SmolChain>(arbitrumGoerli)
 
-  const [bridgeTransferMap, setBridgeTransferMap] = useState<
-    Record<string, BridgeTransfer>
-  >({})
+  const [bridgeTransferMap, setBridgeTransferMap] = useState<BridgeTransfer[]>(
+    []
+  )
+
+  useEffect(() => {
+    async function update() {
+      const result = await loadTxHistory({
+        sourceChainProvider: fromChain.provider,
+        destinationChainProvider: toChain.provider
+      })
+
+      setBridgeTransferMap(result)
+    }
+
+    update()
+  }, [fromChain.provider, toChain.provider])
 
   function swap() {
     setFromChain(toChain)
@@ -202,11 +270,13 @@ function App() {
       <div>
         <h3 className="text-lg font-medium">Transaction History</h3>
 
-        <ol>
+        <ol className="flex flex-col gap-2">
           {Object.values(bridgeTransferMap).map((bridgeTransfer, index) => (
             <BridgeTransferListItem
               key={index}
               bridgeTransfer={bridgeTransfer}
+              sourceChainBlockExplorer={fromChain.blockExplorer}
+              destinationChainBlockExplorer={toChain.blockExplorer}
             />
           ))}
         </ol>

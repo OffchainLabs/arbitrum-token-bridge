@@ -44,12 +44,35 @@ export class Erc20Deposit extends BridgeTransfer {
     return new Erc20Deposit({ ...props, status, sourceChainTxReceipt })
   }
 
+  public static async fromSourceChainTxHash(props: {
+    sourceChainTxHash: string
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) {
+    const sourceChainTx = await props.sourceChainProvider.getTransaction(
+      props.sourceChainTxHash
+    )
+
+    const erc20Deposit = await Erc20Deposit.fromSourceChainTx({
+      ...props,
+      sourceChainTx
+    })
+
+    await erc20Deposit.updateStatus()
+
+    return erc20Deposit
+  }
+
   protected isStatusFinal(status: BridgeTransferStatus): boolean {
     if (status === 'source_chain_tx_error') {
       return true
     }
 
     return false
+  }
+
+  public async updateStatus(): Promise<void> {
+    this.status = await this.fetchStatus()
   }
 
   public async fetchStatus(): BridgeTransferFetchStatusFunctionResult {
@@ -79,19 +102,17 @@ export class Erc20Deposit extends BridgeTransfer {
         : 'source_chain_tx_error'
     }
 
-    return this.mapStatus(await message.status())
-  }
+    const successfulRedeem = await message.getSuccessfulRedeem()
 
-  private mapStatus(status: L1ToL2MessageStatus): BridgeTransferStatus {
-    switch (status) {
-      case L1ToL2MessageStatus.NOT_YET_CREATED:
-        return 'source_chain_tx_success'
-
-      case L1ToL2MessageStatus.REDEEMED:
-        return 'destination_chain_tx_success'
-
-      default:
-        return 'destination_chain_tx_pending'
+    if (successfulRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+      this.destinationChainTxReceipt = successfulRedeem.l2TxReceipt
+      return 'destination_chain_tx_success'
     }
+
+    if (successfulRedeem.status === L1ToL2MessageStatus.NOT_YET_CREATED) {
+      return 'source_chain_tx_success'
+    }
+
+    return 'destination_chain_tx_error'
   }
 }
