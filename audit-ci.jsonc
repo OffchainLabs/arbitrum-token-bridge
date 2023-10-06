@@ -13,6 +13,12 @@
     // Zod version 3.22.2 allows an attacker to perform a denial of service while validating emails.
     // Used by at least next>zod, zod
     // Not used anywhere in our code base
-    "GHSA-m95q-7qp3-xv42"
+    "GHSA-m95q-7qp3-xv42",
+    // https://github.com/advisories/GHSA-7fh5-64p2-3v2j
+    // An issue was discovered in PostCSS before 8.4.31.
+    // It affects linters using PostCSS to parse external Cascading Style Sheets (CSS).
+    // There may be \r discrepancies, as demonstrated by @font-face{ font:(\r/*);} in a rule.
+    // Used by next>postcss
+    "GHSA-7fh5-64p2-3v2j"
   ]
 }
