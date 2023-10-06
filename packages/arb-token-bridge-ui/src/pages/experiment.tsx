@@ -1,4 +1,4 @@
-import { useAccount, useNetwork, useSigner, WagmiConfig } from 'wagmi'
+import { useAccount, useSigner, WagmiConfig } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import {
   lightTheme,
@@ -8,18 +8,13 @@ import {
 
 import { getProps } from '../util/wagmi/setup'
 import { PropsWithChildren, useEffect, useState } from 'react'
-import {
-  StaticJsonRpcProvider,
-  TransactionReceipt
-} from '@ethersproject/providers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { EthDepositStarter } from '../__experiments__/EthDepositStarter'
 import { Loader } from '../components/common/atoms/Loader'
-import { util } from 'zod'
+import { BridgeTransfer } from '../__experiments__/BridgeTransfer'
 import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
-console.log(wagmiConfigProps)
 
 function Connected(props: PropsWithChildren<{ fallback: React.ReactNode }>) {
   const { isConnected } = useAccount()
@@ -74,29 +69,30 @@ function Balance({ provider }: { provider: StaticJsonRpcProvider }) {
   return <span>{utils.formatEther(balance)} ETH</span>
 }
 
-class BridgeTransfer {
-  public fromChainTxHash: string
-  public fromChainTxStatus: 'pending' | 'confirmed' | 'failed'
-
-  constructor(props: { fromChainTxHash: string }) {
-    this.fromChainTxHash = props.fromChainTxHash
-    this.fromChainTxStatus = 'pending'
-  }
-
-  public updateWithFromChainTxReceipt(receipt: TransactionReceipt) {
-    if (receipt.status === 0) {
-      this.fromChainTxStatus = 'failed'
-    } else {
-      this.fromChainTxStatus = 'confirmed'
-    }
-  }
+type TxHistoryEntry = {
+  type: `${'eth' | 'erc-20'}-${'deposit' | 'withdrawal'}`
+  txHash: string
 }
 
-async function fetchFromHistory(props: {
-  txHash: string
-  provider: StaticJsonRpcProvider
+function BridgeTransferListItem({
+  bridgeTransfer
+}: {
+  bridgeTransfer: BridgeTransfer
 }) {
-  return props.provider.getTransactionReceipt(props.txHash)
+  return (
+    <li key={bridgeTransfer.sourceChainTx.hash}>
+      <div className="flex flex-row items-center gap-2">
+        <span className="font-medium">
+          sourceChainTxHash: {bridgeTransfer.sourceChainTx.hash}
+        </span>
+        <span className="font-medium">
+          destinationChainTxHash:{' '}
+          {bridgeTransfer.destinationChainTxReceipt?.transactionHash ?? '?'}
+        </span>
+        <span className="font-medium">status: {bridgeTransfer.status}</span>
+      </div>
+    </li>
+  )
 }
 
 function App() {
@@ -104,34 +100,13 @@ function App() {
   const { data: signer } = useSigner()
 
   const [amount, setAmount] = useState<string>('')
+  const [erc20, setErc20] = useState<string>('')
   const [fromChain, setFromChain] = useState<SmolChain>(goerli)
   const [toChain, setToChain] = useState<SmolChain>(arbitrumGoerli)
 
-  const [bridgeTransfers, setBridgeTransfers] = useState<BridgeTransfer[]>([])
-
-  useEffect(() => {
-    async function fetchTxHistory() {
-      setBridgeTransfers([])
-      // setBridgeTransfers(
-      //   await Promise.all(
-      //     ethDepositsHistory.map(async txHash => {
-      //       const bridgeTransfer = new BridgeTransfer({
-      //         fromChainTxHash: txHash
-      //       })
-      //       const txReceipt = await fromChain.provider.getTransactionReceipt(
-      //         txHash
-      //       )
-
-      //       bridgeTransfer.updateWithFromChainTxReceipt(txReceipt)
-
-      //       return bridgeTransfer
-      //     })
-      //   )
-      // )
-    }
-
-    fetchTxHistory()
-  }, [fromChain.provider])
+  const [bridgeTransferMap, setBridgeTransferMap] = useState<
+    Record<string, BridgeTransfer>
+  >({})
 
   function swap() {
     setFromChain(toChain)
@@ -143,25 +118,38 @@ function App() {
       throw new Error('signer not found')
     }
 
-    const starter = await BridgeTransferStarterFactory.create({
-      fromChainProvider: fromChain.provider,
-      toChainProvider: toChain.provider
+    const sourceChainErc20ContractAddress = erc20 !== '' ? erc20 : undefined
+
+    const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+      sourceChainProvider: fromChain.provider,
+      destinationChainProvider: toChain.provider,
+      sourceChainErc20ContractAddress
     })
 
-    const tx = await starter.start({
-      fromChainSigner: signer,
+    const startProps = {
+      sourceChainSigner: signer,
       amount: utils.parseEther(amount)
+    }
+
+    if (await bridgeTransferStarter.requiresApproval(startProps)) {
+      const approvalTx = await bridgeTransferStarter.approve(startProps)
+      await approvalTx.wait()
+    }
+
+    const bridgeTransfer = await bridgeTransferStarter.start(startProps)
+
+    setBridgeTransferMap(prevBridgeTransferMap => ({
+      ...prevBridgeTransferMap,
+      [bridgeTransfer.sourceChainTx.hash]: bridgeTransfer
+    }))
+
+    bridgeTransfer.pollForStatus({
+      onChange: _bridgeTranfer =>
+        setBridgeTransferMap(prevBridgeTransferMap => ({
+          ...prevBridgeTransferMap,
+          [_bridgeTranfer.sourceChainTx.hash]: _bridgeTranfer
+        }))
     })
-
-    const bridgeTransfer = new BridgeTransfer({
-      fromChainTxHash: tx.hash
-    })
-
-    setBridgeTransfers([...bridgeTransfers, bridgeTransfer])
-
-    // const txReceipt = await tx.wait()
-
-    // bridgeTransfer.updateWithFromChainTxReceipt(txReceipt)
   }
 
   return (
@@ -188,7 +176,14 @@ function App() {
         </div>
       </div>
 
-      <div className="flex max-w-[480px] flex-row gap-2">
+      <div className="flex max-w-[480px] flex-col gap-2">
+        <input
+          placeholder="erc-20 address"
+          className="w-full border p-1"
+          value={erc20}
+          onChange={event => setErc20(event.target.value)}
+        />
+
         <input
           placeholder="amount"
           className="w-full border p-1"
@@ -197,7 +192,7 @@ function App() {
         />
 
         <button
-          className="bg-black px-4 font-medium text-white"
+          className="bg-black px-4 py-2 font-medium text-white"
           onClick={bridge}
         >
           Bridge
@@ -208,17 +203,11 @@ function App() {
         <h3 className="text-lg font-medium">Transaction History</h3>
 
         <ol>
-          {bridgeTransfers.map(bridgeTransfer => (
-            <li key={bridgeTransfer.fromChainTxHash}>
-              <div className="flex flex-row items-center gap-2">
-                <span className="font-medium">
-                  fromChainTxHash: {bridgeTransfer.fromChainTxHash}
-                </span>
-                <span className="font-medium">
-                  fromChainTxStatus: {bridgeTransfer.fromChainTxStatus}
-                </span>
-              </div>
-            </li>
+          {Object.values(bridgeTransferMap).map((bridgeTransfer, index) => (
+            <BridgeTransferListItem
+              key={index}
+              bridgeTransfer={bridgeTransfer}
+            />
           ))}
         </ol>
       </div>

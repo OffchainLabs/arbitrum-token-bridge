@@ -1,21 +1,14 @@
-import { getL1Network } from '@arbitrum/sdk'
-import { Provider } from '@ethersproject/providers'
-import { BridgeTransferStarter } from './BridgeTransferStarter'
-import { EthDepositStarter } from './EthDepositStarter'
-import { EthWithdrawalStarter } from './EthWithdrawalStarter'
+import {
+  BridgeTransferStarter,
+  BridgeTransferStarterConstructorProps
+} from './BridgeTransferStarter'
+
+import { Erc20DepositStarter } from './Erc20DepositStarter'
 
 export class BridgeTransferStarterFactory {
-  public static async create(props: {
-    fromChainProvider: Provider
-    fromChainErc20ContractAddress?: string
-    toChainProvider: Provider
-  }): Promise<BridgeTransferStarter> {
-    try {
-      await getL1Network(props.fromChainProvider)
-
-      return new EthDepositStarter(props)
-    } catch (error) {
-      return new EthWithdrawalStarter(props)
-    }
+  public static async create(
+    props: BridgeTransferStarterConstructorProps
+  ): Promise<BridgeTransferStarter> {
+    return new Erc20DepositStarter(props)
   }
 }

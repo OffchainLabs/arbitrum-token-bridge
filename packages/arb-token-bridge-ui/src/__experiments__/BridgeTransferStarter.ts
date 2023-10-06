@@ -1,32 +1,45 @@
 import { Provider } from '@ethersproject/providers'
-import { BigNumber, Signer, ContractTransaction } from 'ethers'
+import { BigNumber, ContractTransaction, Signer } from 'ethers'
+
+import { BridgeTransfer } from './BridgeTransfer'
 
 export type BridgeTransferStarterConstructorProps = {
-  fromChainProvider: Provider
-  fromChainErc20ContractAddress?: string
-  toChainProvider: Provider
+  sourceChainProvider: Provider
+  sourceChainErc20ContractAddress?: string
+  destinationChainProvider: Provider
 }
 
-export type BridgeTransferStarterStartProps = {
-  fromChainSigner: Signer
+export type BridgeTransferStarterApproveFunctionProps = {
+  amount?: BigNumber
+  sourceChainSigner: Signer
+}
+
+export type BridgeTransferStarterStartFunctionProps = {
   amount: BigNumber
-  destinationAddress?: string
+  sourceChainSigner: Signer
+  destinationChainAddress?: string
 }
-
-export type BridgeTransferStarterStartResult = Promise<ContractTransaction>
 
 export abstract class BridgeTransferStarter {
-  protected fromChainProvider: Provider
-  protected fromChainErc20ContractAddress?: string
-  protected toChainProvider: Provider
+  protected sourceChainProvider: Provider
+  protected sourceChainErc20ContractAddress?: string
+  protected destinationChainProvider: Provider
 
   constructor(props: BridgeTransferStarterConstructorProps) {
-    this.fromChainProvider = props.fromChainProvider
-    this.fromChainErc20ContractAddress = props.fromChainErc20ContractAddress
-    this.toChainProvider = props.toChainProvider
+    this.sourceChainProvider = props.sourceChainProvider
+    this.sourceChainErc20ContractAddress = props.sourceChainErc20ContractAddress
+    this.destinationChainProvider = props.destinationChainProvider
   }
 
+  public abstract requiresApproval(
+    props: BridgeTransferStarterStartFunctionProps
+  ): Promise<boolean>
+
+  public abstract approve(
+    props: BridgeTransferStarterApproveFunctionProps
+  ): Promise<ContractTransaction>
+
   public abstract start(
-    props: BridgeTransferStarterStartProps
-  ): BridgeTransferStarterStartResult
+    props: BridgeTransferStarterStartFunctionProps
+  ): Promise<BridgeTransfer>
 }
