@@ -7,14 +7,13 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { useAppState } from '../../state'
-import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useWithdrawals } from '../../hooks/useWithdrawals'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { isNetwork } from '../../util/networks'
+import { useFetchedTransactions } from '../../hooks/useFetchedTransactions'
 
 export const motionDivProps = {
   layout: true,
@@ -73,7 +72,10 @@ export function MainContent() {
     },
     isValidating: depositsLoading,
     error: depositsError
-  } = useDeposits({ ...depositsPageParams, pageSize })
+  } = useFetchedTransactions({
+    type: 'deposit',
+    pageParams: { ...depositsPageParams, pageSize }
+  })
 
   const {
     data: withdrawalsData = {
@@ -83,7 +85,10 @@ export function MainContent() {
     },
     isValidating: withdrawalsLoading,
     error: withdrawalsError
-  } = useWithdrawals({ ...withdrawalsPageParams, pageSize })
+  } = useFetchedTransactions({
+    type: 'withdrawal',
+    pageParams: { ...withdrawalsPageParams, pageSize }
+  })
 
   useEffect(() => {
     // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status

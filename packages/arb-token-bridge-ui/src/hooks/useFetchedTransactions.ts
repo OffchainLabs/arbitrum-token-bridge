@@ -4,7 +4,11 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
-import { isPending, transformWithdrawals } from '../state/app/utils'
+import {
+  isPending,
+  transformDeposits,
+  transformWithdrawals
+} from '../state/app/utils'
 import {
   FetchWithdrawalsParams,
   fetchWithdrawals
@@ -16,6 +20,12 @@ import {
   shouldIncludeSentTxs,
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
+import { Transaction } from './useTransactions'
+import {
+  FetchDepositParams,
+  fetchDeposits
+} from '../util/deposits/fetchDeposits'
+import { SWRResponse } from 'swr'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -53,7 +63,42 @@ const fetchCompleteWithdrawalData = async (
   }
 }
 
-export const useWithdrawals = (withdrawalPageParams: PageParams) => {
+export type CompleteDepositData = {
+  deposits: Transaction[]
+  pendingDeposits: Transaction[]
+  transformedDeposits: MergedTransaction[]
+}
+
+export const fetchCompleteDepositData = async (
+  depositParams: FetchDepositParams
+): Promise<CompleteDepositData> => {
+  // get the original deposits
+  const deposits = await fetchDeposits(depositParams)
+  // filter out pending deposits
+  const pendingDepositsMap = new Map<string, boolean>()
+  // get their complete transformed data (so that we get their exact status)
+  const completeDepositData = transformDeposits(deposits)
+  completeDepositData.forEach(completeTxData => {
+    if (isPending(completeTxData)) {
+      pendingDepositsMap.set(completeTxData.txId, true)
+    }
+  })
+  const pendingDeposits = deposits.filter(
+    tx => typeof pendingDepositsMap.get(tx.txID) !== 'undefined'
+  )
+
+  return { deposits, pendingDeposits, transformedDeposits: completeDepositData }
+}
+
+export const useFetchedTransactions = <Type extends 'deposit' | 'withdrawal'>({
+  type,
+  pageParams
+}: {
+  type: Type
+  pageParams: PageParams
+}): SWRResponse<
+  Type extends 'deposit' ? CompleteDepositData : CompleteWithdrawalData
+> => {
   const { l1, l2 } = useNetworksAndSigners()
   const { isSmartContractWallet, isLoading: isAccountTypeLoading } =
     useAccountType()
@@ -61,7 +106,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
 
   const isConnectedToParentChain = l1.network.id === chainId
 
-  // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
+  // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
   // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
   const l1Provider = useMemo(() => l1.provider, [l1.network.id])
   const l2Provider = useMemo(() => l2.provider, [l2.network.id])
@@ -74,7 +119,7 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const includeSentTxs = isAccountTypeLoading
     ? false
     : shouldIncludeSentTxs({
-        type: 'withdrawal',
+        type,
         isSmartContractWallet,
         isConnectedToParentChain
       })
@@ -82,10 +127,14 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const includeReceivedTxs = isAccountTypeLoading
     ? false
     : shouldIncludeReceivedTxs({
-        type: 'withdrawal',
+        type,
         isSmartContractWallet,
         isConnectedToParentChain
       })
+
+  type SWRReturnType = Type extends 'deposit'
+    ? CompleteDepositData
+    : CompleteWithdrawalData
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
@@ -93,13 +142,13 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     // remove comment once we switch to `useAccount`
     walletAddress
       ? [
-          'withdrawals',
+          type,
           walletAddress,
           l1Provider,
           l2Provider,
-          withdrawalPageParams.pageNumber,
-          withdrawalPageParams.pageSize,
-          withdrawalPageParams.searchString,
+          pageParams.pageNumber,
+          pageParams.pageSize,
+          pageParams.searchString,
           isAccountTypeLoading
         ]
       : null,
@@ -111,8 +160,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _pageNumber,
       _pageSize,
       _searchString
-    ]) =>
-      fetchCompleteWithdrawalData({
+    ]): Promise<SWRReturnType> => {
+      const params = {
         sender: includeSentTxs ? _walletAddress : undefined,
         receiver: includeReceivedTxs ? _walletAddress : undefined,
         l1Provider: _l1Provider,
@@ -120,6 +169,11 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString
-      })
+      }
+
+      return type === 'deposit'
+        ? (fetchCompleteDepositData(params) as Promise<SWRReturnType>)
+        : (fetchCompleteWithdrawalData(params) as Promise<SWRReturnType>)
+    }
   )
 }
