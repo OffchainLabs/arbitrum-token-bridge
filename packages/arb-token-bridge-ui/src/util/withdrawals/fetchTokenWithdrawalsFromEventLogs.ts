@@ -5,7 +5,8 @@ import { Erc20Bridger } from '@arbitrum/sdk'
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
  *
  * @param query Query params
- * @param query.address Address that initiated the withdrawal, or received the funds
+ * @param query.sender Address that initiated the withdrawal
+ * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2Provider Provider for the L2 network
