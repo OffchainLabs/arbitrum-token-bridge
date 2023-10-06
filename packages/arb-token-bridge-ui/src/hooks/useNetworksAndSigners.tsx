@@ -179,8 +179,8 @@ export function NetworksAndSignersProvider(
       trackEvent('Connect Wallet Click', { walletName })
     }
 
-    // set a custom tag in sentry to filter issues by connected wallet_name
-    Sentry.setTag('wallet_name', connector?.name ?? '')
+    // set a custom tag in sentry to filter issues by connected wallet.name
+    Sentry.setTag('wallet.name', connector?.name ?? '')
   }, [isDisconnected, isConnected, connector])
 
   useEffect(() => {
