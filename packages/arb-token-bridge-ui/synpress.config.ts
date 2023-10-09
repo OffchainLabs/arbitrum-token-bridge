@@ -86,7 +86,8 @@ export default defineConfig({
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ETH_GOERLI_RPC_URL = ethGoerliRpcUrl
-      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
+      config.env.ARB_GOERLI_RPC_URL =
+        'https://arb-goerli.g.alchemy.com/v2/YYCNZzRm6nq-HhkNi9i7cUkPaVBRF4AM'
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -110,8 +111,7 @@ export default defineConfig({
 
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const ethGoerliRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_GOERLI_RPC_URL
-const arbGoerliRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_GOERLI_RPC_URL
+const ethGoerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
@@ -124,9 +124,6 @@ if (!process.env.PRIVATE_KEY_USER) {
 }
 if (!ethGoerliRpcUrl) {
   throw new Error('process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_GOERLI_RPC_URL')
-}
-if (!arbGoerliRpcUrl) {
-  throw new Error('process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_GOERLI_RPC_URL')
 }
 
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
