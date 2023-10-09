@@ -91,7 +91,7 @@ describe('Transaction History', () => {
     context('load withdrawals', () => {
       // If user clicks instantly on the withdraw tab, it might be reset to the first tab (deposits)
       // But it's unlikely to happen, so we add a wait here to avoid false negative
-      cy.wait(100)
+      cy.wait(1_000)
       cy.findByRole('tab', { name: 'show withdrawal transactions' })
         .should('be.visible')
         .click()
