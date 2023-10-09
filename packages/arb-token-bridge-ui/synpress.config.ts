@@ -85,6 +85,8 @@ export default defineConfig({
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
+      config.env.ETH_GOERLI_RPC_URL = ethGoerliRpcUrl
+      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -108,6 +110,8 @@ export default defineConfig({
 
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+const ethGoerliRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_GOERLI_RPC_URL
+const arbGoerliRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_GOERLI_RPC_URL
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)

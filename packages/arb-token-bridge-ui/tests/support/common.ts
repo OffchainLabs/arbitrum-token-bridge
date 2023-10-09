@@ -11,6 +11,7 @@ export type NetworkName =
   | 'localhost'
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'arbitrum-goerli'
   | 'mainnet'
   | 'goerli'
   | 'Sepolia test network'
@@ -50,6 +51,28 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     symbol: 'ETH',
     isTestnet: true,
     multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
+}
+
+export const getL1TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'goerli',
+    rpcUrl: Cypress.env('ETH_GOERLI_RPC_URL'),
+    chainId: '5',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: '0xcA11bde05977b3631167028862bE2a173976CA11'
+  }
+}
+
+export const getL2TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'arbitrum-goerli',
+    rpcUrl: Cypress.env('ARB_GOERLI_RPC_URL'),
+    chainId: '421613',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: '0xcA11bde05977b3631167028862bE2a173976CA11'
   }
 }
 
