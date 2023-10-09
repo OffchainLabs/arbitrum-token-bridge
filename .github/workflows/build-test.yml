@@ -130,7 +130,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-     
+
       - id: set-matrix
         run: |
           content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .`
@@ -146,7 +146,7 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-  
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -179,6 +179,9 @@ jobs:
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_GOERLI_RPC_URL: https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161
+          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_GOERLI_RPC_URL: https://goerli-rollup.arbitrum.io/rpc
+
           envkey_TEST_FILE: ${{ matrix.tests.file }}
           envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
           envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
