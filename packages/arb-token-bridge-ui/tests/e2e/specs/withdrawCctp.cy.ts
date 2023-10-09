@@ -60,7 +60,7 @@ describe('Deposit USDC through CCTP', () => {
     })
 
     it('should bridge ERC-20 successfully', () => {
-      cy.login({ networkType: 'L1', networkName: 'goerli' })
+      cy.login({ networkType: 'L2', networkName: 'arbitrum-goerli' })
       context('should add USDC token', () => {
         // Click on the ETH dropdown (Select token button)
         cy.findByRole('button', { name: 'Select Token' })
@@ -70,7 +70,7 @@ describe('Deposit USDC through CCTP', () => {
 
         // open the Select Token popup
         cy.findByPlaceholderText(/Search by token name/i)
-          .typeRecursively(CommonAddress.Goerli.USDC)
+          .typeRecursively(CommonAddress.ArbitrumGoerli.USDC)
           .should('be.visible')
           .then(() => {
             // Click on the Add new token button
@@ -101,6 +101,9 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('should show clickable withdraw button', () => {
+        cy.findByPlaceholderText('Enter amount').typeRecursively(
+          String(USDCAmountToSend)
+        )
         cy.findByRole('button', {
           name: /Move funds to Goerli/i
         })
@@ -158,7 +161,7 @@ describe('Deposit USDC through CCTP', () => {
           cy.findByText(
             `Moving ${formatAmount(0.0001, {
               symbol: 'USDC'
-            })} to Arbitrum Goerli`
+            })} to Goerli`
           ).should('be.visible')
         })
       })
