@@ -122,9 +122,6 @@ if (!process.env.PRIVATE_KEY_CUSTOM) {
 if (!process.env.PRIVATE_KEY_USER) {
   throw new Error('PRIVATE_KEY_USER variable missing.')
 }
-if (!ethGoerliRpcUrl) {
-  throw new Error('process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_GOERLI_RPC_URL')
-}
 
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
