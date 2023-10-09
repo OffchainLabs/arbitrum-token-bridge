@@ -26,6 +26,7 @@ import { getChain, getParentChain } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
+import * as Sentry from '@sentry/react'
 
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
@@ -177,6 +178,9 @@ export function NetworksAndSignersProvider(
       const walletName = getWalletName(connector.name)
       trackEvent('Connect Wallet Click', { walletName })
     }
+
+    // set a custom tag in sentry to filter issues by connected wallet.name
+    Sentry.setTag('wallet.name', connector?.name ?? '')
   }, [isDisconnected, isConnected, connector])
 
   useEffect(() => {
