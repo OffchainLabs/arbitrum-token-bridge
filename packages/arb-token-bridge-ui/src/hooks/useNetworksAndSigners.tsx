@@ -14,8 +14,8 @@ import React, {
   useCallback,
   useEffect,
   useState,
-  useContext,
-  createContext
+  createContext,
+  useMemo
 } from 'react'
 import {
   JsonRpcProvider,
@@ -35,6 +35,7 @@ import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
+import { useNetworks } from './useNetworks'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -85,16 +86,36 @@ export const NetworksAndSignersContext = createContext<
   UseNetworksAndSignersConnectedResult | undefined
 >(undefined)
 
-export function useNetworksAndSigners() {
-  const context = useContext(NetworksAndSignersContext)
+export function useNetworksAndSigners(): UseNetworksAndSignersConnectedResult {
+  const [{ from, fromProvider, to, toProvider }] = useNetworks()
 
-  if (typeof context === 'undefined') {
-    throw new Error(
-      'The useNetworksAndSigners Hook must only be used inside NetworksAndSignersContext.Provider.'
-    )
-  }
+  return useMemo(() => {
+    if (isNetwork(from.id).isEthereum) {
+      return {
+        status: UseNetworksAndSignersStatus.CONNECTED,
+        l1: {
+          network: from,
+          provider: fromProvider
+        },
+        l2: {
+          network: to,
+          provider: toProvider
+        }
+      }
+    }
 
-  return context
+    return {
+      status: UseNetworksAndSignersStatus.CONNECTED,
+      l1: {
+        network: to,
+        provider: toProvider
+      },
+      l2: {
+        network: from,
+        provider: fromProvider
+      }
+    }
+  }, [from, fromProvider, to, toProvider])
 }
 
 export type FallbackProps =
