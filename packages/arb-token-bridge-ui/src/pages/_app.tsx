@@ -1,7 +1,7 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
-import { BrowserTracing } from '@sentry/tracing'
+import { BrowserTracing } from '@sentry/browser'
 import posthog from 'posthog-js'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -31,6 +31,7 @@ dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
 
 Sentry.init({
+  environment: process.env.NODE_ENV,
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
