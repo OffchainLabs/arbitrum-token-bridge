@@ -15,6 +15,10 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 
+/**
+ * `l2TxHash` exists on result from subgraph
+ * `transactionHash` exists on result from event logs
+ */
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string

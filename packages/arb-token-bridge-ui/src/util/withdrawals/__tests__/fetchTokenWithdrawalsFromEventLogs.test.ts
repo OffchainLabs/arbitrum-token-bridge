@@ -17,9 +17,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
 
   it('fetches some token withdrawals from event logs pre-nitro', async () => {
     const query = getQueryCoveringClassicOnlyWithResults()
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(1)
     expect(result).toEqual(
@@ -34,9 +32,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
 
   it('fetches some token withdrawals from event logs pre-nitro and post-nitro', async () => {
     const query = getQueryCoveringClassicAndNitroWithResults()
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(2)
     expect(result).toEqual(
