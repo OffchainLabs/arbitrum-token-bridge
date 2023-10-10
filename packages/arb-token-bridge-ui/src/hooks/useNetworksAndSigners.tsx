@@ -184,6 +184,25 @@ export function NetworksAndSignersProvider(
   }, [isDisconnected, isConnected, connector])
 
   useEffect(() => {
+    let l1ChainId, l2ChainId, l1RpcUrl, l2RpcUrl
+    if (result.status === UseNetworksAndSignersStatus.CONNECTED) {
+      l1ChainId = result.l1.network.id
+      l2ChainId = result.l2.network.id
+
+      l1RpcUrl = rpcURLs[l1ChainId]
+      l2RpcUrl = rpcURLs[l2ChainId]
+    }
+
+    Sentry.setTag('network.l1ChainId', l1ChainId ?? '')
+    Sentry.setTag('network.l2ChainId', l2ChainId ?? '')
+
+    Sentry.setTag('network.l1RpcUrl', l1RpcUrl ?? '')
+    Sentry.setTag('network.l2RpcUrl', l2RpcUrl ?? '')
+
+    Sentry.setTag('network.isMainnet', isNetwork(l1ChainId ?? 0).isMainnet)
+  }, [result])
+
+  useEffect(() => {
     if (isTosAccepted) {
       openConnectModal?.()
     }
