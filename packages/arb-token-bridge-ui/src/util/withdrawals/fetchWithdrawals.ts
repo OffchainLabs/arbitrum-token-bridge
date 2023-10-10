@@ -6,7 +6,7 @@ import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEvent
 import {
   EthWithdrawal,
   attachTimestampToTokenWithdrawal,
-  isEthWithdrawal,
+  isTokenWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
   mapWithdrawalToL2ToL1EventResult,
@@ -133,7 +133,7 @@ export const fetchWithdrawals = async ({
 
   const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
     paginatedWithdrawalsFromEventLogs
-      .filter(withdrawal => !isEthWithdrawal(withdrawal))
+      .filter(isTokenWithdrawal)
       .map(withdrawal =>
         mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
           withdrawal as WithdrawalInitiated,
@@ -155,7 +155,7 @@ export const fetchWithdrawals = async ({
         )
       ),
       ...paginatedWithdrawalsFromEventLogs
-        .filter(isEthWithdrawal)
+        .filter(withdrawal => !isTokenWithdrawal(withdrawal))
         .map(withdrawal =>
           mapETHWithdrawalToL2ToL1EventResult(
             withdrawal as EthWithdrawal,

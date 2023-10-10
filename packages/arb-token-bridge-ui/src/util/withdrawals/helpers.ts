@@ -162,10 +162,10 @@ export async function attachNodeBlockDeadlineToEvent(
   }
 }
 
-export function isEthWithdrawal(
+export function isTokenWithdrawal(
   withdrawal: WithdrawalInitiated | EthWithdrawal
-): withdrawal is EthWithdrawal {
-  return typeof (withdrawal as EthWithdrawal).ethBlockNum !== 'undefined'
+): withdrawal is WithdrawalInitiated {
+  return typeof (withdrawal as WithdrawalInitiated).l1Token !== 'undefined'
 }
 
 export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
