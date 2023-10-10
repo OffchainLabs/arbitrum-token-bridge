@@ -1,5 +1,6 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger } from '@arbitrum/sdk'
+import { dedupeEvents } from '../SubgraphUtils'
 
 /**
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].
@@ -28,13 +29,12 @@ export async function fetchTokenWithdrawalsFromEventLogs({
   l2GatewayAddresses?: string[]
 }) {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const promises: ReturnType<Erc20Bridger['getL2WithdrawalEvents']>[] = []
 
-  const promises = l2GatewayAddresses.flatMap(gatewayAddress => {
-    const events = []
-
+  l2GatewayAddresses.forEach(gatewayAddress => {
     // funds sent by this address
     if (sender) {
-      events.push(
+      promises.push(
         erc20Bridger.getL2WithdrawalEvents(
           l2Provider,
           gatewayAddress,
@@ -48,7 +48,7 @@ export async function fetchTokenWithdrawalsFromEventLogs({
 
     // funds received by this address
     if (receiver) {
-      events.push(
+      promises.push(
         erc20Bridger.getL2WithdrawalEvents(
           l2Provider,
           gatewayAddress,
@@ -59,18 +59,8 @@ export async function fetchTokenWithdrawalsFromEventLogs({
         )
       )
     }
-
-    return events
   })
 
-  return (
-    (await Promise.all(promises))
-      .flat()
-      // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
-      // we have to filter them out
-      .filter(
-        (item, index, self) =>
-          index === self.findIndex(tx => tx.txHash === item.txHash)
-      )
-  )
+  // when getting funds received by this address we will also get duplicate txs returned in 'funds sent by this address'
+  return dedupeEvents((await Promise.all(promises)).flat())
 }

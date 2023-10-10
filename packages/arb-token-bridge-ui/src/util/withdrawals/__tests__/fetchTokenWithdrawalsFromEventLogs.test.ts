@@ -10,9 +10,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
     // TODO: This is a temporary fix, when Event Logs are enabled for custom address
     // we will be able to use the same properties, and remove the need to assign sender to address
     const query = getQueryCoveringClassicOnlyWithoutResults()
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(0)
   })

@@ -34,32 +34,28 @@ export const updateAdditionalWithdrawalData = async (
   return l2toL1TxWithDeadline
 }
 
-export async function attachTimestampToTokenWithdrawals({
-  withdrawals,
+export async function attachTimestampToTokenWithdrawal({
+  withdrawal,
   l2Provider
 }: {
-  withdrawals: WithdrawalInitiated[]
+  withdrawal: WithdrawalInitiated
   l2Provider: Provider
 }) {
-  return Promise.all(
-    withdrawals.map(async withdrawal => {
-      const txReceipt = await l2Provider.getTransactionReceipt(
-        withdrawal.txHash
-      )
-      const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-      const [event] = l2TxReceipt.getL2ToL1Events()
+  const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const [event] = l2TxReceipt.getL2ToL1Events()
 
-      return {
-        ...withdrawal,
-        timestamp: event?.timestamp
-      }
-    })
-  )
+  return {
+    ...withdrawal,
+    timestamp: event?.timestamp
+  }
 }
 
+/**
+ * `l2TxHash` exists on result from subgraph
+ * `transactionHash` exists on result from event logs
+ */
 export async function mapETHWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   event: EthWithdrawal,
   l1Provider: Provider,
   l2Provider: Provider,

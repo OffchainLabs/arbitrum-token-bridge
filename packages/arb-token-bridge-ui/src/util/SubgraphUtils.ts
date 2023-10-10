@@ -1,5 +1,7 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -148,11 +150,47 @@ export const shouldIncludeReceivedTxs = ({
   isConnectedToParentChain: boolean
 }) => {
   if (isSmartContractWallet) {
-    // show txs sent from this account for:
+    // show txs sent to this account for:
     // 1. withdrawals if we are connected to the parent chain, or
     // 2. deposits if we are connected to the child chain
     return isConnectedToParentChain ? type === 'withdrawal' : type === 'deposit'
   }
   // always show for EOA
   return true
+}
+
+export const getAdditionalSubgraphFilters = ({
+  type,
+  fromBlock,
+  toBlock,
+  search
+}: {
+  type: 'deposit' | 'withdrawal'
+  fromBlock?: string
+  toBlock?: string
+  search?: string
+}) => {
+  const blockParamKey = type === 'deposit' ? 'blockCreatedAt' : 'l2BlockNum'
+
+  const fromBlockParam =
+    typeof fromBlock !== 'undefined'
+      ? `${blockParamKey}_gte: ${Number(fromBlock)},`
+      : ''
+
+  const toBlockParam =
+    typeof toBlock !== 'undefined'
+      ? `${blockParamKey}_lte: ${Number(toBlock)}`
+      : ''
+
+  const searchParam = search ? `l2TxHash_contains: "${search}"` : ''
+
+  return fromBlockParam + toBlockParam + searchParam
+}
+
+export const dedupeEvents = (
+  events: (EventArgs<WithdrawalInitiatedEvent> & {
+    txHash: string
+  })[]
+) => {
+  return [...new Map(events.map(item => [item.txHash, item])).values()]
 }

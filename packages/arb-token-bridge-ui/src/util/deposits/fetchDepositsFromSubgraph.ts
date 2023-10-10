@@ -25,7 +25,8 @@ export type FetchDepositsFromSubgraphResult = {
  * Fetches initiated deposits (ETH + Tokens) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
- * @param query.address Account address
+ * @param query.sender Address that initiated the withdrawal
+ * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2ChainId Chain id for the L2 network

@@ -5,7 +5,7 @@ import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEvent
 
 import {
   EthWithdrawal,
-  attachTimestampToTokenWithdrawals,
+  attachTimestampToTokenWithdrawal,
   isEthWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
@@ -106,11 +106,11 @@ export const fetchWithdrawals = async ({
   const currentPageEnd = currentPageStart + pageSize
 
   // we need timestamps to sort token withdrawals along ETH withdrawals
-  const tokenWithdrawalsFromEventLogsWithTimestamp =
-    await attachTimestampToTokenWithdrawals({
-      withdrawals: tokenWithdrawalsFromEventLogs,
-      l2Provider
-    })
+  const tokenWithdrawalsFromEventLogsWithTimestamp = await Promise.all(
+    tokenWithdrawalsFromEventLogs.map(withdrawal =>
+      attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
+    )
+  )
 
   // get ETH and token withdrawals that will be displayed on the current page
   const paginatedWithdrawalsFromEventLogs = [
