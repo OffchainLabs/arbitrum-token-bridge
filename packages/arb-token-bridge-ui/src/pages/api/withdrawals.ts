@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import {
-  getAdditionalSubgraphFilters,
-  getL2SubgraphClient
-} from '../../util/SubgraphUtils'
+import { getL2SubgraphClient } from '../../util/SubgraphUtils'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
@@ -62,12 +59,18 @@ export default async function handler(
       })
     }
 
-    const additionalFilters = getAdditionalSubgraphFilters({
-      type: 'withdrawal',
-      fromBlock,
-      toBlock,
-      search
-    })
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `l2BlockNum_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `l2BlockNum_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `l2TxHash_contains: "${search}"` : ''}
+    `
 
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{

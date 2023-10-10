@@ -159,34 +159,6 @@ export const shouldIncludeReceivedTxs = ({
   return true
 }
 
-export const getAdditionalSubgraphFilters = ({
-  type,
-  fromBlock,
-  toBlock,
-  search
-}: {
-  type: 'deposit' | 'withdrawal'
-  fromBlock?: string
-  toBlock?: string
-  search?: string
-}) => {
-  const blockParamKey = type === 'deposit' ? 'blockCreatedAt' : 'l2BlockNum'
-
-  const fromBlockParam =
-    typeof fromBlock !== 'undefined'
-      ? `${blockParamKey}_gte: ${Number(fromBlock)},`
-      : ''
-
-  const toBlockParam =
-    typeof toBlock !== 'undefined'
-      ? `${blockParamKey}_lte: ${Number(toBlock)}`
-      : ''
-
-  const searchParam = search ? `l2TxHash_contains: "${search}"` : ''
-
-  return fromBlockParam + toBlockParam + searchParam
-}
-
 export const dedupeEvents = (
   events: (EventArgs<WithdrawalInitiatedEvent> & {
     txHash: string

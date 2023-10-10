@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
-import {
-  getAdditionalSubgraphFilters,
-  getL1SubgraphClient
-} from '../../util/SubgraphUtils'
+import { getL1SubgraphClient } from '../../util/SubgraphUtils'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
@@ -62,12 +59,18 @@ export default async function handler(
       })
     }
 
-    const additionalFilters = getAdditionalSubgraphFilters({
-      type: 'deposit',
-      fromBlock,
-      toBlock,
-      search
-    })
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `blockCreatedAt_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `blockCreatedAt_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `transactionHash_contains: "${search}"` : ''}
+    `
 
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql(`{
