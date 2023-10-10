@@ -1,4 +1,4 @@
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
@@ -31,6 +31,17 @@ export type FetchWithdrawalsParams = {
   pageNumber?: number
   pageSize?: number
   searchString?: string
+}
+
+type Timestamped = {
+  timestamp?: BigNumber
+}
+
+function sortByTimestampDescending(a: Timestamped, b: Timestamped) {
+  const aTimestamp = a.timestamp ?? constants.Zero
+  const bTimestamp = b.timestamp ?? constants.Zero
+
+  return aTimestamp.gt(bTimestamp) ? -1 : 1
 }
 
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
@@ -117,7 +128,7 @@ export const fetchWithdrawals = async ({
     ...ethWithdrawalsFromEventLogs,
     ...tokenWithdrawalsFromEventLogsWithTimestamp
   ]
-    .sort((a, b) => (a.timestamp?.gt(b.timestamp || constants.Zero) ? -1 : 1))
+    .sort(sortByTimestampDescending)
     .slice(currentPageStart, currentPageEnd)
 
   const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
@@ -157,7 +168,7 @@ export const fetchWithdrawals = async ({
     ...mappedTokenWithdrawalsFromEventLogs
   ]
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-    .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    .sort(sortByTimestampDescending)
 
   const finalL2ToL1Txns: L2ToL1EventResultPlus[] = await Promise.all(
     l2ToL1Txns.map(withdrawal =>
