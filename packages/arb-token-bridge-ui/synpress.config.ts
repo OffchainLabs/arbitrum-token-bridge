@@ -126,6 +126,9 @@ if (!process.env.PRIVATE_KEY_USER) {
 const localWallet = new Wallet(process.env.PRIVATE_KEY_CUSTOM)
 const userWallet = new Wallet(process.env.PRIVATE_KEY_USER)
 
+console.log(await localWallet.getAddress())
+console.log(await userWallet.getAddress())
+
 async function deployERC20ToL1() {
   console.log('Deploying ERC20 to L1...')
   const contract = new TestERC20__factory().connect(
