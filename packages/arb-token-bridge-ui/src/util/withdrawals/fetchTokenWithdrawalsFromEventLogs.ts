@@ -1,6 +1,15 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { dedupeEvents } from '../SubgraphUtils'
+import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+
+function dedupeEvents(
+  events: (EventArgs<WithdrawalInitiatedEvent> & {
+    txHash: string
+  })[]
+) {
+  return [...new Map(events.map(item => [item.txHash, item])).values()]
+}
 
 /**
  * Fetches initiated token withdrawals from event logs in range of [fromBlock, toBlock].

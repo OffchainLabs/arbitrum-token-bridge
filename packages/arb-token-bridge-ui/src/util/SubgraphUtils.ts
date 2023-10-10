@@ -1,7 +1,5 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
-import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -157,12 +155,4 @@ export const shouldIncludeReceivedTxs = ({
   }
   // always show for EOA
   return true
-}
-
-export const dedupeEvents = (
-  events: (EventArgs<WithdrawalInitiatedEvent> & {
-    txHash: string
-  })[]
-) => {
-  return [...new Map(events.map(item => [item.txHash, item])).values()]
 }
