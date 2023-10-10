@@ -2,15 +2,20 @@ import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
-import {
-  getCustomChainsFromLocalStorage,
-  stylusTestnet,
-  xaiTestnet
-} from '../util/networks'
+import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
+import { Loader } from '../components/common/atoms/Loader'
+import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
-  ssr: false
+  ssr: false,
+  loading: () => (
+    <AppConnectionFallbackContainer>
+      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+        <Loader size="large" color="white" />
+      </div>
+    </AppConnectionFallbackContainer>
+  )
 })
 
 export default function Index() {
@@ -21,14 +26,14 @@ export default function Index() {
       try {
         addCustomChain({ customChain: chain })
         mapCustomChainToNetworkData(chain)
-      } catch {
+      } catch (_) {
         // already added
       }
 
       try {
         // adding to L2 networks too to be fully compatible with the sdk
         addCustomNetwork({ customL2Network: chain })
-      } catch {
+      } catch (_) {
         // already added
       }
     })
@@ -42,17 +47,6 @@ export default function Index() {
       addCustomChain({ customChain: xaiTestnet })
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
-    }
-
-    try {
-      addCustomNetwork({ customL2Network: stylusTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Stylus Testnet: ${error.message}`)
-    }
-    try {
-      addCustomChain({ customChain: stylusTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Stylus Testnet: ${error.message}`)
     }
   }, [])
 

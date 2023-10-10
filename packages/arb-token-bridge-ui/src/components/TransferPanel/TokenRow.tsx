@@ -6,7 +6,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -79,13 +79,14 @@ export function TokenRow({
   onClick,
   token
 }: TokenRowProps): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, walletAddress },
+      arbTokenBridge: { bridgeTokens },
       isDepositMode
     }
   } = useAppState()
-  const { isSmartContractWallet } = useAccountType()
+  const { isLoading: isLoadingAccountType } = useAccountType()
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
@@ -276,7 +277,7 @@ export function TokenRow({
 
     // We don't want users to be able to click on USDC before we know whether or not they are SCW users
     if (
-      typeof isSmartContractWallet === 'undefined' &&
+      isLoadingAccountType &&
       (tokenIsArbGoerliNativeUSDC || tokenIsArbOneNativeUSDC)
     ) {
       return (
@@ -301,7 +302,7 @@ export function TokenRow({
       </span>
     )
   }, [
-    isSmartContractWallet,
+    isLoadingAccountType,
     token?.decimals,
     tokenBalance,
     tokenIsAddedToTheBridge,

@@ -13,6 +13,7 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
+import { fetchL2Gateways } from '../fetchL2Gateways'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -23,7 +24,6 @@ export type FetchWithdrawalsParams = {
   toBlock?: number
   l1Provider: Provider
   l2Provider: Provider
-  gatewayAddresses: string[]
   pageNumber?: number
   pageSize?: number
   searchString?: string
@@ -38,9 +38,8 @@ export const fetchWithdrawals = async ({
   receiverNot,
   l1Provider,
   l2Provider,
-  gatewayAddresses,
   pageNumber = 0,
-  pageSize,
+  pageSize = 10,
   searchString,
   fromBlock,
   toBlock
@@ -51,6 +50,8 @@ export const fetchWithdrawals = async ({
 
   const l1ChainID = (await l1Provider.getNetwork()).chainId
   const l2ChainID = (await l2Provider.getNetwork()).chainId
+
+  const l2GatewayAddresses = await fetchL2Gateways(l2Provider)
 
   if (!fromBlock) {
     fromBlock = 0
@@ -120,13 +121,27 @@ export const fetchWithdrawals = async ({
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
-      l2GatewayAddresses: gatewayAddresses
+      l2GatewayAddresses
     })
   ])
 
+  // get txs to be displayed on the current page (event logs)
+  const currentPageStart = pageNumber * pageSize
+  const currentPageEnd = currentPageStart + pageSize
+
+  const partialEthWithdrawalsFromEventLogs = [...ethWithdrawalsFromEventLogs]
+    // event logs start from the earliest, we need to reverse them
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+  const partialTokenWithdrawalsFromEventLogs = [
+    ...tokenWithdrawalsFromEventLogs
+  ]
+    .reverse()
+    .slice(currentPageStart, currentPageEnd)
+
   const mappedTokenWithdrawalsFromEventLogs = (
-    await Promise.all([
-      ...tokenWithdrawalsFromEventLogs.map(withdrawal =>
+    await Promise.all(
+      partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
         mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
           withdrawal,
           l1Provider,
@@ -134,7 +149,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       )
-    ])
+    )
   )
     // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
     .filter(withdrawal => {
@@ -155,7 +170,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...ethWithdrawalsFromEventLogs.map(withdrawal =>
+      ...partialEthWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
           withdrawal,
           l1Provider,

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
 import {
@@ -11,8 +12,9 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 // In the token list we should show later only tokens with positive balances
 const TokenListSyncer = (): JSX.Element => {
   const {
-    app: { arbTokenBridge }
+    app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
+  const { address: walletAddress } = useAccount()
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
@@ -22,7 +24,11 @@ const TokenListSyncer = (): JSX.Element => {
       return
     }
 
-    if (!arbTokenBridge?.walletAddress) {
+    if (!arbTokenBridgeLoaded) {
+      return
+    }
+
+    if (!walletAddress) {
       return
     }
 
@@ -41,7 +47,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [arbTokenBridge?.walletAddress, l2Network])
+  }, [walletAddress, l2Network, arbTokenBridgeLoaded])
 
   return <></>
 }

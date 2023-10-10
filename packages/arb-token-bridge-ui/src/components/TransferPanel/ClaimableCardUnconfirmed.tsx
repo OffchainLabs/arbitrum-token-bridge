@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -9,8 +10,6 @@ import {
   WithdrawalL1TxStatus,
   WithdrawalL2TxStatus
 } from './WithdrawalCard'
-import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
@@ -19,9 +18,11 @@ import {
   getTargetChainIdFromSourceChain,
   useRemainingTime
 } from '../../state/cctpState'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
 
   let toNetworkId
   if (tx.isCctp) {
@@ -59,25 +60,15 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             {networkName}
           </span>
 
-          <span className="animate-pulse text-sm text-gray-dark">
-            {tx.nodeBlockDeadline ? (
-              <WithdrawalCountdown nodeBlockDeadline={tx.nodeBlockDeadline} />
-            ) : tx.isCctp ? (
-              <>{remainingTime}</>
-            ) : (
-              <span>Calculating...</span>
-            )}
-          </span>
-
           <div className="h-2" />
           <div className="flex flex-col font-light">
             {isWithdrawal ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                  {layer} transaction: <WithdrawalL2TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction:{' '}
+                  {parentLayer} transaction:{' '}
                   {tx.status === 'Failure'
                     ? 'Failed'
                     : 'Will show after claiming'}
@@ -86,10 +77,10 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
             ) : (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                  {parentLayer} transaction: <WithdrawalL1TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction:{' '}
+                  {layer} transaction:{' '}
                   {tx.status === 'Failure'
                     ? 'Failed'
                     : 'Will show after claiming'}
@@ -107,22 +98,20 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <Tooltip content={<span>Funds aren&apos;t ready to claim yet</span>}>
-          <Button
-            variant="primary"
-            className="absolute bottom-0 right-0 text-sm lg:my-4 lg:text-lg"
-            disabled
-          >
-            <div className="flex flex-nowrap whitespace-pre">
-              Claim{' '}
-              <span className="hidden lg:flex">
-                {formatAmount(Number(tx.value), {
-                  symbol: tokenSymbol
-                })}
-              </span>
-            </div>
-          </Button>
-        </Tooltip>
+        <span
+          className={twMerge(
+            'bottom-0 right-0 mt-2 w-full animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-center text-sm font-semibold text-ocl-blue',
+            'md:absolute md:mt-2 md:w-auto md:text-lg'
+          )}
+        >
+          <span className="whitespace-nowrap">
+            {tx.isCctp ? (
+              <>{remainingTime}</>
+            ) : (
+              <WithdrawalCountdown createdAt={tx.createdAt} />
+            )}
+          </span>
+        </span>
       </div>
     </WithdrawalCardContainer>
   )

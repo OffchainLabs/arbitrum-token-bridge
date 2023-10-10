@@ -26,9 +26,11 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { errorToast } from '../common/atoms/Toast'
 import { GET_HELP_LINK } from '../../constants'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer, layer } = useChainLayers()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
@@ -125,19 +127,19 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             {isSourceChainIdEthereum ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L1 transaction: <WithdrawalL1TxStatus tx={tx} />
+                  {parentLayer} transaction: <WithdrawalL1TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  <>L2 transaction: Will show after claiming</>
+                  <>{layer} transaction: Will show after claiming</>
                 </span>
               </>
             ) : (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  L2 transaction: <WithdrawalL2TxStatus tx={tx} />
+                  {layer} transaction: <WithdrawalL2TxStatus tx={tx} />
                 </span>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
-                  <>L1 transaction: Will show after claiming</>
+                  <>{parentLayer} transaction: Will show after claiming</>
                 </span>
               </>
             )}
@@ -155,13 +157,13 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
         {tx.status !== 'Failure' ? (
           <Tooltip
-            wrapperClassName=""
+            wrapperClassName="w-full md:w-auto"
             show={!currentChainIsValid}
             content={
               <span>
-                Please connect to the {isSourceChainIdEthereum ? 'L2' : 'L1'}{' '}
-                network to claim your{' '}
-                {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
+                Please connect to the{' '}
+                {isSourceChainIdEthereum ? layer : parentLayer} network to claim
+                your {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
               </span>
             }
           >
@@ -188,7 +190,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
                   )
                 }
               }}
-              className="absolute bottom-0 right-0 flex flex-nowrap text-sm lg:my-4 lg:text-lg"
+              className="bottom-0 right-0 mt-2 flex w-full flex-nowrap justify-center text-center text-sm md:absolute md:mt-0 md:w-auto  lg:my-4 lg:text-lg"
             >
               <div className="flex flex-nowrap whitespace-pre">
                 Claim{' '}
