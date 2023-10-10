@@ -93,9 +93,6 @@ export default defineConfig({
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
 
-      console.log(await localWallet.getAddress())
-      console.log(await userWallet.getAddress())
-
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
         l1Provider: ethProvider,
