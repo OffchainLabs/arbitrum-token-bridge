@@ -210,6 +210,8 @@ export function NetworksAndSignersProvider(
       'network.child_chain_rpc_url',
       getBaseURL(rpcURLs[result.l2.network.id] ?? '')
     )
+
+    throw new Error('Testing sentry, ignore this error')
   }, [result])
 
   useEffect(() => {
