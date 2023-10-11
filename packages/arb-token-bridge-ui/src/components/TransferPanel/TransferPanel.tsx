@@ -828,6 +828,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
+                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -855,6 +856,7 @@ export function TransferPanel() {
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
+                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -980,6 +982,7 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
+                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -1007,6 +1010,7 @@ export function TransferPanel() {
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
+                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
