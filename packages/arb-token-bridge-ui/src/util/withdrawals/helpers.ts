@@ -55,10 +55,6 @@ export async function attachTimestampToTokenWithdrawal({
   }
 }
 
-/**
- * `l2TxHash` exists on result from subgraph
- * `transactionHash` exists on result from event logs
- */
 export async function mapETHWithdrawalToL2ToL1EventResult(
   event: EthWithdrawal,
   l1Provider: Provider,
@@ -245,8 +241,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 }
 
 export async function mapWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,
