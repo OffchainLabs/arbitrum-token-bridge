@@ -1,12 +1,15 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ChainId } from '../../networks'
 
 const sender = '0x2Ce910fBba65B454bBAf6A18c952A70f3bcd8299'
-const l2Provider = new StaticJsonRpcProvider('https://arb1.arbitrum.io/rpc')
-const l2ChainId = 42161
+const l2Provider = new StaticJsonRpcProvider(
+  'https://arb1.arbitrum.io/rpc',
+  ChainId.ArbitrumOne
+)
 
 const baseQuery = {
   sender,
-  l2ChainId,
+  l2ChainId: ChainId.ArbitrumOne,
   l2Provider,
   l2GatewayAddresses: [
     '0x09e9222E96E7B4AE2a407B98d48e330053351EEe', // L2 Standard Gateway

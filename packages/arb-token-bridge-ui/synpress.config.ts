@@ -109,8 +109,8 @@ export default defineConfig({
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 
-const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
-const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+const ethProvider = new StaticJsonRpcProvider(ethRpcUrl, 'any')
+const arbProvider = new StaticJsonRpcProvider(arbRpcUrl, 'any')
 
 if (!process.env.PRIVATE_KEY_CUSTOM) {
   throw new Error('PRIVATE_KEY_CUSTOM variable missing.')

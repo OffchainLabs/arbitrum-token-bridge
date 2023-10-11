@@ -304,7 +304,8 @@ export function NetworksAndSignersProvider(
 
         // Web3Provider is connected to a ParentChain. We instantiate a provider for the Chain.
         const chainProvider = new StaticJsonRpcProvider(
-          rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
+          rpcURLs[_selectedL2ChainId!], // _selectedL2ChainId is defined here because of L185,
+          _selectedL2ChainId
         )
         const chain = await getChain(chainProvider)
 
@@ -319,7 +320,8 @@ export function NetworksAndSignersProvider(
         // from the ParentChain, instantiate the provider for that too
         // - done to feed into a consistent l1-l2 network-signer result state both having signer+providers
         const parentProvider = new StaticJsonRpcProvider(
-          rpcURLs[parentChain.chainID]
+          rpcURLs[parentChain.chainID],
+          parentChain.chainID
         )
 
         if (thisInvocation !== invocationCounter.current) {
@@ -353,12 +355,14 @@ export function NetworksAndSignersProvider(
           .then(async chain => {
             const parentChainId = chain.partnerChainID
             const parentProvider = new StaticJsonRpcProvider(
-              rpcURLs[parentChainId]
+              rpcURLs[parentChainId],
+              parentChainId
             )
             const parentChain = await getParentChain(parentProvider)
 
             const chainProvider = new StaticJsonRpcProvider(
-              rpcURLs[chain.chainID]
+              rpcURLs[chain.chainID],
+              chain.chainID
             )
 
             if (thisInvocation !== invocationCounter.current) {
