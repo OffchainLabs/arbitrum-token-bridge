@@ -165,7 +165,7 @@ export const fetchWithdrawals = async ({
       ),
       ...paginatedEthWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
-          withdrawal as EthWithdrawal,
+          withdrawal,
           l1Provider,
           l2Provider,
           l2ChainID
