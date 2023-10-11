@@ -215,7 +215,13 @@ export function Header() {
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
-          <a href="/" className="arb-hover flex shrink-0 flex-col items-center">
+          <a
+            href="/"
+            className="arb-hover flex shrink-0 flex-col items-center"
+            onClick={() => {
+              throw new Error('Testing sentry, ignore this error')
+            }}
+          >
             <HeaderImageElement
               src={HeaderLogoMainnetSVG}
               alt="Arbitrum logo"
