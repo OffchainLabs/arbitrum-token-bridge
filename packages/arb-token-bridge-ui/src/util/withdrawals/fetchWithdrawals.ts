@@ -131,17 +131,26 @@ export const fetchWithdrawals = async ({
     .sort(sortByTimestampDescending)
     .slice(currentPageStart, currentPageEnd)
 
+  const paginatedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] = []
+  const paginatedEthWithdrawalsFromEventLogs: EthWithdrawal[] = []
+
+  for (const withdrawal of paginatedWithdrawalsFromEventLogs) {
+    if (isTokenWithdrawal(withdrawal)) {
+      paginatedTokenWithdrawalsFromEventLogs.push(withdrawal)
+    } else {
+      paginatedEthWithdrawalsFromEventLogs.push(withdrawal)
+    }
+  }
+
   const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
-    paginatedWithdrawalsFromEventLogs
-      .filter(isTokenWithdrawal)
-      .map(withdrawal =>
-        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-          withdrawal as WithdrawalInitiated,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
+    paginatedTokenWithdrawalsFromEventLogs.map(withdrawal =>
+      mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+        withdrawal,
+        l1Provider,
+        l2Provider,
+        l2ChainID
       )
+    )
   )
 
   const l2ToL1Txns = [
@@ -154,16 +163,14 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...paginatedWithdrawalsFromEventLogs
-        .filter(withdrawal => !isTokenWithdrawal(withdrawal))
-        .map(withdrawal =>
-          mapETHWithdrawalToL2ToL1EventResult(
-            withdrawal as EthWithdrawal,
-            l1Provider,
-            l2Provider,
-            l2ChainID
-          )
+      ...paginatedEthWithdrawalsFromEventLogs.map(withdrawal =>
+        mapETHWithdrawalToL2ToL1EventResult(
+          withdrawal as EthWithdrawal,
+          l1Provider,
+          l2Provider,
+          l2ChainID
         )
+      )
     ])),
     ...mappedTokenWithdrawalsFromEventLogs
   ]
