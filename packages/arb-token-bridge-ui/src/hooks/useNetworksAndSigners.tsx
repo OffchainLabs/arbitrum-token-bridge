@@ -150,6 +150,17 @@ function getWalletName(connectorName: string): ProviderName {
   }
 }
 
+/** given our RPC url, sanitize it before logging to Sentry, to only pass the url and not the keys */
+function getBaseURL(url: string) {
+  try {
+    const urlObject = new URL(url)
+    return `${urlObject.protocol}//${urlObject.hostname}`
+  } catch {
+    // if invalid url passed
+    return ''
+  }
+}
+
 export function NetworksAndSignersProvider(
   props: NetworksAndSignersProviderProps
 ): JSX.Element {
@@ -187,11 +198,18 @@ export function NetworksAndSignersProvider(
     if (result.status !== UseNetworksAndSignersStatus.CONNECTED) {
       return
     }
+
     Sentry.setTag('network.parent_chain_id', result.l1.network.id)
-    Sentry.setTag('network.parent_chain_rpc_url', rpcURLs[result.l1.network.id])
+    Sentry.setTag(
+      'network.parent_chain_rpc_url',
+      getBaseURL(rpcURLs[result.l1.network.id] ?? '')
+    )
 
     Sentry.setTag('network.child_chain_id', result.l2.network.id)
-    Sentry.setTag('network.child_chain_rpc_url', rpcURLs[result.l2.network.id])
+    Sentry.setTag(
+      'network.child_chain_rpc_url',
+      getBaseURL(rpcURLs[result.l2.network.id] ?? '')
+    )
   }, [result])
 
   useEffect(() => {
