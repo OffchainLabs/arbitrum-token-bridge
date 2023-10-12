@@ -78,7 +78,7 @@ function getOutboxAddress(l2ChainId: number) {
   }
 }
 
-const apiKey = loadEnvironmentVariable('NEXT_PUBLIC_ETHERSCAN_API_KEY')
+const apiKey = loadEnvironmentVariable('ETHERSCAN_API_KEY')
 
 export default async function handler(
   req: Request,
