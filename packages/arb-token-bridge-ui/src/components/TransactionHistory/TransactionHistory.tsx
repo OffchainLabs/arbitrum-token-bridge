@@ -1,6 +1,12 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, SetStateAction, useMemo } from 'react'
-import { useAccount } from 'wagmi'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
+import { useAccount, useNetwork } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
@@ -17,6 +23,12 @@ import { FailedTransactionsWarning } from './FailedTransactionsWarning'
 import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
+import { useAccountType } from '../../hooks/useAccountType'
+import {
+  TransactionHistoryTab,
+  useAppContextActions,
+  useAppContextState
+} from '../App/AppContext'
 import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
@@ -46,7 +58,17 @@ export const TransactionHistory = ({
   setDepositsPageParams: Dispatch<SetStateAction<PageParams>>
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
+  const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
+  const { isSmartContractWallet } = useAccountType()
+  const {
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions,
+    setTransactionHistoryTab
+  } = useAppContextActions()
+  const {
+    layout: { transactionHistorySelectedTab }
+  } = useAppContextState()
   const {
     pendingIds: pendingIdsCctp,
     transfers: transfersCctp,
@@ -118,6 +140,43 @@ export const TransactionHistory = ({
   const roundedTabClasses =
     'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
+  const handleSmartContractWalletTxHistoryTab = useCallback(
+    (index: number) => {
+      if (!isSmartContractWallet || !chain) {
+        return
+      }
+      const isCctpTab = index === TransactionHistoryTab.CCTP
+      const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+
+      if (isCctpTab) {
+        if (isConnectedToArbitrum) {
+          showCctpDepositsTransactions()
+        } else {
+          showCctpWithdrawalsTransactions()
+        }
+      }
+    },
+    [
+      chain,
+      isSmartContractWallet,
+      showCctpDepositsTransactions,
+      showCctpWithdrawalsTransactions
+    ]
+  )
+
+  useEffect(() => {
+    // this function runs every time the network tab is changed, and here it is also triggered when the page loads
+    // it sets the tab to 0 (deposits), which is the default tab
+    handleSmartContractWalletTxHistoryTab(0)
+  }, [handleSmartContractWalletTxHistoryTab])
+
+  useEffect(() => {
+    // This check avoid the situation when we open the transaction history on CCTP tab after a transfer, but it would go back to "To Arbitrum" tab
+    if (transfersIds.length === 0) {
+      setTransactionHistoryTab(0)
+    }
+  }, [address, chain, setTransactionHistoryTab, transfersIds])
+
   const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
 
   return (
@@ -139,7 +198,13 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group key={address}>
+        <Tab.Group
+          onChange={index => {
+            handleSmartContractWalletTxHistoryTab(index)
+            setTransactionHistoryTab(index)
+          }}
+          selectedIndex={transactionHistorySelectedTab}
+        >
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
