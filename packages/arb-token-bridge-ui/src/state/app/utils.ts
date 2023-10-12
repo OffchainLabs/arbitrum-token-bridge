@@ -10,6 +10,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { ClaimTransaction } from '../../pages/api/claims'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -112,7 +113,33 @@ export const transformWithdrawals = (
       tokenAddress: tx.tokenAddress || null,
       nodeBlockDeadline: tx.nodeBlockDeadline,
       chainId: tx.chainId,
-      parentChainId: tx.parentChainId
+      parentChainId: tx.parentChainId,
+      arbBlockNum: tx.arbBlockNum.toNumber()
+    }
+  })
+}
+
+export const transformClaimTransactions = (
+  transactions?: ClaimTransaction[]
+): MergedTransaction[] => {
+  return (transactions ?? []).map(tx => {
+    return {
+      sender: tx.from,
+      destination: tx.to,
+      direction: 'outbox',
+      status: 'success',
+      createdAt: getStandardizedTimestamp(
+        String(BigNumber.from(tx.timeStamp).toNumber() * 1000)
+      ),
+      resolvedAt: null,
+      txId: tx.hash,
+      uniqueId: null, // not needed
+      value: '0',
+      asset: 'ETH',
+      isWithdrawal: true,
+      blockNum: Number(tx.blockNumber),
+      tokenAddress: null,
+      arbBlockNum: Number(tx.l2Block)
     }
   })
 }
@@ -224,10 +251,16 @@ export const getStandardizedDate = (standatdisedTimestamp: string) => {
 }
 
 export const findMatchingL1TxForWithdrawal = (
-  withdrawalTxn: MergedTransaction
+  withdrawalTxn: MergedTransaction,
+  claimTransactions?: MergedTransaction[]
 ) => {
-  // finds the corresponding L1 transaction for withdrawal
+  // if we already have data about user's claim txs, find in that
+  const claimFound = claimTransactions?.find(tx => {
+    return tx.arbBlockNum === withdrawalTxn.arbBlockNum
+  })
+  if (claimFound) return claimFound
 
+  // else, finds the corresponding L1 transaction for withdrawal using local-storage
   const cachedTransactions: Transaction[] = JSON.parse(
     window.localStorage.getItem('arbTransactions') || '[]'
   )

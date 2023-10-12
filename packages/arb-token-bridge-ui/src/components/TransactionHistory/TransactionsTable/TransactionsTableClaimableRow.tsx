@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
@@ -29,17 +28,25 @@ import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../../state/cctpState'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useClaims } from '../../../hooks/useClaims'
 
 type CommonProps = {
   tx: MergedTransaction
   isSourceChainArbitrum?: boolean
+  claimTransactions?: MergedTransaction[]
+  isClaimTransactionLoading?: boolean
 }
 
-function ClaimableRowStatus({ tx }: CommonProps) {
+function ClaimableRowStatus({
+  tx,
+  claimTransactions,
+  isClaimTransactionLoading
+}: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
+
   const matchingL1Tx = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
-    : findMatchingL1TxForWithdrawal(tx)
+    : findMatchingL1TxForWithdrawal(tx, claimTransactions)
 
   switch (tx.status) {
     case 'pending':
@@ -117,7 +124,8 @@ function ClaimableRowStatus({ tx }: CommonProps) {
                 variant="gray"
                 aria-label={`${parentLayer} Transaction Status`}
               >
-                <InformationCircleIcon className="h-4 w-4" /> n/a
+                <InformationCircleIcon className="h-4 w-4" />{' '}
+                {isClaimTransactionLoading ? 'Loading...' : 'n/a'}
               </StatusBadge>
             </Tooltip>
           </div>
@@ -156,7 +164,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
   }
 }
 
-function ClaimableRowTime({ tx }: CommonProps) {
+function ClaimableRowTime({ tx, claimTransactions }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
   const { remainingTime } = useRemainingTime(tx)
 
@@ -195,7 +203,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
     ? {
         createdAt: tx.cctpData?.receiveMessageTimestamp
       }
-    : findMatchingL1TxForWithdrawal(tx)
+    : findMatchingL1TxForWithdrawal(tx, claimTransactions)
 
   if (typeof claimedTx === 'undefined') {
     return (
@@ -228,7 +236,12 @@ function ClaimableRowTime({ tx }: CommonProps) {
   )
 }
 
-function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
+function ClaimedTxInfo({
+  tx,
+  isSourceChainArbitrum,
+  claimTransactions,
+  isClaimTransactionLoading
+}: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer } = useChainLayers()
   const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
@@ -243,13 +256,14 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
     ? {
         txId: tx.cctpData?.receiveMessageTransactionHash
       }
-    : findMatchingL1TxForWithdrawal(tx)
+    : findMatchingL1TxForWithdrawal(tx, claimTransactions)
 
   if (!claimedTx?.txId) {
     return (
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
         <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-        {getNetworkName(toNetworkId)}: Not available
+        {getNetworkName(toNetworkId)}:{' '}
+        {isClaimTransactionLoading ? 'Loading...' : 'Not available'}
       </span>
     )
   }
@@ -271,7 +285,12 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   )
 }
 
-function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
+function ClaimableRowTxID({
+  tx,
+  isSourceChainArbitrum,
+  claimTransactions,
+  isClaimTransactionLoading
+}: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
   const { layer } = useChainLayers()
   const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
@@ -292,7 +311,12 @@ function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
         </ExternalLink>
       </span>
 
-      <ClaimedTxInfo tx={tx} isSourceChainArbitrum={isSourceChainArbitrum} />
+      <ClaimedTxInfo
+        tx={tx}
+        isSourceChainArbitrum={isSourceChainArbitrum}
+        claimTransactions={claimTransactions}
+        isClaimTransactionLoading={isClaimTransactionLoading}
+      />
     </div>
   )
 }
@@ -313,6 +337,9 @@ export function TransactionsTableClaimableRow({
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
+
+  const { data: claimTransactions = [], isLoading: isClaimTransactionLoading } =
+    useClaims()
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -351,6 +378,8 @@ export function TransactionsTableClaimableRow({
         <ClaimableRowStatus
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
+          claimTransactions={claimTransactions}
+          isClaimTransactionLoading={isClaimTransactionLoading}
         />
       </td>
 
@@ -358,6 +387,8 @@ export function TransactionsTableClaimableRow({
         <ClaimableRowTime
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
+          claimTransactions={claimTransactions}
+          isClaimTransactionLoading={isClaimTransactionLoading}
         />
       </td>
 
@@ -376,6 +407,8 @@ export function TransactionsTableClaimableRow({
         <ClaimableRowTxID
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
+          claimTransactions={claimTransactions}
+          isClaimTransactionLoading={isClaimTransactionLoading}
         />
       </td>
 

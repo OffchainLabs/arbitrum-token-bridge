@@ -70,6 +70,7 @@ export interface MergedTransaction {
   depositStatus?: DepositStatus
   chainId?: number
   parentChainId?: number
+  arbBlockNum?: number
   cctpData?: {
     sourceChainId: CCTPSupportedChainId
     attestationHash: `0x${string}` | null
