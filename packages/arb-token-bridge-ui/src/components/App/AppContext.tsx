@@ -1,11 +1,24 @@
-import { createContext, useContext, useReducer, Dispatch } from 'react'
+import {
+  createContext,
+  useContext,
+  useReducer,
+  Dispatch,
+  useCallback
+} from 'react'
 
+export enum TransactionHistoryTab {
+  DEPOSITS = 0,
+  WITHDRAWALS = 1,
+  CCTP = 2
+}
 type AppContextState = {
   layout: {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
     isTransactionHistoryShowingSentTx: boolean
+    isTransactionHistoryShowingCctpDeposits: boolean
+    transactionHistorySelectedTab: TransactionHistoryTab
   }
 }
 
@@ -14,7 +27,9 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-    isTransactionHistoryShowingSentTx: true
+    isTransactionHistoryShowingSentTx: true,
+    isTransactionHistoryShowingCctpDeposits: true,
+    transactionHistorySelectedTab: TransactionHistoryTab.DEPOSITS
   }
 }
 
@@ -28,6 +43,8 @@ type Action =
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
   | { type: 'layout.set_txhistory_show_sent_tx'; payload: boolean }
+  | { type: 'layout.set_txhistory_show_cctp_deposits'; payload: boolean }
+  | { type: 'layout.set_txhistory_tab'; payload: TransactionHistoryTab }
 
 function reducer(state: AppContextState, action: Action) {
   switch (action.type) {
@@ -55,10 +72,28 @@ function reducer(state: AppContextState, action: Action) {
         }
       }
 
+    case 'layout.set_txhistory_show_cctp_deposits':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          isTransactionHistoryShowingCctpDeposits: action.payload
+        }
+      }
+
     case 'layout.set_is_transferring':
       return {
         ...state,
         layout: { ...state.layout, isTransferring: action.payload }
+      }
+
+    case 'layout.set_txhistory_tab':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          transactionHistorySelectedTab: action.payload
+        }
       }
 
     default:
@@ -99,23 +134,44 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
   }
 
-  const showSentTransactions = () => {
-    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
-  }
+  const showCctpDepositsTransactions = useCallback(() => {
+    dispatch({ type: 'layout.set_txhistory_show_cctp_deposits', payload: true })
+  }, [dispatch])
 
-  const showReceivedTransactions = () => {
+  const showCctpWithdrawalsTransactions = useCallback(() => {
+    dispatch({
+      type: 'layout.set_txhistory_show_cctp_deposits',
+      payload: false
+    })
+  }, [dispatch])
+
+  const showSentTransactions = useCallback(() => {
+    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
+  }, [dispatch])
+
+  const showReceivedTransactions = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: false })
-  }
+  }, [dispatch])
 
   const closeTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
+
+  const setTransactionHistoryTab = useCallback(
+    (payload: TransactionHistoryTab) => {
+      dispatch({ type: 'layout.set_txhistory_tab', payload })
+    },
+    [dispatch]
+  )
 
   return {
     setTransferring,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
     showSentTransactions,
-    showReceivedTransactions
+    showReceivedTransactions,
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions,
+    setTransactionHistoryTab
   }
 }
