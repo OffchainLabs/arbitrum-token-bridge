@@ -102,8 +102,9 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
+      <HeaderOverrides {...headerOverridesProps} />
+
       <HeaderContent>
-        <HeaderOverrides {...headerOverridesProps} />
         <HeaderAccountPopover />
       </HeaderContent>
 
