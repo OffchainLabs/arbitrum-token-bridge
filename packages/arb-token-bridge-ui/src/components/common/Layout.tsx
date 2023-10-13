@@ -2,6 +2,7 @@ import React from 'react'
 import { useWindowSize } from 'react-use'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
+import { Header } from './Header'
 import { Footer } from './Footer'
 import { Toast } from './atoms/Toast'
 
@@ -34,7 +35,11 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      {props.children}
+      <Header />
+
+      <main className="bg-gradient-overlay min-h-[calc(100vh-80px)]">
+        {props.children}
+      </main>
 
       <Toast />
 

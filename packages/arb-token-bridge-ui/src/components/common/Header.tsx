@@ -17,7 +17,6 @@ import {
 } from './HeaderMenu'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { ChainId, getExplorerUrl } from '../../util/networks'
-import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -272,10 +271,10 @@ export function Header() {
           )}
         </Disclosure>
         <div className="hidden flex-grow items-center justify-end lg:flex lg:space-x-2 xl:space-x-4">
-          <div className="flex space-x-2 xl:space-x-4">
-            <NetworkSelectionContainer />
-            <div id="header-content-root" />
-          </div>
+          <div
+            id="header-content-root"
+            className="flex space-x-2 xl:space-x-4"
+          />
           <div className="flex flex-row space-x-2 xl:space-x-4">
             <ExternalLink
               href="https://discord.com/invite/ZpZuw7p"
@@ -327,10 +326,10 @@ function HeaderMobile() {
         </Disclosure.Button>
       </div>
       <div className="flex min-h-screen flex-col items-center gap-1 bg-dark">
-        <div className="flex w-full flex-col items-start pt-4">
-          <div id="header-content-root" className="self-stretch" />
-          <NetworkSelectionContainer />
-        </div>
+        <div
+          id="header-content-root"
+          className="flex w-full flex-col items-start pt-4 [&:first-child]:self-stretch"
+        />
         <HeaderMenuMobile {...learnMenuProps}>
           <HeaderItemLogo
             src="/images/header/headerLogo_learn.svg"

@@ -19,10 +19,9 @@ import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
 import { TargetChainKey } from '..'
 
-const customChains =
-  typeof window !== 'undefined'
-    ? getCustomChainsFromLocalStorage().map(chain => chainToWagmiChain(chain))
-    : []
+const customChains = getCustomChainsFromLocalStorage().map(chain =>
+  chainToWagmiChain(chain)
+)
 
 const chainList = isTestingEnvironment
   ? [

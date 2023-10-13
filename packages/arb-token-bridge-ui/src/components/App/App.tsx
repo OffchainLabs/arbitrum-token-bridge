@@ -30,7 +30,6 @@ import {
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
 import {
-  Header,
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps
@@ -51,6 +50,7 @@ import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { getWalletProvidersConfigProps } from '../../util/wagmi/setup'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 
 declare global {
   interface Window {
@@ -105,6 +105,7 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
+        <NetworkSelectionContainer />
         <HeaderAccountPopover />
       </HeaderContent>
 
@@ -271,6 +272,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
+            <NetworkSelectionContainer />
             <HeaderNetworkLoadingIndicator />
           </HeaderContent>
 
@@ -286,6 +288,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
+            <NetworkSelectionContainer />
             <HeaderConnectWalletButton />
           </HeaderContent>
 
@@ -303,6 +306,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
+            <NetworkSelectionContainer />
             <HeaderAccountPopover isCorrectNetworkConnected={false} />
           </HeaderContent>
 
@@ -351,16 +355,13 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <Header />
-            <main className="bg-gradient-overlay min-h-[calc(100vh-80px)]">
-              <NetworkReady>
-                <AppContextProvider>
-                  <Injector>
-                    <AppContent />
-                  </Injector>
-                </AppContextProvider>
-              </NetworkReady>
-            </main>
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>
+                  <AppContent />
+                </Injector>
+              </AppContextProvider>
+            </NetworkReady>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>
