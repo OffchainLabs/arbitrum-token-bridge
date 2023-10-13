@@ -1,6 +1,7 @@
 import { Popover } from '@headlessui/react'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
@@ -15,7 +16,6 @@ import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../../hooks/useSwitchNetworkWithConfig'
-import { twMerge } from 'tailwind-merge'
 
 const GetHelpButton = ({
   variant,
