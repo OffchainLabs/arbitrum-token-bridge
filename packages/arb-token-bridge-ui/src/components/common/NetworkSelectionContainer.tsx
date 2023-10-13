@@ -91,7 +91,7 @@ export const NetworkSelectionContainer = () => {
         setSelectedChainId(chainId)
         // this is to make sure it's run after `setSelectedChainId,
         // otherwise there'll be a race condition where the previous chain is used on reload
-        setTimeout(() => window.location.reload(), 0)
+        setTimeout(() => window.location.reload(), 50)
       }
       close?.() // close the popover after option-click
     },

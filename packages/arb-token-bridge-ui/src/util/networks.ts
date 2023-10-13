@@ -530,9 +530,11 @@ export function getNetworkName(chainId: number) {
   }
 }
 
+type ValidTargetChainKey = keyof typeof ChainId & keyof typeof TargetChainKey
+
 export function getNetworkNameQueryParam(
   chainId: ChainId
-): keyof typeof TargetChainKey {
+): ValidTargetChainKey {
   const { isRinkeby, isArbitrumRinkeby } = isNetwork(chainId)
   if (isRinkeby) {
     return 'Goerli'
@@ -541,7 +543,7 @@ export function getNetworkNameQueryParam(
     return 'ArbitrumGoerli'
   }
   // this excludes Rinkeby and Arbitrum Rinkeby
-  return ChainId[chainId] as keyof typeof ChainId & keyof typeof TargetChainKey
+  return ChainId[chainId] as ValidTargetChainKey
 }
 
 export function getNetworkLogo(
