@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
-import { twJoin, twMerge } from 'tailwind-merge'
+import { twMerge } from 'tailwind-merge'
 import Image, { ImageProps } from 'next/image'
-import { useNetwork } from 'wagmi'
 import Link from 'next/link'
 
 import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
-import HeaderLogoTestnetWebp from '@/images/HeaderArbitrumLogoTestnet.webp'
 import Discord from '@/icons/discord.webp'
 import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
@@ -18,7 +16,7 @@ import {
   HeaderMenuProps
 } from './HeaderMenu'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { ChainId, getExplorerUrl, isNetwork } from '../../util/networks'
+import { ChainId, getExplorerUrl } from '../../util/networks'
 import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
@@ -137,6 +135,31 @@ function DesktopExternalLink({
   )
 }
 
+export type HeaderOverridesProps = {
+  imageSrc?: string
+  className?: string
+}
+
+export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
+  const header = document.getElementById('header')
+
+  if (header) {
+    if (className) {
+      // Reset back to defaults and then add overrides on top of that
+      header.className = defaultHeaderClassName
+      header.classList.add(...className.split(' '))
+    }
+
+    const image = document.getElementById('header-image') as HTMLImageElement
+
+    if (image && imageSrc) {
+      image.src = imageSrc
+    }
+  }
+
+  return null
+}
+
 function HeaderImageElement({ ...props }: ImageProps) {
   return (
     <Image
@@ -190,19 +213,8 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
 }
 
 export function Header() {
-  const { chain } = useNetwork()
-  const { isTestnet } = isNetwork(chain?.id ?? 0)
-
   return (
-    <header
-      id="header"
-      className={twMerge(
-        twJoin(
-          defaultHeaderClassName,
-          isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
-        )
-      )}
-    >
+    <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
         <div className="flex items-center lg:space-x-2 xl:space-x-12">
           <Link
@@ -210,7 +222,7 @@ export function Header() {
             className="arb-hover flex shrink-0 flex-col items-center"
           >
             <HeaderImageElement
-              src={isTestnet ? HeaderLogoTestnetWebp : HeaderLogoMainnetSVG}
+              src={HeaderLogoMainnetSVG}
               alt="Arbitrum logo"
             />
           </Link>

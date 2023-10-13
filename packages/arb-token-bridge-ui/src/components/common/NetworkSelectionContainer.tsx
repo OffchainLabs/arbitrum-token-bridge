@@ -9,6 +9,7 @@ import {
   ChainId,
   getNetworkLogo,
   getNetworkName,
+  getNetworkNameQueryParam,
   getSupportedNetworks,
   isNetwork
 } from '../../util/networks'
@@ -66,7 +67,7 @@ export const NetworkSelectionContainer = () => {
 
   const setWalletConnectChain = useCallback(
     (chainId: ChainId) => {
-      const chainName = ChainId[chainId] as keyof typeof ChainId
+      const chainName = getNetworkNameQueryParam(chainId)
       setQueryParams({
         walletConnectChain: TargetChainKey[chainName]
       })

@@ -7,8 +7,6 @@ export enum ConnectionState {
 
 export enum TargetChainKey {
   Mainnet = 'mainnet',
-  Rinkeby = 'rinkeby',
-  ArbitrumRinkeby = 'arbitrum-rinkeby',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',

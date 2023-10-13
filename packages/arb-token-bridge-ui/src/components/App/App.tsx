@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { WagmiConfig, useAccount, useNetwork } from 'wagmi'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -29,7 +29,12 @@ import {
   UseNetworksAndSignersConnectedResult,
   FallbackProps
 } from '../../hooks/useNetworksAndSigners'
-import { Header, HeaderContent } from '../common/Header'
+import {
+  Header,
+  HeaderContent,
+  HeaderOverrides,
+  HeaderOverridesProps
+} from '../common/Header'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
@@ -63,9 +68,25 @@ const rainbowkitTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
+  const { chain } = useNetwork()
   const {
     app: { connectionState }
   } = useAppState()
+
+  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
+    const { isTestnet } = isNetwork(chain?.id ?? 0)
+    if (isTestnet) {
+      return {
+        imageSrc: 'images/HeaderArbitrumLogoTestnet.webp',
+        className: 'lg:bg-ocl-blue'
+      }
+    }
+
+    return {
+      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
+      className: 'lg:bg-black'
+    }
+  }, [chain])
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
@@ -82,6 +103,7 @@ const AppContent = (): JSX.Element => {
   return (
     <>
       <HeaderContent>
+        <HeaderOverrides {...headerOverridesProps} />
         <HeaderAccountPopover />
       </HeaderContent>
 

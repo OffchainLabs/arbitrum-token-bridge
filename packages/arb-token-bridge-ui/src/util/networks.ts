@@ -8,7 +8,7 @@ import {
   addCustomChain
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
-import { loadEnvironmentVariableWithFallback } from './index'
+import { TargetChainKey, loadEnvironmentVariableWithFallback } from './index'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -528,6 +528,20 @@ export function getNetworkName(chainId: number) {
     default:
       return 'Unknown'
   }
+}
+
+export function getNetworkNameQueryParam(
+  chainId: ChainId
+): keyof typeof TargetChainKey {
+  const { isRinkeby, isArbitrumRinkeby } = isNetwork(chainId)
+  if (isRinkeby) {
+    return 'Goerli'
+  }
+  if (isArbitrumRinkeby) {
+    return 'ArbitrumGoerli'
+  }
+  // this excludes Rinkeby and Arbitrum Rinkeby
+  return ChainId[chainId] as keyof typeof ChainId & keyof typeof TargetChainKey
 }
 
 export function getNetworkLogo(
