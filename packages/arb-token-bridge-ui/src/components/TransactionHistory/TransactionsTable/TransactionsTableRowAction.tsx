@@ -14,7 +14,8 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
-import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useSwitchNetworkWithConfig } from '../../../hooks/useSwitchNetworkWithConfig'
+import { twMerge } from 'tailwind-merge'
 
 const GetHelpButton = ({
   variant,
@@ -47,7 +48,7 @@ export function TransactionsTableRowAction({
     l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
+  const { switchNetwork } = useSwitchNetworkWithConfig()
   const l1NetworkName = getNetworkName(l1Network.id)
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
@@ -74,8 +75,8 @@ export function TransactionsTableRowAction({
   }, [isArbitrum, isEthereum, l2Network.id, type])
 
   const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed
-  }, [isClaiming, isClaimingCctp, currentChainIsValid, isConfirmed])
+    return isClaiming || isClaimingCctp || !isConfirmed
+  }, [isClaiming, isClaimingCctp, isConfirmed])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -110,11 +111,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            {`Please connect to the ${
-              type === 'deposits' ? layer : parentLayer
-            } network to claim your ${
-              type === 'deposits' ? 'deposit' : 'withdrawal'
-            }.`}
+            {`Please switch to ${
+              type === 'deposits' ? l2NetworkName : l1NetworkName
+            } to claim your ${type === 'deposits' ? 'deposit' : 'withdrawal'}.`}
           </span>
         }
       >
@@ -122,8 +121,14 @@ export function TransactionsTableRowAction({
           variant="primary"
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
+          className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
+              if (!currentChainIsValid) {
+                return switchNetwork?.(
+                  type === 'deposits' ? l2Network.id : l1Network.id
+                )
+              }
               if (tx.isCctp) {
                 return await claimCctp()
               } else {
@@ -142,7 +147,7 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          Claim
+          {currentChainIsValid ? 'Claim' : 'Switch Network'}
         </Button>
       </Tooltip>
     )
