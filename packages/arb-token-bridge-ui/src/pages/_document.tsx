@@ -1,17 +1,39 @@
 import { Html, Head, Main, NextScript } from 'next/document'
 
+export const siteTitle = 'Bridge to Arbitrum'
+const siteDescription =
+  'Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.'
+
 export default function Document() {
   return (
     <Html lang="en">
       <Head>
         <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <link rel="icon" href="/logo.png" />
 
         <meta name="theme-color" content="#000000" />
+        <meta name="description" content={siteDescription} />
+        {/* <!-- Facebook Meta Tags --> */}
+        <meta property="og:url" content="https://bridge.arbitrum.io" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={siteTitle} />
+        <meta property="og:description" content={siteDescription} />
         <meta
-          name="description"
-          content="Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup."
+          property="og:image"
+          content="https://bridge.arbitrum.io/og-image.jpg"
+        />
+
+        {/* <!-- Twitter Meta Tags --> */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content="bridge.arbitrum.io" />
+        <meta property="twitter:url" content="https://bridge.arbitrum.io" />
+        <meta name="twitter:title" content={siteTitle} />
+        <meta name="twitter:description" content={siteDescription} />
+        <meta
+          name="twitter:image"
+          content="https://bridge.arbitrum.io/og-image.jpg"
         />
       </Head>
       <body>

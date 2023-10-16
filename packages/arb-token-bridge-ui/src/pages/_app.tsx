@@ -15,6 +15,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
+import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
@@ -77,8 +78,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Bridge to Arbitrum</title>
+        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />
