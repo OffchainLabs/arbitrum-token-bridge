@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
 import { getL1SubgraphClient } from '../../util/SubgraphUtils'
+import { PAGE_SIZE } from '../../hooks/useMultiChainTransactionList'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
@@ -87,7 +88,7 @@ export default async function handler(
           }
           orderBy: blockCreatedAt
           orderDirection: desc
-          first: ${Number(pageSize)},
+          first: ${Number(PAGE_SIZE)},
           skip: ${Number(page) * Number(pageSize)}
         ) {
           receiver

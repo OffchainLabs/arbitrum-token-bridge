@@ -10,6 +10,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { Deposit } from '../../hooks/useMultiChainTransactionList'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -82,6 +83,64 @@ export const transformDeposits = (
       parentChainId: Number(tx.l1NetworkID)
     }
   })
+}
+
+export const transformDeposit = (tx: Deposit): MergedTransaction => {
+  return {
+    sender: tx.sender,
+    destination: tx.destination,
+    direction: tx.type,
+    status: tx.status,
+    createdAt: tx.timestampCreated
+      ? getStandardizedTimestamp(tx.timestampCreated)
+      : null,
+    resolvedAt: tx.timestampResolved
+      ? getStandardizedTimestamp(tx.timestampResolved)
+      : null,
+    txId: tx.txID,
+    asset: tx.assetName || '',
+    value: tx.value,
+    uniqueId: null, // not needed
+    isWithdrawal: false,
+    blockNum: tx.blockNumber || null,
+    tokenAddress: tx.tokenAddress || null,
+    l1ToL2MsgData: tx.l1ToL2MsgData,
+    l2ToL1MsgData: tx.l2ToL1MsgData,
+    depositStatus: getDepositStatus(tx),
+    chainId: tx.chainId,
+    parentChainId: tx.parentChainId
+  }
+}
+
+export const transformWithdrawal = (
+  tx: L2ToL1EventResultPlus
+): MergedTransaction => {
+  const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
+
+  return {
+    sender: tx.sender,
+    destination: tx.destinationAddress,
+    direction: 'outbox',
+    status:
+      tx.nodeBlockDeadline ===
+      NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
+        ? 'Failure'
+        : outgoingStateToString[tx.outgoingMessageState],
+    createdAt: getStandardizedTimestamp(
+      String(BigNumber.from(tx.timestamp).toNumber() * 1000)
+    ),
+    resolvedAt: null,
+    txId: tx.l2TxHash || 'l2-tx-hash-not-found',
+    asset: tx.symbol || '',
+    value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
+    uniqueId: uniqueIdOrHash,
+    isWithdrawal: true,
+    blockNum: tx.ethBlockNum.toNumber(),
+    tokenAddress: tx.tokenAddress || null,
+    nodeBlockDeadline: tx.nodeBlockDeadline,
+    chainId: tx.chainId,
+    parentChainId: tx.parentChainId
+  }
 }
 
 export const transformWithdrawals = (
@@ -211,8 +270,8 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
 export const getStandardizedTimestamp = (dateString: string) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
 
-  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).format() // for ISOstring type of dates -> dayjs timestamp
-  return dayjs(Number(dateString)).format() // for timestamp type of date -> dayjs timestamp
+  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).unix() // for ISOstring type of dates -> dayjs timestamp
+  return Number(dateString) // for timestamp type of date -> dayjs timestamp
 }
 
 export const getStandardizedTime = (standatdisedTimestamp: string) => {

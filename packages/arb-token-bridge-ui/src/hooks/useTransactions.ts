@@ -81,7 +81,7 @@ export type L2ToL1MessageData = {
 
 type TransactionBase = {
   type: TxnType
-  status: TxnStatus
+  status?: TxnStatus
   value: string | null
   txID?: string
   assetName: string
@@ -101,6 +101,11 @@ type TransactionBase = {
 
 export interface Transaction extends TransactionBase {
   txID: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs'
+  parentChainId: number
+  chainId: number
+  ts: number
 }
 
 export interface NewTransaction extends TransactionBase {

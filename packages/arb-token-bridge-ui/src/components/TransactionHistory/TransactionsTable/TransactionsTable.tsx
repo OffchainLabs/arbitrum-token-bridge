@@ -297,7 +297,7 @@ export function TransactionsTable({
               )
               const finalTx = locallyStoredTransaction ?? tx
 
-              if (isDeposit(finalTx)) {
+              if (isDeposit(finalTx) && !finalTx.isCctp) {
                 return (
                   <TransactionsTableDepositRow
                     key={`${finalTx.txId}-${finalTx.direction}`}
@@ -305,7 +305,7 @@ export function TransactionsTable({
                     className={!isLastRow ? 'border-b border-black' : ''}
                   />
                 )
-              } else if (isWithdrawal(finalTx)) {
+              } else if (isWithdrawal(finalTx) || finalTx.isCctp) {
                 return (
                   <TransactionsTableClaimableRow
                     key={`${finalTx.txId}-${finalTx.direction}`}

@@ -1,13 +1,9 @@
 import { Provider } from '@ethersproject/providers'
-import { utils } from 'ethers'
-import { updateAdditionalDepositData } from './helpers'
-import {
-  fetchDepositsFromSubgraph,
-  FetchDepositsFromSubgraphResult
-} from './fetchDepositsFromSubgraph'
+import { fetchDepositsFromSubgraph } from './fetchDepositsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
+import { Deposit } from '../../hooks/useMultiChainTransactionList'
+import { utils } from 'ethers'
 
 export type FetchDepositParams = {
   sender?: string
@@ -21,10 +17,7 @@ export type FetchDepositParams = {
   searchString?: string
 }
 
-/* Fetch complete deposits - both ETH and Token deposits from subgraph into one list */
-/* Also fills in any additional data required per transaction for our UI logic to work well */
-/* TODO : Add event logs as well */
-export const fetchDeposits = async ({
+export async function fetchDepositList({
   sender,
   receiver,
   fromBlock,
@@ -34,7 +27,7 @@ export const fetchDeposits = async ({
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
-}: FetchDepositParams): Promise<Transaction[]> => {
+}: FetchDepositParams): Promise<Deposit[]> {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined')
     return []
   if (!l1Provider || !l2Provider) return []
@@ -74,60 +67,48 @@ export const fetchDeposits = async ({
     searchString
   })
 
-  const ethDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
-    (tx: FetchDepositsFromSubgraphResult) => {
-      const isEthDeposit = tx.type === 'EthDeposit'
+  return depositsFromSubgraph.map(tx => {
+    const isEth = tx.type === 'EthDeposit'
 
-      const assetDetails = {
-        asset: 'ETH',
-        assetName: 'ETH',
-        assetType: AssetType.ETH,
-        tokenAddress: ''
-      }
-
-      if (!isEthDeposit) {
-        // update some values for token deposit
-        const symbol = tx.l1Token?.symbol || ''
-
-        assetDetails.asset = symbol
-        assetDetails.assetName = symbol
-        assetDetails.assetType = AssetType.ERC20
-        assetDetails.tokenAddress = tx?.l1Token?.id || ''
-      }
-
-      return {
-        type: 'deposit-l1',
-        status: 'pending',
-        value: utils.formatUnits(
-          (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
-          isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
-        ),
-        txID: tx.transactionHash,
-        tokenAddress: assetDetails.tokenAddress,
-        sender: tx.sender,
-        destination: tx.receiver,
-
-        asset: assetDetails.asset,
-        assetName: assetDetails.assetName,
-        assetType: assetDetails.assetType,
-
-        l1NetworkID: String(l1ChainId),
-        l2NetworkID: String(l2ChainId),
-        blockNumber: Number(tx.blockCreatedAt),
-        timestampCreated: tx.timestamp,
-        isClassic: tx.isClassic,
-
-        chainId: l2ChainId,
-        parentChainId: l1ChainId
-      }
+    const assetDetails = {
+      asset: 'ETH',
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      tokenAddress: ''
     }
-  )
 
-  const finalTransactions: Transaction[] = await Promise.all(
-    ethDepositsFromSubgraph.map(depositTx =>
-      updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
-    )
-  )
+    if (!isEth) {
+      // update some values for token deposit
+      const symbol = tx.l1Token?.symbol || ''
 
-  return finalTransactions
+      assetDetails.asset = symbol
+      assetDetails.assetName = symbol
+      assetDetails.assetType = AssetType.ERC20
+      assetDetails.tokenAddress = tx?.l1Token?.id || ''
+    }
+
+    return {
+      type: 'deposit-l1',
+      direction: 'deposit',
+      source: 'subgraph',
+      l1NetworkID: String(l1ChainId),
+      l2NetworkID: String(l2ChainId),
+      // TODO: may need to format units here
+      value: utils.formatUnits(
+        (isEth ? tx.ethValue : tx.tokenAmount) || 0,
+        isEth ? 18 : tx?.l1Token?.decimals || 18
+      ),
+      ...assetDetails,
+      tokenAddress: isEth ? '' : tx.l1Token?.id,
+      sender: tx.sender,
+      destination: tx.receiver,
+      txID: tx.transactionHash,
+      blockNumber: Number(tx.blockCreatedAt),
+      timestampCreated: tx.timestamp,
+      isClassic: tx.isClassic,
+      parentChainId: l1ChainId,
+      chainId: l2ChainId,
+      ts: Number(tx.timestamp)
+    }
+  })
 }
