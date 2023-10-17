@@ -231,7 +231,7 @@ jobs:
         run: echo "nice"
       - name: E2E Failed
         if: needs.test-e2e.result != 'success'
-        run: exit 0
+        run: exit 1
 
   clean-up:
     name: "Clean Up"
