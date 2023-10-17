@@ -100,7 +100,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
   const { l1, l2 } = params
-  const { address: walletAddress, connector } = useAccount()
+  const { address: walletAddress } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -141,14 +141,14 @@ export const useArbTokenBridge = (
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
 
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
-  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])
+  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
+  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
   // once the l1/l2/account changes, we need to revalidate the withdrawal list in the store
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
-    if (!l1NetworkID || !l2NetworkID || !walletAddress) {
+    if (!walletAddress) {
       return
     }
     // reset pending-withdrawal-map and re-fetch for new set of L1/L2/Account combination
