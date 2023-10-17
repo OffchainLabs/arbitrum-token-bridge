@@ -612,8 +612,10 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         }
       }
-      const mutate = isDeposit ? setPendingDeposit : setPendingWithdrawal
-      mutate(newTransfer)
+      const setTransferInCache = isDeposit
+        ? setPendingDeposit
+        : setPendingWithdrawal
+      setTransferInCache(newTransfer)
 
       if (isDeposit) {
         showCctpDepositsTransactions()
