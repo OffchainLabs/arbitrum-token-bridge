@@ -228,6 +228,7 @@ jobs:
       - name: E2E Succeeded
         if: needs.test-e2e.result == 'success'
         run: echo "nice"
+        
       - name: E2E Failed
         if: needs.test-e2e.result != 'success'
         run: exit 1
