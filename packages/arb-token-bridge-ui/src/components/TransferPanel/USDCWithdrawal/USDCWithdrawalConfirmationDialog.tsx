@@ -13,23 +13,23 @@ import {
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { isArbitrumGoerli } = isNetwork(l2.network.id)
+  const { isArbitrumGoerli } = isNetwork(toProvider.network.chainId)
 
-  const from = l2.network
-  const to = l1.network
-  const toNetworkName = getNetworkName(to.id)
+  const from = fromProvider.network
+  const to = toProvider.network
+  const toNetworkName = getNetworkName(to.chainId)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
   useEffect(() => {
@@ -40,8 +40,8 @@ export function USDCWithdrawalConfirmationDialog(
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: from.id,
-      to: to.id,
+      from: from.chainId,
+      to: to.chainId,
       fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,

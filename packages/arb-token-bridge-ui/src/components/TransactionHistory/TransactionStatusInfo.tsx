@@ -8,7 +8,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -25,10 +25,8 @@ export const TransactionStatusInfo = ({
 }: {
   deposits: MergedTransaction[]
 }) => {
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.id)
+  const [{ toProvider }] = useNetworks()
+  const l2NetworkName = getNetworkName(toProvider.network.chainId)
   const { openTransactionHistoryPanel, setTransactionHistoryTab } =
     useAppContextActions()
 

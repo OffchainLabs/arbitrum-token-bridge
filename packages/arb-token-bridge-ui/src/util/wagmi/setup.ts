@@ -3,7 +3,7 @@ import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
-
+import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc'
 import {
   sepolia,
   arbitrumNova,
@@ -15,7 +15,7 @@ import {
   chainToWagmiChain
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
+import { ChainId, rpcURLs } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
@@ -129,10 +129,16 @@ function getChains(targetChainKey: TargetChainKey) {
 export function getProps(targetChainKey: string | null) {
   const { chains, provider } = configureChains(
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
-    //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [publicProvider()]
+    [
+      publicProvider(),
+      jsonRpcProvider({
+        rpc: chain => ({
+          http: rpcURLs[chain.id]!
+        })
+      })
+    ]
   )
 
   const { wallets } = getDefaultWallets({

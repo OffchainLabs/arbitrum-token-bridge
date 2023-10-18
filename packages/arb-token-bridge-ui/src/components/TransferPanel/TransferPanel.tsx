@@ -19,7 +19,6 @@ import {
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -74,6 +73,7 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
+import { useNetworks } from '../../hooks/useNetworks'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -161,26 +161,20 @@ export function TransferPanel() {
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
-  const provider = useProvider()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
-  const latestConnectedProvider = useLatest(provider)
 
-  const networksAndSigners = useNetworksAndSigners()
-  const latestNetworksAndSigners = useLatest(networksAndSigners)
-  const {
-    l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
-  } = networksAndSigners
-
+  const [networks] = useNetworks()
+  const latestConnectedProvider = useLatest(networks.fromProvider)
+  const latestNetworksAndSigners = useLatest(networks)
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
-    chainId: l1Network.id
+    chainId: networks.fromProvider.network.chainId
   })
   const { data: l2Signer } = useSigner({
-    chainId: l2Network.id
+    chainId: networks.toProvider.network.chainId
   })
 
   const { updateTransfer, setPendingTransfer } = useCctpState()
@@ -193,8 +187,8 @@ export function TransferPanel() {
     setTransactionHistoryTab
   } = useAppContextActions()
 
-  const { isMainnet } = isNetwork(l1Network.id)
-  const { isArbitrumNova } = isNetwork(l2Network.id)
+  const { isMainnet } = isNetwork(networks.fromProvider.network.chainId)
+  const { isArbitrumNova } = isNetwork(networks.toProvider.network.chainId)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -215,9 +209,7 @@ export function TransferPanel() {
   )
 
   const { approveForBurn, depositForBurn } = useCCTP({
-    sourceChainId: isDepositMode
-      ? latestNetworksAndSigners.current.l1.network.id
-      : latestNetworksAndSigners.current.l2.network.id
+    sourceChainId: latestNetworksAndSigners.current.fromProvider.network.chainId
   })
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -238,11 +230,11 @@ export function TransferPanel() {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: networks.fromProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: networks.toProvider, walletAddress })
 
   const ethBalance = useMemo(() => {
     return isDepositMode ? ethL1Balance : ethL2Balance
@@ -335,12 +327,11 @@ export function TransferPanel() {
   }, [ethL2Balance, erc20L2Balances, selectedToken])
 
   const isBridgingANewStandardToken = useMemo(() => {
-    const isConnected = typeof l1Network !== 'undefined'
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
     return isConnected && isDepositMode && isUnbridgedToken
-  }, [l1Network, isDepositMode, selectedToken])
+  }, [isConnected, isDepositMode, selectedToken])
 
   const isNonCanonicalToken = useMemo(() => {
     if (selectedToken) {
@@ -421,11 +412,9 @@ export function TransferPanel() {
     }
 
     setTransferring(true)
-    let currentNetwork = isDeposit
-      ? latestNetworksAndSigners.current.l1.network
-      : latestNetworksAndSigners.current.l2.network
+    let currentNetwork = latestNetworksAndSigners.current.fromProvider.network
 
-    const currentNetworkName = getNetworkName(currentNetwork.id)
+    const currentNetworkName = getNetworkName(currentNetwork.chainId)
     const isConnectedToTheWrongChain =
       (isDeposit && isConnectedToArbitrum.current) ||
       (type === 'withdrawals' && !isConnectedToArbitrum.current)
@@ -441,14 +430,11 @@ export function TransferPanel() {
           amount: Number(amount)
         })
       }
-      const switchTargetChainId = isDeposit
-        ? latestNetworksAndSigners.current.l1.network.id
-        : latestNetworksAndSigners.current.l2.network.id
+      const switchTargetChainId =
+        latestNetworksAndSigners.current.fromProvider.network.chainId
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-        currentNetwork = isDeposit
-          ? latestNetworksAndSigners.current.l1.network
-          : latestNetworksAndSigners.current.l2.network
+        currentNetwork = latestNetworksAndSigners.current.fromProvider.network
       } catch (e) {
         if (isUserRejectedError(e)) {
           return
@@ -457,9 +443,8 @@ export function TransferPanel() {
     }
 
     try {
-      const l1ChainID = latestNetworksAndSigners.current.l1.network.id
-      const l2ChainID = latestNetworksAndSigners.current.l2.network.id
-      const sourceChainId = isDeposit ? l1ChainID : l2ChainID
+      const sourceChainId =
+        latestNetworksAndSigners.current.fromProvider.network.chainId
 
       const waitForInput = isDeposit
         ? openUSDCDepositConfirmationDialog()
@@ -498,7 +483,7 @@ export function TransferPanel() {
       const allowance = await getTokenAllowanceForSpender({
         account: walletAddress,
         erc20Address: usdcContractAddress,
-        provider: type === 'deposits' ? l1Provider : l2Provider,
+        provider: networks.fromProvider,
         spender: tokenMessengerContractAddress
       })
 
@@ -672,18 +657,19 @@ export function TransferPanel() {
     }
 
     // Make sure Ethereum and/or Orbit chains are not selected as a pair.
-    const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
-      id => {
-        const { isEthereum, isOrbitChain } = isNetwork(id)
-        return isEthereum || isOrbitChain
-      }
-    )
+    const ethereumOrOrbitPairsSelected = [
+      networks.fromProvider.network.chainId,
+      networks.toProvider.network.chainId
+    ].every(id => {
+      const { isEthereum, isOrbitChain } = isNetwork(id)
+      return isEthereum || isOrbitChain
+    })
     if (ethereumOrOrbitPairsSelected) {
       console.error('Cannot transfer funds between L1 and/or Orbit chains.')
       return
     }
 
-    const l2NetworkName = getNetworkName(l2Network.id)
+    const l2NetworkName = getNetworkName(networks.toProvider.network.chainId)
 
     setTransferring(true)
 
@@ -711,7 +697,9 @@ export function TransferPanel() {
           )
         }
 
-        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
+        const isParentChainEthereum = isNetwork(
+          networks.fromProvider.network.chainId
+        ).isEthereum
         // Only switch to L1 if the selected L1 network is Ethereum.
         // Or if connected to an Orbit chain as it can't make deposits.
         if (
@@ -729,7 +717,7 @@ export function TransferPanel() {
             })
           }
           await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l1.network.id
+            latestNetworksAndSigners.current.fromProvider.network.chainId
           )
 
           while (
@@ -744,9 +732,9 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworksAndSigners.current.l1.network.id
-        const connectedChainID =
-          latestConnectedProvider.current?.network?.chainId
+        const l1ChainID =
+          latestNetworksAndSigners.current.fromProvider.network.chainId
+        const connectedChainID = latestConnectedProvider.current.network.chainId
         const l1ChainEqualsConnectedChain =
           l1ChainID && connectedChainID && l1ChainID === connectedChainID
 
@@ -762,8 +750,8 @@ export function TransferPanel() {
           // check that a registration is not currently in progress
           const l2RoutedAddress = await getL2ERC20Address({
             erc20L1Address: selectedToken.address,
-            l1Provider,
-            l2Provider
+            l1Provider: networks.fromProvider,
+            l2Provider: networks.toProvider
           })
 
           if (
@@ -789,8 +777,8 @@ export function TransferPanel() {
           const allowance = await getL1TokenAllowance({
             account: walletAddress,
             erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
+            l1Provider: networks.fromProvider,
+            l2Provider: networks.toProvider
           })
 
           if (!allowance.gte(amountRaw)) {
@@ -883,7 +871,7 @@ export function TransferPanel() {
 
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-        const { isOrbitChain } = isNetwork(l2Network.id)
+        const { isOrbitChain } = isNetwork(networks.toProvider.network.chainId)
 
         if (
           isConnectedToEthereum ||
@@ -900,7 +888,7 @@ export function TransferPanel() {
             })
           }
           await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l2.network.id
+            latestNetworksAndSigners.current.toProvider.network.chainId
           )
 
           while (
@@ -925,7 +913,8 @@ export function TransferPanel() {
           }
         }
 
-        const l2ChainID = latestNetworksAndSigners.current.l2.network.id
+        const l2ChainID =
+          latestNetworksAndSigners.current.toProvider.network.chainId
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (
@@ -947,7 +936,7 @@ export function TransferPanel() {
               l2TokenAddress: selectedToken.l2Address,
               walletAddress,
               amountNeeded: amountRaw,
-              l2Provider: latestNetworksAndSigners.current.l2.provider
+              l2Provider: latestNetworksAndSigners.current.toProvider
             })
             if (!allowed) {
               if (isSmartContractWallet) {
@@ -1087,7 +1076,10 @@ export function TransferPanel() {
       if (
         isDepositMode &&
         selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
+        isWithdrawOnlyToken(
+          selectedToken.address,
+          networks.toProvider.network.chainId
+        )
       ) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
@@ -1134,7 +1126,7 @@ export function TransferPanel() {
       ethBalance,
       selectedToken,
       isDepositMode,
-      l2Network,
+      networks.toProvider.network.chainId,
       requiredGasFees,
       isSmartContractWallet
     ]
@@ -1178,7 +1170,10 @@ export function TransferPanel() {
 
     if (
       selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address, l2Network.id)
+      isWithdrawOnlyToken(
+        selectedToken.address,
+        networks.toProvider.network.chainId
+      )
     ) {
       return true
     }
@@ -1206,7 +1201,7 @@ export function TransferPanel() {
   }, [
     disableDepositAndWithdrawal,
     selectedToken,
-    l2Network.id,
+    networks.toProvider.network.chainId,
     isBridgingANewStandardToken,
     amount,
     requiredGasFees,
@@ -1274,7 +1269,7 @@ export function TransferPanel() {
 
   const depositButtonColorClassName = useMemo(() => {
     const { isArbitrum, isArbitrumNova, isXaiTestnet, isStylusTestnet } =
-      isNetwork(l2Network.id)
+      isNetwork(networks.toProvider.network.chainId)
 
     if (isArbitrumNova) {
       return 'bg-arb-nova-dark'
@@ -1294,13 +1289,13 @@ export function TransferPanel() {
 
     // is Orbit chain
     return 'bg-orbit-dark'
-  }, [l2Network.id])
+  }, [networks.toProvider.network.chainId])
 
   const withdrawalButtonColorClassName = useMemo(() => {
     const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
-      l1Network.id
+      networks.fromProvider.network.chainId
     )
-    const { isArbitrum } = isNetwork(l2Network.id)
+    const { isArbitrum } = isNetwork(networks.toProvider.network.chainId)
 
     if (isArbitrum) {
       return 'bg-eth-dark'
@@ -1312,7 +1307,10 @@ export function TransferPanel() {
     }
 
     return 'bg-arb-one-dark'
-  }, [l1Network.id, l2Network.id])
+  }, [
+    networks.fromProvider.network.chainId,
+    networks.toProvider.network.chainId
+  ])
 
   return (
     <>
@@ -1418,7 +1416,9 @@ export function TransferPanel() {
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(l2Network.id)}`}
+                  : `Move funds to ${getNetworkName(
+                      networks.toProvider.network.chainId
+                    )}`}
               </span>
             </Button>
           ) : (
@@ -1445,7 +1445,9 @@ export function TransferPanel() {
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(l1Network.id)}`}
+                  : `Move funds to ${getNetworkName(
+                      networks.fromProvider.network.chainId
+                    )}`}
               </span>
             </Button>
           )}

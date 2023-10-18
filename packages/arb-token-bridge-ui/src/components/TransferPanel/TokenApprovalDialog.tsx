@@ -13,7 +13,6 @@ import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -27,6 +26,7 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
 import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -46,10 +46,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
-  const { isMainnet, isTestnet } = isNetwork(l1.network.id)
-  const provider = isDepositMode ? l1.provider : l2.provider
+  const { isMainnet, isTestnet } = isNetwork(fromProvider.network.chainId)
+  const provider = isDepositMode ? fromProvider : toProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
   const { data: signer } = useSigner({
@@ -98,8 +98,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         gasEstimate = await approveTokenEstimateGas({
           erc20L1Address: token.address,
           address: walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+          l1Provider: fromProvider,
+          l2Provider: toProvider
         })
       }
 
@@ -118,8 +118,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     signer,
     walletAddress,
     token?.address,
-    l1.provider,
-    l2.provider
+    fromProvider,
+    toProvider
   ])
 
   useEffect(() => {
@@ -136,8 +136,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress(
           await getL1GatewayAddress({
             erc20L1Address: token.address,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
+            l1Provider: fromProvider,
+            l2Provider: toProvider
           })
         )
         return
@@ -145,12 +145,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       setContractAddress(
         await getL2GatewayAddress({
           erc20L1Address: token.address,
-          l2Provider: l2.provider
+          l2Provider: toProvider
         })
       )
     }
     getContractAddress()
-  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
+  }, [chainId, isCctp, isDepositMode, fromProvider, toProvider, token?.address])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -199,7 +199,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             </div>
             <ExternalLink
               href={`${getExplorerUrl(
-                isDepositMode ? l1.network.id : l2.network.id
+                isDepositMode
+                  ? fromProvider.network.chainId
+                  : toProvider.network.chainId
               )}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
@@ -220,7 +222,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <ExternalLink
                 className="text-blue-link underline"
                 href={`${getExplorerUrl(
-                  isDepositMode ? l1.network.id : l2.network.id
+                  isDepositMode
+                    ? fromProvider.network.chainId
+                    : toProvider.network.chainId
                 )}/address/${contractAddress}`}
                 onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   event.stopPropagation()

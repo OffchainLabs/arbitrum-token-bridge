@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { getNetworkName } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { DepositCountdown } from '../common/DepositCountdown'
 import {
@@ -13,19 +12,20 @@ import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
-  const networkName = getNetworkName(l2.network.id)
+  const networkName = getNetworkName(toProvider.network.chainId)
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l1.network
+        chainId: fromProvider.network.chainId
       }),
-    [l1.network, tx.tokenAddress, tx.asset]
+    [fromProvider.network.chainId, tx.tokenAddress, tx.asset]
   )
 
   return (

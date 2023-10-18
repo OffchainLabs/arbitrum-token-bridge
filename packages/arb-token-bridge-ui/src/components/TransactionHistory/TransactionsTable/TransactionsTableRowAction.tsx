@@ -5,7 +5,6 @@ import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
@@ -15,6 +14,7 @@ import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 const GetHelpButton = ({
   variant,
@@ -43,13 +43,10 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
-  const l1NetworkName = getNetworkName(l1Network.id)
-  const l2NetworkName = getNetworkName(l2Network.id)
+  const l1NetworkName = getNetworkName(fromProvider.network.chainId)
+  const l2NetworkName = getNetworkName(toProvider.network.chainId)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
 
   const chainId = useChainId()
@@ -60,7 +57,9 @@ export function TransactionsTableRowAction({
   const { isEthereum, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(l2Network.id).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(
+      toProvider.network.chainId
+    ).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -71,7 +70,7 @@ export function TransactionsTableRowAction({
       (type === 'deposits' && isArbitrum) ||
       (type === 'withdrawals' && isEthereum)
     )
-  }, [isArbitrum, isEthereum, l2Network.id, type])
+  }, [isArbitrum, isEthereum, toProvider.network.chainId, type])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed

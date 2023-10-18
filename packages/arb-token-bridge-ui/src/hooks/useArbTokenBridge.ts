@@ -6,6 +6,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
+import { Network } from '@ethersproject/networks'
 import {
   EthBridger,
   Erc20Bridger,
@@ -92,8 +93,8 @@ class TokenDisabledError extends Error {
 }
 
 export interface TokenBridgeParams {
-  l1: { provider: JsonRpcProvider; network: Chain }
-  l2: { provider: JsonRpcProvider; network: Chain }
+  l1: { provider: JsonRpcProvider; network: Network }
+  l2: { provider: JsonRpcProvider; network: Network }
 }
 
 export const useArbTokenBridge = (

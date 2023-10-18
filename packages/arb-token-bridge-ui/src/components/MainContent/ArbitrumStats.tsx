@@ -2,12 +2,12 @@ import { utils } from 'ethers'
 import useLocalStorage from '@rehooks/local-storage'
 import { useBlockNumber } from 'wagmi'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -28,28 +28,28 @@ export const ArbitrumStats = () => {
     useLocalStorage<boolean>(statsLocalStorageKey)
   const [{ settingsOpen }] = useArbQueryParams()
 
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
 
   const { data: currentL1BlockNumber } = useBlockNumber({
-    chainId: l1.network.id,
+    chainId: fromProvider.network.chainId,
     watch: true
   })
 
   const { data: currentL2BlockNumber } = useBlockNumber({
-    chainId: l2.network.id,
+    chainId: toProvider.network.chainId,
     watch: true
   })
 
   const { data: tpsData, isValidating: tpsLoading } = useNetworkTPS()
 
-  const currentL1GasPrice = useGasPrice({ provider: l1.provider })
+  const currentL1GasPrice = useGasPrice({ provider: fromProvider })
   const currentL1GasPriceGwei = utils.formatUnits(currentL1GasPrice, 'gwei')
   const currentL1Activity = getActivityThresholdL1(
     Number(currentL1GasPriceGwei || 0)
   )
 
-  const currentL2GasPrice = useGasPrice({ provider: l2.provider })
+  const currentL2GasPrice = useGasPrice({ provider: toProvider })
   const currentL2GasPriceGwei = utils.formatUnits(currentL2GasPrice, 'gwei')
   const currentL2Activity = getActivityThresholdL2(
     Number(currentL2GasPriceGwei || 0)
@@ -66,7 +66,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l1.network.id)} ({parentLayer})
+          {getNetworkName(fromProvider.network.chainId)} ({parentLayer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -86,7 +86,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l2.network.id)} ({layer})
+          {getNetworkName(toProvider.network.chainId)} ({layer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -101,7 +101,7 @@ export const ArbitrumStats = () => {
         </span>
 
         {/* TPS info is not available for testnets */}
-        {!isNetwork(l2.network.id).isTestnet && (
+        {!isNetwork(toProvider.network.chainId).isTestnet && (
           <span>
             &gt; TPS: {tpsLoading && <span>Loading...</span>}
             {!tpsLoading && (

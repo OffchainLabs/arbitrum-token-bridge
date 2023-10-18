@@ -8,11 +8,11 @@ import { useSigner } from 'wagmi'
 import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
+import { useNetworks } from './useNetworks'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -23,12 +23,9 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l1: { provider: l1Provider },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(l2Network.id)
+  const l2NetworkName = getNetworkName(toProvider.network.chainId)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -49,7 +46,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider,
+        l1Provider: fromProvider,
         l2Signer: signer
       })
     } catch (error: any) {

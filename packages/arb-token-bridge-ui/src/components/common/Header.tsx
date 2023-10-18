@@ -138,7 +138,13 @@ export type HeaderOverridesProps = {
   className?: string
 }
 
+// TODO: remove
 export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
+  const document = global.document
+  if (!document) {
+    return null
+  }
+
   const header = document.getElementById('header')
 
   if (header) {
@@ -201,7 +207,7 @@ export function HeaderContent({ children }: { children: React.ReactNode }) {
     return () => mutationObserverRef.current?.disconnect()
   }, [])
 
-  const rootElement = document.getElementById('header-content-root')
+  const rootElement = global.document?.getElementById('header-content-root')
 
   if (!rootElement) {
     return null

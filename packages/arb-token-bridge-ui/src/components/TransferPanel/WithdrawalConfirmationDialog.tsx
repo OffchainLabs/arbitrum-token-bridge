@@ -14,7 +14,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import {
@@ -27,6 +26,7 @@ import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -52,20 +52,20 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const networkName = getNetworkName(l1.network.id)
+  const networkName = getNetworkName(fromProvider.network.chainId)
   const {
     app: { selectedToken }
   } = useAppState()
 
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const from = isConnectedToArbitrum ? toProvider.network : fromProvider.network
+  const to = isConnectedToArbitrum ? fromProvider.network : toProvider.network
 
   const fastBridges = getFastBridges({
-    from: from.id,
-    to: to.id,
+    from: from.chainId,
+    to: to.chainId,
     tokenSymbol: selectedToken?.symbol,
     amount: props.amount
   })
@@ -75,7 +75,8 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    getBlockTime(l1.network.id) * getConfirmPeriodBlocks(l2.network.id)
+    getBlockTime(fromProvider.network.chainId) *
+    getConfirmPeriodBlocks(toProvider.network.chainId)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
@@ -90,7 +91,8 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
+  // TODO: Check for ArbGoerli?
+  const { isArbitrumOne } = isNetwork(toProvider.network.chainId)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -199,7 +201,7 @@ export function WithdrawalConfirmationDialog(
                         confirmationHours,
                         props.amount,
                         selectedToken?.symbol || 'ETH',
-                        getNetworkName(l2.network.id)
+                        getNetworkName(toProvider.network.chainId)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-ocl-blue px-4 py-2 text-ocl-blue"

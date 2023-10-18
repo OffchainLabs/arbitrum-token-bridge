@@ -6,23 +6,19 @@ import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
 import { TokenImportDialog } from './TokenImportDialog'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
+
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
-      isDepositMode,
       selectedToken,
-      arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
+      arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
-  const { status, l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider }] = useNetworks()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -32,12 +28,7 @@ export function TokenButton(): JSX.Element {
     if (!selectedAddress) {
       return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
     }
-    if (
-      status !== UseNetworksAndSignersStatus.CONNECTED ||
-      !arbTokenBridgeLoaded
-    ) {
-      return undefined
-    }
+
     if (typeof bridgeTokens === 'undefined') {
       return undefined
     }
@@ -46,7 +37,7 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+  }, [bridgeTokens, selectedToken?.address])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -55,9 +46,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chain: isDepositMode ? l1.network : l2.network
+      chainId: fromProvider.network.chainId
     })
-  }, [selectedToken, isDepositMode, l2.network, l1.network])
+  }, [selectedToken, fromProvider.network.chainId])
 
   function closeWithReset() {
     setTokenToImport(undefined)

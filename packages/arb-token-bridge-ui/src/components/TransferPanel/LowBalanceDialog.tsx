@@ -12,7 +12,6 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -22,6 +21,7 @@ import {
   FiatOnRampName
 } from './LowBalanceDialogContent'
 import { FAST_BRIDGE_ARTICLE_LINK } from '../../constants'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -81,16 +81,16 @@ function ExternalLinkCard({
 
 export function LowBalanceDialog(props: UseDialogProps) {
   const { ethToUSD } = useETHPrice()
-  const { l1 } = useNetworksAndSigners()
+  const [{ fromProvider }] = useNetworks()
   const { address: walletAddress } = useAccount()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(l1.network.id)
+  const { isMainnet } = isNetwork(fromProvider.network.chainId)
   const {
     eth: [ethBalance]
   } = useBalance({
-    provider: l1.provider,
+    provider: fromProvider,
     walletAddress
   })
 
@@ -120,7 +120,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               height={32}
             />
             <span className="text-2xl text-eth-dark">
-              {getNetworkName(l1.network.id)} Balance
+              {getNetworkName(fromProvider.network.chainId)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-eth-dark">

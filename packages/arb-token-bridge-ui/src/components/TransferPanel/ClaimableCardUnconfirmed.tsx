@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import {
@@ -19,30 +18,43 @@ import {
   useRemainingTime
 } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
 
   let toNetworkId
   if (tx.isCctp) {
     toNetworkId = getTargetChainIdFromSourceChain(tx)
   } else {
-    toNetworkId = tx.isWithdrawal ? l1.network.id : l2.network.id
+    toNetworkId = tx.isWithdrawal
+      ? fromProvider.network.chainId
+      : toProvider.network.chainId
   }
 
   const networkName = getNetworkName(toNetworkId)
   const { isEthereum: isWithdrawal } = isNetwork(toNetworkId)
 
-  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+  const isOrbitChainSelected = isNetwork(
+    toProvider.network.chainId
+  ).isOrbitChain
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isWithdrawal ? l2.network : l1.network
+        chainId: isWithdrawal
+          ? toProvider.network.chainId
+          : fromProvider.network.chainId
       }),
-    [tx.asset, tx.tokenAddress, isWithdrawal, l1.network, l2.network]
+    [
+      tx.asset,
+      tx.tokenAddress,
+      isWithdrawal,
+      fromProvider.network.chainId,
+      toProvider.network.chainId
+    ]
   )
 
   const { remainingTime } = useRemainingTime(tx)

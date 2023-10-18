@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 import { useAccount } from 'wagmi'
 
@@ -10,12 +9,12 @@ import {
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAppContextState } from '../components/App/AppContext'
 import {
   getQueryParamsForFetchingReceivedFunds,
   getQueryParamsForFetchingSentFunds
 } from '../util/SubgraphUtils'
+import { useNetworks } from './useNetworks'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -54,12 +53,7 @@ const fetchCompleteWithdrawalData = async (
 }
 
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
-  const { l1, l2 } = useNetworksAndSigners()
-
-  // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
-  // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
-  const l1Provider = useMemo(() => l1.provider, [l1.network.id])
-  const l2Provider = useMemo(() => l2.provider, [l2.network.id])
+  const [{ fromProvider, toProvider }] = useNetworks()
 
   const {
     layout: { isTransactionHistoryShowingSentTx }
@@ -75,8 +69,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       ? [
           'withdrawals',
           walletAddress,
-          l1Provider,
-          l2Provider,
+          fromProvider,
+          toProvider,
           isTransactionHistoryShowingSentTx,
           withdrawalPageParams.pageNumber,
           withdrawalPageParams.pageSize,
@@ -86,16 +80,16 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     ([
       ,
       _walletAddress,
-      _l1Provider,
-      _l2Provider,
+      _fromProvider,
+      _toProvider,
       _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
-        l1Provider: _l1Provider,
-        l2Provider: _l2Provider,
+        l1Provider: _fromProvider,
+        l2Provider: _toProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,

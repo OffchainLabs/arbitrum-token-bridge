@@ -29,7 +29,6 @@ import {
   useTokensFromUser,
   toERC20BridgeToken
 } from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -41,6 +40,7 @@ import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 enum Panel {
   TOKENS,
@@ -69,25 +69,19 @@ function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ toProvider }] = useNetworks()
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
-
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
       // Don't show the Arbitrum Token token list, because it's special and can't be disabled
       if (tokenList.isArbitrumTokenTokenList) {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      return tokenList.originChainID === toProvider.network.chainId
     })
-  }, [l2Network])
+  }, [toProvider.network.chainId])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
@@ -157,22 +151,21 @@ function TokensPanel({
       isDepositMode
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: fromProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: toProvider, walletAddress })
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
+    toProvider.network.chainId
+  )
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -467,12 +460,13 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isLoading: isLoadingAccountType } = useAccountType()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(
+    toProvider.network.chainId
+  ) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -528,8 +522,8 @@ export function TokenSearch({
       const data = await getL1TokenData({
         account: walletAddress,
         erc20L1Address: _token.address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+        l1Provider: fromProvider,
+        l2Provider: toProvider
       })
 
       if (data) {

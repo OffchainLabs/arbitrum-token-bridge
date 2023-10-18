@@ -10,7 +10,6 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
@@ -23,6 +22,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -59,13 +59,12 @@ export function useGasSummary(
   const {
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
-  const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const [networks] = useNetworks()
+  const latestNetworksAndSigners = useLatest(networks)
   const { address: walletAddress } = useAccount()
 
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
-  const l2GasPrice = useGasPrice({ provider: l2.provider })
+  const l1GasPrice = useGasPrice({ provider: networks.fromProvider })
+  const l2GasPrice = useGasPrice({ provider: networks.toProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)
@@ -136,8 +135,8 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
+              l1Provider: networks.fromProvider,
+              l2Provider: networks.toProvider
             })
 
             setResult(estimateGasResult)
@@ -145,8 +144,8 @@ export function useGasSummary(
             const estimateGasResult = await depositEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
+              l1Provider: networks.fromProvider,
+              l2Provider: networks.toProvider
             })
 
             setResult(estimateGasResult)
@@ -162,7 +161,7 @@ export function useGasSummary(
             if (
               tokenRequiresApprovalOnL2(
                 token.address,
-                latestNetworksAndSigners.current.l2.network.id
+                latestNetworksAndSigners.current.toProvider.network.chainId
               )
             ) {
               estimateGasResult = {
@@ -184,7 +183,7 @@ export function useGasSummary(
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
-                l2Provider: l2.provider
+                l2Provider: networks.toProvider
               })
             }
 
@@ -196,7 +195,7 @@ export function useGasSummary(
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l2Provider: l2.provider
+              l2Provider: networks.toProvider
             })
 
             setResult({
@@ -224,8 +223,7 @@ export function useGasSummary(
     amountDebounced,
     token, // when the token changes
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
-    l1.network.id, // when L1 and L2 network id changes
-    l2.network.id,
+    networks, // when the network changes
     walletAddress // when user switches account or if user is not connected
   ])
 
@@ -285,20 +283,20 @@ export function TransferPanelSummary({
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
 
-  const { isMainnet } = isNetwork(l1.network.id)
+  const { isMainnet } = isNetwork(fromProvider.network.chainId)
 
   const tokenSymbol = useMemo(
     () =>
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chain: app.isDepositMode ? l1.network : l2.network
+            chainId: fromProvider.network.chainId
           })
         : 'ETH',
-    [token, app.isDepositMode, l1.network, l2.network]
+    [token, fromProvider.network.chainId]
   )
 
   if (status === 'loading') {

@@ -3,16 +3,16 @@ import { DocumentDuplicateIcon } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositCardContainer } from './DepositCard'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
@@ -33,11 +33,11 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `${parentLayer} transaction: ${getExplorerUrl(l1.network.id)}/tx/${
-              tx.txId
-            }\n${layer} transaction: ${getExplorerUrl(l2.network.id)}/tx/${
-              tx.l1ToL2MsgData?.retryableCreationTxID
-            }`
+            `${parentLayer} transaction: ${getExplorerUrl(
+              fromProvider.network.chainId
+            )}/tx/${tx.txId}\n${layer} transaction: ${getExplorerUrl(
+              toProvider.network.chainId
+            )}/tx/${tx.l1ToL2MsgData?.retryableCreationTxID}`
           )
         }}
       >

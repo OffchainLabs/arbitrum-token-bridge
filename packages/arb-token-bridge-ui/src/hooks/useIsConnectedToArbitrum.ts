@@ -6,7 +6,7 @@ export function useIsConnectedToArbitrum() {
   const { chain } = useNetwork()
 
   if (typeof chain === 'undefined') {
-    return undefined
+    return false
   }
 
   return isNetwork(chain.id).isArbitrum

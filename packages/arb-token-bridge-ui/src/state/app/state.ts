@@ -5,15 +5,10 @@ import {
 } from 'lodash-es'
 import { derived } from 'overmind'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { getAccount } from '@wagmi/core'
 import { BigNumber } from 'ethers'
 import dayjs from 'dayjs'
 
-import {
-  filterTransactions,
-  transformDeposits,
-  transformWithdrawals
-} from './utils'
+import { transformDeposits, transformWithdrawals } from './utils'
 
 import {
   ArbTokenBridge,
@@ -114,19 +109,9 @@ export const defaultState: AppState = {
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   isDepositMode: true,
-  sortedTransactions: derived((s: AppState) => {
-    const transactions = s.arbTokenBridge?.transactions?.transactions || []
-    const account = getAccount()
-    if (!account.address) {
-      return []
-    }
-
-    return filterTransactions(
-      [...transactions],
-      account.address,
-      s.l1NetworkChainId,
-      s.l2NetworkChainId
-    )
+  sortedTransactions: derived(() => {
+    // TODO: Fix?
+    return []
   }),
   pendingTransactions: derived((s: AppState) => {
     return s.sortedTransactions.filter(tx => tx.status === 'pending')

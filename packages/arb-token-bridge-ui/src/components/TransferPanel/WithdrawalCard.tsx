@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
@@ -19,18 +18,14 @@ import Image from 'next/image'
 import { ClaimableCardConfirmed } from './ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from './ClaimableCardUnconfirmed'
 import { twMerge } from 'tailwind-merge'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function WithdrawalL2TxStatus({
   tx
 }: {
   tx: MergedTransaction
 }): JSX.Element {
-  const { l2 } = useNetworksAndSigners()
-  const { network: l2Network } = l2
-
-  if (typeof l2Network === 'undefined') {
-    return <span>Not available</span>
-  }
+  const [{ toProvider }] = useNetworks()
 
   if (tx.direction === 'withdraw' && tx.status === 'pending') {
     return <span>Pending...</span>
@@ -42,7 +37,7 @@ export function WithdrawalL2TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(l2Network.id)}/tx/${tx.txId}`}
+      href={`${getExplorerUrl(toProvider.network.chainId)}/tx/${tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
@@ -56,15 +51,10 @@ export function WithdrawalL1TxStatus({
 }: {
   tx: MergedTransaction
 }): JSX.Element {
-  const { l1 } = useNetworksAndSigners()
-  const { network: l1Network } = l1
+  const [{ fromProvider }] = useNetworks()
 
   // Try to find the L1 transaction that matches the L2ToL1 message
   const l1Tx = tx.isCctp ? tx : findMatchingL1TxForWithdrawal(tx)
-
-  if (typeof l1Network === 'undefined') {
-    return <span>Not available</span>
-  }
 
   if (typeof l1Tx === 'undefined') {
     return <span>Not available</span>
@@ -72,7 +62,7 @@ export function WithdrawalL1TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(l1Network.id)}/tx/${l1Tx.txId}`}
+      href={`${getExplorerUrl(fromProvider.network.chainId)}/tx/${l1Tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}

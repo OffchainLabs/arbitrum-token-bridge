@@ -13,7 +13,6 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useAppState } from '../../../state'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
@@ -21,6 +20,7 @@ import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmation
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 type Props = UseDialogProps & {
   amount: string
@@ -29,14 +29,14 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network.id)
-  const { isArbitrumGoerli } = isNetwork(l2.network.id)
+  const [{ fromProvider, toProvider }] = useNetworks()
+  const networkName = getNetworkName(toProvider.network.chainId)
+  const { isArbitrumGoerli } = isNetwork(toProvider.network.chainId)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
 
-  const from = l1.network
-  const to = l2.network
-  const toNetworkName = getNetworkName(to.id)
+  const from = fromProvider.network
+  const to = toProvider.network
+  const toNetworkName = getNetworkName(to.chainId)
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -59,8 +59,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: from.id,
-      to: to.id,
+      from: from.chainId,
+      to: to.chainId,
       fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.Goerli.USDC
         : CommonAddress.Mainnet.USDC,

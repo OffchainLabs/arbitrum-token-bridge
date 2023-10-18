@@ -6,7 +6,8 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
-import { Chain, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { Network } from '@ethersproject/networks'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -23,7 +24,6 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
@@ -31,6 +31,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useNetworks } from '../../hooks/useNetworks'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -50,7 +51,7 @@ function BlockExplorerTokenLink({
   chain,
   address
 }: {
-  chain: Chain
+  chain: Network
   address: string | undefined
 }) {
   if (typeof address === 'undefined') {
@@ -59,7 +60,7 @@ function BlockExplorerTokenLink({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(chain.id)}/token/${address}`}
+      href={`${getExplorerUrl(chain.chainId)}/token/${address}`}
       className="text-xs text-blue-link underline"
       onClick={e => e.stopPropagation()}
     >
@@ -87,10 +88,7 @@ export function TokenRow({
     }
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
-  const {
-    l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
-  } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
 
   const isSmallScreen = useMedia('(max-width: 419px)')
 
@@ -99,20 +97,29 @@ export function TokenRow({
       token
         ? sanitizeTokenName(token.name, {
             erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
+            chainId: isDepositMode
+              ? fromProvider.network.chainId
+              : toProvider.network.chainId
           })
         : 'Ether',
-    [token, isDepositMode, l2Network, l1Network]
+    [token, isDepositMode, fromProvider.network, toProvider.network]
   )
   const tokenSymbol = useMemo(
     () =>
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
+            chainId: isDepositMode
+              ? fromProvider.network.chainId
+              : toProvider.network.chainId
           })
         : 'ETH',
-    [token, isDepositMode, l2Network, l1Network]
+    [
+      token,
+      isDepositMode,
+      toProvider.network.chainId,
+      fromProvider.network.chainId
+    ]
   )
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
@@ -127,11 +134,11 @@ export function TokenRow({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: fromProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: toProvider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -259,7 +266,7 @@ export function TokenRow({
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
-      isDepositMode ? l1Network.id : l2Network.id
+      isDepositMode ? fromProvider.network.chainId : toProvider.network.chainId
     )
 
     return (
@@ -268,7 +275,7 @@ export function TokenRow({
         fake tokens trying to impersonate it.
       </span>
     )
-  }, [isDepositMode, l1Network, l2Network])
+  }, [isDepositMode, fromProvider.network.chainId, toProvider.network.chainId])
 
   const tokenBalanceContent = useMemo(() => {
     if (!tokenIsAddedToTheBridge) {
@@ -373,12 +380,12 @@ export function TokenRow({
                   <>
                     {isL2NativeToken ? (
                       <BlockExplorerTokenLink
-                        chain={l2Network}
+                        chain={toProvider.network}
                         address={token.address}
                       />
                     ) : (
                       <BlockExplorerTokenLink
-                        chain={l1Network}
+                        chain={fromProvider.network}
                         address={token.address}
                       />
                     )}

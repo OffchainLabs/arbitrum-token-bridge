@@ -3,15 +3,15 @@ import { DocumentDuplicateIcon } from '@heroicons/react/24/outline'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCardContainer } from './DepositCard'
 import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
-  const { l1 } = useNetworksAndSigners()
+  const [{ fromProvider }] = useNetworks()
   const { parentLayer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
@@ -32,9 +32,9 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `${parentLayer} transaction: ${getExplorerUrl(l1.network.id)}/tx/${
-              tx.txId
-            }`
+            `${parentLayer} transaction: ${getExplorerUrl(
+              fromProvider.network.chainId
+            )}/tx/${tx.txId}`
           )
         }}
       >

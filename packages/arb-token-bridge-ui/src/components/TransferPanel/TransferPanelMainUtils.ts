@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { BigNumber, utils } from 'ethers'
 
 import { useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function calculateEstimatedL1GasFees(
   estimatedL1Gas: BigNumber,
@@ -27,27 +27,25 @@ export function calculateEstimatedL2GasFees(
 
 // TODO: These could be useful in the rest of the app
 export function useIsSwitchingL2Chain() {
-  const { app } = useAppState()
-  const { isDepositMode } = app
+  return false
+  // const { app } = useAppState()
+  // const { isDepositMode } = app
 
-  const { l2 } = useNetworksAndSigners()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const [{ l2ChainId: l2ChainIdSearchParam }] = useArbQueryParams()
+  // const [{ fromProvider, toProvider }] = useNetworks()
+  // const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  // // TODO: replace with chain from useNetworks
+  // const [{ l2ChainId: l2ChainIdSearchParam }] = useArbQueryParams()
 
-  return useMemo(() => {
-    if (typeof isConnectedToArbitrum === 'undefined') {
-      return false
-    }
+  // return useMemo(() => {
+  //   if (isConnectedToArbitrum || !isDepositMode) {
+  //     return false
+  //   }
 
-    if (isConnectedToArbitrum || !isDepositMode) {
-      return false
-    }
+  //   // if l2ChainId url param is either null, undefined, blank, 0 or invalid number
+  //   if (!l2ChainIdSearchParam || isNaN(l2ChainIdSearchParam)) {
+  //     return false
+  //   }
 
-    // if l2ChainId url param is either null, undefined, blank, 0 or invalid number
-    if (!l2ChainIdSearchParam || isNaN(l2ChainIdSearchParam)) {
-      return false
-    }
-
-    return l2.network.id !== l2ChainIdSearchParam
-  }, [isConnectedToArbitrum, isDepositMode, l2, l2ChainIdSearchParam])
+  //   return l2.network.id !== l2ChainIdSearchParam
+  // }, [isConnectedToArbitrum, isDepositMode, l2, l2ChainIdSearchParam])
 }

@@ -8,7 +8,7 @@ import {
   getChainForChainQueryParam,
   getChainQueryParamForChain
 } from '../types/ChainQueryParam'
-import { rpcURLs } from '../util/networks'
+import { ChainId, rpcURLs } from '../util/networks'
 import { getPartnerChainsForChain } from '../util/wagmi/getPartnerChainsForChain'
 
 function getPartnerChainsQueryParams(
@@ -26,8 +26,8 @@ const getProviderForChainCache: {
   // start with empty cache
 }
 
-function createProviderWithCache(rpcUrl: string) {
-  const provider = new StaticJsonRpcProvider(rpcUrl)
+function createProviderWithCache(rpcUrl: string, chainId: ChainId) {
+  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
   getProviderForChainCache[rpcUrl] = provider
   return provider
 }
@@ -45,7 +45,7 @@ function getProviderForChain(chain: Chain): StaticJsonRpcProvider {
     return cachedProvider
   }
 
-  return createProviderWithCache(rpcUrl)
+  return createProviderWithCache(rpcUrl, chain.id)
 }
 
 export function sanitizeQueryParams({

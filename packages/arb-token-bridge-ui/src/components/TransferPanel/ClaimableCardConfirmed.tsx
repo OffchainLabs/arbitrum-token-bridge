@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import {
   WithdrawalCardContainer,
@@ -27,9 +26,10 @@ import { errorToast } from '../common/atoms/Toast'
 import { GET_HELP_LINK } from '../../constants'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
@@ -47,14 +47,20 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   if (tx.isCctp) {
     toNetworkId = getTargetChainIdFromSourceChain(tx)
   } else {
-    toNetworkId = tx.isWithdrawal ? l1.network.id : l2.network.id
+    toNetworkId = tx.isWithdrawal
+      ? fromProvider.network.chainId
+      : toProvider.network.chainId
   }
 
   const networkName = getNetworkName(toNetworkId)
-  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+  const isOrbitChainSelected = isNetwork(
+    toProvider.network.chainId
+  ).isOrbitChain
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(l2.network.id).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(
+      toProvider.network.chainId
+    ).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -66,7 +72,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
       (isSourceChainIdArbitrum && isEthereum)
     )
   }, [
-    l2.network.id,
+    toProvider.network.chainId,
     isSourceChainIdEthereum,
     isArbitrum,
     isSourceChainIdArbitrum,
@@ -103,9 +109,11 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isSourceChainIdEthereum ? l1.network : l2.network
+        chainId: isSourceChainIdEthereum
+          ? fromProvider.network.chainId
+          : toProvider.network.chainId
       }),
-    [tx, isSourceChainIdEthereum, l1, l2]
+    [tx, isSourceChainIdEthereum, fromProvider, toProvider]
   )
 
   if (isOrbitChainSelected && tx.isCctp) {

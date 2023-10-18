@@ -16,10 +16,10 @@ import {
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -27,16 +27,16 @@ export function DepositConfirmationDialog(
   const {
     app: { selectedToken }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const networkName = getNetworkName(l2.network.id)
-  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const networkName = getNetworkName(toProvider.network.chainId)
+  const { isArbitrumOne } = isNetwork(toProvider.network.chainId)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
 
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const from = isConnectedToArbitrum ? toProvider.network : fromProvider.network
+  const to = isConnectedToArbitrum ? fromProvider.network : toProvider.network
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
@@ -51,8 +51,8 @@ export function DepositConfirmationDialog(
 
   const fastBridges = [
     ...getFastBridges({
-      from: from.id,
-      to: to.id,
+      from: from.chainId,
+      to: to.chainId,
       tokenSymbol,
       amount: props.amount
     })

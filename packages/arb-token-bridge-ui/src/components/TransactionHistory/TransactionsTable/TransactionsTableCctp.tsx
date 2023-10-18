@@ -13,11 +13,11 @@ import {
 } from './TransactionsTable'
 import { TransactionsTableSwitch } from './TransactionsTableSwitch'
 import { useCctpFetching, useCctpState } from '../../../state/cctpState'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { getNetworkName } from '../../../util/networks'
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 export function TransactionsTableCctp() {
   const { address } = useAccount()
@@ -33,7 +33,7 @@ export function TransactionsTableCctp() {
     pageNumber: 0,
     pageSize: 10
   })
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { transfers, depositIds, withdrawalIds } = useCctpState()
   const {
     depositsError,
@@ -41,8 +41,8 @@ export function TransactionsTableCctp() {
     isLoadingDeposits,
     isLoadingWithdrawals
   } = useCctpFetching({
-    l1ChainId: l1.network.id,
-    l2ChainId: l2.network.id,
+    l1ChainId: fromProvider.network.chainId,
+    l2ChainId: toProvider.network.chainId,
     walletAddress: address,
     pageSize: pageParams.pageSize,
     pageNumber: pageParams.pageNumber,
@@ -93,18 +93,18 @@ export function TransactionsTableCctp() {
       {
         handleClick: () => showCctpDepositsTransactions(),
         isActive: isTransactionHistoryShowingCctpDeposits,
-        text: `To ${getNetworkName(l2.network.id)}`
+        text: `To ${getNetworkName(toProvider.network.chainId)}`
       },
       {
         handleClick: () => showCctpWithdrawalsTransactions(),
         isActive: !isTransactionHistoryShowingCctpDeposits,
-        text: `To ${getNetworkName(l1.network.id)}`
+        text: `To ${getNetworkName(fromProvider.network.chainId)}`
       }
     ]
   }, [
     isTransactionHistoryShowingCctpDeposits,
-    l1.network.id,
-    l2.network.id,
+    fromProvider.network.chainId,
+    toProvider.network.chainId,
     showCctpDepositsTransactions,
     showCctpWithdrawalsTransactions
   ])

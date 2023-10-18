@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
 import { getL1TokenData } from '../../util/TokenUtils'
@@ -24,6 +23,7 @@ import {
 } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
+import { useNetworks } from '../../hooks/useNetworks'
 
 enum ImportStatus {
   LOADING,
@@ -57,7 +57,7 @@ export function TokenImportDialog({
       selectedToken
     }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -73,7 +73,7 @@ export function TokenImportDialog({
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
-    l2Provider: l2.provider
+    l2Provider: toProvider
   })
 
   const modalTitle = useMemo(() => {
@@ -102,10 +102,10 @@ export function TokenImportDialog({
     return getL1TokenData({
       account: walletAddress,
       erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: fromProvider,
+      l2Provider: toProvider
     })
-  }, [l1, l2, walletAddress, l1Address])
+  }, [fromProvider, toProvider, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -358,7 +358,7 @@ export function TokenImportDialog({
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
-            href={`${getExplorerUrl(l1.network.id)}/token/${
+            href={`${getExplorerUrl(fromProvider.network.chainId)}/token/${
               tokenToImport?.address
             }`}
             target="_blank"

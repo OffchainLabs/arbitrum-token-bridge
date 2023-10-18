@@ -19,10 +19,10 @@ import { TableActionHeader } from './TableActionHeader'
 import { TableSentOrReceivedFundsSwitch } from './TableSentOrReceivedFundsSwitch'
 import { useAppState } from '../../../state'
 import { useAppContextState } from '../../App/AppContext'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 export type PageParams = {
   searchString: string
@@ -94,7 +94,7 @@ export const CustomAddressTxExplorer = ({
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
 
   const isDifferentSenderTx = useMemo(() => {
     if (!tx.sender || !address) {
@@ -119,14 +119,23 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isDifferentSenderTx ? l2.network.id : l1.network.id
+      return isDifferentSenderTx
+        ? toProvider.network.chainId
+        : fromProvider.network.chainId
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isDifferentSenderTx ? l1.network.id : l2.network.id
-  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
+    return isDifferentSenderTx
+      ? fromProvider.network.chainId
+      : toProvider.network.chainId
+  }, [
+    isDifferentSenderTx,
+    isCustomDestinationTx,
+    fromProvider.network.chainId,
+    toProvider.network.chainId
+  ])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null

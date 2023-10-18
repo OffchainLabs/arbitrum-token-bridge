@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -9,7 +9,6 @@ import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
-import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
@@ -22,37 +21,23 @@ import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdate
 import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { useDialog } from '../common/Dialog'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus,
-  NetworksAndSignersProvider,
-  UseNetworksAndSignersConnectedResult,
-  FallbackProps
-} from '../../hooks/useNetworksAndSigners'
+
 import {
   HeaderContent,
   HeaderOverrides,
   HeaderOverridesProps
 } from '../common/Header'
-import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, getSupportedNetworks } from '../../util/networks'
-import {
-  ArbQueryParamProvider,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
-import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
-import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
+import { isNetwork } from '../../util/networks'
+import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
-import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
-import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
+import { useNetworks } from '../../hooks/useNetworks'
 
 declare global {
   interface Window {
@@ -135,7 +120,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const networksAndSigners = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
@@ -143,49 +128,28 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
 
-  const initBridge = useCallback(
-    async (params: UseNetworksAndSignersConnectedResult) => {
-      const { l1, l2 } = params
-
-      if (!address) {
-        return
-      }
-
-      setTokenBridgeParams({
-        l1: {
-          network: l1.network,
-          provider: l1.provider
-        },
-        l2: {
-          network: l2.network,
-          provider: l2.provider
-        }
-      })
-    },
-    [address]
-  )
-
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
-    if (!isConnected || !chain) {
+    if (!chain) {
       return
     }
 
-    const { l1, l2 } = networksAndSigners
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
     const isConnectedToOrbitChain = isNetwork(chain.id).isOrbitChain
 
-    const l1NetworkChainId = l1.network.id
-    const l2NetworkChainId = l2.network.id
-
-    const isParentChainEthereum = isNetwork(l1NetworkChainId).isEthereum
+    const fromNetworkChainId = fromProvider.network.chainId
+    const toNetworkChainId = toProvider.network.chainId
+    const isParentChainEthereum = isNetwork(fromNetworkChainId).isEthereum
 
     actions.app.reset(chain.id)
-    actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
+    actions.app.setChainIds({
+      l1NetworkChainId: fromNetworkChainId,
+      l2NetworkChainId: toNetworkChainId
+    })
 
     if (
       (isParentChainEthereum && isConnectedToArbitrum) ||
@@ -200,8 +164,17 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     }
 
-    initBridge(networksAndSigners)
-  }, [networksAndSigners, chain, isConnected, initBridge, address])
+    setTokenBridgeParams({
+      l1: {
+        network: fromProvider.network,
+        provider: fromProvider
+      },
+      l2: {
+        network: toProvider.network,
+        provider: toProvider
+      }
+    })
+  }, [chain, isConnected, address, actions.app, fromProvider, toProvider])
 
   useEffect(() => {
     axios
@@ -240,102 +213,40 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
-function NetworkReady({ children }: { children: React.ReactNode }) {
-  const [{ l2ChainId }] = useArbQueryParams()
-
-  return (
-    <NetworksAndSignersProvider
-      selectedL2ChainId={l2ChainId || undefined}
-      fallback={fallbackProps => <ConnectionFallback {...fallbackProps} />}
-    >
-      {children}
-    </NetworksAndSignersProvider>
-  )
-}
-
-function ConnectionFallback(props: FallbackProps): JSX.Element {
-  const { chain } = useNetwork()
-
-  switch (props.status) {
-    case UseNetworksAndSignersStatus.LOADING:
-      return (
-        <>
-          <HeaderContent>
-            <HeaderNetworkLoadingIndicator />
-          </HeaderContent>
-
-          <AppConnectionFallbackContainer>
-            <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
-              <Loader color="white" size="large" />
-            </div>
-          </AppConnectionFallbackContainer>
-        </>
-      )
-
-    case UseNetworksAndSignersStatus.NOT_CONNECTED:
-      return (
-        <>
-          <HeaderContent>
-            <HeaderConnectWalletButton />
-          </HeaderContent>
-
-          <AppConnectionFallbackContainer>
-            <span className="text-white">
-              Please connect your wallet to use the bridge.
-            </span>
-          </AppConnectionFallbackContainer>
-        </>
-      )
-
-    case UseNetworksAndSignersStatus.NOT_SUPPORTED:
-      const supportedNetworks = getSupportedNetworks(chain?.id)
-
-      return (
-        <>
-          <HeaderContent>
-            <NetworkSelectionContainer>
-              <HeaderNetworkNotSupported />
-            </NetworkSelectionContainer>
-
-            <HeaderAccountPopover isCorrectNetworkConnected={false} />
-          </HeaderContent>
-
-          <AppConnectionFallbackContainer
-            layout="row"
-            imgProps={{
-              className: 'sm:w-[300px]',
-              src: FixingSpaceship,
-              alt: 'Arbinaut fixing a spaceship'
-            }}
-          >
-            <MainNetworkNotSupported supportedNetworks={supportedNetworks} />
-          </AppConnectionFallbackContainer>
-        </>
-      )
-  }
-}
-
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('walletConnectChain')
+function useProviderProps() {
+  const [searchParams] = useState(
+    new URLSearchParams(global.window?.location.search ?? '')
+  )
+  const targetChainKey = searchParams.get('walletConnectChain')
+  const localStorage = global.window?.localStorage
+  const { wagmiConfigProps, rainbowKitProviderProps } = useMemo(
+    () => getProps(targetChainKey),
+    [targetChainKey]
+  )
 
-const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
+  // Clear cache for everything related to WalletConnect v2.
+  // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
+  useEffect(() => {
+    if (!localStorage) {
+      return
+    }
+    Object.keys(localStorage).forEach(key => {
+      if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
+        localStorage.removeItem(key)
+      }
+    })
+  }, [localStorage])
 
-// Clear cache for everything related to WalletConnect v2.
-//
-// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
-Object.keys(localStorage).forEach(key => {
-  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
-    localStorage.removeItem(key)
-  }
-})
+  return { wagmiConfigProps, rainbowKitProviderProps }
+}
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
+  const { wagmiConfigProps, rainbowKitProviderProps } = useProviderProps()
   const [tosAccepted, setTosAccepted] =
     useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
   const [welcomeDialogProps, openWelcomeDialog] = useDialog()
@@ -356,6 +267,10 @@ export default function App() {
     }
   }
 
+  if (!wagmiConfigProps || !rainbowKitProviderProps) {
+    return null
+  }
+
   return (
     <Provider value={overmind}>
       <ArbQueryParamProvider>
@@ -365,11 +280,9 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
+            <AppContextProvider>
+              <Injector>{<AppContent />}</Injector>
+            </AppContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>

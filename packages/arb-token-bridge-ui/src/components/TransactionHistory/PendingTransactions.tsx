@@ -6,7 +6,6 @@ import { isDeposit, isTokenDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
@@ -14,6 +13,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
+import { useNetworks } from '../../hooks/useNetworks'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (isNetwork(chainId).isEthereum) {
@@ -61,13 +61,10 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ fromProvider, toProvider }] = useNetworks()
   const { switchNetwork } = useSwitchNetworkWithConfig()
 
-  const bgClassName = isNetwork(l2Network.id).isArbitrumNova
+  const bgClassName = isNetwork(toProvider.network.chainId).isArbitrumNova
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
@@ -80,18 +77,22 @@ export const PendingTransactions = ({
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
-          {`${getNetworkName(l2Network.id)}/${getNetworkName(l1Network.id)}`}
+          {`${getNetworkName(toProvider.network.chainId)}/${getNetworkName(
+            fromProvider.network.chainId
+          )}`}
         </div>
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
-        {!isNetwork(l2Network.id).isTestnet && (
+        {!isNetwork(toProvider.network.chainId).isTestnet && (
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchNetwork?.(getOtherL2NetworkChainId(l2Network.id))
+              switchNetwork?.(
+                getOtherL2NetworkChainId(toProvider.network.chainId)
+              )
             }}
           >{`See ${getNetworkName(
-            getOtherL2NetworkChainId(l2Network.id)
+            getOtherL2NetworkChainId(toProvider.network.chainId)
           )}`}</ExternalLink>
         )}
       </div>
