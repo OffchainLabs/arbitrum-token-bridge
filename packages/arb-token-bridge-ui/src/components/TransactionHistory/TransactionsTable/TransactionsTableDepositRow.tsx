@@ -212,7 +212,7 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [{ fromProvider }] = useNetworks()
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
