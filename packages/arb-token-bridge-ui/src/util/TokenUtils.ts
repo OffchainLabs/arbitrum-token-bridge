@@ -336,7 +336,7 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||

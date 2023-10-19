@@ -142,8 +142,14 @@ export const useArbTokenBridge = (
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
 
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
-  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
+  const l1NetworkID = useMemo(
+    () => String(l1.network.chainId),
+    [l1.network.chainId]
+  )
+  const l2NetworkID = useMemo(
+    () => String(l2.network.chainId),
+    [l2.network.chainId]
+  )
 
   // once the l1/l2/account changes, we need to revalidate the withdrawal list in the store
   // this prevents previous account/chains' transactions to show up in the current account
@@ -635,8 +641,8 @@ export const useArbTokenBridge = (
   }
 
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
+    const l1ChainID = l1.network.chainId
+    const l2ChainID = l2.network.chainId
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -934,7 +940,7 @@ export const useArbTokenBridge = (
   }
 
   function addL2NativeToken(erc20L2Address: string) {
-    const token = getL2NativeToken(erc20L2Address, l2.network.id)
+    const token = getL2NativeToken(erc20L2Address, l2.network.chainId)
 
     setBridgeTokens(oldBridgeTokens => {
       return {
@@ -1016,7 +1022,7 @@ export const useArbTokenBridge = (
     events.forEach((event: L2ToL1EventResult) => {
       const cacheKey = getExecutedMessagesCacheKey({
         event,
-        l2ChainId: l2.network.id
+        l2ChainId: l2.network.chainId
       })
 
       added[cacheKey] = true
