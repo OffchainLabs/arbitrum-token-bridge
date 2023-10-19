@@ -123,7 +123,7 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
 
   if (isWithdrawalFromSubgraph(tx)) {
     withdrawal = await mapWithdrawalToL2ToL1EventResult(
-      tx as unknown as FetchWithdrawalsFromSubgraphResult,
+      tx,
       parentChainProvider,
       chainProvider,
       tx.parentChainId,
