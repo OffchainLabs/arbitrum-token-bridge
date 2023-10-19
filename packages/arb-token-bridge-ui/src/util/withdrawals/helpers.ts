@@ -263,13 +263,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
   l2ChainId: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
-
-  console.log('rec: ', withdrawal.l2TxHash)
-  console.log({ l2Provider })
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
-  console.log({ txReceipt })
   const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-  console.log({ l2TxReceipt })
 
   // TODO: length != 1
   const [event] = l2TxReceipt.getL2ToL1Events()

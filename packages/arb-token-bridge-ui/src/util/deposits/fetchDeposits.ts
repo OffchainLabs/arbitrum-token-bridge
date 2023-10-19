@@ -1,9 +1,9 @@
+import { utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { fetchDepositsFromSubgraph } from './fetchDepositsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Deposit } from '../../hooks/useMultiChainTransactionList'
-import { utils } from 'ethers'
 
 export type FetchDepositParams = {
   sender?: string
@@ -104,11 +104,10 @@ export async function fetchDepositList({
       destination: tx.receiver,
       txID: tx.transactionHash,
       blockNumber: Number(tx.blockCreatedAt),
-      timestampCreated: tx.timestamp,
+      timestampCreated: tx.timestampCreated,
       isClassic: tx.isClassic,
       parentChainId: l1ChainId,
-      chainId: l2ChainId,
-      ts: Number(tx.timestamp)
+      chainId: l2ChainId
     }
   })
 }

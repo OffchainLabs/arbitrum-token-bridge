@@ -50,8 +50,8 @@ function sortByTimestampDescending(
   a: DepositOrWithdrawal,
   b: DepositOrWithdrawal
 ) {
-  const aTimestamp = isDeposit(a) ? a.timestampCreatedAt : a.timestamp
-  const bTimestamp = isDeposit(b) ? b.timestampCreatedAt : b.timestamp
+  const aTimestamp = isDeposit(a) ? a.timestampCreated : a.timestamp
+  const bTimestamp = isDeposit(b) ? b.timestampCreated : b.timestamp
   return (aTimestamp ?? constants.Zero) > (bTimestamp ?? constants.Zero)
     ? -1
     : 1
@@ -206,6 +206,7 @@ const useTransactionListByDirection = (
 
   useEffect(() => {
     if (data) {
+      // if there is not a single full page in any of the data fetched, then there is no more to fetch
       const shouldFetchNextPage = data.some((_, index) =>
         shouldFetchPage(index)
       )
@@ -224,15 +225,12 @@ const useTransactionListByDirection = (
         })
       })
 
-      // if there is a full page in at least one of the fetches, then there is more to fetch
       if (!shouldFetchNextPage) {
         setLoading(false)
+        return
       }
 
-      setPage(prevPage => {
-        // fetch next page if there is at least one full page for any chain pair
-        return shouldFetchNextPage ? prevPage + 1 : prevPage
-      })
+      setPage(prevPage => prevPage + 1)
     }
   }, [data, shouldFetchPage])
 
@@ -276,7 +274,6 @@ export const useCompleteMultiChainTransactions = () => {
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
   const MAX_BATCH_SIZE = 5
 
-  // TODO: Change to MergedTransaction[]
   const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
   const [fetching, setFetching] = useState(true)
