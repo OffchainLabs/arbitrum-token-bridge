@@ -1,73 +1,113 @@
-import { Provider, TransactionReceipt } from '@ethersproject/providers'
-
-import { L2TransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L2Transaction'
+import { ContractTransaction, ContractReceipt } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 
 import {
   BridgeTransfer,
-  BridgeTransferStatusFunctionProps,
-  BridgeTransferStatusFunctionResult
+  BridgeTransferStatus,
+  BridgeTransferFetchStatusFunctionResult,
+  BridgeTransferProps
 } from './BridgeTransfer'
-import { Signer } from 'ethers'
-import { L2ToL1Message } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
-export class EthDeposit extends BridgeTransfer {
-  protected fromChainProvider: Provider
-  protected fromChainTxReceipt: L2TransactionReceipt
-
-  private constructor(props: {
-    fromChainProvider: Provider
-    fromChainTxReceipt: L2TransactionReceipt
-  }) {
-    super()
-
-    this.fromChainProvider = props.fromChainProvider
-    this.fromChainTxReceipt = props.fromChainTxReceipt
+export class Erc20Withdrawal extends BridgeTransfer {
+  private constructor(props: BridgeTransferProps) {
+    super(props)
   }
 
-  public static async create(props: {
-    fromChainProvider: Provider
-    fromChainTxHash: string
+  public static async fromSourceChainTx(props: {
+    sourceChainTx: ContractTransaction
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
   }) {
-    const txReceipt = await props.fromChainProvider.getTransactionReceipt(
-      props.fromChainTxHash
-    )
+    const sourceChainTxReceipt =
+      await props.sourceChainProvider.getTransactionReceipt(
+        props.sourceChainTx.hash
+      )
 
-    return new EthDeposit({
-      fromChainProvider: props.fromChainProvider,
-      fromChainTxReceipt: txReceipt as L2TransactionReceipt
-    })
-  }
+    let status: BridgeTransferStatus
 
-  public async status(
-    props: BridgeTransferStatusFunctionProps
-  ): Promise<BridgeTransferStatusFunctionResult> {
-    // return 'from_chain_tx_error'
-    // const [message] = await this.fromChainTxReceipt.getEthDeposits(
-    //   props.toChainProvider
-    // )
-
-    // not yet created
-    // if (typeof message === 'undefined') {
-    //   return 'from_chain_tx_success'
-    // }
-
-    return 'to_chain_tx_success'
-  }
-
-  public async complete(props: {
-    toChainSigner: Signer
-    toChainProvider: Provider
-  }) {
-    const [event] = this.fromChainTxReceipt.getL2ToL1Events()
-
-    if (typeof event === 'undefined') {
-      throw new Error('event not found')
+    if (sourceChainTxReceipt) {
+      status =
+        sourceChainTxReceipt.status === 0
+          ? 'source_chain_tx_error'
+          : 'source_chain_tx_success'
+    } else {
+      status = 'source_chain_tx_pending'
     }
 
-    return L2ToL1Message.fromEvent(
-      props.toChainSigner,
-      event,
-      props.toChainProvider
-    ).execute(this.fromChainProvider)
+    return new Erc20Withdrawal({ ...props, status, sourceChainTxReceipt })
+  }
+
+  public static async fromSourceChainTxHash(props: {
+    sourceChainTxHash: string
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) {
+    const sourceChainTx = await props.sourceChainProvider.getTransaction(
+      props.sourceChainTxHash
+    )
+
+    const erc20Deposit = await Erc20Withdrawal.fromSourceChainTx({
+      ...props,
+      sourceChainTx
+    })
+
+    await erc20Deposit.updateStatus()
+
+    return erc20Deposit
+  }
+
+  protected isStatusFinal(status: BridgeTransferStatus): boolean {
+    if (status === 'source_chain_tx_error') {
+      return true
+    }
+
+    return false
+  }
+
+  public async updateStatus(): Promise<void> {
+    this.status = await this.fetchStatus()
+  }
+
+  public async fetchStatus(): BridgeTransferFetchStatusFunctionResult {
+    // we don't have a source chain tx receipt yet
+    if (!this.sourceChainTxReceipt) {
+      // let's fetch it
+      this.sourceChainTxReceipt =
+        await this.sourceChainProvider.getTransactionReceipt(
+          this.sourceChainTx.hash
+        )
+
+      // still nothing
+      if (!this.sourceChainTxReceipt) {
+        return 'source_chain_tx_pending'
+      }
+    }
+
+    // okay now we have tx receipt
+    const [message] = await new L1ContractCallTransactionReceipt(
+      this.sourceChainTxReceipt
+    ).getL1ToL2Messages(this.destinationChainProvider)
+
+    // message not yet created
+    if (typeof message === 'undefined') {
+      return this.sourceChainTxReceipt.status === 1
+        ? 'source_chain_tx_success'
+        : 'source_chain_tx_error'
+    }
+
+    const successfulRedeem = await message.getSuccessfulRedeem()
+
+    if (successfulRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+      this.destinationChainTxReceipt = successfulRedeem.l2TxReceipt
+      return 'destination_chain_tx_success'
+    }
+
+    if (successfulRedeem.status === L1ToL2MessageStatus.NOT_YET_CREATED) {
+      return 'source_chain_tx_success'
+    }
+
+    return 'destination_chain_tx_error'
   }
 }

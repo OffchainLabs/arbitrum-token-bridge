@@ -5,18 +5,13 @@ import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message
 import {
   BridgeTransfer,
   BridgeTransferStatus,
-  BridgeTransferFetchStatusFunctionResult
+  BridgeTransferFetchStatusFunctionResult,
+  BridgeTransferProps
 } from './BridgeTransfer'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 export class Erc20Deposit extends BridgeTransfer {
-  private constructor(props: {
-    status: BridgeTransferStatus
-    sourceChainTx: ContractTransaction
-    sourceChainTxReceipt?: ContractReceipt
-    sourceChainProvider: Provider
-    destinationChainProvider: Provider
-  }) {
+  private constructor(props: BridgeTransferProps) {
     super(props)
   }
 

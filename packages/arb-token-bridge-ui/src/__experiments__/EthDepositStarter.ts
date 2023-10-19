@@ -2,19 +2,21 @@ import { EthBridger } from '@arbitrum/sdk'
 
 import {
   BridgeTransferStarter,
-  BridgeTransferStarterStartProps,
-  BridgeTransferStarterStartResult
+  BridgeTransferStarterStartFunctionProps
 } from './BridgeTransferStarter'
+import { BridgeTransfer } from './BridgeTransfer'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public async start(
-    props: BridgeTransferStarterStartProps
-  ): BridgeTransferStarterStartResult {
-    const ethBridger = await EthBridger.fromProvider(this.toChainProvider)
+    props: BridgeTransferStarterStartFunctionProps
+  ): Promise<BridgeTransfer> {
+    const ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
 
     return ethBridger.deposit({
       amount: props.amount,
-      l1Signer: props.fromChainSigner
+      l1Signer: props.sourceChainSigner
     })
   }
 }

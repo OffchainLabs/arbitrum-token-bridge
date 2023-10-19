@@ -4,13 +4,27 @@ import { ContractReceipt, ContractTransaction } from 'ethers'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
+export type BridgeTransferProps = {
+  status: BridgeTransferStatus
+  sourceChainTx: ContractTransaction
+  sourceChainTxReceipt?: ContractReceipt
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+}
+
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type BridgeTransferFetchStatusFunctionResult =
   Promise<BridgeTransferStatus>
 
+export type BridgeTransferPollStatusProps = {
+  intervalMs?: number
+  onChange: (bridgeTransfer: BridgeTransfer) => void
+}
+
 export abstract class BridgeTransfer {
   // status
   public status: BridgeTransferStatus
+  public fetchingStatus: boolean
 
   // source chain
   public sourceChainProvider: Provider
@@ -22,18 +36,13 @@ export abstract class BridgeTransfer {
   public destinationChainTx?: ContractTransaction
   public destinationChainTxReceipt?: ContractReceipt
 
-  protected constructor(props: {
-    status: BridgeTransferStatus
-    sourceChainTx: ContractTransaction
-    sourceChainTxReceipt?: ContractReceipt
-    sourceChainProvider: Provider
-    destinationChainProvider: Provider
-  }) {
+  protected constructor(props: BridgeTransferProps) {
     this.status = props.status
     this.sourceChainTx = props.sourceChainTx
     this.sourceChainTxReceipt = props.sourceChainTxReceipt
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
+    this.fetchingStatus = false
   }
 
   /**
@@ -48,14 +57,13 @@ export abstract class BridgeTransfer {
    */
   public abstract fetchStatus(): BridgeTransferFetchStatusFunctionResult
 
-  public pollForStatus(props: {
-    intervalMs?: number
-    onChange: (bridgeTransfer: BridgeTransfer) => void
-  }): void {
+  public pollForStatus(props: BridgeTransferPollStatusProps): void {
     const intervalId = setInterval(async () => {
+      this.fetchingStatus = true
       const status = await this.fetchStatus()
       const statusChanged = this.status !== status
       this.status = status
+      this.fetchingStatus = false
 
       if (statusChanged) {
         props.onChange(this)

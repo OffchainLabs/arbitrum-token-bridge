@@ -164,16 +164,16 @@ function App() {
   )
 
   useEffect(() => {
-    async function update() {
-      const result = await loadTxHistory({
-        sourceChainProvider: fromChain.provider,
-        destinationChainProvider: toChain.provider
-      })
+    // async function update() {
+    //   const result = await loadTxHistory({
+    //     sourceChainProvider: fromChain.provider,
+    //     destinationChainProvider: toChain.provider
+    //   })
 
-      setBridgeTransferMap(result)
-    }
+    //   setBridgeTransferMap(result)
+    // }
 
-    update()
+    // update()
   }, [fromChain.provider, toChain.provider])
 
   function swap() {

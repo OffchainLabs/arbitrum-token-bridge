@@ -3,24 +3,26 @@ import { L1EthDepositTransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L
 
 import {
   BridgeTransfer,
-  BridgeTransferStatusFunctionProps,
-  BridgeTransferStatusFunctionResult
+  BridgeTransferFetchStatusFunctionResult,
+  BridgeTransferPollStatusProps,
+  BridgeTransferStatus
 } from './BridgeTransfer'
-
-type WithOptionalInterval<T> = T & { interval?: number }
+import { ContractTransaction } from 'ethers'
 
 export class EthDeposit extends BridgeTransfer {
-  protected fromChainProvider: Provider
-  protected fromChainTxReceipt: L1EthDepositTransactionReceipt
+  protected sourceChainProvider: Provider
+  protected sourceChainTxReceipt: L1EthDepositTransactionReceipt
 
   private constructor(props: {
-    fromChainProvider: Provider
-    fromChainTxReceipt: L1EthDepositTransactionReceipt
+    status: BridgeTransferStatus
+    sourceChainTx: ContractTransaction
+    sourceChainTxReceipt?: L1EthDepositTransactionReceipt
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
   }) {
-    super()
+    super(props)
 
-    this.fromChainProvider = props.fromChainProvider
-    this.fromChainTxReceipt = props.fromChainTxReceipt
+    this.sourceChainProvider = props.sourceChainProvider
   }
 
   public static async create(props: {
@@ -32,38 +34,33 @@ export class EthDeposit extends BridgeTransfer {
     )
 
     return new EthDeposit({
-      fromChainProvider: props.fromChainProvider,
-      fromChainTxReceipt: txReceipt as L1EthDepositTransactionReceipt
+      sourceChainProvider: props.fromChainProvider,
+      sourceChainTxReceipt: txReceipt as L1EthDepositTransactionReceipt
     })
   }
 
-  public async status(
-    props: BridgeTransferStatusFunctionProps
-  ): Promise<BridgeTransferStatusFunctionResult> {
-    // return 'from_chain_tx_error'
-    const [message] = await this.fromChainTxReceipt.getEthDeposits(
-      props.toChainProvider
+  public async fetchStatus(): BridgeTransferFetchStatusFunctionResult {
+    const [message] = await this.sourceChainTxReceipt.getEthDeposits(
+      this.destinationChainProvider
     )
 
     // not yet created
     if (typeof message === 'undefined') {
-      return 'from_chain_tx_success'
+      return 'source_chain_tx_success'
     }
 
-    return 'to_chain_tx_success'
+    return 'destination_chain_tx_success'
   }
 
-  public async watchForStatus(
-    props: WithOptionalInterval<BridgeTransferStatusFunctionProps>
-  ) {
+  public async pollForStatus(props: BridgeTransferPollStatusProps) {
     const intervalId = setInterval(async () => {
-      const status = await this.status(props)
+      const status = await this.fetchStatus()
 
-      if (status === 'to_chain_tx_success') {
+      if (status === 'destination_chain_tx_success') {
         clearInterval(intervalId)
       }
 
       return status
-    }, props?.interval ?? 10_000)
+    }, props?.intervalMs ?? 10_000)
   }
 }
