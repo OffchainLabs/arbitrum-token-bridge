@@ -48,6 +48,7 @@ export async function attachTimestampToTokenWithdrawal({
 }) {
   return {
     ...withdrawal,
+    // TODO: arbitrary number, need changes to the SDK to get token withdrawal timestamp
     timestamp: BigNumber.from(1665914495)
   }
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
@@ -261,8 +262,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 }
 
 export async function mapWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,

@@ -1,3 +1,4 @@
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
