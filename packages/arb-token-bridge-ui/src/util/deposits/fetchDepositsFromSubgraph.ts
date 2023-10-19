@@ -4,7 +4,7 @@ export type FetchDepositsFromSubgraphResult = {
   receiver: string
   sender: string
   sequenceNumber: string
-  timestamp: string
+  timestampCreatedAt: string
   transactionHash: string
   type: 'EthDeposit' | 'TokenDeposit'
   isClassic: boolean

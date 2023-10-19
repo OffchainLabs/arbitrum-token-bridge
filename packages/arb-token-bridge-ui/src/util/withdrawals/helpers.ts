@@ -29,7 +29,6 @@ export const updateAdditionalWithdrawalData = async (
   l1Provider: Provider,
   l2Provider: Provider
 ) => {
-  console.log({ withdrawalTx })
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
     withdrawalTx as L2ToL1EventResultPlus,
     l1Provider,
@@ -73,7 +72,6 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   l2ChainId: number
 ): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
-  console.log('ethevent: ', event)
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
@@ -102,7 +100,6 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  console.log('HERE')
   const cacheKey = getExecutedMessagesCacheKey({
     event,
     l2ChainId: l2ChainID
@@ -135,8 +132,6 @@ export async function attachNodeBlockDeadlineToEvent(
   ) {
     return event
   }
-
-  console.log({ event })
 
   const messageReader = L2ToL1MessageReader.fromEvent(l1Provider, event)
 
@@ -188,7 +183,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   l1ChainID: number,
   l2ChainID: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
-  console.log('TOKENL1', result.l1Token)
   const { symbol, decimals } = await getL1TokenData({
     // we don't care about allowance in this call, so we're just using vitalik.eth
     // didn't want to use address zero in case contracts have checks for it

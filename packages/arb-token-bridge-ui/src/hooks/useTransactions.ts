@@ -94,7 +94,7 @@ type TransactionBase = {
   l1NetworkID: string
   l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
-  timestamp?: string //time when this transaction is first added to the list
+  timestampCreatedAt?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   isClassic?: boolean
@@ -310,7 +310,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
     const tx = {
       ...transaction,
-      timestamp: new Date().toISOString()
+      timestampCreatedAt: new Date().toISOString()
     } as Transaction
     return dispatch({
       type: 'ADD_TRANSACTION',
@@ -516,7 +516,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
-    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }

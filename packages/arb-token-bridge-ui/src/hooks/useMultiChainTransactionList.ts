@@ -50,7 +50,9 @@ function sortByTimestampDescending(
   a: DepositOrWithdrawal,
   b: DepositOrWithdrawal
 ) {
-  return (a.timestamp ?? constants.Zero) > (b.timestamp ?? constants.Zero)
+  const aTimestamp = isDeposit(a) ? a.timestampCreatedAt : a.timestamp
+  const bTimestamp = isDeposit(b) ? b.timestampCreatedAt : b.timestamp
+  return (aTimestamp ?? constants.Zero) > (bTimestamp ?? constants.Zero)
     ? -1
     : 1
 }
@@ -299,7 +301,6 @@ export const useCompleteMultiChainTransactions = () => {
 
   useEffect(() => {
     if (mapData) {
-      console.log({ mapData })
       setTransactions(prevTransactions => [
         ...prevTransactions,
         ...(mapData.filter(Boolean) as MergedTransaction[])
