@@ -3,7 +3,7 @@
 
 import dayjs from 'dayjs'
 
-import { useCompleteMultiChainTransactions } from '../../hooks/useMultiChainTransactionList'
+import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getNetworkName } from '../../util/networks'
 import { useCallback } from 'react'

@@ -194,7 +194,7 @@ const useTransactionListByDirection = (
 
   const { data, error } = useSWRImmutable(
     address ? [direction, address, page] : null,
-    ([, _address, _page]) => {
+    ([_direction, _address, _page]) => {
       return Promise.all(
         multiChainFetchList.map((c, index) => {
           if (!shouldFetchPage(index)) {
@@ -209,7 +209,7 @@ const useTransactionListByDirection = (
             pageNumber: _page
           }
 
-          return direction === 'deposits'
+          return _direction === 'deposits'
             ? fetchDepositList(params)
             : fetchWithdrawalList(params)
         })

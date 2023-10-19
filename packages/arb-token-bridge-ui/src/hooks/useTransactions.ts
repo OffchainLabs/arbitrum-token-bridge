@@ -9,7 +9,7 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
-import { AdditionalProperties } from './useMultiChainTransactionList'
+import { AdditionalProperties } from './useCompleteMultiChainTransactions'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
