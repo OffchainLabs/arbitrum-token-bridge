@@ -4,3 +4,6 @@ yarn-error.log
 .DS_Store
 tsconfig.tsbuildinfo
 __auto-generated-denylist.json
+
+# wagmi
+**/src/generated.ts

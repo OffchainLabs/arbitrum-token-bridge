@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useLatest } from 'react-use'
-import { useAccount } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -63,6 +63,9 @@ export function useGasSummary(
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const { address: walletAddress } = useAccount()
+  const { data: l2Signer } = useSigner({
+    chainId: l2.network.id
+  })
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -184,7 +187,9 @@ export function useGasSummary(
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
-                l2Provider: l2.provider
+                l1Provider: l1.provider,
+                l2Provider: l2.provider,
+                l2Signer
               })
             }
 

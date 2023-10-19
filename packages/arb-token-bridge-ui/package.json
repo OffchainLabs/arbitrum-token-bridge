@@ -48,8 +48,9 @@
     "zustand": "^4.3.9"
   },
   "scripts": {
+    "predev": "yarn wagmi:generate",
     "dev": "next dev",
-    "prebuild": "yarn generateDenylist",
+    "prebuild": "yarn generateDenylist & yarn wagmi:generate",
     "build": "next build",
     "start": "next start",
     "test": "jest --watch",
@@ -61,7 +62,8 @@
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
     "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "e2e:install": "cypress install"
+    "e2e:install": "cypress install",
+    "wagmi:generate": "wagmi generate"
   },
   "browserslist": {
     "production": [
@@ -89,6 +91,7 @@
     "@types/react-virtualized": "^9.21.20",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.44.0",
+    "@wagmi/cli": "^1.5.2",
     "autoprefixer": "^10.4.13",
     "cypress-recurse": "^1.27.0",
     "cypress-wait-until": "^1.7.2",
