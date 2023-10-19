@@ -38,8 +38,6 @@ export function MainContent() {
       <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
 
-        {/* if the user has some pending claim txns or retryables to redeem, show that banner here */}
-
         <AnimatePresence>
           <motion.div
             key="transfer-panel"

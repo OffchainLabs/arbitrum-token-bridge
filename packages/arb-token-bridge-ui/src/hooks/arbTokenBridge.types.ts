@@ -95,7 +95,7 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
-  timestamp?: number
+  timestamp?: BigNumber
 }
 
 export interface PendingWithdrawalsMap {

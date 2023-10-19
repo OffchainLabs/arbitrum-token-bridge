@@ -100,7 +100,7 @@ export const useArbTokenBridge = (
   params: TokenBridgeParams
 ): ArbTokenBridge => {
   const { l1, l2 } = params
-  const { address: walletAddress, connector } = useAccount()
+  const { address: walletAddress } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
@@ -141,29 +141,19 @@ export const useArbTokenBridge = (
   const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
     useState<PendingWithdrawalsMap>({})
 
+  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
+  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
+
   // once the l1/l2/account changes, we need to revalidate the withdrawal list in the store
   // this prevents previous account/chains' transactions to show up in the current account
   // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
   useEffect(() => {
-    if (!connector) {
+    if (!walletAddress) {
       return
     }
-
-    const resetPendingWithdrawalMap = () => {
-      setPendingWithdrawalMap({})
-    }
-
-    /**
-     * https://github.com/wagmi-dev/references/blob/7d02972803714e47a24ea9f5de33d91f384025b9/packages/connectors/src/base.ts#L13
-     * Handler is called whenever network or account change
-     */
-    connector.on('change', resetPendingWithdrawalMap)
-
-    return () => {
-      connector.off('change', resetPendingWithdrawalMap)
-    }
-  }, [connector])
-
+    // reset pending-withdrawal-map and re-fetch for new set of L1/L2/Account combination
+    setPendingWithdrawalMap({})
+  }, [l1NetworkID, l2NetworkID, walletAddress])
   const [
     transactions,
     {
@@ -180,8 +170,6 @@ export const useArbTokenBridge = (
       fetchAndUpdateEthDepositMessageStatus
     }
   ] = useTransactions()
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network])
-  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network])
 
   const depositEth = async ({
     amount,
@@ -320,7 +308,9 @@ export const useArbTokenBridge = (
           symbol: 'ETH',
           decimals: 18,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash
+          l2TxHash: tx.hash,
+          parentChainId: Number(l1NetworkID),
+          chainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -608,7 +598,9 @@ export const useArbTokenBridge = (
           symbol: symbol,
           decimals: decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash
+          l2TxHash: tx.hash,
+          parentChainId: Number(l1NetworkID),
+          chainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {

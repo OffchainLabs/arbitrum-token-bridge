@@ -9,6 +9,7 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { AdditionalProperties } from './useCompleteMultiChainTransactions'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -99,13 +100,8 @@ type TransactionBase = {
   isClassic?: boolean
 }
 
-export interface Transaction extends TransactionBase {
+export interface Transaction extends TransactionBase, AdditionalProperties {
   txID: string
-  direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
-  parentChainId: number
-  chainId: number
-  ts: number
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -520,7 +516,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
-    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }

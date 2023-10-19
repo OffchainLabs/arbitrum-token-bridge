@@ -26,7 +26,11 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import { useAppContextActions, useAppContextState } from '../App/AppContext'
+import {
+  TransactionHistoryTab,
+  useAppContextActions,
+  useAppContextState
+} from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import {
   TransferPanelMain,
@@ -592,8 +596,11 @@ export function TransferPanel() {
           messageBytes: null,
           receiveMessageTransactionHash: null,
           receiveMessageTimestamp: null
-        }
+        },
+        parentChainId: l1Network.id,
+        chainId: l2Network.id
       })
+
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()

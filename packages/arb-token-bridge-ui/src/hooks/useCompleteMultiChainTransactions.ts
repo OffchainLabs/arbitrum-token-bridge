@@ -12,9 +12,13 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { Transaction, TxnStatus } from './useTransactions'
+import { Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
-import { transformDeposit, transformWithdrawal } from '../state/app/utils'
+import {
+  getStandardizedTimestamp,
+  transformDeposit,
+  transformWithdrawal
+} from '../state/app/utils'
 import {
   EthWithdrawal,
   isTokenWithdrawal,
@@ -27,15 +31,14 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 
 export const PAGE_SIZE = 100
 
-type AdditionalProperties = {
+export type AdditionalProperties = {
   direction: 'deposit' | 'withdrawal'
   source: 'subgraph' | 'event_logs'
   parentChainId: ChainId
   chainId: ChainId
-  ts: number
 }
 
-export type Deposit = Transaction & AdditionalProperties
+export type Deposit = Transaction
 
 export type Withdrawal = (
   | FetchWithdrawalsFromSubgraphResult
@@ -46,19 +49,28 @@ export type Withdrawal = (
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 
+function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
+  if (isDeposit(tx)) {
+    return tx.timestampCreated ?? 0
+  }
+
+  if (isWithdrawalFromSubgraph(tx)) {
+    return getStandardizedTimestamp(tx.timestamp)
+  }
+
+  return getStandardizedTimestamp(tx.timestamp ?? '0')
+}
+
 function sortByTimestampDescending(
   a: DepositOrWithdrawal,
   b: DepositOrWithdrawal
 ) {
-  return a.ts > b.ts ? -1 : 1
+  return getStandardizedTimestampByTx(a) > getStandardizedTimestampByTx(b)
+    ? -1
+    : 1
 }
 
-type MultiChainFetch = {
-  parentChain: ChainId
-  chain: ChainId
-}
-
-const multiChainFetchList: MultiChainFetch[] = [
+const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Mainnet,
     chain: ChainId.ArbitrumOne
@@ -97,11 +109,6 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function getTransactionReceipt(tx: MergedTransaction) {
-  const provider = getProvider(tx.isWithdrawal ? tx.chainId : tx.parentChainId)
-  return provider.getTransactionReceipt(tx.txId)
-}
-
 async function transformTransaction(tx: DepositOrWithdrawal) {
   const parentChainProvider = getProvider(tx.parentChainId)
   const chainProvider = getProvider(tx.chainId)
@@ -116,7 +123,7 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
 
   if (isWithdrawalFromSubgraph(tx)) {
     withdrawal = await mapWithdrawalToL2ToL1EventResult(
-      tx as unknown as FetchWithdrawalsFromSubgraphResult,
+      tx,
       parentChainProvider,
       chainProvider,
       tx.parentChainId,
@@ -180,14 +187,14 @@ const useTransactionListByDirection = (
       const txCount = latestTransactions.current[index]?.length ?? 0
       // fetch next page for a chain pair if all fetched pages are full
       // we check for >= in case some txs were included by initiating a transfer
-      return txCount / _page + 1 >= PAGE_SIZE
+      return txCount / _page >= PAGE_SIZE
     },
     [latestTransactions, latestPage]
   )
 
   const { data, error } = useSWRImmutable(
     address ? [direction, address, page] : null,
-    ([, _address, _page]) => {
+    ([_direction, _address, _page]) => {
       return Promise.all(
         multiChainFetchList.map((c, index) => {
           if (!shouldFetchPage(index)) {
@@ -202,7 +209,7 @@ const useTransactionListByDirection = (
             pageNumber: _page
           }
 
-          return direction === 'deposits'
+          return _direction === 'deposits'
             ? fetchDepositList(params)
             : fetchWithdrawalList(params)
         })
@@ -212,6 +219,7 @@ const useTransactionListByDirection = (
 
   useEffect(() => {
     if (data) {
+      // if there is not a single full page in any of the data fetched, then there is no more to fetch
       const shouldFetchNextPage = data.some((_, index) =>
         shouldFetchPage(index)
       )
@@ -230,15 +238,12 @@ const useTransactionListByDirection = (
         })
       })
 
-      // if there is a full page in at least one of the fetches, then there is more to fetch
       if (!shouldFetchNextPage) {
         setLoading(false)
+        return
       }
 
-      setPage(prevPage => {
-        // fetch next page if there is at least one full page for any chain pair
-        return shouldFetchNextPage ? prevPage + 1 : prevPage
-      })
+      setPage(prevPage => prevPage + 1)
     }
   }, [data, shouldFetchPage])
 
@@ -282,7 +287,6 @@ export const useCompleteMultiChainTransactions = () => {
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
   const MAX_BATCH_SIZE = 5
 
-  // TODO: Change to MergedTransaction[]
   const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
   const [fetching, setFetching] = useState(true)

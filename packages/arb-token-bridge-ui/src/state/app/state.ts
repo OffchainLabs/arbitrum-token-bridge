@@ -75,7 +75,7 @@ export interface MergedTransaction {
     attestationHash: `0x${string}` | null
     messageBytes: string | null
     receiveMessageTransactionHash: `0x${string}` | null
-    receiveMessageTimestamp: string | null
+    receiveMessageTimestamp: number | null
   }
 }
 

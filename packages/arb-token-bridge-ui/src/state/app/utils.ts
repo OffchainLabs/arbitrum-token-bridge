@@ -10,7 +10,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { Deposit } from '../../hooks/useMultiChainTransactionList'
+import { Deposit } from '../../hooks/useCompleteMultiChainTransactions'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -267,11 +267,15 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (dateString: string) => {
+export const getStandardizedTimestamp = (date: string | BigNumber) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
+  if (typeof date === 'string') {
+    if (isNaN(Number(date))) return dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
+    return Number(date) // for timestamp type of date -> dayjs timestamp
+  }
 
-  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).unix() // for ISOstring type of dates -> dayjs timestamp
-  return Number(dateString) // for timestamp type of date -> dayjs timestamp
+  // BigNumber
+  return date.toNumber()
 }
 
 export const getStandardizedTime = (standatdisedTimestamp: string) => {

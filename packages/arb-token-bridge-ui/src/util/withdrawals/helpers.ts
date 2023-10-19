@@ -1,5 +1,5 @@
 import { utils } from 'ethers'
-import { Provider, getNetwork } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
@@ -29,7 +29,6 @@ export const updateAdditionalWithdrawalData = async (
   l1Provider: Provider,
   l2Provider: Provider
 ) => {
-  console.log({ withdrawalTx })
   const l2toL1TxWithDeadline = await attachNodeBlockDeadlineToEvent(
     withdrawalTx as L2ToL1EventResultPlus,
     l1Provider,
@@ -48,6 +47,7 @@ export async function attachTimestampToTokenWithdrawal({
 }) {
   return {
     ...withdrawal,
+    // TODO: arbitrary number, need changes to the SDK to get token withdrawal timestamp
     timestamp: BigNumber.from(1665914495)
   }
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
@@ -60,10 +60,6 @@ export async function attachTimestampToTokenWithdrawal({
   }
 }
 
-/**
- * `l2TxHash` exists on result from subgraph
- * `transactionHash` exists on result from event logs
- */
 export async function mapETHWithdrawalToL2ToL1EventResult(
   event: EthWithdrawal,
   l1Provider: Provider,
@@ -72,7 +68,6 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
   l2ChainId: number
 ): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
-  console.log('ethevent: ', event)
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
@@ -101,7 +96,6 @@ export async function getOutgoingMessageState(
   l2Provider: Provider,
   l2ChainID: number
 ) {
-  console.log('HERE')
   const cacheKey = getExecutedMessagesCacheKey({
     event,
     l2ChainId: l2ChainID
@@ -134,8 +128,6 @@ export async function attachNodeBlockDeadlineToEvent(
   ) {
     return event
   }
-
-  console.log({ event })
 
   const messageReader = L2ToL1MessageReader.fromEvent(l1Provider, event)
 
@@ -187,7 +179,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   l1ChainID: number,
   l2ChainID: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
-  console.log('TOKENL1', result.l1Token)
   const { symbol, decimals } = await getL1TokenData({
     // we don't care about allowance in this call, so we're just using vitalik.eth
     // didn't want to use address zero in case contracts have checks for it
@@ -261,8 +252,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 }
 
 export async function mapWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,
@@ -270,13 +259,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
   l2ChainId: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
-
-  console.log('rec: ', withdrawal.l2TxHash)
-  console.log({ l2Provider })
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
-  console.log({ txReceipt })
   const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-  console.log({ l2TxReceipt })
 
   // TODO: length != 1
   const [event] = l2TxReceipt.getL2ToL1Events()
