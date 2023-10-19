@@ -4,7 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from './Transition'
 
 type SidePanelProps = {
-  heading: string
+  heading?: string
   isOpen: boolean
   onClose?: () => void
   children: React.ReactNode
@@ -29,12 +29,17 @@ export const SidePanel = ({
           {/* The heading of dialog  */}
           <Dialog.Panel
             className={twMerge(
-              'side-panel flex h-full w-full flex-col bg-dark lg:w-1/2 lg:min-w-[900px]',
+              'side-panel flex h-full w-full flex-col bg-black lg:w-1/2 lg:min-w-[1100px]',
               panelClassNameOverrides
             )}
           >
-            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-dark py-4 text-white">
-              <span className="text-xl">{heading}</span>
+            <Dialog.Title
+              className={twMerge(
+                'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black py-4 text-white',
+                heading ? 'border-b-[1px] border-gray-6' : ''
+              )}
+            >
+              {heading && <span className="text-xl">{heading}</span>}
               <button className="arb-hover" onClick={onClose}>
                 <XMarkIcon className="h-6 w-6 text-white" />
               </button>

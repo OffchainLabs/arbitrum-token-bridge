@@ -63,10 +63,10 @@ const multiChainFetchList: MultiChainFetch[] = [
     parentChain: ChainId.Mainnet,
     chain: ChainId.ArbitrumOne
   },
-  // {
-  //   parentChain: ChainId.Mainnet,
-  //   chain: ChainId.ArbitrumNova
-  // },
+  {
+    parentChain: ChainId.Mainnet,
+    chain: ChainId.ArbitrumNova
+  },
   // // Testnet
   {
     parentChain: ChainId.Goerli,
@@ -75,16 +75,16 @@ const multiChainFetchList: MultiChainFetch[] = [
   {
     parentChain: ChainId.Sepolia,
     chain: ChainId.ArbitrumSepolia
-  }
+  },
   // Orbit
-  // {
-  //   parentChain: ChainId.ArbitrumGoerli,
-  //   chain: ChainId.XaiTestnet
-  // }
-  // {
-  //   parentChain: ChainId.ArbitrumSepolia,
-  //   chain: ChainId.StylusTestnet
-  // }
+  {
+    parentChain: ChainId.ArbitrumGoerli,
+    chain: ChainId.XaiTestnet
+  },
+  {
+    parentChain: ChainId.ArbitrumSepolia,
+    chain: ChainId.StylusTestnet
+  }
 ]
 
 function isWithdrawalFromSubgraph(
@@ -300,19 +300,13 @@ export const useCompleteMultiChainTransactions = () => {
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(tx => {
-          if (!tx.parentChainId) {
-            console.log('NODATA! ', tx)
-          }
-          return transformTransaction(tx)
-        })
+        data.slice(startIndex, endIndex).map(tx => transformTransaction(tx))
       )
     }
   )
 
   useEffect(() => {
     if (mapData) {
-      console.log({ mapData })
       setTransactions(prevTransactions => [
         ...prevTransactions,
         ...(mapData.filter(Boolean) as MergedTransaction[])
@@ -333,6 +327,7 @@ export const useCompleteMultiChainTransactions = () => {
 
   return {
     data: { transactions, total: data.length },
+    loading: fetching,
     completed: !fetching && !paused,
     paused,
     error: mapError ?? error ?? null
