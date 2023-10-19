@@ -1,7 +1,5 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
-import { FetchDepositParams } from './deposits/fetchDeposits'
-import { FetchWithdrawalsParams } from './withdrawals/fetchWithdrawals'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -121,24 +119,40 @@ export const tryFetchLatestSubgraphBlockNumber = async (
   }
 }
 
-type AdditionalSubgraphQueryParams = Pick<
-  FetchDepositParams | FetchWithdrawalsParams,
-  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
->
-
-export function getQueryParamsForFetchingSentFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    sender: address
+export const shouldIncludeSentTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposit' | 'withdrawal'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent from this account for:
+    // 1. deposits if we are connected to the parent chain, or
+    // 2. withdrawals if we are connected to the child chain
+    return isConnectedToParentChain ? type === 'deposit' : type === 'withdrawal'
   }
+  // always show for EOA
+  return true
 }
 
-export function getQueryParamsForFetchingReceivedFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    senderNot: address,
-    receiver: address
+export const shouldIncludeReceivedTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposit' | 'withdrawal'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent to this account for:
+    // 1. withdrawals if we are connected to the parent chain, or
+    // 2. deposits if we are connected to the child chain
+    return isConnectedToParentChain ? type === 'withdrawal' : type === 'deposit'
   }
+  // always show for EOA
+  return true
 }
