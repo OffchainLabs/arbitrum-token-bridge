@@ -17,7 +17,7 @@ import {
 } from '../../state/app/utils'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
-import { useAppContextActions } from '../App/AppContext'
+import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
 
 export const TransactionStatusInfo = ({
@@ -29,7 +29,8 @@ export const TransactionStatusInfo = ({
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const l2NetworkName = getNetworkName(l2Network.id)
-  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { openTransactionHistoryPanel, setTransactionHistoryTab } =
+    useAppContextActions()
 
   // get the pending withdrawals to claim
   const {
@@ -57,6 +58,7 @@ export const TransactionStatusInfo = ({
           : 'bg-lime text-lime-dark'
       )}
       onClick={() => {
+        setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
         openTransactionHistoryPanel()
         if (shouldTrackAnalytics(l2NetworkName)) {
           trackEvent('Open Transaction History Click', {
