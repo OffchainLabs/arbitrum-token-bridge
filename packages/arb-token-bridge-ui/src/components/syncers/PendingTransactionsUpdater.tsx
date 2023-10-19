@@ -32,6 +32,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
+      // TODO: NETWORKS: check
       const provider = txnTypeToLayer(tx.type) === 2 ? toProvider : fromProvider
       return provider.getTransactionReceipt(tx.txID)
     },

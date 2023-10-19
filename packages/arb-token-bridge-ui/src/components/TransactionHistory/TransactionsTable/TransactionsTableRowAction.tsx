@@ -15,6 +15,7 @@ import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { useChainLayers } from '../../../hooks/useChainLayers'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 const GetHelpButton = ({
   variant,
@@ -43,10 +44,11 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
-  const l1NetworkName = getNetworkName(fromProvider.network.chainId)
-  const l2NetworkName = getNetworkName(toProvider.network.chainId)
+  const l1NetworkName = getNetworkName(parentChain.id)
+  const l2NetworkName = getNetworkName(childChain.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
 
   const chainId = useChainId()
@@ -57,9 +59,7 @@ export function TransactionsTableRowAction({
   const { isEthereum, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(
-      toProvider.network.chainId
-    ).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -70,7 +70,7 @@ export function TransactionsTableRowAction({
       (type === 'deposits' && isArbitrum) ||
       (type === 'withdrawals' && isEthereum)
     )
-  }, [isArbitrum, isEthereum, toProvider.network.chainId, type])
+  }, [childChain.id, isArbitrum, isEthereum, type])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed

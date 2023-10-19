@@ -9,10 +9,12 @@ import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 // TODO: Remove after Nitro.
 export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
@@ -33,11 +35,11 @@ export function DepositCardCreationFailure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `${parentLayer} transaction: ${getExplorerUrl(
-              fromProvider.network.chainId
-            )}/tx/${tx.txId}\n${layer} transaction: ${getExplorerUrl(
-              toProvider.network.chainId
-            )}/tx/${tx.l1ToL2MsgData?.retryableCreationTxID}`
+            `${parentLayer} transaction: ${getExplorerUrl(parentChain.id)}/tx/${
+              tx.txId
+            }\n${layer} transaction: ${getExplorerUrl(childChain.id)}/tx/${
+              tx.l1ToL2MsgData?.retryableCreationTxID
+            }`
           )
         }}
       >

@@ -19,13 +19,15 @@ import { ClaimableCardConfirmed } from './ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from './ClaimableCardUnconfirmed'
 import { twMerge } from 'tailwind-merge'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function WithdrawalL2TxStatus({
   tx
 }: {
   tx: MergedTransaction
 }): JSX.Element {
-  const [{ toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   if (tx.direction === 'withdraw' && tx.status === 'pending') {
     return <span>Pending...</span>
@@ -37,7 +39,7 @@ export function WithdrawalL2TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(toProvider.network.chainId)}/tx/${tx.txId}`}
+      href={`${getExplorerUrl(childChain.id)}/tx/${tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(tx.txId)}
@@ -51,7 +53,8 @@ export function WithdrawalL1TxStatus({
 }: {
   tx: MergedTransaction
 }): JSX.Element {
-  const [{ fromProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
 
   // Try to find the L1 transaction that matches the L2ToL1 message
   const l1Tx = tx.isCctp ? tx : findMatchingL1TxForWithdrawal(tx)
@@ -62,7 +65,7 @@ export function WithdrawalL1TxStatus({
 
   return (
     <ExternalLink
-      href={`${getExplorerUrl(fromProvider.network.chainId)}/tx/${l1Tx.txId}`}
+      href={`${getExplorerUrl(parentChain.id)}/tx/${l1Tx.txId}`}
       className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
     >
       {shortenTxHash(l1Tx.txId)}

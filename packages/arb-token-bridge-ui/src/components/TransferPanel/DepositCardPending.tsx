@@ -13,19 +13,21 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
-  const networkName = getNetworkName(toProvider.network.chainId)
+  const toNetworkName = getNetworkName(childChain.id)
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: fromProvider.network.chainId
+        chainId: parentChain.id
       }),
-    [fromProvider.network.chainId, tx.tokenAddress, tx.asset]
+    [tx.asset, tx.tokenAddress, parentChain.id]
   )
 
   return (
@@ -38,7 +40,7 @@ export function DepositCardPending({ tx }: { tx: MergedTransaction }) {
             {formatAmount(Number(tx.value), {
               symbol: tokenSymbol
             })}{' '}
-            to {networkName}
+            to {toNetworkName}
           </span>
 
           {/* Addresses */}

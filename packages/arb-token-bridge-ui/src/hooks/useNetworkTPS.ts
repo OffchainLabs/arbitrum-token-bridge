@@ -6,6 +6,7 @@ import useSWR from 'swr'
 
 import { getExplorerUrl, isNetwork } from '../util/networks'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 const emptyData = { tps: null }
 
@@ -39,10 +40,11 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
 }
 
 export const useNetworkTPS = () => {
-  const [{ toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   return useSWR(
-    ['tps', toProvider.network.chainId],
+    ['tps', childChain.id],
     ([, _l2ChainId]) => fetchNetworkTPS(_l2ChainId),
     {
       refreshInterval: 30_000,

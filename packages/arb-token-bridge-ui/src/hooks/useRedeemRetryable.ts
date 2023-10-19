@@ -13,6 +13,7 @@ import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -23,9 +24,10 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, childProvider } = useNetworksRelationship(networks)
   const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(toProvider.network.chainId)
+  const l2NetworkName = getNetworkName(childProvider.network.chainId)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -46,7 +48,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: fromProvider,
+        l1Provider: parentProvider,
         l2Signer: signer
       })
     } catch (error: any) {

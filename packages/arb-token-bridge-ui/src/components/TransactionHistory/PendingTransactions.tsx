@@ -14,6 +14,7 @@ import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (isNetwork(chainId).isEthereum) {
@@ -61,10 +62,11 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { switchNetwork } = useSwitchNetworkWithConfig()
 
-  const bgClassName = isNetwork(toProvider.network.chainId).isArbitrumNova
+  const bgClassName = isNetwork(childChain.id).isArbitrumNova
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
@@ -77,22 +79,18 @@ export const PendingTransactions = ({
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
-          {`${getNetworkName(toProvider.network.chainId)}/${getNetworkName(
-            fromProvider.network.chainId
-          )}`}
+          {`${getNetworkName(childChain.id)}/${getNetworkName(parentChain.id)}`}
         </div>
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
-        {!isNetwork(toProvider.network.chainId).isTestnet && (
+        {!isNetwork(childChain.id).isTestnet && (
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchNetwork?.(
-                getOtherL2NetworkChainId(toProvider.network.chainId)
-              )
+              switchNetwork?.(getOtherL2NetworkChainId(childChain.id))
             }}
           >{`See ${getNetworkName(
-            getOtherL2NetworkChainId(toProvider.network.chainId)
+            getOtherL2NetworkChainId(childChain.id)
           )}`}</ExternalLink>
         )}
       </div>

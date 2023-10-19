@@ -23,6 +23,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export type PageParams = {
   searchString: string
@@ -94,7 +95,8 @@ export const CustomAddressTxExplorer = ({
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const isDifferentSenderTx = useMemo(() => {
     if (!tx.sender || !address) {
@@ -119,22 +121,19 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isDifferentSenderTx
-        ? toProvider.network.chainId
-        : fromProvider.network.chainId
+      return isDifferentSenderTx ? childChain.id : parentChain.id
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isDifferentSenderTx
-      ? fromProvider.network.chainId
-      : toProvider.network.chainId
+    return isDifferentSenderTx ? parentChain.id : childChain.id
   }, [
     isDifferentSenderTx,
     isCustomDestinationTx,
-    fromProvider.network.chainId,
-    toProvider.network.chainId
+    tx.isWithdrawal,
+    parentChain.id,
+    childChain.id
   ])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {

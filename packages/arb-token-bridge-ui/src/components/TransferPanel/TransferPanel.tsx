@@ -74,6 +74,7 @@ import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -166,15 +167,16 @@ export function TransferPanel() {
   })
 
   const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const latestConnectedProvider = useLatest(networks.fromProvider)
   const latestNetworksAndSigners = useLatest(networks)
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
-    chainId: networks.fromProvider.network.chainId
+    chainId: parentChain.id
   })
   const { data: l2Signer } = useSigner({
-    chainId: networks.toProvider.network.chainId
+    chainId: childChain.id
   })
 
   const { updateTransfer, setPendingTransfer } = useCctpState()
@@ -187,8 +189,8 @@ export function TransferPanel() {
     setTransactionHistoryTab
   } = useAppContextActions()
 
-  const { isMainnet } = isNetwork(networks.fromProvider.network.chainId)
-  const { isArbitrumNova } = isNetwork(networks.toProvider.network.chainId)
+  const { isMainnet } = isNetwork(parentChain.id)
+  const { isArbitrumNova } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
@@ -658,8 +660,8 @@ export function TransferPanel() {
 
     // Make sure Ethereum and/or Orbit chains are not selected as a pair.
     const ethereumOrOrbitPairsSelected = [
-      networks.fromProvider.network.chainId,
-      networks.toProvider.network.chainId
+      networks.from.id,
+      networks.to.id
     ].every(id => {
       const { isEthereum, isOrbitChain } = isNetwork(id)
       return isEthereum || isOrbitChain
@@ -669,7 +671,7 @@ export function TransferPanel() {
       return
     }
 
-    const l2NetworkName = getNetworkName(networks.toProvider.network.chainId)
+    const l2NetworkName = getNetworkName(networks.to.id)
 
     setTransferring(true)
 
@@ -697,9 +699,7 @@ export function TransferPanel() {
           )
         }
 
-        const isParentChainEthereum = isNetwork(
-          networks.fromProvider.network.chainId
-        ).isEthereum
+        const isParentChainEthereum = isNetwork(networks.from.id).isEthereum
         // Only switch to L1 if the selected L1 network is Ethereum.
         // Or if connected to an Orbit chain as it can't make deposits.
         if (
@@ -871,7 +871,7 @@ export function TransferPanel() {
 
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-        const { isOrbitChain } = isNetwork(networks.toProvider.network.chainId)
+        const { isOrbitChain } = isNetwork(networks.to.id)
 
         if (
           isConnectedToEthereum ||
@@ -887,9 +887,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.toProvider.network.chainId
-          )
+          await switchNetworkAsync?.(latestNetworksAndSigners.current.to.id)
 
           while (
             (!isConnectedToArbitrum.current &&
@@ -1076,10 +1074,7 @@ export function TransferPanel() {
       if (
         isDepositMode &&
         selectedToken &&
-        isWithdrawOnlyToken(
-          selectedToken.address,
-          networks.toProvider.network.chainId
-        )
+        isWithdrawOnlyToken(selectedToken.address, networks.to.id)
       ) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
@@ -1126,7 +1121,7 @@ export function TransferPanel() {
       ethBalance,
       selectedToken,
       isDepositMode,
-      networks.toProvider.network.chainId,
+      networks.to.id,
       requiredGasFees,
       isSmartContractWallet
     ]
@@ -1170,10 +1165,7 @@ export function TransferPanel() {
 
     if (
       selectedToken &&
-      isWithdrawOnlyToken(
-        selectedToken.address,
-        networks.toProvider.network.chainId
-      )
+      isWithdrawOnlyToken(selectedToken.address, networks.to.id)
     ) {
       return true
     }
@@ -1201,7 +1193,7 @@ export function TransferPanel() {
   }, [
     disableDepositAndWithdrawal,
     selectedToken,
-    networks.toProvider.network.chainId,
+    networks.to.id,
     isBridgingANewStandardToken,
     amount,
     requiredGasFees,
@@ -1269,7 +1261,7 @@ export function TransferPanel() {
 
   const depositButtonColorClassName = useMemo(() => {
     const { isArbitrum, isArbitrumNova, isXaiTestnet, isStylusTestnet } =
-      isNetwork(networks.toProvider.network.chainId)
+      isNetwork(networks.to.id)
 
     if (isArbitrumNova) {
       return 'bg-arb-nova-dark'
@@ -1289,13 +1281,13 @@ export function TransferPanel() {
 
     // is Orbit chain
     return 'bg-orbit-dark'
-  }, [networks.toProvider.network.chainId])
+  }, [networks.to.id])
 
   const withdrawalButtonColorClassName = useMemo(() => {
     const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
-      networks.fromProvider.network.chainId
+      networks.from.id
     )
-    const { isArbitrum } = isNetwork(networks.toProvider.network.chainId)
+    const { isArbitrum } = isNetwork(networks.to.id)
 
     if (isArbitrum) {
       return 'bg-eth-dark'
@@ -1307,10 +1299,7 @@ export function TransferPanel() {
     }
 
     return 'bg-arb-one-dark'
-  }, [
-    networks.fromProvider.network.chainId,
-    networks.toProvider.network.chainId
-  ])
+  }, [networks.from.id, networks.to.id])
 
   return (
     <>
@@ -1416,9 +1405,7 @@ export function TransferPanel() {
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.toProvider.network.chainId
-                    )}`}
+                  : `Move funds to ${getNetworkName(networks.to.id)}`}
               </span>
             </Button>
           ) : (
@@ -1445,9 +1432,7 @@ export function TransferPanel() {
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.fromProvider.network.chainId
-                    )}`}
+                  : `Move funds to ${getNetworkName(networks.from.id)}`}
               </span>
             </Button>
           )}

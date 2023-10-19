@@ -15,6 +15,7 @@ import {
   getQueryParamsForFetchingSentFunds
 } from '../util/SubgraphUtils'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -44,7 +45,8 @@ export const fetchCompleteDepositData = async (
 }
 
 export const useDeposits = (depositPageParams: PageParams) => {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childProvider, parentProvider } = useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const {
     layout: { isTransactionHistoryShowingSentTx }
@@ -56,8 +58,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
       ? [
           'deposits',
           walletAddress,
-          fromProvider,
-          toProvider,
+          parentProvider,
+          childProvider,
           isTransactionHistoryShowingSentTx,
           depositPageParams.pageNumber,
           depositPageParams.pageSize,
@@ -67,16 +69,16 @@ export const useDeposits = (depositPageParams: PageParams) => {
     ([
       ,
       _walletAddress,
-      _fromProvider,
-      _toProvider,
+      _parentProvider,
+      _childProvider,
       _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteDepositData({
-        l1Provider: _fromProvider,
-        l2Provider: _toProvider,
+        l1Provider: _parentProvider,
+        l2Provider: _childProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,

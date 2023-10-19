@@ -19,42 +19,32 @@ import {
 } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   let toNetworkId
   if (tx.isCctp) {
     toNetworkId = getTargetChainIdFromSourceChain(tx)
   } else {
-    toNetworkId = tx.isWithdrawal
-      ? fromProvider.network.chainId
-      : toProvider.network.chainId
+    toNetworkId = tx.isWithdrawal ? parentChain.id : childChain.id
   }
 
   const networkName = getNetworkName(toNetworkId)
   const { isEthereum: isWithdrawal } = isNetwork(toNetworkId)
 
-  const isOrbitChainSelected = isNetwork(
-    toProvider.network.chainId
-  ).isOrbitChain
+  const isOrbitChainSelected = isNetwork(childChain.id).isOrbitChain
 
   const tokenSymbol = useMemo(
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: isWithdrawal
-          ? toProvider.network.chainId
-          : fromProvider.network.chainId
+        chainId: isWithdrawal ? childChain.id : parentChain.id
       }),
-    [
-      tx.asset,
-      tx.tokenAddress,
-      isWithdrawal,
-      fromProvider.network.chainId,
-      toProvider.network.chainId
-    ]
+    [tx.asset, tx.tokenAddress, isWithdrawal, childChain.id, parentChain.id]
   )
 
   const { remainingTime } = useRemainingTime(tx)

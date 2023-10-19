@@ -28,6 +28,7 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../../state/cctpState'
 import { useChainLayers } from '../../../hooks/useChainLayers'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -228,11 +229,10 @@ function ClaimableRowTime({ tx }: CommonProps) {
 }
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum
-    ? fromProvider.network.chainId
-    : toProvider.network.chainId
+  const toNetworkId = isSourceChainArbitrum ? parentChain.id : childChain.id
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
@@ -273,11 +273,10 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 }
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum
-    ? toProvider.network.chainId
-    : fromProvider.network.chainId
+  const fromNetworkId = isSourceChainArbitrum ? childChain.id : parentChain.id
 
   return (
     <div className="flex flex-col space-y-3">
@@ -309,7 +308,8 @@ export function TransactionsTableClaimableRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereum: isSourceChainIdEthereum,
@@ -327,16 +327,14 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: isSourceChainIdEthereum
-          ? fromProvider.network.chainId
-          : toProvider.network.chainId
+        chainId: isSourceChainIdEthereum ? parentChain.id : childChain.id
       }),
     [
       tx.asset,
       tx.tokenAddress,
       isSourceChainIdEthereum,
-      fromProvider.network,
-      toProvider.network
+      parentChain.id,
+      childChain.id
     ]
   )
 

@@ -9,19 +9,26 @@ import {
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { TokenListWithId } from '../../util/TokenListUtils'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, childProvider, parentProvider } =
+    useNetworksRelationship(networks)
 
-  const { data: tokenLists = [] } = useTokenLists(toProvider.network.chainId)
+  const { data: tokenLists = [] } = useTokenLists(childChain.id)
 
   return useMemo(() => {
     return tokenListsToSearchableTokenStorage(
       tokenLists,
-      String(fromProvider.network.chainId),
-      String(toProvider.network.chainId)
+      String(parentProvider.network.chainId),
+      String(childProvider.network.chainId)
     )
-  }, [tokenLists, fromProvider, toProvider])
+  }, [
+    tokenLists,
+    parentProvider.network.chainId,
+    childProvider.network.chainId
+  ])
 }
 
 export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {

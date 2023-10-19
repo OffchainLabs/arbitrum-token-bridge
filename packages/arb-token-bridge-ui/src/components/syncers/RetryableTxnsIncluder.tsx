@@ -10,11 +10,13 @@ import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
 
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, childProvider } = useNetworksRelationship(networks)
 
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
@@ -27,8 +29,8 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const { l1ToL2Msg, isClassic } = await getL1ToL2MessageDataFromL1TxHash({
         depositTxId,
         isEthDeposit,
-        l1Provider: fromProvider,
-        l2Provider: toProvider
+        l1Provider: parentProvider,
+        l2Provider: childProvider
       })
 
       if (!l1ToL2Msg) return
@@ -62,7 +64,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     },
-    [fromProvider, toProvider, arbTokenBridge?.transactions]
+    [parentProvider, childProvider, arbTokenBridge.transactions]
   )
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {

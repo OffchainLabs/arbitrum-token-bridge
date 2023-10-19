@@ -41,6 +41,7 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 enum Panel {
   TOKENS,
@@ -69,7 +70,9 @@ function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const [{ toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
@@ -79,9 +82,9 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === toProvider.network.chainId
+      return tokenList.originChainID === childChain.id
     })
-  }, [toProvider.network.chainId])
+  }, [childChain.id])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
@@ -151,21 +154,21 @@ function TokensPanel({
       isDepositMode
     }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, childProvider, parentProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: fromProvider, walletAddress })
+  } = useBalance({ provider: parentProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: toProvider, walletAddress })
+  } = useBalance({ provider: childProvider, walletAddress })
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
-    toProvider.network.chainId
-  )
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(childChain.id)
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -460,13 +463,13 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, childProvider, parentChain, parentProvider } =
+    useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(
-    toProvider.network.chainId
-  ) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -522,8 +525,8 @@ export function TokenSearch({
       const data = await getL1TokenData({
         account: walletAddress,
         erc20L1Address: _token.address,
-        l1Provider: fromProvider,
-        l2Provider: toProvider
+        l1Provider: parentProvider,
+        l2Provider: childProvider
       })
 
       if (data) {

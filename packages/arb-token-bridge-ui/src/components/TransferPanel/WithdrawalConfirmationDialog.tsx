@@ -23,10 +23,10 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -52,20 +52,17 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain, childChain } = useNetworksRelationship(networks)
   const { parentLayer } = useChainLayers()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const networkName = getNetworkName(fromProvider.network.chainId)
+  const toNetworkName = getNetworkName(parentChain.id)
   const {
     app: { selectedToken }
   } = useAppState()
 
-  const from = isConnectedToArbitrum ? toProvider.network : fromProvider.network
-  const to = isConnectedToArbitrum ? fromProvider.network : toProvider.network
-
   const fastBridges = getFastBridges({
-    from: from.chainId,
-    to: to.chainId,
+    from: childChain.id,
+    to: parentChain.id,
     tokenSymbol: selectedToken?.symbol,
     amount: props.amount
   })
@@ -75,8 +72,7 @@ export function WithdrawalConfirmationDialog(
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
   const confirmationSeconds =
-    getBlockTime(fromProvider.network.chainId) *
-    getConfirmPeriodBlocks(toProvider.network.chainId)
+    getBlockTime(parentChain.id) * getConfirmPeriodBlocks(childChain.id)
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
   let confirmationPeriod = ''
   const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
@@ -91,8 +87,8 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  // TODO: Check for ArbGoerli?
-  const { isArbitrumOne } = isNetwork(toProvider.network.chainId)
+  // Show fast bridge on Goerli?
+  const { isArbitrumOne } = isNetwork(childChain.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -107,7 +103,7 @@ export function WithdrawalConfirmationDialog(
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {toNetworkName}
             </HeadlessUIDialog.Title>
             <button className="arb-hover" onClick={() => closeWithReset(false)}>
               <XMarkIcon className="h-6 w-6 text-white" />
@@ -169,7 +165,7 @@ export function WithdrawalConfirmationDialog(
                       I understand that it will take ~{confirmationPeriod}{' '}
                       before I can claim my funds on{' '}
                       {parentLayer === 'L1' ? 'Ethereum ' : ''}
-                      {networkName}
+                      {toNetworkName}
                     </span>
                   }
                   checked={checkbox1Checked}
@@ -201,7 +197,7 @@ export function WithdrawalConfirmationDialog(
                         confirmationHours,
                         props.amount,
                         selectedToken?.symbol || 'ETH',
-                        getNetworkName(toProvider.network.chainId)
+                        getNetworkName(childChain.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-ocl-blue px-4 py-2 text-ocl-blue"

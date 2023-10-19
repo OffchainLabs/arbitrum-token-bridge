@@ -49,8 +49,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const [{ fromProvider, toProvider }] = useNetworks()
   const { parentLayer, layer } = useChainLayers()
   const { isMainnet, isTestnet } = isNetwork(fromProvider.network.chainId)
-  const provider = isDepositMode ? fromProvider : toProvider
-  const gasPrice = useGasPrice({ provider })
+  const gasPrice = useGasPrice({ provider: fromProvider })
   const chainId = useChainId()
   const { data: signer } = useSigner({
     chainId
@@ -198,11 +197,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(
-                isDepositMode
-                  ? fromProvider.network.chainId
-                  : toProvider.network.chainId
-              )}/token/${token?.address}`}
+              href={`${getExplorerUrl(fromProvider.network.chainId)}/token/${
+                token?.address
+              }`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
@@ -222,9 +219,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <ExternalLink
                 className="text-blue-link underline"
                 href={`${getExplorerUrl(
-                  isDepositMode
-                    ? fromProvider.network.chainId
-                    : toProvider.network.chainId
+                  fromProvider.network.chainId
                 )}/address/${contractAddress}`}
                 onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   event.stopPropagation()

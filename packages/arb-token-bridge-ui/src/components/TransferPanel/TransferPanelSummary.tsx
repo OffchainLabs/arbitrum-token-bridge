@@ -23,6 +23,7 @@ import {
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -60,11 +61,12 @@ export function useGasSummary(
     app: { arbTokenBridge, isDepositMode }
   } = useAppState()
   const [networks] = useNetworks()
+  const { childProvider, parentProvider } = useNetworksRelationship(networks)
   const latestNetworksAndSigners = useLatest(networks)
   const { address: walletAddress } = useAccount()
 
-  const l1GasPrice = useGasPrice({ provider: networks.fromProvider })
-  const l2GasPrice = useGasPrice({ provider: networks.toProvider })
+  const l1GasPrice = useGasPrice({ provider: parentProvider })
+  const l2GasPrice = useGasPrice({ provider: childProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)
@@ -135,8 +137,8 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
-              l1Provider: networks.fromProvider,
-              l2Provider: networks.toProvider
+              l1Provider: parentProvider,
+              l2Provider: childProvider
             })
 
             setResult(estimateGasResult)
@@ -144,10 +146,9 @@ export function useGasSummary(
             const estimateGasResult = await depositEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l1Provider: networks.fromProvider,
-              l2Provider: networks.toProvider
+              l1Provider: parentProvider,
+              l2Provider: childProvider
             })
-
             setResult(estimateGasResult)
           }
         } else {
@@ -183,7 +184,7 @@ export function useGasSummary(
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
-                l2Provider: networks.toProvider
+                l2Provider: childProvider
               })
             }
 
@@ -195,7 +196,7 @@ export function useGasSummary(
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l2Provider: networks.toProvider
+              l2Provider: childProvider
             })
 
             setResult({
@@ -223,7 +224,9 @@ export function useGasSummary(
     amountDebounced,
     token, // when the token changes
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
-    networks, // when the network changes
+    // when the providers changes
+    parentProvider,
+    childProvider,
     walletAddress // when user switches account or if user is not connected
   ])
 
@@ -283,20 +286,21 @@ export function TransferPanelSummary({
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const [{ fromProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
-  const { isMainnet } = isNetwork(fromProvider.network.chainId)
+  const { isMainnet } = isNetwork(parentChain.id)
 
   const tokenSymbol = useMemo(
     () =>
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chainId: fromProvider.network.chainId
+            chainId: networks.fromProvider.network.chainId
           })
         : 'ETH',
-    [token, fromProvider.network.chainId]
+    [token, networks.fromProvider.network.chainId]
   )
 
   if (status === 'loading') {

@@ -17,6 +17,7 @@ import { getRetryableTicketExpiration } from '../../util/RetryableUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
@@ -24,7 +25,8 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     days: number
   }>({ isValid: false, days: 0 })
 
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childProvider, parentProvider } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
@@ -43,8 +45,8 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       const { daysUntilExpired, isLoading, isLoadingError, isExpired } =
         await getRetryableTicketExpiration({
           l1TxHash: tx.txId,
-          l1Provider: fromProvider,
-          l2Provider: toProvider
+          l1Provider: parentProvider,
+          l2Provider: childProvider
         })
 
       // update the state to show/hide text and the card
@@ -52,7 +54,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
         days: daysUntilExpired,
         isValid: !(isLoading || isLoadingError || isExpired)
       })
-    }, [tx.txId, fromProvider, toProvider])
+    }, [tx.txId, parentProvider, childProvider])
 
   useEffect(() => {
     updateRetryableTicketExpirationDate()

@@ -15,6 +15,7 @@ import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const motionDivProps = {
   layout: true,
@@ -42,7 +43,8 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const [{ toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childProvider } = useNetworksRelationship(networks)
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
@@ -58,8 +60,8 @@ export function MainContent() {
     })
 
   const pageSize = useMemo(
-    () => (isNetwork(toProvider.network.chainId).isOrbitChain ? 5 : 10),
-    [toProvider.network.chainId]
+    () => (isNetwork(childProvider.network.chainId).isOrbitChain ? 5 : 10),
+    [childProvider.network.chainId]
   )
 
   const {

@@ -28,6 +28,7 @@ import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
 import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { useNetworks } from '../hooks/useNetworks'
+import { useNetworksRelationship } from '../hooks/useNetworksRelationship'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -357,19 +358,20 @@ export function useCctpState() {
 
 export function useUpdateCctpTransactions() {
   const { pendingIds, transfers, updateTransfer } = useCctpState()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, childProvider } = useNetworksRelationship(networks)
 
   const getTransactionReceipt = useCallback(
     async (tx: MergedTransaction) => {
-      // TODO: check
-      const provider = tx.direction === 'deposit' ? fromProvider : toProvider
+      const provider =
+        tx.direction === 'deposit' ? parentProvider : childProvider
       const receipt = await provider.getTransactionReceipt(tx.txId)
       return {
         receipt,
         tx
       }
     },
-    [fromProvider, toProvider]
+    [parentProvider, childProvider]
   )
 
   const pendingTransactions = useMemo(() => {

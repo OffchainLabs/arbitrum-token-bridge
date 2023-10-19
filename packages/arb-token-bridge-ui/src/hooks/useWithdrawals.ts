@@ -15,6 +15,7 @@ import {
   getQueryParamsForFetchingSentFunds
 } from '../util/SubgraphUtils'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -53,7 +54,8 @@ const fetchCompleteWithdrawalData = async (
 }
 
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, childProvider } = useNetworksRelationship(networks)
 
   const {
     layout: { isTransactionHistoryShowingSentTx }
@@ -69,8 +71,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       ? [
           'withdrawals',
           walletAddress,
-          fromProvider,
-          toProvider,
+          parentProvider,
+          childProvider,
           isTransactionHistoryShowingSentTx,
           withdrawalPageParams.pageNumber,
           withdrawalPageParams.pageSize,
@@ -80,16 +82,16 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     ([
       ,
       _walletAddress,
-      _fromProvider,
-      _toProvider,
+      _parentProvider,
+      _childProvider,
       _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
-        l1Provider: _fromProvider,
-        l2Provider: _toProvider,
+        l1Provider: _parentProvider,
+        l2Provider: _childProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString,

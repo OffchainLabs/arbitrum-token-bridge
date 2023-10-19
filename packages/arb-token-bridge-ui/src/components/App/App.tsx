@@ -38,6 +38,7 @@ import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 declare global {
   interface Window {
@@ -120,7 +121,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, parentChain, childProvider } =
+    useNetworksRelationship(networks)
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
@@ -141,9 +144,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
     const isConnectedToOrbitChain = isNetwork(chain.id).isOrbitChain
 
-    const fromNetworkChainId = fromProvider.network.chainId
-    const toNetworkChainId = toProvider.network.chainId
-    const isParentChainEthereum = isNetwork(fromNetworkChainId).isEthereum
+    const fromNetworkChainId = parentProvider.network.chainId
+    const toNetworkChainId = childProvider.network.chainId
+    const isParentChainEthereum = isNetwork(parentChain.id).isEthereum
 
     actions.app.reset(chain.id)
     actions.app.setChainIds({
@@ -166,15 +169,23 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
     setTokenBridgeParams({
       l1: {
-        network: fromProvider.network,
-        provider: fromProvider
+        network: parentProvider.network,
+        provider: parentProvider
       },
       l2: {
-        network: toProvider.network,
-        provider: toProvider
+        network: childProvider.network,
+        provider: childProvider
       }
     })
-  }, [chain, isConnected, address, actions.app, fromProvider, toProvider])
+  }, [
+    chain,
+    isConnected,
+    address,
+    actions.app,
+    parentProvider,
+    childProvider,
+    parentChain.id
+  ])
 
   useEffect(() => {
     axios

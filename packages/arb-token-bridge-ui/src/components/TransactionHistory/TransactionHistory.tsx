@@ -34,6 +34,7 @@ import dayjs from 'dayjs'
 import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
 import { CustomMessageWarning } from './CustomMessageWarning'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -59,7 +60,8 @@ export const TransactionHistory = ({
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
   const { chain } = useNetwork()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isSmartContractWallet } = useAccountType()
   const {
     showSentTransactions,
@@ -79,8 +81,8 @@ export const TransactionHistory = ({
   const { address } = useAccount()
   const { isLoadingDeposits, depositsError: cctpDepositsError } =
     useCctpFetching({
-      l1ChainId: fromProvider.network.chainId,
-      l2ChainId: toProvider.network.chainId,
+      l1ChainId: parentChain.id,
+      l2ChainId: childChain.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -88,8 +90,8 @@ export const TransactionHistory = ({
     })
   const { isLoadingWithdrawals, withdrawalsError: cctpWithdrawalsError } =
     useCctpFetching({
-      l1ChainId: fromProvider.network.chainId,
-      l2ChainId: toProvider.network.chainId,
+      l1ChainId: parentChain.id,
+      l2ChainId: childChain.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -111,9 +113,7 @@ export const TransactionHistory = ({
     cctpDepositsError ||
     cctpWithdrawalsError
 
-  const isOrbitChainSelected = isNetwork(
-    toProvider.network.chainId
-  ).isOrbitChain
+  const isOrbitChainSelected = isNetwork(childChain.id).isOrbitChain
 
   const pendingTransactions = useMemo(() => {
     const pendingCctpTransactions = pendingIdsCctp
@@ -208,7 +208,7 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col justify-around gap-6">
-      {isNetwork(toProvider.network.chainId).isOrbitChain && (
+      {isOrbitChainSelected && (
         <CustomMessageWarning>
           Fetching transaction history details might be slower for Orbit chains.
         </CustomMessageWarning>
@@ -239,14 +239,14 @@ export const TransactionHistory = ({
             >
               {/* Deposits */}
               <Image
-                src={getNetworkLogo(toProvider.network.chainId)}
+                src={getNetworkLogo(childChain.id)}
                 className="hidden h-6 w-auto md:block"
                 alt="Deposit"
                 height={24}
                 width={24}
               />
               <span className="text-xs md:text-base">{`To ${getNetworkName(
-                toProvider.network.chainId
+                childChain.id
               )}`}</span>
             </TabButton>
             <TabButton
@@ -260,14 +260,14 @@ export const TransactionHistory = ({
             >
               {/* Withdrawals */}
               <Image
-                src={getNetworkLogo(fromProvider.network.chainId)}
+                src={getNetworkLogo(parentChain.id)}
                 className="hidden h-6 w-auto md:block"
                 alt="Withdraw"
                 width={24}
                 height={24}
               />
               <span className="text-xs md:text-base">{`To ${getNetworkName(
-                fromProvider.network.chainId
+                parentChain.id
               )}`}</span>
             </TabButton>
             {displayCctp && (

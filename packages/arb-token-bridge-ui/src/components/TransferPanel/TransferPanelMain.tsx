@@ -61,6 +61,7 @@ import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 enum NetworkType {
   l1 = 'l1',
@@ -275,7 +276,8 @@ function TokenBalance({
   prefix?: string
   tokenSymbolOverride?: string
 }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isConnected } = useAccount()
 
   const symbol = useMemo(() => {
@@ -287,13 +289,10 @@ function TokenBalance({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(forToken.symbol, {
         erc20L1Address: forToken.address,
-        chainId:
-          on === NetworkType.l1
-            ? fromProvider.network.chainId
-            : toProvider.network.chainId
+        chainId: on === NetworkType.l1 ? parentChain.id : childChain.id
       })
     )
-  }, [forToken, on, fromProvider, toProvider])
+  }, [forToken, tokenSymbolOverride, on, parentChain.id, childChain.id])
 
   if (!forToken) {
     return null

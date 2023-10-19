@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useAppState } from '../../state'
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -25,8 +26,9 @@ export const TransactionStatusInfo = ({
 }: {
   deposits: MergedTransaction[]
 }) => {
-  const [{ toProvider }] = useNetworks()
-  const l2NetworkName = getNetworkName(toProvider.network.chainId)
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const l2NetworkName = getNetworkName(childChain.id)
   const { openTransactionHistoryPanel, setTransactionHistoryTab } =
     useAppContextActions()
 

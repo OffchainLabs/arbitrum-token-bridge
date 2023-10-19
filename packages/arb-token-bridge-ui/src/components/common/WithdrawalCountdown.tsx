@@ -3,6 +3,7 @@ import dayjs, { Dayjs } from 'dayjs'
 
 import { ChainId } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should usually/always be less in practice.
@@ -50,23 +51,20 @@ export function WithdrawalCountdown({
 }: {
   createdAt: string | null
 }): JSX.Element {
-  const [
-    {
-      fromProvider: { network: l1Network }
-    }
-  ] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
   const isLargeScreen = useMedia('(min-width: 1024px)')
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
-    parentChainId: l1Network.chainId
+    parentChainId: parentChain.id
   })
 
   const minutesLeft = getTxConfirmationRemainingMinutes({
     createdAt: createdAtDate,
-    parentChainId: l1Network.chainId
+    parentChainId: parentChain.id
   })
 
   const remainingTextOrEmpty =

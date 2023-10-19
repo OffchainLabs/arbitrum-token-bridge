@@ -1,5 +1,6 @@
 import { isNetwork } from '../util/networks'
 import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type ChainLayer = 'L1' | 'L2' | 'Orbit'
 
@@ -16,10 +17,11 @@ function getChainLayerByChainId(chainId: number): ChainLayer {
 }
 
 export const useChainLayers = () => {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain, childChain } = useNetworksRelationship(networks)
 
   return {
-    parentLayer: getChainLayerByChainId(fromProvider.network.chainId),
-    layer: getChainLayerByChainId(toProvider.network.chainId)
+    parentLayer: getChainLayerByChainId(parentChain.id),
+    layer: getChainLayerByChainId(childChain.id)
   }
 }

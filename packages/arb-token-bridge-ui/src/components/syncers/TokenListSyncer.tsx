@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 import { useAppState } from '../../state'
 import {
@@ -15,7 +16,8 @@ const TokenListSyncer = (): JSX.Element => {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const { address: walletAddress } = useAccount()
-  const [{ toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childProvider } = useNetworksRelationship(networks)
 
   useEffect(() => {
     if (!arbTokenBridgeLoaded) {
@@ -33,7 +35,7 @@ const TokenListSyncer = (): JSX.Element => {
       }
 
       return (
-        bridgeTokenList.originChainID === toProvider.network.chainId &&
+        bridgeTokenList.originChainID === childProvider.network.chainId &&
         bridgeTokenList.isDefault
       )
     })
@@ -41,7 +43,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [walletAddress, toProvider.network, arbTokenBridgeLoaded])
+  }, [walletAddress, childProvider.network.chainId, arbTokenBridgeLoaded])
 
   return <></>
 }

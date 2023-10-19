@@ -22,6 +22,8 @@ import {
   addressIsDenylisted
 } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { parentChains } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -112,7 +114,10 @@ export const AdvancedSettings = () => {
   const {
     app: { selectedToken, isDepositMode }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, childProvider, parentChain, parentProvider } =
+    useNetworksRelationship(networks)
+
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
@@ -150,7 +155,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: isDepositMode ? toProvider : fromProvider
+        destinationProvider: isDepositMode ? childProvider : parentProvider
       })
       if (isSubscribed) {
         setWarning(result)
@@ -161,7 +166,7 @@ export const AdvancedSettings = () => {
     return () => {
       isSubscribed = false
     }
-  }, [destinationAddress, isDepositMode, isEOA, fromProvider, toProvider])
+  }, [childProvider, destinationAddress, isDepositMode, isEOA, parentProvider])
 
   const collapsible = useMemo(() => {
     // cannot collapse if:
@@ -278,7 +283,7 @@ export const AdvancedSettings = () => {
             <ExternalLink
               className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
               href={`${getExplorerUrl(
-                (isDepositMode ? toProvider : fromProvider).network.chainId
+                (isDepositMode ? childChain : parentChain).id
               )}/address/${destinationAddress}`}
             >
               <ArrowDownTrayIcon

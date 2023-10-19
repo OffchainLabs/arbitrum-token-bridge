@@ -9,9 +9,11 @@ import { GET_HELP_LINK } from '../../constants'
 import { getExplorerUrl } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
-  const [{ fromProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
   const { parentLayer } = useChainLayers()
   const [, copyToClipboard] = useCopyToClipboard()
 
@@ -32,9 +34,9 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         style={{ background: 'rgba(118, 39, 22, 0.2)' }}
         onClick={() => {
           copyToClipboard(
-            `${parentLayer} transaction: ${getExplorerUrl(
-              fromProvider.network.chainId
-            )}/tx/${tx.txId}`
+            `${parentLayer} transaction: ${getExplorerUrl(parentChain.id)}/tx/${
+              tx.txId
+            }`
           )
         }}
       >

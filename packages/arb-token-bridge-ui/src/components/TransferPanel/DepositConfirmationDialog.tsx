@@ -18,8 +18,8 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -27,16 +27,13 @@ export function DepositConfirmationDialog(
   const {
     app: { selectedToken }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const networkName = getNetworkName(toProvider.network.chainId)
-  const { isArbitrumOne } = isNetwork(toProvider.network.chainId)
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const toNetworkName = getNetworkName(childChain.id)
+  const { isArbitrumOne } = isNetwork(childChain.id)
 
   const [, copyToClipboard] = useCopyToClipboard()
   const [showCopied, setShowCopied] = useState(false)
-
-  const from = isConnectedToArbitrum ? toProvider.network : fromProvider.network
-  const to = isConnectedToArbitrum ? fromProvider.network : toProvider.network
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
@@ -51,8 +48,8 @@ export function DepositConfirmationDialog(
 
   const fastBridges = [
     ...getFastBridges({
-      from: from.chainId,
-      to: to.chainId,
+      from: networks.from.id,
+      to: networks.to.id,
       tokenSymbol,
       amount: props.amount
     })
@@ -77,7 +74,7 @@ export function DepositConfirmationDialog(
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {toNetworkName}
             </HeadlessUIDialog.Title>
             <button
               className="arb-hover"
@@ -99,7 +96,7 @@ export function DepositConfirmationDialog(
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
                   To get the canonical variant of {tokenSymbol} directly onto{' '}
-                  {networkName} you’ll have to use a bridge that {tokenSymbol}{' '}
+                  {toNetworkName} you’ll have to use a bridge that {tokenSymbol}{' '}
                   has fully integrated with.{' '}
                   <ExternalLink
                     href={bridgeInfo.learnMoreUrl}

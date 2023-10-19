@@ -21,6 +21,7 @@ import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 type Props = UseDialogProps & {
   amount: string
@@ -29,14 +30,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
-  const networkName = getNetworkName(toProvider.network.chainId)
-  const { isArbitrumGoerli } = isNetwork(toProvider.network.chainId)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { isTestnet } = isNetwork(parentChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-
-  const from = fromProvider.network
-  const to = toProvider.network
-  const toNetworkName = getNetworkName(to.chainId)
+  const toNetworkName = getNetworkName(childChain.id)
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -59,12 +57,12 @@ export function USDCDepositConfirmationDialog(props: Props) {
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: from.chainId,
-      to: to.chainId,
-      fromTokenAddress: isArbitrumGoerli
+      from: parentChain.id,
+      to: childChain.id,
+      fromTokenAddress: isTestnet
         ? CommonAddress.Goerli.USDC
         : CommonAddress.Mainnet.USDC,
-      toTokenAddress: isArbitrumGoerli
+      toTokenAddress: isTestnet
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,
       amount: props.amount,
@@ -82,7 +80,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
         >
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {toNetworkName}
             </HeadlessUIDialog.Title>
             <button
               className="arb-hover"

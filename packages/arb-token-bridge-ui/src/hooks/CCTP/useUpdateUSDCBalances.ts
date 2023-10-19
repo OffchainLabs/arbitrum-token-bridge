@@ -3,6 +3,7 @@ import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
@@ -26,17 +27,18 @@ export function useUpdateUSDCBalances({
 }: {
   walletAddress: string | undefined
 }) {
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentProvider, childProvider } = useNetworksRelationship(networks)
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: fromProvider,
+    provider: parentProvider,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: toProvider,
+    provider: childProvider,
     walletAddress
   })
 
