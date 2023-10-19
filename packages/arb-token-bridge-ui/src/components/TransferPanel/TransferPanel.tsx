@@ -185,13 +185,8 @@ export function TransferPanel() {
 
   const { updateTransfer, setPendingTransfer } = useCctpState()
 
-  const {
-    openTransactionHistoryPanel,
-    setTransferring,
-    showCctpDepositsTransactions,
-    showCctpWithdrawalsTransactions,
-    setTransactionHistoryTab
-  } = useAppContextActions()
+  const { openTransactionHistoryPanel, setTransferring } =
+    useAppContextActions()
 
   const { isMainnet } = isNetwork(l1Network.id)
   const { isArbitrumNova } = isNetwork(l2Network.id)
@@ -601,15 +596,11 @@ export function TransferPanel() {
           messageBytes: null,
           receiveMessageTransactionHash: null,
           receiveMessageTimestamp: null
-        }
+        },
+        parentChainId: l1Network.id,
+        chainId: l2Network.id
       })
 
-      if (isDeposit) {
-        showCctpDepositsTransactions()
-      } else {
-        showCctpWithdrawalsTransactions()
-      }
-      setTransactionHistoryTab(TransactionHistoryTab.CCTP)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
@@ -828,7 +819,6 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -856,7 +846,6 @@ export function TransferPanel() {
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -982,7 +971,6 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -1010,7 +998,6 @@ export function TransferPanel() {
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
