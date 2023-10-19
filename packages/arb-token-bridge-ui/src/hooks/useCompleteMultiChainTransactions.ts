@@ -187,7 +187,7 @@ const useTransactionListByDirection = (
       const txCount = latestTransactions.current[index]?.length ?? 0
       // fetch next page for a chain pair if all fetched pages are full
       // we check for >= in case some txs were included by initiating a transfer
-      return txCount / _page + 1 >= PAGE_SIZE
+      return txCount / _page >= PAGE_SIZE
     },
     [latestTransactions, latestPage]
   )
