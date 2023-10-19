@@ -14,7 +14,11 @@ import {
 } from './arbTokenBridge.types'
 import { Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
-import { transformDeposit, transformWithdrawal } from '../state/app/utils'
+import {
+  getStandardizedTimestamp,
+  transformDeposit,
+  transformWithdrawal
+} from '../state/app/utils'
 import {
   EthWithdrawal,
   isTokenWithdrawal,
@@ -24,7 +28,6 @@ import {
 } from '../util/withdrawals/helpers'
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
-import { constants } from 'ethers'
 
 export const PAGE_SIZE = 100
 
@@ -46,13 +49,23 @@ export type Withdrawal = (
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 
+function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
+  if (isDeposit(tx)) {
+    return tx.timestampCreated ?? 0
+  }
+
+  if (isWithdrawalFromSubgraph(tx)) {
+    return getStandardizedTimestamp(tx.timestamp)
+  }
+
+  return getStandardizedTimestamp(tx.timestamp ?? '0')
+}
+
 function sortByTimestampDescending(
   a: DepositOrWithdrawal,
   b: DepositOrWithdrawal
 ) {
-  const aTimestamp = isDeposit(a) ? a.timestampCreated : a.timestamp
-  const bTimestamp = isDeposit(b) ? b.timestampCreated : b.timestamp
-  return (aTimestamp ?? constants.Zero) > (bTimestamp ?? constants.Zero)
+  return getStandardizedTimestampByTx(a) > getStandardizedTimestampByTx(b)
     ? -1
     : 1
 }

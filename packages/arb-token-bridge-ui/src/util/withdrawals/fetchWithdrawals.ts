@@ -1,4 +1,3 @@
-import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
@@ -94,8 +93,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'subgraph',
         parentChainId: l1ChainID,
-        chainId: l2ChainID,
-        ts: Number(tx.l2BlockTimestamp)
+        chainId: l2ChainID
       }
     })
   }
@@ -107,8 +105,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID,
-        ts: tx.timestamp.toNumber()
+        chainId: l2ChainID
       }
     })
 
@@ -119,8 +116,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID,
-        ts: 0
+        chainId: l2ChainID
       }
     })
 

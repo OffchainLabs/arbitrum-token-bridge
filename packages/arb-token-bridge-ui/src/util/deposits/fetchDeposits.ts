@@ -104,7 +104,7 @@ export async function fetchDepositList({
       destination: tx.receiver,
       txID: tx.transactionHash,
       blockNumber: Number(tx.blockCreatedAt),
-      timestampCreated: tx.timestampCreated,
+      timestampCreated: tx.timestamp,
       isClassic: tx.isClassic,
       parentChainId: l1ChainId,
       chainId: l2ChainId
