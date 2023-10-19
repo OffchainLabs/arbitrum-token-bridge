@@ -1,4 +1,4 @@
-import { BigNumber, constants, Wallet, utils } from 'ethers'
+import { BigNumber, Wallet, constants, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -10,6 +10,7 @@ import specFiles from './tests/e2e/specfiles.json'
 
 import {
   NetworkName,
+  l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
@@ -192,7 +193,7 @@ async function approveWeth() {
   console.log('Approving WETH...')
   const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
     // L1 WETH gateway
-    '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    l1WethGateway,
     constants.MaxInt256
   )
   await tx.wait()
