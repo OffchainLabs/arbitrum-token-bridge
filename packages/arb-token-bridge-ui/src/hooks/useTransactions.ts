@@ -9,6 +9,7 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { AdditionalProperties } from './useMultiChainTransactionList'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -93,19 +94,14 @@ type TransactionBase = {
   l1NetworkID: string
   l2NetworkID?: string
   timestampResolved?: string // time when its status was changed
-  timestampCreated?: string //time when this transaction is first added to the list
+  timestamp?: string //time when this transaction is first added to the list
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   isClassic?: boolean
 }
 
-export interface Transaction extends TransactionBase {
+export interface Transaction extends TransactionBase, AdditionalProperties {
   txID: string
-  direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
-  parentChainId: number
-  chainId: number
-  ts: number
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -314,7 +310,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
     const tx = {
       ...transaction,
-      timestampCreated: new Date().toISOString()
+      timestamp: new Date().toISOString()
     } as Transaction
     return dispatch({
       type: 'ADD_TRANSACTION',

@@ -12,7 +12,7 @@ import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
-import { Transaction, TxnStatus } from './useTransactions'
+import { Transaction } from './useTransactions'
 import { MergedTransaction } from '../state/app/state'
 import { transformDeposit, transformWithdrawal } from '../state/app/utils'
 import {
@@ -24,18 +24,18 @@ import {
 } from '../util/withdrawals/helpers'
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
+import { constants } from 'ethers'
 
 export const PAGE_SIZE = 100
 
-type AdditionalProperties = {
+export type AdditionalProperties = {
   direction: 'deposit' | 'withdrawal'
   source: 'subgraph' | 'event_logs'
   parentChainId: ChainId
   chainId: ChainId
-  ts: number
 }
 
-export type Deposit = Transaction & AdditionalProperties
+export type Deposit = Transaction
 
 export type Withdrawal = (
   | FetchWithdrawalsFromSubgraphResult
@@ -50,15 +50,12 @@ function sortByTimestampDescending(
   a: DepositOrWithdrawal,
   b: DepositOrWithdrawal
 ) {
-  return a.ts > b.ts ? -1 : 1
+  return (a.timestamp ?? constants.Zero) > (b.timestamp ?? constants.Zero)
+    ? -1
+    : 1
 }
 
-type MultiChainFetch = {
-  parentChain: ChainId
-  chain: ChainId
-}
-
-const multiChainFetchList: MultiChainFetch[] = [
+const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Mainnet,
     chain: ChainId.ArbitrumOne
@@ -95,11 +92,6 @@ function isWithdrawalFromSubgraph(
 
 function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
-}
-
-async function getTransactionReceipt(tx: MergedTransaction) {
-  const provider = getProvider(tx.isWithdrawal ? tx.chainId : tx.parentChainId)
-  return provider.getTransactionReceipt(tx.txId)
 }
 
 async function transformTransaction(tx: DepositOrWithdrawal) {
@@ -300,12 +292,7 @@ export const useCompleteMultiChainTransactions = () => {
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(tx => {
-          if (!tx.parentChainId) {
-            console.log('NODATA! ', tx)
-          }
-          return transformTransaction(tx)
-        })
+        data.slice(startIndex, endIndex).map(tx => transformTransaction(tx))
       )
     }
   )

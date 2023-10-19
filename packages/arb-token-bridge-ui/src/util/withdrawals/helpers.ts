@@ -1,5 +1,5 @@
 import { utils } from 'ethers'
-import { Provider, getNetwork } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'

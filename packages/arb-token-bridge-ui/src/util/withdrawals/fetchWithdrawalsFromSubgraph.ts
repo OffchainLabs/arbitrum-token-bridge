@@ -11,7 +11,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
   }
   tokenAmount: string
   isClassic: boolean
-  l2BlockTimestamp: string
+  timestamp: string
   l2TxHash: string
   l2BlockNum: string
 }

@@ -23,9 +23,9 @@ export const updateAdditionalDepositData = async (
 
   // fetch timestamp creation date
   let timestampCreated = new Date().toISOString()
-  if (depositTx.timestampCreated) {
+  if (depositTx.timestamp) {
     // if timestamp is already there in Subgraphs, take it from there
-    timestampCreated = String(Number(depositTx.timestampCreated) * 1000)
+    timestampCreated = String(Number(depositTx.timestamp) * 1000)
   } else if (depositTx.blockNumber) {
     // if timestamp not in subgraph, fallback to onchain data
     timestampCreated = String(
@@ -107,7 +107,7 @@ const updateETHDepositStatusData = async ({
   const updatedDepositTx: Transaction = {
     ...depositTx,
     status: retryableCreationTxID ? 'success' : 'pending',
-    timestampCreated,
+    timestamp: timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
@@ -187,7 +187,7 @@ const updateTokenDepositStatusData = async ({
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
     status: l1ToL2Msg.retryableCreationId ? 'success' : 'pending', // TODO :handle other cases here
-    timestampCreated,
+    timestamp: timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
@@ -250,7 +250,7 @@ const updateClassicDepositStatusData = async ({
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
     status: l2TxID ? 'success' : 'pending', // TODO :handle other cases here
-    timestampCreated,
+    timestamp: timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
