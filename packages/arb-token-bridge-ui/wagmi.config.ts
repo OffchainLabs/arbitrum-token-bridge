@@ -1,4 +1,4 @@
-import { react, fetch } from '@wagmi/cli/plugins'
+import { fetch } from '@wagmi/cli/plugins'
 import { defineConfig } from '@wagmi/cli'
 
 const NODE_INTERFACE_ADDRESS = '0x00000000000000000000000000000000000000C8'
@@ -23,7 +23,6 @@ export default defineConfig({
         }
       ],
       cacheDuration: 0
-    }),
-    react()
+    })
   ]
 })

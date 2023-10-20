@@ -8862,10 +8862,10 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-next-query-params@^4.1.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/next-query-params/-/next-query-params-4.2.1.tgz#33f9ee4b2d2d6f8e33b564e67200a57c2f54903d"
-  integrity sha512-sWhnZOO3wWlnhGcoWSiZDY+PTExv8EMeptJo6z3gR0jpdteNpkV5y49T8nplb7iHxvYE8LkeZDJ2oiFApr4xUQ==
+next-query-params@^4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/next-query-params/-/next-query-params-4.2.3.tgz#f90f1a56de8ac6e6a6adb492a11f8854cced314d"
+  integrity sha512-hGNCYRH8YyA5ItiBGSKrtMl21b2MAqfPkdI1mvwloNVqSU142IaGzqHN+OTovyeLIpQfonY01y7BAHb/UH4POg==
   dependencies:
     tslib "^2.0.3"
 
@@ -11575,10 +11575,10 @@ typedarray-to-buffer@3.1.5, typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.7.4:
-  version "4.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
-  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
+typescript@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.2.2.tgz#5ebb5e5a5b75f085f22bc3f8460fba308310fa78"
+  integrity sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==
 
 uint8arrays@^3.0.0, uint8arrays@^3.1.0:
   version "3.1.1"
