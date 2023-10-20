@@ -12,9 +12,7 @@ import { defaultErc20Decimals } from '../../defaults'
 
 export type FetchDepositParams = {
   sender?: string
-  senderNot?: string
   receiver?: string
-  receiverNot?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -29,9 +27,7 @@ export type FetchDepositParams = {
 /* TODO : Add event logs as well */
 export const fetchDeposits = async ({
   sender,
-  senderNot,
   receiver,
-  receiverNot,
   fromBlock,
   toBlock,
   l1Provider,
@@ -40,7 +36,8 @@ export const fetchDeposits = async ({
   pageNumber = 0,
   searchString = ''
 }: FetchDepositParams): Promise<Transaction[]> => {
-  if (!sender && !receiver) return []
+  if (typeof sender === 'undefined' && typeof receiver === 'undefined')
+    return []
   if (!l1Provider || !l2Provider) return []
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
@@ -69,9 +66,7 @@ export const fetchDeposits = async ({
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
     sender,
-    senderNot,
     receiver,
-    receiverNot,
     fromBlock,
     toBlock,
     l2ChainId,

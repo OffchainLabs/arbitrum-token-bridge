@@ -205,7 +205,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
-  [ChainId.ArbitrumSepolia]: 'https://sepolia-explorer.arbitrum.io',
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
@@ -304,13 +304,13 @@ const defaultL2Network: ParentChain = {
   nitroGenesisL1Block: 0,
   depositTimeout: 900000,
   tokenBridge: {
-    l1CustomGateway: '0x3DF948c956e14175f43670407d5796b95Bb219D8',
-    l1ERC20Gateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4',
-    l1GatewayRouter: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
-    l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l1ProxyAdmin: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
-    l1Weth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l1WethGateway: '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    l1CustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
+    l1ERC20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
+    l1GatewayRouter: '0x85D9a8a4bd77b9b5559c1B7FCb8eC9635922Ed49',
+    l1MultiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386',
+    l1ProxyAdmin: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
+    l1Weth: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+    l1WethGateway: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
     l2CustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
     l2ERC20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
     l2GatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',
@@ -356,43 +356,6 @@ export const xaiTestnet: Chain = {
   nitroGenesisBlock: 0,
   nitroGenesisL1Block: 0,
   depositTimeout: 1800000
-}
-
-export const stylusTestnet: Chain = {
-  chainID: 23011913,
-  confirmPeriodBlocks: 20,
-  ethBridge: {
-    bridge: '0x35aa95ac4747D928E2Cd42FE4461F6D9d1826346',
-    inbox: '0xe1e3b1CBaCC870cb6e5F4Bdf246feB6eB5cD351B',
-    outbox: '0x98fcA8bFF38a987B988E54273Fa228A52b62E43b',
-    rollup: '0x94db9E36d9336cD6F9FfcAd399dDa6Cc05299898',
-    sequencerInbox: '0x00A0F15b79d1D3e5991929FaAbCF2AA65623530c'
-  },
-  explorerUrl: 'https://stylus-testnet-explorer.arbitrum.io',
-  isArbitrum: true,
-  isCustom: true,
-  name: 'Stylus Testnet',
-  partnerChainID: 421614,
-  retryableLifetimeSeconds: 604800,
-  tokenBridge: {
-    l1CustomGateway: '0xd624D491A5Bc32de52a2e1481846752213bF7415',
-    l1ERC20Gateway: '0x7348Fdf6F3e090C635b23D970945093455214F3B',
-    l1GatewayRouter: '0x0057892cb8bb5f1cE1B3C6f5adE899732249713f',
-    l1MultiCall: '0xBEbe3BfBF52FFEA965efdb3f14F2101c0264c940',
-    l1ProxyAdmin: '0xB9E77732f32831f09e2a50D6E71B2Cca227544bf',
-    l1Weth: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
-    l1WethGateway: '0x39845e4a230434D218b907459a305eBA61A790d4',
-    l2CustomGateway: '0xF6dbB0e312dF4652d59ce405F5E00CC3430f19c5',
-    l2ERC20Gateway: '0xe027f79CE40a1eF8e47B51d0D46Dc4ea658C5860',
-    l2GatewayRouter: '0x4c3a1f7011F02Fe4769fC704359c3696a6A60D89',
-    l2Multicall: '0xEb4A260FD16aaf18c04B1aeaDFE20E622e549bd3',
-    l2ProxyAdmin: '0xE914c0d417E8250d0237d2F4827ed3612e6A9C3B',
-    l2Weth: '0x61Dc4b961D2165623A25EB775260785fE78BD37C',
-    l2WethGateway: '0x7021B4Edd9f047772242fc948441d6e0b9121175'
-  },
-  nitroGenesisBlock: 0,
-  nitroGenesisL1Block: 0,
-  depositTimeout: 900000
 }
 
 export type RegisterLocalNetworkParams = {
