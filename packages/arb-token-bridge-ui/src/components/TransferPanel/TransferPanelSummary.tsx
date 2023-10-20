@@ -350,7 +350,7 @@ export function TransferPanelSummary({
           return layerToGasFeeTooltip[parentLayer].withdrawal['to L1']
         }
       default:
-        return ''
+        return null
     }
   }, [isDepositMode, layer, parentLayer])
 
@@ -371,7 +371,7 @@ export function TransferPanelSummary({
         }
         return layerToGasFeeTooltip[layer].withdrawal
       default:
-        return ''
+        return null
     }
   }, [isDepositMode, layer, parentLayer])
 
