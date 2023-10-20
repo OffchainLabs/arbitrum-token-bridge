@@ -1,44 +1,30 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber, Contract, Signer, utils } from 'ethers'
-
-import { GasEstimates } from '../hooks/arbTokenBridge.types'
-import { nodeInterfaceABI } from '../generated'
+import { BigNumber } from 'ethers'
 import {
   ARB_RETRYABLE_TX_ADDRESS,
   NODE_INTERFACE_ADDRESS
 } from '@arbitrum/sdk/dist/lib/dataEntities/constants'
+import { isHex } from 'viem'
+import { Chain } from 'viem/chains'
 
-class NodeInterface__factory {
-  static readonly abi = nodeInterfaceABI
-  static createInterface() {
-    return new utils.Interface(nodeInterfaceABI)
-  }
-  static connect(address: string, provider: Provider) {
-    return new Contract(address, nodeInterfaceABI, provider)
-  }
-}
+import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { nodeInterfaceABI } from '../generated'
+import { arbPublicClient } from './viem'
 
 export async function withdrawTokenEstimateGas({
   amount,
   address,
   erc20L1Address,
-  l1Provider,
   l2Provider,
-  l2Signer
+  l2Chain
 }: {
   amount: BigNumber
-  address: string
+  address: `0x${string}`
   erc20L1Address: string
-  l1Provider: Provider
   l2Provider: Provider
-  l2Signer: Signer | undefined | null
+  l2Chain: Chain
 }): Promise<GasEstimates> {
-  const nInterface = NodeInterface__factory.connect(
-    NODE_INTERFACE_ADDRESS,
-    l2Signer?.provider ?? l2Provider
-  )
-
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
@@ -47,21 +33,22 @@ export async function withdrawTokenEstimateGas({
     erc20l1Address: erc20L1Address,
     from: address
   })
-  console.log(
-    'withdrawalRequest.txRequest.data? ',
-    withdrawalRequest.txRequest.data
-  )
 
-  const gasComponents = await nInterface.callStatic.gasEstimateL1Component!(
-    ARB_RETRYABLE_TX_ADDRESS,
-    false,
-    withdrawalRequest.txRequest.data
-  )
+  const withdrawalRequestCalldata = isHex(withdrawalRequest.txRequest.data)
+    ? withdrawalRequest.txRequest.data
+    : '0x'
 
-  console.log('l1 gas? ', gasComponents.gasEstimateForL1)
+  const gasComponents = await arbPublicClient(l2Chain).simulateContract({
+    address: NODE_INTERFACE_ADDRESS,
+    abi: nodeInterfaceABI,
+    functionName: 'gasEstimateL1Component',
+    args: [ARB_RETRYABLE_TX_ADDRESS, false, withdrawalRequestCalldata],
+    account: address
+  })
 
   // This is the gas needed to execute the withdrawal on L1; not the batch posting fee
-  const estimatedL1Gas = gasComponents.gasEstimateForL1
+  // 1st result in the array is `gasEstimateForL1` according to ABI
+  const estimatedL1Gas = BigNumber.from(gasComponents.result[0])
 
   const estimatedL2Gas = await l2Provider.estimateGas(
     withdrawalRequest.txRequest
