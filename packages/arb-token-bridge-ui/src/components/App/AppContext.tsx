@@ -16,7 +16,6 @@ type AppContextState = {
     isTransferPanelVisible: boolean
     isTransferring: boolean
     isTransactionHistoryPanelVisible: boolean
-    isTransactionHistoryShowingSentTx: boolean
     isTransactionHistoryShowingCctpDeposits: boolean
     transactionHistorySelectedTab: TransactionHistoryTab
   }
@@ -27,7 +26,6 @@ const initialState: AppContextState = {
     isTransferPanelVisible: true,
     isTransferring: false,
     isTransactionHistoryPanelVisible: false,
-    isTransactionHistoryShowingSentTx: true,
     isTransactionHistoryShowingCctpDeposits: true,
     transactionHistorySelectedTab: TransactionHistoryTab.DEPOSITS
   }
@@ -42,7 +40,6 @@ type Action =
   | { type: 'layout.set_is_transfer_panel_visible'; payload: boolean }
   | { type: 'layout.set_is_transferring'; payload: boolean }
   | { type: 'layout.set_txhistory_panel_visible'; payload: boolean }
-  | { type: 'layout.set_txhistory_show_sent_tx'; payload: boolean }
   | { type: 'layout.set_txhistory_show_cctp_deposits'; payload: boolean }
   | { type: 'layout.set_txhistory_tab'; payload: TransactionHistoryTab }
 
@@ -60,15 +57,6 @@ function reducer(state: AppContextState, action: Action) {
         layout: {
           ...state.layout,
           isTransactionHistoryPanelVisible: action.payload
-        }
-      }
-
-    case 'layout.set_txhistory_show_sent_tx':
-      return {
-        ...state,
-        layout: {
-          ...state.layout,
-          isTransactionHistoryShowingSentTx: action.payload
         }
       }
 
@@ -145,14 +133,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     })
   }, [dispatch])
 
-  const showSentTransactions = useCallback(() => {
-    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: true })
-  }, [dispatch])
-
-  const showReceivedTransactions = useCallback(() => {
-    dispatch({ type: 'layout.set_txhistory_show_sent_tx', payload: false })
-  }, [dispatch])
-
   const closeTransactionHistoryPanel = () => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
   }
@@ -168,8 +148,6 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
     setTransferring,
     openTransactionHistoryPanel,
     closeTransactionHistoryPanel,
-    showSentTransactions,
-    showReceivedTransactions,
     showCctpDepositsTransactions,
     showCctpWithdrawalsTransactions,
     setTransactionHistoryTab
