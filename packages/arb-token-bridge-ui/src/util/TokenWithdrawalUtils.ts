@@ -8,6 +8,7 @@ import {
   ARB_RETRYABLE_TX_ADDRESS,
   NODE_INTERFACE_ADDRESS
 } from '@arbitrum/sdk/dist/lib/dataEntities/constants'
+
 class NodeInterface__factory {
   static readonly abi = nodeInterfaceABI
   static createInterface() {

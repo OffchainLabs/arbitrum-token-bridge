@@ -22,7 +22,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
+import { useChainLayers } from '../../hooks/useChainLayers'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -44,11 +44,38 @@ export type UseGasSummaryResult = {
   estimatedTotalGasFees: number
 }
 
-const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
-  L1: 'L1 fees go to Ethereum Validators.',
-  L2: "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded.",
-  Orbit:
-    "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded."
+const layerToGasFeeTooltip = {
+  L1: {
+    // always parent
+    deposit: 'L1 fees go to Ethereum Validators.',
+    withdrawal: `A small L1 calldata fee is paid for including this L2 transaction in the
+        sequencer batch to be posted on Mainnet.`
+  },
+  L2: {
+    deposit: {
+      // as child
+      'to L2':
+        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
+      // as parent
+      'to Orbit':
+        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded."
+    },
+    withdrawal: {
+      // as child
+      'to L1':
+        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
+      // as parent
+      'to L2':
+        'A small L2 calldata fee is paid for including this Orbit transaction in the sequencer batch to be posted on L2.'
+    }
+  },
+  Orbit: {
+    // always child
+    deposit:
+      "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
+    withdrawal:
+      "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded."
+  }
 }
 
 export function useGasSummary(
@@ -84,10 +111,14 @@ export function useGasSummary(
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(
-    () => parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))),
-    [result.estimatedL1Gas, l1GasPrice]
-  )
+  const estimatedL1GasFees = useMemo(() => {
+    if (isDepositMode) {
+      return parseFloat(
+        utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))
+      )
+    }
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l2GasPrice)))
+  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -288,26 +319,73 @@ export function TransferPanelSummary({
     estimatedTotalGasFees
   } = gasSummary
 
-  const { app } = useAppState()
+  const {
+    app: { isDepositMode }
+  } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
 
   const { isMainnet } = isNetwork(l1.network.id)
 
+  const parentLayerGasFeeTooltipContent = useMemo(() => {
+    switch (parentLayer) {
+      case 'L1':
+        if (isDepositMode) {
+          return layerToGasFeeTooltip[parentLayer].deposit
+        }
+        return layerToGasFeeTooltip[parentLayer].withdrawal
+      case 'L2':
+        if (isDepositMode) {
+          if (layer === 'Orbit') {
+            return layerToGasFeeTooltip[parentLayer].deposit['to Orbit']
+          }
+          return layerToGasFeeTooltip[parentLayer].deposit['to L2']
+        } else {
+          if (layer === 'Orbit') {
+            return layerToGasFeeTooltip[parentLayer].withdrawal['to L2']
+          }
+          return layerToGasFeeTooltip[parentLayer].withdrawal['to L1']
+        }
+      default:
+        return ''
+    }
+  }, [isDepositMode, layer, parentLayer])
+
+  const layerGasFeeTooltipContent = useMemo(() => {
+    switch (layer) {
+      case 'L2':
+        if (isDepositMode) {
+          return layerToGasFeeTooltip[layer].deposit['to L2']
+        } else {
+          if (parentLayer === 'L1') {
+            return layerToGasFeeTooltip[layer].withdrawal['to L1']
+          }
+          return layerToGasFeeTooltip[layer].withdrawal['to L2']
+        }
+      case 'Orbit':
+        if (isDepositMode) {
+          return layerToGasFeeTooltip[layer].deposit
+        }
+        return layerToGasFeeTooltip[layer].withdrawal
+      default:
+        return ''
+    }
+  }, [isDepositMode, layer, parentLayer])
+
   const tokenSymbol = useMemo(
     () =>
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chain: app.isDepositMode ? l1.network : l2.network
+            chain: isDepositMode ? l1.network : l2.network
           })
         : 'ETH',
-    [token, app.isDepositMode, l1.network, l2.network]
+    [token, isDepositMode, l1.network, l2.network]
   )
 
   if (status === 'loading') {
-    const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
+    const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
@@ -393,7 +471,7 @@ export function TransferPanelSummary({
         <div className="flex flex-row justify-between">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light">{parentLayer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
+            <Tooltip content={parentLayerGasFeeTooltipContent}>
               <InformationCircleIcon className="h-4 w-4" />
             </Tooltip>
           </div>
@@ -413,7 +491,7 @@ export function TransferPanelSummary({
         <div className="flex flex-row justify-between text-gray-dark">
           <div className="flex flex-row items-center space-x-2">
             <span className="pl-4 font-light ">{layer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[layer]}>
+            <Tooltip content={layerGasFeeTooltipContent}>
               <InformationCircleIcon className="h-4 w-4 " />
             </Tooltip>
           </div>
