@@ -14,6 +14,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
   public async requiresApproval(
     props: BridgeTransferStarterStartFunctionProps
   ): Promise<boolean> {
+    debugger
+
     const account = await props.sourceChainSigner.getAddress()
 
     if (typeof this.sourceChainErc20ContractAddress === 'undefined') {
@@ -33,6 +35,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
   public async approve(
     props: BridgeTransferStarterApproveFunctionProps
   ): Promise<ContractTransaction> {
+    debugger
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
@@ -51,6 +54,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
   public async start(
     props: BridgeTransferStarterStartFunctionProps
   ): Promise<BridgeTransfer> {
+    debugger
+
+    const account = await props.sourceChainSigner.getAddress()
+
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
@@ -59,12 +66,23 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw new Error('unexpected')
     }
 
-    const tx = await erc20Bridger.deposit({
-      amount: props.amount,
-      l1Signer: props.sourceChainSigner,
+    const depositRequest = await erc20Bridger.getDepositRequest({
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider,
+      from: account,
       erc20L1Address: this.sourceChainErc20ContractAddress,
-      l2Provider: this.destinationChainProvider
+      destinationAddress: account,
+      amount: props.amount
     })
+
+    console.log('XXX deposit request', depositRequest)
+
+    const tx = await erc20Bridger.deposit({
+      ...depositRequest,
+      l1Signer: props.sourceChainSigner
+    })
+
+    alert('Success')
 
     return Erc20Deposit.fromSourceChainTx({
       sourceChainTx: tx,

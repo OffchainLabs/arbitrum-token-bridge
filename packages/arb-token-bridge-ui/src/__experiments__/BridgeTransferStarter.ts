@@ -6,6 +6,7 @@ import { BridgeTransfer } from './BridgeTransfer'
 export type BridgeTransferStarterConstructorProps = {
   sourceChainProvider: Provider
   sourceChainErc20ContractAddress?: string
+  destinationChainErc20ContractAddress?: string
   destinationChainProvider: Provider
 }
 
@@ -23,12 +24,19 @@ export type BridgeTransferStarterStartFunctionProps = {
 export abstract class BridgeTransferStarter {
   protected sourceChainProvider: Provider
   protected sourceChainErc20ContractAddress?: string
+  protected destinationChainErc20ContractAddress?: string
   protected destinationChainProvider: Provider
 
   constructor(props: BridgeTransferStarterConstructorProps) {
     this.sourceChainProvider = props.sourceChainProvider
     this.sourceChainErc20ContractAddress = props.sourceChainErc20ContractAddress
+    this.destinationChainErc20ContractAddress =
+      props.destinationChainErc20ContractAddress
     this.destinationChainProvider = props.destinationChainProvider
+  }
+
+  public setSourceChainErc20ContractAddress(address: string) {
+    this.sourceChainErc20ContractAddress = address
   }
 
   public abstract requiresApproval(

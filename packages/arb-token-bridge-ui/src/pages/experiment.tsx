@@ -169,10 +169,8 @@ function App() {
     //     sourceChainProvider: fromChain.provider,
     //     destinationChainProvider: toChain.provider
     //   })
-
     //   setBridgeTransferMap(result)
     // }
-
     // update()
   }, [fromChain.provider, toChain.provider])
 
@@ -187,11 +185,14 @@ function App() {
     }
 
     const sourceChainErc20ContractAddress = erc20 !== '' ? erc20 : undefined
+    const destinationChainErc20ContractAddress =
+      erc20 !== '' ? erc20 : undefined
 
     const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
       sourceChainProvider: fromChain.provider,
       destinationChainProvider: toChain.provider,
-      sourceChainErc20ContractAddress
+      sourceChainErc20ContractAddress,
+      destinationChainErc20ContractAddress
     })
 
     const startProps = {

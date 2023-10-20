@@ -1,4 +1,4 @@
-import { ContractTransaction, ContractReceipt } from 'ethers'
+import { ContractTransaction } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 

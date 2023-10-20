@@ -10,8 +10,8 @@ import {
 import { ContractTransaction } from 'ethers'
 
 export class EthDeposit extends BridgeTransfer {
-  protected sourceChainProvider: Provider
-  protected sourceChainTxReceipt: L1EthDepositTransactionReceipt
+  public sourceChainProvider: Provider
+  public sourceChainTxReceipt: L1EthDepositTransactionReceipt
 
   private constructor(props: {
     status: BridgeTransferStatus
@@ -63,4 +63,6 @@ export class EthDeposit extends BridgeTransfer {
       return status
     }, props?.intervalMs ?? 10_000)
   }
+
+  public isStatusFinal() {}
 }
