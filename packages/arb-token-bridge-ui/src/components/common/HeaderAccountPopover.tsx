@@ -25,7 +25,7 @@ import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { useAppContextActions } from '../App/AppContext'
+import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -81,7 +81,8 @@ export function HeaderAccountPopover({
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { openTransactionHistoryPanel, setTransactionHistoryTab } =
+    useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
 
   const [showCopied, setShowCopied] = useState(false)
@@ -124,6 +125,7 @@ export function HeaderAccountPopover({
   }
 
   function openTransactionHistory() {
+    setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }

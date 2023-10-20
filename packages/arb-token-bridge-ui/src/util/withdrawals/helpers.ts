@@ -15,6 +15,15 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 
+/**
+ * `l2TxHash` exists on result from subgraph
+ * `transactionHash` exists on result from event logs
+ */
+export type EthWithdrawal = L2ToL1EventResult & {
+  l2TxHash?: string
+  transactionHash?: string
+}
+
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
   l1Provider: Provider,
@@ -29,10 +38,25 @@ export const updateAdditionalWithdrawalData = async (
   return l2toL1TxWithDeadline
 }
 
+export async function attachTimestampToTokenWithdrawal({
+  withdrawal,
+  l2Provider
+}: {
+  withdrawal: WithdrawalInitiated
+  l2Provider: Provider
+}) {
+  const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const [event] = l2TxReceipt.getL2ToL1Events()
+
+  return {
+    ...withdrawal,
+    timestamp: event?.timestamp
+  }
+}
+
 export async function mapETHWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
-  event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
+  event: EthWithdrawal,
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainId: number
@@ -134,6 +158,12 @@ export async function attachNodeBlockDeadlineToEvent(
   }
 }
 
+export function isTokenWithdrawal(
+  withdrawal: WithdrawalInitiated | EthWithdrawal
+): withdrawal is WithdrawalInitiated {
+  return typeof (withdrawal as WithdrawalInitiated).l1Token !== 'undefined'
+}
+
 export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
@@ -211,8 +241,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 }
 
 export async function mapWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,

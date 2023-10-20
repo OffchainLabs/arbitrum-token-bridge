@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -97,7 +98,12 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
           </div>
         </div>
 
-        <span className="absolute bottom-0 right-0 max-w-[100px] animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-sm font-semibold text-ocl-blue lg:max-w-full lg:text-lg">
+        <span
+          className={twMerge(
+            'bottom-0 right-0 mt-2 w-full animate-pulse overflow-hidden text-ellipsis rounded-full bg-orange p-2 px-4 text-center text-sm font-semibold text-ocl-blue',
+            'md:absolute md:mt-2 md:w-auto md:text-lg'
+          )}
+        >
           <span className="whitespace-nowrap">
             {tx.isCctp ? (
               <>{remainingTime}</>
