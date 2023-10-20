@@ -341,7 +341,7 @@ export function NetworksAndSignersProvider(
         // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
         // else, the child chain will reset to default when switching back from parent
         setQueryParams({
-          l2ChainId: getWagmiChain(chain.chainID).id
+          l2ChainId: chain.chainID
         })
       })
       .catch(() => {
@@ -386,7 +386,7 @@ export function NetworksAndSignersProvider(
             // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
             // else, the child chain will reset to default when switching back from parent
             setQueryParams({
-              l2ChainId: getWagmiChain(chain.chainID).id
+              l2ChainId: chain.chainID
             })
           })
           .catch(() => {
