@@ -1,4 +1,4 @@
-import { useAccount, useSigner, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, useSigner, WagmiConfig } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import {
   lightTheme,
@@ -14,6 +14,7 @@ import { Loader } from '../components/common/atoms/Loader'
 import { BridgeTransfer } from '../__experiments__/BridgeTransfer'
 import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
 import { Erc20Deposit } from '../__experiments__/Erc20Deposit'
+import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
 
@@ -154,6 +155,9 @@ function App() {
   const { address } = useAccount()
   const { data: signer } = useSigner()
 
+  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { chain } = useNetwork()
+
   const [amount, setAmount] = useState<string>('')
   const [erc20, setErc20] = useState<string>('')
   const [fromChain, setFromChain] = useState<SmolChain>(goerli)
@@ -174,10 +178,24 @@ function App() {
     // update()
   }, [fromChain.provider, toChain.provider])
 
-  function swap() {
+  const swap = async () => {
     setFromChain(toChain)
     setToChain(fromChain)
   }
+
+  const updateConnectedChain = async () => {
+    if (address) {
+      const connectedChainId = chain?.id
+      const fromChainId = await (await fromChain.provider.getNetwork()).chainId
+      if (fromChainId && connectedChainId !== fromChainId) {
+        switchNetwork?.(fromChainId)
+      }
+    }
+  }
+
+  useEffect(() => {
+    updateConnectedChain()
+  }, [address, fromChain])
 
   async function bridge() {
     if (!signer) {

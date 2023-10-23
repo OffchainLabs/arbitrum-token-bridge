@@ -11,15 +11,13 @@ export class BridgeTransferStarterFactory {
     props: BridgeTransferStarterConstructorProps
   ): Promise<BridgeTransferStarter> {
     const sourceChainId = (await props.sourceChainProvider.getNetwork()).chainId
-    const destinationChainId = (
-      await props.destinationChainProvider.getNetwork()
-    ).chainId
+    // const destinationChainId = (
+    //   await props.destinationChainProvider.getNetwork()
+    // ).chainId
 
     if (isNetwork(sourceChainId).isEthereum) {
-      console.log('ERC 20 DEPOSIT')
       return new Erc20DepositStarter(props)
     } else {
-      console.log('ERC 20 WITHDRAWAL')
       return new Erc20WithdrawalStarter(props)
     }
   }
