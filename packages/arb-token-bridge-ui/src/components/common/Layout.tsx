@@ -4,11 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
-import { SiteBanner } from './SiteBanner'
-
-import { PORTAL_DOMAIN } from '../../constants'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -39,17 +35,6 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
-      <SiteBanner>
-        The Arbitrum Odyssey has officially returned! Complete missions and
-        start collecting badges by visiting the{' '}
-        <ExternalLink
-          href={`${PORTAL_DOMAIN}/odyssey`}
-          className="arb-hover underline"
-        >
-          Arbitrum Portal
-        </ExternalLink>
-        .
-      </SiteBanner>
       <Header />
 
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">

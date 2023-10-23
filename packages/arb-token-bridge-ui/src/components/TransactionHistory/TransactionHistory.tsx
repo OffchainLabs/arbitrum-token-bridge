@@ -1,5 +1,11 @@
 import { Tab } from '@headlessui/react'
-import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo
+} from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
@@ -18,7 +24,11 @@ import { isFailed, isPending } from '../../state/app/utils'
 import Image from 'next/image'
 import { TabButton } from '../common/Tab'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppContextActions } from '../App/AppContext'
+import {
+  TransactionHistoryTab,
+  useAppContextActions,
+  useAppContextState
+} from '../App/AppContext'
 import { useCctpFetching, useCctpState } from '../../state/cctpState'
 import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
@@ -51,8 +61,14 @@ export const TransactionHistory = ({
   const { chain } = useNetwork()
   const { l1, l2 } = useNetworksAndSigners()
   const { isSmartContractWallet } = useAccountType()
-  const { showSentTransactions, showReceivedTransactions } =
-    useAppContextActions()
+  const {
+    showCctpDepositsTransactions,
+    showCctpWithdrawalsTransactions,
+    setTransactionHistoryTab
+  } = useAppContextActions()
+  const {
+    layout: { transactionHistorySelectedTab }
+  } = useAppContextState()
   const {
     pendingIds: pendingIdsCctp,
     transfers: transfersCctp,
@@ -124,39 +140,42 @@ export const TransactionHistory = ({
   const roundedTabClasses =
     'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
-  function handleSentOrReceivedTxForSCW(index: number) {
-    if (!isSmartContractWallet || !chain) {
-      return
-    }
-    const isDepositsTab = index === 0
-    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
-    // SCW address is tied to a specific network, so we must ensure that:
-    if (isDepositsTab) {
-      // if showing deposits, we always show:
-      if (isConnectedToArbitrum) {
-        // - received txs if connected to L2
-        showReceivedTransactions()
-      } else {
-        // - sent txs if connected to L1
-        showSentTransactions()
+  const handleSmartContractWalletTxHistoryTab = useCallback(
+    (index: number) => {
+      if (!isSmartContractWallet || !chain) {
+        return
       }
-    } else {
-      // if showing withdrawals, we always show:
-      if (isConnectedToArbitrum) {
-        // - sent txs if connected to L2
-        showSentTransactions()
-      } else {
-        // - received txs if connected to L1
-        showReceivedTransactions()
+      const isCctpTab = index === TransactionHistoryTab.CCTP
+      const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+
+      if (isCctpTab) {
+        if (isConnectedToArbitrum) {
+          showCctpDepositsTransactions()
+        } else {
+          showCctpWithdrawalsTransactions()
+        }
       }
-    }
-  }
+    },
+    [
+      chain,
+      isSmartContractWallet,
+      showCctpDepositsTransactions,
+      showCctpWithdrawalsTransactions
+    ]
+  )
 
   useEffect(() => {
     // this function runs every time the network tab is changed, and here it is also triggered when the page loads
     // it sets the tab to 0 (deposits), which is the default tab
-    handleSentOrReceivedTxForSCW(0)
-  }, [isSmartContractWallet, chain])
+    handleSmartContractWalletTxHistoryTab(0)
+  }, [handleSmartContractWalletTxHistoryTab])
+
+  useEffect(() => {
+    // This check avoid the situation when we open the transaction history on CCTP tab after a transfer, but it would go back to "To Arbitrum" tab
+    if (transfersIds.length === 0) {
+      setTransactionHistoryTab(0)
+    }
+  }, [address, chain, setTransactionHistoryTab, transfersIds])
 
   const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
 
@@ -179,7 +198,13 @@ export const TransactionHistory = ({
 
       {/* Transaction history table */}
       <div>
-        <Tab.Group onChange={handleSentOrReceivedTxForSCW} key={address}>
+        <Tab.Group
+          onChange={index => {
+            handleSmartContractWalletTxHistoryTab(index)
+            setTransactionHistoryTab(index)
+          }}
+          selectedIndex={transactionHistorySelectedTab}
+        >
           <Tab.List className={'flex flex-row whitespace-nowrap'}>
             <TabButton
               aria-label="show deposit transactions"
@@ -250,7 +275,6 @@ export const TransactionHistory = ({
               pageParams={depositsPageParams}
               setPageParams={setDepositsPageParams}
               transactions={depositsData.transformedDeposits}
-              isSmartContractWallet={isSmartContractWallet}
               loading={depositsLoading}
               error={depositsError}
             />
@@ -267,7 +291,6 @@ export const TransactionHistory = ({
               pageParams={withdrawalsPageParams}
               setPageParams={setWithdrawalsPageParams}
               transactions={withdrawalsData.transformedWithdrawals}
-              isSmartContractWallet={isSmartContractWallet}
               loading={withdrawalsLoading}
               error={withdrawalsError}
             />
