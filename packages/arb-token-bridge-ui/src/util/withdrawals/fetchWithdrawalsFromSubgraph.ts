@@ -20,7 +20,8 @@ export type FetchWithdrawalsFromSubgraphResult = {
  * Fetches initiated withdrawals (ETH + Token) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
- * @param query.address Account address
+ * @param query.sender Address that initiated the withdrawal
+ * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2ChainId ChainId for the L2 network
@@ -30,9 +31,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
  */
 export async function fetchWithdrawalsFromSubgraph({
   sender,
-  senderNot,
   receiver,
-  receiverNot,
   fromBlock,
   toBlock,
   l2ChainId,
@@ -41,9 +40,7 @@ export async function fetchWithdrawalsFromSubgraph({
   searchString = ''
 }: {
   sender?: string
-  senderNot?: string
   receiver?: string
-  receiverNot?: string
   fromBlock: number
   toBlock: number
   l2ChainId: number
@@ -59,9 +56,7 @@ export async function fetchWithdrawalsFromSubgraph({
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       sender,
-      senderNot,
       receiver,
-      receiverNot,
       fromBlock,
       toBlock,
       l2ChainId,

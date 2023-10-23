@@ -5,34 +5,44 @@ import { DOCS_DOMAIN } from '../../constants'
 type FooterLink = {
   title: string
   href: string
-  lgOrder: number
+  className: string
 }
 
 const footerLinks: FooterLink[] = [
   {
     title: 'Documentation',
     href: DOCS_DOMAIN,
-    lgOrder: 1
+    className: 'lg:order-1'
   },
   {
     title: 'Careers',
     href: 'https://offchainlabs.com/careers',
-    lgOrder: 4
+    className: 'lg:order-6'
   },
   {
     title: 'Blog',
     href: 'https://medium.com/offchainlabs',
-    lgOrder: 2
+    className: 'lg:order-2'
   },
   {
     title: 'Recent Press',
     href: 'https://offchainlabs.com/#press',
-    lgOrder: 5
+    className: 'lg:order-5'
+  },
+  {
+    title: 'Bridge ToS',
+    href: '/tos',
+    className: 'lg:order-3'
   },
   {
     title: 'ToS',
-    href: '/tos',
-    lgOrder: 3
+    href: 'https://arbitrum.io/tos',
+    className: 'lg:order-7'
+  },
+  {
+    title: 'Privacy Policy',
+    href: 'https://www.iubenda.com/privacy-policy/76750372',
+    className: 'lg:order-4'
   }
 ]
 
@@ -48,9 +58,9 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col space-y-8">
-          <ul className="grid text-center font-light lg:max-w-[448px] lg:grid-cols-3 lg:grid-rows-2 lg:text-left lg:font-normal">
+          <ul className="grid text-center font-light lg:max-w-[500px] lg:grid-cols-4 lg:grid-rows-2 lg:text-left lg:font-normal">
             {footerLinks.map(link => (
-              <li key={link.href} className={`lg:order-${link.lgOrder}`}>
+              <li key={link.href} className={link.className}>
                 <ExternalLink href={link.href} className="arb-hover">
                   {link.title}
                 </ExternalLink>

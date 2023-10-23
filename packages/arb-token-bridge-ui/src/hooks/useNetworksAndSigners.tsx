@@ -337,6 +337,12 @@ export function NetworksAndSignersProvider(
             provider: chainProvider
           }
         })
+
+        // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
+        // else, the child chain will reset to default when switching back from parent
+        setQueryParams({
+          l2ChainId: chain.chainID
+        })
       })
       .catch(() => {
         // Web3Provider is connected to a Chain. We instantiate a provider for the ParentChain.
@@ -375,6 +381,12 @@ export function NetworksAndSignersProvider(
                 network: getWagmiChain(chain.chainID),
                 provider: chainProvider
               }
+            })
+
+            // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
+            // else, the child chain will reset to default when switching back from parent
+            setQueryParams({
+              l2ChainId: chain.chainID
             })
           })
           .catch(() => {
