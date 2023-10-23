@@ -47,6 +47,14 @@ export enum DepositStatus {
   CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
 }
 
+export enum WithdrawalStatus {
+  EXECUTED = 'Executed',
+  UNCONFIRMED = 'Unconfirmed',
+  CONFIRMED = 'Confirmed',
+  EXPIRED = 'Expired',
+  FAILURE = 'Failure'
+}
+
 export interface MergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31
   // should return sender as well, then we can make it non-optional

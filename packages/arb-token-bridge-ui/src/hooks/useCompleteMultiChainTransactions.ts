@@ -326,7 +326,11 @@ export const useCompleteMultiChainTransactions = () => {
   }, [mapData])
 
   if (loading || error) {
-    return { data: { transactions: [], total: undefined }, loading, error }
+    return {
+      data: { transactions: [] as MergedTransaction[], total: undefined },
+      loading,
+      error
+    }
   }
 
   return {
