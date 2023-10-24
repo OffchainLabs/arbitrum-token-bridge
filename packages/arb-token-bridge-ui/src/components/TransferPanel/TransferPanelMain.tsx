@@ -601,8 +601,10 @@ export function TransferPanelMain({
       return
     }
 
-    if(customFeeToken) {
-      setAmount(utils.formatUnits(customFeeTokenBalances.l1!, customFeeToken.decimals))
+    if (customFeeToken) {
+      setAmount(
+        utils.formatUnits(customFeeTokenBalances.l1!, customFeeToken.decimals)
+      )
       return
     }
 
