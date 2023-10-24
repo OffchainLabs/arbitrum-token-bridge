@@ -41,7 +41,6 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
 }
 
 const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
-  console.error("geting")
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),

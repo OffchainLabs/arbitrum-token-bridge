@@ -472,7 +472,6 @@ export function TransferPanelMain({
       l1: null,
       l2: null
     }
-    console.log(selectedToken)
     if (!selectedToken) {
       return result
     }
