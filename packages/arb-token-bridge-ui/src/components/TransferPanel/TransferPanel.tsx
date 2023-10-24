@@ -313,6 +313,15 @@ export function TransferPanel() {
       return utils.formatUnits(balanceL1, decimals)
     }
 
+    if(customFeeToken) {
+      const balanceL1 = erc20L1Balances?.[customFeeToken.address]
+      const { decimals } = customFeeToken
+      if (!balanceL1 || !decimals) {
+        return null
+      }
+      return utils.formatUnits(balanceL1, decimals)
+    }
+
     if (!ethL1Balance) {
       return null
     }
@@ -331,6 +340,15 @@ export function TransferPanel() {
       const { decimals } = selectedToken
 
       if (!balanceL2) {
+        return null
+      }
+      return utils.formatUnits(balanceL2, decimals)
+    }
+
+    if(customFeeToken) {
+      const balanceL2 = erc20L2Balances?.[customFeeToken.address]
+      const { decimals } = customFeeToken
+      if (!balanceL2 || !decimals) {
         return null
       }
       return utils.formatUnits(balanceL2, decimals)
