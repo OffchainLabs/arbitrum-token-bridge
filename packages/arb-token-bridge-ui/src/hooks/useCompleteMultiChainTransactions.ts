@@ -29,7 +29,7 @@ import {
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 
-export const PAGE_SIZE = 100
+const PAGE_SIZE = 100
 
 export type AdditionalProperties = {
   direction: 'deposit' | 'withdrawal'
@@ -206,7 +206,8 @@ const useTransactionListByDirection = (
             receiver: _address,
             l1Provider: getProvider(c.parentChain),
             l2Provider: getProvider(c.chain),
-            pageNumber: _page
+            pageNumber: _page,
+            pageSize: PAGE_SIZE
           }
 
           return _direction === 'deposits'
