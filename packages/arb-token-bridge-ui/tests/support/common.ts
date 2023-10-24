@@ -116,7 +116,7 @@ export const acceptMetamaskAccess = () => {
 export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
-  cy.clearLocalStorage('arbitrum:bridge:tos-v1')
+  cy.clearLocalStorage('arbitrum:bridge:tos-v2')
   cy.visit(url, {
     qs
   })
