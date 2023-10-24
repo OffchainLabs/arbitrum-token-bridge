@@ -472,6 +472,7 @@ export function TransferPanelMain({
       l1: null,
       l2: null
     }
+
     if (!selectedToken) {
       return result
     }
@@ -585,6 +586,7 @@ export function TransferPanelMain({
 
   const setMaxAmount = useCallback(async () => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.l1
       : selectedTokenBalances.l2
@@ -593,6 +595,7 @@ export function TransferPanelMain({
       if (!tokenBalance) {
         return
       }
+      
       // For tokens, we can set the max amount, and have the gas summary component handle the rest
       setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
       return
