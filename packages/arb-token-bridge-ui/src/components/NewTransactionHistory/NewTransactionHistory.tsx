@@ -1,4 +1,6 @@
+import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
+import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 
 import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
@@ -11,14 +13,16 @@ import {
   isTxPending
 } from './helpers'
 import { MergedTransaction } from '../../state/app/state'
-import { PropsWithChildren, useMemo } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { TabButton } from '../common/Tab'
+
+const roundedTabClasses =
+  'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
 export const NewTransactionHistory = () => {
   const { address } = useAccount()
 
   const {
-    data: { transactions, total },
+    data: { transactions },
     loading,
     completed,
     paused
@@ -61,38 +65,27 @@ export const NewTransactionHistory = () => {
     [transactions]
   )
 
-  const TabButton = ({
-    children,
-    selected
-  }: PropsWithChildren<{ selected: boolean }>) => {
-    return (
-      <button
-        className={twMerge(
-          'px-4 text-lg transition-all',
-          selected ? 'border-b-2 border-white font-normal' : 'font-extralight'
-        )}
-      >
-        {children}
-      </button>
-    )
-  }
-
   return (
-    <Tab.Group key={address} as="div" className="h-full overflow-hidden pb-28">
-      <Tab.List className="border-b border-gray-500 text-white">
-        <Tab>
-          {({ selected }) => (
-            <TabButton selected={selected}>Pending transactions</TabButton>
+    <Tab.Group key={address} as="div" className="h-full overflow-hidden pb-24">
+      <Tab.List className="flex">
+        <TabButton
+          aria-label="show pending transactions"
+          className={twMerge(roundedTabClasses, 'roundedTabRight')}
+        >
+          <span className="text-xs md:text-base">Pending transactions</span>
+        </TabButton>
+        <TabButton
+          aria-label="show settled transactions"
+          className={twMerge(
+            roundedTabClasses,
+            'roundedTabLeft roundedTabRight'
           )}
-        </Tab>
-        <Tab>
-          {({ selected }) => (
-            <TabButton selected={selected}>Settled transactions</TabButton>
-          )}
-        </Tab>
+        >
+          <span className="text-xs md:text-base">Settled transactions</span>
+        </TabButton>
       </Tab.List>
 
-      <Tab.Panels className="mt-4 h-full overflow-auto">
+      <Tab.Panels className="h-full overflow-auto">
         <Tab.Panel className="h-full">
           <TransactionHistoryTable
             transactions={[
@@ -101,15 +94,14 @@ export const NewTransactionHistory = () => {
               ...groupedTransactions.failed,
               ...groupedTransactions.claimable
             ]}
-            txCount={total}
             loading={loading}
             type="pending"
+            className="rounded-tl-none"
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
           <TransactionHistoryTable
             transactions={groupedTransactions.settled}
-            txCount={total}
             loading={loading}
             type="settled"
           />

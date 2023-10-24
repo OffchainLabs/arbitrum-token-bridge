@@ -48,7 +48,7 @@ function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
 export function WithdrawalCountdown({
   createdAt
 }: {
-  createdAt: string | null
+  createdAt: number | null
 }): JSX.Element {
   const {
     l1: { network: l1Network }

@@ -28,242 +28,82 @@ import {
 import { ExternalLink } from '../common/ExternalLink'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { getStandardizedDate, getStandardizedTime } from '../../state/app/utils'
+import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 
-const TableActionCell = ({ tx }: { tx: MergedTransaction }) => {
-  if (isTxPending(tx)) {
-    const timeLeftInMinutes = getTxRemainingTimeInMinutes(tx)
-    const timeLeft = getTxHumanReadableRemainingTime(tx)
+export const TransactionDateTime = ({
+  standardizedDate
+}: {
+  standardizedDate: number | null
+}) => {
+  // Standardized formatted date-time component used across transaction rows
 
-    if (!timeLeftInMinutes) {
-      return null
-    }
-
-    return (
-      <div className="flex flex-col items-center justify-center text-center text-xs">
-        <span>Time left:</span>
-        {timeLeft}
-      </div>
-    )
-  }
-
-  if (tx.status === WithdrawalStatus.FAILURE) {
-    return (
-      <Button
-        variant="primary"
-        className=" bg-[#d26a6a] p-2 font-normal text-black"
-      >
-        Retry
-      </Button>
-    )
-  }
-
-  if (tx.status === WithdrawalStatus.CONFIRMED) {
-    return (
-      <Button
-        variant="primary"
-        className=" bg-[#6ad28a] p-2 font-normal text-black"
-      >
-        Claim
-      </Button>
-    )
-  }
-
-  return null
-}
-
-const TableStatusLabel = ({ tx }: { tx: MergedTransaction }) => {
-  const statusLabel = getTxStatusLabel(tx)
-
-  let colorClassName, icon
-
-  switch (statusLabel) {
-    case StatusLabel.FAILURE:
-    case StatusLabel.EXPIRED:
-      // TODO: add colors to config
-      colorClassName = 'text-[#d26a6a]'
-      break
-    case StatusLabel.PENDING:
-      colorClassName = 'text-[#ccb069]'
-      icon = <div className="h-3 w-3 rounded-full border border-[#ccb069]" />
-      break
-    case StatusLabel.CLAIMABLE:
-      colorClassName = 'text-[#6ad28a]'
-      icon = <div className="h-3 w-3 rounded-full border border-[#6ad28a]" />
-      break
-    default:
-      colorClassName = 'text-white'
-      icon = <CheckCircleIcon className="h-4 w-4 text-white" />
-  }
-
+  if (!standardizedDate) return <span className="whitespace-nowrap">n/a</span>
   return (
-    <div className="flex flex-col space-y-1">
-      {icon}
-      <div className="flex items-center space-x-1">
-        <span className={colorClassName}>{statusLabel}</span>
-        <ExternalLink
-          href={`${getExplorerUrl(getSourceChainId(tx))}/tx/${tx.txId}`}
-        >
-          <ArrowTopRightOnSquareIcon
-            className={twMerge('h-3 w-3', colorClassName)}
-          />
-        </ExternalLink>
-      </div>
+    <div className="flex flex-nowrap gap-1">
+      <span className="whitespace-nowrap">
+        {getStandardizedDate(standardizedDate)}
+      </span>
+      <span className="whitespace-nowrap opacity-60">
+        {getStandardizedTime(standardizedDate)}
+      </span>
     </div>
   )
 }
 
-const TableHeader = ({ children }: PropsWithChildren) => (
-  <th className="h-full w-1/7 py-4 text-left text-sm font-normal">
+const TableHeader = ({
+  children,
+  className
+}: PropsWithChildren<{ className?: string }>) => (
+  <th
+    className={twMerge(
+      'h-full w-1/5 py-4 pl-2 text-left text-sm font-normal',
+      className
+    )}
+  >
     {children}
   </th>
 )
 
-const TableItem = ({
-  children,
-  className,
-  containerClassName
-}: PropsWithChildren<{ className?: string; containerClassName?: string }>) => (
-  <td className={twMerge('w-1/7 pr-12', containerClassName)}>
+export const TransactionHistoryTable = ({
+  transactions,
+  loading,
+  type,
+  className
+}: {
+  transactions: MergedTransaction[]
+  loading: boolean
+  type: 'pending' | 'settled'
+  className?: string
+}) => {
+  return (
     <div
       className={twMerge(
-        'flex h-16 w-full flex-grow items-center space-x-3 py-3 text-left text-sm font-light',
+        'flex max-h-full flex-col overflow-auto rounded-lg bg-white',
         className
       )}
     >
-      {children}
-    </div>
-  </td>
-)
-
-function getRelativeTime(tx: MergedTransaction) {
-  return dayjs(Number(tx.createdAt)).fromNow()
-}
-
-export const TransactionHistoryTable = ({
-  transactions,
-  txCount,
-  loading,
-  type
-}: {
-  transactions: MergedTransaction[]
-  txCount: number | undefined
-  loading: boolean
-  type: 'pending' | 'settled'
-}) => {
-  const tokensFromLists = useTokensFromLists()
-
-  const getTokenSymbol = useCallback((tx: MergedTransaction) => {
-    return sanitizeTokenSymbol(tx.asset, {
-      erc20L1Address: tx.tokenAddress,
-      chain: getWagmiChain(tx.parentChainId)
-    })
-  }, [])
-
-  const getTokenLogoURI = useCallback(
-    (tx: MergedTransaction) => {
-      if (!tx.tokenAddress) {
-        return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-      }
-
-      return tokensFromLists[tx.tokenAddress]?.logoURI
-    },
-    [tokensFromLists]
-  )
-
-  return (
-    <div className="flex max-h-full flex-col overflow-auto rounded bg-[#191919] px-4 text-white">
       <div className="flex-1 overflow-y-auto">
         <table className="min-h-[80px] w-full">
-          <thead className="sticky top-0 border-b border-gray-500 bg-[#191919]">
-            <TableHeader>TIME</TableHeader>
-            <TableHeader>TOKEN</TableHeader>
-            <TableHeader>FROM</TableHeader>
-            <TableHeader>TO</TableHeader>
-            <TableHeader>STATUS</TableHeader>
-            <TableHeader />
+          <thead className="sticky top-0 z-50 bg-white">
+            <TableHeader className="pl-6">Status</TableHeader>
+            <TableHeader>Time</TableHeader>
+            <TableHeader>Token</TableHeader>
+            <TableHeader>TxID</TableHeader>
             <TableHeader />
           </thead>
           <tbody>
-            {transactions.map(tx => (
-              <tr
-                key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-                className="border-b border-gray-500"
-              >
-                <TableItem>{getRelativeTime(tx)}</TableItem>
-                <TableItem>
-                  {/* SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-              It would throw error if it's loaded from external domains */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={getTokenLogoURI(tx) ?? ''}
-                    alt="Token logo"
-                    className="h-5 w-5 rounded-full"
-                  />
-                  <span className="whitespace-nowrap">
-                    {tx.value} {getTokenSymbol(tx)}
-                  </span>
-                </TableItem>
-                <TableItem>
-                  <Image
-                    src={getNetworkLogo(getSourceChainId(tx)) ?? ''}
-                    alt="Network logo"
-                    width={16}
-                    height={16}
-                    className="mr-3"
-                  />
-                  {getNetworkName(getSourceChainId(tx))}
-                </TableItem>
-                <TableItem>
-                  <Image
-                    src={getNetworkLogo(getDestChainId(tx)) ?? ''}
-                    alt="Network logo"
-                    width={16}
-                    height={16}
-                    className="mr-3 rounded-full"
-                  />
-                  {getNetworkName(getDestChainId(tx))}
-                </TableItem>
-                <TableItem>
-                  <TableStatusLabel tx={tx} />
-                </TableItem>
-                <TableItem containerClassName="pr-0" className="justify-center">
-                  <TableActionCell tx={tx} />
-                </TableItem>
-                <TableItem containerClassName="pr-0" className="justify-end">
-                  <Button
-                    variant="secondary"
-                    className="border border-white p-2 text-white"
-                  >
-                    See details
-                  </Button>
-                </TableItem>
-              </tr>
-            ))}
+            {transactions.map(tx =>
+              tx.isWithdrawal ? (
+                <TransactionsTableClaimableRow
+                  key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
+                  tx={tx}
+                />
+              ) : (
+                <></>
+              )
+            )}
           </tbody>
-          <tfoot className="sticky bottom-0 z-10 h-12 border-gray-500 bg-[#191919]">
-            <tr>
-              <td colSpan={12}>
-                <div className="grid w-full grid-cols-3 items-center">
-                  <span className="text-xs font-light">
-                    {transactions.length > 0 && (
-                      <>
-                        Showing {transactions.length} {type} out of {txCount}{' '}
-                        transactions
-                      </>
-                    )}
-                  </span>
-                  {loading && (
-                    <span className="animate-pulse text-center text-xs font-light">
-                      {transactions.length === 0
-                        ? 'Loading...'
-                        : 'Loading more...'}
-                    </span>
-                  )}
-                  <span />
-                </div>
-              </td>
-            </tr>
-          </tfoot>
         </table>
       </div>
     </div>

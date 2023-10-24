@@ -49,6 +49,7 @@ export function MainContent() {
         </AnimatePresence>
       </div>
       <SidePanel
+        heading="Transaction history"
         isOpen={isTransactionHistoryPanelVisible}
         onClose={closeTransactionHistoryPanel}
       >
