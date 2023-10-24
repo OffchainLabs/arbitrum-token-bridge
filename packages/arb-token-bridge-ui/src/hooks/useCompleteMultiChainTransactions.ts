@@ -115,29 +115,29 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
 
   if (isDeposit(tx)) {
     return transformDeposit(
-      await updateAdditionalDepositData(tx, parentChainProvider, chainProvider)
+      await updateAdditionalDepositData({
+        depositTx: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     )
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
 
   if (isWithdrawalFromSubgraph(tx)) {
-    withdrawal = await mapWithdrawalToL2ToL1EventResult(
-      tx,
-      parentChainProvider,
-      chainProvider,
-      tx.parentChainId,
-      tx.chainId
-    )
+    withdrawal = await mapWithdrawalToL2ToL1EventResult({
+      withdrawal: tx,
+      l1Provider: parentChainProvider,
+      l2Provider: chainProvider
+    })
   } else {
     if (isTokenWithdrawal(tx)) {
-      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-        tx,
-        parentChainProvider,
-        chainProvider,
-        tx.parentChainId,
-        tx.chainId
-      )
+      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+        result: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     } else {
       withdrawal = await mapETHWithdrawalToL2ToL1EventResult(
         tx,
@@ -272,8 +272,7 @@ const useMultiChainTransactionList = () => {
   // checks if any source is loading
   const loading = groupedTransactions.map(grp => grp.loading).some(Boolean)
   // get first error
-  const error =
-    groupedTransactions.map(grp => grp.error).filter(Boolean)[0] ?? null
+  const error = groupedTransactions.map(grp => grp.error).filter(Boolean)[0]
 
   return { data, loading, error }
 }
