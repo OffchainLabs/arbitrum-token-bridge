@@ -602,7 +602,7 @@ export function TransferPanelMain({
     }
 
     if(customFeeToken) {
-      setAmount(utils.formatUnits(customFeeTokenBalances.l1!))
+      setAmount(utils.formatUnits(customFeeTokenBalances.l1!, customFeeToken.decimals))
       return
     }
 
