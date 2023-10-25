@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useLatest } from 'react-use'
 import { useAccount } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
@@ -11,7 +10,6 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
@@ -89,7 +87,6 @@ export function useGasSummary(
   } = useAppState()
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
-  const latestNetworksAndSigners = useLatest(networksAndSigners)
   const { address: walletAddress } = useAccount()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -195,18 +192,7 @@ export function useGasSummary(
               estimatedL2Gas: BigNumber
             }
 
-            // TODO: Update, as this only handles LPT
             if (
-              tokenRequiresApprovalOnL2(
-                token.address,
-                latestNetworksAndSigners.current.l2.network.id
-              )
-            ) {
-              estimateGasResult = {
-                estimatedL1Gas: BigNumber.from(5_000),
-                estimatedL2Gas: BigNumber.from(10_000)
-              }
-            } else if (
               isTokenArbitrumOneNativeUSDC(token.address) ||
               isTokenArbitrumGoerliNativeUSDC(token.address)
             ) {
