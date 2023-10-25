@@ -156,7 +156,7 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  return useSWRImmutable(
+  const { data, error, isLoading, mutate } = useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
@@ -173,6 +173,8 @@ export const useCCTPDeposits = ({
         pageSize: _pageSize
       }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
   )
+
+  return { data, error, isLoading, mutate }
 }
 
 export const useCCTPWithdrawals = ({
@@ -182,7 +184,7 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  return useSWRImmutable(
+  const { data, error, isLoading, mutate } = useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
@@ -205,6 +207,8 @@ export const useCCTPWithdrawals = ({
         pageSize: _pageSize
       }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
   )
+
+  return { data, error, isLoading, mutate }
 }
 
 type PartialMergedTransaction = Partial<Omit<MergedTransaction, 'cctpData'>> & {
@@ -481,46 +485,43 @@ export function useCctpFetching({
   const setPendingTransfer = useCallback(
     (transfer: PartialMergedTransaction, isDeposit: boolean) => {
       const mutate = isDeposit ? mutateDeposits : mutateWithdrawals
-      const previousData = isDeposit ? deposits : withdrawals
-      // We have no previousData, we don't need to merge anything
-      if (!previousData) {
-        mutate(previousData, { revalidate: false })
-        return
-      }
-
-      const index = previousData.pending.findIndex(
-        tx => tx.txId === transfer.txId
-      )
-      const existingTransfer = { ...previousData.pending[index] }
-      if (existingTransfer) {
-        mutate(
-          {
-            pending: [
-              {
-                ...existingTransfer,
-                ...transfer,
-                cctpData: {
-                  ...existingTransfer.cctpData,
-                  ...transfer.cctpData
-                }
-              }
-            ],
-            completed: previousData.completed
-          },
-          { revalidate: false }
-        )
-        return
-      }
-
       mutate(
         {
-          pending: previousData.pending.concat(transfer as MergedTransaction),
-          completed: previousData.completed
+          pending: [transfer as MergedTransaction],
+          completed: []
         },
-        { revalidate: false }
+        {
+          populateCache(result, currentData) {
+            if (!currentData) {
+              return result
+            }
+            const index = currentData.pending.findIndex(
+              tx => tx.txId === result.pending[0].txId
+            )
+            const previousData = { ...currentData } // Make sure we don't mutate previous data
+            const existingTransfer = previousData.pending[index]
+            if (existingTransfer) {
+              previousData.pending[index] = {
+                ...existingTransfer,
+                ...result.pending[0],
+                cctpData: {
+                  ...existingTransfer.cctpData,
+                  ...result.pending[0].cctpData
+                }
+              }
+              return previousData
+            }
+
+            return {
+              pending: result.pending.concat(currentData.pending),
+              completed: result.completed.concat(currentData.completed)
+            }
+          },
+          revalidate: false
+        }
       )
     },
-    [mutateDeposits, mutateWithdrawals, deposits, withdrawals]
+    [mutateDeposits, mutateWithdrawals]
   )
 
   const setPendingDeposit = useCallback(
