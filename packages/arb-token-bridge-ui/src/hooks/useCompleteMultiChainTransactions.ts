@@ -79,7 +79,7 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   //   parentChain: ChainId.Mainnet,
   //   chain: ChainId.ArbitrumNova
   // },
-  // // Testnet
+  // Testnet
   {
     parentChain: ChainId.Goerli,
     chain: ChainId.ArbitrumGoerli
@@ -139,13 +139,11 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
         l2Provider: chainProvider
       })
     } else {
-      withdrawal = await mapETHWithdrawalToL2ToL1EventResult(
-        tx,
-        parentChainProvider,
-        chainProvider,
-        tx.parentChainId,
-        tx.chainId
-      )
+      withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
+        event: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     }
   }
 
@@ -227,17 +225,12 @@ const useTransactionListByDirection = (
 
       // include the new data with the previously fetched data
       // the data is grouped by chain pairs
-      setTransactions(prevTransactions => {
-        return data.map((transactionsForChainPair, chainPairIndex) => {
-          const prevTransactionsForChainPair = prevTransactions[chainPairIndex]
-          return [
-            ...(prevTransactionsForChainPair
-              ? prevTransactionsForChainPair
-              : []),
-            ...(transactionsForChainPair ? transactionsForChainPair : [])
-          ]
-        })
-      })
+      setTransactions(prevTransactions =>
+        data.map((transactionsForChainPair, chainPairIndex) => [
+          ...(prevTransactions[chainPairIndex] ?? []),
+          ...(transactionsForChainPair ?? [])
+        ])
+      )
 
       if (!shouldFetchNextPage) {
         setLoading(false)
@@ -304,7 +297,7 @@ export const useCompleteMultiChainTransactions = () => {
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(tx => transformTransaction(tx))
+        data.slice(startIndex, endIndex).map(transformTransaction)
       )
     }
   )
@@ -333,6 +326,6 @@ export const useCompleteMultiChainTransactions = () => {
     data: { transactions, total: data.length },
     completed: !fetching && !paused,
     paused,
-    error: mapError ?? error ?? null
+    error: mapError ?? error
   }
 }

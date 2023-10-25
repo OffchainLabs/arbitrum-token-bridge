@@ -22,6 +22,8 @@ import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
+  parentChainId: number
+  chainId: number
 }
 
 export const updateAdditionalWithdrawalData = async (
@@ -60,19 +62,21 @@ export async function attachTimestampToTokenWithdrawal({
   }
 }
 
-export async function mapETHWithdrawalToL2ToL1EventResult(
-  event: EthWithdrawal,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l1ChainId: number,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus> {
+export async function mapETHWithdrawalToL2ToL1EventResult({
+  event,
+  l1Provider,
+  l2Provider
+}: {
+  event: EthWithdrawal
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    event.chainId
   )
 
   return {
@@ -85,8 +89,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     outgoingMessageState,
     decimals: 18,
     l2TxHash: event.l2TxHash || event.transactionHash,
-    parentChainId: l1ChainId,
-    chainId: l2ChainId
+    parentChainId: event.parentChainId,
+    chainId: event.chainId
   }
 }
 
