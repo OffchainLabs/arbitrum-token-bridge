@@ -156,7 +156,7 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { data, error, isLoading, mutate } = useSWRImmutable(
+  return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
@@ -173,8 +173,6 @@ export const useCCTPDeposits = ({
         pageSize: _pageSize
       }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
   )
-
-  return { data, error, isLoading, mutate }
 }
 
 export const useCCTPWithdrawals = ({
@@ -184,7 +182,7 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { data, error, isLoading, mutate } = useSWRImmutable(
+  return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
@@ -207,8 +205,6 @@ export const useCCTPWithdrawals = ({
         pageSize: _pageSize
       }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
   )
-
-  return { data, error, isLoading, mutate }
 }
 
 type PartialMergedTransaction = Partial<Omit<MergedTransaction, 'cctpData'>> & {
