@@ -28,7 +28,7 @@
     "framer-motion": "^10.12.10",
     "graphql": "^16.8.1",
     "lodash-es": "^4.17.21",
-    "next": "^13.2.4",
+    "next": "^13.5.0",
     "next-query-params": "^4.1.0",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
