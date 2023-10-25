@@ -1,4 +1,4 @@
-export const TOS_VERSION = 1
+export const TOS_VERSION = 2
 
 export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
 
