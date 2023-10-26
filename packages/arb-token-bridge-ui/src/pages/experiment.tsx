@@ -11,10 +11,22 @@ import { PropsWithChildren, useEffect, useState } from 'react'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { Loader } from '../components/common/atoms/Loader'
-import { BridgeTransfer } from '../__experiments__/BridgeTransfer'
+import {
+  BridgeTransfer,
+  BridgeTransferStatus,
+  BridgeTransferType
+} from '../__experiments__/BridgeTransfer'
 import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
 import { Erc20Deposit } from '../__experiments__/Erc20Deposit'
 import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
+import { Erc20Withdrawal } from '../__experiments__/Erc20Withdrawal'
+import { ChainId } from '../util/networks'
+
+// Adding claims to bridge
+// 1. show the ERC-20 withdrawals in the tx history
+// 1.1. The status should keep updating on polling
+// 2. In the ERC-20 withdrawal class, implement the claim method
+// 3. once ready, claim button should activate on the tx history card
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
 
@@ -30,12 +42,14 @@ function Connected(props: PropsWithChildren<{ fallback: React.ReactNode }>) {
 
 type SmolChain = {
   name: string
+  chainId: ChainId
   provider: StaticJsonRpcProvider
   blockExplorer: string
 }
 
 const goerli: SmolChain = {
   name: 'Goerli',
+  chainId: ChainId.Goerli,
   provider: new StaticJsonRpcProvider(
     `https://goerli.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_KEY}`
   ),
@@ -44,6 +58,7 @@ const goerli: SmolChain = {
 
 const arbitrumGoerli = {
   name: 'Arbitrum Goerli',
+  chainId: ChainId.ArbitrumGoerli,
   provider: new StaticJsonRpcProvider(`https://goerli-rollup.arbitrum.io/rpc`),
   blockExplorer: 'https://goerli.arbiscan.io'
 }
@@ -71,40 +86,56 @@ function Balance({ provider }: { provider: StaticJsonRpcProvider }) {
 }
 
 type TxHistoryEntry = {
-  type: `${'eth' | 'erc-20'}-${'deposit' | 'withdrawal'}`
+  type: BridgeTransferType
   sourceChainTxHash: string
+  sourceChainProvider: StaticJsonRpcProvider
+  destinationChainProvider: StaticJsonRpcProvider
 }
 
 const txHistory: TxHistoryEntry[] = [
   {
-    type: 'erc-20-deposit',
+    type: 'erc20_withdrawal',
     sourceChainTxHash:
-      '0xffd303a28eb156fd95ae4b424c00944d672a5737ec93c2b93f772e490ba7a6b8'
+      '0x33b04cfe3a9a691d9c804163bd878f2bc340a77ea9d04586eb8b19a0e554e629',
+    sourceChainProvider: arbitrumGoerli.provider,
+    destinationChainProvider: goerli.provider
   },
   {
-    type: 'erc-20-deposit',
+    type: 'erc20_deposit',
     sourceChainTxHash:
-      '0x9228d80ee1da15301755de4a577a4baa21614250d6c78d97ad4ca72dbfccdb06'
+      '0xffd303a28eb156fd95ae4b424c00944d672a5737ec93c2b93f772e490ba7a6b8',
+    sourceChainProvider: goerli.provider,
+    destinationChainProvider: arbitrumGoerli.provider
   },
   {
-    type: 'erc-20-deposit',
+    type: 'erc20_deposit',
     sourceChainTxHash:
-      '0x79136479c42ca7f96e6eed6018e4ca015f76270fcf904598eae4e97081a8e509'
+      '0x9228d80ee1da15301755de4a577a4baa21614250d6c78d97ad4ca72dbfccdb06',
+    sourceChainProvider: goerli.provider,
+    destinationChainProvider: arbitrumGoerli.provider
+  },
+  {
+    type: 'erc20_deposit',
+    sourceChainTxHash:
+      '0x79136479c42ca7f96e6eed6018e4ca015f76270fcf904598eae4e97081a8e509',
+    sourceChainProvider: goerli.provider,
+    destinationChainProvider: arbitrumGoerli.provider
   }
 ]
 
-async function loadTxHistory(props: {
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
-}): Promise<BridgeTransfer[]> {
+async function loadTxHistory(): Promise<(Erc20Deposit | Erc20Withdrawal)[]> {
   return Promise.all(
-    Object.values(txHistory).map(async tx =>
-      Erc20Deposit.fromSourceChainTxHash({
+    Object.values(txHistory).map(async tx => {
+      const isDeposit = tx.type.includes('deposit')
+
+      const Factory = isDeposit ? Erc20Deposit : Erc20Withdrawal
+
+      return Factory.initializeFromSourceChainTxHash({
         sourceChainTxHash: tx.sourceChainTxHash,
-        sourceChainProvider: props.sourceChainProvider,
-        destinationChainProvider: props.destinationChainProvider
+        sourceChainProvider: tx.sourceChainProvider,
+        destinationChainProvider: tx.destinationChainProvider
       })
-    )
+    })
   )
 }
 
@@ -113,7 +144,7 @@ function BridgeTransferListItem({
   sourceChainBlockExplorer,
   destinationChainBlockExplorer
 }: {
-  bridgeTransfer: BridgeTransfer
+  bridgeTransfer: Erc20Deposit | Erc20Withdrawal
   sourceChainBlockExplorer: string
   destinationChainBlockExplorer: string
 }) {
@@ -147,6 +178,16 @@ function BridgeTransferListItem({
         )}
       </span>
       <span className="font-medium">status: {bridgeTransfer.status}</span>
+      <span>{bridgeTransfer.isFetchingStatus ? 'Fetching...' : 'Fetched'}</span>
+      {bridgeTransfer instanceof Erc20Withdrawal && (
+        <button
+          className="bg-black text-white"
+          disabled={!bridgeTransfer.isClaimable}
+          // onClick={bridgeTransfer.claim}
+        >
+          Claim
+        </button>
+      )}
     </li>
   )
 }
@@ -163,19 +204,16 @@ function App() {
   const [fromChain, setFromChain] = useState<SmolChain>(goerli)
   const [toChain, setToChain] = useState<SmolChain>(arbitrumGoerli)
 
-  const [bridgeTransferMap, setBridgeTransferMap] = useState<BridgeTransfer[]>(
-    []
-  )
+  const [bridgeTransferMap, setBridgeTransferMap] = useState<
+    (Erc20Deposit | Erc20Withdrawal)[]
+  >([])
 
   useEffect(() => {
-    // async function update() {
-    //   const result = await loadTxHistory({
-    //     sourceChainProvider: fromChain.provider,
-    //     destinationChainProvider: toChain.provider
-    //   })
-    //   setBridgeTransferMap(result)
-    // }
-    // update()
+    async function update() {
+      const result = await loadTxHistory()
+      setBridgeTransferMap(result)
+    }
+    update()
   }, [fromChain.provider, toChain.provider])
 
   const swap = async () => {
@@ -265,7 +303,7 @@ function App() {
 
       <div className="flex max-w-[480px] flex-col gap-2">
         <input
-          placeholder="erc-20 address"
+          placeholder="source chain erc-20 address"
           className="w-full border p-1"
           value={erc20}
           onChange={event => setErc20(event.target.value)}

@@ -84,7 +84,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     alert('Success')
 
-    return Erc20Deposit.fromSourceChainTx({
+    return Erc20Deposit.initializeFromSourceChainTx({
       sourceChainTx: tx,
       sourceChainProvider: this.sourceChainProvider,
       destinationChainProvider: this.destinationChainProvider

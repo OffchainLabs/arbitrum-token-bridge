@@ -12,10 +12,10 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
 export class Erc20Deposit extends BridgeTransfer {
   private constructor(props: BridgeTransferProps) {
-    super(props)
+    super({ ...props, type: 'erc20_deposit' })
   }
 
-  public static async fromSourceChainTx(props: {
+  public static async initializeFromSourceChainTx(props: {
     sourceChainTx: ContractTransaction
     sourceChainProvider: Provider
     destinationChainProvider: Provider
@@ -36,10 +36,15 @@ export class Erc20Deposit extends BridgeTransfer {
       status = 'source_chain_tx_pending'
     }
 
-    return new Erc20Deposit({ ...props, status, sourceChainTxReceipt })
+    return new Erc20Deposit({
+      ...props,
+      type: 'erc20_deposit',
+      status,
+      sourceChainTxReceipt
+    })
   }
 
-  public static async fromSourceChainTxHash(props: {
+  public static async initializeFromSourceChainTxHash(props: {
     sourceChainTxHash: string
     sourceChainProvider: Provider
     destinationChainProvider: Provider
@@ -48,7 +53,7 @@ export class Erc20Deposit extends BridgeTransfer {
       props.sourceChainTxHash
     )
 
-    const erc20Deposit = await Erc20Deposit.fromSourceChainTx({
+    const erc20Deposit = await Erc20Deposit.initializeFromSourceChainTx({
       ...props,
       sourceChainTx
     })
