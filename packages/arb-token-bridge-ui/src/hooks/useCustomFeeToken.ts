@@ -2,7 +2,7 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EthBridger, getChain } from '@arbitrum/sdk'
 
 import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
-import { fetchErc20Info } from '../util/TokenUtils'
+import { fetchErc20Data } from '../util/TokenUtils'
 import { rpcURLs } from '../util/networks'
 import useSWRImmutable from 'swr/immutable'
 
@@ -20,8 +20,8 @@ async function fetchCustomFeeToken(
   const parentChainId = chain.partnerChainID
   const parentChainProvider = new StaticJsonRpcProvider(rpcURLs[parentChainId])
 
-  const { name, symbol, decimals } = await fetchErc20Info({
-    erc20Address: address,
+  const { name, symbol, decimals } = await fetchErc20Data({
+    address,
     provider: parentChainProvider
   })
 

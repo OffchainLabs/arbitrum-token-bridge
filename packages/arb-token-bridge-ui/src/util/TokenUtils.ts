@@ -46,26 +46,26 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
   sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
 }
 
-export type FetchErc20InfoProps = {
-  erc20Address: string
+export type FetchErc20DataProps = {
+  address: string
   provider: Provider
 }
 
-export async function fetchErc20Info({
-  erc20Address,
+export async function fetchErc20Data({
+  address,
   provider
-}: FetchErc20InfoProps) {
+}: FetchErc20DataProps) {
   const multiCaller = await MultiCaller.fromProvider(provider)
 
-  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
+  const [tokenData] = await multiCaller.getTokenData([address], {
     name: true,
     symbol: true,
     decimals: true
   })
 
   return {
-    name: tokenData?.name ?? getDefaultTokenName(erc20Address),
-    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20Address),
+    name: tokenData?.name ?? getDefaultTokenName(address),
+    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
     decimals: tokenData?.decimals ?? defaultErc20Decimals
   }
 }
@@ -133,27 +133,35 @@ export async function getL1TokenData({
   return finalTokenData
 }
 
-/**
- * Retrieves token allowance for a given contract of an ERC-20 token using its L1/L2 address.
- * @param account,
- * @param erc20Address,
- * @param provider,
- * @param spender
- */
-export async function fetchTokenAllowance({
-  account,
-  erc20Address,
-  spender,
-  provider
-}: {
-  account: string
-  erc20Address: string
-  spender: string
+export type FetchErc20AllowanceParams = {
+  /**
+   * Address of the ERC-20 token contract.
+   * */
+  address: string
+  /**
+   * Provider for the chain where the ERC-20 token contract is deployed.
+   */
   provider: Provider
-}) {
+  /**
+   * Address of the owner of the ERC-20 tokens.
+   */
+  owner: string
+  /**
+   * Address of the spender of the ERC-20 tokens.
+   */
+  spender: string
+}
+
+/**
+ * Fetches allowance for an ERC-20 token.
+ */
+export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
+  const { address, provider, owner, spender } = params
+
+  // todo: fall back if there is no multicall
   const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
-    allowance: { owner: account, spender }
+  const [tokenData] = await multiCaller.getTokenData([address], {
+    allowance: { owner, spender }
   })
 
   return tokenData?.allowance ?? constants.Zero
@@ -183,10 +191,10 @@ export async function getL1TokenAllowance({
     erc20L1Address,
     l1Provider
   )
-  return fetchTokenAllowance({
-    account,
-    erc20Address: erc20L1Address,
+  return fetchErc20Allowance({
+    address: erc20L1Address,
     provider: l1Provider,
+    owner: account,
     spender: l1GatewayAddress
   })
 }

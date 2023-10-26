@@ -42,7 +42,7 @@ import {
   getL2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  fetchErc20Info
+  fetchErc20Data
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -97,8 +97,8 @@ async function getNativeTokenSymbol({
   }
 
   return (
-    await fetchErc20Info({
-      erc20Address: nativeToken,
+    await fetchErc20Data({
+      address: nativeToken,
       provider: parentChainProvider
     })
   ).symbol
