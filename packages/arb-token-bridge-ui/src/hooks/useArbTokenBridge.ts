@@ -47,7 +47,7 @@ import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
-import { fetchNativeCurrency } from './useNativeCurrency'
+import { useNativeCurrency } from './useNativeCurrency'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -124,6 +124,8 @@ export const useArbTokenBridge = (
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
+
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress
@@ -205,8 +207,6 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    const nativeCurrency = await fetchNativeCurrency({ provider: l2.provider })
-
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
@@ -265,10 +265,6 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
-
-      const nativeCurrency = await fetchNativeCurrency({
-        provider: l2.provider
-      })
 
       addTransaction({
         type: 'withdraw',
@@ -987,8 +983,8 @@ export const useArbTokenBridge = (
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: utils.formatEther(value),
-      assetName: 'ETH',
+      value: utils.formatUnits(value, nativeCurrency.decimals),
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       txID: res.hash,
