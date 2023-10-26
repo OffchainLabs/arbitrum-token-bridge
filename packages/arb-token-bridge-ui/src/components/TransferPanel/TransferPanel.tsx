@@ -44,7 +44,7 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
-  getTokenAllowanceForSpender,
+  fetchTokenAllowance,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -416,7 +416,7 @@ export function TransferPanel() {
       throw new Error('l2 network does not use custom fee token')
     }
 
-    const customFeeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+    const customFeeTokenAllowanceForInbox = await fetchTokenAllowance({
       account: walletAddress,
       spender: l2Network.ethBridge.inbox,
       erc20Address: l2Network.nativeToken,
@@ -468,7 +468,7 @@ export function TransferPanel() {
       l1Provider
     )
 
-    const customFeeTokenAllowanceForInbox = await getTokenAllowanceForSpender({
+    const customFeeTokenAllowanceForGateway = await fetchTokenAllowance({
       account: walletAddress,
       spender: gateway,
       erc20Address: l2Network.nativeToken,
@@ -478,7 +478,7 @@ export function TransferPanel() {
     // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
-    if (!customFeeTokenAllowanceForInbox.gte(amountRaw)) {
+    if (!customFeeTokenAllowanceForGateway.gte(amountRaw)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
 
@@ -602,7 +602,7 @@ export function TransferPanel() {
       const { usdcContractAddress, tokenMessengerContractAddress } =
         getContracts(sourceChainId)
 
-      const allowance = await getTokenAllowanceForSpender({
+      const allowance = await fetchTokenAllowance({
         account: walletAddress,
         erc20Address: usdcContractAddress,
         provider: type === 'deposits' ? l1Provider : l2Provider,

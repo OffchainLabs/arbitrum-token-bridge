@@ -140,7 +140,7 @@ export async function getL1TokenData({
  * @param provider,
  * @param spender
  */
-export async function getTokenAllowanceForSpender({
+export async function fetchTokenAllowance({
   account,
   erc20Address,
   spender,
@@ -183,7 +183,7 @@ export async function getL1TokenAllowance({
     erc20L1Address,
     l1Provider
   )
-  return getTokenAllowanceForSpender({
+  return fetchTokenAllowance({
     account,
     erc20Address: erc20L1Address,
     provider: l1Provider,
