@@ -48,7 +48,10 @@ export function WelcomeDialog(props: UseDialogProps) {
           <div className="flex flex-col gap-2">
             <p className="text-sm">
               By clicking the button below, you agree to our{' '}
-              <ExternalLink href="/tos" className="arb-hover underline">
+              <ExternalLink
+                href="https://arbitrum.io/tos"
+                className="arb-hover underline"
+              >
                 Terms of Service.
               </ExternalLink>
             </p>

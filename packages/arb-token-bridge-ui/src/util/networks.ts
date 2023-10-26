@@ -209,7 +209,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
-  [ChainId.ArbitrumSepolia]: 'https://sepolia-explorer.arbitrum.io',
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
@@ -308,13 +308,13 @@ const defaultL2Network: ParentChain = {
   nitroGenesisL1Block: 0,
   depositTimeout: 900000,
   tokenBridge: {
-    l1CustomGateway: '0x3DF948c956e14175f43670407d5796b95Bb219D8',
-    l1ERC20Gateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4',
-    l1GatewayRouter: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
-    l1MultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l1ProxyAdmin: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
-    l1Weth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l1WethGateway: '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    l1CustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
+    l1ERC20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
+    l1GatewayRouter: '0x85D9a8a4bd77b9b5559c1B7FCb8eC9635922Ed49',
+    l1MultiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386',
+    l1ProxyAdmin: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
+    l1Weth: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+    l1WethGateway: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
     l2CustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
     l2ERC20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
     l2GatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',

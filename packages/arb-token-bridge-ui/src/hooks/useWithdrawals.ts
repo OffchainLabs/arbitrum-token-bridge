@@ -1,5 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
@@ -9,10 +9,10 @@ import {
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { useAppContextState } from '../components/App/AppContext'
+import { useAccountType } from './useAccountType'
 import {
-  getQueryParamsForFetchingReceivedFunds,
-  getQueryParamsForFetchingSentFunds
+  shouldIncludeSentTxs,
+  shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
@@ -55,13 +55,33 @@ const fetchCompleteWithdrawalData = async (
 
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
   const [networks] = useNetworks()
-  const { parentProvider, childProvider } = useNetworksRelationship(networks)
-
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
+  const { childChain, childProvider, parentChain, parentProvider } =
+    useNetworksRelationship(networks)
+  const { isSmartContractWallet, isLoading: isAccountTypeLoading } =
+    useAccountType()
+  const chainId = useChainId()
+  const isConnectedToParentChain = parentChain.id === chainId
 
   const { address: walletAddress } = useAccount()
+
+  // SCW address is tied to a specific network
+  // that's why we need to limit shown txs either to sent or received funds
+  // otherwise we'd display funds for a different network, which could be someone else's account
+  const includeSentTxs = isAccountTypeLoading
+    ? false
+    : shouldIncludeSentTxs({
+        type: 'withdrawal',
+        isSmartContractWallet,
+        isConnectedToParentChain
+      })
+
+  const includeReceivedTxs = isAccountTypeLoading
+    ? false
+    : shouldIncludeReceivedTxs({
+        type: 'withdrawal',
+        isSmartContractWallet,
+        isConnectedToParentChain
+      })
 
   /* return the cached response for the complete pending transactions */
   return useSWRImmutable(
@@ -73,10 +93,10 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
           walletAddress,
           parentProvider,
           childProvider,
-          isTransactionHistoryShowingSentTx,
           withdrawalPageParams.pageNumber,
           withdrawalPageParams.pageSize,
-          withdrawalPageParams.searchString
+          withdrawalPageParams.searchString,
+          isAccountTypeLoading
         ]
       : null,
     ([
@@ -84,20 +104,18 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       _walletAddress,
       _parentProvider,
       _childProvider,
-      _isTransactionHistoryShowingSentTx,
       _pageNumber,
       _pageSize,
       _searchString
     ]) =>
       fetchCompleteWithdrawalData({
+        sender: includeSentTxs ? _walletAddress : undefined,
+        receiver: includeReceivedTxs ? _walletAddress : undefined,
         l1Provider: _parentProvider,
         l2Provider: _childProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
-        searchString: _searchString,
-        ...(_isTransactionHistoryShowingSentTx
-          ? getQueryParamsForFetchingSentFunds(_walletAddress)
-          : getQueryParamsForFetchingReceivedFunds(_walletAddress))
+        searchString: _searchString
       })
   )
 }

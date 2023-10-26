@@ -28,11 +28,16 @@ import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
+  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const l1NetworkName = getNetworkName(parentChain.id)
+  const l2NetworkName = getNetworkName(childChain.id)
+
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
@@ -79,14 +84,12 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     return !!(
       isClaiming ||
       isClaimingCctp ||
-      !currentChainIsValid ||
       !isConfirmed ||
       (tx.status === 'Confirmed' && tx.cctpData?.receiveMessageTimestamp)
     )
   }, [
     isClaiming,
     isClaimingCctp,
-    currentChainIsValid,
     isConfirmed,
     tx.status,
     tx.cctpData?.receiveMessageTimestamp
@@ -169,9 +172,11 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             show={!currentChainIsValid}
             content={
               <span>
-                Please connect to the{' '}
-                {isSourceChainIdEthereum ? layer : parentLayer} network to claim
-                your {isSourceChainIdEthereum ? 'withdrawal' : 'deposit'}.
+                {`Please switch to ${
+                  isSourceChainIdEthereum ? l2NetworkName : l1NetworkName
+                } to claim your ${
+                  isSourceChainIdEthereum ? 'deposit' : 'withdrawal'
+                }.`}
               </span>
             }
           >
@@ -181,6 +186,11 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
               disabled={isClaimButtonDisabled}
               onClick={async () => {
                 try {
+                  if (!currentChainIsValid) {
+                    return switchNetwork?.(
+                      isSourceChainIdEthereum ? childChain.id : parentChain.id
+                    )
+                  }
                   if (tx.isCctp) {
                     await claimCctp()
                   } else {
@@ -200,14 +210,18 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
               }}
               className="bottom-0 right-0 mt-2 flex w-full flex-nowrap justify-center text-center text-sm md:absolute md:mt-0 md:w-auto  lg:my-4 lg:text-lg"
             >
-              <div className="flex flex-nowrap whitespace-pre">
-                Claim{' '}
-                <span className="hidden lg:flex">
-                  {formatAmount(Number(tx.value), {
-                    symbol: tokenSymbol
-                  })}
-                </span>
-              </div>
+              {currentChainIsValid ? (
+                <div className="flex flex-nowrap whitespace-pre">
+                  Claim{' '}
+                  <span className="hidden lg:flex">
+                    {formatAmount(Number(tx.value), {
+                      symbol: tokenSymbol
+                    })}
+                  </span>
+                </div>
+              ) : (
+                'Switch Network'
+              )}
             </Button>
           </Tooltip>
         ) : (

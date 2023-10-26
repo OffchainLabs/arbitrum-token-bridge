@@ -16,9 +16,7 @@ import { NoDataOverlay } from './NoDataOverlay'
 import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
-import { TableSentOrReceivedFundsSwitch } from './TableSentOrReceivedFundsSwitch'
 import { useAppState } from '../../../state'
-import { useAppContextState } from '../../App/AppContext'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
@@ -174,7 +172,6 @@ export type TransactionsTableProps = {
   pageParams: PageParams
   setPageParams: Dispatch<SetStateAction<PageParams>>
   transactions: MergedTransaction[]
-  isSmartContractWallet?: boolean
   loading: boolean
   error: boolean
 }
@@ -184,17 +181,12 @@ export function TransactionsTable({
   pageParams,
   setPageParams,
   transactions,
-  isSmartContractWallet,
   loading,
   error
 }: TransactionsTableProps) {
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
-  const {
-    layout: { isTransactionHistoryShowingSentTx }
-  } = useAppContextState()
-  const { address } = useAccount()
 
   // don't want to update hooks on useAppState reference change. Just the exact value of localTransactions
   const localTransactionsKey = JSON.stringify(locallyStoredTransactions || [])
@@ -243,18 +235,6 @@ export function TransactionsTable({
     return [...newerTransactions.reverse(), ...subgraphTransactions]
   }, [transactions, localTransactionsKey])
 
-  const transactionsBySentOrReceivedFunds = useMemo(() => {
-    if (!address) return []
-    // both sent and received PENDING txs are stored together
-    // here we make sure we display a correct tx (sent or received)
-    return _transactions.filter(tx => {
-      if (isTransactionHistoryShowingSentTx) {
-        return tx.sender?.toLowerCase() === address.toLowerCase()
-      }
-      return tx.sender?.toLowerCase() !== address.toLowerCase()
-    })
-  }, [_transactions, address])
-
   const locallyStoredTransactionsMap = useMemo(() => {
     // map of all the locally-stored transactions (pending + recently executed)
     // so that tx rows can easily subscribe to live-local status without refetching table data
@@ -279,14 +259,12 @@ export function TransactionsTable({
 
   return (
     <>
-      {!isSmartContractWallet && <TableSentOrReceivedFundsSwitch />}
-
       {/* search and pagination buttons */}
       <TableActionHeader
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
-        transactions={transactionsBySentOrReceivedFunds}
+        transactions={_transactions}
         loading={loading}
         showSearch
       />
@@ -307,7 +285,7 @@ export function TransactionsTable({
           {/* when there are no transactions present */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            !transactionsBySentOrReceivedFunds.length && (
+            _transactions.length === 0 && (
               <EmptyTableRow>
                 <span className="text-sm font-medium">No transactions</span>
               </EmptyTableRow>
@@ -316,9 +294,8 @@ export function TransactionsTable({
           {/* finally, when transactions are present, show rows */}
           {status === TableStatus.SUCCESS &&
             !noSearchResults &&
-            transactionsBySentOrReceivedFunds.map((tx, index) => {
-              const isLastRow =
-                index === transactionsBySentOrReceivedFunds.length - 1
+            _transactions.map((tx, index) => {
+              const isLastRow = index === _transactions.length - 1
 
               // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
               // this will make sure the row updates with any updates in the local app state

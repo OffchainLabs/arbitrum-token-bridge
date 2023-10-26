@@ -1,6 +1,7 @@
 import { Popover } from '@headlessui/react'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
@@ -16,6 +17,7 @@ import { Tooltip } from '../../common/Tooltip'
 import { useChainLayers } from '../../../hooks/useChainLayers'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useSwitchNetworkWithConfig } from '../../../hooks/useSwitchNetworkWithConfig'
 
 const GetHelpButton = ({
   variant,
@@ -46,9 +48,9 @@ export function TransactionsTableRowAction({
 }) {
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
   const l1NetworkName = getNetworkName(parentChain.id)
   const l2NetworkName = getNetworkName(childChain.id)
+  const { switchNetwork } = useSwitchNetworkWithConfig()
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
 
   const chainId = useChainId()
@@ -73,8 +75,8 @@ export function TransactionsTableRowAction({
   }, [childChain.id, isArbitrum, isEthereum, type])
 
   const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !currentChainIsValid || !isConfirmed
-  }, [isClaiming, isClaimingCctp, currentChainIsValid, isConfirmed])
+    return isClaiming || isClaimingCctp || !isConfirmed
+  }, [isClaiming, isClaimingCctp, isConfirmed])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -109,11 +111,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            {`Please connect to the ${
-              type === 'deposits' ? layer : parentLayer
-            } network to claim your ${
-              type === 'deposits' ? 'deposit' : 'withdrawal'
-            }.`}
+            {`Please switch to ${
+              type === 'deposits' ? l2NetworkName : l1NetworkName
+            } to claim your ${type === 'deposits' ? 'deposit' : 'withdrawal'}.`}
           </span>
         }
       >
@@ -121,8 +121,14 @@ export function TransactionsTableRowAction({
           variant="primary"
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
+          className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
+              if (!currentChainIsValid) {
+                return switchNetwork?.(
+                  type === 'deposits' ? childChain.id : parentChain.id
+                )
+              }
               if (tx.isCctp) {
                 return await claimCctp()
               } else {
@@ -141,7 +147,7 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          Claim
+          {currentChainIsValid ? 'Claim' : 'Switch Network'}
         </Button>
       </Tooltip>
     )

@@ -64,8 +64,6 @@ export const TransactionHistory = ({
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isSmartContractWallet } = useAccountType()
   const {
-    showSentTransactions,
-    showReceivedTransactions,
     showCctpDepositsTransactions,
     showCctpWithdrawalsTransactions,
     setTransactionHistoryTab
@@ -149,31 +147,10 @@ export const TransactionHistory = ({
       if (!isSmartContractWallet || !chain) {
         return
       }
-      const isDepositsTab = index === TransactionHistoryTab.DEPOSITS
-      const isWithdrawalsTab = index === TransactionHistoryTab.WITHDRAWALS
+      const isCctpTab = index === TransactionHistoryTab.CCTP
       const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
-      // SCW address is tied to a specific network, so we must ensure that:
-      if (isDepositsTab) {
-        // if showing deposits, we always show:
-        if (isConnectedToArbitrum) {
-          // - received txs if connected to L2
-          showReceivedTransactions()
-        } else {
-          // - sent txs if connected to L1
-          showSentTransactions()
-        }
-      } else if (isWithdrawalsTab) {
-        // Withdrawal tab
-        // if showing withdrawals, we always show:
-        if (isConnectedToArbitrum) {
-          // - sent txs if connected to L2
-          showSentTransactions()
-        } else {
-          // - received txs if connected to L1
-          showReceivedTransactions()
-        }
-      } else {
-        // Cctp tab
+
+      if (isCctpTab) {
         if (isConnectedToArbitrum) {
           showCctpDepositsTransactions()
         } else {
@@ -185,9 +162,7 @@ export const TransactionHistory = ({
       chain,
       isSmartContractWallet,
       showCctpDepositsTransactions,
-      showCctpWithdrawalsTransactions,
-      showReceivedTransactions,
-      showSentTransactions
+      showCctpWithdrawalsTransactions
     ]
   )
 
@@ -302,7 +277,6 @@ export const TransactionHistory = ({
               pageParams={depositsPageParams}
               setPageParams={setDepositsPageParams}
               transactions={depositsData.transformedDeposits}
-              isSmartContractWallet={isSmartContractWallet}
               loading={depositsLoading}
               error={depositsError}
             />
@@ -319,7 +293,6 @@ export const TransactionHistory = ({
               pageParams={withdrawalsPageParams}
               setPageParams={setWithdrawalsPageParams}
               transactions={withdrawalsData.transformedWithdrawals}
-              isSmartContractWallet={isSmartContractWallet}
               loading={withdrawalsLoading}
               error={withdrawalsError}
             />
