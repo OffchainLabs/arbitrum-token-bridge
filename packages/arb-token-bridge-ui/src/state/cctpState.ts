@@ -115,9 +115,8 @@ function parseTransferToMergedTransaction(
     tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
     depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
     isCctp: true,
-    // TODO: Fix those when adding CCTP
-    parentChainId: 0,
-    chainId: 0,
+    parentChainId: isDeposit ? sourceChainId : chainId,
+    chainId: isDeposit ? chainId : sourceChainId,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,
@@ -180,10 +179,22 @@ export const useCCTPDeposits = ({
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize
-      }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
+      })
+        .then(deposits => parseSWRResponse(deposits, _l1ChainId))
+        .then(deposits => {
+          return {
+            completed: deposits.completed,
+            pending: deposits.pending.map(tx => {
+              return {
+                ...tx,
+                status: isTransferConfirmed(tx) ? 'Confirmed' : tx.status
+              }
+            })
+          }
+        })
   )
 
-  return { data, error, isLoading }
+  return { data, error, isLoading: isLoading }
 }
 
 export const useCCTPWithdrawals = ({
@@ -214,7 +225,19 @@ export const useCCTPWithdrawals = ({
         l1ChainId: _l1ChainId,
         pageNumber: _pageNumber,
         pageSize: _pageSize
-      }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
+      })
+        .then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
+        .then(withdrawals => {
+          return {
+            completed: withdrawals.completed,
+            pending: withdrawals.pending.map(tx => {
+              return {
+                ...tx,
+                status: isTransferConfirmed(tx) ? 'Confirmed' : tx.status
+              }
+            })
+          }
+        })
   )
 
   return { data, error, isLoading, isValidating }
@@ -616,13 +639,24 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
   }[tx.cctpData.sourceChainId]
 }
 
-export function useRemainingTime(tx: MergedTransaction) {
+function getConfirmedDate(tx: MergedTransaction) {
   const l1SourceChain = getL1ChainIdFromSourceChain(tx)
   const requiredL1BlocksBeforeConfirmation =
     getBlockBeforeConfirmation(l1SourceChain)
   const blockTime = getBlockTime(l1SourceChain)
 
-  const [remainingTime, setRemainingTime] = useState<string>('Calculating...')
+  return dayjs(tx.createdAt).add(
+    requiredL1BlocksBeforeConfirmation * blockTime,
+    'seconds'
+  )
+}
+
+function isTransferConfirmed(tx: MergedTransaction) {
+  return dayjs().isAfter(getConfirmedDate(tx))
+}
+
+export function useRemainingTime(tx: MergedTransaction) {
+  const [remainingTime, setRemainingTime] = useState<string>()
   const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
   const [isConfirmed, setIsConfirmed] = useState(
     tx.status === 'Confirmed' || tx.status === 'Executed'
@@ -639,20 +673,15 @@ export function useRemainingTime(tx: MergedTransaction) {
       return
     }
 
-    setCanBeClaimedDate(
-      dayjs(tx.createdAt).add(
-        requiredL1BlocksBeforeConfirmation * blockTime,
-        'seconds'
-      )
-    )
-  }, [blockTime, requiredL1BlocksBeforeConfirmation, tx.createdAt, tx.status])
+    setCanBeClaimedDate(getConfirmedDate(tx))
+  }, [tx])
 
   useInterval(() => {
     if (!canBeClaimedDate) {
       return
     }
 
-    if (dayjs().isAfter(canBeClaimedDate)) {
+    if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
     } else {
       setRemainingTime(canBeClaimedDate.fromNow().toString())

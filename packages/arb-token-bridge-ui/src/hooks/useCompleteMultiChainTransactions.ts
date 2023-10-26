@@ -28,6 +28,7 @@ import {
 } from '../util/withdrawals/helpers'
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
+import { useCctpFetching } from '../state/cctpState'
 
 const PAGE_SIZE = 100
 
@@ -48,8 +49,13 @@ export type Withdrawal = (
   AdditionalProperties
 
 type DepositOrWithdrawal = Deposit | Withdrawal
+type Transfer = DepositOrWithdrawal | MergedTransaction
 
-function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
+function getStandardizedTimestampByTx(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return (tx.createdAt ?? 0) / 1_000
+  }
+
   if (isDeposit(tx)) {
     return tx.timestampCreated ?? 0
   }
@@ -61,10 +67,7 @@ function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
   return getStandardizedTimestamp(tx.timestamp ?? '0')
 }
 
-function sortByTimestampDescending(
-  a: DepositOrWithdrawal,
-  b: DepositOrWithdrawal
-) {
+function sortByTimestampDescending(a: Transfer, b: Transfer) {
   return getStandardizedTimestampByTx(a) > getStandardizedTimestampByTx(b)
     ? -1
     : 1
@@ -103,6 +106,12 @@ function isWithdrawalFromSubgraph(
   tx: Withdrawal
 ): tx is FetchWithdrawalsFromSubgraphResult & AdditionalProperties {
   return tx.source === 'subgraph'
+}
+
+function isCctpTransfer(
+  tx: DepositOrWithdrawal | MergedTransaction
+): tx is MergedTransaction {
+  return !!(tx as MergedTransaction).isCctp
 }
 
 function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
@@ -165,7 +174,7 @@ function getProvider(chainId: ChainId) {
 const useTransactionListByDirection = (
   direction: 'deposits' | 'withdrawals'
 ) => {
-  const [transactions, setTransactions] = useState<DepositOrWithdrawal[][]>([])
+  const [transactions, setTransactions] = useState<Transfer[][]>([])
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
 
@@ -173,6 +182,25 @@ const useTransactionListByDirection = (
   const latestPage = useLatest(page)
 
   const { address } = useAccount()
+
+  const cctpTransfers = useCctpFetching({
+    walletAddress: address,
+    l1ChainId: ChainId.Goerli,
+    l2ChainId: ChainId.ArbitrumGoerli,
+    pageNumber: 0,
+    pageSize: 1000,
+    type: direction
+  })
+
+  const combinedCctpTransfers = [
+    ...(cctpTransfers[direction]?.completed || []),
+    ...(cctpTransfers[direction]?.pending || [])
+  ]
+
+  const cctpLoading =
+    direction === 'deposits'
+      ? cctpTransfers.isLoadingDeposits
+      : cctpTransfers.isLoadingWithdrawals
 
   const shouldFetchPage = useCallback(
     (index: number) => {
@@ -242,8 +270,10 @@ const useTransactionListByDirection = (
   }, [data, shouldFetchPage])
 
   return {
-    data: transactions.flat(),
-    loading,
+    data: [...transactions.flat(), ...combinedCctpTransfers].sort(
+      sortByTimestampDescending
+    ),
+    loading: loading || cctpLoading,
     error
   }
 }
@@ -297,7 +327,12 @@ export const useCompleteMultiChainTransactions = () => {
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(transformTransaction)
+        data.slice(startIndex, endIndex).map(tx => {
+          if (isCctpTransfer(tx)) {
+            return tx
+          }
+          return transformTransaction(tx)
+        })
       )
     }
   )
