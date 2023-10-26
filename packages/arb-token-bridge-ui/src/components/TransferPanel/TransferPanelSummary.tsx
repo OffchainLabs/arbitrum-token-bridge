@@ -287,7 +287,6 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
-
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const { isTestnet } = isNetwork(l1.network.id)
