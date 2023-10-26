@@ -106,11 +106,11 @@ export function CustomFeeTokenApprovalDialog(
             </div>
             <ExternalLink
               href={`${getExplorerUrl(l1.network.id)}/token/${
-                customFeeToken.erc20ParentChainAddress
+                customFeeToken.address
               }`}
               className="text-xs text-blue-link underline"
             >
-              {customFeeToken.erc20ParentChainAddress}
+              {customFeeToken.address}
             </ExternalLink>
           </div>
         </div>

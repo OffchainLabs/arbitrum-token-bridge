@@ -153,7 +153,7 @@ export function TokenRow({
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode
-          ? erc20L1Balances?.[nativeCurrency.erc20ParentChainAddress]
+          ? erc20L1Balances?.[nativeCurrency.address]
           : ethL2Balance
       }
 
@@ -326,7 +326,7 @@ export function TokenRow({
   if (
     token &&
     nativeCurrency.isCustom &&
-    token.address.toLowerCase() === nativeCurrency.erc20ParentChainAddress
+    token.address.toLowerCase() === nativeCurrency.address
   ) {
     return null
   }

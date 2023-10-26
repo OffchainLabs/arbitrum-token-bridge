@@ -63,7 +63,10 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { NativeTokenCustom, useNativeToken } from '../../hooks/useNativeToken'
+import {
+  useNativeCurrency,
+  NativeCurrencyErc20
+} from '../../hooks/useNativeCurrency'
 
 enum NetworkType {
   l1 = 'l1',
@@ -272,7 +275,7 @@ function TokenBalance({
   prefix = '',
   tokenSymbolOverride
 }: {
-  forToken: ERC20BridgeToken | NativeTokenCustom | null
+  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
@@ -360,7 +363,7 @@ export function TransferPanelMain({
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet } = useAccountType()
 
-  const nativeToken = useNativeToken({ provider: l2.provider })
+  const nativeToken = useNativeCurrency({ provider: l2.provider })
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
