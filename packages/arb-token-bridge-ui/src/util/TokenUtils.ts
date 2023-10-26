@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
@@ -46,6 +46,37 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
   sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
 }
 
+export type FetchErc20DataProps = {
+  /**
+   * Address of the ERC-20 token contract.
+   */
+  address: string
+  /**
+   * Provider for the chain where the ERC-20 token contract is deployed.
+   */
+  provider: Provider
+}
+
+export async function fetchErc20Data({
+  address,
+  provider
+}: FetchErc20DataProps) {
+  const multiCaller = await MultiCaller.fromProvider(provider)
+
+  // todo: fall back if there is no multicall?
+  const [tokenData] = await multiCaller.getTokenData([address], {
+    name: true,
+    symbol: true,
+    decimals: true
+  })
+
+  return {
+    name: tokenData?.name ?? getDefaultTokenName(address),
+    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
+    decimals: tokenData?.decimals ?? defaultErc20Decimals
+  }
+}
+
 /**
  * Retrieves static data (name, decimals, symbol, address) about an ERC-20 token using its L1 address
  * @param erc20L1Address,
@@ -72,11 +103,13 @@ export async function getL1TokenData({
 
   // else, call on-chain method to retrieve token data
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+
+  const l1GatewayAddress = await fetchErc20L1GatewayAddress({
     erc20L1Address,
-    l1Provider
-  )
+    l1Provider,
+    l2Provider
+  })
+
   const multiCaller = await MultiCaller.fromProvider(l1Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
     decimals: true,
@@ -109,62 +142,30 @@ export async function getL1TokenData({
   return finalTokenData
 }
 
-/**
- * Retrieves token allowance for a given contract of an ERC-20 token using its L1/L2 address.
- * @param account,
- * @param erc20Address,
- * @param provider,
- * @param spender
- */
-export async function getTokenAllowanceForSpender({
-  account,
-  erc20Address,
-  spender,
-  provider
-}: {
-  account: string
-  erc20Address: string
+export type FetchErc20AllowanceParams = FetchErc20DataProps & {
+  /**
+   * Address of the owner of the ERC-20 tokens.
+   */
+  owner: string
+  /**
+   * Address of the spender of the ERC-20 tokens.
+   */
   spender: string
-  provider: Provider
-}) {
-  const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
-    allowance: { owner: account, spender }
-  })
-
-  return tokenData?.allowance ?? constants.Zero
 }
 
 /**
- * Retrieves token allowance of an ERC-20 token using its L1 address.
- * @param account,
- * @param erc20L1Address,
- * @param l1Provider,
- * @param l2Provider,
+ * Fetches allowance for an ERC-20 token.
  */
-export async function getL1TokenAllowance({
-  account,
-  erc20L1Address,
-  l1Provider,
-  l2Provider
-}: {
-  account: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-}): Promise<BigNumber> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
+  const { address, provider, owner, spender } = params
 
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1Provider
-  )
-  return getTokenAllowanceForSpender({
-    account,
-    erc20Address: erc20L1Address,
-    provider: l1Provider,
-    spender: l1GatewayAddress
+  // todo: fall back if there is no multicall?
+  const multiCaller = await MultiCaller.fromProvider(provider)
+  const [tokenData] = await multiCaller.getTokenData([address], {
+    allowance: { owner, spender }
   })
+
+  return tokenData?.allowance ?? constants.Zero
 }
 
 /**
@@ -224,7 +225,7 @@ export async function getL1ERC20Address({
 /*
  Retrieves the L1 gateway of an ERC-20 token using its L1 address.
 */
-export async function getL1GatewayAddress({
+export async function fetchErc20L1GatewayAddress({
   erc20L1Address,
   l1Provider,
   l2Provider
@@ -240,7 +241,7 @@ export async function getL1GatewayAddress({
 /*
  Retrieves the L2 gateway of an ERC-20 token using its L1 address.
 */
-export async function getL2GatewayAddress({
+export async function fetchErc20L2GatewayAddress({
   erc20L1Address,
   l2Provider
 }: {
