@@ -12,7 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
+import { useNativeToken } from '../../hooks/useNativeToken'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -28,15 +28,12 @@ export function TokenButton(): JSX.Element {
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
-  const customFeeToken = useCustomFeeToken({ chainProvider: l2.provider })
+  const nativeToken = useNativeToken({ provider: l2.provider })
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
-      if (customFeeToken) {
-        return undefined
-      }
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeToken.logoUrl
     }
     if (
       status !== UseNetworksAndSignersStatus.CONNECTED ||
@@ -53,7 +50,7 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [
-    customFeeToken,
+    nativeToken,
     bridgeTokens,
     selectedToken?.address,
     status,
@@ -62,14 +59,14 @@ export function TokenButton(): JSX.Element {
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
-      return customFeeToken?.symbol ?? 'ETH'
+      return nativeToken.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
       chain: isDepositMode ? l1.network : l2.network
     })
-  }, [selectedToken, customFeeToken, isDepositMode, l2.network, l1.network])
+  }, [selectedToken, nativeToken, isDepositMode, l2.network, l1.network])
 
   function closeWithReset() {
     setTokenToImport(undefined)

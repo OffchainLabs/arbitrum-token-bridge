@@ -41,7 +41,7 @@ import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
+import { useNativeToken } from '../../hooks/useNativeToken'
 
 enum Panel {
   TOKENS,
@@ -173,7 +173,7 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
-  const customFeeToken = useCustomFeeToken({ chainProvider: L2Provider })
+  const nativeToken = useNativeToken({ provider: L2Provider })
 
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 
@@ -189,9 +189,9 @@ function TokensPanel({
   const getBalance = useCallback(
     (address: string) => {
       if (address === ETH_IDENTIFIER) {
-        if (customFeeToken) {
+        if (nativeToken.isCustom) {
           return isDepositMode
-            ? erc20L1Balances?.[customFeeToken.address]
+            ? erc20L1Balances?.[nativeToken.address]
             : ethL2Balance
         }
 
@@ -217,7 +217,7 @@ function TokensPanel({
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
     [
-      customFeeToken,
+      nativeToken,
       bridgeTokens,
       erc20L1Balances,
       erc20L2Balances,

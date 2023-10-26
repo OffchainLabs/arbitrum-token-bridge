@@ -23,7 +23,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
-import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
+import { useNativeToken } from '../../hooks/useNativeToken'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -287,17 +287,12 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
-  const customFeeToken = useCustomFeeToken({ chainProvider: l2.provider })
+  const nativeToken = useNativeToken({ provider: l2.provider })
 
   const { isTestnet } = isNetwork(l1.network.id)
 
-  const isNativeToken = token === null
-  const showPrice = isNativeToken && !customFeeToken && !isTestnet
-
-  const nativeTokenSymbol = useMemo(
-    () => customFeeToken?.symbol ?? 'ETH',
-    [customFeeToken]
-  )
+  const isBridgingNativeToken = token === null
+  const showPrice = isBridgingNativeToken && !nativeToken.isCustom && !isTestnet
 
   const tokenSymbol = useMemo(() => {
     if (token) {
@@ -307,8 +302,8 @@ export function TransferPanelSummary({
       })
     }
 
-    return nativeTokenSymbol
-  }, [token, nativeTokenSymbol, app.isDepositMode, l1.network, l2.network])
+    return nativeToken.symbol
+  }, [token, nativeToken, app.isDepositMode, l1.network, l2.network])
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
@@ -324,7 +319,7 @@ export function TransferPanelSummary({
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
-        {isNativeToken && (
+        {isBridgingNativeToken && (
           <>
             <div>
               <div className="h-2" />
@@ -381,7 +376,7 @@ export function TransferPanelSummary({
         <div className="flex w-3/5 justify-between">
           <span>
             {formatAmount(estimatedTotalGasFees, {
-              symbol: nativeTokenSymbol
+              symbol: nativeToken.symbol
             })}
           </span>
           {showPrice && (
@@ -403,7 +398,7 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL1GasFees, {
-                symbol: nativeTokenSymbol
+                symbol: nativeToken.symbol
               })}
             </span>
             {showPrice && (
@@ -423,7 +418,7 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL2GasFees, {
-                symbol: nativeTokenSymbol
+                symbol: nativeToken.symbol
               })}
             </span>
             {showPrice && (
@@ -435,7 +430,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      {isNativeToken && (
+      {isBridgingNativeToken && (
         <>
           <div>
             <div className="h-2" />
@@ -449,7 +444,7 @@ export function TransferPanelSummary({
             <div className="flex w-3/5 flex-row justify-between">
               <span>
                 {formatAmount(amount + estimatedTotalGasFees, {
-                  symbol: nativeTokenSymbol
+                  symbol: nativeToken.symbol
                 })}
               </span>
               {showPrice && (

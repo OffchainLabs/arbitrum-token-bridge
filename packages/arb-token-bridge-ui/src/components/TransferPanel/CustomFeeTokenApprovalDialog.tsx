@@ -10,12 +10,12 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { approveCustomFeeTokenForInboxEstimateGas } from './CustomFeeTokenUtils'
+import { NativeTokenCustom } from '../../hooks/useNativeToken'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
-  customFeeToken: ERC20BridgeToken | null | undefined
+  customFeeToken: NativeTokenCustom
 }
 
 export function CustomFeeTokenApprovalDialog(
@@ -86,8 +86,8 @@ export function CustomFeeTokenApprovalDialog(
       <div className="flex flex-col space-y-6 md:max-w-[490px]">
         <div className="flex flex-row items-center space-x-4">
           <SafeImage
-            src={customFeeToken?.logoURI}
-            alt={`${customFeeToken?.name} logo`}
+            src={customFeeToken.logoUrl}
+            alt={`${customFeeToken.name} logo`}
             className="h-8 w-8 grow-0 rounded-full"
             fallback={
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
@@ -98,19 +98,19 @@ export function CustomFeeTokenApprovalDialog(
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
               <span className="text-base font-medium text-gray-900">
-                {customFeeToken?.symbol}
+                {customFeeToken.symbol}
               </span>
               <span className="text-xs text-gray-500">
-                {customFeeToken?.name}
+                {customFeeToken.name}
               </span>
             </div>
             <ExternalLink
               href={`${getExplorerUrl(l1.network.id)}/token/${
-                customFeeToken?.address
+                customFeeToken.address
               }`}
               className="text-xs text-blue-link underline"
             >
-              {customFeeToken?.address.toLowerCase()}
+              {customFeeToken.address}
             </ExternalLink>
           </div>
         </div>

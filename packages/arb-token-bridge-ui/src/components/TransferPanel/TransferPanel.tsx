@@ -64,7 +64,6 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
-import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
@@ -78,6 +77,7 @@ import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { defaultErc20Decimals } from '../../defaults'
+import { useNativeToken } from '../../hooks/useNativeToken'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -218,7 +218,7 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const customFeeToken = useCustomFeeToken({ chainProvider: l2Provider })
+  const nativeToken = useNativeToken({ provider: l2Provider })
 
   const { approveForBurn, depositForBurn } = useCCTP({
     sourceChainId: isDepositMode
@@ -910,7 +910,7 @@ export function TransferPanel() {
             }
           }
 
-          if (customFeeToken) {
+          if (nativeToken.isCustom) {
             const approved = await approveCustomFeeTokenForGateway()
 
             if (!approved) {
@@ -984,7 +984,7 @@ export function TransferPanel() {
           // todo: decimals != 18
           const amountRaw = utils.parseUnits(amount, 18)
 
-          if (customFeeToken) {
+          if (nativeToken.isCustom) {
             const approved = await approveCustomFeeTokenForInbox()
 
             if (!approved) {
@@ -1465,10 +1465,12 @@ export function TransferPanel() {
         isCctp={isCctp}
       />
 
-      <CustomFeeTokenApprovalDialog
-        {...customFeeTokenApprovalDialogProps}
-        customFeeToken={customFeeToken}
-      />
+      {nativeToken.isCustom && (
+        <CustomFeeTokenApprovalDialog
+          {...customFeeTokenApprovalDialogProps}
+          customFeeToken={nativeToken}
+        />
+      )}
 
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}

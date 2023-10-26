@@ -31,7 +31,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useCustomFeeToken } from '../../hooks/useCustomFeeToken'
+import { useNativeToken } from '../../hooks/useNativeToken'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -92,7 +92,7 @@ export function TokenRow({
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
-  const customFeeToken = useCustomFeeToken({ chainProvider: l2Provider })
+  const nativeToken = useNativeToken({ provider: l2Provider })
 
   const isSmallScreen = useMedia('(max-width: 419px)')
 
@@ -104,12 +104,8 @@ export function TokenRow({
       })
     }
 
-    if (customFeeToken) {
-      return customFeeToken.name
-    }
-
-    return 'Ether'
-  }, [token, customFeeToken, isDepositMode, l2Network, l1Network])
+    return nativeToken.name
+  }, [token, nativeToken, isDepositMode, l2Network, l1Network])
 
   const tokenSymbol = useMemo(() => {
     if (token) {
@@ -119,12 +115,8 @@ export function TokenRow({
       })
     }
 
-    if (customFeeToken) {
-      return customFeeToken.symbol
-    }
-
-    return 'ETH'
-  }, [token, customFeeToken, isDepositMode, l2Network, l1Network])
+    return nativeToken.symbol
+  }, [token, nativeToken, isDepositMode, l2Network, l1Network])
 
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
@@ -147,11 +139,7 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
-      if (customFeeToken) {
-        return undefined
-      }
-
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeToken.logoUrl
     }
 
     if (!token.logoURI) {
@@ -159,13 +147,13 @@ export function TokenRow({
     }
 
     return token.logoURI
-  }, [token, customFeeToken])
+  }, [token, nativeToken])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
-      if (customFeeToken) {
+      if (nativeToken.isCustom) {
         return isDepositMode
-          ? erc20L1Balances?.[customFeeToken.address.toLowerCase()]
+          ? erc20L1Balances?.[nativeToken.address]
           : ethL2Balance
       }
 
@@ -185,10 +173,10 @@ export function TokenRow({
     ethL1Balance,
     ethL2Balance,
     token,
+    nativeToken,
     isDepositMode,
     erc20L1Balances,
-    erc20L2Balances,
-    customFeeToken
+    erc20L2Balances
   ])
 
   const isArbitrumToken = useMemo(() => {
@@ -211,7 +199,7 @@ export function TokenRow({
   }, [token, isArbitrumToken])
 
   const tokenListInfo = useMemo(() => {
-    if (!token || customFeeToken) {
+    if (!token) {
       return null
     }
 
@@ -241,12 +229,7 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [
-    token,
-    customFeeToken,
-    tokenIsArbGoerliNativeUSDC,
-    tokenIsArbOneNativeUSDC
-  ])
+  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -254,7 +237,7 @@ export function TokenRow({
       return true
     }
 
-    if (!token || customFeeToken) {
+    if (!token) {
       return true
     }
 
@@ -263,13 +246,7 @@ export function TokenRow({
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [
-    bridgeTokens,
-    token,
-    customFeeToken,
-    tokenIsArbOneNativeUSDC,
-    tokenIsArbGoerliNativeUSDC
-  ])
+  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
@@ -348,8 +325,8 @@ export function TokenRow({
   // If there's a custom fee token, we only display it as native token, not as an erc-20 in the list
   if (
     token &&
-    customFeeToken &&
-    token.address.toLowerCase() === customFeeToken.address.toLowerCase()
+    nativeToken.isCustom &&
+    token.address.toLowerCase() === nativeToken.address
   ) {
     return null
   }
