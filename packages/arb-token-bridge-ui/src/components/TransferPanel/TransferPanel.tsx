@@ -426,6 +426,7 @@ export function TransferPanel() {
     // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
+    // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
     if (!customFeeTokenAllowanceForInbox.gte(amountRaw)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
@@ -478,7 +479,23 @@ export function TransferPanel() {
     // todo: decimals != 18
     const amountRaw = utils.parseUnits(amount, 18)
 
-    if (!customFeeTokenAllowanceForGateway.gte(amountRaw)) {
+    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the child chain will be paid in the custom fee token.
+
+    const { retryableData } = await erc20Bridger.getDepositRequest({
+      from: walletAddress,
+      amount: amountRaw,
+      erc20L1Address: selectedToken.address,
+      l1Provider,
+      l2Provider
+    })
+
+    // maxSubmissionCost + gasLimit * maxFeePerGas
+    const retryableFees = retryableData.maxSubmissionCost
+      //
+      .add(retryableData.gasLimit.mul(retryableData.maxFeePerGas))
+
+    // We have to check if the allowance is enough to cover the fees.
+    if (!customFeeTokenAllowanceForGateway.gte(retryableFees)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
 
