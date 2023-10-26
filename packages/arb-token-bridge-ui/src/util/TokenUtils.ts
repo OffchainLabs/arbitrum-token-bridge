@@ -148,7 +148,7 @@ export type FetchErc20AllowanceParams = FetchErc20DataProps & {
   /**
    * Address of the spender of the ERC-20 tokens.
    */
-  spender: string | 'gateway'
+  spender: string
 }
 
 /**
