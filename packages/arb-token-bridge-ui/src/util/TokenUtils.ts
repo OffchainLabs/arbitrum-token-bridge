@@ -49,7 +49,7 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
 export type FetchErc20DataProps = {
   /**
    * Address of the ERC-20 token contract.
-   * */
+   */
   address: string
   /**
    * Provider for the chain where the ERC-20 token contract is deployed.
