@@ -1,9 +1,12 @@
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { constants as arbitrumConstants } from '@arbitrum/sdk'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
 import {
+  EthWithdrawal,
+  attachTimestampToTokenWithdrawal,
+  isTokenWithdrawal,
   mapETHWithdrawalToL2ToL1EventResult,
   mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
   mapWithdrawalToL2ToL1EventResult,
@@ -12,14 +15,15 @@ import {
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
-import { L2ToL1EventResultPlus } from '../../hooks/arbTokenBridge.types'
+import {
+  L2ToL1EventResultPlus,
+  WithdrawalInitiated
+} from '../../hooks/arbTokenBridge.types'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 
 export type FetchWithdrawalsParams = {
   sender?: string
-  senderNot?: string
   receiver?: string
-  receiverNot?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -29,13 +33,22 @@ export type FetchWithdrawalsParams = {
   searchString?: string
 }
 
+type Timestamped = {
+  timestamp?: BigNumber
+}
+
+function sortByTimestampDescending(a: Timestamped, b: Timestamped) {
+  const aTimestamp = a.timestamp ?? constants.Zero
+  const bTimestamp = b.timestamp ?? constants.Zero
+
+  return aTimestamp.gt(bTimestamp) ? -1 : 1
+}
+
 /* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 export const fetchWithdrawals = async ({
   sender,
-  senderNot,
   receiver,
-  receiverNot,
   l1Provider,
   l2Provider,
   pageNumber = 0,
@@ -68,31 +81,6 @@ export const fetchWithdrawals = async ({
     toBlock = latestSubgraphBlockNumber
   }
 
-  // todo: update when eth withdrawals to a custom destination address are enabled (requires https://github.com/OffchainLabs/arbitrum-sdk/issues/325)
-  function getETHWithdrawalsFromEventLogsQuery() {
-    // give me all the eth withdrawals that someone else initiated, but the funds are sent to me
-    if (receiver) {
-      // since we don't do eth withdrawals to a custom destination address, we don't expect any results here
-      // however, if we pass in `undefined`, it will skip the filter and give us everything, which is why we use the node interface address that should never return any results
-      return { toAddress: arbitrumConstants.NODE_INTERFACE_ADDRESS }
-    }
-
-    // give me all the eth withdrawals that i initiated
-    // since we don't do eth withdrawals to a custom destination address, we set `toAddress` to be the sender, giving us all withdrawals sent to the same address
-    return { toAddress: sender }
-  }
-
-  function getTokenWithdrawalsFromEventLogsQuery() {
-    // give me all the token withdrawals that someone else initiated, but the funds are sent to me
-    // because we can't exclude withdrawals that were sent from the same address, we have to filter them out later, see `mappedTokenWithdrawalsFromEventLogs`
-    if (receiver) {
-      return { fromAddress: undefined, toAddress: receiver }
-    }
-
-    // give me all the token withdrawals that i initiated
-    return { fromAddress: sender, toAddress: undefined }
-  }
-
   const [
     withdrawalsFromSubgraph,
     ethWithdrawalsFromEventLogs,
@@ -100,24 +88,23 @@ export const fetchWithdrawals = async ({
   ] = await Promise.all([
     fetchWithdrawalsFromSubgraph({
       sender,
-      senderNot,
       receiver,
-      receiverNot,
-      fromBlock: fromBlock,
-      toBlock: toBlock,
+      fromBlock,
+      toBlock,
       l2ChainId: l2ChainID,
       pageNumber,
       pageSize,
       searchString
     }),
     fetchETHWithdrawalsFromEventLogs({
-      ...getETHWithdrawalsFromEventLogsQuery(),
+      receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider
     }),
     fetchTokenWithdrawalsFromEventLogs({
-      ...getTokenWithdrawalsFromEventLogsQuery(),
+      sender,
+      receiver,
       fromBlock: toBlock + 1,
       toBlock: 'latest',
       l2Provider: l2Provider,
@@ -129,36 +116,42 @@ export const fetchWithdrawals = async ({
   const currentPageStart = pageNumber * pageSize
   const currentPageEnd = currentPageStart + pageSize
 
-  const partialEthWithdrawalsFromEventLogs = [...ethWithdrawalsFromEventLogs]
-    // event logs start from the earliest, we need to reverse them
-    .reverse()
-    .slice(currentPageStart, currentPageEnd)
-  const partialTokenWithdrawalsFromEventLogs = [
-    ...tokenWithdrawalsFromEventLogs
+  // we need timestamps to sort token withdrawals along ETH withdrawals
+  const tokenWithdrawalsFromEventLogsWithTimestamp = await Promise.all(
+    tokenWithdrawalsFromEventLogs.map(withdrawal =>
+      attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
+    )
+  )
+
+  // get ETH and token withdrawals that will be displayed on the current page
+  const paginatedWithdrawalsFromEventLogs = [
+    ...ethWithdrawalsFromEventLogs,
+    ...tokenWithdrawalsFromEventLogsWithTimestamp
   ]
-    .reverse()
+    .sort(sortByTimestampDescending)
     .slice(currentPageStart, currentPageEnd)
 
-  const mappedTokenWithdrawalsFromEventLogs = (
-    await Promise.all(
-      partialTokenWithdrawalsFromEventLogs.map(withdrawal =>
-        mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
+  const paginatedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] = []
+  const paginatedEthWithdrawalsFromEventLogs: EthWithdrawal[] = []
+
+  for (const withdrawal of paginatedWithdrawalsFromEventLogs) {
+    if (isTokenWithdrawal(withdrawal)) {
+      paginatedTokenWithdrawalsFromEventLogs.push(withdrawal)
+    } else {
+      paginatedEthWithdrawalsFromEventLogs.push(withdrawal)
+    }
+  }
+
+  const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
+    paginatedTokenWithdrawalsFromEventLogs.map(withdrawal =>
+      mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
+        withdrawal,
+        l1Provider,
+        l2Provider,
+        l2ChainID
       )
     )
   )
-    // when viewing received funds, we don't want to see funds sent from the same address, so we filter them out
-    .filter(withdrawal => {
-      if (senderNot && receiver && withdrawal) {
-        return withdrawal.sender?.toLowerCase() !== senderNot.toLowerCase()
-      }
-
-      return true
-    })
 
   const l2ToL1Txns = [
     ...(await Promise.all([
@@ -170,7 +163,7 @@ export const fetchWithdrawals = async ({
           l2ChainID
         )
       ),
-      ...partialEthWithdrawalsFromEventLogs.map(withdrawal =>
+      ...paginatedEthWithdrawalsFromEventLogs.map(withdrawal =>
         mapETHWithdrawalToL2ToL1EventResult(
           withdrawal,
           l1Provider,
@@ -182,7 +175,7 @@ export const fetchWithdrawals = async ({
     ...mappedTokenWithdrawalsFromEventLogs
   ]
     .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-    .sort((msgA, msgB) => +msgA.timestamp - +msgB.timestamp)
+    .sort(sortByTimestampDescending)
 
   const finalL2ToL1Txns: L2ToL1EventResultPlus[] = await Promise.all(
     l2ToL1Txns.map(withdrawal =>
