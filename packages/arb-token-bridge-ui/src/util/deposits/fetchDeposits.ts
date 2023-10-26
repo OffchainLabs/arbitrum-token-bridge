@@ -96,7 +96,7 @@ export async function fetchDepositList({
       // TODO: may need to format units here
       value: utils.formatUnits(
         (isEth ? tx.ethValue : tx.tokenAmount) || 0,
-        isEth ? 18 : tx?.l1Token?.decimals || 18
+        isEth ? 18 : tx?.l1Token?.decimals || 0
       ),
       ...assetDetails,
       tokenAddress: isEth ? '' : tx.l1Token?.id,

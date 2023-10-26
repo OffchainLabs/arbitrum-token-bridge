@@ -22,6 +22,8 @@ import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
+  parentChainId: number
+  chainId: number
 }
 
 export const updateAdditionalWithdrawalData = async (
@@ -60,19 +62,21 @@ export async function attachTimestampToTokenWithdrawal({
   }
 }
 
-export async function mapETHWithdrawalToL2ToL1EventResult(
-  event: EthWithdrawal,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l1ChainId: number,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus> {
+export async function mapETHWithdrawalToL2ToL1EventResult({
+  event,
+  l1Provider,
+  l2Provider
+}: {
+  event: EthWithdrawal
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    event.chainId
   )
 
   return {
@@ -85,8 +89,8 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     outgoingMessageState,
     decimals: 18,
     l2TxHash: event.l2TxHash || event.transactionHash,
-    parentChainId: l1ChainId,
-    chainId: l2ChainId
+    parentChainId: event.parentChainId,
+    chainId: event.chainId
   }
 }
 
@@ -172,13 +176,15 @@ export function isTokenWithdrawal(
   return typeof (withdrawal as WithdrawalInitiated).l1Token !== 'undefined'
 }
 
-export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-  result: WithdrawalInitiated,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l1ChainID: number,
-  l2ChainID: number
-): Promise<L2ToL1EventResultPlus | undefined> {
+export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+  result,
+  l1Provider,
+  l2Provider
+}: {
+  result: WithdrawalInitiated
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await getL1TokenData({
     // we don't care about allowance in this call, so we're just using vitalik.eth
     // didn't want to use address zero in case contracts have checks for it
@@ -202,7 +208,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainID
+    result.chainId
   )
 
   // We cannot access sender and destination from the withdrawal object.
@@ -246,18 +252,20 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     symbol,
     decimals,
     l2TxHash: l2TxReceipt.transactionHash,
-    parentChainId: l1ChainID,
-    chainId: l2ChainID
+    parentChainId: result.parentChainId,
+    chainId: result.chainId
   }
 }
 
-export async function mapWithdrawalToL2ToL1EventResult(
-  withdrawal: FetchWithdrawalsFromSubgraphResult,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l1ChainId: number,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus | undefined> {
+export async function mapWithdrawalToL2ToL1EventResult({
+  withdrawal,
+  l1Provider,
+  l2Provider
+}: {
+  withdrawal: FetchWithdrawalsFromSubgraphResult
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
   const l2TxReceipt = new L2TransactionReceipt(txReceipt)
@@ -273,7 +281,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    withdrawal.chainId
   )
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
@@ -295,8 +303,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
       symbol,
       decimals,
       l2TxHash: l2TxReceipt.transactionHash,
-      parentChainId: l1ChainId,
-      chainId: l2ChainId
+      parentChainId: withdrawal.parentChainId,
+      chainId: withdrawal.chainId
     } as L2ToL1EventResultPlus
   }
 
@@ -311,7 +319,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     l2TxHash: l2TxReceipt.transactionHash,
     symbol: 'ETH',
     decimals: 18,
-    parentChainId: l1ChainId,
-    chainId: l2ChainId
+    parentChainId: withdrawal.parentChainId,
+    chainId: withdrawal.chainId
   } as L2ToL1EventResultPlus
 }

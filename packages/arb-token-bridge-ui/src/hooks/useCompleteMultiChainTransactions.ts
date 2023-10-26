@@ -79,7 +79,7 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
     parentChain: ChainId.Mainnet,
     chain: ChainId.ArbitrumNova
   },
-  // // Testnet
+  // Testnet
   {
     parentChain: ChainId.Goerli,
     chain: ChainId.ArbitrumGoerli
@@ -115,37 +115,35 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
 
   if (isDeposit(tx)) {
     return transformDeposit(
-      await updateAdditionalDepositData(tx, parentChainProvider, chainProvider)
+      await updateAdditionalDepositData({
+        depositTx: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     )
   }
 
   let withdrawal: L2ToL1EventResultPlus | undefined
 
   if (isWithdrawalFromSubgraph(tx)) {
-    withdrawal = await mapWithdrawalToL2ToL1EventResult(
-      tx,
-      parentChainProvider,
-      chainProvider,
-      tx.parentChainId,
-      tx.chainId
-    )
+    withdrawal = await mapWithdrawalToL2ToL1EventResult({
+      withdrawal: tx,
+      l1Provider: parentChainProvider,
+      l2Provider: chainProvider
+    })
   } else {
     if (isTokenWithdrawal(tx)) {
-      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-        tx,
-        parentChainProvider,
-        chainProvider,
-        tx.parentChainId,
-        tx.chainId
-      )
+      withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+        result: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     } else {
-      withdrawal = await mapETHWithdrawalToL2ToL1EventResult(
-        tx,
-        parentChainProvider,
-        chainProvider,
-        tx.parentChainId,
-        tx.chainId
-      )
+      withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
+        event: tx,
+        l1Provider: parentChainProvider,
+        l2Provider: chainProvider
+      })
     }
   }
 
@@ -227,17 +225,12 @@ const useTransactionListByDirection = (
 
       // include the new data with the previously fetched data
       // the data is grouped by chain pairs
-      setTransactions(prevTransactions => {
-        return data.map((transactionsForChainPair, chainPairIndex) => {
-          const prevTransactionsForChainPair = prevTransactions[chainPairIndex]
-          return [
-            ...(prevTransactionsForChainPair
-              ? prevTransactionsForChainPair
-              : []),
-            ...(transactionsForChainPair ? transactionsForChainPair : [])
-          ]
-        })
-      })
+      setTransactions(prevTransactions =>
+        data.map((transactionsForChainPair, chainPairIndex) => [
+          ...(prevTransactions[chainPairIndex] ?? []),
+          ...(transactionsForChainPair ?? [])
+        ])
+      )
 
       if (!shouldFetchNextPage) {
         setLoading(false)
@@ -272,8 +265,7 @@ const useMultiChainTransactionList = () => {
   // checks if any source is loading
   const loading = groupedTransactions.map(grp => grp.loading).some(Boolean)
   // get first error
-  const error =
-    groupedTransactions.map(grp => grp.error).filter(Boolean)[0] ?? null
+  const error = groupedTransactions.map(grp => grp.error).filter(Boolean)[0]
 
   return { data, loading, error }
 }
@@ -305,7 +297,7 @@ export const useCompleteMultiChainTransactions = () => {
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(tx => transformTransaction(tx))
+        data.slice(startIndex, endIndex).map(transformTransaction)
       )
     }
   )
@@ -339,6 +331,6 @@ export const useCompleteMultiChainTransactions = () => {
     loading: fetching,
     completed: !fetching && !paused,
     paused,
-    error: mapError ?? error ?? null
+    error: mapError ?? error
   }
 }
