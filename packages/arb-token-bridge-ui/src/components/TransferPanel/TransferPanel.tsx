@@ -75,6 +75,7 @@ import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -589,9 +590,11 @@ export function TransferPanel() {
           complete: false
         })
       }
+
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',
+        assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: getStandardizedTimestamp(new Date().toString()),
         direction: isDeposit ? 'deposit' : 'withdraw',
