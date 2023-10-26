@@ -27,7 +27,7 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
 import {
   fetchErc20L1GatewayAddress,
-  getL2GatewayAddress
+  fetchErc20L2GatewayAddress
 } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
 
@@ -146,7 +146,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
       setContractAddress(
-        await getL2GatewayAddress({
+        await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
           l2Provider: l2.provider
         })

@@ -41,9 +41,9 @@ import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL2ERC20Address,
-  getL2GatewayAddress,
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
+  fetchErc20L2GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -96,7 +96,7 @@ const isAllowedL2 = async ({
 }) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
 
-  const gatewayAddress = await getL2GatewayAddress({
+  const gatewayAddress = await fetchErc20L2GatewayAddress({
     erc20L1Address: l1TokenAddress,
     l2Provider
   })

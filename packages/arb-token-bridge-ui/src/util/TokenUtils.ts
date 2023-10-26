@@ -239,7 +239,7 @@ export async function fetchErc20L1GatewayAddress({
 /*
  Retrieves the L2 gateway of an ERC-20 token using its L1 address.
 */
-export async function getL2GatewayAddress({
+export async function fetchErc20L2GatewayAddress({
   erc20L1Address,
   l2Provider
 }: {
