@@ -16,7 +16,10 @@ export type NativeCurrencyEther = NativeCurrencyBase & {
 
 export type NativeCurrencyErc20 = NativeCurrencyBase & {
   isCustom: true
-  erc20ParentChainAddress: string
+  /**
+   * Address of the ERC-20 token contract on the parent chain.
+   */
+  address: string
 }
 
 export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
