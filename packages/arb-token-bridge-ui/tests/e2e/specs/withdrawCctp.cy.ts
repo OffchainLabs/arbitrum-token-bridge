@@ -11,7 +11,7 @@ import {
   zeroToLessThanOneETH
 } from '../../support/common'
 
-describe('Deposit USDC through CCTP', () => {
+describe('Withdraw USDC through CCTP', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
   // because it is cleared between each `it` cypress test
@@ -59,7 +59,7 @@ describe('Deposit USDC through CCTP', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should bridge ERC-20 successfully', () => {
+    it('should bridge USDC through CCTP successfully', () => {
       cy.login({ networkType: 'L2', networkName: 'arbitrum-goerli' })
       context('should add USDC token', () => {
         // Click on the ETH dropdown (Select token button)
@@ -154,7 +154,7 @@ describe('Deposit USDC through CCTP', () => {
           name: /Pay approval fee of/
         }).click()
         cy.confirmMetamaskPermissionToSpend('1')
-        cy.log('Approving ERC-20...')
+        cy.log('Approving USDC...')
         // eslint-disable-next-line
         cy.wait(15000)
         cy.confirmMetamaskTransaction().then(() => {
