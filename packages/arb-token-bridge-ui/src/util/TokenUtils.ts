@@ -47,7 +47,13 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
 }
 
 export type FetchErc20DataProps = {
+  /**
+   * Address of the ERC-20 token contract.
+   * */
   address: string
+  /**
+   * Provider for the chain where the ERC-20 token contract is deployed.
+   */
   provider: Provider
 }
 
@@ -133,15 +139,7 @@ export async function getL1TokenData({
   return finalTokenData
 }
 
-export type FetchErc20AllowanceParams = {
-  /**
-   * Address of the ERC-20 token contract.
-   * */
-  address: string
-  /**
-   * Provider for the chain where the ERC-20 token contract is deployed.
-   */
-  provider: Provider
+export type FetchErc20AllowanceParams = FetchErc20DataProps & {
   /**
    * Address of the owner of the ERC-20 tokens.
    */
