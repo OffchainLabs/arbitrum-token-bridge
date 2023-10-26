@@ -74,6 +74,7 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -244,6 +245,8 @@ export function TransferPanel() {
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
+  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
+
   const ethBalance = useMemo(() => {
     return isDepositMode ? ethL1Balance : ethL2Balance
   }, [ethL1Balance, ethL2Balance, isDepositMode])
@@ -308,8 +311,9 @@ export function TransferPanel() {
     if (!ethL1Balance) {
       return null
     }
-    return utils.formatUnits(ethL1Balance, 18)
-  }, [ethL1Balance, erc20L1Balances, selectedToken])
+
+    return utils.formatUnits(ethL1Balance, nativeCurrency.decimals)
+  }, [ethL1Balance, erc20L1Balances, selectedToken, nativeCurrency])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -331,8 +335,8 @@ export function TransferPanel() {
     if (!ethL2Balance) {
       return null
     }
-    return utils.formatUnits(ethL2Balance, 18)
-  }, [ethL2Balance, erc20L2Balances, selectedToken])
+    return utils.formatUnits(ethL2Balance, nativeCurrency.decimals)
+  }, [ethL2Balance, erc20L2Balances, selectedToken, nativeCurrency])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -394,11 +398,17 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(amount || '0', selectedToken?.decimals ?? 18)
+      const amountSafe = amount || '0'
+
+      if (selectedToken) {
+        return utils.parseUnits(amountSafe, selectedToken.decimals)
+      }
+
+      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken])
+  }, [amount, selectedToken, nativeCurrency])
 
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
@@ -849,10 +859,8 @@ export function TransferPanel() {
             }
           })
         } else {
-          const amountRaw = utils.parseUnits(amount, 18)
-
           await latestEth.current.deposit({
-            amount: amountRaw,
+            amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
@@ -1003,10 +1011,8 @@ export function TransferPanel() {
             }
           })
         } else {
-          const amountRaw = utils.parseUnits(amount, 18)
-
           await latestEth.current.withdraw({
-            amount: amountRaw,
+            amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {

@@ -98,6 +98,7 @@ export const fetchDeposits = async ({
       return {
         type: 'deposit-l1',
         status: 'pending',
+        // todo: update this for subgraphs for custom fee token networks
         value: utils.formatUnits(
           (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
           isEthDeposit ? 18 : tx?.l1Token?.decimals || 18

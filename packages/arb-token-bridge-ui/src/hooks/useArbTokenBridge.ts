@@ -47,6 +47,7 @@ import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
+import { fetchNativeCurrency } from './useNativeCurrency'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -204,12 +205,14 @@ export const useArbTokenBridge = (
       return error.message
     }
 
+    const nativeCurrency = await fetchNativeCurrency({ provider: l2.provider })
+
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatEther(amount),
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
       txID: tx.hash,
-      assetName: 'ETH',
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -262,12 +265,17 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
+
+      const nativeCurrency = await fetchNativeCurrency({
+        provider: l2.provider
+      })
+
       addTransaction({
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatEther(amount),
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
         txID: tx.hash,
-        assetName: 'ETH',
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         sender: walletAddress,
         // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -305,8 +313,8 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: 'ETH',
-          decimals: 18,
+          symbol: nativeCurrency.symbol,
+          decimals: nativeCurrency.decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }

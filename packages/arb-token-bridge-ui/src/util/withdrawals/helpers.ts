@@ -14,6 +14,7 @@ import {
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 
 /**
  * `l2TxHash` exists on result from subgraph
@@ -69,15 +70,17 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     l2ChainId
   )
 
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
+
   return {
     ...event,
     sender: event.caller,
     destinationAddress: event.destination,
     type: AssetType.ETH,
     value: callvalue,
-    symbol: 'ETH',
+    symbol: nativeCurrency.symbol,
     outgoingMessageState,
-    decimals: 18,
+    decimals: nativeCurrency.decimals,
     l2TxHash: event.l2TxHash || event.transactionHash
   }
 }
@@ -287,6 +290,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
     } as L2ToL1EventResultPlus
   }
 
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
+
   // Else, Eth withdrawal
   return {
     ...event,
@@ -296,7 +301,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     value: BigNumber.from(withdrawal.ethValue),
     outgoingMessageState,
     l2TxHash: l2TxReceipt.transactionHash,
-    symbol: 'ETH',
-    decimals: 18
+    symbol: nativeCurrency.symbol,
+    decimals: nativeCurrency.decimals
   } as L2ToL1EventResultPlus
 }
