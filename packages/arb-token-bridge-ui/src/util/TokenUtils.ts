@@ -1,4 +1,4 @@
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
@@ -167,39 +167,6 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
 }
 
 /**
- * Retrieves token allowance of an ERC-20 token using its L1 address.
- * @param account,
- * @param erc20L1Address,
- * @param l1Provider,
- * @param l2Provider,
- */
-export async function getL1TokenAllowance({
-  account,
-  erc20L1Address,
-  l1Provider,
-  l2Provider
-}: {
-  account: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-}): Promise<BigNumber> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1Provider
-  )
-
-  return fetchErc20Allowance({
-    address: erc20L1Address,
-    provider: l1Provider,
-    owner: account,
-    spender: l1GatewayAddress
-  })
-}
-
-/**
  * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
  * @param erc20L2Address
  * @returns
@@ -256,7 +223,7 @@ export async function getL1ERC20Address({
 /*
  Retrieves the L1 gateway of an ERC-20 token using its L1 address.
 */
-export async function getL1GatewayAddress({
+export async function fetchErc20L1GatewayAddress({
   erc20L1Address,
   l1Provider,
   l2Provider

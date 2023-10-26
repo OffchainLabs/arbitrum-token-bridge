@@ -40,10 +40,10 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
-  getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
   fetchErc20Allowance,
+  fetchErc20L1GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -786,14 +786,20 @@ export function TransferPanel() {
             }
           }
 
-          const allowance = await getL1TokenAllowance({
-            account: walletAddress,
+          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
+            l1Provider,
+            l2Provider
           })
 
-          if (!allowance.gte(amountRaw)) {
+          const allowanceForL1Gateway = await fetchErc20Allowance({
+            address: selectedToken.address,
+            provider: l1Provider,
+            owner: walletAddress,
+            spender: l1GatewayAddress
+          })
+
+          if (!allowanceForL1Gateway.gte(amountRaw)) {
             setAllowance(allowance)
             const waitForInput = openTokenApprovalDialog()
             const [confirmed] = await waitForInput()
