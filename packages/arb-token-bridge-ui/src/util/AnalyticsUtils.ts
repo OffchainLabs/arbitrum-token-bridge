@@ -5,10 +5,6 @@ import {
   ExploreArbitrumNFTProjectName
 } from '../components/MainContent/ExploreArbitrumContent'
 import {
-  CEXName,
-  FiatOnRampName
-} from '../components/TransferPanel/LowBalanceDialogContent'
-import {
   NonCanonicalTokenAddresses,
   NonCanonicalTokenNames,
   NonCanonicalTokenSupportedBridges,
@@ -54,8 +50,6 @@ type AnalyticsEventMap = {
   'Connect Wallet Click': { walletName: ProviderName }
   'Explore: DeFi Project Click': { project: ExploreArbitrumDeFiProjectName }
   'Explore: NFT Project Click': { project: ExploreArbitrumNFTProjectName }
-  'CEX Click': { project: CEXName }
-  'Fiat On-Ramp Click': { project: FiatOnRampName }
   'Fast Bridge Click': {
     bridge:
       | FastBridgeName
