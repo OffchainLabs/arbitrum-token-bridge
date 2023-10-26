@@ -25,7 +25,10 @@ import {
 import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
-import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
+import {
+  fetchErc20L1GatewayAddress,
+  fetchErc20L2GatewayAddress
+} from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
@@ -134,7 +137,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       }
       if (isDepositMode) {
         setContractAddress(
-          await getL1GatewayAddress({
+          await fetchErc20L1GatewayAddress({
             erc20L1Address: token.address,
             l1Provider: l1.provider,
             l2Provider: l2.provider
@@ -143,7 +146,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
       setContractAddress(
-        await getL2GatewayAddress({
+        await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
           l2Provider: l2.provider
         })

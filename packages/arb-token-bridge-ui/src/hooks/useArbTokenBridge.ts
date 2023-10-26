@@ -39,7 +39,7 @@ import { useBalance } from './useBalance'
 import {
   getL1TokenData,
   getL1ERC20Address,
-  getL2GatewayAddress,
+  fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled
 } from '../util/TokenUtils'
@@ -384,7 +384,7 @@ export const useArbTokenBridge = (
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress({
+    const gatewayAddress = await fetchErc20L2GatewayAddress({
       erc20L1Address,
       l2Provider: l2.provider
     })
