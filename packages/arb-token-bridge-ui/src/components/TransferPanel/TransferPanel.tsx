@@ -43,7 +43,7 @@ import {
   getL1TokenAllowance,
   getL2ERC20Address,
   getL2GatewayAddress,
-  getTokenAllowanceForSpender,
+  fetchErc20Allowance,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -495,10 +495,10 @@ export function TransferPanel() {
       const { usdcContractAddress, tokenMessengerContractAddress } =
         getContracts(sourceChainId)
 
-      const allowance = await getTokenAllowanceForSpender({
-        account: walletAddress,
-        erc20Address: usdcContractAddress,
+      const allowance = await fetchErc20Allowance({
+        address: usdcContractAddress,
         provider: type === 'deposits' ? l1Provider : l2Provider,
+        owner: walletAddress,
         spender: tokenMessengerContractAddress
       })
 

@@ -1,6 +1,6 @@
 import { BigNumber, constants } from 'ethers'
 import { Chain } from 'wagmi'
-import { JsonRpcProvider, Provider } from '@ethersproject/providers'
+import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -8,6 +8,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
+import { defaultErc20Decimals } from '../defaults'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -43,6 +44,37 @@ const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
   l1TokenDataCache[erc20L1Address] = tokenData
 
   sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+}
+
+export type FetchErc20DataProps = {
+  /**
+   * Address of the ERC-20 token contract.
+   * */
+  address: string
+  /**
+   * Provider for the chain where the ERC-20 token contract is deployed.
+   */
+  provider: Provider
+}
+
+export async function fetchErc20Data({
+  address,
+  provider
+}: FetchErc20DataProps) {
+  const multiCaller = await MultiCaller.fromProvider(provider)
+
+  // todo: fall back if there is no multicall?
+  const [tokenData] = await multiCaller.getTokenData([address], {
+    name: true,
+    symbol: true,
+    decimals: true
+  })
+
+  return {
+    name: tokenData?.name ?? getDefaultTokenName(address),
+    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
+    decimals: tokenData?.decimals ?? defaultErc20Decimals
+  }
 }
 
 /**
@@ -94,7 +126,7 @@ export async function getL1TokenData({
   const finalTokenData = {
     name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
-    decimals: tokenData?.decimals ?? 0,
+    decimals: tokenData?.decimals ?? defaultErc20Decimals,
     address: contract.address
   }
 
@@ -108,27 +140,27 @@ export async function getL1TokenData({
   return finalTokenData
 }
 
+export type FetchErc20AllowanceParams = FetchErc20DataProps & {
+  /**
+   * Address of the owner of the ERC-20 tokens.
+   */
+  owner: string
+  /**
+   * Address of the spender of the ERC-20 tokens.
+   */
+  spender: string | 'gateway'
+}
+
 /**
- * Retrieves token allowance for a given contract of an ERC-20 token using its L1/L2 address.
- * @param account,
- * @param erc20Address,
- * @param provider,
- * @param spender
+ * Fetches allowance for an ERC-20 token.
  */
-export async function getTokenAllowanceForSpender({
-  account,
-  erc20Address,
-  spender,
-  provider
-}: {
-  account: string
-  erc20Address: string
-  spender: string
-  provider: Provider
-}) {
+export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
+  const { address, provider, owner, spender } = params
+
+  // todo: fall back if there is no multicall?
   const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
-    allowance: { owner: account, spender }
+  const [tokenData] = await multiCaller.getTokenData([address], {
+    allowance: { owner, spender }
   })
 
   return tokenData?.allowance ?? constants.Zero
@@ -158,10 +190,11 @@ export async function getL1TokenAllowance({
     erc20L1Address,
     l1Provider
   )
-  return getTokenAllowanceForSpender({
-    account,
-    erc20Address: erc20L1Address,
+
+  return fetchErc20Allowance({
+    address: erc20L1Address,
     provider: l1Provider,
+    owner: account,
     spender: l1GatewayAddress
   })
 }
