@@ -71,6 +71,7 @@ export const transformDeposits = (
         : null,
       txId: tx.txID,
       asset: tx.assetName || '',
+      assetType: tx.assetType,
       value: tx.value,
       uniqueId: null, // not needed
       isWithdrawal: false,
@@ -106,6 +107,7 @@ export const transformWithdrawals = (
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
       asset: tx.symbol || '',
+      assetType: tx.type,
       value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
       uniqueId: uniqueIdOrHash,
       isWithdrawal: true,

@@ -25,6 +25,7 @@ import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { AssetType } from '../../../hooks/arbTokenBridge.types'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -233,7 +234,7 @@ export function TransactionsTableDepositRow({
 
     if (tx.depositStatus === DepositStatus.CREATION_FAILED) {
       // In case of a retryable ticket creation failure, mark only the token deposits as errors
-      return tx.asset.toLowerCase() !== 'eth'
+      return tx.assetType === AssetType.ETH
     }
 
     return false
