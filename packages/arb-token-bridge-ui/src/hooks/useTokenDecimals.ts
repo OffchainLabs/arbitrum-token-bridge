@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { ArbTokenBridge } from './arbTokenBridge.types'
 import { defaultErc20Decimals } from '../defaults'
 

@@ -39,7 +39,7 @@ import { useBalance } from './useBalance'
 import {
   getL1TokenData,
   getL1ERC20Address,
-  getL2GatewayAddress,
+  fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled
 } from '../util/TokenUtils'
@@ -47,7 +47,7 @@ import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
-import { fetchNativeToken } from './useNativeToken'
+import { useNativeCurrency } from './useNativeCurrency'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -124,6 +124,8 @@ export const useArbTokenBridge = (
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
+
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress
@@ -205,14 +207,12 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    const nativeToken = await fetchNativeToken(l2.provider)
-
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatUnits(amount, nativeToken.decimals),
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
       txID: tx.hash,
-      assetName: nativeToken.symbol,
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -266,14 +266,12 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      const nativeToken = await fetchNativeToken(l2.provider)
-
       addTransaction({
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatUnits(amount, nativeToken.decimals),
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
         txID: tx.hash,
-        assetName: nativeToken.symbol,
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         sender: walletAddress,
         // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -311,8 +309,8 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: nativeToken.symbol,
-          decimals: nativeToken.decimals,
+          symbol: nativeCurrency.symbol,
+          decimals: nativeCurrency.decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
@@ -390,7 +388,7 @@ export const useArbTokenBridge = (
     if (!bridgeToken) throw new Error('Bridge token not found')
     const { l2Address } = bridgeToken
     if (!l2Address) throw new Error('L2 address not found')
-    const gatewayAddress = await getL2GatewayAddress({
+    const gatewayAddress = await fetchErc20L2GatewayAddress({
       erc20L1Address,
       l2Provider: l2.provider
     })
@@ -985,8 +983,8 @@ export const useArbTokenBridge = (
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: utils.formatEther(value),
-      assetName: 'ETH',
+      value: utils.formatUnits(value, nativeCurrency.decimals),
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       txID: res.hash,

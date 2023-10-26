@@ -31,7 +31,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useNativeToken } from '../../hooks/useNativeToken'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -92,9 +92,9 @@ export function TokenRow({
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
-  const nativeToken = useNativeToken({ provider: l2Provider })
 
   const isSmallScreen = useMedia('(max-width: 419px)')
+  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
   const tokenName = useMemo(() => {
     if (token) {
@@ -104,8 +104,8 @@ export function TokenRow({
       })
     }
 
-    return nativeToken.name
-  }, [token, nativeToken, isDepositMode, l2Network, l1Network])
+    return nativeCurrency.name
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
 
   const tokenSymbol = useMemo(() => {
     if (token) {
@@ -115,8 +115,8 @@ export function TokenRow({
       })
     }
 
-    return nativeToken.symbol
-  }, [token, nativeToken, isDepositMode, l2Network, l1Network])
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
 
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
@@ -139,7 +139,7 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
-      return nativeToken.logoUrl
+      return nativeCurrency.logoUrl
     }
 
     if (!token.logoURI) {
@@ -147,13 +147,13 @@ export function TokenRow({
     }
 
     return token.logoURI
-  }, [token, nativeToken])
+  }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
-      if (nativeToken.isCustom) {
+      if (nativeCurrency.isCustom) {
         return isDepositMode
-          ? erc20L1Balances?.[nativeToken.address]
+          ? erc20L1Balances?.[nativeCurrency.erc20ParentChainAddress]
           : ethL2Balance
       }
 
@@ -173,7 +173,7 @@ export function TokenRow({
     ethL1Balance,
     ethL2Balance,
     token,
-    nativeToken,
+    nativeCurrency,
     isDepositMode,
     erc20L1Balances,
     erc20L2Balances
@@ -325,8 +325,8 @@ export function TokenRow({
   // If there's a custom fee token, we only display it as native token, not as an erc-20 in the list
   if (
     token &&
-    nativeToken.isCustom &&
-    token.address.toLowerCase() === nativeToken.address
+    nativeCurrency.isCustom &&
+    token.address.toLowerCase() === nativeCurrency.erc20ParentChainAddress
   ) {
     return null
   }

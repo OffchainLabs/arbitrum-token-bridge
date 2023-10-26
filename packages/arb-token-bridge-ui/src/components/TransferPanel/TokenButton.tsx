@@ -12,7 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { useNativeToken } from '../../hooks/useNativeToken'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -28,12 +28,12 @@ export function TokenButton(): JSX.Element {
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
-  const nativeToken = useNativeToken({ provider: l2.provider })
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
-      return nativeToken.logoUrl
+      return nativeCurrency.logoUrl
     }
     if (
       status !== UseNetworksAndSignersStatus.CONNECTED ||
@@ -50,7 +50,7 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [
-    nativeToken,
+    nativeCurrency,
     bridgeTokens,
     selectedToken?.address,
     status,
@@ -59,14 +59,14 @@ export function TokenButton(): JSX.Element {
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
-      return nativeToken.symbol
+      return nativeCurrency.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
       chain: isDepositMode ? l1.network : l2.network
     })
-  }, [selectedToken, nativeToken, isDepositMode, l2.network, l1.network])
+  }, [selectedToken, nativeCurrency, isDepositMode, l2.network, l1.network])
 
   function closeWithReset() {
     setTokenToImport(undefined)

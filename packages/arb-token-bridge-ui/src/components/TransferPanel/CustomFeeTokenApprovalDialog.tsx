@@ -12,10 +12,10 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { approveCustomFeeTokenForInboxEstimateGas } from './CustomFeeTokenUtils'
-import { NativeTokenCustom } from '../../hooks/useNativeToken'
+import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
-  customFeeToken: NativeTokenCustom
+  customFeeToken: NativeCurrencyErc20
 }
 
 export function CustomFeeTokenApprovalDialog(
@@ -106,11 +106,11 @@ export function CustomFeeTokenApprovalDialog(
             </div>
             <ExternalLink
               href={`${getExplorerUrl(l1.network.id)}/token/${
-                customFeeToken.address
+                customFeeToken.erc20ParentChainAddress
               }`}
               className="text-xs text-blue-link underline"
             >
-              {customFeeToken.address}
+              {customFeeToken.erc20ParentChainAddress}
             </ExternalLink>
           </div>
         </div>

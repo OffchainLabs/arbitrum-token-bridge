@@ -41,10 +41,10 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
-  getL1TokenAllowance,
   getL2ERC20Address,
-  getL2GatewayAddress,
   fetchErc20Allowance,
+  fetchErc20L1GatewayAddress,
+  fetchErc20L2GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -76,8 +76,8 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
-import { defaultErc20Decimals } from '../../defaults'
-import { useNativeToken } from '../../hooks/useNativeToken'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 const onTxError = (error: any) => {
   if (!isUserRejectedError(error)) {
@@ -100,7 +100,7 @@ const isAllowedL2 = async ({
 }) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
 
-  const gatewayAddress = await getL2GatewayAddress({
+  const gatewayAddress = await fetchErc20L2GatewayAddress({
     erc20L1Address: l1TokenAddress,
     l2Provider
   })
@@ -218,8 +218,6 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const nativeToken = useNativeToken({ provider: l2Provider })
-
   const { approveForBurn, depositForBurn } = useCCTP({
     sourceChainId: isDepositMode
       ? latestNetworksAndSigners.current.l1.network.id
@@ -251,6 +249,8 @@ export function TransferPanel() {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
+
+  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
   const ethBalance = useMemo(() => {
     return isDepositMode ? ethL1Balance : ethL2Balance
@@ -316,8 +316,9 @@ export function TransferPanel() {
     if (!ethL1Balance) {
       return null
     }
-    return utils.formatUnits(ethL1Balance, nativeToken.decimals)
-  }, [nativeToken, ethL1Balance, erc20L1Balances, selectedToken])
+
+    return utils.formatUnits(ethL1Balance, nativeCurrency.decimals)
+  }, [ethL1Balance, erc20L1Balances, selectedToken, nativeCurrency])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -339,8 +340,8 @@ export function TransferPanel() {
     if (!ethL2Balance) {
       return null
     }
-    return utils.formatUnits(ethL2Balance, nativeToken.decimals)
-  }, [nativeToken, ethL2Balance, erc20L2Balances, selectedToken])
+    return utils.formatUnits(ethL2Balance, nativeCurrency.decimals)
+  }, [ethL2Balance, erc20L2Balances, selectedToken, nativeCurrency])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -423,7 +424,7 @@ export function TransferPanel() {
       spender: l2Network.ethBridge.inbox
     })
 
-    const amountBigNumber = utils.parseUnits(amount, nativeToken.decimals)
+    const amountBigNumber = utils.parseUnits(amount, nativeCurrency.decimals)
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
     if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
@@ -477,7 +478,7 @@ export function TransferPanel() {
     // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the child chain will be paid in the custom fee token.
     const { retryableData } = await erc20Bridger.getDepositRequest({
       from: walletAddress,
-      amount: utils.parseUnits(amount, nativeToken.decimals),
+      amount: utils.parseUnits(amount, nativeCurrency.decimals),
       erc20L1Address: selectedToken.address,
       l1Provider,
       l2Provider
@@ -509,14 +510,17 @@ export function TransferPanel() {
 
   const amountBigNumber = useMemo(() => {
     try {
-      return utils.parseUnits(
-        amount ?? '0',
-        selectedToken?.decimals ?? defaultErc20Decimals
-      )
+      const amountSafe = amount || '0'
+
+      if (selectedToken) {
+        return utils.parseUnits(amountSafe, selectedToken.decimals)
+      }
+
+      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, selectedToken])
+  }, [amount, selectedToken, nativeCurrency])
 
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
@@ -697,9 +701,11 @@ export function TransferPanel() {
           complete: false
         })
       }
+
       setPendingTransfer({
         txId: depositForBurnTx.hash,
         asset: 'USDC',
+        assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: getStandardizedTimestamp(new Date().toString()),
         direction: isDeposit ? 'deposit' : 'withdraw',
@@ -904,7 +910,7 @@ export function TransferPanel() {
             }
           }
 
-          if (nativeToken.isCustom) {
+          if (nativeCurrency.isCustom) {
             const approved = await approveCustomFeeTokenForGateway()
 
             if (!approved) {
@@ -912,14 +918,20 @@ export function TransferPanel() {
             }
           }
 
-          const allowance = await getL1TokenAllowance({
-            account: walletAddress,
+          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
+            l1Provider,
+            l2Provider
           })
 
-          if (!allowance.gte(amountRaw)) {
+          const allowanceForL1Gateway = await fetchErc20Allowance({
+            address: selectedToken.address,
+            provider: l1Provider,
+            owner: walletAddress,
+            spender: l1GatewayAddress
+          })
+
+          if (!allowanceForL1Gateway.gte(amountRaw)) {
             setAllowance(allowance)
             const waitForInput = openTokenApprovalDialog()
             const [confirmed] = await waitForInput()
@@ -975,7 +987,7 @@ export function TransferPanel() {
             }
           })
         } else {
-          if (nativeToken.isCustom) {
+          if (nativeCurrency.isCustom) {
             const approved = await approveCustomFeeTokenForInbox()
 
             if (!approved) {
@@ -984,7 +996,7 @@ export function TransferPanel() {
           }
 
           await latestEth.current.deposit({
-            amount: utils.parseUnits(amount, nativeToken.decimals),
+            amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
@@ -1136,7 +1148,7 @@ export function TransferPanel() {
           })
         } else {
           await latestEth.current.withdraw({
-            amount: utils.parseUnits(amount, nativeToken.decimals),
+            amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
@@ -1454,10 +1466,10 @@ export function TransferPanel() {
         isCctp={isCctp}
       />
 
-      {nativeToken.isCustom && (
+      {nativeCurrency.isCustom && (
         <CustomFeeTokenApprovalDialog
           {...customFeeTokenApprovalDialogProps}
-          customFeeToken={nativeToken}
+          customFeeToken={nativeCurrency}
         />
       )}
 
@@ -1601,7 +1613,7 @@ export function TransferPanel() {
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
           type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : 'ETH'}
+          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
 
         {showSCWalletTooltip && (
