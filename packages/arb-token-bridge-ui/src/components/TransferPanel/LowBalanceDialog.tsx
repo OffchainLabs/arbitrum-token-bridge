@@ -21,7 +21,7 @@ import {
   CEXName,
   FiatOnRampName
 } from './LowBalanceDialogContent'
-import { FAST_BRIDGE_ARTICLE_LINK } from '../../constants'
+import { FAST_BRIDGE_ARTICLE_LINK, ether } from '../../constants'
 
 type ExternalLinkCardDynamicProps =
   | {
@@ -124,7 +124,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
             </span>
           </div>
           <span className="text-center text-3xl font-light text-eth-dark">
-            {formatAmount(balanceNumber, { symbol: 'ETH' })}{' '}
+            {formatAmount(balanceNumber, { symbol: ether.symbol })}{' '}
             {isMainnet && (
               <span className="font-medium">
                 ({formatUSD(ethToUSD(balanceNumber))})

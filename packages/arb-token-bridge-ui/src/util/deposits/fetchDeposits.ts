@@ -83,8 +83,7 @@ export const fetchDeposits = async ({
       const isEthDeposit = tx.type === 'EthDeposit'
 
       const assetDetails = {
-        asset: 'ETH',
-        assetName: 'ETH',
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         tokenAddress: ''
       }
@@ -93,7 +92,6 @@ export const fetchDeposits = async ({
         // update some values for token deposit
         const symbol = tx.l1Token?.symbol || ''
 
-        assetDetails.asset = symbol
         assetDetails.assetName = symbol
         assetDetails.assetType = AssetType.ERC20
         assetDetails.tokenAddress = tx?.l1Token?.id || ''
@@ -113,7 +111,6 @@ export const fetchDeposits = async ({
         sender: tx.sender,
         destination: tx.receiver,
 
-        asset: assetDetails.asset,
         assetName: assetDetails.assetName,
         assetType: assetDetails.assetType,
 

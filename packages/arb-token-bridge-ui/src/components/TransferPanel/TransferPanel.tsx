@@ -1473,7 +1473,7 @@ export function TransferPanel() {
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
           type={tokenDepositCheckDialogType}
-          symbol={selectedToken ? selectedToken.symbol : 'ETH'}
+          symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
 
         {showSCWalletTooltip && (
