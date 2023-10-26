@@ -103,11 +103,13 @@ export async function getL1TokenData({
 
   // else, call on-chain method to retrieve token data
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+
+  const l1GatewayAddress = await fetchErc20L1GatewayAddress({
     erc20L1Address,
-    l1Provider
-  )
+    l1Provider,
+    l2Provider
+  })
+
   const multiCaller = await MultiCaller.fromProvider(l1Provider)
   const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
     decimals: true,
