@@ -18,7 +18,6 @@ import { NextAdapter } from 'next-query-params'
 import queryString from 'query-string'
 import {
   BooleanParam,
-  NumberParam,
   QueryParamProvider,
   StringParam,
   useQueryParams,
@@ -42,11 +41,9 @@ export const useArbQueryParams = () => {
     ]
   */
   return useQueryParams({
-    from: withDefault(ChainParam, 'mainnet'),
-    to: withDefault(ChainParam, 'arbitrumOne'),
+    from: ChainParam,
+    to: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    // `l2ChainId` is soon to be deprecated in favor of `from` and `to`
-    l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
