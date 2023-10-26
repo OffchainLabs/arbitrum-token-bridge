@@ -67,7 +67,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    // this will be changed with custom fee token so it's fine to not use "useNativeCurrency" for now
     const eth = formatAmount(estimatedGasFees, { symbol: ether.symbol })
     const usd = formatUSD(ethToUSD(estimatedGasFees))
     return `${eth}${isMainnet ? ` (${usd})` : ''}`
