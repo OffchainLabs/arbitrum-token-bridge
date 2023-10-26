@@ -2,7 +2,7 @@ import { useCallback, useState, useMemo, useEffect } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
-import { JsonRpcProvider, Provider } from '@ethersproject/providers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
@@ -41,13 +41,13 @@ import {
   getL1ERC20Address,
   getL2GatewayAddress,
   getL2ERC20Address,
-  l1TokenIsDisabled,
-  fetchErc20Data
+  l1TokenIsDisabled
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
+import { fetchNativeToken } from './useNativeToken'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -83,25 +83,6 @@ export function getUniqueIdOrHashFromEvent(
 
   // Classic
   return anyEvent.uniqueId as BigNumber
-}
-
-async function getNativeTokenSymbol({
-  nativeToken,
-  parentChainProvider
-}: {
-  nativeToken?: string
-  parentChainProvider: Provider
-}): Promise<string> {
-  if (typeof nativeToken === 'undefined') {
-    return 'ETH'
-  }
-
-  return (
-    await fetchErc20Data({
-      address: nativeToken,
-      provider: parentChainProvider
-    })
-  ).symbol
 }
 
 class TokenDisabledError extends Error {
@@ -224,17 +205,14 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    const nativeTokenSymbol = await getNativeTokenSymbol({
-      nativeToken: ethBridger.nativeToken,
-      parentChainProvider: l1.provider
-    })
+    const nativeToken = await fetchNativeToken(l2.provider)
 
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatEther(amount),
+      value: utils.formatUnits(amount, nativeToken.decimals),
       txID: tx.hash,
-      assetName: nativeTokenSymbol,
+      assetName: nativeToken.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -288,17 +266,14 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      const nativeTokenSymbol = await getNativeTokenSymbol({
-        nativeToken: ethBridger.nativeToken,
-        parentChainProvider: l1.provider
-      })
+      const nativeToken = await fetchNativeToken(l2.provider)
 
       addTransaction({
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatEther(amount),
+        value: utils.formatUnits(amount, nativeToken.decimals),
         txID: tx.hash,
-        assetName: nativeTokenSymbol,
+        assetName: nativeToken.symbol,
         assetType: AssetType.ETH,
         sender: walletAddress,
         // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -336,8 +311,8 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: nativeTokenSymbol,
-          decimals: 18,
+          symbol: nativeToken.symbol,
+          decimals: nativeToken.decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }

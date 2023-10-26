@@ -316,8 +316,8 @@ export function TransferPanel() {
     if (!ethL1Balance) {
       return null
     }
-    return utils.formatUnits(ethL1Balance, 18)
-  }, [ethL1Balance, erc20L1Balances, selectedToken])
+    return utils.formatUnits(ethL1Balance, nativeToken.decimals)
+  }, [nativeToken, ethL1Balance, erc20L1Balances, selectedToken])
 
   const l2Balance = useMemo(() => {
     if (selectedToken) {
@@ -339,8 +339,8 @@ export function TransferPanel() {
     if (!ethL2Balance) {
       return null
     }
-    return utils.formatUnits(ethL2Balance, 18)
-  }, [ethL2Balance, erc20L2Balances, selectedToken])
+    return utils.formatUnits(ethL2Balance, nativeToken.decimals)
+  }, [nativeToken, ethL2Balance, erc20L2Balances, selectedToken])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -423,11 +423,9 @@ export function TransferPanel() {
       spender: l2Network.ethBridge.inbox
     })
 
-    // todo: decimals != 18
-    const amountRaw = utils.parseUnits(amount, 18)
-
+    const amountBigNumber = utils.parseUnits(amount, nativeToken.decimals)
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    if (!customFeeTokenAllowanceForInbox.gte(amountRaw)) {
+    if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const confirmed = await waitForInput()
 
@@ -476,14 +474,10 @@ export function TransferPanel() {
       spender: gateway
     })
 
-    // todo: decimals != 18
-    const amountRaw = utils.parseUnits(amount, 18)
-
     // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the child chain will be paid in the custom fee token.
-
     const { retryableData } = await erc20Bridger.getDepositRequest({
       from: walletAddress,
-      amount: amountRaw,
+      amount: utils.parseUnits(amount, nativeToken.decimals),
       erc20L1Address: selectedToken.address,
       l1Provider,
       l2Provider
@@ -981,9 +975,6 @@ export function TransferPanel() {
             }
           })
         } else {
-          // todo: decimals != 18
-          const amountRaw = utils.parseUnits(amount, 18)
-
           if (nativeToken.isCustom) {
             const approved = await approveCustomFeeTokenForInbox()
 
@@ -993,7 +984,7 @@ export function TransferPanel() {
           }
 
           await latestEth.current.deposit({
-            amount: amountRaw,
+            amount: utils.parseUnits(amount, nativeToken.decimals),
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
@@ -1144,10 +1135,8 @@ export function TransferPanel() {
             }
           })
         } else {
-          const amountRaw = utils.parseUnits(amount, 18)
-
           await latestEth.current.withdraw({
-            amount: amountRaw,
+            amount: utils.parseUnits(amount, nativeToken.decimals),
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {

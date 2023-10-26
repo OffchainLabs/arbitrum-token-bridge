@@ -25,3 +25,9 @@ export const ORBIT_QUICKSTART_LINK =
 
 export const CCTP_DOCUMENTATION =
   'https://www.circle.com/en/cross-chain-transfer-protocol'
+
+export const ether = {
+  name: 'Ether',
+  symbol: 'ETH',
+  decimals: 18
+}
