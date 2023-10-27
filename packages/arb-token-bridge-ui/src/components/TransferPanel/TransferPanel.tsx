@@ -40,10 +40,10 @@ import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
-  getL1TokenAllowance,
   getL2ERC20Address,
-  getL2GatewayAddress,
-  getTokenAllowanceForSpender,
+  fetchErc20Allowance,
+  fetchErc20L1GatewayAddress,
+  fetchErc20L2GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -97,7 +97,7 @@ const isAllowedL2 = async ({
 }) => {
   const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
 
-  const gatewayAddress = await getL2GatewayAddress({
+  const gatewayAddress = await fetchErc20L2GatewayAddress({
     erc20L1Address: l1TokenAddress,
     l2Provider
   })
@@ -503,10 +503,10 @@ export function TransferPanel() {
       const { usdcContractAddress, tokenMessengerContractAddress } =
         getContracts(sourceChainId)
 
-      const allowance = await getTokenAllowanceForSpender({
-        account: walletAddress,
-        erc20Address: usdcContractAddress,
+      const allowance = await fetchErc20Allowance({
+        address: usdcContractAddress,
         provider: type === 'deposits' ? l1Provider : l2Provider,
+        owner: walletAddress,
         spender: tokenMessengerContractAddress
       })
 
@@ -799,14 +799,20 @@ export function TransferPanel() {
             }
           }
 
-          const allowance = await getL1TokenAllowance({
-            account: walletAddress,
+          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
-            l1Provider: l1Provider,
-            l2Provider: l2Provider
+            l1Provider,
+            l2Provider
           })
 
-          if (!allowance.gte(amountRaw)) {
+          const allowanceForL1Gateway = await fetchErc20Allowance({
+            address: selectedToken.address,
+            provider: l1Provider,
+            owner: walletAddress,
+            spender: l1GatewayAddress
+          })
+
+          if (!allowanceForL1Gateway.gte(amountRaw)) {
             setAllowance(allowance)
             const waitForInput = openTokenApprovalDialog()
             const [confirmed] = await waitForInput()
