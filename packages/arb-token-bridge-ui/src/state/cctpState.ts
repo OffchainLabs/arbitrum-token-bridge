@@ -28,6 +28,7 @@ import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
 import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
 import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { AssetType } from '../hooks/arbTokenBridge.types'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -108,6 +109,7 @@ function parseTransferToMergedTransaction(
     resolvedAt,
     txId: messageSent.transactionHash,
     asset: 'USDC',
+    assetType: AssetType.ERC20,
     value: messageSent.amount,
     uniqueId: null,
     isWithdrawal: !isDeposit,
