@@ -1,4 +1,4 @@
-import { BigNumber, Wallet, constants, utils } from 'ethers'
+import { BigNumber, Wallet, constants, utils, Contract } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -15,6 +15,8 @@ import {
   wethTokenAddressL2
 } from './tests/support/common'
 import { registerLocalNetwork } from './src/util/networks'
+import { CommonAddress } from './src/util/CommonAddressUtils'
+import { erc20ABI } from 'wagmi'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -175,13 +177,16 @@ async function fundUserUsdc(networkType: 'L1' | 'L2') {
   console.log(`Funding USDC to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
-  const balance = await provider.getBalance(address)
+  const usdcContractAddress =
+    networkType === 'L1'
+      ? CommonAddress.Goerli.USDC
+      : CommonAddress.ArbitrumGoerli.USDC
+  const usdcContract = new Contract(usdcContractAddress, erc20ABI, provider)
+  const usdcBalance = await usdcContract.balanceOf(address)
   // Fund only if the balance is less than 0.5 USDC
-  if (balance.lt(utils.parseUnits('0.5', 6))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther('2')
-    })
+  if (usdcBalance.lt(utils.parseUnits('0.5', 6))) {
+    console.log('Adding USDC to user wallet...')
+    const tx = await usdcContract.connect(localWallet).transfer(userWallet, 1)
     await tx.wait()
   }
 }
