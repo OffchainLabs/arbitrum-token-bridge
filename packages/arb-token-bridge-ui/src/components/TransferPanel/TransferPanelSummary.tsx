@@ -22,6 +22,7 @@ import {
 } from '../../util/TokenUtils'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { createArbPublicClient } from '../../util/viem'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -299,7 +300,6 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const isETH = token === null
   const {
     status,
     estimatedL1GasFees,
@@ -313,8 +313,9 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
-  const { isMainnet } = isNetwork(l1.network.id)
+  const { isTestnet } = isNetwork(l1.network.id)
 
   const parentLayerGasFeeTooltipContent = useMemo(() => {
     switch (parentLayer) {
@@ -361,16 +362,19 @@ export function TransferPanelSummary({
     }
   }, [isDepositMode, layer, parentLayer])
 
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1.network : l2.network
-          })
-        : 'ETH',
-    [token, isDepositMode, l1.network, l2.network]
-  )
+  const isBridgingNativeCurrency = token === null
+  const showPrice = isBridgingNativeCurrency && !isTestnet
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1.network : l2.network
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
 
   if (status === 'loading') {
     const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
@@ -386,7 +390,7 @@ export function TransferPanelSummary({
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
-        {isETH && (
+        {isBridgingNativeCurrency && (
           <>
             <div>
               <div className="h-2" />
@@ -430,8 +434,8 @@ export function TransferPanelSummary({
               symbol: tokenSymbol
             })}
           </span>
-          {/* Only show USD price for ETH */}
-          {isETH && isMainnet && (
+
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(amount))}
             </span>
@@ -444,10 +448,11 @@ export function TransferPanelSummary({
         <div className="flex w-3/5 justify-between">
           <span>
             {formatAmount(estimatedTotalGasFees, {
-              symbol: 'ETH'
+              symbol: nativeCurrency.symbol
             })}
           </span>
-          {isMainnet && (
+
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(estimatedTotalGasFees))}
             </span>
@@ -466,10 +471,11 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL1GasFees, {
-                symbol: 'ETH'
+                symbol: nativeCurrency.symbol
               })}
             </span>
-            {isMainnet && (
+
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL1GasFees))}
               </span>
@@ -486,10 +492,11 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL2GasFees, {
-                symbol: 'ETH'
+                symbol: nativeCurrency.symbol
               })}
             </span>
-            {isMainnet && (
+
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL2GasFees))}
               </span>
@@ -498,7 +505,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      {isETH && (
+      {isBridgingNativeCurrency && (
         <>
           <div>
             <div className="h-2" />
@@ -512,10 +519,11 @@ export function TransferPanelSummary({
             <div className="flex w-3/5 flex-row justify-between">
               <span>
                 {formatAmount(amount + estimatedTotalGasFees, {
-                  symbol: 'ETH'
+                  symbol: nativeCurrency.symbol
                 })}
               </span>
-              {isMainnet && (
+
+              {showPrice && (
                 <span className="font-medium text-dark">
                   {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
                 </span>

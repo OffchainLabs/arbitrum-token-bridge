@@ -54,7 +54,11 @@ import {
   isTokenMainnetUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { ETH_BALANCE_ARTICLE_LINK, USDC_LEARN_MORE_LINK } from '../../constants'
+import {
+  ETH_BALANCE_ARTICLE_LINK,
+  USDC_LEARN_MORE_LINK,
+  ether
+} from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
@@ -256,7 +260,7 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: 'ETH' })}</span>
+      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
     </p>
   )
 }
