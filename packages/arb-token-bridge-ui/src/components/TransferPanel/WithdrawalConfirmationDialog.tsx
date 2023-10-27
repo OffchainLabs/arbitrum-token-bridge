@@ -27,6 +27,7 @@ import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -60,13 +61,15 @@ export function WithdrawalConfirmationDialog(
     app: { selectedToken }
   } = useAppState()
 
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
   const fastBridges = getFastBridges({
     from: from.id,
     to: to.id,
-    tokenSymbol: selectedToken?.symbol,
+    tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
     amount: props.amount
   })
 
@@ -198,7 +201,7 @@ export function WithdrawalConfirmationDialog(
                       href={getCalendarUrl(
                         confirmationHours,
                         props.amount,
-                        selectedToken?.symbol || 'ETH',
+                        selectedToken?.symbol || nativeCurrency.symbol,
                         getNetworkName(l2.network.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
