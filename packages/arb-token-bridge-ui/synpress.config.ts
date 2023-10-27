@@ -75,6 +75,12 @@ export default defineConfig({
       // L2
       await fundUserWalletEth('L2')
 
+      // Fund the userWallet with USDC.
+      // L1
+      await fundUserUsdc('L1')
+      // L2
+      await fundUserUsdc('L2')
+
       // Wrap ETH to test ERC-20 transactions
       // L1
       await wrapEth('L1')
