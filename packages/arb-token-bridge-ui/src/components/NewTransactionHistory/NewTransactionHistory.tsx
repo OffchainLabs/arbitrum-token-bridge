@@ -25,7 +25,8 @@ export const NewTransactionHistory = () => {
     data: { transactions },
     loading,
     completed,
-    paused
+    paused,
+    error
   } = useCompleteMultiChainTransactions()
 
   const groupedTransactions = useMemo(
@@ -65,12 +66,22 @@ export const NewTransactionHistory = () => {
     [transactions]
   )
 
+  const pendingTransactions = [
+    ...groupedTransactions.pending,
+    ...groupedTransactions.expired,
+    ...groupedTransactions.failed,
+    ...groupedTransactions.claimable
+  ]
+
+  const settledTransactions = groupedTransactions.settled
+
   return (
     <Tab.Group key={address} as="div" className="h-full overflow-hidden pb-24">
       <Tab.List className="flex">
         <TabButton
           aria-label="show pending transactions"
           className={twMerge(roundedTabClasses, 'roundedTabRight')}
+          showloader={loading && pendingTransactions.length > 0}
         >
           <span className="text-xs md:text-base">Pending transactions</span>
         </TabButton>
@@ -80,6 +91,7 @@ export const NewTransactionHistory = () => {
             roundedTabClasses,
             'roundedTabLeft roundedTabRight'
           )}
+          showloader={loading && settledTransactions.length > 0}
         >
           <span className="text-xs md:text-base">Settled transactions</span>
         </TabButton>
@@ -88,22 +100,17 @@ export const NewTransactionHistory = () => {
       <Tab.Panels className="h-full overflow-auto">
         <Tab.Panel className="h-full">
           <TransactionHistoryTable
-            transactions={[
-              ...groupedTransactions.pending,
-              ...groupedTransactions.expired,
-              ...groupedTransactions.failed,
-              ...groupedTransactions.claimable
-            ]}
-            loading={loading}
-            type="pending"
+            transactions={pendingTransactions}
             className="rounded-tl-none"
+            loading={loading}
+            error={error}
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
           <TransactionHistoryTable
-            transactions={groupedTransactions.settled}
+            transactions={settledTransactions}
             loading={loading}
-            type="settled"
+            error={error}
           />
         </Tab.Panel>
       </Tab.Panels>
