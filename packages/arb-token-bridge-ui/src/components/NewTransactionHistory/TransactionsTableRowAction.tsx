@@ -61,7 +61,7 @@ export function TransactionsTableRowAction({
   const { isEthereum, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(l2Network.id).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(tx.chainId).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -72,7 +72,7 @@ export function TransactionsTableRowAction({
       (type === 'deposits' && isArbitrum) ||
       (type === 'withdrawals' && isEthereum)
     )
-  }, [isArbitrum, isEthereum, l2Network.id, type])
+  }, [isArbitrum, isEthereum, type, tx.chainId])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed
@@ -111,9 +111,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            {`Please switch to ${
-              type === 'deposits' ? l2NetworkName : l1NetworkName
-            } to claim your ${type === 'deposits' ? 'deposit' : 'withdrawal'}.`}
+            {`Please switch to ${getNetworkName(
+              tx.isWithdrawal ? tx.parentChainId : tx.chainId
+            )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
           </span>
         }
       >
@@ -126,7 +126,7 @@ export function TransactionsTableRowAction({
             try {
               if (!currentChainIsValid) {
                 return switchNetwork?.(
-                  type === 'deposits' ? l2Network.id : l1Network.id
+                  tx.isWithdrawal ? tx.parentChainId : tx.chainId
                 )
               }
               if (tx.isCctp) {

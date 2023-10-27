@@ -1,35 +1,15 @@
 import { PropsWithChildren, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
-import {
-  ArrowTopRightOnSquareIcon,
-  CheckCircleIcon
-} from '@heroicons/react/24/outline'
-import Image from 'next/image'
-import dayjs from 'dayjs'
 
-import { MergedTransaction, WithdrawalStatus } from '../../state/app/state'
-import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
-import { Button } from '../common/Button'
-import {
-  StatusLabel,
-  getDestChainId,
-  getSourceChainId,
-  getTxCompletionDate,
-  getTxHumanReadableRemainingTime,
-  getTxRemainingTimeInMinutes,
-  getTxStatusLabel,
-  isTxPending
-} from './helpers'
-import {
-  getExplorerUrl,
-  getNetworkLogo,
-  getNetworkName
-} from '../../util/networks'
-import { ExternalLink } from '../common/ExternalLink'
-import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { MergedTransaction } from '../../state/app/state'
 import { getStandardizedDate, getStandardizedTime } from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
+import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
+import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
+import { SafeImage } from '../common/SafeImage'
+import { Loader } from '../common/atoms/Loader'
+import { ExternalLink } from '../common/ExternalLink'
+import { GET_HELP_LINK } from '../../constants'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -51,6 +31,32 @@ export const TransactionDateTime = ({
   )
 }
 
+export const TokenIcon = ({ tx }: { tx: MergedTransaction }) => {
+  const tokensFromLists = useTokensFromLists({
+    parentChainId: tx.parentChainId,
+    chainId: tx.chainId
+  })
+
+  if (!tx.tokenAddress) {
+    const ethIconUrl =
+      'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+
+    return (
+      /* SafeImage throws an error if eth logo is loaded from an external domain */
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img src={ethIconUrl} alt="Ether logo" className="h-5 w-5 rounded-full" />
+    )
+  }
+
+  return (
+    <SafeImage
+      src={tokensFromLists[tx.tokenAddress]?.logoURI}
+      alt="Token logo"
+      className="h-5 w-5 rounded-full"
+    />
+  )
+}
+
 const TableHeader = ({
   children,
   className
@@ -67,15 +73,67 @@ const TableHeader = ({
 
 export const TransactionHistoryTable = ({
   transactions,
+  className,
   loading,
-  type,
-  className
+  error
 }: {
   transactions: MergedTransaction[]
-  loading: boolean
-  type: 'pending' | 'settled'
   className?: string
+  loading: boolean
+  error: unknown
 }) => {
+  const BodyContent = useCallback(() => {
+    if (transactions.length === 0) {
+      if (error) {
+        return (
+          <div className="absolute left-0 top-0 flex space-x-2 px-6 pt-2 text-sm text-error">
+            <span>
+              We seem to be having a difficult time loading your data. Please
+              give it a moment and then try refreshing the page. If the problem
+              persists please file a ticket{' '}
+              <ExternalLink
+                className="arb-hover text-blue-link underline"
+                href={GET_HELP_LINK}
+              >
+                here
+              </ExternalLink>
+              .
+            </span>
+          </div>
+        )
+      }
+
+      return (
+        <div className="absolute left-0 top-0 p-6 text-sm font-semibold">
+          <span className={loading ? 'animate-pulse' : ''}>
+            {loading ? (
+              <div className="flex space-x-2">
+                <Loader size="small" color="black" />
+                <span>Loading...</span>
+              </div>
+            ) : (
+              'Looks like no transactions here yet!'
+            )}
+          </span>
+        </div>
+      )
+    }
+
+    return transactions.map(tx =>
+      tx.isWithdrawal ? (
+        <TransactionsTableClaimableRow
+          key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
+          tx={tx}
+        />
+      ) : (
+        <TransactionsTableDepositRow
+          key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
+          tx={tx}
+        />
+      )
+    )
+  }, [transactions, loading, error])
+
   return (
     <div
       className={twMerge(
@@ -87,22 +145,13 @@ export const TransactionHistoryTable = ({
         <table className="min-h-[80px] w-full">
           <thead className="sticky top-0 z-50 bg-white">
             <TableHeader className="pl-6">Status</TableHeader>
-            <TableHeader>Time</TableHeader>
+            <TableHeader>Date</TableHeader>
             <TableHeader>Token</TableHeader>
-            <TableHeader>TxID</TableHeader>
+            <TableHeader>Networks</TableHeader>
             <TableHeader />
           </thead>
-          <tbody>
-            {transactions.map(tx =>
-              tx.isWithdrawal ? (
-                <TransactionsTableClaimableRow
-                  key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-                  tx={tx}
-                />
-              ) : (
-                <></>
-              )
-            )}
+          <tbody className={transactions.length === 0 ? 'relative h-16' : ''}>
+            <BodyContent />
           </tbody>
         </table>
       </div>

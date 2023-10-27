@@ -21,7 +21,7 @@ import {
   findMatchingL1TxForWithdrawal,
   isPending
 } from '../../state/app/utils'
-import { TransactionDateTime } from './TransactionHistoryTable'
+import { TokenIcon, TransactionDateTime } from './TransactionHistoryTable'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -168,11 +168,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {tx.isCctp ? (
-          <>{remainingTime}</>
-        ) : (
-          <WithdrawalCountdown createdAt={tx.createdAt} />
-        )}
+        {tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />}
       </div>
     )
   }
@@ -258,7 +254,8 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
       aria-label={`${parentLayer} Transaction Link`}
     >
-      <span className="w-8  rounded-md pr-2 text-xs text-dark">To</span>
+      <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+      <NetworkImage chainId={toNetworkId} />
       {getNetworkName(toNetworkId)}:{' '}
       <ExternalLink
         href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
@@ -311,7 +308,11 @@ export function TransactionsTableClaimableRow({
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
-  const tokensFromLists = useTokensFromLists()
+
+  const tokensFromLists = useTokensFromLists({
+    parentChainId: tx.parentChainId,
+    chainId: tx.chainId
+  })
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -386,14 +387,7 @@ export function TransactionsTableClaimableRow({
         )}
       >
         <div className="flex space-x-1">
-          {/* SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-              It would throw error if it's loaded from external domains */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={getTokenLogoURI(tx) ?? ''}
-            alt="Token logo"
-            className="h-5 w-5 rounded-full"
-          />
+          <TokenIcon tx={tx} />
           <span>
             {formatAmount(Number(tx.value), {
               symbol: tokenSymbol

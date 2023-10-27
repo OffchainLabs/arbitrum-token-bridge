@@ -10,7 +10,13 @@ import {
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { TokenListWithId } from '../../util/TokenListUtils'
 
-export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
+export function useTokensFromLists({
+  parentChainId,
+  chainId
+}: {
+  parentChainId?: number
+  chainId?: number
+} = {}): ContractStorage<ERC20BridgeToken> {
   const {
     l1: { network: l1Network },
     l2: { network: l2Network }
@@ -25,10 +31,10 @@ export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
 
     return tokenListsToSearchableTokenStorage(
       tokenLists,
-      String(l1Network.id),
-      String(l2Network.id)
+      String(parentChainId ?? l1Network.id),
+      String(chainId ?? l2Network.id)
     )
-  }, [tokenLists, l1Network, l2Network])
+  }, [tokenLists, l1Network, l2Network, parentChainId, chainId])
 }
 
 export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {

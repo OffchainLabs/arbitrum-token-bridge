@@ -11,11 +11,13 @@ export const NetworkImage = ({
   const size = isNetwork(chainId).isEthereum ? 12 : 16
 
   return (
-    <Image
-      src={getNetworkLogo(chainId, theme)}
-      alt={`${getNetworkName(chainId)} logo`}
-      width={size}
-      height={size}
-    />
+    <div className="flex w-4 justify-center">
+      <Image
+        src={getNetworkLogo(chainId, theme)}
+        alt={`${getNetworkName(chainId)} logo`}
+        width={size}
+        height={size}
+      />
+    </div>
   )
 }
