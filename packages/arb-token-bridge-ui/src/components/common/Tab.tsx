@@ -19,12 +19,10 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
         className={`${tabButtonClassName} ${props.className ?? ''}`}
         {...props}
       >
-        {({ selected }) => (
-          <>
-            {selected && props.showloader && <Loader size="small" />}
-            {props.children}
-          </>
-        )}
+        <>
+          {props.showloader && <Loader size="small" />}
+          {props.children}
+        </>
       </Tab>
     )
   }
