@@ -71,9 +71,9 @@ export default defineConfig({
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       // L1
-      await fundUserWallet('L1')
+      await fundUserWalletEth('L1')
       // L2
-      await fundUserWallet('L2')
+      await fundUserWalletEth('L2')
 
       // Wrap ETH to test ERC-20 transactions
       // L1
@@ -150,13 +150,28 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWallet(networkType: 'L1' | 'L2') {
-  console.log(`Funding user wallet: ${networkType}...`)
+async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+  console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 2 eth
   if (balance.lt(utils.parseEther('2'))) {
+    const tx = await localWallet.connect(provider).sendTransaction({
+      to: address,
+      value: utils.parseEther('2')
+    })
+    await tx.wait()
+  }
+}
+
+async function fundUserUsdc(networkType: 'L1' | 'L2') {
+  console.log(`Funding USDC to user wallet: ${networkType}...`)
+  const address = await userWallet.getAddress()
+  const provider = networkType === 'L1' ? ethProvider : arbProvider
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 0.5 USDC
+  if (balance.lt(utils.parseUnits('0.5', 6))) {
     const tx = await localWallet.connect(provider).sendTransaction({
       to: address,
       value: utils.parseEther('2')
