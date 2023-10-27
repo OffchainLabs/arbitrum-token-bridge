@@ -1,4 +1,4 @@
-import { PropsWithChildren, useCallback } from 'react'
+import { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -82,58 +82,6 @@ export const TransactionHistoryTable = ({
   loading: boolean
   error: unknown
 }) => {
-  const BodyContent = useCallback(() => {
-    if (transactions.length === 0) {
-      if (error) {
-        return (
-          <div className="absolute left-0 top-0 flex space-x-2 px-6 pt-2 text-sm text-error">
-            <span>
-              We seem to be having a difficult time loading your data. Please
-              give it a moment and then try refreshing the page. If the problem
-              persists please file a ticket{' '}
-              <ExternalLink
-                className="arb-hover text-blue-link underline"
-                href={GET_HELP_LINK}
-              >
-                here
-              </ExternalLink>
-              .
-            </span>
-          </div>
-        )
-      }
-
-      return (
-        <div className="absolute left-0 top-0 p-6 text-sm font-semibold">
-          <span className={loading ? 'animate-pulse' : ''}>
-            {loading ? (
-              <div className="flex space-x-2">
-                <Loader size="small" color="black" />
-                <span>Loading...</span>
-              </div>
-            ) : (
-              'Looks like no transactions here yet!'
-            )}
-          </span>
-        </div>
-      )
-    }
-
-    return transactions.map(tx =>
-      tx.isWithdrawal ? (
-        <TransactionsTableClaimableRow
-          key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-          tx={tx}
-        />
-      ) : (
-        <TransactionsTableDepositRow
-          key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-          tx={tx}
-        />
-      )
-    )
-  }, [transactions, loading, error])
-
   return (
     <div
       className={twMerge(
@@ -151,7 +99,51 @@ export const TransactionHistoryTable = ({
             <TableHeader />
           </thead>
           <tbody className={transactions.length === 0 ? 'relative h-16' : ''}>
-            <BodyContent />
+            {transactions.length === 0 ? (
+              error ? (
+                <div className="absolute left-0 top-0 flex space-x-2 px-6 pt-2 text-sm text-error">
+                  <span>
+                    We seem to be having a difficult time loading your data.
+                    Please give it a moment and then try refreshing the page. If
+                    the problem persists please file a ticket{' '}
+                    <ExternalLink
+                      className="arb-hover text-blue-link underline"
+                      href={GET_HELP_LINK}
+                    >
+                      here
+                    </ExternalLink>
+                    .
+                  </span>
+                </div>
+              ) : (
+                <div className="absolute left-0 top-0 p-6 text-sm font-semibold">
+                  <span className={loading ? 'animate-pulse' : ''}>
+                    {loading ? (
+                      <div className="flex space-x-2">
+                        <Loader size="small" color="black" />
+                        <span>Loading...</span>
+                      </div>
+                    ) : (
+                      'Looks like no transactions here yet!'
+                    )}
+                  </span>
+                </div>
+              )
+            ) : (
+              transactions.map(tx =>
+                tx.isWithdrawal ? (
+                  <TransactionsTableClaimableRow
+                    key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
+                    tx={tx}
+                  />
+                ) : (
+                  <TransactionsTableDepositRow
+                    key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
+                    tx={tx}
+                  />
+                )
+              )
+            )}
           </tbody>
         </table>
       </div>
