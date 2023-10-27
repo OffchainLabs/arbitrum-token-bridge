@@ -43,8 +43,6 @@ export default defineConfig({
     async setupNodeEvents(on, config) {
       registerLocalNetwork()
 
-      console.log('user', await userWallet.getAddress())
-      console.log('local', await localWallet.getAddress())
       if (!ethRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL variable missing.')
       }
