@@ -75,14 +75,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       amount: props.amount
     })
 
-    console.log('XXX deposit request', depositRequest)
-
     const tx = await erc20Bridger.deposit({
       ...depositRequest,
       l1Signer: props.sourceChainSigner
     })
-
-    alert('Success')
 
     return Erc20Deposit.initializeFromSourceChainTx({
       sourceChainTx: tx,

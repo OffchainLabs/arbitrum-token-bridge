@@ -63,6 +63,4 @@ export class EthDeposit extends BridgeTransfer {
       return status
     }, props?.intervalMs ?? 10_000)
   }
-
-  public isStatusFinal() {}
 }

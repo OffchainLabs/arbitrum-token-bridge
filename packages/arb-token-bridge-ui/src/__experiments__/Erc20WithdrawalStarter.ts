@@ -115,7 +115,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     alert('Success')
 
-    return Erc20Withdrawal.fromSourceChainTx({
+    return Erc20Withdrawal.initializeFromSourceChainTx({
       sourceChainTx: tx,
       sourceChainProvider: this.sourceChainProvider,
       destinationChainProvider: this.destinationChainProvider

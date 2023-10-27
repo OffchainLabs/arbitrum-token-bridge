@@ -63,14 +63,6 @@ export class Erc20Deposit extends BridgeTransfer {
     return erc20Deposit
   }
 
-  protected isStatusFinal(status: BridgeTransferStatus): boolean {
-    if (status === 'source_chain_tx_error') {
-      return true
-    }
-
-    return false
-  }
-
   public async updateStatus(): Promise<void> {
     this.status = await this.fetchStatus()
   }
@@ -114,5 +106,9 @@ export class Erc20Deposit extends BridgeTransfer {
     }
 
     return 'destination_chain_tx_error'
+  }
+
+  public async fetchTimeRemaining() {
+    return '20 mins'
   }
 }

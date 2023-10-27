@@ -7,7 +7,7 @@ import {
 } from '@rainbow-me/rainbowkit'
 
 import { getProps } from '../util/wagmi/setup'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useState, useMemo } from 'react'
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { Loader } from '../components/common/atoms/Loader'
@@ -127,9 +127,7 @@ async function loadTxHistory(): Promise<(Erc20Deposit | Erc20Withdrawal)[]> {
   return Promise.all(
     Object.values(txHistory).map(async tx => {
       const isDeposit = tx.type.includes('deposit')
-
       const Factory = isDeposit ? Erc20Deposit : Erc20Withdrawal
-
       return Factory.initializeFromSourceChainTxHash({
         sourceChainTxHash: tx.sourceChainTxHash,
         sourceChainProvider: tx.sourceChainProvider,
@@ -148,6 +146,19 @@ function BridgeTransferListItem({
   sourceChainBlockExplorer: string
   destinationChainBlockExplorer: string
 }) {
+  const { data: signer } = useSigner()
+  const { address } = useAccount()
+
+  const [timeRemaining, setTimeRemaining] = useState('')
+
+  useEffect(() => {
+    const fetchTimeRemaining = async () => {
+      setTimeRemaining('Loading...')
+      setTimeRemaining(await bridgeTransfer.fetchTimeRemaining())
+    }
+    fetchTimeRemaining()
+  }, [bridgeTransfer])
+
   return (
     <li
       key={bridgeTransfer.sourceChainTx.hash}
@@ -179,11 +190,25 @@ function BridgeTransferListItem({
       </span>
       <span className="font-medium">status: {bridgeTransfer.status}</span>
       <span>{bridgeTransfer.isFetchingStatus ? 'Fetching...' : 'Fetched'}</span>
+      <span>Time remaining: {timeRemaining}</span>
       {bridgeTransfer instanceof Erc20Withdrawal && (
         <button
           className="bg-black text-white"
           disabled={!bridgeTransfer.isClaimable}
-          // onClick={bridgeTransfer.claim}
+          onClick={() => {
+            if (!signer || !address) throw 'No signer, walletaddress found'
+            // todo: also add a check for incorrect chain signer (connected network wrong)
+            bridgeTransfer.claim({
+              destinationChainSigner: signer,
+              walletAddress: address,
+              successCallback: () => {
+                alert('Claim successful')
+              },
+              errorCallback: () => {
+                alert('Claim failed')
+              }
+            })
+          }}
         >
           Claim
         </button>

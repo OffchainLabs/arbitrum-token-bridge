@@ -1,10 +1,24 @@
 import { Provider } from '@ethersproject/providers'
-import { ContractReceipt, ContractTransaction } from 'ethers'
+import { ContractReceipt, ContractTransaction, BigNumber } from 'ethers'
+import { AssetType } from '../hooks/arbTokenBridge.types'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
+
+type GasEstimates = {
+  sourceChain: {
+    amount: BigNumber
+    assetType: AssetType
+    description?: string
+  }
+  destinationChain: {
+    amount: BigNumber
+    assetType: AssetType
+    description?: string
+  }
+}
 
 export type BridgeTransferProps = {
   type: BridgeTransferType
@@ -58,7 +72,13 @@ export abstract class BridgeTransfer {
    *
    * @param status Status to be checked.
    */
-  protected abstract isStatusFinal(status: BridgeTransferStatus): boolean
+  protected isStatusFinal(status: BridgeTransferStatus): boolean {
+    if (status.includes('error') || status === 'destination_chain_tx_success') {
+      return true
+    }
+
+    return false
+  }
 
   /**
    * Fetches the current status of the bridge transfer.
@@ -82,4 +102,6 @@ export abstract class BridgeTransfer {
       }
     }, props.intervalMs ?? 15_000)
   }
+
+  public abstract fetchTimeRemaining(): Promise<string>
 }
