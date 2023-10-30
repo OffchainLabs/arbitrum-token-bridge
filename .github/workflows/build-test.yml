@@ -179,6 +179,7 @@ jobs:
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+          envkey_NEXT_PUBLIC_GOERLI_RPC_URL: https://goerli.infura.io/v3/${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           envkey_TEST_FILE: ${{ matrix.tests.file }}
           envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
           envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
@@ -229,7 +230,7 @@ jobs:
       - name: E2E Succeeded
         if: needs.test-e2e.result == 'success'
         run: echo "nice"
-        
+
       - name: E2E Failed
         if: needs.test-e2e.result != 'success'
         run: exit 1
