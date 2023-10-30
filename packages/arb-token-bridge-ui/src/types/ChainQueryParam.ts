@@ -20,8 +20,8 @@ export function isValidChainQueryParam(
   return (chainQueryParams as readonly string[]).includes(value)
 }
 
-export function getChainQueryParamForChain(value: Chain): ChainQueryParam {
-  switch (value.id) {
+export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
+  switch (chainId) {
     case ChainId.Mainnet:
       return 'mainnet'
 

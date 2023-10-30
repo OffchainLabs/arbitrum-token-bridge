@@ -17,7 +17,7 @@ function getPartnerChainsQueryParams(
   const chain = getChainForChainQueryParam(chainQueryParam)
   const partnerChains = getPartnerChainsForChain(chain)
 
-  return partnerChains.map(chain => getChainQueryParamForChain(chain))
+  return partnerChains.map(chain => getChainQueryParamForChain(chain.id))
 }
 
 const getProviderForChainCache: {
@@ -101,8 +101,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   const setState = useCallback(
     (params: UseNetworksSetStateParams) => {
-      const fromQueryParam = getChainQueryParamForChain(params.from)
-      const toQueryParam = getChainQueryParamForChain(params.to)
+      const fromQueryParam = getChainQueryParamForChain(params.from.id)
+      const toQueryParam = getChainQueryParamForChain(params.to.id)
 
       setQueryParams(
         sanitizeQueryParams({ from: fromQueryParam, to: toQueryParam })

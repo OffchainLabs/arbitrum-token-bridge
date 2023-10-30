@@ -62,6 +62,7 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
 
 enum NetworkType {
   l1 = 'l1',
@@ -765,7 +766,8 @@ export function TransferPanelMain({
     }
 
     function updatePreferredL2Chain(l2ChainId: number) {
-      setQueryParams({ l2ChainId })
+      const networkName = getChainQueryParamForChain(l2ChainId)
+      setQueryParams({ to: networkName })
     }
 
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
