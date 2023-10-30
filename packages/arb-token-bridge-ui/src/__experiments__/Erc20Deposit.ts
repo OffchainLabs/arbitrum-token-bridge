@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 import { ContractTransaction } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
@@ -9,10 +11,17 @@ import {
   BridgeTransferProps
 } from './BridgeTransfer'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  getEstimatedDepositDurationInMinutes,
+  getMinutesRemainingText
+} from './Erc20DepositTimeRemainingUtils'
 
 export class Erc20Deposit extends BridgeTransfer {
+  public isUserActionRequired: boolean
+
   private constructor(props: BridgeTransferProps) {
     super({ ...props, type: 'erc20_deposit' })
+    this.isUserActionRequired = false
   }
 
   public static async initializeFromSourceChainTx(props: {
@@ -109,6 +118,22 @@ export class Erc20Deposit extends BridgeTransfer {
   }
 
   public async fetchTimeRemaining() {
-    return '20 mins'
+    const now = dayjs()
+    const createdAt = this.sourceChainTx.timestamp
+    const whenCreated = dayjs(createdAt)
+
+    const sourceChainId = await (
+      await this.sourceChainProvider.getNetwork()
+    ).chainId
+
+    if (!this.isStatusFinal(this.status)) {
+      // Subtract the diff from the initial deposit time
+      const minutesRemaining =
+        getEstimatedDepositDurationInMinutes(sourceChainId) -
+        now.diff(whenCreated, 'minutes')
+      return getMinutesRemainingText(minutesRemaining)
+    } else {
+      return 'Completed'
+    }
   }
 }

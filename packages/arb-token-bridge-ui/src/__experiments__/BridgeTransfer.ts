@@ -7,18 +7,18 @@ type TxType = 'deposit' | 'withdrawal'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
-type GasEstimates = {
-  sourceChain: {
-    amount: BigNumber
-    assetType: AssetType
-    description?: string
-  }
-  destinationChain: {
-    amount: BigNumber
-    assetType: AssetType
-    description?: string
-  }
-}
+// type GasEstimates = {
+//   sourceChain: {
+//     amount: BigNumber
+//     assetType: AssetType
+//     description?: string
+//   }
+//   destinationChain: {
+//     amount: BigNumber
+//     assetType: AssetType
+//     description?: string
+//   }
+// }
 
 export type BridgeTransferProps = {
   type: BridgeTransferType
@@ -46,6 +46,7 @@ export abstract class BridgeTransfer {
   // status
   public status: BridgeTransferStatus
   public isFetchingStatus: boolean
+  public abstract isUserActionRequired: boolean
 
   // source chain
   public sourceChainProvider: Provider
@@ -60,6 +61,7 @@ export abstract class BridgeTransfer {
   protected constructor(props: BridgeTransferProps) {
     this.type = props.type
     this.status = props.status
+    // this.timeRemaining = props.timeRemaining
     this.sourceChainTx = props.sourceChainTx
     this.sourceChainTxReceipt = props.sourceChainTxReceipt
     this.sourceChainProvider = props.sourceChainProvider
@@ -97,7 +99,8 @@ export abstract class BridgeTransfer {
         props.onChange(this)
       }
 
-      if (this.isStatusFinal(this.status)) {
+      // if status is final or any user action is required (like claim / retry) then pause the polling
+      if (this.isStatusFinal(this.status) || this.isUserActionRequired) {
         clearInterval(intervalId)
       }
     }, props.intervalMs ?? 15_000)

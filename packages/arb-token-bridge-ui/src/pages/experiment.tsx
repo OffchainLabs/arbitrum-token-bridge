@@ -7,26 +7,16 @@ import {
 } from '@rainbow-me/rainbowkit'
 
 import { getProps } from '../util/wagmi/setup'
-import { PropsWithChildren, useEffect, useState, useMemo } from 'react'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { PropsWithChildren, useEffect, useState } from 'react'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { Loader } from '../components/common/atoms/Loader'
-import {
-  BridgeTransfer,
-  BridgeTransferStatus,
-  BridgeTransferType
-} from '../__experiments__/BridgeTransfer'
+import { BridgeTransferType } from '../__experiments__/BridgeTransfer'
 import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
 import { Erc20Deposit } from '../__experiments__/Erc20Deposit'
 import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
 import { Erc20Withdrawal } from '../__experiments__/Erc20Withdrawal'
 import { ChainId } from '../util/networks'
-
-// Adding claims to bridge
-// 1. show the ERC-20 withdrawals in the tx history
-// 1.1. The status should keep updating on polling
-// 2. In the ERC-20 withdrawal class, implement the claim method
-// 3. once ready, claim button should activate on the tx history card
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
 
@@ -191,28 +181,28 @@ function BridgeTransferListItem({
       <span className="font-medium">status: {bridgeTransfer.status}</span>
       <span>{bridgeTransfer.isFetchingStatus ? 'Fetching...' : 'Fetched'}</span>
       <span>Time remaining: {timeRemaining}</span>
-      {bridgeTransfer instanceof Erc20Withdrawal && (
-        <button
-          className="bg-black text-white"
-          disabled={!bridgeTransfer.isClaimable}
-          onClick={() => {
-            if (!signer || !address) throw 'No signer, walletaddress found'
-            // todo: also add a check for incorrect chain signer (connected network wrong)
-            bridgeTransfer.claim({
-              destinationChainSigner: signer,
-              walletAddress: address,
-              successCallback: () => {
-                alert('Claim successful')
-              },
-              errorCallback: () => {
-                alert('Claim failed')
-              }
-            })
-          }}
-        >
-          Claim
-        </button>
-      )}
+      {bridgeTransfer instanceof Erc20Withdrawal &&
+        bridgeTransfer.isClaimable && (
+          <button
+            className="bg-black text-white"
+            onClick={() => {
+              if (!signer || !address) throw 'No signer, wallet-address found'
+              // todo: also add a check for incorrect chain signer (connected network wrong)
+              bridgeTransfer.claim({
+                destinationChainSigner: signer,
+                walletAddress: address,
+                successCallback: () => {
+                  alert('Claim successful')
+                },
+                errorCallback: () => {
+                  alert('Claim failed')
+                }
+              })
+            }}
+          >
+            Claim
+          </button>
+        )}
     </li>
   )
 }
@@ -316,6 +306,7 @@ function App() {
             From: <span className="font-medium">{fromChain.name}</span>
           </span>
           <Balance provider={fromChain.provider} />
+          <span>Gas: abc ETH</span>
         </div>
         <button onClick={swap}>{'<>'}</button>
         <div className="flex flex-col">
@@ -323,6 +314,7 @@ function App() {
             To: <span className="font-medium">{toChain.name}</span>
           </span>
           <Balance provider={toChain.provider} />
+          <span>Gas: xyz ETH</span>
         </div>
       </div>
 

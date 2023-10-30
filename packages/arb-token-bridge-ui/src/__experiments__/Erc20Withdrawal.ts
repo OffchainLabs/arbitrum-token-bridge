@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import {
   BridgeTransfer,
   BridgeTransferStatus,
@@ -12,19 +13,40 @@ import {
 import { OutgoingMessageState } from '../hooks/arbTokenBridge.types'
 import { ContractReceipt, ContractTransaction, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
+import {
+  getTxConfirmationDate,
+  getTxConfirmationRemainingMinutes
+} from './Erc20WithdrawalTimeRemainingUtils'
 
 export class Erc20Withdrawal extends BridgeTransfer {
   public isClaiming: boolean
   public isClaimable: boolean
+  public isUserActionRequired: boolean
 
   private constructor(props: BridgeTransferProps) {
     super({ ...props, type: 'erc20_withdrawal' })
     this.isClaiming = false
     this.isClaimable = false
+    this.isUserActionRequired = false
   }
 
-  public async updateStatus(): Promise<void> {
-    this.status = await this.fetchStatus()
+  public async updateStatus(status?: BridgeTransferStatus): Promise<void> {
+    // if status is provided, then update it as it is
+    if (status) {
+      this.status = status
+    } else {
+      // else fetch the status
+      this.status = await this.fetchStatus()
+    }
+
+    // side-effect - update other state variables as well
+    if (this.status === 'destination_chain_tx_pending') {
+      this.isUserActionRequired = true
+      this.isClaimable = true
+    } else {
+      this.isUserActionRequired = false
+      this.isClaimable = false
+    }
   }
 
   protected async getSourceChainTxReceipt() {
@@ -76,15 +98,12 @@ export class Erc20Withdrawal extends BridgeTransfer {
       outgoingMessageState = OutgoingMessageState.UNCONFIRMED
     }
 
-    this.isClaimable = false
     if (outgoingMessageState === OutgoingMessageState.EXECUTED) {
-      return 'destination_chain_tx_success' // claiamed successfully
+      return 'destination_chain_tx_success' // claimed successfully
     }
     if (outgoingMessageState === OutgoingMessageState.CONFIRMED) {
-      this.isClaimable = true
       return 'destination_chain_tx_pending' // claim pending
     }
-    this.isClaimable = false
     return 'destination_chain_tx_success'
   }
 
@@ -165,13 +184,13 @@ export class Erc20Withdrawal extends BridgeTransfer {
       const rec = await res.wait()
 
       if (rec.status === 1) {
-        this.status = 'destination_chain_tx_success'
+        this.updateStatus('destination_chain_tx_success')
         this.destinationChainTx = res
         this.destinationChainTxReceipt = rec
         // todo: set this receipt in the local storage so that it can be retrieved on refresh
         props.successCallback?.(rec)
       } else {
-        this.status = 'destination_chain_tx_error'
+        this.updateStatus('destination_chain_tx_error')
         props.errorCallback?.()
       }
       return rec
@@ -184,6 +203,27 @@ export class Erc20Withdrawal extends BridgeTransfer {
   }
 
   public async fetchTimeRemaining() {
-    return '20 mins'
+    if (this.isStatusFinal(this.status)) {
+      return 'Completed'
+    }
+
+    const createdAt = this.sourceChainTx.timestamp
+    const destinationChainNetworkChainId = (
+      await this.destinationChainProvider.getNetwork()
+    ).chainId
+    const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+    const txConfirmationDate = getTxConfirmationDate({
+      createdAt: createdAtDate,
+      parentChainId: destinationChainNetworkChainId
+    })
+
+    const minutesLeft = getTxConfirmationRemainingMinutes({
+      createdAt: createdAtDate,
+      parentChainId: destinationChainNetworkChainId
+    })
+
+    return minutesLeft === 0
+      ? 'Almost there...'
+      : dayjs().to(txConfirmationDate, true)
   }
 }
