@@ -27,3 +27,6 @@ export const CCTP_DOCUMENTATION =
   'https://www.circle.com/en/cross-chain-transfer-protocol'
 
 export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 }
+
+export const MULTICALL_TESTNET_ADDRESS =
+  '0xcA11bde05977b3631167028862bE2a173976CA11'

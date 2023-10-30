@@ -25,33 +25,36 @@ describe('Deposit USDC through CCTP', () => {
 
     // log in to metamask before deposit
     before(() => {
-      getInitialERC20Balance(
-        CommonAddress.Goerli.USDC,
-        getL1TestnetNetworkConfig().multiCall,
-        Cypress.env('ETH_GOERLI_RPC_URL')
-      ).then(
+      getInitialERC20Balance({
+        tokenAddress: CommonAddress.Goerli.USDC,
+        multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
+        rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
+        address: Cypress.env('ADDRESS')
+      }).then(
         val =>
           (l1USDCBal = formatAmount(val, {
             symbol: 'USDC',
             decimals: 6
           }))
       )
-      getInitialERC20Balance(
-        CommonAddress.ArbitrumGoerli.USDC,
-        getL2TestnetNetworkConfig().multiCall,
-        Cypress.env('ARB_GOERLI_RPC_URL')
-      ).then(
+      getInitialERC20Balance({
+        tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
+        multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
+        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        address: Cypress.env('ADDRESS')
+      }).then(
         val =>
           (l2USDCBal = formatAmount(val, {
             symbol: 'USDC',
             decimals: 6
           }))
       )
-      getInitialERC20Balance(
-        CommonAddress.ArbitrumGoerli['USDC.e'],
-        getL2TestnetNetworkConfig().multiCall,
-        Cypress.env('ARB_GOERLI_RPC_URL')
-      ).then(
+      getInitialERC20Balance({
+        tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
+        multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
+        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        address: Cypress.env('ADDRESS')
+      }).then(
         val =>
           (l2USDCeBal = formatAmount(val, {
             symbol: 'USDC.e',

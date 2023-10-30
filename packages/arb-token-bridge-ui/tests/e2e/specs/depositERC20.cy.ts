@@ -22,11 +22,12 @@ describe('Deposit ERC20 Token', () => {
 
     // log in to metamask before deposit
     before(() => {
-      getInitialERC20Balance(
-        wethTokenAddressL1,
-        getL1NetworkConfig().multiCall,
-        Cypress.env('ETH_RPC_URL')
-      ).then(
+      getInitialERC20Balance({
+        tokenAddress: wethTokenAddressL1,
+        multiCallerAddress: getL1NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(
         val =>
           (l1ERC20bal = formatAmount(val, {
             symbol: 'WETH'

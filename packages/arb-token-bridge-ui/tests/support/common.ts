@@ -113,15 +113,21 @@ export async function getInitialETHBalance(
   return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
 
-export async function getInitialERC20Balance(
-  tokenAddress: string,
-  multiCallerAddress: string,
+export async function getInitialERC20Balance({
+  tokenAddress,
+  multiCallerAddress,
+  rpcURL,
+  address
+}: {
+  tokenAddress: string
+  multiCallerAddress: string
   rpcURL: string
-): Promise<BigNumber> {
+  address: string
+}): Promise<BigNumber> {
   const provider = new StaticJsonRpcProvider(rpcURL)
   const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
-    balanceOf: { account: Cypress.env('ADDRESS') }
+    balanceOf: { account: address }
   })
   return tokenData.balance
 }

@@ -1,4 +1,4 @@
-import { BigNumber, Wallet, constants, utils, Contract } from 'ethers'
+import { BigNumber, Wallet, constants, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -6,17 +6,20 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
+import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
 import specFiles from './tests/e2e/specfiles.json'
 
 import {
   NetworkName,
   l1WethGateway,
   wethTokenAddressL1,
-  wethTokenAddressL2
+  wethTokenAddressL2,
+  getInitialERC20Balance
 } from './tests/support/common'
+
 import { registerLocalNetwork } from './src/util/networks'
 import { CommonAddress } from './src/util/CommonAddressUtils'
-import { erc20ABI } from 'wagmi'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -52,7 +55,17 @@ export default defineConfig({
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
 
+      if (!goerliRpcUrl) {
+        throw new Error('NEXT_PUBLIC_GOERLI_RPC_URL variable missing.')
+      }
+      if (!arbGoerliRpcUrl) {
+        throw new Error('NEXT_PUBLIC_ARBITRUM_GOERLI_RPC_URL variable missing.')
+      }
       const userWalletAddress = await userWallet.getAddress()
+
+      // Fund the userWallet with USDC.
+
+      await Promise.all([fundUserUsdc('L1'), fundUserUsdc('L2')])
 
       // Deploy ERC-20 token to L1
       const l1ERC20Token = await deployERC20ToL1()
@@ -72,29 +85,18 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      // L1
-      await fundUserWalletEth('L1')
-      // L2
-      await fundUserWalletEth('L2')
-
-      // Fund the userWallet with USDC.
-      // L1
-      await fundUserUsdc('L1')
-      // L2
-      await fundUserUsdc('L2')
+      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
 
       // Wrap ETH to test ERC-20 transactions
-      // L1
-      await wrapEth('L1')
-      // L2
-      await wrapEth('L2')
+      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+
       // Approve WETH
       await approveWeth()
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
-      config.env.ETH_GOERLI_RPC_URL = ethGoerliRpcUrl
+      config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
       config.env.ARB_GOERLI_RPC_URL =
         'https://arb-goerli.g.alchemy.com/v2/YYCNZzRm6nq-HhkNi9i7cUkPaVBRF4AM'
       config.env.ADDRESS = userWalletAddress
@@ -120,10 +122,13 @@ export default defineConfig({
 
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const ethGoerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
+const goerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
+const arbGoerliRpcUrl = process.env.NEXT_PUBLIC_ARBITRUM_GOERLI_RPC_URL
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
+const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
+const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
 
 if (!process.env.PRIVATE_KEY_CUSTOM) {
   throw new Error('PRIVATE_KEY_CUSTOM variable missing.')
@@ -176,17 +181,26 @@ async function fundUserWalletEth(networkType: 'L1' | 'L2') {
 async function fundUserUsdc(networkType: 'L1' | 'L2') {
   console.log(`Funding USDC to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? ethProvider : arbProvider
   const usdcContractAddress =
     networkType === 'L1'
       ? CommonAddress.Goerli.USDC
       : CommonAddress.ArbitrumGoerli.USDC
-  const usdcContract = new Contract(usdcContractAddress, erc20ABI, provider)
-  const usdcBalance = await usdcContract.balanceOf(address)
+
+  const usdcBalance = await getInitialERC20Balance({
+    address,
+    rpcURL: networkType === 'L1' ? goerliRpcUrl! : arbGoerliRpcUrl!,
+    tokenAddress: usdcContractAddress,
+    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
+  })
+
   // Fund only if the balance is less than 0.5 USDC
   if (usdcBalance.lt(utils.parseUnits('0.5', 6))) {
     console.log('Adding USDC to user wallet...')
-    const tx = await usdcContract.connect(localWallet).transfer(userWallet, 1)
+    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+    const contract = new ERC20__factory().connect(localWallet.connect(provider))
+    const token = contract.attach(usdcContractAddress)
+    await token.deployed()
+    const tx = await token.transfer(address, utils.parseUnits('1', 6))
     await tx.wait()
   }
 }
