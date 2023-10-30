@@ -54,13 +54,12 @@ export default defineConfig({
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
-
       if (!goerliRpcUrl) {
-        throw new Error('NEXT_PUBLIC_GOERLI_RPC_URL variable missing.')
+        throw new Error(
+          'process.env.NEXT_PUBLIC_GOERLI_RPC_URL variable missing.'
+        )
       }
-      if (!arbGoerliRpcUrl) {
-        throw new Error('NEXT_PUBLIC_ARBITRUM_GOERLI_RPC_URL variable missing.')
-      }
+
       const userWalletAddress = await userWallet.getAddress()
 
       // Fund the userWallet with USDC.
@@ -123,7 +122,7 @@ export default defineConfig({
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 const goerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
-const arbGoerliRpcUrl = process.env.NEXT_PUBLIC_ARBITRUM_GOERLI_RPC_URL
+const arbGoerliRpcUrl = 'https://api.zan.top/node/v1/arb/goerli/public'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
