@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -14,6 +15,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
+import { CustomMessageWarning } from './CustomMessageWarning'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (isNetwork(chainId).isEthereum) {
@@ -71,6 +73,11 @@ export const PendingTransactions = ({
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
+  // Show from 6th November 2023 to 7th November 2023
+  const showSubgraphMaintenanceMessage =
+    dayjs().startOf('day').isAfter(dayjs('2023-11-06').startOf('day')) &&
+    dayjs().startOf('day').isBefore(dayjs('2023-11-07').startOf('day'))
+
   return (
     <div
       className={`pending-transactions relative flex max-h-[500px] flex-col gap-4 overflow-auto rounded-lg p-4 ${bgClassName}`}
@@ -115,6 +122,24 @@ export const PendingTransactions = ({
         transactions.some(tx => isTokenDeposit(tx)) && (
           <PendingDepositWarning />
         )}
+
+      {showSubgraphMaintenanceMessage && (
+        <CustomMessageWarning>
+          <span>
+            The Graph is expected to undergo scheduled database maintenance
+            beginning Nov 6, 2023, 08:00 UTC. Transaction history may not appear
+            between 08:00-14:00 UTC on Nov 6, 2023. Please check back later or
+            visit{' '}
+            <ExternalLink
+              href="https://status.thegraph.com"
+              className="arb-hover text-blue-link underline"
+            >
+              The Graph&apos;s status page
+            </ExternalLink>{' '}
+            for the latest.
+          </span>
+        </CustomMessageWarning>
+      )}
 
       {/* Transaction cards */}
       {transactions.map(tx => (
