@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -10,7 +10,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
-import { ConnectionState } from '../../util'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
@@ -76,12 +75,14 @@ import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-
-const onTxError = (error: any) => {
-  if (!isUserRejectedError(error)) {
-    Sentry.captureException(error)
-  }
-}
+import { useStyles } from '../../hooks/TransferPanel/useStyles'
+import {
+  ImportTokenModalStatus,
+  getWarningTokenDescription,
+  onTxError
+} from './TransferPanelUtils'
+import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
+import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -122,13 +123,6 @@ function useTokenFromSearchParams(): string | undefined {
   return tokenFromSearchParams
 }
 
-enum ImportTokenModalStatus {
-  // "IDLE" is here to distinguish between the modal never being opened, and being closed after a user interaction
-  IDLE,
-  OPEN,
-  CLOSED
-}
-
 const networkConnectionWarningToast = () =>
   warningToast(
     <>
@@ -156,7 +150,6 @@ export function TransferPanel() {
       isDepositMode,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
-      arbTokenBridge,
       warningTokens
     }
   } = useAppState()
@@ -195,7 +188,6 @@ export function TransferPanel() {
     setTransactionHistoryTab
   } = useAppContextActions()
 
-  const { isMainnet } = isNetwork(l1Network.id)
   const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
@@ -204,6 +196,9 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
+
+  const { depositButtonColorClassName, withdrawalButtonColorClassName } =
+    useStyles()
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -263,41 +258,11 @@ export function TransferPanel() {
     setAmount('')
   }
 
-  useEffect(() => {
-    if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
-      return
-    }
-
-    if (
-      connectionState === ConnectionState.L1_CONNECTED ||
-      connectionState === ConnectionState.L2_CONNECTED
-    ) {
-      setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
-    }
-  }, [connectionState, importTokenModalStatus])
-
-  useEffect(() => {
-    // Check in case of an account switch or network switch
-    if (typeof walletAddress === 'undefined') {
-      return
-    }
-
-    // Don't open when the token import dialog should open
-    if (typeof tokenFromSearchParams !== 'undefined') {
-      return
-    }
-
-    if (!ethL1Balance) {
-      return
-    }
-  }, [
-    ethL1Balance,
-    walletAddress,
-    isMainnet,
-    isDepositMode,
-    arbTokenBridge,
-    tokenFromSearchParams
-  ])
+  useImportTokenModal({
+    importTokenModalStatus,
+    connectionState,
+    setImportTokenModalStatus
+  })
 
   const l1Balance = useMemo(() => {
     if (selectedToken) {
@@ -709,16 +674,7 @@ export function TransferPanel() {
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
-          const description = (() => {
-            switch (warningToken.type) {
-              case 0:
-                return 'a supply rebasing token'
-              case 1:
-                return 'an interest accruing token'
-              default:
-                return 'a non-standard ERC20 token'
-            }
-          })()
+          const description = getWarningTokenDescription(warningToken.type)
           return window.alert(
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
           )
@@ -1268,66 +1224,11 @@ export function TransferPanel() {
     ethBalance
   ])
 
-  const isSummaryVisible = useMemo(() => {
-    if (isSwitchingL2Chain || gasEstimationStatus === 'error') {
-      return false
-    }
-
-    if (isTransferring) {
-      return true
-    }
-
-    return !(isDepositMode ? disableDeposit : disableWithdrawal)
-  }, [
-    isSwitchingL2Chain,
-    gasEstimationStatus,
-    isTransferring,
-    isDepositMode,
+  const { isSummaryVisible } = useSummaryVisibility({
     disableDeposit,
-    disableWithdrawal
-  ])
-
-  const depositButtonColorClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova, isXaiTestnet, isStylusTestnet } =
-      isNetwork(l2Network.id)
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-dark'
-    }
-
-    if (isArbitrum) {
-      return 'bg-arb-one-dark'
-    }
-
-    if (isXaiTestnet) {
-      return 'bg-xai-dark'
-    }
-
-    if (isStylusTestnet) {
-      return 'bg-stylus-dark'
-    }
-
-    // is Orbit chain
-    return 'bg-orbit-dark'
-  }, [l2Network.id])
-
-  const withdrawalButtonColorClassName = useMemo(() => {
-    const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
-      l1Network.id
-    )
-    const { isArbitrum } = isNetwork(l2Network.id)
-
-    if (isArbitrum) {
-      return 'bg-eth-dark'
-    }
-
-    // is Orbit chain
-    if (isParentChainArbitrumNova) {
-      return 'bg-arb-nova-dark'
-    }
-
-    return 'bg-arb-one-dark'
-  }, [l1Network.id, l2Network.id])
+    disableWithdrawal,
+    gasEstimationStatus
+  })
 
   return (
     <>
