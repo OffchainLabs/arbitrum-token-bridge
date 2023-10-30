@@ -268,6 +268,14 @@ export function TokenRow({
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
 
+  const isDuplicateCustomFeeTokenRow = useMemo(() => {
+    if (!token || !nativeCurrency.isCustom) {
+      return false
+    }
+
+    return token.address.toLowerCase() === nativeCurrency.address
+  }, [token, nativeCurrency])
+
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
       isDepositMode ? l1Network.id : l2Network.id
@@ -323,11 +331,7 @@ export function TokenRow({
   ])
 
   // If there's a custom fee token, we only display it as native token, not as an erc-20 in the list
-  if (
-    token &&
-    nativeCurrency.isCustom &&
-    token.address.toLowerCase() === nativeCurrency.address
-  ) {
+  if (isDuplicateCustomFeeTokenRow) {
     return null
   }
 
@@ -385,6 +389,7 @@ export function TokenRow({
               </Tooltip>
             )}
           </div>
+
           {token && (
             <div className="flex w-full flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
@@ -430,6 +435,20 @@ export function TokenRow({
                   {tokenListInfo}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Show address for custom fee token when depositing */}
+          {token === null && nativeCurrency.isCustom && (
+            <div className="flex w-full flex-col items-start space-y-1">
+              <div className="flex w-full justify-between">
+                {isDepositMode && (
+                  <BlockExplorerTokenLink
+                    chain={l1Network}
+                    address={nativeCurrency.address}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>
