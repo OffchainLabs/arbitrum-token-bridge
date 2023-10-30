@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -16,6 +17,8 @@ import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 import { CustomMessageWarning } from './CustomMessageWarning'
+
+dayjs.extend(utc)
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (isNetwork(chainId).isEthereum) {
@@ -75,8 +78,8 @@ export const PendingTransactions = ({
 
   // Show from 6th November 2023 to 7th November 2023
   const showSubgraphMaintenanceMessage =
-    dayjs().startOf('day').isAfter(dayjs('2023-11-06').startOf('day')) &&
-    dayjs().startOf('day').isBefore(dayjs('2023-11-07').startOf('day'))
+    dayjs().utc().startOf('day').isAfter(dayjs('2023-11-05').startOf('day')) &&
+    dayjs().utc().startOf('day').isBefore(dayjs('2023-11-07').startOf('day'))
 
   return (
     <div
