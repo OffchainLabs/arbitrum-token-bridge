@@ -252,6 +252,10 @@ function ETHBalance({
   balance: BigNumber | null
   prefix?: string
 }) {
+  const { isConnected } = useAccount()
+  if (!isConnected) {
+    return null
+  }
   if (!balance) {
     return <StyledLoader />
   }
