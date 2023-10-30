@@ -80,7 +80,7 @@ export function TokenRow({
   onClick,
   token
 }: TokenRowProps): JSX.Element {
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const {
     app: {
       arbTokenBridge: { bridgeTokens },
@@ -272,6 +272,10 @@ export function TokenRow({
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
 
+    if (!isConnected) {
+      return null
+    }
+
     // We don't want users to be able to click on USDC before we know whether or not they are SCW users
     if (
       isLoadingAccountType &&
@@ -299,6 +303,7 @@ export function TokenRow({
       </span>
     )
   }, [
+    isConnected,
     isLoadingAccountType,
     token?.decimals,
     tokenBalance,

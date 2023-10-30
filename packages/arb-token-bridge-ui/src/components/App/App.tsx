@@ -137,6 +137,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
+    const chain = networks.from
     if (!chain) {
       return
     }
@@ -178,7 +179,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
     })
   }, [
-    chain,
+    networks.from,
     isConnected,
     address,
     actions.app,

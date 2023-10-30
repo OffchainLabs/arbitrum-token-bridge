@@ -83,13 +83,14 @@ export async function fetchErc20Data({
  * @param l1Provider
  */
 export async function getL1TokenData({
-  account,
+  // Make sure we have a default wallet address (required to fetch allowance)
+  account = constants.AddressZero,
   erc20L1Address,
   l1Provider,
   l2Provider,
   throwOnInvalidERC20 = true
 }: {
-  account: string
+  account: string | undefined
   erc20L1Address: string
   l1Provider: Provider
   l2Provider: Provider

@@ -464,7 +464,7 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, childProvider, parentChain, parentProvider } =
+  const { childChain, childProvider, parentProvider } =
     useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
@@ -515,10 +515,6 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         onImportToken(_token.address)
-        return
-      }
-
-      if (!walletAddress) {
         return
       }
 
