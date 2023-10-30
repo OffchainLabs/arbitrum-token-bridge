@@ -23,5 +23,4 @@ export function useConnectionState({
       setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
     }
   }, [connectionState, importTokenModalStatus, setImportTokenModalStatus])
-  return {}
 }
