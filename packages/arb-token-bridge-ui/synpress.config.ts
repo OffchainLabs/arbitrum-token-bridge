@@ -96,8 +96,8 @@ export default defineConfig({
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
-      config.env.ARB_GOERLI_RPC_URL =
-        'https://arb-goerli.g.alchemy.com/v2/YYCNZzRm6nq-HhkNi9i7cUkPaVBRF4AM'
+      config.env.ARB_GOERLI_RPC_URL = 'https://goerli-rollup.arbitrum.io/rpc'
+
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
