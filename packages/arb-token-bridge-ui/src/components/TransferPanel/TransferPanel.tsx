@@ -478,7 +478,7 @@ export function TransferPanel() {
     // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the child chain will be paid in the custom fee token.
     const { retryableData } = await erc20Bridger.getDepositRequest({
       from: walletAddress,
-      amount: utils.parseUnits(amount, nativeCurrency.decimals),
+      amount: utils.parseUnits(amount, selectedToken.decimals),
       erc20L1Address: selectedToken.address,
       l1Provider,
       l2Provider
