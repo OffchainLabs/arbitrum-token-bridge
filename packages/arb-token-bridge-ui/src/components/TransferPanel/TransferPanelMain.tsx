@@ -559,13 +559,12 @@ export function TransferPanelMain({
       }
 
       if (isDepositMode) {
-        const result = await depositEthEstimateGas({
+        return await depositEthEstimateGas({
           amount: weiValue,
           address: walletAddress,
           l1Provider: l1.provider,
           l2Provider: l2.provider
         })
-        return result
       }
 
       const result = await withdrawEthEstimateGas({
@@ -581,6 +580,9 @@ export function TransferPanelMain({
 
   const setMaxAmount = useCallback(async () => {
     const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const customFeeTokenBalance = isDepositMode
+      ? customFeeTokenBalances.l1
+      : customFeeTokenBalances.l2
 
     const tokenBalance = isDepositMode
       ? selectedTokenBalances.l1
@@ -596,13 +598,26 @@ export function TransferPanelMain({
       return
     }
 
-    if (!ethBalance) {
+    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH on L2
+    // For custom fee token withdrawals, they can be handled same as ETH withdrawals
+    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenBalance) {
+      setAmount(
+        utils.formatUnits(customFeeTokenBalance, nativeCurrency.decimals)
+      )
+      return
+    }
+
+    const nativeCurrencyBalance = nativeCurrency.isCustom
+      ? customFeeTokenBalance
+      : ethBalance
+
+    if (!nativeCurrencyBalance) {
       return
     }
 
     try {
       setLoadingMaxAmount(true)
-      const result = await estimateGas(ethBalance)
+      const result = await estimateGas(nativeCurrencyBalance)
 
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
@@ -614,15 +629,20 @@ export function TransferPanelMain({
         result.estimatedL2SubmissionCost
       )
 
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      const nativeCurrencyBalanceFloat = parseFloat(
+        utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
+      )
       const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+      setAmount(
+        String(nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4)
+      )
     } catch (error) {
       console.error(error)
     } finally {
       setLoadingMaxAmount(false)
     }
   }, [
+    nativeCurrency,
     estimateGas,
     ethL1Balance,
     ethL2Balance,
@@ -631,7 +651,8 @@ export function TransferPanelMain({
     l2GasPrice,
     selectedToken,
     setAmount,
-    selectedTokenBalances
+    selectedTokenBalances,
+    customFeeTokenBalances
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
