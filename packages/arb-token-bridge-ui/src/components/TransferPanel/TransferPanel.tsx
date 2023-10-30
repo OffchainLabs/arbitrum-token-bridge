@@ -81,7 +81,8 @@ import {
   getWarningTokenDescription,
   onTxError
 } from './TransferPanelUtils'
-import { useConnectionState } from '../../hooks/TransferPanel/useConnectionState'
+import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
+import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -187,7 +188,6 @@ export function TransferPanel() {
     setTransactionHistoryTab
   } = useAppContextActions()
 
-  const { isMainnet } = isNetwork(l1Network.id)
   const { isArbitrumNova } = isNetwork(l2Network.id)
 
   const latestEth = useLatest(eth)
@@ -196,6 +196,9 @@ export function TransferPanel() {
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
+
+  const { depositButtonColorClassName, withdrawalButtonColorClassName } =
+    useStyles()
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -255,7 +258,7 @@ export function TransferPanel() {
     setAmount('')
   }
 
-  useConnectionState({
+  useImportTokenModal({
     importTokenModalStatus,
     connectionState,
     setImportTokenModalStatus
@@ -1221,16 +1224,7 @@ export function TransferPanel() {
     ethBalance
   ])
 
-  const {
-    depositButtonColorClassName,
-    withdrawalButtonColorClassName,
-    isSummaryVisible
-  } = useStyles({
-    l1Network,
-    l2Network,
-    isSwitchingL2Chain,
-    isTransferring,
-    isDepositMode,
+  const { isSummaryVisible } = useSummaryVisibility({
     disableDeposit,
     disableWithdrawal,
     gasEstimationStatus

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { ImportTokenModalStatus } from '../../components/TransferPanel/TransferPanelUtils'
 import { ConnectionState } from '../../util'
 
-export function useConnectionState({
+export function useImportTokenModal({
   importTokenModalStatus,
   connectionState,
   setImportTokenModalStatus

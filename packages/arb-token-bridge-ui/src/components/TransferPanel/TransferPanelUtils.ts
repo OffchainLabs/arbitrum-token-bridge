@@ -20,7 +20,7 @@ export function getWarningTokenDescription(warningTokenType: number) {
   }
 }
 
-export function onTxError(error: any) {
+export function onTxError(error: unknown) {
   if (!isUserRejectedError(error)) {
     Sentry.captureException(error)
   }

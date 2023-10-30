@@ -1,39 +1,17 @@
 import { useMemo } from 'react'
-import { Chain } from 'wagmi'
 
 import { isNetwork } from '../../util/networks'
-import { GasEstimationStatus } from '../../components/TransferPanel/TransferPanelSummary'
+import { useNetworksAndSigners } from '../useNetworksAndSigners'
 
-export function useStyles({
-  l1Network,
-  l2Network,
-  isSwitchingL2Chain,
-  isTransferring,
-  isDepositMode,
-  disableDeposit,
-  disableWithdrawal,
-  gasEstimationStatus
-}: {
-  l1Network: Chain
-  l2Network: Chain
-  isSwitchingL2Chain: boolean
-  isTransferring: boolean
-  isDepositMode: boolean
-  disableDeposit: boolean
-  disableWithdrawal: boolean
-  gasEstimationStatus: GasEstimationStatus
-}) {
+export function useStyles() {
+  const {
+    l1: { network: l1Network },
+    l2: { network: l2Network }
+  } = useNetworksAndSigners()
+
   const depositButtonColorClassName = useMemo(() => {
-    const { isArbitrum, isArbitrumNova, isXaiTestnet, isStylusTestnet } =
+    const { isArbitrumNova, isXaiTestnet, isStylusTestnet, isOrbitChain } =
       isNetwork(l2Network.id)
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-dark'
-    }
-
-    if (isArbitrum) {
-      return 'bg-arb-one-dark'
-    }
 
     if (isXaiTestnet) {
       return 'bg-xai-dark'
@@ -43,8 +21,16 @@ export function useStyles({
       return 'bg-stylus-dark'
     }
 
-    // is Orbit chain
-    return 'bg-orbit-dark'
+    if (isArbitrumNova) {
+      return 'bg-arb-nova-dark'
+    }
+
+    if (isOrbitChain) {
+      return 'bg-orbit-dark'
+    }
+
+    // isArbitrum
+    return 'bg-arb-one-dark'
   }, [l2Network.id])
 
   const withdrawalButtonColorClassName = useMemo(() => {
@@ -65,28 +51,8 @@ export function useStyles({
     return 'bg-arb-one-dark'
   }, [l1Network.id, l2Network.id])
 
-  const isSummaryVisible = useMemo(() => {
-    if (isSwitchingL2Chain || gasEstimationStatus === 'error') {
-      return false
-    }
-
-    if (isTransferring) {
-      return true
-    }
-
-    return !(isDepositMode ? disableDeposit : disableWithdrawal)
-  }, [
-    isSwitchingL2Chain,
-    gasEstimationStatus,
-    isTransferring,
-    isDepositMode,
-    disableDeposit,
-    disableWithdrawal
-  ])
-
   return {
     depositButtonColorClassName,
-    withdrawalButtonColorClassName,
-    isSummaryVisible
+    withdrawalButtonColorClassName
   }
 }
