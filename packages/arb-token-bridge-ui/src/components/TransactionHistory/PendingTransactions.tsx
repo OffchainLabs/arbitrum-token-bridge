@@ -76,7 +76,7 @@ export const PendingTransactions = ({
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
-  // Show from 6th November 2023 to 7th November 2023
+  // Show from 5th November 2023 to 7th November 2023
   const showSubgraphMaintenanceMessage =
     dayjs().utc().startOf('day').isAfter(dayjs('2023-11-05').startOf('day')) &&
     dayjs().utc().startOf('day').isBefore(dayjs('2023-11-07').startOf('day'))
