@@ -3,6 +3,10 @@ name: Build, Test
 on:
   pull_request:
     branches: ["master"]
+    types:
+      - opened
+      - edited
+      - synchronize
   push:
     branches: ["master"]
   workflow_dispatch:
