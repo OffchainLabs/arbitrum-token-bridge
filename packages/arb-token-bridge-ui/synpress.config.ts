@@ -96,8 +96,7 @@ export default defineConfig({
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
-      config.env.ARB_GOERLI_RPC_URL = 'https://goerli-rollup.arbitrum.io/rpc'
-
+      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -122,7 +121,7 @@ export default defineConfig({
 const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 const goerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
-const arbGoerliRpcUrl = 'https://api.zan.top/node/v1/arb/goerli/public'
+const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
