@@ -142,7 +142,7 @@ jobs:
     name: "Test E2E"
     runs-on: ubuntu-latest
     needs: [install, check-files, load-e2e-files]
-    if: [needs.check-files.outputs.run_tests == 'true'] && ! [grep -q "hotfix" <<< "$PR_TITLE"]
+    if: needs.check-files.outputs.run_tests == 'true' && ! [grep -q "hotfix" <<< "$PR_TITLE"]
     strategy:
       fail-fast: false # If one test fails, let the other tests run
       matrix:
