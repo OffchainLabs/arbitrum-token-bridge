@@ -29,8 +29,6 @@ import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWit
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 
-const PAGE_SIZE = 100
-
 export type AdditionalTransferProperties = {
   direction: 'deposit' | 'withdrawal'
   source: 'subgraph' | 'event_logs'
@@ -173,6 +171,8 @@ function getProvider(chainId: ChainId) {
 const useTransactionListByDirection = (
   direction: 'deposits' | 'withdrawals'
 ) => {
+  const PAGE_SIZE = 100
+
   const [transactions, setTransactions] = useState<Transfer[][]>([])
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -298,22 +298,32 @@ const useMultiChainTransactionList = () => {
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useCompleteMultiChainTransactions = () => {
+export const useCompleteMultiChainTransactions = (): {
+  data: {
+    transactions: MergedTransaction[]
+    total: number | undefined
+  }
+  loading: boolean
+  completed: boolean
+  error: unknown
+  pause: () => void
+  resume: () => void
+} => {
   // max number of transactions mapped in parallel, for the same chain pair
   // we can batch more than MAX_BATCH_SIZE at a time if they use a different RPC
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
   const MAX_BATCH_SIZE = 5
+  const PAUSE_SIZE = 20
 
   const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
   const [fetching, setFetching] = useState(true)
-  const [paused, setPaused] = useState(false)
 
   const { data, loading, error } = useMultiChainTransactionList()
   const { address } = useAccount()
 
   const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading ? [address, page] : null,
+    address && !loading && fetching ? [address, page] : null,
     ([, _page]) => {
       // TODO: Need to allow more than MAX_BATCH_SIZE if they are for diff chain pairs
       // MAX_BATCH_SIZE refers to the same chain pair only
@@ -331,16 +341,32 @@ export const useCompleteMultiChainTransactions = () => {
     }
   )
 
+  function pause() {
+    setFetching(false)
+  }
+
+  function resume() {
+    setFetching(true)
+    setPage(prevPage => prevPage + 1)
+  }
+
   useEffect(() => {
     if (mapData) {
-      setTransactions(prevTransactions => [
-        ...prevTransactions,
-        ...(mapData.filter(Boolean) as MergedTransaction[])
-      ])
+      setTransactions(prevTransactions => {
+        const newTransactions = mapData.filter(Boolean) as MergedTransaction[]
+        return [...prevTransactions, ...newTransactions]
+      })
 
+      // mapped data is a full page, so we need to fetch more pages
       if (mapData.length === MAX_BATCH_SIZE) {
-        // full batch size has been mapped, which means there may be more txs to map
-        setPage(prevPage => prevPage + 1)
+        setPage(prevPage => {
+          // we fetched enough transactions to pause
+          if (MAX_BATCH_SIZE * (prevPage + 1) >= PAUSE_SIZE) {
+            pause()
+            return prevPage
+          }
+          return prevPage + 1
+        })
       } else {
         setFetching(false)
       }
@@ -349,17 +375,24 @@ export const useCompleteMultiChainTransactions = () => {
 
   if (loading || error) {
     return {
-      data: { transactions: [] as MergedTransaction[], total: undefined },
+      data: {
+        transactions: [] as MergedTransaction[],
+        total: undefined
+      },
+      completed: false,
       loading,
-      error
+      error,
+      pause,
+      resume
     }
   }
 
   return {
     data: { transactions, total: data.length },
     loading: fetching,
-    completed: !fetching && !paused,
-    paused,
-    error: mapError ?? error
+    completed: transactions.length === data.length,
+    error: mapError ?? error,
+    pause,
+    resume
   }
 }

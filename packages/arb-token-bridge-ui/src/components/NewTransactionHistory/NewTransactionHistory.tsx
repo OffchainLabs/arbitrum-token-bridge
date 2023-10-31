@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
@@ -18,16 +18,22 @@ import { TabButton } from '../common/Tab'
 const roundedTabClasses =
   'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
-export const NewTransactionHistory = () => {
+export const NewTransactionHistory = ({
+  transactions,
+  loading,
+  completed,
+  error,
+  resume
+}: {
+  transactions: MergedTransaction[]
+  loading: boolean
+  completed: boolean
+  error: unknown
+  resume: () => void
+}) => {
   const { address } = useAccount()
 
-  const {
-    data: { transactions },
-    loading,
-    completed,
-    paused,
-    error
-  } = useCompleteMultiChainTransactions()
+  const tabPanelsRef = useRef<HTMLDivElement>(null)
 
   const groupedTransactions = useMemo(
     () =>
@@ -103,14 +109,18 @@ export const NewTransactionHistory = () => {
             transactions={pendingTransactions}
             className="rounded-tl-none"
             loading={loading}
+            completed={completed}
             error={error}
+            resume={resume}
           />
         </Tab.Panel>
-        <Tab.Panel className="h-full">
+        <Tab.Panel ref={tabPanelsRef} className="h-full">
           <TransactionHistoryTable
             transactions={settledTransactions}
             loading={loading}
+            completed={completed}
             error={error}
+            resume={resume}
           />
         </Tab.Panel>
       </Tab.Panels>
