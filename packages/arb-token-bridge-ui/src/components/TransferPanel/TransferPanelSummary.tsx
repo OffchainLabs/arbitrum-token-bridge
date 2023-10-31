@@ -24,7 +24,6 @@ import {
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useAccountType } from '../../hooks/useAccountType'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -64,7 +63,6 @@ export function useGasSummary(
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const { address: walletAddress } = useAccount()
-  const { isSmartContractWallet } = useAccountType()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -83,37 +81,22 @@ export function useGasSummary(
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(() => {
-    // The relayer pays the gas fees
-    if (isSmartContractWallet) {
-      return 0
-    }
+  const estimatedL1GasFees = useMemo(
+    () => parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))),
+    [result.estimatedL1Gas, l1GasPrice]
+  )
 
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice)))
-  }, [result.estimatedL1Gas, l1GasPrice, isSmartContractWallet])
-
-  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL2GasFees = useMemo(() => {
-    // The relayer pays the gas fees, except for deposits where the L2 fee is paid in callvalue and
-    // needs to come from the smart contract wallet for retryable cost estimation to succeed
-    if (isSmartContractWallet && !isDepositMode) {
-      return 0
-    }
-
-    return parseFloat(
-      utils.formatEther(
-        result.estimatedL2Gas
-          .mul(l2GasPrice)
-          .add(result.estimatedL2SubmissionCost)
-      )
-    )
-  }, [
-    isSmartContractWallet,
-    isDepositMode,
-    result.estimatedL2Gas,
-    l2GasPrice,
-    result.estimatedL2SubmissionCost
-  ])
+  const estimatedL2GasFees = useMemo(
+    () =>
+      parseFloat(
+        utils.formatEther(
+          result.estimatedL2Gas
+            .mul(l2GasPrice)
+            .add(result.estimatedL2SubmissionCost)
+        )
+      ),
+    [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
+  )
 
   useEffect(() => {
     // When the user starts typing, set the status to `loading` for better UX

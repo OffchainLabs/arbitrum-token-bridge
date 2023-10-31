@@ -1106,8 +1106,19 @@ export function TransferPanel() {
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
-        const requiredGasFees =
-          gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+        const requiredGasFees: number = (() => {
+          // For SC wallets, the relayer pays the gas fees
+          if (isSmartContractWallet) {
+            if (isDepositMode) {
+              // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+              return gasSummary.estimatedL2GasFees
+            }
+
+            return 0
+          }
+
+          return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+        })()
 
         if (selectedToken) {
           // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
@@ -1171,8 +1182,19 @@ export function TransferPanel() {
       return true
     }
 
-    const requiredGasFees =
-      gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+    const requiredGasFees: number = (() => {
+      // For SC wallets, the relayer pays the gas fees
+      if (isSmartContractWallet) {
+        if (isDepositMode) {
+          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+          return gasSummary.estimatedL2GasFees
+        }
+
+        return 0
+      }
+
+      return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+    })()
 
     if (selectedToken) {
       // Still loading ERC-20 balance
