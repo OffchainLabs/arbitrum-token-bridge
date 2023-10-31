@@ -86,6 +86,7 @@ export function useGasSummary(
     [result.estimatedL1Gas, l1GasPrice]
   )
 
+  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
     () =>
       parseFloat(
