@@ -310,6 +310,20 @@ export function TransferPanel() {
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
 
+  const customFeeTokenL1BalanceFloat = useMemo(() => {
+    if (!nativeCurrency.isCustom) {
+      return null
+    }
+
+    const balance = erc20L1Balances?.[nativeCurrency.address]
+
+    if (!balance) {
+      return null
+    }
+
+    return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
+  }, [nativeCurrency, erc20L1Balances])
+
   const selectedTokenIsWithdrawOnly = useMemo(() => {
     if (!selectedToken) {
       return false
@@ -1150,11 +1164,20 @@ export function TransferPanel() {
   const shouldRunGasEstimation = useMemo(() => {
     let balanceFloat: number | null
 
+    // Compare ERC-20 balance
     if (selectedToken) {
       balanceFloat = isDepositMode
         ? selectedTokenL1BalanceFloat
         : selectedTokenL2BalanceFloat
-    } else {
+    }
+    // Compare custom fee token balance
+    else if (nativeCurrency.isCustom) {
+      balanceFloat = isDepositMode
+        ? customFeeTokenL1BalanceFloat
+        : ethL2BalanceFloat
+    }
+    // Compare ETH balance
+    else {
       balanceFloat = isDepositMode ? ethL1BalanceFloat : ethL2BalanceFloat
     }
 
@@ -1167,17 +1190,22 @@ export function TransferPanel() {
     amount,
     selectedToken,
     isDepositMode,
+    nativeCurrency,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
+    selectedTokenL2BalanceFloat,
+    customFeeTokenL1BalanceFloat
   ])
+
+  console.log({ shouldRunGasEstimation })
 
   const gasSummary = useGasSummary(
     amountBigNumber,
     selectedToken,
     shouldRunGasEstimation
   )
+  console.log({ gasSummary })
   const { status: gasEstimationStatus } = gasSummary
 
   const requiredGasFees = useMemo(
@@ -1211,6 +1239,10 @@ export function TransferPanel() {
       ? selectedTokenL1BalanceFloat
       : selectedTokenL2BalanceFloat
 
+    const customFeeTokenBalanceFloat = isDepositMode
+      ? customFeeTokenL1BalanceFloat
+      : ethL2BalanceFloat
+
     // No error while loading ETH balance
     if (ethBalanceFloat === null) {
       return undefined
@@ -1229,6 +1261,14 @@ export function TransferPanel() {
 
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
+        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      }
+    } else if (nativeCurrency.isCustom) {
+      if (customFeeTokenBalanceFloat === null) {
+        return undefined
+      }
+
+      if (Number(amount) > customFeeTokenBalanceFloat) {
         return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
       }
     }
@@ -1258,6 +1298,14 @@ export function TransferPanel() {
           return undefined
         }
 
+        if (nativeCurrency.isCustom) {
+          if (requiredGasFees > ethBalanceFloat) {
+            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+          }
+
+          return undefined
+        }
+
         const notEnoughEthForGasFees =
           Number(amount) + requiredGasFees > ethBalanceFloat
 
@@ -1276,10 +1324,12 @@ export function TransferPanel() {
     selectedTokenIsWithdrawOnly,
     gasSummary,
     requiredGasFees,
+    nativeCurrency,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
+    selectedTokenL2BalanceFloat,
+    customFeeTokenL1BalanceFloat
   ])
 
   const disableTransfer = useMemo(() => {
