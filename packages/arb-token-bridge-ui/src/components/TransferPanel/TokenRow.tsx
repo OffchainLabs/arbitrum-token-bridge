@@ -31,6 +31,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -93,27 +94,30 @@ export function TokenRow({
   } = useNetworksAndSigners()
 
   const isSmallScreen = useMedia('(max-width: 419px)')
+  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
-  const tokenName = useMemo(
-    () =>
-      token
-        ? sanitizeTokenName(token.name, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'Ether',
-    [token, isDepositMode, l2Network, l1Network]
-  )
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'ETH',
-    [token, isDepositMode, l2Network, l1Network]
-  )
+  const tokenName = useMemo(() => {
+    if (token) {
+      return sanitizeTokenName(token.name, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    return nativeCurrency.name
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
@@ -135,7 +139,7 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeCurrency.logoUrl
     }
 
     if (!token.logoURI) {
@@ -143,7 +147,7 @@ export function TokenRow({
     }
 
     return token.logoURI
-  }, [token])
+  }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
