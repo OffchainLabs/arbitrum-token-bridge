@@ -1196,7 +1196,7 @@ export function TransferPanel() {
       return requiredGasFees > ethBalanceFloat
     }
 
-    // Check if there's enough ETH to ETH to cover gas
+    // Check if there's enough ETH to brige over + cover gas
     return Number(amount) + requiredGasFees > ethBalanceFloat
   }, [
     amount,
