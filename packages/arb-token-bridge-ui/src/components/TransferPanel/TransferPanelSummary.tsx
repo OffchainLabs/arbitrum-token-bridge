@@ -42,7 +42,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
 const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
@@ -98,11 +97,6 @@ export function useGasSummary(
         )
       ),
     [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
-  )
-
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   useEffect(() => {
@@ -230,8 +224,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -273,12 +266,7 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
@@ -306,6 +294,11 @@ export function TransferPanelSummary({
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
     () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
     [nativeCurrency, parentChainNativeCurrency]
+  )
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   if (status === 'loading') {
