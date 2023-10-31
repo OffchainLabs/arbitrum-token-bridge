@@ -306,6 +306,14 @@ export function TransferPanel() {
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
 
+  const selectedTokenIsWithdrawOnly = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+
+    return isWithdrawOnlyToken(selectedToken.address, l2Network.id)
+  }, [selectedToken, l2Network])
+
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
     const isUnbridgedToken =
@@ -1083,10 +1091,7 @@ export function TransferPanel() {
 
     // ERC-20
     if (selectedToken) {
-      if (
-        isDepositMode &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-      ) {
+      if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
 
@@ -1138,8 +1143,8 @@ export function TransferPanel() {
     isDepositMode,
     isSmartContractWallet,
     selectedToken,
+    selectedTokenIsWithdrawOnly,
     gasSummary,
-    l2Network,
     requiredGasFees,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
@@ -1214,14 +1219,12 @@ export function TransferPanel() {
       return true
     }
 
-    if (selectedToken) {
-      if (isWithdrawOnlyToken(selectedToken.address, l2Network.id)) {
-        return true
-      }
+    if (selectedTokenIsWithdrawOnly) {
+      return true
     }
 
     return false
-  }, [disableTransfer, selectedToken, l2Network.id])
+  }, [disableTransfer, selectedTokenIsWithdrawOnly])
 
   const disableWithdrawal = useMemo(() => {
     if (disableTransfer) {
