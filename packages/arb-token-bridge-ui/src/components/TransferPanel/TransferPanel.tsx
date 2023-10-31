@@ -1051,22 +1051,6 @@ export function TransferPanel() {
     selectedToken,
     shouldRunGasEstimation
   )
-  const { status: gasEstimationStatus } = gasSummary
-
-  const requiredGasFees = useMemo(
-    // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
-    () => {
-      if (isSmartContractWallet) {
-        if (isDepositMode) {
-          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
-          return gasSummary.estimatedL2GasFees
-        }
-        return 0
-      }
-      return gasSummary.estimatedTotalGasFees
-    },
-    [isSmartContractWallet, isDepositMode, gasSummary]
-  )
 
   const transferPanelMainErrorMessage:
     | TransferPanelMainErrorMessage
@@ -1122,6 +1106,9 @@ export function TransferPanel() {
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
+        const requiredGasFees =
+          gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+
         if (selectedToken) {
           // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
           if (requiredGasFees > ethBalanceFloat) {
@@ -1148,7 +1135,6 @@ export function TransferPanel() {
     selectedToken,
     selectedTokenIsWithdrawOnly,
     gasSummary,
-    requiredGasFees,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
@@ -1185,6 +1171,9 @@ export function TransferPanel() {
       return true
     }
 
+    const requiredGasFees =
+      gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
+
     if (selectedToken) {
       // Still loading ERC-20 balance
       if (selectedTokenBalanceFloat === null) {
@@ -1208,11 +1197,10 @@ export function TransferPanel() {
     destinationAddressError,
     isSmartContractWallet,
     isDepositMode,
-    gasSummary.status,
+    gasSummary,
     isSwitchingL2Chain,
     isTransferring,
     selectedToken,
-    requiredGasFees,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
@@ -1253,7 +1241,7 @@ export function TransferPanel() {
   const { isSummaryVisible } = useSummaryVisibility({
     disableDeposit,
     disableWithdrawal,
-    gasEstimationStatus
+    gasEstimationStatus: gasSummary.status
   })
 
   return (

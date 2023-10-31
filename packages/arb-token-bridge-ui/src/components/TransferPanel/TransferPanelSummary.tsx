@@ -24,6 +24,7 @@ import {
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useAccountType } from '../../hooks/useAccountType'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -42,7 +43,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
 const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
@@ -64,6 +64,7 @@ export function useGasSummary(
   const { l1, l2 } = networksAndSigners
   const latestNetworksAndSigners = useLatest(networksAndSigners)
   const { address: walletAddress } = useAccount()
+  const { isSmartContractWallet } = useAccountType()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
   const l2GasPrice = useGasPrice({ provider: l2.provider })
@@ -82,28 +83,37 @@ export function useGasSummary(
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(
-    () => parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))),
-    [result.estimatedL1Gas, l1GasPrice]
-  )
+  const estimatedL1GasFees = useMemo(() => {
+    // The relayer pays the gas fees
+    if (isSmartContractWallet) {
+      return 0
+    }
+
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice)))
+  }, [result.estimatedL1Gas, l1GasPrice, isSmartContractWallet])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL2GasFees = useMemo(
-    () =>
-      parseFloat(
-        utils.formatEther(
-          result.estimatedL2Gas
-            .mul(l2GasPrice)
-            .add(result.estimatedL2SubmissionCost)
-        )
-      ),
-    [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
-  )
+  const estimatedL2GasFees = useMemo(() => {
+    // The relayer pays the gas fees, except for deposits where the L2 fee is paid in callvalue and
+    // needs to come from the smart contract wallet for retryable cost estimation to succeed
+    if (isSmartContractWallet && !isDepositMode) {
+      return 0
+    }
 
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
+    return parseFloat(
+      utils.formatEther(
+        result.estimatedL2Gas
+          .mul(l2GasPrice)
+          .add(result.estimatedL2SubmissionCost)
+      )
+    )
+  }, [
+    isSmartContractWallet,
+    isDepositMode,
+    result.estimatedL2Gas,
+    l2GasPrice,
+    result.estimatedL2SubmissionCost
+  ])
 
   useEffect(() => {
     // When the user starts typing, set the status to `loading` for better UX
@@ -144,9 +154,6 @@ export function useGasSummary(
             setResult(estimateGasResult)
           } else {
             const estimateGasResult = await depositEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l1Provider: l1.provider,
               l2Provider: l2.provider
             })
 
@@ -233,8 +240,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -276,12 +282,7 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
@@ -304,6 +305,11 @@ export function TransferPanelSummary({
 
     return nativeCurrency.symbol
   }, [token, nativeCurrency, app.isDepositMode, l1.network, l2.network])
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
+  )
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
