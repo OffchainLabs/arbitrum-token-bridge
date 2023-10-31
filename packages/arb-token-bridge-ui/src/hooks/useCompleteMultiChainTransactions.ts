@@ -1,4 +1,3 @@
-import { useLatest } from 'react-use'
 import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
@@ -6,8 +5,8 @@ import { ChainId, rpcURLs } from '../util/networks'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useCallback, useEffect, useState } from 'react'
-import { fetchWithdrawalList } from '../util/withdrawals/fetchWithdrawals'
-import { fetchDepositList } from '../util/deposits/fetchDeposits'
+import { fetchWithdrawalList } from '../util/withdrawals/fetchWithdrawalsList'
+import { fetchDepositList } from '../util/deposits/fetchDepositList'
 import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
@@ -31,7 +30,7 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 
 const PAGE_SIZE = 100
 
-export type AdditionalProperties = {
+export type AdditionalTransferProperties = {
   direction: 'deposit' | 'withdrawal'
   source: 'subgraph' | 'event_logs'
   parentChainId: ChainId
@@ -45,7 +44,7 @@ export type Withdrawal = (
   | WithdrawalInitiated
   | EthWithdrawal
 ) &
-  AdditionalProperties
+  AdditionalTransferProperties
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 
@@ -101,7 +100,7 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
-): tx is FetchWithdrawalsFromSubgraphResult & AdditionalProperties {
+): tx is FetchWithdrawalsFromSubgraphResult & AdditionalTransferProperties {
   return tx.source === 'subgraph'
 }
 
@@ -169,41 +168,36 @@ const useTransactionListByDirection = (
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  const latestTransactions = useLatest(transactions)
-  const latestPage = useLatest(page)
-
   const { address } = useAccount()
 
-  const shouldFetchPage = useCallback(
-    (index: number) => {
-      const _page = latestPage.current
-
-      if (_page === 0) {
+  const shouldFetchNextPageForChainPair = useCallback(
+    (chainPairIndex: number) => {
+      if (page === 0) {
         return true
       }
 
-      const txCount = latestTransactions.current[index]?.length ?? 0
+      const txCountForChainPair = transactions[chainPairIndex]?.length ?? 0
       // fetch next page for a chain pair if all fetched pages are full
       // we check for >= in case some txs were included by initiating a transfer
-      return txCount / _page >= PAGE_SIZE
+      return txCountForChainPair / page >= PAGE_SIZE
     },
-    [latestTransactions, latestPage]
+    [page, transactions]
   )
 
   const { data, error } = useSWRImmutable(
     address ? [direction, address, page] : null,
     ([_direction, _address, _page]) => {
       return Promise.all(
-        multiChainFetchList.map((c, index) => {
-          if (!shouldFetchPage(index)) {
+        multiChainFetchList.map((chainPair, chainPairIndex) => {
+          if (!shouldFetchNextPageForChainPair(chainPairIndex)) {
             return []
           }
 
           const params = {
             sender: _address,
             receiver: _address,
-            l1Provider: getProvider(c.parentChain),
-            l2Provider: getProvider(c.chain),
+            l1Provider: getProvider(chainPair.parentChain),
+            l2Provider: getProvider(chainPair.chain),
             pageNumber: _page,
             pageSize: PAGE_SIZE
           }
@@ -218,11 +212,6 @@ const useTransactionListByDirection = (
 
   useEffect(() => {
     if (data) {
-      // if there is not a single full page in any of the data fetched, then there is no more to fetch
-      const shouldFetchNextPage = data.some((_, index) =>
-        shouldFetchPage(index)
-      )
-
       // include the new data with the previously fetched data
       // the data is grouped by chain pairs
       setTransactions(prevTransactions =>
@@ -232,6 +221,11 @@ const useTransactionListByDirection = (
         ])
       )
 
+      // if there is not a single full page in any of the data fetched, then there is no more to fetch
+      const shouldFetchNextPage = data.some((_, chainPairIndex) =>
+        shouldFetchNextPageForChainPair(chainPairIndex)
+      )
+
       if (!shouldFetchNextPage) {
         setLoading(false)
         return
@@ -239,7 +233,7 @@ const useTransactionListByDirection = (
 
       setPage(prevPage => prevPage + 1)
     }
-  }, [data, shouldFetchPage])
+  }, [data, shouldFetchNextPageForChainPair])
 
   return {
     data: transactions.flat(),
