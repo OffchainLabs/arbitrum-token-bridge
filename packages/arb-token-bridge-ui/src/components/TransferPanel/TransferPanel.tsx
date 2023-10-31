@@ -1124,14 +1124,17 @@ export function TransferPanel() {
       case 'success': {
         if (selectedToken) {
           // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
-          if (requiredGasFees > Number(ethBalanceFloat)) {
+          if (requiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
           return undefined
         }
 
-        if (Number(amount) + requiredGasFees > ethBalanceFloat) {
+        const notEnoughEthForGasFees =
+          Number(amount) + requiredGasFees > ethBalanceFloat
+
+        if (notEnoughEthForGasFees) {
           return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
         }
 
@@ -1196,8 +1199,10 @@ export function TransferPanel() {
       return requiredGasFees > ethBalanceFloat
     }
 
-    // Check if there's enough ETH to brige over + cover gas
-    return Number(amount) + requiredGasFees > ethBalanceFloat
+    const notEnoughEthForGasFees =
+      Number(amount) + requiredGasFees > ethBalanceFloat
+
+    return notEnoughEthForGasFees
   }, [
     amount,
     destinationAddressError,
