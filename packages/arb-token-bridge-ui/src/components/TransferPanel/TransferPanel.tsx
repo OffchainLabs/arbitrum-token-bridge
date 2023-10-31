@@ -243,10 +243,6 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
-  // const ethBalance = useMemo(() => {
-  //   return isDepositMode ? ethL1Balance : ethL2Balance
-  // }, [ethL1Balance, ethL2Balance, isDepositMode])
-
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
 
@@ -309,46 +305,6 @@ export function TransferPanel() {
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
-
-  // const l1Balance = useMemo(() => {
-  //   if (selectedToken) {
-  //     const balanceL1 = erc20L1Balances?.[selectedToken.address.toLowerCase()]
-  //     const { decimals } = selectedToken
-  //     if (!balanceL1 || !decimals) {
-  //       return null
-  //     }
-  //     return utils.formatUnits(balanceL1, decimals)
-  //   }
-
-  //   if (!ethL1Balance) {
-  //     return null
-  //   }
-
-  //   return utils.formatUnits(ethL1Balance, nativeCurrency.decimals)
-  // }, [ethL1Balance, erc20L1Balances, selectedToken, nativeCurrency])
-
-  // const l2Balance = useMemo(() => {
-  //   if (selectedToken) {
-  //     const addressLookup =
-  //       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-  //       isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
-  //         ? selectedToken.address.toLowerCase()
-  //         : (selectedToken.l2Address || '').toLowerCase()
-
-  //     const balanceL2 = erc20L2Balances?.[addressLookup]
-  //     const { decimals } = selectedToken
-
-  //     if (!balanceL2) {
-  //       return null
-  //     }
-  //     return utils.formatUnits(balanceL2, decimals)
-  //   }
-
-  //   if (!ethL2Balance) {
-  //     return null
-  //   }
-  //   return utils.formatUnits(ethL2Balance, nativeCurrency.decimals)
-  // }, [ethL2Balance, erc20L2Balances, selectedToken, nativeCurrency])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
