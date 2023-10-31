@@ -154,6 +154,9 @@ export function useGasSummary(
             setResult(estimateGasResult)
           } else {
             const estimateGasResult = await depositEthEstimateGas({
+              amount: amountDebounced,
+              address: walletAddress,
+              l1Provider: l1.provider,
               l2Provider: l2.provider
             })
 
