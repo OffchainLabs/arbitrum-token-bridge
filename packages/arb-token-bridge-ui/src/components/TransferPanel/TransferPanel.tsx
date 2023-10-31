@@ -1110,7 +1110,7 @@ export function TransferPanel() {
           // For SC wallets, the relayer pays the gas fees
           if (isSmartContractWallet) {
             if (isDepositMode) {
-              // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+              // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
               return gasSummary.estimatedL2GasFees
             }
 
@@ -1186,7 +1186,7 @@ export function TransferPanel() {
       // For SC wallets, the relayer pays the gas fees
       if (isSmartContractWallet) {
         if (isDepositMode) {
-          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
+          // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
           return gasSummary.estimatedL2GasFees
         }
 
