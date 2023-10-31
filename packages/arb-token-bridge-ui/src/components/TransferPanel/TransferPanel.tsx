@@ -1029,13 +1029,13 @@ export function TransferPanel() {
 
     return Number(amount) <= balanceFloat
   }, [
+    amount,
     selectedToken,
     isDepositMode,
-    amount,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
     ethL1BalanceFloat,
-    ethL2BalanceFloat
+    ethL2BalanceFloat,
+    selectedTokenL1BalanceFloat,
+    selectedTokenL2BalanceFloat
   ])
 
   const gasSummary = useGasSummary(
@@ -1063,38 +1063,46 @@ export function TransferPanel() {
   const transferPanelMainErrorMessage:
     | TransferPanelMainErrorMessage
     | undefined = useMemo(() => {
-    const ethBalanceFormatted = isDepositMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-
-    const selectedTokenBalanceFormatted = isDepositMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-
-    // No error while loading balance
-    if (ethBalanceFormatted === null) {
-      return undefined
-    }
-
     // ETH transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
     }
 
-    if (
-      isDepositMode &&
-      selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-    ) {
-      return TransferPanelMainErrorMessage.WITHDRAW_ONLY
+    const ethBalanceFloat = isDepositMode
+      ? ethL1BalanceFloat
+      : ethL2BalanceFloat
+
+    const selectedTokenBalanceFloat = isDepositMode
+      ? selectedTokenL1BalanceFloat
+      : selectedTokenL2BalanceFloat
+
+    // No error while loading ETH balance
+    if (ethBalanceFloat === null) {
+      return undefined
     }
 
-    const amountEntered = Number(amount)
-    const balance = selectedToken
-      ? Number(selectedTokenBalanceFormatted)
-      : Number(ethBalanceFormatted)
+    // ERC-20
+    if (selectedToken) {
+      if (
+        isDepositMode &&
+        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
+      ) {
+        return TransferPanelMainErrorMessage.WITHDRAW_ONLY
+      }
 
-    if (amountEntered > balance) {
+      // No error while loading ERC-20 balance
+      if (selectedTokenBalanceFloat === null) {
+        return undefined
+      }
+
+      // Check amount against ERC-20 balance
+      if (Number(amount) > selectedTokenBalanceFloat) {
+        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      }
+    }
+    // ETH
+    // Check amount against ETH balance
+    else if (Number(amount) > ethBalanceFloat) {
       return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
     }
 
@@ -1111,8 +1119,6 @@ export function TransferPanel() {
       case 'success': {
         if (selectedToken) {
           // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
-          const ethBalanceFloat = ethBalanceFormatted
-
           if (requiredGasFees > Number(ethBalanceFloat)) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
@@ -1120,7 +1126,7 @@ export function TransferPanel() {
           return undefined
         }
 
-        if (amountEntered + requiredGasFees > balance) {
+        if (Number(amount) + requiredGasFees > ethBalanceFloat) {
           return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
         }
 
@@ -1128,13 +1134,13 @@ export function TransferPanel() {
       }
     }
   }, [
-    gasSummary,
-    selectedToken,
+    amount,
     isDepositMode,
+    isSmartContractWallet,
+    selectedToken,
+    gasSummary,
     l2Network,
     requiredGasFees,
-    isSmartContractWallet,
-    amount,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
