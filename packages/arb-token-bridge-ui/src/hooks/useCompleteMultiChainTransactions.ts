@@ -185,8 +185,8 @@ const useTransactionListByDirection = (
   )
 
   const { data, error } = useSWRImmutable(
-    address ? [direction, address, page] : null,
-    ([_direction, _address, _page]) => {
+    address ? ['tx_list', direction, address, page] : null,
+    ([, _direction, _address, _page]) => {
       return Promise.all(
         multiChainFetchList.map((chainPair, chainPairIndex) => {
           if (!shouldFetchNextPageForChainPair(chainPairIndex)) {
@@ -283,8 +283,8 @@ export const useCompleteMultiChainTransactions = () => {
   const { address } = useAccount()
 
   const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading ? [address, page] : null,
-    ([, _page]) => {
+    address && !loading ? ['complete_tx_list', address, page] : null,
+    ([, , _page]) => {
       // TODO: Need to allow more than MAX_BATCH_SIZE if they are for diff chain pairs
       // MAX_BATCH_SIZE refers to the same chain pair only
       const startIndex = _page * MAX_BATCH_SIZE
