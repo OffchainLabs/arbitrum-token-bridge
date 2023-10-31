@@ -414,6 +414,7 @@ export function TransferPanel() {
     })
 
     const amountBigNumber = utils.parseUnits(amount, nativeCurrency.decimals)
+
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
     if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
@@ -1198,12 +1199,18 @@ export function TransferPanel() {
     customFeeTokenL1BalanceFloat
   ])
 
-  console.log({ shouldRunGasEstimation })
-
   const gasSummary = useGasSummary(
     amountBigNumber,
     selectedToken,
     shouldRunGasEstimation
+  )
+
+  console.log({ gasSummary })
+
+  const customFeeTokenInsufficientAllowanceError = useMemo(
+    () =>
+      nativeCurrency.isCustom && isDepositMode && gasSummary.status === 'error',
+    [nativeCurrency, isDepositMode, gasSummary.status]
   )
 
   const transferPanelMainErrorMessage:
@@ -1269,6 +1276,10 @@ export function TransferPanel() {
         return undefined
 
       case 'error':
+        if (customFeeTokenInsufficientAllowanceError) {
+          return undefined
+        }
+
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
@@ -1325,7 +1336,8 @@ export function TransferPanel() {
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat
+    customFeeTokenL1BalanceFloat,
+    customFeeTokenInsufficientAllowanceError
   ])
 
   const disableTransfer = useMemo(() => {
@@ -1355,6 +1367,10 @@ export function TransferPanel() {
       gasSummary.status !== 'success' &&
       gasSummary.status !== 'unavailable'
     ) {
+      if (customFeeTokenInsufficientAllowanceError) {
+        return false
+      }
+
       return true
     }
 
@@ -1386,8 +1402,14 @@ export function TransferPanel() {
       return requiredGasFees > ethBalanceFloat
     }
 
+    if (nativeCurrency.isCustom) {
+      return requiredGasFees > ethBalanceFloat
+    }
+
     const notEnoughEthForGasFees =
       Number(amount) + requiredGasFees > ethBalanceFloat
+
+    console.log({ notEnoughEthForGasFees })
 
     return notEnoughEthForGasFees
   }, [
@@ -1402,8 +1424,12 @@ export function TransferPanel() {
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
+    selectedTokenL2BalanceFloat,
+    nativeCurrency,
+    customFeeTokenInsufficientAllowanceError
   ])
+
+  console.log({ disableTransfer })
 
   const disableDeposit = useMemo(() => {
     if (disableTransfer) {
@@ -1515,9 +1541,29 @@ export function TransferPanel() {
               />
             ) : (
               <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
-                <span className="text-xl">
-                  Bridging summary will appear here.
-                </span>
+                {customFeeTokenInsufficientAllowanceError ? (
+                  <p className="text-base">
+                    <span className="font-medium">{l2Network.name}</span> uses{' '}
+                    <span className="font-medium">
+                      {nativeCurrency.name} ({nativeCurrency.symbol})
+                    </span>{' '}
+                    as the network fee token.
+                    <br />
+                    <br />
+                    <span>
+                      Bridging summary will appear here after you have approved
+                      your{' '}
+                      <span className="font-medium">
+                        {nativeCurrency.symbol}
+                      </span>{' '}
+                      to be spent by the bridge contracts.
+                    </span>
+                  </p>
+                ) : (
+                  <span className="text-xl">
+                    Bridging summary will appear here.
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -1526,7 +1572,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              // disabled={disableDeposit}
+              disabled={disableDeposit}
               onClick={() => {
                 if (
                   selectedToken &&

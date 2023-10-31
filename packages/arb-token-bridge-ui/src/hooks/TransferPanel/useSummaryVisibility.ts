@@ -43,6 +43,8 @@ export function useSummaryVisibility({
     disableWithdrawal
   ])
 
+  console.log({ isSummaryVisible, disableDeposit, disableWithdrawal })
+
   return {
     isSummaryVisible
   }
