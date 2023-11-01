@@ -41,7 +41,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
 const layerToGasFeeTooltip = {
@@ -132,11 +131,6 @@ export function useGasSummary(
         )
       ),
     [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
-  )
-
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   useEffect(() => {
@@ -257,8 +251,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -300,12 +293,7 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
   const {
     app: { isDepositMode }
@@ -375,6 +363,11 @@ export function TransferPanelSummary({
 
     return nativeCurrency.symbol
   }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
+  )
 
   if (status === 'loading') {
     const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
