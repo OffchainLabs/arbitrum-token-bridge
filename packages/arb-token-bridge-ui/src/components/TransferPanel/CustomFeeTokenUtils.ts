@@ -28,7 +28,7 @@ export async function approveCustomFeeTokenForInboxEstimateGas(params: {
   const { l1Signer, l2Provider } = params
   const ethBridger = await EthBridger.fromProvider(l2Provider)
 
-  const txRequest = ethBridger.getApproveFeeTokenTxRequest()
+  const txRequest = ethBridger.getApproveFeeTokenRequest()
 
   return l1Signer.estimateGas(txRequest)
 }
