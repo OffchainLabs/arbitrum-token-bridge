@@ -131,6 +131,9 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
+              amount,
+              address: walletAddress,
+              erc20L1Address: token.address,
               l1Provider: l1.provider,
               l2Provider: l2.provider
             })
