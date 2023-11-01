@@ -88,8 +88,8 @@ export async function depositTokenEstimateGas(
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   if (await allowanceForL1GatewayIsInsufficient(params)) {
-    console.log(
-      'L1 gateway allowance for token being deposited is too low, falling back to hardcoded estimates.'
+    console.warn(
+      `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
     )
 
     return fetchFallbackGasEstimates({
