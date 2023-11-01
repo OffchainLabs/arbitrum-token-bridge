@@ -260,6 +260,11 @@ function TokensPanel({
           token = ARB_GOERLI_NATIVE_USDC_TOKEN
         }
 
+        // If the token on the list is used as a custom fee token, we remove the duplicate
+        if (nativeCurrency.isCustom) {
+          return address.toLowerCase() !== nativeCurrency.address
+        }
+
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show ETH
@@ -323,7 +328,8 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumGoerli,
-    getBalance
+    getBalance,
+    nativeCurrency
   ])
 
   const storeNewToken = async () => {
