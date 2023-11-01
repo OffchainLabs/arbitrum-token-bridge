@@ -453,34 +453,23 @@ export function TransferPanel() {
       throw new Error('l2 network does not use custom fee token')
     }
 
-    const gateway = await erc20Bridger.getL1GatewayAddress(
-      selectedToken.address,
-      l1Provider
-    )
-
-    const customFeeTokenAllowanceForGateway = await fetchErc20Allowance({
-      address: l2Network.nativeToken,
-      provider: l1Provider,
-      owner: walletAddress,
-      spender: gateway
-    })
-
-    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the child chain will be paid in the custom fee token.
-    const { retryableData } = await erc20Bridger.getDepositRequest({
-      from: walletAddress,
-      amount: utils.parseUnits(amount, selectedToken.decimals),
+    const l1Gateway = await fetchErc20L1GatewayAddress({
       erc20L1Address: selectedToken.address,
       l1Provider,
       l2Provider
     })
 
-    // maxSubmissionCost + gasLimit * maxFeePerGas
-    const retryableFees = retryableData.maxSubmissionCost
-      //
-      .add(retryableData.gasLimit.mul(retryableData.maxFeePerGas))
+    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: l1Provider,
+      owner: walletAddress,
+      spender: l1Gateway
+    })
 
-    // We have to check if the allowance is enough to cover the fees.
-    if (!customFeeTokenAllowanceForGateway.gte(retryableFees)) {
+    const estimatedL2GasFees = gasSummary.estimatedL2GasFees
+    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the chain will be paid in the custom fee token
+    // We have to check if the allowance is enough to cover the fees
+    if (!customFeeTokenAllowanceForL1Gateway.gte(estimatedL2GasFees)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
       const [confirmed] = await waitForInput()
 
