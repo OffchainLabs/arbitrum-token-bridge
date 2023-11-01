@@ -24,7 +24,11 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import {
+  TransferPanelSummary,
+  UseGasSummaryResult,
+  useGasSummary
+} from './TransferPanelSummary'
 import {
   TransactionHistoryTab,
   useAppContextActions,
@@ -107,6 +111,32 @@ const isAllowedL2 = async ({
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
+}
+
+function sanitizeEstimatedGasFees(
+  gasSummary: UseGasSummaryResult,
+  options: { isSmartContractWallet: boolean; isDepositMode: boolean }
+) {
+  // For smart contract wallets, the relayer pays the gas fees
+  if (options.isSmartContractWallet) {
+    if (options.isDepositMode) {
+      // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
+      return {
+        estimatedL1GasFees: 0,
+        estimatedL2GasFees: gasSummary.estimatedL2GasFees
+      }
+    }
+
+    return {
+      estimatedL1GasFees: 0,
+      estimatedL2GasFees: 0
+    }
+  }
+
+  return {
+    estimatedL1GasFees: gasSummary.estimatedL1GasFees,
+    estimatedL2GasFees: gasSummary.estimatedL2GasFees
+  }
 }
 
 function useTokenFromSearchParams(): string | undefined {
@@ -1106,23 +1136,18 @@ export function TransferPanel() {
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
-        const requiredGasFees: number = (() => {
-          // For SC wallets, the relayer pays the gas fees
-          if (isSmartContractWallet) {
-            if (isDepositMode) {
-              // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
-              return gasSummary.estimatedL2GasFees
-            }
+        const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+          isSmartContractWallet,
+          isDepositMode
+        })
 
-            return 0
-          }
-
-          return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
-        })()
+        const defaultRequiredGasFees =
+          sanitizedEstimatedGasFees.estimatedL1GasFees +
+          sanitizedEstimatedGasFees.estimatedL2GasFees
 
         if (selectedToken) {
           // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
-          if (requiredGasFees > ethBalanceFloat) {
+          if (defaultRequiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
@@ -1130,7 +1155,7 @@ export function TransferPanel() {
         }
 
         const notEnoughEthForGasFees =
-          Number(amount) + requiredGasFees > ethBalanceFloat
+          Number(amount) + defaultRequiredGasFees > ethBalanceFloat
 
         if (notEnoughEthForGasFees) {
           return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
@@ -1182,19 +1207,14 @@ export function TransferPanel() {
       return true
     }
 
-    const requiredGasFees: number = (() => {
-      // For SC wallets, the relayer pays the gas fees
-      if (isSmartContractWallet) {
-        if (isDepositMode) {
-          // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
-          return gasSummary.estimatedL2GasFees
-        }
+    const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+      isSmartContractWallet,
+      isDepositMode
+    })
 
-        return 0
-      }
-
-      return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
-    })()
+    const defaultRequiredGasFees =
+      sanitizedEstimatedGasFees.estimatedL1GasFees +
+      sanitizedEstimatedGasFees.estimatedL2GasFees
 
     if (selectedToken) {
       // Still loading ERC-20 balance
@@ -1207,11 +1227,11 @@ export function TransferPanel() {
       }
 
       // We checked if there's enough tokens, but let's check if there's enough ETH to cover gas
-      return requiredGasFees > ethBalanceFloat
+      return defaultRequiredGasFees > ethBalanceFloat
     }
 
     const notEnoughEthForGasFees =
-      Number(amount) + requiredGasFees > ethBalanceFloat
+      Number(amount) + defaultRequiredGasFees > ethBalanceFloat
 
     return notEnoughEthForGasFees
   }, [
