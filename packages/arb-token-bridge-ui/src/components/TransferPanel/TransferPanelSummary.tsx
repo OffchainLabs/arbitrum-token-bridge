@@ -42,7 +42,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
 const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
@@ -100,11 +99,6 @@ export function useGasSummary(
     [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
   )
 
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
-
   useEffect(() => {
     // When the user starts typing, set the status to `loading` for better UX
     // The value is debounced, so we'll start fetching the gas estimates only when the user stops typing
@@ -137,6 +131,9 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
+              amount,
+              address: walletAddress,
+              erc20L1Address: token.address,
               l1Provider: l1.provider,
               l2Provider: l2.provider
             })
@@ -233,8 +230,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -276,12 +272,7 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
@@ -304,6 +295,11 @@ export function TransferPanelSummary({
 
     return nativeCurrency.symbol
   }, [token, nativeCurrency, app.isDepositMode, l1.network, l2.network])
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
+  )
 
   if (status === 'loading') {
     const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
