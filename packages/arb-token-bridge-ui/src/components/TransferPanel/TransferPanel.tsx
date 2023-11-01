@@ -1205,8 +1205,7 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  console.log({ gasSummary })
-
+  // This is not completely accurate, as the gas estimation error could be due to something other than insufficient allowance, but it's good enough for now.
   const customFeeTokenInsufficientAllowanceError = useMemo(
     () =>
       nativeCurrency.isCustom && isDepositMode && gasSummary.status === 'error',
@@ -1233,7 +1232,7 @@ export function TransferPanel() {
       ? customFeeTokenL1BalanceFloat
       : ethL2BalanceFloat
 
-    // No error while loading ETH balance
+    // No error while loading balance
     if (ethBalanceFloat === null) {
       return undefined
     }
@@ -1244,7 +1243,7 @@ export function TransferPanel() {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
 
-      // No error while loading ERC-20 balance
+      // No error while loading balance
       if (selectedTokenBalanceFloat === null) {
         return undefined
       }
@@ -1253,11 +1252,15 @@ export function TransferPanel() {
       if (Number(amount) > selectedTokenBalanceFloat) {
         return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
       }
-    } else if (nativeCurrency.isCustom) {
+    }
+    // Custom fee token
+    else if (nativeCurrency.isCustom) {
+      // No error while loading balance
       if (customFeeTokenBalanceFloat === null) {
         return undefined
       }
 
+      // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
         return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
       }
@@ -1276,6 +1279,7 @@ export function TransferPanel() {
         return undefined
 
       case 'error':
+        // Don't show an error as the summary will explain the custom fee token allowance situation
         if (customFeeTokenInsufficientAllowanceError) {
           return undefined
         }
@@ -1306,7 +1310,9 @@ export function TransferPanel() {
           return undefined
         }
 
-        if (nativeCurrency.isCustom) {
+        if (nativeCurrency.isCustom && isDepositMode) {
+          // Custom fee token deposits will be paid in ETH, so we check against ETH
+          // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
           if (requiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
@@ -1402,14 +1408,14 @@ export function TransferPanel() {
       return requiredGasFees > ethBalanceFloat
     }
 
-    if (nativeCurrency.isCustom) {
+    if (nativeCurrency.isCustom && isDepositMode) {
+      // Custom fee token deposits will be paid in ETH, so we check against ETH
+      // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
       return requiredGasFees > ethBalanceFloat
     }
 
     const notEnoughEthForGasFees =
       Number(amount) + requiredGasFees > ethBalanceFloat
-
-    console.log({ notEnoughEthForGasFees })
 
     return notEnoughEthForGasFees
   }, [
@@ -1428,8 +1434,6 @@ export function TransferPanel() {
     nativeCurrency,
     customFeeTokenInsufficientAllowanceError
   ])
-
-  console.log({ disableTransfer })
 
   const disableDeposit = useMemo(() => {
     if (disableTransfer) {
