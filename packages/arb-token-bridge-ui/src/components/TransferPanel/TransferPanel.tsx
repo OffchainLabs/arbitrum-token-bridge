@@ -24,7 +24,11 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import {
+  TransferPanelSummary,
+  UseGasSummaryResult,
+  useGasSummary
+} from './TransferPanelSummary'
 import {
   TransactionHistoryTab,
   useAppContextActions,
@@ -107,6 +111,32 @@ const isAllowedL2 = async ({
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
+}
+
+function sanitizeEstimatedGasFees(
+  gasSummary: UseGasSummaryResult,
+  options: { isSmartContractWallet: boolean; isDepositMode: boolean }
+) {
+  // For smart contract wallets, the relayer pays the gas fees
+  if (options.isSmartContractWallet) {
+    if (options.isDepositMode) {
+      // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
+      return {
+        estimatedL1GasFees: 0,
+        estimatedL2GasFees: gasSummary.estimatedL2GasFees
+      }
+    }
+
+    return {
+      estimatedL1GasFees: 0,
+      estimatedL2GasFees: 0
+    }
+  }
+
+  return {
+    estimatedL1GasFees: gasSummary.estimatedL1GasFees,
+    estimatedL2GasFees: gasSummary.estimatedL2GasFees
+  }
 }
 
 function useTokenFromSearchParams(): string | undefined {
@@ -1052,32 +1082,6 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const sanitizedEstimatedGasFees: {
-    estimatedL1GasFees: number
-    estimatedL2GasFees: number
-  } = useMemo(() => {
-    // For smart contract wallets, the relayer pays the gas fees
-    if (isSmartContractWallet) {
-      if (isDepositMode) {
-        // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
-        return {
-          estimatedL1GasFees: 0,
-          estimatedL2GasFees: gasSummary.estimatedL2GasFees
-        }
-      }
-
-      return {
-        estimatedL1GasFees: 0,
-        estimatedL2GasFees: 0
-      }
-    }
-
-    return {
-      estimatedL1GasFees: gasSummary.estimatedL1GasFees,
-      estimatedL2GasFees: gasSummary.estimatedL2GasFees
-    }
-  }, [isSmartContractWallet, isDepositMode, gasSummary])
-
   const transferPanelMainErrorMessage:
     | TransferPanelMainErrorMessage
     | undefined = useMemo(() => {
@@ -1132,6 +1136,11 @@ export function TransferPanel() {
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
+        const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+          isSmartContractWallet,
+          isDepositMode
+        })
+
         const defaultRequiredGasFees =
           sanitizedEstimatedGasFees.estimatedL1GasFees +
           sanitizedEstimatedGasFees.estimatedL2GasFees
@@ -1165,8 +1174,7 @@ export function TransferPanel() {
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
-    sanitizedEstimatedGasFees
+    selectedTokenL2BalanceFloat
   ])
 
   const disableTransfer = useMemo(() => {
@@ -1198,6 +1206,11 @@ export function TransferPanel() {
     ) {
       return true
     }
+
+    const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+      isSmartContractWallet,
+      isDepositMode
+    })
 
     const defaultRequiredGasFees =
       sanitizedEstimatedGasFees.estimatedL1GasFees +
@@ -1233,8 +1246,7 @@ export function TransferPanel() {
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
-    sanitizedEstimatedGasFees
+    selectedTokenL2BalanceFloat
   ])
 
   const disableDeposit = useMemo(() => {
