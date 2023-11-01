@@ -92,7 +92,7 @@ export type UseNetworksState = {
   toProvider: StaticJsonRpcProvider
 }
 
-export type UseNetworksSetStateParams = { from: Chain; to: Chain }
+export type UseNetworksSetStateParams = { fromId: ChainId; toId?: ChainId }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
@@ -101,8 +101,16 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   const setState = useCallback(
     (params: UseNetworksSetStateParams) => {
-      const fromQueryParam = getChainQueryParamForChain(params.from.id)
-      const toQueryParam = getChainQueryParamForChain(params.to.id)
+      const fromQueryParam = getChainQueryParamForChain(params.fromId)
+      if (!params.toId) {
+        const [toQueryParam] = getPartnerChainsQueryParams(fromQueryParam)
+        setQueryParams(
+          sanitizeQueryParams({ from: fromQueryParam, to: toQueryParam })
+        )
+        return
+      }
+
+      const toQueryParam = getChainQueryParamForChain(params.toId)
 
       setQueryParams(
         sanitizeQueryParams({ from: fromQueryParam, to: toQueryParam })

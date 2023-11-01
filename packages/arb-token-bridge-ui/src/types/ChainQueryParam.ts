@@ -9,7 +9,9 @@ const chainQueryParams = [
   'goerli',
   'arbitrumOne',
   'arbitrumNova',
-  'arbitrumGoerli'
+  'arbitrumGoerli',
+  'stylus-testnet',
+  'xai-testnet'
 ] as const
 
 export type ChainQueryParam = (typeof chainQueryParams)[number]
@@ -37,9 +39,15 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumGoerli:
       return 'arbitrumGoerli'
 
+    case ChainId.StylusTestnet:
+      return 'stylus-testnet'
+
+    case ChainId.XaiTestnet:
+      return 'xai-testnet'
+
     default:
       throw new Error(
-        `[getChainQueryParamForChain] Unexpected chain id: ${value.id}`
+        `[getChainQueryParamForChain] Unexpected chain id: ${chainId}`
       )
   }
 }
@@ -60,5 +68,11 @@ export function getChainForChainQueryParam(value: ChainQueryParam): Chain {
 
     case 'arbitrumGoerli':
       return chains.arbitrumGoerli
+
+    case 'stylus-testnet':
+      return customChains.stylusTestnet
+
+    case 'xai-testnet':
+      return customChains.xaiTestnet
   }
 }

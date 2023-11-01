@@ -6,13 +6,9 @@ import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 function NetworkButtonAndConnectButton({
   connected,
-  chainUnsupported,
-  openConnectModal,
-  openChainModal
+  openConnectModal
 }: {
   connected: boolean
-  chainUnsupported?: boolean
-  openChainModal: () => void
   openConnectModal: () => void
 }) {
   if (!connected) {
@@ -24,18 +20,6 @@ function NetworkButtonAndConnectButton({
       >
         <PlusCircleIcon className="mr-3 h-10 w-10 rounded-full bg-white stroke-lime-dark p-1 opacity-40" />
         Connect Wallet
-      </button>
-    )
-  }
-
-  if (chainUnsupported) {
-    return (
-      <button
-        onClick={openChainModal}
-        type="button"
-        className="arb-hover flex w-full flex-row items-center bg-[#FF494A] bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:px-4 lg:py-2 lg:text-base lg:font-normal"
-      >
-        Wrong network
       </button>
     )
   }
@@ -70,15 +54,13 @@ function HeaderConnectWalletButtonWrapper({
 export function HeaderConnectWalletButton() {
   return (
     <ConnectButton.Custom>
-      {({ account, chain, openChainModal, openConnectModal, mounted }) => {
+      {({ account, chain, openConnectModal, mounted }) => {
         const connected = !!(mounted && account && chain)
 
         return (
           <HeaderConnectWalletButtonWrapper ready={mounted}>
             <NetworkButtonAndConnectButton
               connected={connected}
-              chainUnsupported={chain?.unsupported}
-              openChainModal={openChainModal}
               openConnectModal={openConnectModal}
             />
           </HeaderConnectWalletButtonWrapper>

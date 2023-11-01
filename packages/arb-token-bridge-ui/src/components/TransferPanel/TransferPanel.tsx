@@ -1432,7 +1432,7 @@ export function TransferPanel() {
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(networks.from.id)}`}
+                  : `Move funds to ${getNetworkName(networks.to.id)}`}
               </span>
             </Button>
           )}

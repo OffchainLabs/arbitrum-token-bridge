@@ -29,6 +29,7 @@ import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -76,7 +77,7 @@ export function HeaderAccountPopover({
   isCorrectNetworkConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
 }) {
   const l1Provider = useProvider({ chainId: 1 })
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
@@ -132,6 +133,10 @@ export function HeaderAccountPopover({
 
   const headerItemsClassName =
     'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-lg lg:text-sm font-light text-white hover:bg-ocl-blue lg:px-4'
+
+  if (!isConnected) {
+    return <HeaderConnectWalletButton />
+  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">

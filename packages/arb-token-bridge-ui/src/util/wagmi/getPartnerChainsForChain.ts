@@ -2,6 +2,7 @@ import { Chain } from 'wagmi'
 
 import { chains } from '../../constants'
 import { ChainId } from '../../util/networks'
+import { stylusTestnet, xaiTestnet } from './wagmiAdditionalNetworks'
 
 export function getPartnerChainsForChain(chain: Chain): Chain[] {
   switch (chain.id) {
@@ -18,7 +19,13 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
       return [chains.mainnet]
 
     case ChainId.ArbitrumGoerli:
-      return [chains.goerli]
+      return [chains.goerli, xaiTestnet, stylusTestnet]
+
+    case ChainId.StylusTestnet:
+      return [chains.arbitrumGoerli]
+
+    case ChainId.XaiTestnet:
+      return [chains.arbitrumGoerli]
 
     default:
       throw new Error(

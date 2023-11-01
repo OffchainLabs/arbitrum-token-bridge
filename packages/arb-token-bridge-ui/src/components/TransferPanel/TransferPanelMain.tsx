@@ -695,11 +695,11 @@ export function TransferPanelMain({
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     setNetworks({
-      from: to,
-      to: from
+      fromId: to.id,
+      toId: from.id
     })
     actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [actions.app, app.isDepositMode, from, setNetworks, to])
+  }, [actions.app, app.isDepositMode, from.id, setNetworks, to.id])
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
@@ -882,8 +882,8 @@ export function TransferPanelMain({
             updatePreferredL2Chain(network.id)
             // TODO: double check
             setNetworks({
-              from,
-              to: network
+              fromId: from.id,
+              toId: network.id
             })
           }
         }
@@ -986,8 +986,8 @@ export function TransferPanelMain({
 
           // TODO: double check
           setNetworks({
-            to: network,
-            from
+            fromId: from.id,
+            toId: network.id
           })
         }
       }

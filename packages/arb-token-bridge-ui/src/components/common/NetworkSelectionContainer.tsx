@@ -1,8 +1,6 @@
 import { Popover, Transition } from '@headlessui/react'
 import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
-import { useCallback } from 'react'
-import { useNetwork } from 'wagmi'
 import { useWindowSize } from 'react-use'
 
 import {
@@ -12,26 +10,24 @@ import {
   getSupportedNetworks,
   isNetwork
 } from '../../util/networks'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export const NetworkSelectionContainer = ({
   children
 }: {
   children: React.ReactNode
 }) => {
-  const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
-
+  const [{ from }, setNetworks] = useNetworks()
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
 
   const supportedNetworks = getSupportedNetworks(
-    chain?.id,
+    from.id,
     !!isTestnetMode
-  ).filter(chainId => chainId !== chain?.id)
+  ).filter(chainId => chainId !== from.id)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
@@ -57,21 +53,20 @@ export const NetworkSelectionContainer = ({
     finalNetworks.push({ id: 'orbit', title: 'Orbit', networks: orbitNetworks })
   }
 
-  const handleClick = useCallback(
-    (
-      chainId: ChainId,
-      close: (
-        focusableElement?:
-          | HTMLElement
-          | React.MutableRefObject<HTMLElement | null>
-          | undefined
-      ) => void
-    ) => {
-      switchNetwork?.(Number(chainId))
-      close?.() //close the popover after option-click
-    },
-    [switchNetwork]
-  )
+  const handleClick = (
+    chainId: ChainId,
+    close: (
+      focusableElement?:
+        | HTMLElement
+        | React.MutableRefObject<HTMLElement | null>
+        | undefined
+    ) => void
+  ) => {
+    setNetworks({
+      fromId: chainId
+    })
+    close?.() //close the popover after option-click
+  }
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
