@@ -1194,13 +1194,6 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  // This is not completely accurate, as the gas estimation error could be due to something other than insufficient allowance, but it's good enough for now.
-  const customFeeTokenInsufficientAllowanceError = useMemo(
-    () =>
-      nativeCurrency.isCustom && isDepositMode && gasSummary.status === 'error',
-    [nativeCurrency, isDepositMode, gasSummary.status]
-  )
-
   const transferPanelMainErrorMessage:
     | TransferPanelMainErrorMessage
     | undefined = useMemo(() => {
@@ -1268,11 +1261,6 @@ export function TransferPanel() {
         return undefined
 
       case 'error':
-        // Don't show an error as the summary will explain the custom fee token allowance situation
-        if (customFeeTokenInsufficientAllowanceError) {
-          return undefined
-        }
-
         return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
@@ -1331,8 +1319,7 @@ export function TransferPanel() {
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat,
-    customFeeTokenInsufficientAllowanceError
+    customFeeTokenL1BalanceFloat
   ])
 
   const disableTransfer = useMemo(() => {
@@ -1362,10 +1349,6 @@ export function TransferPanel() {
       gasSummary.status !== 'success' &&
       gasSummary.status !== 'unavailable'
     ) {
-      if (customFeeTokenInsufficientAllowanceError) {
-        return false
-      }
-
       return true
     }
 
@@ -1420,8 +1403,7 @@ export function TransferPanel() {
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    nativeCurrency,
-    customFeeTokenInsufficientAllowanceError
+    nativeCurrency
   ])
 
   const disableDeposit = useMemo(() => {
@@ -1534,29 +1516,9 @@ export function TransferPanel() {
               />
             ) : (
               <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
-                {customFeeTokenInsufficientAllowanceError ? (
-                  <p className="text-base">
-                    <span className="font-medium">{l2Network.name}</span> uses{' '}
-                    <span className="font-medium">
-                      {nativeCurrency.name} ({nativeCurrency.symbol})
-                    </span>{' '}
-                    as the network fee token.
-                    <br />
-                    <br />
-                    <span>
-                      Bridging summary will appear here after you have approved
-                      your{' '}
-                      <span className="font-medium">
-                        {nativeCurrency.symbol}
-                      </span>{' '}
-                      to be spent by the bridge contracts.
-                    </span>
-                  </p>
-                ) : (
-                  <span className="text-xl">
-                    Bridging summary will appear here.
-                  </span>
-                )}
+                <span className="text-xl">
+                  Bridging summary will appear here.
+                </span>
               </div>
             )}
           </div>
