@@ -81,12 +81,12 @@ function ExternalLinkCard({
 
 export function LowBalanceDialog(props: UseDialogProps) {
   const { ethToUSD } = useETHPrice()
-  const [{ fromProvider }] = useNetworks()
+  const [{ from, fromProvider }] = useNetworks()
   const { address: walletAddress } = useAccount()
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const { isMainnet } = isNetwork(fromProvider.network.chainId)
+  const { isMainnet } = isNetwork(from.id)
   const {
     eth: [ethBalance]
   } = useBalance({
@@ -120,7 +120,7 @@ export function LowBalanceDialog(props: UseDialogProps) {
               height={32}
             />
             <span className="text-2xl text-eth-dark">
-              {getNetworkName(fromProvider.network.chainId)} Balance
+              {getNetworkName(from.id)} Balance
             </span>
           </div>
           <span className="text-center text-3xl font-light text-eth-dark">

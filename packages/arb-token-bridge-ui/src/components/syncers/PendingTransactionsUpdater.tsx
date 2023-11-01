@@ -11,7 +11,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
 
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [{ from, fromProvider, to, toProvider }] = useNetworks()
 
   const { updateCctpTransactions } = useUpdateCctpTransactions()
 
@@ -23,12 +23,7 @@ export function PendingTransactionsUpdater(): JSX.Element {
 
   useEffect(() => {
     resetTransfers()
-  }, [
-    address,
-    fromProvider.network.chainId,
-    toProvider.network.chainId,
-    resetTransfers
-  ])
+  }, [address, from.id, to.id, resetTransfers])
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {

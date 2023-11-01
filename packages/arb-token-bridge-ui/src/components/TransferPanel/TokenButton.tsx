@@ -18,7 +18,7 @@ export function TokenButton(): JSX.Element {
       arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
-  const [{ fromProvider }] = useNetworks()
+  const [{ from }] = useNetworks()
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -46,9 +46,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chainId: fromProvider.network.chainId
+      chainId: from.id
     })
-  }, [selectedToken, fromProvider.network.chainId])
+  }, [selectedToken, from.id])
 
   function closeWithReset() {
     setTokenToImport(undefined)

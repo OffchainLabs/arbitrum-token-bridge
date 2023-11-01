@@ -118,11 +118,10 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
-  const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [networks] = useNetworks()
-  const { parentProvider, parentChain, childProvider } =
+  const { childChain, childProvider, parentProvider, parentChain } =
     useNetworksRelationship(networks)
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
@@ -137,22 +136,19 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
-    const chain = networks.from
-    if (!chain) {
+    const chainId = networks.from.id
+    if (!chainId) {
       return
     }
 
-    const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
-    const isConnectedToOrbitChain = isNetwork(chain.id).isOrbitChain
-
-    const fromNetworkChainId = parentProvider.network.chainId
-    const toNetworkChainId = childProvider.network.chainId
+    const isConnectedToArbitrum = isNetwork(chainId).isArbitrum
+    const isConnectedToOrbitChain = isNetwork(chainId).isOrbitChain
     const isParentChainEthereum = isNetwork(parentChain.id).isEthereum
 
-    actions.app.reset(chain.id)
+    actions.app.reset(chainId)
     actions.app.setChainIds({
-      l1NetworkChainId: fromNetworkChainId,
-      l2NetworkChainId: toNetworkChainId
+      l1NetworkChainId: parentChain.id,
+      l2NetworkChainId: childChain.id
     })
 
     if (
@@ -185,7 +181,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     actions.app,
     parentProvider,
     childProvider,
-    parentChain.id
+    parentChain.id,
+    childChain.id
   ])
 
   useEffect(() => {

@@ -162,7 +162,7 @@ export function useGasSummary(
             if (
               tokenRequiresApprovalOnL2(
                 token.address,
-                latestNetworksAndSigners.current.toProvider.network.chainId
+                latestNetworksAndSigners.current.to.id
               )
             ) {
               estimateGasResult = {
@@ -297,10 +297,10 @@ export function TransferPanelSummary({
       token
         ? sanitizeTokenSymbol(token.symbol, {
             erc20L1Address: token.address,
-            chainId: networks.fromProvider.network.chainId
+            chainId: networks.from.id
           })
         : 'ETH',
-    [token, networks.fromProvider.network.chainId]
+    [token, networks.from.id]
   )
 
   if (status === 'loading') {

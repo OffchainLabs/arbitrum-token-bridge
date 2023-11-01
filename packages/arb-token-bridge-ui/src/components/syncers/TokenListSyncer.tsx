@@ -15,7 +15,7 @@ const TokenListSyncer = (): JSX.Element => {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childProvider } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
     if (!arbTokenBridgeLoaded) {
@@ -29,7 +29,7 @@ const TokenListSyncer = (): JSX.Element => {
       }
 
       return (
-        bridgeTokenList.originChainID === childProvider.network.chainId &&
+        bridgeTokenList.originChainID === childChain.id &&
         bridgeTokenList.isDefault
       )
     })
@@ -37,7 +37,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [childProvider.network.chainId, arbTokenBridgeLoaded])
+  }, [childChain.id, arbTokenBridgeLoaded])
 
   return <></>
 }

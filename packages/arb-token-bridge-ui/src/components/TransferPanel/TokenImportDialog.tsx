@@ -57,7 +57,7 @@ export function TokenImportDialog({
       selectedToken
     }
   } = useAppState()
-  const [{ fromProvider, toProvider }] = useNetworks()
+  const [{ from, fromProvider, toProvider }] = useNetworks()
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -358,9 +358,7 @@ export function TokenImportDialog({
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
-            href={`${getExplorerUrl(fromProvider.network.chainId)}/token/${
-              tokenToImport?.address
-            }`}
+            href={`${getExplorerUrl(from.id)}/token/${tokenToImport?.address}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#1366C1' }}

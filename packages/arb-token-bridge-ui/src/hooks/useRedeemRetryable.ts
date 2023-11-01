@@ -25,9 +25,9 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     app: { arbTokenBridge }
   } = useAppState()
   const [networks] = useNetworks()
-  const { parentProvider, childProvider } = useNetworksRelationship(networks)
+  const { childChain, parentProvider } = useNetworksRelationship(networks)
   const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(childProvider.network.chainId)
+  const l2NetworkName = getNetworkName(childChain.id)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 

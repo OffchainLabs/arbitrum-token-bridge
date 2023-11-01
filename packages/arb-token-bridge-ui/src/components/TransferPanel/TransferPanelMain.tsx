@@ -375,9 +375,7 @@ export function TransferPanelMain({
   const { parentLayer, layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
-    toProvider.network.chainId
-  )
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(to.id)
   const { isSmartContractWallet } = useAccountType()
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
@@ -821,9 +819,7 @@ export function TransferPanelMain({
             try {
               await switchNetworkAsync?.(network.id)
 
-              const isOrbitChainSelected = isNetwork(
-                toProvider.network.chainId
-              ).isOrbitChain
+              const isOrbitChainSelected = isNetwork(to.id).isOrbitChain
               // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
               // Otherwise we want to keep the current chain, in case it's Nova.
               if (isEthereum && isOrbitChainSelected) {
@@ -861,9 +857,7 @@ export function TransferPanelMain({
               return
             }
 
-            const isOrbitChainCurrentlySelected = isNetwork(
-              toProvider.network.chainId
-            ).isOrbitChain
+            const isOrbitChainCurrentlySelected = isNetwork(to.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainCurrentlySelected) {
@@ -917,9 +911,7 @@ export function TransferPanelMain({
             // In withdraw mode we always switch to the L2 network.
             await switchNetworkAsync?.(network.id)
 
-            const isOrbitChainSelected = isNetwork(
-              toProvider.network.chainId
-            ).isOrbitChain
+            const isOrbitChainSelected = isNetwork(to.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainSelected) {
@@ -982,9 +974,7 @@ export function TransferPanelMain({
               await switchNetworkAsync?.(defaultPartnerChain)
             }
 
-            const isOrbitChainCurrentlySelected = isNetwork(
-              toProvider.network.chainId
-            ).isOrbitChain
+            const isOrbitChainCurrentlySelected = isNetwork(to.id).isOrbitChain
             if (isOrbitChainCurrentlySelected) {
               // long-term we will have to change to Orbit chain's parent network
               // right now only Arbitrum Goerli is support so it's fine
@@ -1004,7 +994,6 @@ export function TransferPanelMain({
     }
   }, [
     fromProvider,
-    toProvider,
     setNetworks,
     from,
     to,

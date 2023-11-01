@@ -44,7 +44,7 @@ export function MainContent() {
   } = useAppState()
 
   const [networks] = useNetworks()
-  const { childProvider } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
@@ -60,8 +60,8 @@ export function MainContent() {
     })
 
   const pageSize = useMemo(
-    () => (isNetwork(childProvider.network.chainId).isOrbitChain ? 5 : 10),
-    [childProvider.network.chainId]
+    () => (isNetwork(childChain.id).isOrbitChain ? 5 : 10),
+    [childChain.id]
   )
 
   const {

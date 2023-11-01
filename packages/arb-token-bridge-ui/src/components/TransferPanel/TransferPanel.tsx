@@ -5,7 +5,7 @@ import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -211,7 +211,7 @@ export function TransferPanel() {
   )
 
   const { approveForBurn, depositForBurn } = useCCTP({
-    sourceChainId: latestNetworksAndSigners.current.fromProvider.network.chainId
+    sourceChainId: latestNetworksAndSigners.current.from.id
   })
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -432,8 +432,7 @@ export function TransferPanel() {
           amount: Number(amount)
         })
       }
-      const switchTargetChainId =
-        latestNetworksAndSigners.current.fromProvider.network.chainId
+      const switchTargetChainId = latestNetworksAndSigners.current.from.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
         currentNetwork = latestNetworksAndSigners.current.fromProvider.network
@@ -445,8 +444,7 @@ export function TransferPanel() {
     }
 
     try {
-      const sourceChainId =
-        latestNetworksAndSigners.current.fromProvider.network.chainId
+      const sourceChainId = latestNetworksAndSigners.current.from.id
 
       const waitForInput = isDeposit
         ? openUSDCDepositConfirmationDialog()
@@ -716,9 +714,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.fromProvider.network.chainId
-          )
+          await switchNetworkAsync?.(latestNetworksAndSigners.current.from.id)
 
           while (
             (isConnectedToArbitrum.current && isParentChainEthereum) ||
@@ -732,8 +728,7 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID =
-          latestNetworksAndSigners.current.fromProvider.network.chainId
+        const l1ChainID = latestNetworksAndSigners.current.from.id
         const connectedChainID = latestConnectedProvider.current.network.chainId
         const l1ChainEqualsConnectedChain =
           l1ChainID && connectedChainID && l1ChainID === connectedChainID
@@ -917,8 +912,7 @@ export function TransferPanel() {
           }
         }
 
-        const l2ChainID =
-          latestNetworksAndSigners.current.toProvider.network.chainId
+        const l2ChainID = latestNetworksAndSigners.current.to.id
         const connectedChainID =
           latestConnectedProvider.current?.network?.chainId
         if (

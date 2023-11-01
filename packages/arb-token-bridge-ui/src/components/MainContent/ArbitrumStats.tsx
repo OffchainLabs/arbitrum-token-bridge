@@ -30,16 +30,17 @@ export const ArbitrumStats = () => {
   const [{ settingsOpen }] = useArbQueryParams()
 
   const [networks] = useNetworks()
-  const { parentProvider, childProvider } = useNetworksRelationship(networks)
+  const { childChain, childProvider, parentChain, parentProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const { data: currentL1BlockNumber } = useBlockNumber({
-    chainId: parentProvider.network.chainId,
+    chainId: parentChain.id,
     watch: true
   })
 
   const { data: currentL2BlockNumber } = useBlockNumber({
-    chainId: childProvider.network.chainId,
+    chainId: childChain.id,
     watch: true
   })
 
@@ -68,7 +69,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(parentProvider.network.chainId)} ({parentLayer})
+          {getNetworkName(parentChain.id)} ({parentLayer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -88,7 +89,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(childProvider.network.chainId)} ({layer})
+          {getNetworkName(childChain.id)} ({layer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -103,7 +104,7 @@ export const ArbitrumStats = () => {
         </span>
 
         {/* TPS info is not available for testnets */}
-        {!isNetwork(childProvider.network.chainId).isTestnet && (
+        {!isNetwork(childChain.id).isTestnet && (
           <span>
             &gt; TPS: {tpsLoading && <span>Loading...</span>}
             {!tpsLoading && (
