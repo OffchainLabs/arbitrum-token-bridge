@@ -1,20 +1,59 @@
-import { EthBridger } from '@arbitrum/sdk'
+import { EthBridger, getChain } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, constants } from 'ethers'
-import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 
-export async function depositEthEstimateGas({
-  amount,
-  address,
-  l1Provider,
-  l2Provider
-}: {
+import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { fetchErc20Allowance } from './TokenUtils'
+
+async function fetchFallbackGasEstimates(): Promise<DepositGasEstimates> {
+  return {
+    // todo: fix
+    estimatedL1Gas: BigNumber.from(100_000),
+    estimatedL2Gas: BigNumber.from(0),
+    estimatedL2SubmissionCost: BigNumber.from(0)
+  }
+}
+
+async function customFeeTokenAllowanceIsInsufficient(
+  params: DepositEthEstimateGasParams
+) {
+  const { amount, address, l1Provider, l2Provider } = params
+  const l2Network = await getChain(l2Provider)
+
+  if (typeof l2Network.nativeToken === 'undefined') {
+    throw new Error(
+      '[customFeeTokenAllowanceIsInsufficient] expected nativeToken to be defined'
+    )
+  }
+
+  const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+    address: l2Network.nativeToken,
+    provider: l1Provider,
+    owner: address,
+    spender: l2Network.ethBridge.inbox
+  })
+
+  return customFeeTokenAllowanceForInbox.lt(amount)
+}
+
+export type DepositEthEstimateGasParams = {
   amount: BigNumber
   address: string
   l1Provider: Provider
   l2Provider: Provider
-}): Promise<DepositGasEstimates> {
+}
+
+export async function depositEthEstimateGas(
+  params: DepositEthEstimateGasParams
+): Promise<DepositGasEstimates> {
+  const { amount, address, l1Provider, l2Provider } = params
+
   const ethBridger = await EthBridger.fromProvider(l2Provider)
+  const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
+
+  if (customFeeToken && (await customFeeTokenAllowanceIsInsufficient(params))) {
+    return fetchFallbackGasEstimates()
+  }
 
   const depositRequest = await ethBridger.getDepositRequest({
     amount,
