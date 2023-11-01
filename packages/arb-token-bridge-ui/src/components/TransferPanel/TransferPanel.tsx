@@ -418,7 +418,7 @@ export function TransferPanel() {
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
     if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
-      const confirmed = await waitForInput()
+      const [confirmed] = await waitForInput()
 
       if (!confirmed) {
         return false
@@ -482,7 +482,7 @@ export function TransferPanel() {
     // We have to check if the allowance is enough to cover the fees.
     if (!customFeeTokenAllowanceForGateway.gte(retryableFees)) {
       const waitForInput = openCustomFeeTokenApprovalDialog()
-      const confirmed = await waitForInput()
+      const [confirmed] = await waitForInput()
 
       if (!confirmed) {
         return false
