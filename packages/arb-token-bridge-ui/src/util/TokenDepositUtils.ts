@@ -1,4 +1,4 @@
-import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
@@ -6,13 +6,13 @@ import { BigNumber } from 'ethers'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance, fetchErc20L1GatewayAddress } from './TokenUtils'
 
-async function getHardcodedEstimates({
+async function fetchFallbackGasEstimates({
   inboxAddress,
   l1Provider
 }: {
   inboxAddress: string
   l1Provider: Provider
-}) {
+}): Promise<DepositGasEstimates> {
   const l1BaseFee = await l1Provider.getGasPrice()
   const inbox = Inbox__factory.connect(inboxAddress, l1Provider)
 
@@ -81,8 +81,11 @@ export async function depositTokenEstimateGas({
   })
 
   if (allowanceForL1Gateway.lt(amount)) {
-    console.log('Gateway allowance too low, using hardcoded estimates.')
-    return getHardcodedEstimates({
+    console.log(
+      'L1 gateway allowance for token being deposited is too low, falling back to hardcoded estimates.'
+    )
+
+    return fetchFallbackGasEstimates({
       inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
       l1Provider
     })
