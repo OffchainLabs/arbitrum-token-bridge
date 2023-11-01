@@ -11,8 +11,9 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { approveCustomFeeTokenForInboxEstimateGas } from './CustomFeeTokenUtils'
+import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
+import { useAppState } from '../../state'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -24,6 +25,7 @@ export function CustomFeeTokenApprovalDialog(
   const { customFeeToken, isOpen } = props
 
   const { ethToUSD } = useETHPrice()
+  const { app } = useAppState()
 
   const { l1, l2 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network.id)
@@ -54,16 +56,18 @@ export function CustomFeeTokenApprovalDialog(
     async function getEstimatedGas() {
       if (l1Signer) {
         setEstimatedGas(
-          await approveCustomFeeTokenForInboxEstimateGas({
-            chainProvider: l2.provider,
-            parentChainSigner: l1Signer
+          await approveCustomFeeTokenEstimateGas({
+            erc20L1Address: app.selectedToken?.address,
+            l1Signer,
+            l1Provider: l1.provider,
+            l2Provider: l2.provider
           })
         )
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, l2.provider, l1Signer])
+  }, [isOpen, app.selectedToken, l1Signer, l1.provider, l2.provider])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -117,10 +121,12 @@ export function CustomFeeTokenApprovalDialog(
 
         <span className="font-light">
           The network you are trying to deposit to uses{' '}
-          <span className="font-medium">{customFeeToken.symbol}</span> as its
-          fee token. In order to complete your deposit, you must first allow the
-          bridge contract to access your{' '}
-          <span className="font-medium">{customFeeToken.symbol}</span> tokens.
+          <span className="font-medium">
+            {customFeeToken.name} ({customFeeToken.symbol})
+          </span>{' '}
+          as the fee token. Before continuing with your deposit, you must first
+          allow the bridge contract to access your{' '}
+          <span className="font-medium">{customFeeToken.symbol}</span>.
         </span>
 
         <Checkbox
@@ -143,8 +149,9 @@ export function CustomFeeTokenApprovalDialog(
           >
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
             <span className="text-sm font-light text-cyan-dark">
-              After approval, you’ll see a second prompt in your wallet to
-              deposit your {customFeeToken.symbol}.
+              After approval, you&apos;ll see a second prompt in your wallet to
+              deposit your{' '}
+              <span className="font-medium">{customFeeToken.symbol}</span>.
             </span>
           </div>
         </div>
