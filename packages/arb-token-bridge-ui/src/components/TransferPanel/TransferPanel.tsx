@@ -1315,7 +1315,7 @@ export function TransferPanel() {
         if (nativeCurrency.isCustom && isDepositMode) {
           // Custom fee token deposits will be paid in ETH, so we check against ETH
           // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
-          if (requiredGasFees > ethBalanceFloat) {
+          if (defaultRequiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
@@ -1403,7 +1403,7 @@ export function TransferPanel() {
     if (nativeCurrency.isCustom && isDepositMode) {
       // Custom fee token deposits will be paid in ETH, so we check against ETH
       // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
-      return requiredGasFees > ethBalanceFloat
+      return defaultRequiredGasFees > ethBalanceFloat
     }
 
     const notEnoughEthForGasFees =
