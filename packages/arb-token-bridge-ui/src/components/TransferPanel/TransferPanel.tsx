@@ -1304,7 +1304,25 @@ export function TransferPanel() {
           sanitizedEstimatedGasFees.estimatedL2GasFees
 
         if (selectedToken) {
-          // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
+          // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
+          if (nativeCurrency.isCustom && isDepositMode) {
+            // Still loading custom fee token balance
+            if (customFeeTokenL1BalanceFloat === null) {
+              return undefined
+            }
+
+            const { estimatedL1GasFees, estimatedL2GasFees } =
+              sanitizedEstimatedGasFees
+
+            // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
+            if (
+              estimatedL1GasFees > ethBalanceFloat ||
+              estimatedL2GasFees > customFeeTokenL1BalanceFloat
+            ) {
+              return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+            }
+          }
+
           if (defaultRequiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
@@ -1313,8 +1331,8 @@ export function TransferPanel() {
         }
 
         if (nativeCurrency.isCustom && isDepositMode) {
-          // Custom fee token deposits will be paid in ETH, so we check against ETH
-          // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
+          // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
+          // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (defaultRequiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
@@ -1392,8 +1410,26 @@ export function TransferPanel() {
         return true
       }
 
+      // First, check if there's enough tokens
       if (Number(amount) > selectedTokenBalanceFloat) {
         return true
+      }
+
+      // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
+      if (nativeCurrency.isCustom && isDepositMode) {
+        // Still loading custom fee token balance
+        if (customFeeTokenL1BalanceFloat === null) {
+          return true
+        }
+
+        const { estimatedL1GasFees, estimatedL2GasFees } =
+          sanitizedEstimatedGasFees
+
+        // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
+        return (
+          estimatedL1GasFees > ethBalanceFloat ||
+          estimatedL2GasFees > customFeeTokenL1BalanceFloat
+        )
       }
 
       // We checked if there's enough tokens, but let's check if there's enough ETH to cover gas
@@ -1401,8 +1437,8 @@ export function TransferPanel() {
     }
 
     if (nativeCurrency.isCustom && isDepositMode) {
-      // Custom fee token deposits will be paid in ETH, so we check against ETH
-      // Custom fee token withdrawals will be treated same as ETH withdrawals in the case below
+      // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
+      // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
       return defaultRequiredGasFees > ethBalanceFloat
     }
 
@@ -1423,7 +1459,8 @@ export function TransferPanel() {
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    nativeCurrency
+    nativeCurrency,
+    customFeeTokenL1BalanceFloat
   ])
 
   const disableDeposit = useMemo(() => {
