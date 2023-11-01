@@ -91,7 +91,7 @@ export async function depositTokenEstimateGas({
     })
   }
 
-  const depositRequest = await erc20Bridger.getDepositRequest({
+  const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
     amount,
     erc20L1Address,
     l1Provider,
@@ -100,9 +100,8 @@ export async function depositTokenEstimateGas({
   })
 
   return {
-    estimatedL1Gas: await l1Provider.estimateGas(depositRequest.txRequest),
-    // todo:fix
-    estimatedL2Gas: BigNumber.from(0),
-    estimatedL2SubmissionCost: BigNumber.from(0)
+    estimatedL1Gas: await l1Provider.estimateGas(txRequest),
+    estimatedL2Gas: retryableData.gasLimit.mul(retryableData.maxFeePerGas),
+    estimatedL2SubmissionCost: retryableData.maxSubmissionCost
   }
 }
