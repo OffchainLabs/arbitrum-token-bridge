@@ -26,6 +26,7 @@ export function CustomFeeTokenApprovalDialog(
 
   const { ethToUSD } = useETHPrice()
   const { app } = useAppState()
+  const { selectedToken } = app
 
   const { l1, l2 } = useNetworksAndSigners()
   const { isMainnet } = isNetwork(l1.network.id)
@@ -57,7 +58,7 @@ export function CustomFeeTokenApprovalDialog(
       if (l1Signer) {
         setEstimatedGas(
           await approveCustomFeeTokenEstimateGas({
-            erc20L1Address: app.selectedToken?.address,
+            erc20L1Address: selectedToken?.address,
             l1Signer,
             l1Provider: l1.provider,
             l2Provider: l2.provider
@@ -67,7 +68,7 @@ export function CustomFeeTokenApprovalDialog(
     }
 
     getEstimatedGas()
-  }, [isOpen, app.selectedToken, l1Signer, l1.provider, l2.provider])
+  }, [isOpen, selectedToken, l1Signer, l1.provider, l2.provider])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -148,11 +149,19 @@ export function CustomFeeTokenApprovalDialog(
             className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan px-2 py-3`}
           >
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
-            <span className="text-sm font-light text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet to
-              deposit your{' '}
-              <span className="font-medium">{customFeeToken.symbol}</span>.
-            </span>
+            {selectedToken ? (
+              <span className="text-sm font-light text-cyan-dark">
+                After approval, you&apos;ll see additional prompts related to
+                depositing your{' '}
+                <span className="font-medium">{selectedToken.symbol}</span>.
+              </span>
+            ) : (
+              <span className="text-sm font-light text-cyan-dark">
+                After approval, you&apos;ll see an additional prompt in your
+                wallet to deposit your{' '}
+                <span className="font-medium">{customFeeToken.symbol}</span>.
+              </span>
+            )}
           </div>
         </div>
       </div>
