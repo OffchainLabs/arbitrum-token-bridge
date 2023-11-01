@@ -24,6 +24,11 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
+  nativeTokenData?: {
+    name: string
+    symbol: string
+    decimals: number
+  }
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {

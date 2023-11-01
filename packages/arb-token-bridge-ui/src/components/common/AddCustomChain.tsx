@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import { addCustomChain } from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { z } from 'zod'
 
@@ -13,9 +14,11 @@ import {
   getNetworkName,
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
-  supportedCustomOrbitParentChains
+  supportedCustomOrbitParentChains,
+  rpcURLs
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
+import { fetchErc20Data } from '../../util/TokenUtils'
 
 type Contracts = {
   customGateway: string
@@ -166,6 +169,19 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   }
 }
 
+async function fetchNativeTokenData(data: OrbitConfig) {
+  const nativeToken = data.chainInfo.nativeToken
+
+  if (typeof nativeToken === 'undefined') {
+    return undefined
+  }
+
+  return await fetchErc20Data({
+    address: nativeToken,
+    provider: new StaticJsonRpcProvider(rpcURLs[data.chainInfo.parentChainId])
+  })
+}
+
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -173,7 +189,7 @@ export const AddCustomChain = () => {
 
   const customChains = getCustomChainsFromLocalStorage()
 
-  function onAddChain() {
+  async function onAddChain() {
     setAddingChain(true)
     setError(null)
 
@@ -190,11 +206,11 @@ export const AddCustomChain = () => {
       ZodOrbitConfig.parse(data)
 
       const customChain = mapOrbitConfigToOrbitChain(data)
+      const nativeTokenData = await fetchNativeTokenData(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
       addCustomChain({ customChain })
-
-      saveCustomChainToLocalStorage(customChain)
+      saveCustomChainToLocalStorage({ ...customChain, nativeTokenData })
       // reload to apply changes
       location.reload()
     } catch (error: any) {
