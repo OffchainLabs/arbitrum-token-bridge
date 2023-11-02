@@ -67,6 +67,7 @@ import {
   useNativeCurrency,
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
+import { defaultErc20Decimals } from '../../defaults'
 
 enum NetworkType {
   l1 = 'l1',
@@ -580,37 +581,36 @@ export function TransferPanelMain({
   )
 
   const setMaxAmount = useCallback(async () => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-    const customFeeTokenBalance = isDepositMode
-      ? customFeeTokenBalances.l1
-      : customFeeTokenBalances.l2
-
-    const tokenBalance = isDepositMode
-      ? selectedTokenBalances.l1
-      : selectedTokenBalances.l2
-
     if (selectedToken) {
-      if (!tokenBalance) {
-        return
+      const tokenBalance = isDepositMode
+        ? selectedTokenBalances.l1
+        : selectedTokenBalances.l2
+
+      if (tokenBalance) {
+        // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+        setAmount(
+          utils.formatUnits(
+            tokenBalance,
+            selectedToken?.decimals ?? defaultErc20Decimals
+          )
+        )
       }
 
-      // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
       return
     }
 
-    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH on L2
-    // For custom fee token withdrawals, they can be handled same as ETH withdrawals
-    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenBalance) {
+    const customFeeTokenL1Balance = customFeeTokenBalances.l1
+    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
+    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenL1Balance) {
       setAmount(
-        utils.formatUnits(customFeeTokenBalance, nativeCurrency.decimals)
+        utils.formatUnits(customFeeTokenL1Balance, nativeCurrency.decimals)
       )
       return
     }
 
-    const nativeCurrencyBalance = nativeCurrency.isCustom
-      ? customFeeTokenBalance
-      : ethBalance
+    // We have already handled token deposits and deposits of the custom fee token
+    // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
+    const nativeCurrencyBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
     if (!nativeCurrencyBalance) {
       return
