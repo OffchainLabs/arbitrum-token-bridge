@@ -1,12 +1,3 @@
-import {
-  mainnet,
-  goerli,
-  arbitrum as arbitrumOne,
-  arbitrumGoerli
-} from 'wagmi/chains'
-
-import { arbitrumNova } from './util/wagmi/wagmiAdditionalNetworks'
-
 export const TOS_VERSION = 2
 
 export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
@@ -35,11 +26,4 @@ export const ORBIT_QUICKSTART_LINK =
 export const CCTP_DOCUMENTATION =
   'https://www.circle.com/en/cross-chain-transfer-protocol'
 
-export const chains = {
-  mainnet,
-  goerli,
-  arbitrumOne,
-  arbitrumNova,
-  arbitrumGoerli
-}
 export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 }

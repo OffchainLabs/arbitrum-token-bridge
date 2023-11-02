@@ -216,7 +216,6 @@ export function TransferPanel() {
     setTransactionHistoryTab
   } = useAppContextActions()
 
-  const { isMainnet } = isNetwork(parentChain.id)
   const { isArbitrumNova } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)

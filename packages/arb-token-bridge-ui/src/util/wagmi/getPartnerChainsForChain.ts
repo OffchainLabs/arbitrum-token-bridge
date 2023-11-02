@@ -1,31 +1,40 @@
 import { Chain } from 'wagmi'
+import {
+  mainnet,
+  goerli,
+  arbitrum as arbitrumOne,
+  arbitrumGoerli
+} from 'wagmi/chains'
 
-import { chains } from '../../constants'
 import { ChainId } from '../../util/networks'
-import { stylusTestnet, xaiTestnet } from './wagmiAdditionalNetworks'
+import {
+  arbitrumNova,
+  stylusTestnet,
+  xaiTestnet
+} from './wagmiAdditionalNetworks'
 
 export function getPartnerChainsForChain(chain: Chain): Chain[] {
   switch (chain.id) {
     case ChainId.Mainnet:
-      return [chains.arbitrumOne, chains.arbitrumNova]
+      return [arbitrumOne, arbitrumNova]
 
     case ChainId.Goerli:
-      return [chains.arbitrumGoerli]
+      return [arbitrumGoerli]
 
     case ChainId.ArbitrumOne:
-      return [chains.mainnet]
+      return [mainnet]
 
     case ChainId.ArbitrumNova:
-      return [chains.mainnet]
+      return [mainnet]
 
     case ChainId.ArbitrumGoerli:
-      return [chains.goerli, xaiTestnet, stylusTestnet]
+      return [goerli, xaiTestnet, stylusTestnet]
 
     case ChainId.StylusTestnet:
-      return [chains.arbitrumGoerli]
+      return [arbitrumGoerli]
 
     case ChainId.XaiTestnet:
-      return [chains.arbitrumGoerli]
+      return [arbitrumGoerli]
 
     default:
       throw new Error(
