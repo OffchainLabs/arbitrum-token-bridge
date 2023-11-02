@@ -2,6 +2,7 @@ import { Chain } from 'wagmi'
 import {
   mainnet,
   goerli,
+  sepolia,
   arbitrum as arbitrumOne,
   arbitrumGoerli
 } from 'wagmi/chains'
@@ -9,6 +10,7 @@ import {
 import { ChainId } from '../../util/networks'
 import {
   arbitrumNova,
+  arbitrumSepolia,
   stylusTestnet,
   xaiTestnet
 } from './wagmiAdditionalNetworks'
@@ -21,6 +23,9 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
     case ChainId.Goerli:
       return [arbitrumGoerli]
 
+    case ChainId.Sepolia:
+      return [arbitrumSepolia]
+
     case ChainId.ArbitrumOne:
       return [mainnet]
 
@@ -29,6 +34,9 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
 
     case ChainId.ArbitrumGoerli:
       return [goerli, xaiTestnet, stylusTestnet]
+
+    case ChainId.ArbitrumSepolia:
+      return [sepolia]
 
     case ChainId.StylusTestnet:
       return [arbitrumGoerli]

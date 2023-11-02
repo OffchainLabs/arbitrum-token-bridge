@@ -7,9 +7,11 @@ import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 const chainQueryParams = [
   'mainnet',
   'goerli',
+  'sepolia',
   'arbitrumOne',
   'arbitrumNova',
   'arbitrumGoerli',
+  'arbitrumSepolia',
   'stylus-testnet',
   'xai-testnet'
 ] as const
@@ -45,6 +47,12 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.XaiTestnet:
       return 'xai-testnet'
 
+    case ChainId.Sepolia:
+      return 'sepolia'
+
+    case ChainId.ArbitrumSepolia:
+      return 'arbitrumSepolia'
+
     default:
       throw new Error(
         `[getChainQueryParamForChain] Unexpected chain id: ${chainId}`
@@ -60,6 +68,9 @@ export function getChainForChainQueryParam(value: ChainQueryParam): Chain {
     case 'goerli':
       return chains.goerli
 
+    case 'sepolia':
+      return chains.sepolia
+
     case 'arbitrumOne':
       return chains.arbitrum
 
@@ -68,6 +79,9 @@ export function getChainForChainQueryParam(value: ChainQueryParam): Chain {
 
     case 'arbitrumGoerli':
       return chains.arbitrumGoerli
+
+    case 'arbitrumSepolia':
+      return customChains.arbitrumSepolia
 
     case 'stylus-testnet':
       return customChains.stylusTestnet
