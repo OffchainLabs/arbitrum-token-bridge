@@ -2,7 +2,6 @@ import { constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
@@ -27,22 +26,59 @@ export function getDefaultTokenSymbol(address: string) {
   )
 }
 
-type TokenDataCache = { [erc20L1Address: string]: Erc20Data }
+export type Erc20Data = {
+  name: string
+  symbol: string
+  decimals: number
+  address: string
+}
 
-// Get the token data cache (only name, symbol, decimals keys stored)
-const getTokenDataCache = () => {
-  const cache: TokenDataCache = JSON.parse(
-    sessionStorage.getItem('l1TokenDataCache') || '{}'
+const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc20-cache'
+
+type Erc20DataCache = {
+  [cacheKey: string]: Erc20Data
+}
+
+type GetErc20DataCacheParams = {
+  chainId: number
+  address: string
+}
+
+function getErc20DataCacheKey({ chainId, address }: GetErc20DataCacheParams) {
+  return `${chainId}:${address}`
+}
+
+function getErc20DataCache(): Erc20DataCache
+function getErc20DataCache(params: GetErc20DataCacheParams): Erc20Data | null
+function getErc20DataCache(
+  params?: GetErc20DataCacheParams
+): Erc20DataCache | (Erc20Data | null) {
+  const cache: Erc20DataCache = JSON.parse(
+    localStorage.getItem(erc20DataCacheLocalStorageKey) ?? '{}'
   )
+
+  if (typeof params !== 'undefined') {
+    const { chainId, address } = params
+    return cache[getErc20DataCacheKey({ chainId, address })] ?? null
+  }
+
   return cache
 }
 
-// Set the token data cache (only name, symbol, decimals)
-const setTokenDataCache = (erc20L1Address: string, tokenData: Erc20Data) => {
-  const l1TokenDataCache = getTokenDataCache()
-  l1TokenDataCache[erc20L1Address] = tokenData
+type SetErc20DataCacheParams = {
+  chainId: number
+  address: string
+  erc20Data: Erc20Data
+}
 
-  sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+function setErc20DataCache({
+  chainId,
+  address,
+  erc20Data
+}: SetErc20DataCacheParams) {
+  const cache = getErc20DataCache()
+  cache[getErc20DataCacheKey({ chainId, address })] = erc20Data
+  localStorage.setItem(erc20DataCacheLocalStorageKey, JSON.stringify(cache))
 }
 
 export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
@@ -67,18 +103,18 @@ export type FetchErc20DataProps = {
   provider: Provider
 }
 
-export type Erc20Data = {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
-}
-
 export async function fetchErc20Data({
   address,
   provider
 }: FetchErc20DataProps): Promise<Erc20Data> {
+  const chainId = (await provider.getNetwork()).chainId
   const multiCaller = await MultiCaller.fromProvider(provider)
+
+  const cachedErc20Data = getErc20DataCache({ chainId, address })
+
+  if (cachedErc20Data) {
+    return cachedErc20Data
+  }
 
   // todo: fall back if there is no multicall?
   const [tokenData] = await multiCaller.getTokenData([address], {
@@ -87,77 +123,21 @@ export async function fetchErc20Data({
     decimals: true
   })
 
-  return {
-    address,
+  const erc20Data: Erc20Data = {
     name: tokenData?.name ?? getDefaultTokenName(address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
-    decimals: tokenData?.decimals ?? defaultErc20Decimals
-  }
-}
-
-/**
- * Retrieves static data (name, decimals, symbol, address) about an ERC-20 token using its L1 address
- * @param erc20L1Address,
- * @param l1Provider
- */
-export async function getL1TokenData({
-  account,
-  erc20L1Address,
-  l1Provider,
-  l2Provider,
-  throwOnInvalidERC20 = true
-}: {
-  account: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-  throwOnInvalidERC20?: boolean
-}): Promise<Erc20Data> {
-  // checking the cache for tokens results
-  // if successfully found in the cache, return the token data
-  const l1TokenDataCache = getTokenDataCache()
-  const cachedTokenData = l1TokenDataCache[erc20L1Address]
-  if (cachedTokenData) return cachedTokenData
-
-  // else, call on-chain method to retrieve token data
-  const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
-
-  const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-    erc20L1Address,
-    l1Provider,
-    l2Provider
-  })
-
-  const multiCaller = await MultiCaller.fromProvider(l1Provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-    decimals: true,
-    name: true,
-    symbol: true,
-    allowance: { owner: account, spender: l1GatewayAddress } // getting allowance will help us know if it's a valid ERC20 token
-  })
-
-  if (tokenData && typeof tokenData.allowance === 'undefined') {
-    if (throwOnInvalidERC20)
-      throw new Error(
-        `getL1TokenData: No allowance method available for ${erc20L1Address}`
-      )
-  }
-
-  const finalTokenData = {
-    name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
-    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
     decimals: tokenData?.decimals ?? defaultErc20Decimals,
-    address: contract.address
+    address
   }
 
-  // store the newly fetched final-token-data in cache
   try {
-    setTokenDataCache(erc20L1Address, finalTokenData)
+    setErc20DataCache({ chainId, address, erc20Data })
   } catch (e) {
+    console.warn(`Failed to store ERC-20 data to cache.`)
     console.warn(e)
   }
 
-  return finalTokenData
+  return erc20Data
 }
 
 export type FetchErc20AllowanceParams = FetchErc20DataProps & {
