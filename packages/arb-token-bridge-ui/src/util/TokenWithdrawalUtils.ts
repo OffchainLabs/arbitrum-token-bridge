@@ -1,7 +1,6 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 
 export async function withdrawTokenEstimateGas({
@@ -16,6 +15,7 @@ export async function withdrawTokenEstimateGas({
   l2Provider: Provider
 }): Promise<GasEstimates> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const estimatedL1Gas = BigNumber.from(160_000)
 
   const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
     amount,
@@ -28,8 +28,5 @@ export async function withdrawTokenEstimateGas({
     withdrawalRequest.txRequest
   )
 
-  return {
-    estimatedL1Gas: BigNumber.from(0),
-    estimatedL2Gas
-  }
+  return { estimatedL1Gas, estimatedL2Gas }
 }
