@@ -5,9 +5,11 @@ import { BigNumber, constants } from 'ethers'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
 
-async function fetchFallbackGasEstimates(): Promise<DepositGasEstimates> {
+async function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): Promise<DepositGasEstimates> {
   return {
-    // todo: fix
+    // todo(spsjvc): properly estimate these values
+    //
+    // this hardcoding is only necessary for Orbit chains that have a custom fee token (where estimation may fail due to low allowance)
     estimatedL1Gas: BigNumber.from(100_000),
     estimatedL2Gas: BigNumber.from(0),
     estimatedL2SubmissionCost: BigNumber.from(0)
@@ -52,9 +54,10 @@ export async function depositEthEstimateGas(
   const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
 
   if (customFeeToken && (await customFeeTokenAllowanceIsInsufficient(params))) {
-    return fetchFallbackGasEstimates()
+    return fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken()
   }
 
+  // todo: update this when we support custom destination addresses for eth deposits
   const depositRequest = await ethBridger.getDepositRequest({
     amount,
     from: address
