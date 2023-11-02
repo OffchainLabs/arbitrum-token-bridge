@@ -11,7 +11,6 @@ export async function approveCustomFeeTokenEstimateGas(params: {
   const { erc20L1Address } = params
 
   if (typeof erc20L1Address !== 'undefined') {
-    // typescript is dumb
     return approveCustomFeeTokenForGatewayEstimateGas({
       ...params,
       erc20L1Address
