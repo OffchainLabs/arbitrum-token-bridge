@@ -81,17 +81,6 @@ function setErc20DataCache({
   localStorage.setItem(erc20DataCacheLocalStorageKey, JSON.stringify(cache))
 }
 
-export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.address,
-    decimals: data.decimals,
-    listIds: new Set()
-  }
-}
-
 export type FetchErc20DataProps = {
   /**
    * Address of the ERC-20 token contract.
@@ -315,4 +304,15 @@ export function sanitizeTokenName(
   }
 
   return tokenName
+}
+
+export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.address,
+    decimals: data.decimals,
+    listIds: new Set()
+  }
 }
