@@ -169,39 +169,6 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
 }
 
 /**
- * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
- * @param erc20L2Address
- * @returns
- */
-export async function getL2TokenData({
-  account,
-  erc20L2Address,
-  l2Provider
-}: {
-  account: string
-  erc20L2Address: string
-  l2Provider: Provider
-}): Promise<L2TokenData> {
-  const contract = StandardArbERC20__factory.connect(erc20L2Address, l2Provider)
-
-  const multiCaller = await MultiCaller.fromProvider(l2Provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
-    balanceOf: { account }
-  })
-
-  if (tokenData && typeof tokenData.balance === 'undefined') {
-    throw new Error(
-      `getL2TokenData: No balance method available for ${erc20L2Address}`
-    )
-  }
-
-  return {
-    balance: tokenData?.balance ?? constants.Zero,
-    contract
-  }
-}
-
-/**
  * Retrieves the L1 address of an ERC-20 token using its L2 address.
  * @param erc20L2Address
  * @param l2Provider
