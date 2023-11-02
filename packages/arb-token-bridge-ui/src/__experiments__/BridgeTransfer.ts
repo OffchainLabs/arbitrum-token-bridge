@@ -1,24 +1,10 @@
 import { Provider } from '@ethersproject/providers'
 import { ContractReceipt, ContractTransaction, BigNumber } from 'ethers'
-import { AssetType } from '../hooks/arbTokenBridge.types'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
-
-// type GasEstimates = {
-//   sourceChain: {
-//     amount: BigNumber
-//     assetType: AssetType
-//     description?: string
-//   }
-//   destinationChain: {
-//     amount: BigNumber
-//     assetType: AssetType
-//     description?: string
-//   }
-// }
 
 export type BridgeTransferProps = {
   type: BridgeTransferType
