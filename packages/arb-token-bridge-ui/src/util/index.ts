@@ -19,6 +19,11 @@ export enum TargetChainKey {
   StylusTestnet = 'stylus-testnet'
 }
 
+export function getWalletConnectChainFromURL() {
+  const searchParams = new URLSearchParams(window.location.search)
+  return searchParams.get('walletConnectChain')
+}
+
 export const sanitizeImageSrc = (url: string): string => {
   if (url.startsWith('ipfs')) {
     return `https://ipfs.io/ipfs/${url.substring(7)}`

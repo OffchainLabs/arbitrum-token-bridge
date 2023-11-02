@@ -29,7 +29,7 @@
     "graphql": "^16.8.1",
     "lodash-es": "^4.17.21",
     "next": "^13.5.6",
-    "next-query-params": "^4.1.0",
+    "next-query-params": "^4.2.3",
     "overmind": "^28.0.1",
     "overmind-react": "^29.0.1",
     "posthog-js": "^1.57.2",
@@ -42,7 +42,7 @@
     "react-virtualized": "^9.22.3",
     "swr": "^2.1.2",
     "tailwind-merge": "^1.14.0",
-    "use-query-params": "^2.1.1",
+    "use-query-params": "^2.2.1",
     "wagmi": "^0.12.19",
     "zod": "^3.22.2",
     "zustand": "^4.3.9"

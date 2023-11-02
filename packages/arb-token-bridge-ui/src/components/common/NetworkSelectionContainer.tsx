@@ -17,7 +17,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { TargetChainKey } from '../../util'
+import { TargetChainKey, getWalletConnectChainFromURL } from '../../util'
 import { getWalletConnectChain } from '../../util/wagmi/setup'
 import { HeaderNetworkInformation } from './HeaderNetworkInformation'
 import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
@@ -25,7 +25,11 @@ import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
 export const NetworkSelectionContainer = () => {
   const { chain = { ...mainnet, unsupported: false } } = useNetwork()
   const { isConnected } = useAccount()
-  const [{ walletConnectChain }, setQueryParams] = useArbQueryParams()
+  // fall back to `URLSearchParams` because sometimes `walletConnectChain` is undefined on page load
+  const [
+    { walletConnectChain = getWalletConnectChainFromURL() },
+    setQueryParams
+  ] = useArbQueryParams()
   const [selectedChainId, setSelectedChainId] = useState(
     getWalletConnectChain(walletConnectChain ?? TargetChainKey.Mainnet)
   )
@@ -91,7 +95,8 @@ export const NetworkSelectionContainer = () => {
         setSelectedChainId(chainId)
         // this is to make sure it's run after `setSelectedChainId,
         // otherwise there'll be a race condition where the previous chain is used on reload
-        setTimeout(() => window.location.reload(), 50)
+        setTimeout(() => window.location.reload(), 0)
+        window.location.reload()
       }
       close?.() // close the popover after option-click
     },

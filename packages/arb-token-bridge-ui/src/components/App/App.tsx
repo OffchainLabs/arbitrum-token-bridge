@@ -7,7 +7,7 @@ import { useLocalStorage } from 'react-use'
 import merge from 'lodash-es/merge'
 import { RainbowKitProvider, Theme, darkTheme } from '@rainbow-me/rainbowkit'
 
-import { ConnectionState } from '../../util'
+import { ConnectionState, getWalletConnectChainFromURL } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { Loader } from '../common/atoms/Loader'
 import { WelcomeDialog } from './WelcomeDialog'
@@ -329,8 +329,7 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('walletConnectChain')
+const targetChainKey = getWalletConnectChainFromURL()
 
 const { wagmiConfigProps, rainbowKitProviderProps } =
   getWalletProvidersConfigProps(targetChainKey)
