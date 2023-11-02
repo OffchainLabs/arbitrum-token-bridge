@@ -33,7 +33,7 @@ export type Erc20Data = {
   address: string
 }
 
-const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc20-cache'
+const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc-20-cache'
 
 type Erc20DataCache = {
   [cacheKey: string]: Erc20Data
