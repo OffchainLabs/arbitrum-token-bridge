@@ -430,7 +430,7 @@ export function TransferPanel() {
     }
 
     const ethBridger = await EthBridger.fromProvider(l2Provider)
-    const l2Network = ethBridger.l2Network
+    const { l2Network } = ethBridger
 
     if (typeof l2Network.nativeToken === 'undefined') {
       throw new Error('l2 network does not use custom fee token')
