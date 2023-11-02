@@ -21,7 +21,7 @@ import {
   approveCctpEstimateGas,
   approveTokenEstimateGas
 } from '../../util/TokenApprovalUtils'
-import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
+import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
 import {
@@ -71,7 +71,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
+    const eth = formatAmount(estimatedGasFees, { symbol: ether.symbol })
     const usd = formatUSD(ethToUSD(estimatedGasFees))
     return `${eth}${isMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, ethToUSD, isMainnet])

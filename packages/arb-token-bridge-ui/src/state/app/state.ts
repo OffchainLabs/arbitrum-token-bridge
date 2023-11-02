@@ -12,6 +12,7 @@ import { transformDeposits, transformWithdrawals } from './utils'
 
 import {
   ArbTokenBridge,
+  AssetType,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatus
@@ -53,6 +54,7 @@ export interface MergedTransaction {
   resolvedAt: string | null
   txId: string
   asset: string
+  assetType: AssetType
   value: string | null
   uniqueId: BigNumber | null
   isWithdrawal: boolean

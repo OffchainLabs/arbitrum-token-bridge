@@ -9,6 +9,7 @@ import { BridgesTable } from '../common/BridgesTable'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
 import { ChainId, getNetworkName } from '../../util/networks'
+import { ether } from '../../constants'
 
 export function OneNovaTransferDialog(
   props: UseDialogProps & {
@@ -37,7 +38,7 @@ export function OneNovaTransferDialog(
     destinationChainId === ChainId.ArbitrumOne ? 'arbitrum' : 'nova'
 
   const bridgeDeepLink = `https://app.hop.exchange/#/send?sourceNetwork=${sourceNetworkSlug}&destNetwork=${destinationNetworkSlug}&token=${
-    selectedToken?.symbol || 'ETH'
+    selectedToken?.symbol || ether.symbol
   }&amount=${props.amount}`
 
   // only enable Hop for now

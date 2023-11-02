@@ -32,6 +32,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -89,30 +90,40 @@ export function TokenRow({
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { childChain, childProvider, parentChain } =
+    useNetworksRelationship(networks)
 
   const isSmallScreen = useMedia('(max-width: 419px)')
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
-  const tokenName = useMemo(
-    () =>
-      token
-        ? sanitizeTokenName(token.name, {
-            erc20L1Address: token.address,
-            chainId: isDepositMode ? networks.from.id : networks.to.id
-          })
-        : 'Ether',
-    [token, isDepositMode, networks.from.id, networks.to.id]
-  )
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chainId: networks.from.id
-          })
-        : 'ETH',
-    [token, networks.from.id]
-  )
+  const tokenName = useMemo(() => {
+    if (token) {
+      return sanitizeTokenName(token.name, {
+        erc20L1Address: token.address,
+        chainId: isDepositMode ? networks.from.id : networks.to.id
+      })
+    }
+
+    return nativeCurrency.name
+  }, [
+    token,
+    nativeCurrency.name,
+    isDepositMode,
+    networks.from.id,
+    networks.to.id
+  ])
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chainId: networks.from.id
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency.symbol, networks.from.id])
+
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
@@ -134,7 +145,7 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeCurrency.logoUrl
     }
 
     if (!token.logoURI) {
@@ -142,7 +153,7 @@ export function TokenRow({
     }
 
     return token.logoURI
-  }, [token])
+  }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
     if (!token) {

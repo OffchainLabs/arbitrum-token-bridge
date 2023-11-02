@@ -42,3 +42,4 @@ export const chains = {
   arbitrumNova,
   arbitrumGoerli
 }
+export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 }

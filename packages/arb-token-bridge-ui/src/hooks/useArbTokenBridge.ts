@@ -48,6 +48,7 @@ import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
+import { useNativeCurrency } from './useNativeCurrency'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -124,6 +125,8 @@ export const useArbTokenBridge = (
   interface ExecutedMessagesCache {
     [id: string]: boolean
   }
+
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress
@@ -214,9 +217,9 @@ export const useArbTokenBridge = (
     addTransaction({
       type: 'deposit-l1',
       status: 'pending',
-      value: utils.formatEther(amount),
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
       txID: tx.hash,
-      assetName: 'ETH',
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -269,12 +272,13 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
+
       addTransaction({
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatEther(amount),
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
         txID: tx.hash,
-        assetName: 'ETH',
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         sender: walletAddress,
         // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
@@ -312,8 +316,8 @@ export const useArbTokenBridge = (
           type: AssetType.ETH,
           value: amount,
           outgoingMessageState,
-          symbol: 'ETH',
-          decimals: 18,
+          symbol: nativeCurrency.symbol,
+          decimals: nativeCurrency.decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash
         }
@@ -986,8 +990,8 @@ export const useArbTokenBridge = (
     addTransaction({
       status: 'pending',
       type: 'outbox',
-      value: utils.formatEther(value),
-      assetName: 'ETH',
+      value: utils.formatUnits(value, nativeCurrency.decimals),
+      assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
       sender: walletAddress,
       txID: res.hash,

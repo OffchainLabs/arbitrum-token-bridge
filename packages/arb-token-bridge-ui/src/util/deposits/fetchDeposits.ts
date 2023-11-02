@@ -8,6 +8,8 @@ import {
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
+import { defaultErc20Decimals } from '../../defaults'
+import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type FetchDepositParams = {
   sender?: string
@@ -41,6 +43,8 @@ export const fetchDeposits = async ({
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
+
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
 
   if (!fromBlock) {
     fromBlock = 0
@@ -79,8 +83,7 @@ export const fetchDeposits = async ({
       const isEthDeposit = tx.type === 'EthDeposit'
 
       const assetDetails = {
-        asset: 'ETH',
-        assetName: 'ETH',
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         tokenAddress: ''
       }
@@ -89,25 +92,25 @@ export const fetchDeposits = async ({
         // update some values for token deposit
         const symbol = tx.l1Token?.symbol || ''
 
-        assetDetails.asset = symbol
         assetDetails.assetName = symbol
         assetDetails.assetType = AssetType.ERC20
         assetDetails.tokenAddress = tx?.l1Token?.id || ''
       }
 
+      const amount = isEthDeposit ? tx.ethValue : tx.tokenAmount
+
+      const tokenDecimals = tx?.l1Token?.decimals ?? defaultErc20Decimals
+      const decimals = isEthDeposit ? nativeCurrency.decimals : tokenDecimals
+
       return {
         type: 'deposit-l1',
         status: 'pending',
-        value: utils.formatUnits(
-          (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
-          isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
-        ),
+        value: utils.formatUnits(amount || 0, decimals),
         txID: tx.transactionHash,
         tokenAddress: assetDetails.tokenAddress,
         sender: tx.sender,
         destination: tx.receiver,
 
-        asset: assetDetails.asset,
         assetName: assetDetails.assetName,
         assetType: assetDetails.assetType,
 

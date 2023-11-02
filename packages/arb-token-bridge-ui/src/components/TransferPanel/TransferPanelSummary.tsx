@@ -24,6 +24,7 @@ import {
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -42,7 +43,6 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
 const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
@@ -100,11 +100,6 @@ export function useGasSummary(
     [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
   )
 
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
-
   useEffect(() => {
     // When the user starts typing, set the status to `loading` for better UX
     // The value is debounced, so we'll start fetching the gas estimates only when the user stops typing
@@ -138,7 +133,10 @@ export function useGasSummary(
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
               l1Provider: parentProvider,
-              l2Provider: childProvider
+              l2Provider: childProvider,
+              amount,
+              address: walletAddress,
+              erc20L1Address: token.address
             })
 
             setResult(estimateGasResult)
@@ -233,8 +231,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -276,31 +273,34 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const isETH = token === null
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
   const { app } = useAppState()
   const { ethToUSD } = useETHPrice()
   const [networks] = useNetworks()
-  const { parentChain } = useNetworksRelationship(networks)
+  const { childProvider, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
-  const { isMainnet } = isNetwork(parentChain.id)
+  const { isTestnet } = isNetwork(parentChain.id)
 
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chainId: networks.from.id
-          })
-        : 'ETH',
-    [token, networks.from.id]
+  const isBridgingNativeCurrency = token === null
+  const showPrice = isBridgingNativeCurrency && !isTestnet
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chainId: networks.from.id
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency.symbol, networks.from.id])
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   if (status === 'loading') {
@@ -317,7 +317,7 @@ export function TransferPanelSummary({
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
-        {isETH && (
+        {isBridgingNativeCurrency && (
           <>
             <div>
               <div className="h-2" />
@@ -361,8 +361,8 @@ export function TransferPanelSummary({
               symbol: tokenSymbol
             })}
           </span>
-          {/* Only show USD price for ETH */}
-          {isETH && isMainnet && (
+
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(amount))}
             </span>
@@ -375,10 +375,11 @@ export function TransferPanelSummary({
         <div className="flex w-3/5 justify-between">
           <span>
             {formatAmount(estimatedTotalGasFees, {
-              symbol: 'ETH'
+              symbol: nativeCurrency.symbol
             })}
           </span>
-          {isMainnet && (
+
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(estimatedTotalGasFees))}
             </span>
@@ -397,10 +398,11 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL1GasFees, {
-                symbol: 'ETH'
+                symbol: nativeCurrency.symbol
               })}
             </span>
-            {isMainnet && (
+
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL1GasFees))}
               </span>
@@ -417,10 +419,11 @@ export function TransferPanelSummary({
           <div className="flex w-3/5 flex-row justify-between">
             <span className="font-light">
               {formatAmount(estimatedL2GasFees, {
-                symbol: 'ETH'
+                symbol: nativeCurrency.symbol
               })}
             </span>
-            {isMainnet && (
+
+            {showPrice && (
               <span className="font-light">
                 {formatUSD(ethToUSD(estimatedL2GasFees))}
               </span>
@@ -429,7 +432,7 @@ export function TransferPanelSummary({
         </div>
       </div>
 
-      {isETH && (
+      {isBridgingNativeCurrency && (
         <>
           <div>
             <div className="h-2" />
@@ -443,10 +446,11 @@ export function TransferPanelSummary({
             <div className="flex w-3/5 flex-row justify-between">
               <span>
                 {formatAmount(amount + estimatedTotalGasFees, {
-                  symbol: 'ETH'
+                  symbol: nativeCurrency.symbol
                 })}
               </span>
-              {isMainnet && (
+
+              {showPrice && (
                 <span className="font-medium text-dark">
                   {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
                 </span>

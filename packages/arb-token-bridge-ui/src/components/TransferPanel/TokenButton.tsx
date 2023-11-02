@@ -10,6 +10,8 @@ import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -18,15 +20,18 @@ export function TokenButton(): JSX.Element {
       arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
-  const [{ from }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childProvider } = useNetworksRelationship(networks)
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
+
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeCurrency.logoUrl
     }
 
     if (typeof bridgeTokens === 'undefined') {
@@ -37,18 +42,18 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [bridgeTokens, selectedToken?.address])
+  }, [nativeCurrency, bridgeTokens, selectedToken?.address])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
-      return 'ETH'
+      return nativeCurrency.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chainId: from.id
+      chainId: networks.from.id
     })
-  }, [selectedToken, from.id])
+  }, [selectedToken, nativeCurrency, networks.from.id])
 
   function closeWithReset() {
     setTokenToImport(undefined)

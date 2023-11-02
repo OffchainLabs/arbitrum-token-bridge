@@ -27,6 +27,7 @@ import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -53,17 +54,19 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const [networks] = useNetworks()
-  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const { childChain, childProvider, parentChain } =
+    useNetworksRelationship(networks)
   const { parentLayer } = useChainLayers()
   const toNetworkName = getNetworkName(parentChain.id)
   const {
     app: { selectedToken }
   } = useAppState()
 
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
   const fastBridges = getFastBridges({
     from: childChain.id,
     to: parentChain.id,
-    tokenSymbol: selectedToken?.symbol,
+    tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
     amount: props.amount
   })
 
@@ -196,7 +199,7 @@ export function WithdrawalConfirmationDialog(
                       href={getCalendarUrl(
                         confirmationHours,
                         props.amount,
-                        selectedToken?.symbol || 'ETH',
+                        selectedToken?.symbol || nativeCurrency.symbol,
                         getNetworkName(childChain.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
