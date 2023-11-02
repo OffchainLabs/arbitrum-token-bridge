@@ -12,16 +12,15 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
-import { getL1TokenData } from '../../util/TokenUtils'
+import {
+  erc20DataToErc20BridgeToken,
+  fetchErc20Data
+} from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import {
-  toERC20BridgeToken,
-  useTokensFromLists,
-  useTokensFromUser
-} from './TokenSearchUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 
@@ -99,13 +98,8 @@ export function TokenImportDialog({
       return
     }
 
-    return getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
-  }, [l1, l2, walletAddress, l1Address])
+    return fetchErc20Data({ address: l1Address, provider: l1.provider })
+  }, [l1, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -186,7 +180,7 @@ export function TokenImportDialog({
 
         // We couldn't find the address within our lists
         setStatus(ImportStatus.UNKNOWN)
-        setTokenToImport(toERC20BridgeToken(data))
+        setTokenToImport(erc20DataToErc20BridgeToken(data))
       })
       .catch(() => {
         setStatus(ImportStatus.ERROR)

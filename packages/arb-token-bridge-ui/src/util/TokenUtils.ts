@@ -2,13 +2,12 @@ import { constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
-import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
-import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
+import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -28,7 +27,7 @@ export function getDefaultTokenSymbol(address: string) {
   )
 }
 
-type TokenDataCache = { [erc20L1Address: string]: L1TokenData }
+type TokenDataCache = { [erc20L1Address: string]: Erc20Data }
 
 // Get the token data cache (only name, symbol, decimals keys stored)
 const getTokenDataCache = () => {
@@ -39,11 +38,22 @@ const getTokenDataCache = () => {
 }
 
 // Set the token data cache (only name, symbol, decimals)
-const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
+const setTokenDataCache = (erc20L1Address: string, tokenData: Erc20Data) => {
   const l1TokenDataCache = getTokenDataCache()
   l1TokenDataCache[erc20L1Address] = tokenData
 
   sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+}
+
+export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.address,
+    decimals: data.decimals,
+    listIds: new Set()
+  }
 }
 
 export type FetchErc20DataProps = {
@@ -57,10 +67,17 @@ export type FetchErc20DataProps = {
   provider: Provider
 }
 
+export type Erc20Data = {
+  name: string
+  symbol: string
+  decimals: number
+  address: string
+}
+
 export async function fetchErc20Data({
   address,
   provider
-}: FetchErc20DataProps) {
+}: FetchErc20DataProps): Promise<Erc20Data> {
   const multiCaller = await MultiCaller.fromProvider(provider)
 
   // todo: fall back if there is no multicall?
@@ -71,6 +88,7 @@ export async function fetchErc20Data({
   })
 
   return {
+    address,
     name: tokenData?.name ?? getDefaultTokenName(address),
     symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
     decimals: tokenData?.decimals ?? defaultErc20Decimals
@@ -94,7 +112,7 @@ export async function getL1TokenData({
   l1Provider: Provider
   l2Provider: Provider
   throwOnInvalidERC20?: boolean
-}): Promise<L1TokenData> {
+}): Promise<Erc20Data> {
   // checking the cache for tokens results
   // if successfully found in the cache, return the token data
   const l1TokenDataCache = getTokenDataCache()
