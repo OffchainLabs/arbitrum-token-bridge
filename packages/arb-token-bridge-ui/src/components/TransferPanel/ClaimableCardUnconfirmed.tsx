@@ -32,7 +32,6 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
   }
 
   const networkName = getNetworkName(toNetworkId)
-  const { isEthereum: isWithdrawal } = isNetwork(toNetworkId)
 
   const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
 
@@ -40,9 +39,9 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isWithdrawal ? l2.network : l1.network
+        chain: tx.isWithdrawal ? l2.network : l1.network
       }),
-    [tx.asset, tx.tokenAddress, isWithdrawal, l1.network, l2.network]
+    [tx.asset, tx.tokenAddress, tx.isWithdrawal, l1.network, l2.network]
   )
 
   const { remainingTime } = useRemainingTime(tx)
@@ -62,7 +61,7 @@ export function ClaimableCardUnconfirmed({ tx }: { tx: MergedTransaction }) {
 
           <div className="h-2" />
           <div className="flex flex-col font-light">
-            {isWithdrawal ? (
+            {tx.isWithdrawal ? (
               <>
                 <span className="flex flex-nowrap gap-1 text-sm text-ocl-blue lg:text-base">
                   {layer} transaction: <WithdrawalL2TxStatus tx={tx} />
