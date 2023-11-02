@@ -1,4 +1,6 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
+
+import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
@@ -6,7 +8,7 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
     id: chain.chainID,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    nativeCurrency: ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
@@ -34,7 +36,7 @@ export const arbitrumSepolia: Chain = {
   id: ChainId.ArbitrumSepolia,
   name: 'Arbitrum Sepolia',
   network: 'arbitrum-sepolia',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumSepolia]!]
@@ -56,7 +58,7 @@ export const arbitrumNova: Chain = {
   id: ChainId.ArbitrumNova,
   name: 'Arbitrum Nova',
   network: 'arbitrum-nova',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumNova]!]
@@ -75,7 +77,7 @@ export const xaiTestnet: Chain = {
   id: ChainId.XaiTestnet,
   name: 'Xai Orbit Testnet',
   network: 'xai-testnet',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.XaiTestnet]!]
@@ -96,7 +98,7 @@ export const stylusTestnet: Chain = {
   id: ChainId.StylusTestnet,
   name: 'Stylus Testnet',
   network: 'stylus-testnet',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.StylusTestnet]!]
@@ -120,7 +122,7 @@ export const localL1Network: Chain = {
   id: ChainId.Local,
   name: 'EthLocal',
   network: 'localhost',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.Local]!]
@@ -141,7 +143,7 @@ export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
   name: 'ArbLocal',
   network: 'arbitrum-localhost',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumLocal]!]

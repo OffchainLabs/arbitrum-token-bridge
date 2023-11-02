@@ -5,6 +5,8 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { Toast } from './atoms/Toast'
+import { SiteBanner } from './SiteBanner'
+import { ExternalLink } from './ExternalLink'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -35,6 +37,17 @@ export function Layout(props: LayoutProps) {
       style={{ backgroundImage: 'url(/images/space.webp)' }}
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
+      <SiteBanner>
+        Arbitrum Orbit is mainnet-ready! Learn more about launching a customized
+        chain{' '}
+        <ExternalLink
+          href="https://arbitrum.io/orbit"
+          className="arb-hover underline"
+        >
+          here
+        </ExternalLink>
+        .
+      </SiteBanner>
       <Header />
 
       <main className="bg-gradient-overlay min-h-[calc(100vh-80px)]">
