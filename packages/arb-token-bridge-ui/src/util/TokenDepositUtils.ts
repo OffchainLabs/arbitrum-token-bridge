@@ -52,9 +52,7 @@ async function fetchFallbackGasEstimates({
   }
 }
 
-async function allowanceForL1GatewayIsInsufficient(
-  params: DepositTokenEstimateGasParams
-) {
+async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
   const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
 
   const l1Gateway = await fetchErc20L1GatewayAddress({
@@ -87,7 +85,7 @@ export async function depositTokenEstimateGas(
   const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
-  if (await allowanceForL1GatewayIsInsufficient(params)) {
+  if (await allowanceIsInsufficient(params)) {
     console.warn(
       `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
     )

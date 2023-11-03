@@ -278,12 +278,13 @@ export function TransferPanelSummary({
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
+
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const { isTestnet } = isNetwork(l1.network.id)
-
-  const isBridgingNativeCurrency = token === null
-  const showPrice = isBridgingNativeCurrency && !isTestnet
+  const isBridgingETH = token === null && !nativeCurrency.isCustom
+  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
+  const showBreakdown = !nativeCurrency.isCustom
 
   const tokenSymbol = useMemo(() => {
     if (token) {
@@ -295,6 +296,12 @@ export function TransferPanelSummary({
 
     return nativeCurrency.symbol
   }, [token, nativeCurrency, app.isDepositMode, l1.network, l2.network])
+
+  const sameNativeCurrency = useMemo(
+    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
+    () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [nativeCurrency, parentChainNativeCurrency]
+  )
 
   const estimatedTotalGasFees = useMemo(
     () => estimatedL1GasFees + estimatedL2GasFees,
@@ -315,7 +322,7 @@ export function TransferPanelSummary({
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
-        {isBridgingNativeCurrency && (
+        {isBridgingETH && (
           <>
             <div>
               <div className="h-2" />
@@ -371,66 +378,82 @@ export function TransferPanelSummary({
       <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-2/5 font-light">You&apos;ll pay in gas fees</span>
         <div className="flex w-3/5 justify-between">
-          <span>
-            {formatAmount(estimatedTotalGasFees, {
-              symbol: nativeCurrency.symbol
-            })}
-          </span>
+          {sameNativeCurrency ? (
+            <>
+              <span>
+                {formatAmount(estimatedTotalGasFees, {
+                  symbol: nativeCurrency.symbol
+                })}
+              </span>
 
-          {showPrice && (
-            <span className="font-medium text-dark">
-              {formatUSD(ethToUSD(estimatedTotalGasFees))}
+              {showPrice && (
+                <span className="font-medium text-dark">
+                  {formatUSD(ethToUSD(estimatedTotalGasFees))}
+                </span>
+              )}
+            </>
+          ) : (
+            <span>
+              {formatAmount(estimatedL1GasFees, {
+                symbol: parentChainNativeCurrency.symbol
+              })}
+              {' + '}
+              {formatAmount(estimatedL2GasFees, {
+                symbol: nativeCurrency.symbol
+              })}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light">{parentLayer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
-              <InformationCircleIcon className="h-4 w-4" />
-            </Tooltip>
-          </div>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light">
-              {formatAmount(estimatedL1GasFees, {
-                symbol: nativeCurrency.symbol
-              })}
-            </span>
-
-            {showPrice && (
+      {showBreakdown && (
+        <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
+          <div className="flex flex-row justify-between">
+            <div className="flex flex-row items-center space-x-2">
+              <span className="pl-4 font-light">{parentLayer} gas</span>
+              <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
+                <InformationCircleIcon className="h-4 w-4" />
+              </Tooltip>
+            </div>
+            <div className="flex w-3/5 flex-row justify-between">
               <span className="font-light">
-                {formatUSD(ethToUSD(estimatedL1GasFees))}
+                {formatAmount(estimatedL1GasFees, {
+                  symbol: parentChainNativeCurrency.symbol
+                })}
               </span>
-            )}
+
+              {showPrice && (
+                <span className="font-light">
+                  {formatUSD(ethToUSD(estimatedL1GasFees))}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-row justify-between text-gray-dark">
+            <div className="flex flex-row items-center space-x-2">
+              <span className="pl-4 font-light ">{layer} gas</span>
+              <Tooltip content={layerToGasFeeTooltip[layer]}>
+                <InformationCircleIcon className="h-4 w-4 " />
+              </Tooltip>
+            </div>
+            <div className="flex w-3/5 flex-row justify-between">
+              <span className="font-light">
+                {formatAmount(estimatedL2GasFees, {
+                  symbol: nativeCurrency.symbol
+                })}
+              </span>
+
+              {showPrice && (
+                <span className="font-light">
+                  {formatUSD(ethToUSD(estimatedL2GasFees))}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex flex-row justify-between text-gray-dark">
-          <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light ">{layer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[layer]}>
-              <InformationCircleIcon className="h-4 w-4 " />
-            </Tooltip>
-          </div>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light">
-              {formatAmount(estimatedL2GasFees, {
-                symbol: nativeCurrency.symbol
-              })}
-            </span>
+      )}
 
-            {showPrice && (
-              <span className="font-light">
-                {formatUSD(ethToUSD(estimatedL2GasFees))}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {isBridgingNativeCurrency && (
+      {isBridgingETH && (
         <>
           <div>
             <div className="h-2" />
