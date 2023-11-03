@@ -34,7 +34,7 @@ export type Erc20Data = {
   address: string
 }
 
-const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc-20-cache'
+const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc20-cache'
 
 type Erc20DataCache = {
   [cacheKey: string]: Erc20Data
@@ -59,26 +59,19 @@ function getErc20DataCache(
   )
 
   if (typeof params !== 'undefined') {
-    const { chainId, address } = params
-    return cache[getErc20DataCacheKey({ chainId, address })] ?? null
+    return cache[getErc20DataCacheKey(params)] ?? null
   }
 
   return cache
 }
 
-type SetErc20DataCacheParams = {
-  chainId: number
-  address: string
+type SetErc20DataCacheParams = GetErc20DataCacheParams & {
   erc20Data: Erc20Data
 }
 
-function setErc20DataCache({
-  chainId,
-  address,
-  erc20Data
-}: SetErc20DataCacheParams) {
+function setErc20DataCache({ erc20Data, ...params }: SetErc20DataCacheParams) {
   const cache = getErc20DataCache()
-  cache[getErc20DataCacheKey({ chainId, address })] = erc20Data
+  cache[getErc20DataCacheKey(params)] = erc20Data
   localStorage.setItem(erc20DataCacheLocalStorageKey, JSON.stringify(cache))
 }
 
