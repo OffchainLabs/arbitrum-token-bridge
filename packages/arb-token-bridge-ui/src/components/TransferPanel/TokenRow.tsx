@@ -142,10 +142,6 @@ export function TokenRow({
       return nativeCurrency.logoUrl
     }
 
-    if (!token.logoURI) {
-      return undefined
-    }
-
     return token.logoURI
   }, [token, nativeCurrency])
 

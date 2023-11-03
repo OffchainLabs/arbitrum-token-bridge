@@ -144,7 +144,7 @@ function TokenListsPanel() {
   )
 }
 
-const ETH_IDENTIFIER = 'eth.address'
+const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 
 function TokensPanel({
   onTokenSelected
@@ -188,7 +188,7 @@ function TokensPanel({
 
   const getBalance = useCallback(
     (address: string) => {
-      if (address === ETH_IDENTIFIER) {
+      if (address === NATIVE_CURRENCY_IDENTIFIER) {
         if (nativeCurrency.isCustom) {
           return isDepositMode
             ? erc20L1Balances?.[nativeCurrency.address]
@@ -242,7 +242,7 @@ function TokensPanel({
       }
     }
     const tokens = [
-      ETH_IDENTIFIER,
+      NATIVE_CURRENCY_IDENTIFIER,
       // Deduplicate addresses
       ...new Set(tokenAddresses)
     ]
@@ -255,20 +255,21 @@ function TokensPanel({
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
+
         if (isTokenArbitrumGoerliNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_GOERLI_NATIVE_USDC_TOKEN
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
-        if (nativeCurrency.isCustom) {
+        if (nativeCurrency.isCustom && address !== NATIVE_CURRENCY_IDENTIFIER) {
           return address.toLowerCase() !== nativeCurrency.address
         }
 
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
-          // Always show ETH
-          if (address === ETH_IDENTIFIER) {
+          // Always show native currency
+          if (address === NATIVE_CURRENCY_IDENTIFIER) {
             return true
           }
 
@@ -282,8 +283,10 @@ function TokensPanel({
           return balance && balance.gt(0)
         }
 
-        if (address === ETH_IDENTIFIER) {
-          return 'ethereumeth'.includes(tokenSearch)
+        if (address === NATIVE_CURRENCY_IDENTIFIER) {
+          return `${nativeCurrency.name}${nativeCurrency.symbol}`
+            .toLowerCase()
+            .includes(tokenSearch)
         }
 
         if (!token) {
@@ -297,13 +300,13 @@ function TokensPanel({
           .includes(tokenSearch)
       })
       .sort((address1: string, address2: string) => {
-        // Pin ETH to top
-        if (address1 === ETH_IDENTIFIER) {
+        // Pin native currency to top
+        if (address1 === NATIVE_CURRENCY_IDENTIFIER) {
           return -1
         }
 
-        // Pin ETH to top
-        if (address2 === ETH_IDENTIFIER) {
+        // Pin native currency to top
+        if (address2 === NATIVE_CURRENCY_IDENTIFIER) {
           return 1
         }
 
@@ -430,10 +433,10 @@ function TokensPanel({
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
 
-                if (address === ETH_IDENTIFIER) {
+                if (address === NATIVE_CURRENCY_IDENTIFIER) {
                   return (
                     <TokenRow
-                      key="TokenRowEther"
+                      key="TokenRowNativeCurrency"
                       onClick={() => onTokenSelected(null)}
                       token={null}
                     />
