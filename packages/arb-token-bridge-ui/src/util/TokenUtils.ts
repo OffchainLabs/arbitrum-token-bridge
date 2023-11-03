@@ -130,6 +130,8 @@ export async function isValidErc20({
 
   try {
     await Promise.all([
+      // we don't reallly care about the balance in this call, so we're just using vitalik.eth
+      // didn't want to use address zero in case contracts have checks for it
       erc20.balanceOf('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'),
       erc20.totalSupply()
     ])
