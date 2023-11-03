@@ -14,7 +14,8 @@ import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
 import {
   erc20DataToErc20BridgeToken,
-  fetchErc20Data
+  fetchErc20Data,
+  isValidErc20
 } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -96,6 +97,10 @@ export function TokenImportDialog({
   const getL1TokenDataFromL1Address = useCallback(async () => {
     if (!l1Address || !walletAddress) {
       return
+    }
+
+    if (!(await isValidErc20({ address: l1Address, provider: l1.provider }))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token}`)
     }
 
     return fetchErc20Data({ address: l1Address, provider: l1.provider })

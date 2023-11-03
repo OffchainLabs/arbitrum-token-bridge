@@ -2,6 +2,7 @@ import { constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
@@ -127,6 +128,24 @@ export async function fetchErc20Data({
   }
 
   return erc20Data
+}
+
+export async function isValidErc20({
+  address,
+  provider
+}: FetchErc20DataProps): Promise<boolean> {
+  const erc20 = ERC20__factory.connect(address, provider)
+
+  try {
+    await Promise.all([
+      erc20.balanceOf('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'),
+      erc20.totalSupply()
+    ])
+
+    return true
+  } catch (err) {
+    return false
+  }
 }
 
 export type FetchErc20AllowanceParams = FetchErc20DataProps & {
