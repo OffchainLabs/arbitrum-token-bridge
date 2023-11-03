@@ -8,7 +8,7 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
     id: chain.chainID,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: ether,
+    nativeCurrency: chain.nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
