@@ -41,7 +41,8 @@ import {
   getL1ERC20Address,
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
-  l1TokenIsDisabled
+  l1TokenIsDisabled,
+  isValidErc20
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -804,11 +805,13 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const erc20Params = { address: l1Address, provider: l1.provider }
 
-    const { name, symbol, decimals } = await fetchErc20Data({
-      address: l1Address,
-      provider: l1.provider
-    })
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+    }
+
+    const { name, symbol, decimals } = await fetchErc20Data(erc20Params)
 
     const isDisabled = await l1TokenIsDisabled({
       erc20L1Address: l1Address,

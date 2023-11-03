@@ -99,11 +99,13 @@ export function TokenImportDialog({
       return
     }
 
-    if (!(await isValidErc20({ address: l1Address, provider: l1.provider }))) {
-      throw new Error(`${l1Address} is not a valid ERC-20 token}`)
+    const erc20Params = { address: l1Address, provider: l1.provider }
+
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
     }
 
-    return fetchErc20Data({ address: l1Address, provider: l1.provider })
+    return fetchErc20Data(erc20Params)
   }, [l1, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
