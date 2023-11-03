@@ -1,7 +1,10 @@
-import { Provider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
+import { rpcURLs } from '../util/networks'
+import { fetchErc20Data } from '../util/TokenUtils'
 
 type NativeCurrencyBase = {
   name: string
@@ -54,5 +57,30 @@ export async function fetchNativeCurrency({
 }: {
   provider: Provider
 }): Promise<NativeCurrency> {
-  return nativeCurrencyEther
+  let chain: L2Network
+
+  try {
+    chain = await getChain(provider)
+  } catch (error) {
+    // This will only throw for L1s, so we can safely assume that the native currency is ETH
+    return nativeCurrencyEther
+  }
+
+  const ethBridger = await EthBridger.fromProvider(provider)
+
+  // Could be an L2 or an Orbit chain, but doesn't really matter
+  if (typeof ethBridger.nativeToken === 'undefined') {
+    return nativeCurrencyEther
+  }
+
+  const address = ethBridger.nativeToken.toLowerCase()
+  const parentChainId = chain.partnerChainID
+  const parentChainProvider = new StaticJsonRpcProvider(rpcURLs[parentChainId])
+
+  const { name, symbol, decimals } = await fetchErc20Data({
+    address,
+    provider: parentChainProvider
+  })
+
+  return { name, symbol, decimals, address, isCustom: true }
 }

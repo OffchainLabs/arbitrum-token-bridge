@@ -41,6 +41,7 @@ import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 enum Panel {
   TOKENS,
@@ -143,7 +144,7 @@ function TokenListsPanel() {
   )
 }
 
-const ETH_IDENTIFIER = 'eth.address'
+const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 
 function TokensPanel({
   onTokenSelected
@@ -172,6 +173,8 @@ function TokensPanel({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: L2Provider, walletAddress })
 
+  const nativeCurrency = useNativeCurrency({ provider: L2Provider })
+
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
 
   const tokensFromUser = useTokensFromUser()
@@ -185,7 +188,13 @@ function TokensPanel({
 
   const getBalance = useCallback(
     (address: string) => {
-      if (address === ETH_IDENTIFIER) {
+      if (address === NATIVE_CURRENCY_IDENTIFIER) {
+        if (nativeCurrency.isCustom) {
+          return isDepositMode
+            ? erc20L1Balances?.[nativeCurrency.address]
+            : ethL2Balance
+        }
+
         return isDepositMode ? ethL1Balance : ethL2Balance
       }
 
@@ -208,6 +217,7 @@ function TokensPanel({
       return l2Address ? erc20L2Balances?.[l2Address.toLowerCase()] : null
     },
     [
+      nativeCurrency,
       bridgeTokens,
       erc20L1Balances,
       erc20L2Balances,
@@ -232,7 +242,7 @@ function TokensPanel({
       }
     }
     const tokens = [
-      ETH_IDENTIFIER,
+      NATIVE_CURRENCY_IDENTIFIER,
       // Deduplicate addresses
       ...new Set(tokenAddresses)
     ]
@@ -245,15 +255,21 @@ function TokensPanel({
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
+
         if (isTokenArbitrumGoerliNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_GOERLI_NATIVE_USDC_TOKEN
         }
 
+        // If the token on the list is used as a custom fee token, we remove the duplicate
+        if (nativeCurrency.isCustom && address !== NATIVE_CURRENCY_IDENTIFIER) {
+          return address.toLowerCase() !== nativeCurrency.address
+        }
+
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
-          // Always show ETH
-          if (address === ETH_IDENTIFIER) {
+          // Always show native currency
+          if (address === NATIVE_CURRENCY_IDENTIFIER) {
             return true
           }
 
@@ -267,8 +283,10 @@ function TokensPanel({
           return balance && balance.gt(0)
         }
 
-        if (address === ETH_IDENTIFIER) {
-          return 'ethereumeth'.includes(tokenSearch)
+        if (address === NATIVE_CURRENCY_IDENTIFIER) {
+          return `${nativeCurrency.name}${nativeCurrency.symbol}`
+            .toLowerCase()
+            .includes(tokenSearch)
         }
 
         if (!token) {
@@ -282,13 +300,13 @@ function TokensPanel({
           .includes(tokenSearch)
       })
       .sort((address1: string, address2: string) => {
-        // Pin ETH to top
-        if (address1 === ETH_IDENTIFIER) {
+        // Pin native currency to top
+        if (address1 === NATIVE_CURRENCY_IDENTIFIER) {
           return -1
         }
 
-        // Pin ETH to top
-        if (address2 === ETH_IDENTIFIER) {
+        // Pin native currency to top
+        if (address2 === NATIVE_CURRENCY_IDENTIFIER) {
           return 1
         }
 
@@ -313,7 +331,8 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumGoerli,
-    getBalance
+    getBalance,
+    nativeCurrency
   ])
 
   const storeNewToken = async () => {
@@ -414,10 +433,10 @@ function TokensPanel({
               rowRenderer={virtualizedProps => {
                 const address = tokensToShow[virtualizedProps.index]
 
-                if (address === ETH_IDENTIFIER) {
+                if (address === NATIVE_CURRENCY_IDENTIFIER) {
                   return (
                     <TokenRow
-                      key="TokenRowEther"
+                      key="TokenRowNativeCurrency"
                       onClick={() => onTokenSelected(null)}
                       token={null}
                     />
@@ -469,8 +488,7 @@ export function TokenSearch({
   } = useActions()
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { isLoading: isLoadingAccountType } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
