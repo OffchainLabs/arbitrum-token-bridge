@@ -146,6 +146,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: '56', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(2000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
     })
   })
@@ -157,6 +160,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: '1.6678', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(2000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
     })
   })
@@ -167,6 +173,9 @@ describe('User enters site with query params on URL', () => {
         networkType: 'L1',
         query: { amount: '6', ...defaultQueryParams }
       })
+
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(2000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
     })
@@ -191,6 +200,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: '-0.123', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(2000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
   })
@@ -212,6 +224,9 @@ describe('User enters site with query params on URL', () => {
         networkType: 'L1',
         query: { amount: '0', ...defaultQueryParams }
       })
+
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(2000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
