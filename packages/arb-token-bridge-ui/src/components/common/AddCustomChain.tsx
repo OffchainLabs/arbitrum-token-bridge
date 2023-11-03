@@ -19,7 +19,7 @@ import {
   rpcURLs
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
-import { fetchErc20Data } from '../../util/TokenUtils'
+import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 
 type Contracts = {
   customGateway: string
@@ -170,12 +170,11 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   }
 }
 
-async function fetchNativeToken(data: OrbitConfig): Promise<
+async function fetchNativeToken(
+  data: OrbitConfig
+): Promise<
   | { nativeToken: undefined; nativeTokenData: undefined }
-  | {
-      nativeToken: string
-      nativeTokenData: { name: string; symbol: string; decimals: number }
-    }
+  | { nativeToken: string; nativeTokenData: Erc20Data }
 > {
   const nativeToken = data.chainInfo.nativeToken
   const nativeTokenIsEther =
