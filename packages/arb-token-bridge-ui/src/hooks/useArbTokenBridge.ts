@@ -242,6 +242,10 @@ export const useArbTokenBridge = (
 
     updateTransaction(receipt, tx, l1ToL2MsgData)
     updateEthBalances()
+
+    if (nativeCurrency.isCustom) {
+      updateErc20L1Balance([nativeCurrency.address])
+    }
   }
 
   const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
@@ -496,6 +500,11 @@ export const useArbTokenBridge = (
 
       updateTransaction(receipt, tx, l1ToL2MsgData)
       updateTokenData(erc20L1Address)
+      updateEthBalances()
+
+      if (nativeCurrency.isCustom) {
+        updateErc20L1Balance([nativeCurrency.address])
+      }
 
       return receipt
     } catch (error) {

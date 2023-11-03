@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -24,7 +25,11 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import {
+  TransferPanelSummary,
+  UseGasSummaryResult,
+  useGasSummary
+} from './TransferPanelSummary'
 import {
   TransactionHistoryTab,
   useAppContextActions,
@@ -62,6 +67,7 @@ import {
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
@@ -107,6 +113,32 @@ const isAllowedL2 = async ({
   return (await token.allowance(walletAddress, gatewayAddress)).gte(
     amountNeeded
   )
+}
+
+function sanitizeEstimatedGasFees(
+  gasSummary: UseGasSummaryResult,
+  options: { isSmartContractWallet: boolean; isDepositMode: boolean }
+) {
+  // For smart contract wallets, the relayer pays the gas fees
+  if (options.isSmartContractWallet) {
+    if (options.isDepositMode) {
+      // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
+      return {
+        estimatedL1GasFees: 0,
+        estimatedL2GasFees: gasSummary.estimatedL2GasFees
+      }
+    }
+
+    return {
+      estimatedL1GasFees: 0,
+      estimatedL2GasFees: 0
+    }
+  }
+
+  return {
+    estimatedL1GasFees: gasSummary.estimatedL1GasFees,
+    estimatedL2GasFees: gasSummary.estimatedL2GasFees
+  }
 }
 
 function useTokenFromSearchParams(): string | undefined {
@@ -203,7 +235,7 @@ export function TransferPanel() {
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
-  const amountNum = parseFloat(amount) // just a numerical variant of amount
+
   const setAmount = useCallback(
     (newAmount: string) => {
       setQueryParams({ amount: newAmount })
@@ -219,6 +251,8 @@ export function TransferPanel() {
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
+  const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
+    useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
@@ -243,10 +277,6 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
-  const ethBalance = useMemo(() => {
-    return isDepositMode ? ethL1Balance : ethL2Balance
-  }, [ethL1Balance, ethL2Balance, isDepositMode])
-
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
 
@@ -264,45 +294,73 @@ export function TransferPanel() {
     setImportTokenModalStatus
   })
 
-  const l1Balance = useMemo(() => {
-    if (selectedToken) {
-      const balanceL1 = erc20L1Balances?.[selectedToken.address.toLowerCase()]
-      const { decimals } = selectedToken
-      if (!balanceL1 || !decimals) {
-        return null
-      }
-      return utils.formatUnits(balanceL1, decimals)
-    }
+  const ethL1BalanceFloat = useMemo(
+    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
+    [ethL1Balance]
+  )
 
-    if (!ethL1Balance) {
+  const ethL2BalanceFloat = useMemo(
+    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
+    [ethL2Balance]
+  )
+
+  const selectedTokenL1BalanceFloat = useMemo(() => {
+    if (!selectedToken) {
       return null
     }
 
-    return utils.formatUnits(ethL1Balance, nativeCurrency.decimals)
-  }, [ethL1Balance, erc20L1Balances, selectedToken, nativeCurrency])
+    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
 
-  const l2Balance = useMemo(() => {
-    if (selectedToken) {
-      const addressLookup =
-        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-        isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
-          ? selectedToken.address.toLowerCase()
-          : (selectedToken.l2Address || '').toLowerCase()
-
-      const balanceL2 = erc20L2Balances?.[addressLookup]
-      const { decimals } = selectedToken
-
-      if (!balanceL2) {
-        return null
-      }
-      return utils.formatUnits(balanceL2, decimals)
-    }
-
-    if (!ethL2Balance) {
+    if (!balance) {
       return null
     }
-    return utils.formatUnits(ethL2Balance, nativeCurrency.decimals)
-  }, [ethL2Balance, erc20L2Balances, selectedToken, nativeCurrency])
+
+    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
+  }, [selectedToken, erc20L1Balances])
+
+  const selectedTokenL2BalanceFloat = useMemo(() => {
+    if (!selectedToken) {
+      return null
+    }
+
+    const isL2NativeUSDC =
+      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+
+    const selectedTokenL2Address = isL2NativeUSDC
+      ? selectedToken.address.toLowerCase()
+      : (selectedToken.l2Address || '').toLowerCase()
+
+    const balance = erc20L2Balances?.[selectedTokenL2Address]
+
+    if (!balance) {
+      return null
+    }
+
+    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
+  }, [selectedToken, erc20L2Balances])
+
+  const customFeeTokenL1BalanceFloat = useMemo(() => {
+    if (!nativeCurrency.isCustom) {
+      return null
+    }
+
+    const balance = erc20L1Balances?.[nativeCurrency.address]
+
+    if (!balance) {
+      return null
+    }
+
+    return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
+  }, [nativeCurrency, erc20L1Balances])
+
+  const selectedTokenIsWithdrawOnly = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+
+    return isWithdrawOnlyToken(selectedToken.address, l2Network.id)
+  }, [selectedToken, l2Network])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -360,6 +418,107 @@ export function TransferPanel() {
     } else {
       transfer()
     }
+  }
+
+  async function approveCustomFeeTokenForInbox(): Promise<boolean> {
+    if (typeof walletAddress === 'undefined') {
+      throw new Error('walletAddress is undefined')
+    }
+
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    const ethBridger = await EthBridger.fromProvider(l2Provider)
+    const { l2Network } = ethBridger
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('l2 network does not use custom fee token')
+    }
+
+    const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: l1Provider,
+      owner: walletAddress,
+      spender: l2Network.ethBridge.inbox
+    })
+
+    const amountBigNumber = utils.parseUnits(amount, nativeCurrency.decimals)
+
+    // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
+    if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const [confirmed] = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+        l1Signer
+      })
+      await approveCustomFeeTokenTx.wait()
+    }
+
+    return true
+  }
+
+  async function approveCustomFeeTokenForGateway(): Promise<boolean> {
+    if (typeof walletAddress === 'undefined') {
+      throw new Error('walletAddress is undefined')
+    }
+
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    if (!selectedToken) {
+      throw new Error('no selected token')
+    }
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    const l2Network = erc20Bridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('l2 network does not use custom fee token')
+    }
+
+    const l1Gateway = await fetchErc20L1GatewayAddress({
+      erc20L1Address: selectedToken.address,
+      l1Provider,
+      l2Provider
+    })
+
+    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: l1Provider,
+      owner: walletAddress,
+      spender: l1Gateway
+    })
+
+    const estimatedL2GasFees = utils.parseUnits(
+      String(gasSummary.estimatedL2GasFees),
+      nativeCurrency.decimals
+    )
+
+    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the chain will be paid in the custom fee token
+    // We have to check if the allowance is enough to cover the fees
+    if (!customFeeTokenAllowanceForL1Gateway.gte(estimatedL2GasFees)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const [confirmed] = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+        erc20L1Address: selectedToken.address,
+        l1Signer
+      })
+      await approveCustomFeeTokenTx.wait()
+    }
+
+    return true
   }
 
   const amountBigNumber = useMemo(() => {
@@ -755,6 +914,14 @@ export function TransferPanel() {
             }
           }
 
+          if (nativeCurrency.isCustom) {
+            const approved = await approveCustomFeeTokenForGateway()
+
+            if (!approved) {
+              return
+            }
+          }
+
           const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
             l1Provider,
@@ -824,6 +991,14 @@ export function TransferPanel() {
             }
           })
         } else {
+          if (nativeCurrency.isCustom) {
+            const approved = await approveCustomFeeTokenForInbox()
+
+            if (!approved) {
+              return
+            }
+          }
+
           await latestEth.current.deposit({
             amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l1Signer,
@@ -1010,109 +1185,192 @@ export function TransferPanel() {
   }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
-  const shouldRunGasEstimation = useMemo(
-    () =>
-      isDepositMode
-        ? Number(amount) <= Number(l1Balance)
-        : Number(amount) <= Number(l2Balance),
-    [isDepositMode, l1Balance, amount, l2Balance]
-  )
+  const shouldRunGasEstimation = useMemo(() => {
+    let balanceFloat: number | null
+
+    // Compare ERC-20 balance
+    if (selectedToken) {
+      balanceFloat = isDepositMode
+        ? selectedTokenL1BalanceFloat
+        : selectedTokenL2BalanceFloat
+    }
+    // Compare custom fee token balance
+    else if (nativeCurrency.isCustom) {
+      balanceFloat = isDepositMode
+        ? customFeeTokenL1BalanceFloat
+        : ethL2BalanceFloat
+    }
+    // Compare ETH balance
+    else {
+      balanceFloat = isDepositMode ? ethL1BalanceFloat : ethL2BalanceFloat
+    }
+
+    if (!balanceFloat) {
+      return false
+    }
+
+    return Number(amount) <= balanceFloat
+  }, [
+    amount,
+    selectedToken,
+    isDepositMode,
+    nativeCurrency,
+    ethL1BalanceFloat,
+    ethL2BalanceFloat,
+    selectedTokenL1BalanceFloat,
+    selectedTokenL2BalanceFloat,
+    customFeeTokenL1BalanceFloat
+  ])
 
   const gasSummary = useGasSummary(
     amountBigNumber,
     selectedToken,
     shouldRunGasEstimation
   )
-  const { status: gasEstimationStatus } = gasSummary
 
-  const requiredGasFees = useMemo(
-    // For SC wallets, the relayer pays the gas fees so we don't need to check in that case
-    () => {
-      if (isSmartContractWallet) {
-        if (isDepositMode) {
-          // L2 fee is paid in callvalue and still need to come from the wallet for retryable cost estimation to succeed
-          return gasSummary.estimatedL2GasFees
-        }
-        return 0
-      }
-      return gasSummary.estimatedTotalGasFees
-    },
-    [isSmartContractWallet, isDepositMode, gasSummary]
-  )
+  const transferPanelMainErrorMessage:
+    | TransferPanelMainErrorMessage
+    | undefined = useMemo(() => {
+    // ETH transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && !selectedToken) {
+      return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
+    }
 
-  const getErrorMessage = useCallback(
-    (
-      _amountEntered: string,
-      _balance: string | null
-    ): TransferPanelMainErrorMessage | undefined => {
-      // No error while loading balance
-      if (_balance === null || ethBalance === null) {
-        return undefined
-      }
+    const ethBalanceFloat = isDepositMode
+      ? ethL1BalanceFloat
+      : ethL2BalanceFloat
 
-      // ETH transfers using SC wallets not enabled yet
-      if (isSmartContractWallet && !selectedToken) {
-        return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-      }
+    const selectedTokenBalanceFloat = isDepositMode
+      ? selectedTokenL1BalanceFloat
+      : selectedTokenL2BalanceFloat
 
-      if (
-        isDepositMode &&
-        selectedToken &&
-        isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-      ) {
+    const customFeeTokenBalanceFloat = isDepositMode
+      ? customFeeTokenL1BalanceFloat
+      : ethL2BalanceFloat
+
+    // No error while loading balance
+    if (ethBalanceFloat === null) {
+      return undefined
+    }
+
+    // ERC-20
+    if (selectedToken) {
+      if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return TransferPanelMainErrorMessage.WITHDRAW_ONLY
       }
 
-      const amountEntered = Number(_amountEntered)
-      const balance = Number(_balance)
-
-      if (amountEntered > balance) {
-        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      // No error while loading balance
+      if (selectedTokenBalanceFloat === null) {
+        return undefined
       }
 
-      // The amount entered is enough funds, but now let's include gas costs
-      switch (gasSummary.status) {
-        // No error while loading gas costs
-        case 'idle':
-        case 'loading':
-          return undefined
+      // Check amount against ERC-20 balance
+      if (Number(amount) > selectedTokenBalanceFloat) {
+        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      }
+    }
+    // Custom fee token
+    else if (nativeCurrency.isCustom) {
+      // No error while loading balance
+      if (customFeeTokenBalanceFloat === null) {
+        return undefined
+      }
 
-        case 'error':
-          return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
+      // Check amount against custom fee token balance
+      if (Number(amount) > customFeeTokenBalanceFloat) {
+        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      }
+    }
+    // ETH
+    // Check amount against ETH balance
+    else if (Number(amount) > ethBalanceFloat) {
+      return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+    }
 
-        case 'success': {
-          if (selectedToken) {
-            // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
-            const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+    // The amount entered is enough funds, but now let's include gas costs
+    switch (gasSummary.status) {
+      // No error while loading gas costs
+      case 'idle':
+      case 'loading':
+        return undefined
 
-            if (requiredGasFees > ethBalanceFloat) {
-              return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      case 'error':
+        return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
+
+      case 'success': {
+        const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+          isSmartContractWallet,
+          isDepositMode
+        })
+
+        const defaultRequiredGasFees =
+          sanitizedEstimatedGasFees.estimatedL1GasFees +
+          sanitizedEstimatedGasFees.estimatedL2GasFees
+
+        if (selectedToken) {
+          // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
+          if (nativeCurrency.isCustom && isDepositMode) {
+            // Still loading custom fee token balance
+            if (customFeeTokenL1BalanceFloat === null) {
+              return undefined
             }
 
-            return undefined
+            const { estimatedL1GasFees, estimatedL2GasFees } =
+              sanitizedEstimatedGasFees
+
+            // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
+            if (
+              estimatedL1GasFees > ethBalanceFloat ||
+              estimatedL2GasFees > customFeeTokenL1BalanceFloat
+            ) {
+              return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+            }
           }
 
-          if (amountEntered + requiredGasFees > balance) {
+          if (defaultRequiredGasFees > ethBalanceFloat) {
             return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
           }
 
           return undefined
         }
-      }
-    },
-    [
-      gasSummary,
-      ethBalance,
-      selectedToken,
-      isDepositMode,
-      l2Network,
-      requiredGasFees,
-      isSmartContractWallet
-    ]
-  )
 
-  const disableDepositAndWithdrawal = useMemo(() => {
-    if (!amountNum) return true
+        if (nativeCurrency.isCustom && isDepositMode) {
+          // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
+          // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
+          if (defaultRequiredGasFees > ethBalanceFloat) {
+            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+          }
+
+          return undefined
+        }
+
+        const notEnoughEthForGasFees =
+          Number(amount) + defaultRequiredGasFees > ethBalanceFloat
+
+        if (notEnoughEthForGasFees) {
+          return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+        }
+
+        return undefined
+      }
+    }
+  }, [
+    amount,
+    isDepositMode,
+    isSmartContractWallet,
+    selectedToken,
+    selectedTokenIsWithdrawOnly,
+    gasSummary,
+    nativeCurrency,
+    ethL1BalanceFloat,
+    ethL2BalanceFloat,
+    selectedTokenL1BalanceFloat,
+    selectedTokenL2BalanceFloat,
+    customFeeTokenL1BalanceFloat
+  ])
+
+  const disableTransfer = useMemo(() => {
+    if (!amount) return true
     if (isTransferring) return true
     if (isSwitchingL2Chain) return true
     if (destinationAddressError) return true
@@ -1121,113 +1379,129 @@ export function TransferPanel() {
       return true
     }
 
+    const ethBalanceFloat = isDepositMode
+      ? ethL1BalanceFloat
+      : ethL2BalanceFloat
+
+    const selectedTokenBalanceFloat = isDepositMode
+      ? selectedTokenL1BalanceFloat
+      : selectedTokenL2BalanceFloat
+
+    if (!ethBalanceFloat) {
+      return true
+    }
+
     // Keep the button disabled while loading gas summary
     if (
-      !ethBalance ||
-      (gasSummary.status !== 'success' && gasSummary.status !== 'unavailable')
+      gasSummary.status !== 'success' &&
+      gasSummary.status !== 'unavailable'
     ) {
+      return true
+    }
+
+    const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
+      isSmartContractWallet,
+      isDepositMode
+    })
+
+    const defaultRequiredGasFees =
+      sanitizedEstimatedGasFees.estimatedL1GasFees +
+      sanitizedEstimatedGasFees.estimatedL2GasFees
+
+    if (selectedToken) {
+      // Still loading ERC-20 balance
+      if (selectedTokenBalanceFloat === null) {
+        return true
+      }
+
+      // First, check if there's enough tokens
+      if (Number(amount) > selectedTokenBalanceFloat) {
+        return true
+      }
+
+      // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
+      if (nativeCurrency.isCustom && isDepositMode) {
+        // Still loading custom fee token balance
+        if (customFeeTokenL1BalanceFloat === null) {
+          return true
+        }
+
+        const { estimatedL1GasFees, estimatedL2GasFees } =
+          sanitizedEstimatedGasFees
+
+        // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
+        return (
+          estimatedL1GasFees > ethBalanceFloat ||
+          estimatedL2GasFees > customFeeTokenL1BalanceFloat
+        )
+      }
+
+      // We checked if there's enough tokens, but let's check if there's enough ETH to cover gas
+      return defaultRequiredGasFees > ethBalanceFloat
+    }
+
+    if (nativeCurrency.isCustom && isDepositMode) {
+      // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
+      // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
+      return defaultRequiredGasFees > ethBalanceFloat
+    }
+
+    const notEnoughEthForGasFees =
+      Number(amount) + defaultRequiredGasFees > ethBalanceFloat
+
+    return notEnoughEthForGasFees
+  }, [
+    amount,
+    destinationAddressError,
+    isSmartContractWallet,
+    isDepositMode,
+    gasSummary,
+    isSwitchingL2Chain,
+    isTransferring,
+    selectedToken,
+    ethL1BalanceFloat,
+    ethL2BalanceFloat,
+    selectedTokenL1BalanceFloat,
+    selectedTokenL2BalanceFloat,
+    nativeCurrency,
+    customFeeTokenL1BalanceFloat
+  ])
+
+  const disableDeposit = useMemo(() => {
+    if (disableTransfer) {
+      return true
+    }
+
+    if (selectedTokenIsWithdrawOnly) {
       return true
     }
 
     return false
-  }, [
-    amountNum,
-    destinationAddressError,
-    isSmartContractWallet,
-    ethBalance,
-    requiredGasFees,
-    gasSummary.status,
-    isSwitchingL2Chain,
-    isTransferring,
-    selectedToken
-  ])
-
-  const disableDeposit = useMemo(() => {
-    if (disableDepositAndWithdrawal) {
-      return true
-    }
-
-    if (
-      selectedToken &&
-      isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-    ) {
-      return true
-    }
-
-    if (isBridgingANewStandardToken) {
-      if (l1Balance === null || amountNum > Number(l1Balance)) {
-        return true
-      }
-    } else {
-      if (!l1Balance || amountNum > Number(l1Balance)) {
-        return true
-      }
-    }
-
-    if (selectedToken) {
-      if (!ethBalance) {
-        return true
-      }
-      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return requiredGasFees > ethBalanceFloat
-    }
-
-    return Number(amount) + requiredGasFees > Number(l1Balance)
-  }, [
-    disableDepositAndWithdrawal,
-    selectedToken,
-    l2Network.id,
-    isBridgingANewStandardToken,
-    amount,
-    requiredGasFees,
-    l1Balance,
-    amountNum,
-    ethBalance
-  ])
+  }, [disableTransfer, selectedTokenIsWithdrawOnly])
 
   const disableWithdrawal = useMemo(() => {
-    if (disableDepositAndWithdrawal) {
-      return true
-    }
-
-    if (!l2Balance) return true
-    if (amountNum > Number(l2Balance)) return true
-
-    if (
-      selectedToken &&
-      [
-        '0x0e192d382a36de7011f795acc4391cd302003606',
-        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
-      ].includes(selectedToken.address.toLowerCase())
-    ) {
+    if (disableTransfer) {
       return true
     }
 
     if (selectedToken) {
-      if (!ethBalance) {
+      const disabledTokens = [
+        '0x0e192d382a36de7011f795acc4391cd302003606',
+        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+      ]
+
+      if (disabledTokens.includes(selectedToken.address.toLowerCase())) {
         return true
       }
-      // We checked if there's enough tokens, but let's check if there's enough ETH for gas
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
-      return requiredGasFees > ethBalanceFloat
     }
 
-    return Number(amount) + requiredGasFees > Number(l2Balance)
-  }, [
-    disableDepositAndWithdrawal,
-    l2Balance,
-    amountNum,
-    selectedToken,
-    amount,
-    requiredGasFees,
-    ethBalance
-  ])
+    return false
+  }, [disableTransfer, selectedToken])
 
   const { isSummaryVisible } = useSummaryVisibility({
     disableDeposit,
     disableWithdrawal,
-    gasEstimationStatus
+    gasEstimationStatus: gasSummary.status
   })
 
   return (
@@ -1239,6 +1513,13 @@ export function TransferPanel() {
         token={selectedToken}
         isCctp={isCctp}
       />
+
+      {nativeCurrency.isCustom && (
+        <CustomFeeTokenApprovalDialog
+          {...customFeeTokenApprovalDialogProps}
+          customFeeToken={nativeCurrency}
+        />
+      )}
 
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}
@@ -1264,11 +1545,7 @@ export function TransferPanel() {
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
-          errorMessage={
-            isDepositMode
-              ? getErrorMessage(amount, l1Balance)
-              : getErrorMessage(amount, l2Balance)
-          }
+          errorMessage={transferPanelMainErrorMessage}
         />
 
         <div className="border-r border-gray-2" />
@@ -1294,7 +1571,7 @@ export function TransferPanel() {
 
             {isSummaryVisible ? (
               <TransferPanelSummary
-                amount={amountNum}
+                amount={parseFloat(amount)}
                 token={selectedToken}
                 gasSummary={gasSummary}
               />
