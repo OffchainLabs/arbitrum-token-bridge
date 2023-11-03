@@ -247,7 +247,8 @@ describe('Import token', () => {
           networkType: 'L1',
           url: '/',
           query: {
-            token: invalidTokenAddress
+            token: invalidTokenAddress,
+            walletConnectChain: 'mainnet'
           }
         })
 
