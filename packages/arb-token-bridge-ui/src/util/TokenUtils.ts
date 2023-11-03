@@ -55,7 +55,8 @@ function getErc20DataCache(
   params?: GetErc20DataCacheParams
 ): Erc20DataCache | (Erc20Data | null) {
   const cache: Erc20DataCache = JSON.parse(
-    localStorage.getItem(erc20DataCacheLocalStorageKey) ?? '{}'
+    // intentionally using || instead of ?? for it to work with an empty string
+    localStorage.getItem(erc20DataCacheLocalStorageKey) || '{}'
   )
 
   if (typeof params !== 'undefined') {
