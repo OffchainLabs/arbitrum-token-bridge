@@ -248,7 +248,7 @@ describe('Import token', () => {
           url: '/',
           query: {
             token: invalidTokenAddress,
-            walletConnectChain: 'mainnet'
+            walletConnectChain: 'custom-localhost'
           }
         })
 

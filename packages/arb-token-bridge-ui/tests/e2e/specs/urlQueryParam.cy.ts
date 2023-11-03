@@ -5,7 +5,7 @@
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { getInitialETHBalance } from '../../support/common'
 
-const walletConnectChain = 'mainnet'
+const walletConnectChain = 'custom-localhost'
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
