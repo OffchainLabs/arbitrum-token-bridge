@@ -19,16 +19,13 @@ import {
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import {
-  getL1TokenData,
+  fetchErc20Data,
+  erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumGoerliNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
-import {
-  useTokensFromLists,
-  useTokensFromUser,
-  toERC20BridgeToken
-} from './TokenSearchUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
@@ -543,17 +540,15 @@ export function TokenSearch({
         return
       }
 
-      const data = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address: _token.address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+      const data = await fetchErc20Data({
+        address: _token.address,
+        provider: l1.provider
       })
 
       if (data) {
         token.updateTokenData(_token.address)
         setSelectedToken({
-          ...toERC20BridgeToken(data),
+          ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
       }
