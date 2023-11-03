@@ -39,10 +39,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.1.13-orbit-custom-fee-token.0":
-  version "3.1.13"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.13.tgz#a0d3d9a7b387f42547c63f6f066d8a6c4dd945cc"
-  integrity sha512-oE/j8ThWWEdFfV0helmR8lD0T67/CY1zMCt6RVslaCLrytFdbg3QsrHs/sQE3yiCXgisQlsx3qomCgh8PfBo8Q==
+"@arbitrum/sdk@3.1.13-orbit-custom-fee-token.1":
+  version "3.1.13-orbit-custom-fee-token.1"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.13-orbit-custom-fee-token.1.tgz#c10e26c71447eb8c9d0cb1c6efe26c57841b18b7"
+  integrity sha512-DkKk92Ga1lAsn0FZ+6/HAMcPHdmdAvCalZYfWhyHxTQXYdAWDA9Pz0gRi1KaOBPV2eQn7t64Cluz9Z3LU+7Bog==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
