@@ -91,8 +91,6 @@ export async function fetchErc20Data({
   provider
 }: FetchErc20DataProps): Promise<Erc20Data> {
   const chainId = (await provider.getNetwork()).chainId
-  const multiCaller = await MultiCaller.fromProvider(provider)
-
   const cachedErc20Data = getErc20DataCache({ chainId, address })
 
   if (cachedErc20Data) {
@@ -100,6 +98,7 @@ export async function fetchErc20Data({
   }
 
   // todo: fall back if there is no multicall?
+  const multiCaller = await MultiCaller.fromProvider(provider)
   const [tokenData] = await multiCaller.getTokenData([address], {
     name: true,
     symbol: true,
