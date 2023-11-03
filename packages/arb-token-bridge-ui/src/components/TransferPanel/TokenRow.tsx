@@ -264,6 +264,8 @@ export function TokenRow({
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
 
+  const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
+
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
       isDepositMode ? l1Network.id : l2Network.id
@@ -421,8 +423,7 @@ export function TokenRow({
             </div>
           )}
 
-          {/* Show address for custom fee token when depositing */}
-          {token === null && nativeCurrency.isCustom && (
+          {isCustomFeeTokenRow && (
             <div className="flex w-full flex-col items-start space-y-1">
               <div className="flex w-full justify-between">
                 {isDepositMode && (
