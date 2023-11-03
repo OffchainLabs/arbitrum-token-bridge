@@ -3,9 +3,16 @@
  */
 
 import { formatAmount } from '../../../src/util/NumberUtils'
-import { getInitialETHBalance } from '../../support/common'
+import {
+  getInitialETHBalance,
+  getL1NetworkConfig,
+  getL2NetworkConfig
+} from '../../support/common'
 
-const walletConnectChain = 'custom-localhost'
+const defaultQueryParams = {
+  l2ChainId: getL2NetworkConfig().chainId,
+  walletConnectChain: getL1NetworkConfig().networkName
+}
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -24,7 +31,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=max should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: 'max', walletConnectChain }
+        query: { amount: 'max', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i)
@@ -61,7 +68,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=MAX should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: 'MAX', walletConnectChain }
+        query: { amount: 'MAX', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i)
@@ -98,7 +105,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=MaX should set transfer panel amount to maximum amount possible based on balance', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: 'MaX', walletConnectChain }
+        query: { amount: 'MaX', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i)
@@ -136,7 +143,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=56 should set transfer panel amount to 56', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '56', walletConnectChain }
+        query: { amount: '56', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
@@ -147,7 +154,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=1.6678 should set transfer panel amount to 1.6678', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '1.6678', walletConnectChain }
+        query: { amount: '1.6678', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
@@ -158,7 +165,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=6 should set transfer panel amount to 6', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '6', walletConnectChain }
+        query: { amount: '6', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
@@ -169,7 +176,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=0.123 should set transfer panel amount to 0.123', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '0.123', walletConnectChain }
+        query: { amount: '0.123', ...defaultQueryParams }
       })
 
       cy.url().should('include', 'amount=0.123')
@@ -181,7 +188,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=-0.123 should set transfer panel amount to 0.123', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '-0.123', walletConnectChain }
+        query: { amount: '-0.123', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
@@ -192,7 +199,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=asdfs should not set transfer panel amount', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: 'asdfs', walletConnectChain }
+        query: { amount: 'asdfs', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
@@ -203,7 +210,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=0 should set transfer panel amount to 0', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '0', walletConnectChain }
+        query: { amount: '0', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
@@ -214,7 +221,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=0.0001 should set transfer panel amount to 0.0001', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '0.0001', walletConnectChain }
+        query: { amount: '0.0001', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
@@ -225,7 +232,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=123,3,43 should not set transfer panel amount', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '123,3,43', walletConnectChain }
+        query: { amount: '123,3,43', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
@@ -236,7 +243,7 @@ describe('User enters site with query params on URL', () => {
     it('?amount=0, 123.222, 0.3 should not set transfer panel amount', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '0, 123.222, 0.3', walletConnectChain }
+        query: { amount: '0, 123.222, 0.3', ...defaultQueryParams }
       })
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
