@@ -4,6 +4,7 @@ import { Popover } from '@headlessui/react'
 import { addCustomChain } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { constants } from 'ethers'
 import { z } from 'zod'
 
 import {
@@ -169,17 +170,27 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   }
 }
 
-async function fetchNativeTokenData(data: OrbitConfig) {
+async function fetchNativeToken(data: OrbitConfig): Promise<
+  | { nativeToken: undefined; nativeTokenData: undefined }
+  | {
+      nativeToken: string
+      nativeTokenData: { name: string; symbol: string; decimals: number }
+    }
+> {
   const nativeToken = data.chainInfo.nativeToken
+  const nativeTokenIsEther =
+    typeof nativeToken === 'undefined' || nativeToken === constants.AddressZero
 
-  if (typeof nativeToken === 'undefined') {
-    return undefined
+  if (nativeTokenIsEther) {
+    return { nativeToken: undefined, nativeTokenData: undefined }
   }
 
-  return await fetchErc20Data({
+  const nativeTokenData = await fetchErc20Data({
     address: nativeToken,
     provider: new StaticJsonRpcProvider(rpcURLs[data.chainInfo.parentChainId])
   })
+
+  return { nativeToken, nativeTokenData }
 }
 
 export const AddCustomChain = () => {
@@ -206,11 +217,11 @@ export const AddCustomChain = () => {
       ZodOrbitConfig.parse(data)
 
       const customChain = mapOrbitConfigToOrbitChain(data)
-      const nativeTokenData = await fetchNativeTokenData(data)
+      const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
       addCustomChain({ customChain })
-      saveCustomChainToLocalStorage({ ...customChain, nativeTokenData })
+      saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       // reload to apply changes
       location.reload()
     } catch (error: any) {
