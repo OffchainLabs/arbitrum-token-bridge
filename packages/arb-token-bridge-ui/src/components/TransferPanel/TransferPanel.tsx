@@ -60,7 +60,7 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK, ether } from '../../constants'
 import {
   getDestinationAddressError,
   useDestinationAddressStore
@@ -89,6 +89,10 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
+import {
+  getInsufficientFundsErrorMessage,
+  getInsufficientFundsForGasFeesErrorMessage
+} from './errorMessages'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -1229,12 +1233,15 @@ export function TransferPanel() {
   )
 
   const transferPanelMainErrorMessage:
+    | string
     | TransferPanelMainErrorMessage
     | undefined = useMemo(() => {
     // ETH transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
     }
+
+    const sourceChain = isDepositMode ? l1Network.name : l2Network.name
 
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
@@ -1266,7 +1273,10 @@ export function TransferPanel() {
 
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
-        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+        return getInsufficientFundsErrorMessage({
+          asset: selectedToken.symbol,
+          chain: sourceChain
+        })
       }
     }
     // Custom fee token
@@ -1278,13 +1288,19 @@ export function TransferPanel() {
 
       // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
-        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+        return getInsufficientFundsErrorMessage({
+          asset: nativeCurrency.symbol,
+          chain: sourceChain
+        })
       }
     }
     // ETH
     // Check amount against ETH balance
     else if (Number(amount) > ethBalanceFloat) {
-      return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+      return getInsufficientFundsErrorMessage({
+        asset: ether.symbol,
+        chain: sourceChain
+      })
     }
 
     // The amount entered is enough funds, but now let's include gas costs
@@ -1318,17 +1334,28 @@ export function TransferPanel() {
             const { estimatedL1GasFees, estimatedL2GasFees } =
               sanitizedEstimatedGasFees
 
-            // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
-            if (
-              estimatedL1GasFees > ethBalanceFloat ||
-              estimatedL2GasFees > customFeeTokenL1BalanceFloat
-            ) {
-              return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+            // We have to check if there's enough ETH to cover L1 gas
+            if (estimatedL1GasFees > ethBalanceFloat) {
+              return getInsufficientFundsForGasFeesErrorMessage({
+                asset: ether.symbol,
+                chain: sourceChain
+              })
+            }
+
+            // We have to check if there's enough of the custom fee token to cover L2 gas
+            if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
+              return getInsufficientFundsForGasFeesErrorMessage({
+                asset: nativeCurrency.symbol,
+                chain: sourceChain
+              })
             }
           }
 
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+            return getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: sourceChain
+            })
           }
 
           return undefined
@@ -1338,7 +1365,10 @@ export function TransferPanel() {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+            return getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: sourceChain
+            })
           }
 
           return undefined
@@ -1348,7 +1378,10 @@ export function TransferPanel() {
           Number(amount) + defaultRequiredGasFees > ethBalanceFloat
 
         if (notEnoughEthForGasFees) {
-          return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
+          return getInsufficientFundsForGasFeesErrorMessage({
+            asset: ether.symbol,
+            chain: sourceChain
+          })
         }
 
         return undefined
@@ -1358,6 +1391,8 @@ export function TransferPanel() {
     amount,
     isDepositMode,
     isSmartContractWallet,
+    l1Network,
+    l2Network,
     selectedToken,
     selectedTokenIsWithdrawOnly,
     gasSummary,

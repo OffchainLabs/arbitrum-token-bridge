@@ -340,7 +340,6 @@ function NetworkListboxPlusBalancesContainer({
 }
 
 export enum TransferPanelMainErrorMessage {
-  INSUFFICIENT_FUNDS,
   GAS_ESTIMATION_FAILURE,
   WITHDRAW_ONLY,
   SC_WALLET_ETH_NOT_SUPPORTED
@@ -353,12 +352,12 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainErrorMessage
+  errorMessage?: TransferPanelMainErrorMessage | string
 }) {
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
+  const { layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
@@ -700,12 +699,15 @@ export function TransferPanelMain({
   ])
 
   const errorMessageText = useMemo(() => {
-    switch (errorMessage) {
-      case TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS:
-        return `Insufficient balance, please add more to ${
-          isDepositMode ? parentLayer : layer
-        }.`
+    if (typeof errorMessage === 'undefined') {
+      return undefined
+    }
 
+    if (typeof errorMessage === 'string') {
+      return errorMessage
+    }
+
+    switch (errorMessage) {
       case TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE:
         return (
           <span>
@@ -734,12 +736,9 @@ export function TransferPanelMain({
         )
 
       case TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED:
-        return "ETH transfers using smart contract wallets aren't supported yet."
-
-      default:
-        return undefined
+        return `ETH transfers using smart contract wallets aren't supported yet.`
     }
-  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
+  }, [errorMessage, openWithdrawOnlyDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
