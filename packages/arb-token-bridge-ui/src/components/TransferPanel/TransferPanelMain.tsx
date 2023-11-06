@@ -720,7 +720,7 @@ export function TransferPanelMain({
       case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
         return (
           <>
-            <span>This token can&apos;t be bridged over. </span>
+            <span>This token can&apos;t be bridged over.</span>{' '}
             <button
               className="arb-hover underline"
               onClick={openWithdrawOnlyDialog}
