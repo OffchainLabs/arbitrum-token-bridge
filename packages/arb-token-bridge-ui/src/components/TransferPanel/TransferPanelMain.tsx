@@ -68,6 +68,7 @@ import {
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
+import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
 
 enum NetworkType {
   l1 = 'l1',
@@ -339,12 +340,6 @@ function NetworkListboxPlusBalancesContainer({
   )
 }
 
-export enum TransferPanelMainErrorMessage {
-  GAS_ESTIMATION_FAILURE,
-  WITHDRAW_ONLY,
-  SC_WALLET_ETH_NOT_SUPPORTED
-}
-
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -352,7 +347,7 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainErrorMessage | string
+  errorMessage?: TransferPanelMainRichErrorMessage | string
 }) {
   const actions = useActions()
 
@@ -698,7 +693,7 @@ export function TransferPanelMain({
     isDepositMode
   ])
 
-  const errorMessageText = useMemo(() => {
+  const errorMessageElement = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
     }
@@ -708,7 +703,7 @@ export function TransferPanelMain({
     }
 
     switch (errorMessage) {
-      case TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE:
+      case TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE:
         return (
           <span>
             Gas estimation failed, join our{' '}
@@ -722,7 +717,7 @@ export function TransferPanelMain({
           </span>
         )
 
-      case TransferPanelMainErrorMessage.WITHDRAW_ONLY:
+      case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
         return (
           <>
             <span>This token can&apos;t be bridged over. </span>
@@ -734,9 +729,6 @@ export function TransferPanelMain({
             </button>
           </>
         )
-
-      case TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED:
-        return `ETH transfers using smart contract wallets aren't supported yet.`
     }
   }, [errorMessage, openWithdrawOnlyDialog])
 
@@ -1104,7 +1096,7 @@ export function TransferPanelMain({
               loading: isMaxAmount || loadingMaxAmount,
               onClick: setMaxAmount
             }}
-            errorMessage={errorMessageText}
+            errorMessage={errorMessageElement}
             disabled={isSwitchingL2Chain}
             value={isMaxAmount ? '' : amount}
             onChange={e => {

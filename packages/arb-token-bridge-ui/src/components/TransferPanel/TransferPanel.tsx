@@ -36,10 +36,13 @@ import {
   useAppContextState
 } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
+import { TransferPanelMain } from './TransferPanelMain'
 import {
-  TransferPanelMain,
-  TransferPanelMainErrorMessage
-} from './TransferPanelMain'
+  TransferPanelMainRichErrorMessage,
+  getInsufficientFundsErrorMessage,
+  getInsufficientFundsForGasFeesErrorMessage,
+  getSmartContractWalletEthTransfersNotSupportedErrorMessage
+} from './TransferPanelMainErrorMessage'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
@@ -89,10 +92,6 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
-import {
-  getInsufficientFundsErrorMessage,
-  getInsufficientFundsForGasFeesErrorMessage
-} from './errorMessages'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -1234,11 +1233,11 @@ export function TransferPanel() {
 
   const transferPanelMainErrorMessage:
     | string
-    | TransferPanelMainErrorMessage
+    | TransferPanelMainRichErrorMessage
     | undefined = useMemo(() => {
     // ETH transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
-      return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
+      return getSmartContractWalletEthTransfersNotSupportedErrorMessage()
     }
 
     const sourceChain = isDepositMode ? l1Network.name : l2Network.name
@@ -1263,7 +1262,7 @@ export function TransferPanel() {
     // ERC-20
     if (selectedToken) {
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
-        return TransferPanelMainErrorMessage.WITHDRAW_ONLY
+        return TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY
       }
 
       // No error while loading balance
@@ -1311,7 +1310,7 @@ export function TransferPanel() {
         return undefined
 
       case 'error':
-        return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
+        return TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
 
       case 'success': {
         const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
