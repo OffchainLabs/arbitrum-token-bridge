@@ -700,48 +700,45 @@ export function TransferPanelMain({
   ])
 
   const errorMessageText = useMemo(() => {
-    if (typeof errorMessage === 'undefined') {
-      return undefined
-    }
+    switch (errorMessage) {
+      case TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS:
+        return `Insufficient balance, please add more to ${
+          isDepositMode ? parentLayer : layer
+        }.`
 
-    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
-      return (
-        <span>
-          Gas estimation failed, join our{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          and reach out in #support for assistance.
-        </span>
-      )
-    }
+      case TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE:
+        return (
+          <span>
+            Gas estimation failed, join our{' '}
+            <ExternalLink
+              href="https://discord.com/invite/ZpZuw7p"
+              className="underline"
+            >
+              Discord
+            </ExternalLink>{' '}
+            and reach out in #support for assistance.
+          </span>
+        )
 
-    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
-      return (
-        <>
-          <span>This token can&apos;t be bridged over. </span>
-          <button
-            className="arb-hover underline"
-            onClick={openWithdrawOnlyDialog}
-          >
-            Learn more.
-          </button>
-        </>
-      )
-    }
+      case TransferPanelMainErrorMessage.WITHDRAW_ONLY:
+        return (
+          <>
+            <span>This token can&apos;t be bridged over. </span>
+            <button
+              className="arb-hover underline"
+              onClick={openWithdrawOnlyDialog}
+            >
+              Learn more.
+            </button>
+          </>
+        )
 
-    if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-    ) {
-      return "ETH transfers using smart contract wallets aren't supported yet."
-    }
+      case TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED:
+        return "ETH transfers using smart contract wallets aren't supported yet."
 
-    return `Insufficient balance, please add more to ${
-      isDepositMode ? parentLayer : layer
-    }.`
+      default:
+        return undefined
+    }
   }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
