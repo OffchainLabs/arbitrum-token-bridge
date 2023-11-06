@@ -4,13 +4,13 @@ import { useAppState } from '../../state'
 import { useIsSwitchingL2Chain } from '../../components/TransferPanel/TransferPanelMainUtils'
 import { useAppContextState } from '../../components/App/AppContext'
 import { GasEstimationStatus } from '../../components/TransferPanel/TransferPanelSummary'
-import { UseTransferReadinessReady } from '../../components/TransferPanel/useTransferReadiness'
+import { UseTransferReadinessTransferReady } from '../../components/TransferPanel/useTransferReadiness'
 
 export function useSummaryVisibility({
-  ready: { deposit: depositReady, withdrawal: withdrawalReady },
+  transferReady: { deposit: depositReady, withdrawal: withdrawalReady },
   gasEstimationStatus
 }: {
-  ready: UseTransferReadinessReady
+  transferReady: UseTransferReadinessTransferReady
   gasEstimationStatus: GasEstimationStatus
 }) {
   const {

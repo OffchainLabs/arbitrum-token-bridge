@@ -50,13 +50,13 @@ function sanitizeEstimatedGasFees(
   }
 }
 
-export type UseTransferReadinessReady = {
+export type UseTransferReadinessTransferReady = {
   deposit: boolean
   withdrawal: boolean
 }
 
 export type UseTransferReadinessResult = {
-  ready: UseTransferReadinessReady
+  transferReady: UseTransferReadinessTransferReady
   errorMessage?: string | TransferPanelMainRichErrorMessage
 }
 
@@ -463,10 +463,7 @@ export function useTransferReadiness({
   ])
 
   return {
-    ready: {
-      deposit: !disableDeposit,
-      withdrawal: !disableWithdrawal
-    },
+    transferReady: { deposit: !disableDeposit, withdrawal: !disableWithdrawal },
     errorMessage: transferPanelMainErrorMessage
   }
 }

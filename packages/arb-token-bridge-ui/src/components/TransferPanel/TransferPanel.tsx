@@ -1184,13 +1184,13 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const { ready, errorMessage } = useTransferReadiness({
+  const { transferReady, errorMessage } = useTransferReadiness({
     amount,
     gasSummary
   })
 
   const { isSummaryVisible } = useSummaryVisibility({
-    ready,
+    transferReady,
     gasEstimationStatus: gasSummary.status
   })
 
@@ -1278,7 +1278,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={!ready.deposit}
+              disabled={!transferReady.deposit}
               onClick={() => {
                 if (
                   selectedToken &&
@@ -1308,7 +1308,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={!ready.withdrawal}
+              disabled={!transferReady.withdrawal}
               onClick={() => {
                 if (
                   selectedToken &&
