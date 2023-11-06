@@ -50,11 +50,13 @@ function sanitizeEstimatedGasFees(
   }
 }
 
+export type UseTransferReadinessReady = {
+  deposit: boolean
+  withdrawal: boolean
+}
+
 export type UseTransferReadinessResult = {
-  ready: {
-    deposit: boolean
-    withdrawal: boolean
-  }
+  ready: UseTransferReadinessReady
   errorMessage?: string | TransferPanelMainRichErrorMessage
 }
 

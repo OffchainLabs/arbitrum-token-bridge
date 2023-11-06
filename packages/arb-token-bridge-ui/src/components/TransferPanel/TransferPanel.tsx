@@ -1184,17 +1184,13 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const {
-    ready: { deposit: depositReady, withdrawal: withdrawalReady },
-    errorMessage
-  } = useTransferReadiness({
+  const { ready, errorMessage } = useTransferReadiness({
     amount,
     gasSummary
   })
 
   const { isSummaryVisible } = useSummaryVisibility({
-    disableDeposit: !depositReady,
-    disableWithdrawal: !withdrawalReady,
+    ready,
     gasEstimationStatus: gasSummary.status
   })
 
@@ -1282,7 +1278,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={!depositReady}
+              disabled={!ready.deposit}
               onClick={() => {
                 if (
                   selectedToken &&
@@ -1312,7 +1308,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={!withdrawalReady}
+              disabled={!ready.withdrawal}
               onClick={() => {
                 if (
                   selectedToken &&
