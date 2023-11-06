@@ -41,7 +41,7 @@ import {
   TransferPanelMainRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletEthTransfersNotSupportedErrorMessage
+  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './TransferPanelMainErrorMessage'
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
@@ -1235,9 +1235,11 @@ export function TransferPanel() {
     | string
     | TransferPanelMainRichErrorMessage
     | undefined = useMemo(() => {
-    // ETH transfers using SC wallets not enabled yet
+    // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
-      return getSmartContractWalletEthTransfersNotSupportedErrorMessage()
+      return getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
+        { asset: nativeCurrency.symbol }
+      )
     }
 
     const sourceChain = isDepositMode ? l1Network.name : l2Network.name

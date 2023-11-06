@@ -22,6 +22,10 @@ export function getInsufficientFundsForGasFeesErrorMessage({
   return `Insufficient ${asset} to pay for gas fees. Please add more funds to ${chain}.`
 }
 
-export function getSmartContractWalletEthTransfersNotSupportedErrorMessage() {
-  return `ETH transfers using smart contract wallets aren't supported yet.`
+export function getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({
+  asset
+}: {
+  asset: string
+}) {
+  return `${asset} transfers using smart contract wallets aren't supported yet.`
 }
