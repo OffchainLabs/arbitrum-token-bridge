@@ -50,13 +50,21 @@ function sanitizeEstimatedGasFees(
   }
 }
 
+export type UseTransferReadinessResult = {
+  ready: {
+    deposit: boolean
+    withdrawal: boolean
+  }
+  errorMessage?: string | TransferPanelMainRichErrorMessage
+}
+
 export function useTransferReadiness({
   amount,
   gasSummary
 }: {
   amount: string
   gasSummary: UseGasSummaryResult
-}) {
+}): UseTransferReadinessResult {
   const {
     app: { isDepositMode, selectedToken }
   } = useAppState()
@@ -453,8 +461,10 @@ export function useTransferReadiness({
   ])
 
   return {
-    disableDeposit,
-    disableWithdrawal,
-    transferPanelMainErrorMessage
+    ready: {
+      deposit: !disableDeposit,
+      withdrawal: !disableWithdrawal
+    },
+    errorMessage: transferPanelMainErrorMessage
   }
 }
