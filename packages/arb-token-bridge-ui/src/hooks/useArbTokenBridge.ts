@@ -37,11 +37,12 @@ import {
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
-  getL1TokenData,
+  fetchErc20Data,
   getL1ERC20Address,
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
-  l1TokenIsDisabled
+  l1TokenIsDisabled,
+  isValidErc20
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -242,6 +243,10 @@ export const useArbTokenBridge = (
 
     updateTransaction(receipt, tx, l1ToL2MsgData)
     updateEthBalances()
+
+    if (nativeCurrency.isCustom) {
+      updateErc20L1Balance([nativeCurrency.address])
+    }
   }
 
   const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
@@ -350,11 +355,9 @@ export const useArbTokenBridge = (
       l1Signer
     })
 
-    const { symbol } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+    const { symbol } = await fetchErc20Data({
+      address: erc20L1Address,
+      provider: l1.provider
     })
 
     addTransaction({
@@ -394,11 +397,9 @@ export const useArbTokenBridge = (
     })
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
-    const { symbol } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+    const { symbol } = await fetchErc20Data({
+      address: erc20L1Address,
+      provider: l1.provider
     })
 
     addTransaction({
@@ -438,11 +439,9 @@ export const useArbTokenBridge = (
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     try {
-      const { symbol, decimals } = await getL1TokenData({
-        account: walletAddress,
-        erc20L1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+      const { symbol, decimals } = await fetchErc20Data({
+        address: erc20L1Address,
+        provider: l1.provider
       })
 
       const depositRequest = await erc20Bridger.getDepositRequest({
@@ -496,6 +495,11 @@ export const useArbTokenBridge = (
 
       updateTransaction(receipt, tx, l1ToL2MsgData)
       updateTokenData(erc20L1Address)
+      updateEthBalances()
+
+      if (nativeCurrency.isCustom) {
+        updateErc20L1Balance([nativeCurrency.address])
+      }
 
       return receipt
     } catch (error) {
@@ -535,11 +539,9 @@ export const useArbTokenBridge = (
           const { symbol, decimals } = bridgeToken
           return { symbol, decimals }
         }
-        const { symbol, decimals } = await getL1TokenData({
-          account: walletAddress,
-          erc20L1Address,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+        const { symbol, decimals } = await fetchErc20Data({
+          address: erc20L1Address,
+          provider: l1.provider
         })
 
         addToken(erc20L1Address)
@@ -803,13 +805,13 @@ export const useArbTokenBridge = (
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const erc20Params = { address: l1Address, provider: l1.provider }
 
-    const { name, symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+    }
+
+    const { name, symbol, decimals } = await fetchErc20Data(erc20Params)
 
     const isDisabled = await l1TokenIsDisabled({
       erc20L1Address: l1Address,
@@ -896,11 +898,9 @@ export const useArbTokenBridge = (
 
     const res = await messageWriter.execute(l2.provider)
 
-    const { symbol, decimals } = await getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: tokenAddress as string,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+    const { symbol, decimals } = await fetchErc20Data({
+      address: tokenAddress as string,
+      provider: l1.provider
     })
 
     addTransaction({
