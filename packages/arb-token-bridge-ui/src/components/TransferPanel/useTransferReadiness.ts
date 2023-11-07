@@ -65,12 +65,18 @@ function ready() {
   return result
 }
 
-function notReady(errorMessage?: string | TransferPanelMainRichErrorMessage) {
+function notReady(
+  params: {
+    errorMessage: string | TransferPanelMainRichErrorMessage | undefined
+  } = {
+    errorMessage: undefined
+  }
+) {
   const result: UseTransferReadinessResult = {
     transferReady: { deposit: false, withdrawal: false }
   } as const
 
-  return { ...result, errorMessage }
+  return { ...result, ...params }
 }
 
 export type UseTransferReadinessTransferReady = {
@@ -193,11 +199,12 @@ export function useTransferReadiness({
 
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
-      return notReady(
-        getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({
-          asset: nativeCurrency.symbol
-        })
-      )
+      return notReady({
+        errorMessage:
+          getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
+            { asset: nativeCurrency.symbol }
+          )
+      })
     }
 
     const sourceChain = isDepositMode ? l1Network.name : l2Network.name
@@ -222,7 +229,9 @@ export function useTransferReadiness({
     // ERC-20
     if (selectedToken) {
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
-        return notReady(TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY)
+        return notReady({
+          errorMessage: TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY
+        })
       } else if (withdrawalDisabled(selectedToken.address)) {
         return notReady()
       }
@@ -234,12 +243,12 @@ export function useTransferReadiness({
 
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
-        return notReady(
-          getInsufficientFundsErrorMessage({
+        return notReady({
+          errorMessage: getInsufficientFundsErrorMessage({
             asset: selectedToken.symbol,
             chain: sourceChain
           })
-        )
+        })
       }
     }
     // Custom fee token
@@ -251,23 +260,23 @@ export function useTransferReadiness({
 
       // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
-        return notReady(
-          getInsufficientFundsErrorMessage({
+        return notReady({
+          errorMessage: getInsufficientFundsErrorMessage({
             asset: nativeCurrency.symbol,
             chain: sourceChain
           })
-        )
+        })
       }
     }
     // ETH
     // Check amount against ETH balance
     else if (Number(amount) > ethBalanceFloat) {
-      return notReady(
-        getInsufficientFundsErrorMessage({
+      return notReady({
+        errorMessage: getInsufficientFundsErrorMessage({
           asset: ether.symbol,
           chain: sourceChain
         })
-      )
+      })
     }
 
     // The amount entered is enough funds, but now let's include gas costs
@@ -281,9 +290,9 @@ export function useTransferReadiness({
         return ready()
 
       case 'error':
-        return notReady(
-          TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
-        )
+        return notReady({
+          errorMessage: TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
+        })
 
       case 'success': {
         const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
@@ -308,34 +317,34 @@ export function useTransferReadiness({
 
             // We have to check if there's enough ETH to cover L1 gas
             if (estimatedL1GasFees > ethBalanceFloat) {
-              return notReady(
-                getInsufficientFundsForGasFeesErrorMessage({
+              return notReady({
+                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                   asset: ether.symbol,
                   chain: sourceChain
                 })
-              )
+              })
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
             if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
-              return notReady(
-                getInsufficientFundsForGasFeesErrorMessage({
+              return notReady({
+                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                   asset: nativeCurrency.symbol,
                   chain: sourceChain
                 })
-              )
+              })
             }
 
             return ready()
           }
 
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return notReady(
-              getInsufficientFundsForGasFeesErrorMessage({
+            return notReady({
+              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
                 chain: sourceChain
               })
-            )
+            })
           }
 
           return ready()
@@ -345,12 +354,12 @@ export function useTransferReadiness({
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return notReady(
-              getInsufficientFundsForGasFeesErrorMessage({
+            return notReady({
+              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
                 chain: sourceChain
               })
-            )
+            })
           }
 
           return ready()
@@ -360,12 +369,12 @@ export function useTransferReadiness({
           Number(amount) + defaultRequiredGasFees > ethBalanceFloat
 
         if (notEnoughEthForGasFees) {
-          return notReady(
-            getInsufficientFundsForGasFeesErrorMessage({
+          return notReady({
+            errorMessage: getInsufficientFundsForGasFeesErrorMessage({
               asset: ether.symbol,
               chain: sourceChain
             })
-          )
+          })
         }
 
         return ready()
