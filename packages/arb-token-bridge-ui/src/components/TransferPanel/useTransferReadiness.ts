@@ -60,6 +60,22 @@ export type UseTransferReadinessResult = {
   errorMessage?: string | TransferPanelMainRichErrorMessage
 }
 
+function ready() {
+  const result: UseTransferReadinessResult = {
+    transferReady: { deposit: true, withdrawal: true }
+  } as const
+
+  return result
+}
+
+function notReady(errorMessage?: string | TransferPanelMainRichErrorMessage) {
+  const result: UseTransferReadinessResult = {
+    transferReady: { deposit: false, withdrawal: false }
+  } as const
+
+  return { ...result, errorMessage }
+}
+
 export function useTransferReadiness({
   amount,
   gasSummary
@@ -288,14 +304,13 @@ export function useTransferReadiness({
     return false
   }, [disableTransfer, selectedToken])
 
-  const transferPanelMainErrorMessage:
-    | string
-    | TransferPanelMainRichErrorMessage
-    | undefined = useMemo(() => {
+  const result: UseTransferReadinessResult = useMemo(() => {
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
-      return getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-        { asset: nativeCurrency.symbol }
+      return notReady(
+        getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage({
+          asset: nativeCurrency.symbol
+        })
       )
     }
 
@@ -315,50 +330,56 @@ export function useTransferReadiness({
 
     // No error while loading balance
     if (ethBalanceFloat === null) {
-      return undefined
+      return notReady()
     }
 
     // ERC-20
     if (selectedToken) {
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
-        return TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY
+        return notReady(TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY)
       }
 
       // No error while loading balance
       if (selectedTokenBalanceFloat === null) {
-        return undefined
+        return notReady()
       }
 
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
-        return getInsufficientFundsErrorMessage({
-          asset: selectedToken.symbol,
-          chain: sourceChain
-        })
+        return notReady(
+          getInsufficientFundsErrorMessage({
+            asset: selectedToken.symbol,
+            chain: sourceChain
+          })
+        )
       }
     }
     // Custom fee token
     else if (nativeCurrency.isCustom) {
       // No error while loading balance
       if (customFeeTokenBalanceFloat === null) {
-        return undefined
+        return notReady()
       }
 
       // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
-        return getInsufficientFundsErrorMessage({
-          asset: nativeCurrency.symbol,
-          chain: sourceChain
-        })
+        return notReady(
+          getInsufficientFundsErrorMessage({
+            asset: nativeCurrency.symbol,
+            chain: sourceChain
+          })
+        )
       }
     }
     // ETH
     // Check amount against ETH balance
     else if (Number(amount) > ethBalanceFloat) {
-      return getInsufficientFundsErrorMessage({
-        asset: ether.symbol,
-        chain: sourceChain
-      })
+      return notReady(
+        getInsufficientFundsErrorMessage({
+          asset: ether.symbol,
+          chain: sourceChain
+        })
+      )
     }
 
     // The amount entered is enough funds, but now let's include gas costs
@@ -366,10 +387,15 @@ export function useTransferReadiness({
       // No error while loading gas costs
       case 'idle':
       case 'loading':
-        return undefined
+        return notReady()
+
+      case 'unavailable':
+        return ready()
 
       case 'error':
-        return TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
+        return notReady(
+          TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
+        )
 
       case 'success': {
         const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
@@ -386,7 +412,7 @@ export function useTransferReadiness({
           if (nativeCurrency.isCustom && isDepositMode) {
             // Still loading custom fee token balance
             if (customFeeTokenL1BalanceFloat === null) {
-              return undefined
+              return notReady()
             }
 
             const { estimatedL1GasFees, estimatedL2GasFees } =
@@ -394,55 +420,67 @@ export function useTransferReadiness({
 
             // We have to check if there's enough ETH to cover L1 gas
             if (estimatedL1GasFees > ethBalanceFloat) {
-              return getInsufficientFundsForGasFeesErrorMessage({
-                asset: ether.symbol,
-                chain: sourceChain
-              })
+              return notReady(
+                getInsufficientFundsForGasFeesErrorMessage({
+                  asset: ether.symbol,
+                  chain: sourceChain
+                })
+              )
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
             if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
-              return getInsufficientFundsForGasFeesErrorMessage({
-                asset: nativeCurrency.symbol,
-                chain: sourceChain
-              })
+              return notReady(
+                getInsufficientFundsForGasFeesErrorMessage({
+                  asset: nativeCurrency.symbol,
+                  chain: sourceChain
+                })
+              )
             }
+
+            return ready()
           }
 
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
-              chain: sourceChain
-            })
+            return notReady(
+              getInsufficientFundsForGasFeesErrorMessage({
+                asset: ether.symbol,
+                chain: sourceChain
+              })
+            )
           }
 
-          return undefined
+          return ready()
         }
 
         if (nativeCurrency.isCustom && isDepositMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
           if (defaultRequiredGasFees > ethBalanceFloat) {
-            return getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
-              chain: sourceChain
-            })
+            return notReady(
+              getInsufficientFundsForGasFeesErrorMessage({
+                asset: ether.symbol,
+                chain: sourceChain
+              })
+            )
           }
 
-          return undefined
+          return ready()
         }
 
         const notEnoughEthForGasFees =
           Number(amount) + defaultRequiredGasFees > ethBalanceFloat
 
         if (notEnoughEthForGasFees) {
-          return getInsufficientFundsForGasFeesErrorMessage({
-            asset: ether.symbol,
-            chain: sourceChain
-          })
+          return notReady(
+            getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: sourceChain
+            })
+          )
         }
 
-        return undefined
+        return ready()
       }
     }
   }, [
@@ -462,8 +500,5 @@ export function useTransferReadiness({
     customFeeTokenL1BalanceFloat
   ])
 
-  return {
-    transferReady: { deposit: !disableDeposit, withdrawal: !disableWithdrawal },
-    errorMessage: transferPanelMainErrorMessage
-  }
+  return result
 }
