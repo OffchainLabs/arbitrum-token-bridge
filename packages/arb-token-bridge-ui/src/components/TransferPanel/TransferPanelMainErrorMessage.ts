@@ -1,8 +1,3 @@
-export enum TransferPanelMainRichErrorMessage {
-  GAS_ESTIMATION_FAILURE,
-  TOKEN_WITHDRAW_ONLY
-}
-
 export type GetInsufficientFundsErrorMessageParams = {
   asset: string
   chain: string

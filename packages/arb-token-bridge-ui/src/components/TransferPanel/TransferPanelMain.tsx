@@ -68,7 +68,7 @@ import {
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
-import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
+import { UseTransferReadinessTransferNotReadyRichErrorMessage } from './useTransferReadiness'
 
 enum NetworkType {
   l1 = 'l1',
@@ -347,7 +347,7 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainRichErrorMessage | string
+  errorMessage?: UseTransferReadinessTransferNotReadyRichErrorMessage | string
 }) {
   const actions = useActions()
 
@@ -703,7 +703,7 @@ export function TransferPanelMain({
     }
 
     switch (errorMessage) {
-      case TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE:
+      case UseTransferReadinessTransferNotReadyRichErrorMessage.GAS_ESTIMATION_FAILURE:
         return (
           <span>
             Gas estimation failed, join our{' '}
@@ -717,7 +717,7 @@ export function TransferPanelMain({
           </span>
         )
 
-      case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+      case UseTransferReadinessTransferNotReadyRichErrorMessage.TOKEN_WITHDRAW_ONLY:
         return (
           <>
             <span>This token can&apos;t be bridged over.</span>{' '}
