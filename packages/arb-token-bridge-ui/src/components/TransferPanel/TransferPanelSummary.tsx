@@ -218,7 +218,8 @@ export function useGasSummary(
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l2Provider: l2.provider
+              l2Provider: l2.provider,
+              arbPublicClient
             })
 
             setResult({
@@ -308,27 +309,22 @@ export function TransferPanelSummary({
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const { isTestnet } = isNetwork(l1.network.id)
-
   const parentLayerGasFeeTooltipContent = useMemo(() => {
     switch (parentLayer) {
       case 'L1':
         if (isDepositMode) {
           return layerToGasFeeTooltip[parentLayer].deposit
         }
-        return layerToGasFeeTooltip[parentLayer].withdrawal
+        return null
       case 'L2':
         if (isDepositMode) {
           if (layer === 'Orbit') {
             return layerToGasFeeTooltip[parentLayer].deposit['to Orbit']
           }
           return layerToGasFeeTooltip[parentLayer].deposit['to L2']
-        } else {
-          if (layer === 'Orbit') {
-            return layerToGasFeeTooltip[parentLayer].withdrawal['to L2']
-          }
-          return layerToGasFeeTooltip[parentLayer].withdrawal['to L1']
         }
+        return null
+
       default:
         return null
     }
@@ -339,25 +335,21 @@ export function TransferPanelSummary({
       case 'L2':
         if (isDepositMode) {
           return layerToGasFeeTooltip[layer].deposit['to L2']
-        } else {
-          if (parentLayer === 'L1') {
-            return layerToGasFeeTooltip[layer].withdrawal['to L1']
-          }
-          return layerToGasFeeTooltip[layer].withdrawal['to L2']
         }
+        return null
       case 'Orbit':
         if (isDepositMode) {
           return layerToGasFeeTooltip[layer].deposit
         }
-        return layerToGasFeeTooltip[layer].withdrawal
+        return null
       default:
         return null
     }
-  }, [isDepositMode, layer, parentLayer])
+  }, [isDepositMode, layer])
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
-  const showBreakdown = !nativeCurrency.isCustom
+  const showBreakdown = !nativeCurrency.isCustom && isDepositMode
 
   const tokenSymbol = useMemo(() => {
     if (token) {
@@ -432,8 +424,8 @@ export function TransferPanelSummary({
   return (
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You&apos;re moving</span>
-        <div className="flex w-3/5 flex-row justify-between">
+        <span className="w-3/5 font-light">You&apos;re moving</span>
+        <div className="flex w-2/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
               symbol: tokenSymbol
@@ -449,8 +441,10 @@ export function TransferPanelSummary({
       </div>
 
       <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You&apos;ll pay in gas fees</span>
-        <div className="flex w-3/5 justify-between">
+        <span className="w-3/5 font-light">
+          You&apos;ll now pay in gas fees
+        </span>
+        <div className="flex w-2/5 justify-between">
           {sameNativeCurrency ? (
             <>
               <span>
@@ -488,7 +482,7 @@ export function TransferPanelSummary({
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
-            <div className="flex w-3/5 flex-row justify-between">
+            <div className="flex w-2/5 flex-row justify-between">
               <span className="font-light">
                 {formatAmount(estimatedL1GasFees, {
                   symbol: parentChainNativeCurrency.symbol
@@ -509,7 +503,7 @@ export function TransferPanelSummary({
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>
-            <div className="flex w-3/5 flex-row justify-between">
+            <div className="flex w-2/5 flex-row justify-between">
               <span className="font-light">
                 {formatAmount(estimatedL2GasFees, {
                   symbol: nativeCurrency.symbol
@@ -526,30 +520,22 @@ export function TransferPanelSummary({
         </div>
       )}
 
-      {isBridgingETH && (
+      {!isDepositMode && (
         <>
           <div>
             <div className="h-2" />
             <div className="border-b border-gray-5" />
             <div className="h-2" />
           </div>
-          <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-            <span className="w-2/5 font-light text-gray-dark">
-              Total amount
-            </span>
-            <div className="flex w-3/5 flex-row justify-between">
-              <span>
-                {formatAmount(amount + estimatedTotalGasFees, {
-                  symbol: nativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-medium text-dark">
-                  {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
-                </span>
-              )}
-            </div>
+          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
+            <p>
+              This transaction will initiate the withdrawal on {l2.network.name}
+              .
+            </p>
+            <p>
+              When the withdrawal is ready for claiming on {l1.network.name},
+              you will have to pay gas fees for the claim transaction.
+            </p>
           </div>
         </>
       )}

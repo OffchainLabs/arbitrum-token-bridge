@@ -45,7 +45,7 @@ export async function withdrawTokenEstimateGas({
       account: address
     })
 
-    // This is the gas needed to execute the withdrawal on L1; not the batch posting fee
+    // This is the gas needed to pay for the batch posting fee
     // 1st result in the array is `gasEstimateForL1` according to ABI
     const estimatedL1Gas = BigNumber.from(gasComponents.result[1])
 
