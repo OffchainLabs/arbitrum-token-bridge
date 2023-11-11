@@ -19,7 +19,7 @@
     "@unstoppabledomains/resolution": "^8.3.3",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
-    "axios": "^1.3.4",
+    "axios": "^1.6.0",
     "boring-avatars": "^1.7.0",
     "cheerio": "^1.0.0-rc.12",
     "dayjs": "^1.11.8",
