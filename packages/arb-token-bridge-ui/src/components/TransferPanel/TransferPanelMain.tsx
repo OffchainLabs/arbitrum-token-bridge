@@ -68,6 +68,7 @@ import {
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
+import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
 import { createArbPublicClient } from '../../util/viem'
 
 enum NetworkType {
@@ -340,13 +341,6 @@ function NetworkListboxPlusBalancesContainer({
   )
 }
 
-export enum TransferPanelMainErrorMessage {
-  INSUFFICIENT_FUNDS,
-  GAS_ESTIMATION_FAILURE,
-  WITHDRAW_ONLY,
-  SC_WALLET_ETH_NOT_SUPPORTED
-}
-
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -354,12 +348,12 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainErrorMessage
+  errorMessage?: TransferPanelMainRichErrorMessage | string
 }) {
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
+  const { layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
@@ -706,50 +700,44 @@ export function TransferPanelMain({
     isDepositMode
   ])
 
-  const errorMessageText = useMemo(() => {
+  const errorMessageElement = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
-      return (
-        <span>
-          Gas estimation failed, join our{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          and reach out in #support for assistance.
-        </span>
-      )
+    if (typeof errorMessage === 'string') {
+      return errorMessage
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
-      return (
-        <>
-          <span>This token can&apos;t be bridged over. </span>
-          <button
-            className="arb-hover underline"
-            onClick={openWithdrawOnlyDialog}
-          >
-            Learn more.
-          </button>
-        </>
-      )
-    }
+    switch (errorMessage) {
+      case TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE:
+        return (
+          <span>
+            Gas estimation failed, join our{' '}
+            <ExternalLink
+              href="https://discord.com/invite/ZpZuw7p"
+              className="underline"
+            >
+              Discord
+            </ExternalLink>{' '}
+            and reach out in #support for assistance.
+          </span>
+        )
 
-    if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-    ) {
-      return "ETH transfers using smart contract wallets aren't supported yet."
+      case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+        return (
+          <>
+            <span>This token can&apos;t be bridged over.</span>{' '}
+            <button
+              className="arb-hover underline"
+              onClick={openWithdrawOnlyDialog}
+            >
+              Learn more.
+            </button>
+          </>
+        )
     }
-
-    return `Insufficient balance, please add more to ${
-      isDepositMode ? parentLayer : layer
-    }.`
-  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
+  }, [errorMessage, openWithdrawOnlyDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -1115,7 +1103,7 @@ export function TransferPanelMain({
               loading: isMaxAmount || loadingMaxAmount,
               onClick: setMaxAmount
             }}
-            errorMessage={errorMessageText}
+            errorMessage={errorMessageElement}
             disabled={isSwitchingL2Chain}
             value={isMaxAmount ? '' : amount}
             onChange={e => {
