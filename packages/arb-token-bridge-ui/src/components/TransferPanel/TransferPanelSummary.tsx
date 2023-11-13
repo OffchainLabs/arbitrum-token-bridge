@@ -42,26 +42,29 @@ export type UseGasSummaryResult = {
   estimatedL2GasFees: number
 }
 
-const layerToGasFeeTooltip = {
+const layerToGasFeeTooltip = ({
+  l1NetworkName,
+  l2NetworkName
+}: {
+  l1NetworkName: string
+  l2NetworkName: string
+}) => ({
   L1: {
     // always parent
-    deposit: 'L1 fees go to Ethereum Validators.',
-    withdrawal: `A small L1 calldata fee is paid for including this L2 transaction in the
-        sequencer batch to be posted on Mainnet.`
+    deposit: `${l1NetworkName} fees go to Ethereum Validators.`,
+    withdrawal: `A small ${l1NetworkName} calldata fee is paid for including this ${l2NetworkName} transaction in the
+        sequencer batch to be posted on ${l1NetworkName}.`
   },
   L2: {
     deposit: {
       // as child
-      'to L2':
-        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
+      'to L2': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
       // as parent
-      'to Orbit':
-        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded."
+      'to Orbit': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
     },
     withdrawal: {
       // as child
-      'to L1':
-        "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
+      'to L1': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
       // as parent
       'to L2':
         'A small L2 calldata fee is paid for including this Orbit transaction in the sequencer batch to be posted on L2.'
@@ -74,7 +77,7 @@ const layerToGasFeeTooltip = {
     withdrawal:
       "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded."
   }
-}
+})
 
 export function useGasSummary(
   amount: BigNumber,
@@ -301,43 +304,52 @@ export function TransferPanelSummary({
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
+  const networkNames = {
+    l1NetworkName: l1.network.name,
+    l2NetworkName: l2.network.name
+  }
+
   const parentLayerGasFeeTooltipContent = useMemo(() => {
     switch (parentLayer) {
       case 'L1':
         if (isDepositMode) {
-          return layerToGasFeeTooltip[parentLayer].deposit
+          return layerToGasFeeTooltip(networkNames)[parentLayer].deposit
         }
         return null
       case 'L2':
         if (isDepositMode) {
           if (layer === 'Orbit') {
-            return layerToGasFeeTooltip[parentLayer].deposit['to Orbit']
+            return layerToGasFeeTooltip(networkNames)[parentLayer].deposit[
+              'to Orbit'
+            ]
           }
-          return layerToGasFeeTooltip[parentLayer].deposit['to L2']
+          return layerToGasFeeTooltip(networkNames)[parentLayer].deposit[
+            'to L2'
+          ]
         }
         return null
 
       default:
         return null
     }
-  }, [isDepositMode, layer, parentLayer])
+  }, [isDepositMode, layer, networkNames, parentLayer])
 
   const layerGasFeeTooltipContent = useMemo(() => {
     switch (layer) {
       case 'L2':
         if (isDepositMode) {
-          return layerToGasFeeTooltip[layer].deposit['to L2']
+          return layerToGasFeeTooltip(networkNames)[layer].deposit['to L2']
         }
         return null
       case 'Orbit':
         if (isDepositMode) {
-          return layerToGasFeeTooltip[layer].deposit
+          return layerToGasFeeTooltip(networkNames)[layer].deposit
         }
         return null
       default:
         return null
     }
-  }, [isDepositMode, layer])
+  }, [isDepositMode, layer, networkNames])
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
