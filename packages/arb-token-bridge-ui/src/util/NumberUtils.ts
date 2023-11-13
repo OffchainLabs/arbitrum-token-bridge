@@ -57,9 +57,9 @@ export const formatAmount = <T extends number | BigNumber>(
     const maximumFractionDigits = isShortSymbol
       ? MaximumFractionDigits.Long
       : MaximumFractionDigits.Standard
-    const maxValue = Number(`1e${-maximumFractionDigits}`)
-    if (value < maxValue) {
-      return `< ${maxValue}${suffix}`
+    const minDisplayValue = Math.pow(10, -maximumFractionDigits)
+    if (value < minDisplayValue) {
+      return `< ${minDisplayValue}${suffix}`
     }
 
     return (
