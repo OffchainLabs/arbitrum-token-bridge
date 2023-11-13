@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
@@ -20,7 +20,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { useChainLayers } from '../../hooks/useChainLayers'
+import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
@@ -42,41 +42,21 @@ export type UseGasSummaryResult = {
   estimatedL2GasFees: number
 }
 
-const layerToGasFeeTooltip = ({
+const depositGasFeeTooltip = ({
   l1NetworkName,
-  l2NetworkName
+  l2NetworkName,
+  depositToOrbit = false
 }: {
   l1NetworkName: string
   l2NetworkName: string
+  depositToOrbit?: boolean
 }) => ({
-  L1: {
-    // always parent
-    deposit: `${l1NetworkName} fees go to Ethereum Validators.`,
-    withdrawal: `A small ${l1NetworkName} calldata fee is paid for including this ${l2NetworkName} transaction in the
-        sequencer batch to be posted on ${l1NetworkName}.`
-  },
-  L2: {
-    deposit: {
-      // as child
-      'to L2': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-      // as parent
-      'to Orbit': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
-    },
-    withdrawal: {
-      // as child
-      'to L1': `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-      // as parent
-      'to L2':
-        'A small L2 calldata fee is paid for including this Orbit transaction in the sequencer batch to be posted on L2.'
-    }
-  },
-  Orbit: {
-    // always child
-    deposit:
-      "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.",
-    withdrawal:
-      "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded."
-  }
+  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
+  L2: `${
+    depositToOrbit ? l1NetworkName : l2NetworkName
+  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
+  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
+  default: null
 })
 
 export function useGasSummary(
@@ -109,12 +89,8 @@ export function useGasSummary(
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL1GasFees = useMemo(() => {
-    if (isDepositMode) {
-      return parseFloat(
-        utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))
-      )
-    }
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l2GasPrice)))
+    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
   }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
@@ -304,52 +280,19 @@ export function TransferPanelSummary({
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const networkNames = {
-    l1NetworkName: l1.network.name,
-    l2NetworkName: l2.network.name
-  }
-
-  const parentLayerGasFeeTooltipContent = useMemo(() => {
-    switch (parentLayer) {
-      case 'L1':
-        if (isDepositMode) {
-          return layerToGasFeeTooltip(networkNames)[parentLayer].deposit
-        }
-        return null
-      case 'L2':
-        if (isDepositMode) {
-          if (layer === 'Orbit') {
-            return layerToGasFeeTooltip(networkNames)[parentLayer].deposit[
-              'to Orbit'
-            ]
-          }
-          return layerToGasFeeTooltip(networkNames)[parentLayer].deposit[
-            'to L2'
-          ]
-        }
-        return null
-
-      default:
-        return null
-    }
-  }, [isDepositMode, layer, networkNames, parentLayer])
-
-  const layerGasFeeTooltipContent = useMemo(() => {
-    switch (layer) {
-      case 'L2':
-        if (isDepositMode) {
-          return layerToGasFeeTooltip(networkNames)[layer].deposit['to L2']
-        }
-        return null
-      case 'Orbit':
-        if (isDepositMode) {
-          return layerToGasFeeTooltip(networkNames)[layer].deposit
-        }
-        return null
-      default:
-        return null
-    }
-  }, [isDepositMode, layer, networkNames])
+  const layerGasFeeTooltipContent = useCallback(
+    (layer: ChainLayer) => {
+      const depositToOrbit = isNetwork(l2.network.id).isOrbitChain
+      return isDepositMode
+        ? depositGasFeeTooltip({
+            l1NetworkName: l1.network.name,
+            l2NetworkName: l2.network.name,
+            depositToOrbit
+          })[layer ?? 'default']
+        : null
+    },
+    [isDepositMode, l1.network.name, l2.network.id, l2.network.name]
+  )
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
@@ -482,7 +425,7 @@ export function TransferPanelSummary({
           <div className="flex flex-row justify-between">
             <div className="flex flex-row items-center space-x-2">
               <span className="pl-4 font-light">{parentLayer} gas</span>
-              <Tooltip content={parentLayerGasFeeTooltipContent}>
+              <Tooltip content={layerGasFeeTooltipContent(parentLayer)}>
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
@@ -503,7 +446,7 @@ export function TransferPanelSummary({
           <div className="flex flex-row justify-between text-gray-dark">
             <div className="flex flex-row items-center space-x-2">
               <span className="pl-4 font-light ">{layer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent}>
+              <Tooltip content={layerGasFeeTooltipContent(layer)}>
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>
