@@ -59,7 +59,7 @@ export const formatAmount = <T extends number | BigNumber>(
       : MaximumFractionDigits.Standard
     const minDisplayValue = Math.pow(10, -maximumFractionDigits)
     if (value < minDisplayValue) {
-      return `< ${minDisplayValue}${suffix}`
+      return `< 0.${'0'.repeat(maximumFractionDigits - 1)}1${suffix}`
     }
 
     return (
