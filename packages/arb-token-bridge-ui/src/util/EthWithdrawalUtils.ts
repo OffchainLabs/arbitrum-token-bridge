@@ -50,9 +50,13 @@ export async function withdrawEthEstimateGas({
     Sentry.captureException(error)
     const estimatedL1Gas = BigNumber.from(130_000)
     // figures based on gas estimation returned
-    const estimatedTotalGas = await l2Provider.estimateGas(
-      withdrawalRequest.txRequest
-    )
+    const estimatedTotalGas = await l2Provider
+      .estimateGas(withdrawalRequest.txRequest)
+      .catch(error => {
+        Sentry.captureException(error)
+        // from recent gas estimation
+        return BigNumber.from(4_300_000)
+      })
 
     return {
       estimatedL1Gas,
