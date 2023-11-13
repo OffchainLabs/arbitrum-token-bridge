@@ -2,24 +2,21 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
+import { NodeInterface__factory } from '@arbitrum/sdk/dist/lib/abi/factories/NodeInterface__factory'
 import { NODE_INTERFACE_ADDRESS } from '@arbitrum/sdk/dist/lib/dataEntities/constants'
-import { PublicClient, isHex } from 'viem'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
-import { nodeInterfaceABI } from '../generated'
 
 export async function withdrawTokenEstimateGas({
   amount,
   address,
   erc20L1Address,
-  l2Provider,
-  arbPublicClient
+  l2Provider
 }: {
   amount: BigNumber
   address: `0x${string}`
   erc20L1Address: string
   l2Provider: Provider
-  arbPublicClient: PublicClient
 }): Promise<GasEstimates> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
@@ -30,28 +27,24 @@ export async function withdrawTokenEstimateGas({
     from: address
   })
 
-  // if it falls into the `0x` case, user shouldn't be able to perform the tx
-  // so it doesn't matter if the estimate is lower than the actual gas
-  const withdrawalRequestCalldata = isHex(withdrawalRequest.txRequest.data)
-    ? withdrawalRequest.txRequest.data
-    : '0x'
+  const nodeInterface = NodeInterface__factory.connect(
+    NODE_INTERFACE_ADDRESS,
+    l2Provider
+  )
 
   try {
-    const gasComponents = await arbPublicClient.simulateContract({
-      address: NODE_INTERFACE_ADDRESS,
-      abi: nodeInterfaceABI,
-      functionName: 'gasEstimateComponents',
-      args: [address, false, withdrawalRequestCalldata],
-      account: address
-    })
+    const gasComponents = await nodeInterface.callStatic.gasEstimateComponents(
+      address,
+      false,
+      withdrawalRequest.txRequest.data
+    )
 
     // This is the gas needed to pay for the batch posting fee
-    // 1st result in the array is `gasEstimateForL1` according to ABI
-    const estimatedL1Gas = BigNumber.from(gasComponents.result[1])
+    const estimatedL1Gas = BigNumber.from(gasComponents.gasEstimateForL1)
 
     // add 30% to the estimated total gas as buffer
     const estimatedTotalGas = BigNumber.from(
-      Math.ceil(Number(gasComponents.result[0]) * 1.3)
+      Math.ceil(Number(gasComponents.gasEstimate) * 1.3)
     )
 
     const estimatedL2Gas = estimatedTotalGas.sub(estimatedL1Gas)

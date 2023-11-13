@@ -69,7 +69,6 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
-import { createArbPublicClient } from '../../util/viem'
 
 enum NetworkType {
   l1 = 'l1',
@@ -373,11 +372,6 @@ export function TransferPanelMain({
   const { arbTokenBridge, isDepositMode, selectedToken } = app
   const { token } = arbTokenBridge
 
-  const arbPublicClient = useMemo(
-    () => createArbPublicClient(l2.network),
-    [l2.network]
-  )
-
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
@@ -572,13 +566,12 @@ export function TransferPanelMain({
       const result = await withdrawEthEstimateGas({
         amount: weiValue,
         address: walletAddress,
-        l2Provider: l2.provider,
-        arbPublicClient
+        l2Provider: l2.provider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [walletAddress, isDepositMode, l2.provider, arbPublicClient, l1.provider]
+    [walletAddress, isDepositMode, l2.provider, l1.provider]
   )
 
   const setMaxAmount = useCallback(async () => {

@@ -5,5 +5,3 @@ yarn-error.log
 tsconfig.tsbuildinfo
 __auto-generated-denylist.json
 
-# wagmi
-**/src/generated.ts

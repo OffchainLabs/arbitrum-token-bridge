@@ -21,7 +21,6 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { createArbPublicClient } from '../../util/viem'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
@@ -104,11 +103,6 @@ export function useGasSummary(
     // Estimated L2 submission cost is precalculated and includes gas price
     estimatedL2SubmissionCost: constants.Zero
   })
-
-  const arbPublicClient = useMemo(
-    () => createArbPublicClient(l2.network),
-    [l2.network]
-  )
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL1GasFees = useMemo(() => {
@@ -205,8 +199,7 @@ export function useGasSummary(
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
-                l2Provider: l2.provider,
-                arbPublicClient
+                l2Provider: l2.provider
               })
             }
 
@@ -218,8 +211,7 @@ export function useGasSummary(
             const estimateGasResult = await withdrawEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l2Provider: l2.provider,
-              arbPublicClient
+              l2Provider: l2.provider
             })
 
             setResult({

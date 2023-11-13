@@ -4,6 +4,3 @@
 **/dist
 .github/
 **/src/styles/
-
-# wagmi generated ABI
-**/src/generated.ts
