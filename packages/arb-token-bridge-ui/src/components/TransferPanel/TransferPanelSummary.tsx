@@ -280,19 +280,16 @@ export function TransferPanelSummary({
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const layerGasFeeTooltipContent = useCallback(
-    (layer: ChainLayer) => {
-      const depositToOrbit = isNetwork(l2.network.id).isOrbitChain
-      return isDepositMode
-        ? depositGasFeeTooltip({
-            l1NetworkName: l1.network.name,
-            l2NetworkName: l2.network.name,
-            depositToOrbit
-          })[layer ?? 'default']
-        : null
-    },
-    [isDepositMode, l1.network.name, l2.network.id, l2.network.name]
-  )
+  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
+    const { isOrbitChain: isL2OrbitChain } = isNetwork(l2.network.id)
+    return isDepositMode
+      ? depositGasFeeTooltip({
+          l1NetworkName: l1.network.name,
+          l2NetworkName: l2.network.name,
+          depositToOrbit: isL2OrbitChain
+        })[layer ?? 'default']
+      : null
+  }
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
