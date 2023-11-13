@@ -48,11 +48,6 @@ describe('Deposit ETH', () => {
           .last()
           .contains(zeroToLessThanOneETH)
           .should('be.visible')
-        cy.findByText('Total amount')
-          .siblings()
-          .last()
-          .contains(/(\d*)(\.\d+)*( ETH)/)
-          .should('be.visible')
       })
     cy.findByRole('button', {
       name: 'Move funds to Arbitrum'

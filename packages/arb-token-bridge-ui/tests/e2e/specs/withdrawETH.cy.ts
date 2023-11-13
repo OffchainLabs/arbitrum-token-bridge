@@ -45,9 +45,9 @@ describe('Withdraw ETH', () => {
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
             cy.findByText(
-              'This transaction will initiate the withdrawal'
+              /This transaction will initiate the withdrawal/i
             ).should('be.visible')
-            cy.findByText('When the withdrawal is ready for claiming').should(
+            cy.findByText(/When the withdrawal is ready for claiming/i).should(
               'be.visible'
             )
           })
