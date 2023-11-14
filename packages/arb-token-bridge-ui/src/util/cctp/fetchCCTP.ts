@@ -61,14 +61,15 @@ async function fetchCCTP({
   }
 }
 
+type FetchCctpResponse = Response['data']
 export async function fetchCCTPDeposits(
   params: FetchParams
-): Promise<Response['data']> {
+): Promise<FetchCctpResponse> {
   return fetchCCTP({ ...params, type: 'deposits' })
 }
 
 export async function fetchCCTPWithdrawals(
   params: FetchParams
-): Promise<Response['data']> {
+): Promise<FetchCctpResponse> {
   return fetchCCTP({ ...params, type: 'withdrawals' })
 }

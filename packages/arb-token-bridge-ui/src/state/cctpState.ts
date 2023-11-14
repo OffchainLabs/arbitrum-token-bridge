@@ -12,7 +12,11 @@ import {
   getNetworkName,
   isNetwork
 } from '../util/networks'
-import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
+import {
+  fetchCCTPDeposits,
+  FetchCctpResponse,
+  fetchCCTPWithdrawals
+} from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
 import { useSigner } from 'wagmi'
@@ -127,13 +131,14 @@ function parseTransferToMergedTransaction(
   }
 }
 
+type ParsedResponse = {
+  pending: MergedTransaction[]
+  completed: MergedTransaction[]
+}
 function parseSWRResponse(
   { pending, completed }: Response['data'],
   chainId: ChainId
-): {
-  pending: MergedTransaction[]
-  completed: MergedTransaction[]
-} {
+): ParsedResponse {
   return {
     pending: pending.map(pendingDeposit =>
       parseTransferToMergedTransaction(pendingDeposit, chainId)
@@ -481,38 +486,42 @@ export function useCctpFetching({
   }, [withdrawals, setTransfers])
 
   const setPendingTransfer = useCallback(
-    (transfer: PartialMergedTransaction, isDeposit: boolean) => {
-      const mutate = isDeposit ? mutateDeposits : mutateWithdrawals
+    (transfer: PartialMergedTransaction, type: 'deposit' | 'withdrawal') => {
+      const mutate = type === 'deposit' ? mutateDeposits : mutateWithdrawals
       mutate(
         {
           pending: [transfer as MergedTransaction],
           completed: []
         },
         {
-          populateCache(result, currentData) {
-            if (!currentData) {
+          populateCache(result: ParsedResponse, currentData) {
+            const transfer = result.pending[0]
+            if (!currentData || !transfer) {
               return result
             }
             const index = currentData.pending.findIndex(
-              tx => tx.txId === result.pending[0].txId
+              tx => tx.txId === transfer.txId
             )
-            const previousData = { ...currentData } // Make sure we don't mutate previous data
-            const existingTransfer = previousData.pending[index]
+            const existingTransfer = currentData.pending[index]
             if (existingTransfer) {
-              previousData.pending[index] = {
-                ...existingTransfer,
-                ...result.pending[0],
+              const { cctpData, ...txData } = existingTransfer
+              const { cctpData: resultCctpData, ...resultTxData } = transfer
+
+              currentData.pending[index] = {
+                ...txData,
+                ...resultTxData,
                 cctpData: {
-                  ...existingTransfer.cctpData,
-                  ...result.pending[0].cctpData
+                  ...cctpData,
+                  ...resultCctpData
                 }
               }
-              return previousData
+
+              return currentData
             }
 
             return {
-              pending: result.pending.concat(currentData.pending),
-              completed: result.completed.concat(currentData.completed)
+              pending: [...result.pending, ...currentData.pending],
+              completed: [...result.completed, ...currentData.completed]
             }
           },
           revalidate: false
@@ -520,20 +529,6 @@ export function useCctpFetching({
       )
     },
     [mutateDeposits, mutateWithdrawals]
-  )
-
-  const setPendingDeposit = useCallback(
-    (transfer: PartialMergedTransaction) => {
-      setPendingTransfer(transfer, true)
-    },
-    [setPendingTransfer]
-  )
-
-  const setPendingWithdrawal = useCallback(
-    (transfer: PartialMergedTransaction) => {
-      setPendingTransfer(transfer, false)
-    },
-    [setPendingTransfer]
   )
 
   return {
@@ -545,8 +540,7 @@ export function useCctpFetching({
     withdrawalsError,
     mutateDeposits,
     mutateWithdrawals,
-    setPendingDeposit,
-    setPendingWithdrawal
+    setPendingTransfer
   }
 }
 
