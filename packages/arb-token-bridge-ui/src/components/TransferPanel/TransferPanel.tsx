@@ -64,10 +64,11 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   getUsdcTokenAddressFromSourceChainId,
+  useCctpFetching,
   useCctpState
 } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { DepositStatus } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -177,7 +178,14 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { updateTransfer, setPendingTransfer } = useCctpState()
+  const { setPendingTransfer } = useCctpFetching({
+    l1ChainId: l1Network.id,
+    l2ChainId: l2Network.id,
+    walletAddress,
+    pageSize: 10,
+    pageNumber: 0,
+    type: 'all'
+  })
 
   const {
     openTransactionHistoryPanel,
@@ -674,7 +682,7 @@ export function TransferPanel() {
         })
       }
 
-      setPendingTransfer({
+      const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
         asset: 'USDC',
         assetType: AssetType.ERC20,
@@ -692,13 +700,10 @@ export function TransferPanel() {
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
         cctpData: {
-          sourceChainId,
-          attestationHash: null,
-          messageBytes: null,
-          receiveMessageTransactionHash: null,
-          receiveMessageTimestamp: null
+          sourceChainId
         }
-      })
+      }
+      setPendingTransfer(newTransfer, isDeposit ? 'deposit' : 'withdrawal')
 
       if (isDeposit) {
         showCctpDepositsTransactions()
@@ -720,15 +725,18 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        updateTransfer({
-          txId: depositForBurnTx.hash,
-          blockNum: depositTxReceipt.blockNumber,
-          status: 'Unconfirmed',
-          cctpData: {
-            attestationHash,
-            messageBytes
-          }
-        })
+        setPendingTransfer(
+          {
+            txId: depositForBurnTx.hash,
+            blockNum: depositTxReceipt.blockNumber,
+            status: 'Unconfirmed',
+            cctpData: {
+              attestationHash,
+              messageBytes
+            }
+          },
+          isDeposit ? 'deposit' : 'withdrawal'
+        )
       }
     } catch (e) {
     } finally {

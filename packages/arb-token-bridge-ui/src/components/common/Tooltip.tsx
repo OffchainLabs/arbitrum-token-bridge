@@ -14,7 +14,11 @@ export function Tooltip({
   wrapperClassName = 'w-max',
   theme = 'light',
   children
-}: TooltipProps): JSX.Element {
+}: TooltipProps): JSX.Element | null {
+  if (!content) {
+    return null
+  }
+
   if (!show) {
     return <>{children}</>
   }
