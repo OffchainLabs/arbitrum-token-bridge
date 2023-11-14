@@ -124,15 +124,14 @@ export const validateTokenList = (tokenList: TokenList) => {
 }
 
 export const addBridgeTokenListToBridge = (
-  bridgeTokenList: BridgeTokenList,
-  arbTokenBridge: ArbTokenBridge
+  bridgeTokenList: TokenListWithId,
+  arbTokenBridge: ArbTokenBridge,
+  l2NetworkId: number
 ) => {
-  fetchTokenListFromURL(bridgeTokenList.url).then(
-    ({ isValid, data: tokenList }) => {
-      if (!isValid) return
-
-      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-    }
+  arbTokenBridge.token.addTokensFromList(
+    bridgeTokenList,
+    bridgeTokenList.bridgeTokenListId,
+    l2NetworkId
   )
 }
 

@@ -639,9 +639,12 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
+  const addTokensFromList = async (
+    arbTokenList: TokenList,
+    listId: number,
+    l2ChainId: number
+  ) => {
     const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -651,7 +654,7 @@ export const useArbTokenBridge = (
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
+      if (![l1ChainID, l2ChainId].includes(chainId)) {
         continue
       }
 
@@ -739,10 +742,10 @@ export const useArbTokenBridge = (
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
+      if (isNetwork(l2ChainId).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumGoerli) {
+      if (isNetwork(l2ChainId).isArbitrumGoerli) {
         l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
       }
 
@@ -868,7 +871,12 @@ export const useArbTokenBridge = (
         updateErc20L2Balance([l2Address])
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances
+    ]
   )
 
   const updateEthBalances = async () => {

@@ -7,16 +7,14 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { useMedia } from 'react-use'
-import Image from 'next/image'
 import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
-  BRIDGE_TOKEN_LISTS,
-  BridgeTokenList,
   addBridgeTokenListToBridge,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
+  TokenListWithId
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
@@ -39,6 +37,7 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { SafeImage } from '../common/SafeImage'
 
 enum Panel {
   TOKENS,
@@ -71,30 +70,24 @@ function TokenListsPanel() {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { bridgeTokens, token } = arbTokenBridge
+  const { data: allTokenLists = [] } = useTokenLists(l2Network.id)
 
-  const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
-
-    return BRIDGE_TOKEN_LISTS.filter(tokenList => {
-      // Don't show the Arbitrum Token token list, because it's special and can't be disabled
-      if (tokenList.isArbitrumTokenTokenList) {
-        return false
-      }
-
-      return tokenList.originChainID === l2Network.id
-    })
-  }, [l2Network])
+  const listsToShow: TokenListWithId[] = useMemo(() => {
+    // Don't show the Arbitrum Token token list, because it's special and can't be disabled
+    return allTokenLists.filter(
+      tokenList =>
+        tokenList.bridgeTokenListId !== SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+    )
+  }, [allTokenLists])
 
   const toggleTokenList = (
-    bridgeTokenList: BridgeTokenList,
+    bridgeTokenList: TokenListWithId,
     isActive: boolean
   ) => {
     if (isActive) {
-      token.removeTokensFromList(bridgeTokenList.id)
+      token.removeTokensFromList(bridgeTokenList.bridgeTokenListId)
     } else {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge, l2Network.id)
     }
   }
 
@@ -108,12 +101,12 @@ function TokenListsPanel() {
       {listsToShow.map(tokenList => {
         const isActive = Object.keys(bridgeTokens).some(address => {
           const token = bridgeTokens[address]
-          return token?.listIds.has(tokenList?.id)
+          return token?.listIds.has(tokenList?.bridgeTokenListId)
         })
 
         return (
           <label
-            key={tokenList.id}
+            key={tokenList.bridgeTokenListId}
             className="flex items-center justify-start space-x-3"
           >
             <div className="switch">
@@ -125,7 +118,7 @@ function TokenListsPanel() {
               <span className="slider round"></span>
             </div>
             <div className="flex items-center space-x-1">
-              <Image
+              <SafeImage
                 src={tokenList.logoURI}
                 alt={`${tokenList.name} Logo`}
                 className="h-6 w-6 rounded-full"

@@ -7,15 +7,23 @@ import {
 } from '../util/TokenListUtils'
 
 export function fetchTokenLists(
-  forL2ChainId: number
+  forL2ChainId: number,
+  isDefaultList = false
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
-    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList =>
-        bridgeTokenList.originChainID === forL2ChainId ||
-        // Always load the Arbitrum Token token list
-        bridgeTokenList.isArbitrumTokenTokenList
-    )
+    const requestListArray = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
+      const isMatchingL2 = bridgeTokenList.originChainID === forL2ChainId
+      // Always load the Arbitrum Token token list
+      if (bridgeTokenList.isArbitrumTokenTokenList) {
+        return true
+      }
+
+      if (isDefaultList) {
+        return isMatchingL2 && bridgeTokenList.isDefault
+      }
+
+      return isMatchingL2
+    })
 
     Promise.all(
       requestListArray.map(bridgeTokenList =>
@@ -45,11 +53,13 @@ export function fetchTokenLists(
 }
 
 export function useTokenLists(
-  forL2ChainId: number
+  forL2ChainId: number,
+  isDefaultList = false
 ): SWRResponse<TokenListWithId[]> {
   return useSWRImmutable(
-    ['useTokenLists', forL2ChainId],
-    ([, _forL2ChainId]) => fetchTokenLists(_forL2ChainId),
+    ['useTokenLists', forL2ChainId, isDefaultList],
+    ([, _forL2ChainId, _isDefaultList]) =>
+      fetchTokenLists(_forL2ChainId, _isDefaultList),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,

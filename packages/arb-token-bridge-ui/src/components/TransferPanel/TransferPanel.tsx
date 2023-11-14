@@ -81,6 +81,7 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
+import { useSyncSelectedToken } from '../../hooks/TransferPanel/useSyncSelectedToken'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -246,6 +247,8 @@ export function TransferPanel() {
   const [isCctp, setIsCctp] = useState(false)
 
   const { destinationAddress } = useDestinationAddressStore()
+
+  useSyncSelectedToken()
 
   function clearAmountInput() {
     // clear amount input on transfer panel
