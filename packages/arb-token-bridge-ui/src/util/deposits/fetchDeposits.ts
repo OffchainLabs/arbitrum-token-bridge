@@ -8,9 +8,12 @@ import {
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
+import { defaultErc20Decimals } from '../../defaults'
+import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type FetchDepositParams = {
-  walletAddress: string
+  sender?: string
+  receiver?: string
   fromBlock?: number
   toBlock?: number
   l1Provider: Provider
@@ -24,7 +27,8 @@ export type FetchDepositParams = {
 /* Also fills in any additional data required per transaction for our UI logic to work well */
 /* TODO : Add event logs as well */
 export const fetchDeposits = async ({
-  walletAddress,
+  sender,
+  receiver,
   fromBlock,
   toBlock,
   l1Provider,
@@ -33,10 +37,14 @@ export const fetchDeposits = async ({
   pageNumber = 0,
   searchString = ''
 }: FetchDepositParams): Promise<Transaction[]> => {
-  if (!walletAddress || !l1Provider || !l2Provider) return []
+  if (typeof sender === 'undefined' && typeof receiver === 'undefined')
+    return []
+  if (!l1Provider || !l2Provider) return []
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
   const l2ChainId = (await l2Provider.getNetwork()).chainId
+
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
 
   if (!fromBlock) {
     fromBlock = 0
@@ -60,7 +68,8 @@ export const fetchDeposits = async ({
   }
 
   const depositsFromSubgraph = await fetchDepositsFromSubgraph({
-    address: walletAddress,
+    sender,
+    receiver,
     fromBlock,
     toBlock,
     l2ChainId,
@@ -74,8 +83,7 @@ export const fetchDeposits = async ({
       const isEthDeposit = tx.type === 'EthDeposit'
 
       const assetDetails = {
-        asset: 'ETH',
-        assetName: 'ETH',
+        assetName: nativeCurrency.symbol,
         assetType: AssetType.ETH,
         tokenAddress: ''
       }
@@ -84,24 +92,25 @@ export const fetchDeposits = async ({
         // update some values for token deposit
         const symbol = tx.l1Token?.symbol || ''
 
-        assetDetails.asset = symbol
         assetDetails.assetName = symbol
         assetDetails.assetType = AssetType.ERC20
         assetDetails.tokenAddress = tx?.l1Token?.id || ''
       }
 
+      const amount = isEthDeposit ? tx.ethValue : tx.tokenAmount
+
+      const tokenDecimals = tx?.l1Token?.decimals ?? defaultErc20Decimals
+      const decimals = isEthDeposit ? nativeCurrency.decimals : tokenDecimals
+
       return {
         type: 'deposit-l1',
         status: 'pending',
-        value: utils.formatUnits(
-          (isEthDeposit ? tx.ethValue : tx.tokenAmount) || 0,
-          isEthDeposit ? 18 : tx?.l1Token?.decimals || 18
-        ),
+        value: utils.formatUnits(amount || 0, decimals),
         txID: tx.transactionHash,
         tokenAddress: assetDetails.tokenAddress,
-        sender: walletAddress,
+        sender: tx.sender,
+        destination: tx.receiver,
 
-        asset: assetDetails.asset,
         assetName: assetDetails.assetName,
         assetType: assetDetails.assetType,
 
@@ -109,7 +118,10 @@ export const fetchDeposits = async ({
         l2NetworkID: String(l2ChainId),
         blockNumber: Number(tx.blockCreatedAt),
         timestampCreated: tx.timestamp,
-        isClassic: tx.isClassic
+        isClassic: tx.isClassic,
+
+        chainId: l2ChainId,
+        parentChainId: l1ChainId
       }
     }
   )

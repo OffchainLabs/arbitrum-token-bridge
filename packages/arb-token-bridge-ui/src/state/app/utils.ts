@@ -4,6 +4,7 @@ import { ethers, BigNumber } from 'ethers'
 
 import { DepositStatus, MergedTransaction } from './state'
 import {
+  AssetType,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
@@ -40,11 +41,11 @@ export const getDepositStatus = (tx: Transaction) => {
     case L1ToL2MessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case L1ToL2MessageStatus.EXPIRED:
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
     case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
@@ -58,6 +59,8 @@ export const transformDeposits = (
 ): MergedTransaction[] => {
   return deposits.map(tx => {
     return {
+      sender: tx.sender,
+      destination: tx.destination,
       direction: tx.type,
       status: tx.status,
       createdAt: tx.timestampCreated
@@ -68,6 +71,7 @@ export const transformDeposits = (
         : null,
       txId: tx.txID,
       asset: tx.assetName || '',
+      assetType: tx.assetType,
       value: tx.value,
       uniqueId: null, // not needed
       isWithdrawal: false,
@@ -75,7 +79,9 @@ export const transformDeposits = (
       tokenAddress: tx.tokenAddress || null,
       l1ToL2MsgData: tx.l1ToL2MsgData,
       l2ToL1MsgData: tx.l2ToL1MsgData,
-      depositStatus: getDepositStatus(tx)
+      depositStatus: getDepositStatus(tx),
+      chainId: Number(tx.l2NetworkID),
+      parentChainId: Number(tx.l1NetworkID)
     }
   })
 }
@@ -87,6 +93,8 @@ export const transformWithdrawals = (
     const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
 
     return {
+      sender: tx.sender,
+      destination: tx.destinationAddress,
       direction: 'outbox',
       status:
         tx.nodeBlockDeadline ===
@@ -99,12 +107,15 @@ export const transformWithdrawals = (
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
       asset: tx.symbol || '',
+      assetType: tx.type,
       value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
       uniqueId: uniqueIdOrHash,
       isWithdrawal: true,
       blockNum: tx.ethBlockNum.toNumber(),
       tokenAddress: tx.tokenAddress || null,
-      nodeBlockDeadline: tx.nodeBlockDeadline
+      nodeBlockDeadline: tx.nodeBlockDeadline,
+      chainId: tx.chainId,
+      parentChainId: tx.parentChainId
     }
   })
 }
@@ -122,7 +133,8 @@ export const filterTransactions = (
     const txL1NetworkID = tx.l1NetworkID
     const txL2NetworkID = tx.l2NetworkID
 
-    const isSenderWallet = txSender === walletAddress
+    const isSenderWallet =
+      txSender.toLowerCase() === walletAddress.toLowerCase()
     const matchesL1 = txL1NetworkID === String(l1ChainId)
 
     // The `l2NetworkID` field was added later, so not all transactions will have it
@@ -152,6 +164,9 @@ export const isWithdrawal = (tx: MergedTransaction) => {
 }
 
 export const isPending = (tx: MergedTransaction) => {
+  if (tx.isCctp && !tx.resolvedAt && tx.status !== 'Failure') {
+    return true
+  }
   return (
     (isDeposit(tx) &&
       (tx.status === 'pending' ||
@@ -173,6 +188,15 @@ export const isFailed = (tx: MergedTransaction) => {
       tx.nodeBlockDeadline ==
         NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION)
   )
+}
+
+export function isCustomDestinationAddressTx(
+  tx: Pick<MergedTransaction, 'sender' | 'destination'>
+) {
+  if (!tx.sender || !tx.destination) {
+    return false
+  }
+  return tx.sender.toLowerCase() !== tx.destination.toLowerCase()
 }
 
 export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {

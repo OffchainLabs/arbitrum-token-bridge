@@ -23,8 +23,12 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { FastBridgeNames, getFastBridges } from '../../util/fastBridges'
+import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
+import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { FastBridgeNames } from '../../util/fastBridges'
 
 const SECONDS_IN_DAY = 86400
 const SECONDS_IN_HOUR = 3600
@@ -51,11 +55,14 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
+  const { parentLayer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const networkName = getNetworkName(l1.network.id)
   const {
     app: { selectedToken }
   } = useAppState()
+
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
@@ -64,7 +71,7 @@ export function WithdrawalConfirmationDialog(
     deepLinkInfo: {
       from: from.id,
       to: to.id,
-      tokenSymbol: selectedToken?.symbol,
+      tokenSymbol: selectedToken?.symbol ?? 'ETH',
       amount: props.amount
     },
     disabledFastBridgeNames: [
@@ -147,19 +154,21 @@ export function WithdrawalConfirmationDialog(
                   Get your funds in ~{confirmationPeriod} and pay a small fee
                   twice.{' '}
                   <ExternalLink
-                    href="https://consensys.zendesk.com/hc/en-us/articles/7311862385947"
+                    href={CONFIRMATION_PERIOD_ARTICLE_LINK}
                     className="underline"
                   >
                     Learn more.
                   </ExternalLink>
                 </p>
 
-                <div className="flex flex-row items-center space-x-1">
-                  <CheckIcon className="h-6 w-6 text-lime-dark" />
-                  <span className="font-medium text-lime-dark">
-                    Security guaranteed by Ethereum
-                  </span>
-                </div>
+                {parentLayer === 'L1' && (
+                  <div className="flex flex-row items-center space-x-1">
+                    <CheckIcon className="h-6 w-6 text-lime-dark" />
+                    <span className="font-medium text-lime-dark">
+                      Security guaranteed by Ethereum
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col space-y-6">
@@ -167,7 +176,9 @@ export function WithdrawalConfirmationDialog(
                   label={
                     <span className="font-light">
                       I understand that it will take ~{confirmationPeriod}{' '}
-                      before I can claim my funds on Ethereum {networkName}
+                      before I can claim my funds on{' '}
+                      {parentLayer === 'L1' ? 'Ethereum ' : ''}
+                      {networkName}
                     </span>
                   }
                   checked={checkbox1Checked}
@@ -180,9 +191,9 @@ export function WithdrawalConfirmationDialog(
                       I understand that after claiming my funds, I’ll have to
                       send{' '}
                       <span className="font-medium">
-                        another transaction on L1
+                        another transaction on {parentLayer}
                       </span>{' '}
-                      and pay another L1 fee
+                      and pay another {parentLayer} fee
                     </span>
                   }
                   checked={checkbox2Checked}
@@ -198,7 +209,7 @@ export function WithdrawalConfirmationDialog(
                       href={getCalendarUrl(
                         confirmationHours,
                         props.amount,
-                        selectedToken?.symbol || 'ETH',
+                        selectedToken?.symbol || nativeCurrency.symbol,
                         getNetworkName(l2.network.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}

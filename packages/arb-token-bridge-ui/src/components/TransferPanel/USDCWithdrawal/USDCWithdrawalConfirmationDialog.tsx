@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -14,17 +16,19 @@ import { BridgesTable } from '../../common/BridgesTable'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
+import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
+import { CctpTabContent } from '../CctpTabContent'
+import { CCTP_DOCUMENTATION } from '../../../constants'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const { l1, l2 } = useNetworksAndSigners()
-
+  const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const { isArbitrumGoerli } = isNetwork(l2.network.id)
 
   const from = l2.network
   const to = l1.network
-  const fromNetworkName = getNetworkName(from.id)
   const toNetworkName = getNetworkName(to.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
@@ -59,7 +63,7 @@ export function USDCWithdrawalConfirmationDialog(
 
   return (
     <Dialog {...props} isCustom>
-      <div className="flex flex-col md:min-w-[725px]">
+      <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
@@ -75,30 +79,23 @@ export function USDCWithdrawalConfirmationDialog(
             </button>
           </div>
 
-          <Tab.List className="bg-ocl-blue">
-            <TabButton>Use a third-party bridge</TabButton>
+          <Tab.List className="flex bg-ocl-blue">
+            <TabButton>Third party (USDC)</TabButton>
+            <TabButton>Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-3 font-light">
               <p>
-                Receive{' '}
+                Receive <span className="font-medium">USDC</span> on{' '}
+                {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
-                  href={
-                    isArbitrumGoerli
-                      ? `https://goerli.etherscan.io/token/${CommonAddress.Goerli.USDC}`
-                      : `https://etherscan.io/token/${CommonAddress.Mainnet.USDC}`
-                  }
+                  href={CCTP_DOCUMENTATION}
                 >
-                  USDC
+                  Cross-Chain Transfer Protocol
                 </ExternalLink>{' '}
-                on {toNetworkName} using a third-party bridge with Circle&apos;s
-                CCTP integrated.
-              </p>
-              <p>
-                USDC native to {fromNetworkName} cannot be withdrawn using
-                Arbitrum's bridge.
+                integrated.
               </p>
             </div>
 
@@ -109,6 +106,40 @@ export function USDCWithdrawalConfirmationDialog(
             <div className="mt-2 flex flex-row justify-end space-x-2">
               <Button variant="secondary" onClick={() => props.onClose(false)}>
                 Cancel
+              </Button>
+            </div>
+          </Tab.Panel>
+
+          <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
+            <div className="flex flex-col space-y-6">
+              <CctpTabContent toNetworkName={toNetworkName}>
+                <div className="flex flex-col space-y-3">
+                  <USDCWithdrawalConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                  />
+                </div>
+              </CctpTabContent>
+            </div>
+            <div className="mt-2 flex flex-row justify-end space-x-2">
+              <Button variant="secondary" onClick={() => props.onClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!allCheckboxesCheched}
+                onClick={() => {
+                  props.onClose(true)
+                  setAllCheckboxesChecked(false)
+                }}
+              >
+                Confirm
               </Button>
             </div>
           </Tab.Panel>

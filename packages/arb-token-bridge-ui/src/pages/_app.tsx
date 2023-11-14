@@ -1,7 +1,7 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import * as Sentry from '@sentry/react'
-import { BrowserTracing } from '@sentry/tracing'
+import { BrowserTracing } from '@sentry/browser'
 import posthog from 'posthog-js'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -15,6 +15,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
+import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
@@ -31,9 +32,11 @@ dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
 
 Sentry.init({
+  environment: process.env.NODE_ENV,
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.15,
+  maxValueLength: 0,
   beforeSend: event => {
     if (event.message) {
       if (
@@ -76,7 +79,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Bridge to Arbitrum</title>
+        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />

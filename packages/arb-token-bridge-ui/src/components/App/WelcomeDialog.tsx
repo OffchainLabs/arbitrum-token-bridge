@@ -25,56 +25,45 @@ export function WelcomeDialog(props: UseDialogProps) {
   }
 
   return (
-    <Dialog {...props} initialFocus={confirmButtonRef} isCustom>
-      <div className="px-8 py-4">
-        <HeadlessUIDialog.Title className="text-2xl font-medium">
-          Welcome
-        </HeadlessUIDialog.Title>
+    <Dialog
+      {...props}
+      initialFocus={confirmButtonRef}
+      isCustom
+      className="mx-auto my-3 flex max-w-[340px] flex-col rounded-lg px-8 py-4 md:max-w-[600px]"
+    >
+      <HeadlessUIDialog.Title className="text-2xl font-medium">
+        Welcome
+      </HeadlessUIDialog.Title>
 
-        <div className="flex flex-col items-center space-y-8 md:flex-row md:space-x-8 md:space-y-0">
-          <div>
-            <Image
-              src="/images/arbinaut-flying.webp"
-              alt="An Astronaut in an Arbitrum space suit"
-              className="w-64"
-              width={256}
-              height={383}
-            />
-          </div>
-          <div className="flex flex-col justify-between md:h-[384px] md:w-64">
-            <div className="flex flex-col space-y-4">
-              <p className="font-light">
-                We will NEVER ask you for your seed phrase or private keys.
-              </p>
-
-              <p className="font-light">
-                Arbitrum is in beta – we’ve got some extra controls in place to
-                protect you.{' '}
-                <ExternalLink
-                  href="https://developer.offchainlabs.com/docs/mainnet#some-words-of-caution"
-                  className="arb-hover underline"
-                >
-                  Learn more.
-                </ExternalLink>
-              </p>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <p className="text-sm font-light">
-                By clicking the button below, you agree to our{' '}
-                <ExternalLink href="/tos" className="arb-hover underline">
-                  Terms of Service.
-                </ExternalLink>
-              </p>
-
-              <Button
-                ref={confirmButtonRef}
-                variant="primary"
-                className="w-full"
-                onClick={closeHandler}
+      <div className="flex grow flex-col items-center gap-8 md:flex-row md:items-stretch">
+        <Image
+          src="/images/arbinaut-flying.webp"
+          alt="An Astronaut in an Arbitrum space suit"
+          width={256}
+          height={383}
+          className="h-[55vh] max-h-[383px] w-auto"
+        />
+        <div className="flex grow flex-col justify-between font-light">
+          <p>We will NEVER ask you for your seed phrase or private keys.</p>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm">
+              By clicking the button below, you agree to our{' '}
+              <ExternalLink
+                href="https://arbitrum.io/tos"
+                className="arb-hover underline"
               >
-                Agree to terms
-              </Button>
-            </div>
+                Terms of Service.
+              </ExternalLink>
+            </p>
+
+            <Button
+              ref={confirmButtonRef}
+              variant="primary"
+              className="w-full"
+              onClick={closeHandler}
+            >
+              Agree to terms
+            </Button>
           </div>
         </div>
       </div>

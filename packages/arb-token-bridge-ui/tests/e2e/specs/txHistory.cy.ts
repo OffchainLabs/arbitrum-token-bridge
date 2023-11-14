@@ -69,7 +69,8 @@ describe('Transaction History', () => {
       // search for invalid address substring
       cy.findByPlaceholderText(DEPOSIT_SEARCH_IDENTIFIER)
         .typeRecursively('0xx') // 0xx is invalid tx hash
-        .then(() => {
+        .then($input => {
+          cy.wrap($input).scrollIntoView()
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
           ).should('be.visible')
@@ -88,6 +89,9 @@ describe('Transaction History', () => {
 
     // Test withdrawals are loading
     context('load withdrawals', () => {
+      // If user clicks instantly on the withdraw tab, it might be reset to the first tab (deposits)
+      // But it's unlikely to happen, so we add a wait here to avoid false negative
+      cy.wait(1_000)
       cy.findByRole('tab', { name: 'show withdrawal transactions' })
         .should('be.visible')
         .click()
@@ -149,7 +153,8 @@ describe('Transaction History', () => {
       // search for invalid address substring
       cy.findByPlaceholderText(WITHDRAWAL_SEARCH_IDENTIFIER)
         .typeRecursively('0xx') // 0xx is invalid tx hash
-        .then(() => {
+        .then($input => {
+          cy.wrap($input).scrollIntoView()
           cy.findByText(
             /Oops! Looks like nothing matched your search query/i
           ).should('be.visible')

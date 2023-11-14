@@ -1,10 +1,13 @@
 import React, { Dispatch, SetStateAction, useMemo } from 'react'
+import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
+
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { TransactionsTableWithdrawalRow } from './TransactionsTableWithdrawalRow'
+import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import {
   getStandardizedDate,
   getStandardizedTime,
+  isCustomDestinationAddressTx,
   isDeposit,
   isWithdrawal
 } from '../../../state/app/utils'
@@ -14,7 +17,10 @@ import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
-import { useAccountType } from '../../../hooks/useAccountType'
+import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
+import { ExternalLink } from '../../common/ExternalLink'
+import { getExplorerUrl } from '../../../util/networks'
+import { shortenAddress } from '../../../util/CommonUtils'
 
 export type PageParams = {
   searchString: string
@@ -62,7 +68,92 @@ export const TransactionDateTime = ({
   )
 }
 
-enum TableStatus {
+export const TransactionsTableHeader = () => {
+  return (
+    <thead className="text-gray-10 text-left text-sm">
+      <tr>
+        <th className="py-3 pl-6 pr-3 font-normal">Status</th>
+        <th className="px-3 py-3 font-normal">Time</th>
+        <th className="px-3 py-3 font-normal">Amount</th>
+        <th className="px-3 py-3 font-normal">TxID</th>
+        <th className="py-3 pl-3 pr-6 font-normal">
+          {/* Empty header text */}
+        </th>
+      </tr>
+    </thead>
+  )
+}
+
+export const CustomAddressTxExplorer = ({
+  tx,
+  explorerClassName = 'arb-hover underline'
+}: {
+  tx: Pick<MergedTransaction, 'sender' | 'destination' | 'isWithdrawal'>
+  explorerClassName?: string
+}) => {
+  const { address } = useAccount()
+  const { l1, l2 } = useNetworksAndSigners()
+
+  const isDifferentSenderTx = useMemo(() => {
+    if (!tx.sender || !address) {
+      return false
+    }
+    return tx.sender.toLowerCase() !== address.toLowerCase()
+  }, [tx.sender, address])
+
+  const isCustomDestinationTx = useMemo(() => {
+    if (!address || !tx.destination) {
+      return false
+    }
+    return tx.destination.toLowerCase() !== address.toLowerCase()
+  }, [tx.destination, address])
+
+  const explorerChainId = useMemo(() => {
+    if (!isDifferentSenderTx && !isCustomDestinationTx) {
+      return null
+    }
+
+    if (tx.isWithdrawal) {
+      // this is a withdrawal, so
+      // if it's a different sender, show their L2 address (where the withdrawal originated)
+      // otherwise it's a custom destination, show their L1 address (where the funds will land)
+      return isDifferentSenderTx ? l2.network.id : l1.network.id
+    }
+
+    // this is a deposit, so
+    // if it's a different sender, show their L1 address (where the deposit originated)
+    // otherwise it's a custom destination, show their L2 address (where the funds will land)
+    return isDifferentSenderTx ? l1.network.id : l2.network.id
+  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
+
+  if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
+    return null
+  }
+
+  if (!tx.sender || !tx.destination) {
+    return null
+  }
+
+  return (
+    <>
+      {isDifferentSenderTx ? (
+        <span>Funds received from: </span>
+      ) : (
+        <span>Funds sent to: </span>
+      )}
+      <ExternalLink
+        className={explorerClassName}
+        href={`${getExplorerUrl(explorerChainId)}/address/${
+          isDifferentSenderTx ? tx.sender : tx.destination
+        }`}
+      >
+        {shortenAddress(isDifferentSenderTx ? tx.sender : tx.destination)}
+      </ExternalLink>
+    </>
+  )
+}
+
+export enum TableStatus {
   LOADING,
   ERROR,
   SUCCESS
@@ -85,8 +176,6 @@ export function TransactionsTable({
   loading,
   error
 }: TransactionsTableProps) {
-  const { isSmartContractWallet = false } = useAccountType()
-
   const {
     app: { mergedTransactions: locallyStoredTransactions }
   } = useAppState()
@@ -167,83 +256,69 @@ export function TransactionsTable({
         type={type}
         pageParams={pageParams}
         setPageParams={setPageParams}
-        transactions={transactions}
+        transactions={_transactions}
         loading={loading}
+        showSearch
       />
 
-      {
-        <table className="w-full overflow-hidden rounded-b-lg bg-white">
-          <thead className="text-gray-10 text-left text-sm">
-            <tr>
-              <th className="py-3 pl-6 pr-3 font-normal">Status</th>
-              <th className="px-3 py-3 font-normal">Time</th>
-              <th className="px-3 py-3 font-normal">Amount</th>
-              <th className="px-3 py-3 font-normal">TxID</th>
-              <th className="py-3 pl-3 pr-6 font-normal">
-                {/* Empty header text */}
-              </th>
-            </tr>
-          </thead>
+      <table className="w-full overflow-hidden rounded-b-lg bg-white">
+        <TransactionsTableHeader />
 
-          <tbody>
-            {status === TableStatus.LOADING && <TableBodyLoading />}
+        <tbody>
+          {status === TableStatus.LOADING && <TableBodyLoading />}
 
-            {status === TableStatus.ERROR && <TableBodyError />}
+          {status === TableStatus.ERROR && <TableBodyError />}
 
-            {/* when there are no search results found */}
-            {status === TableStatus.SUCCESS && noSearchResults && (
-              <NoDataOverlay />
+          {/* when there are no search results found */}
+          {status === TableStatus.SUCCESS && noSearchResults && (
+            <NoDataOverlay />
+          )}
+
+          {/* when there are no transactions present */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            _transactions.length === 0 && (
+              <EmptyTableRow>
+                <span className="text-sm font-medium">No transactions</span>
+              </EmptyTableRow>
             )}
 
-            {/* when there are no transactions present */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              !_transactions.length && (
-                <EmptyTableRow>
-                  <span className="text-sm font-medium">
-                    {isSmartContractWallet
-                      ? 'You can see tx history in your smart contract wallet'
-                      : 'No transactions'}
-                  </span>
-                </EmptyTableRow>
-              )}
+          {/* finally, when transactions are present, show rows */}
+          {status === TableStatus.SUCCESS &&
+            !noSearchResults &&
+            _transactions.map((tx, index) => {
+              const isLastRow = index === _transactions.length - 1
 
-            {/* finally, when transactions are present, show rows */}
-            {status === TableStatus.SUCCESS &&
-              !noSearchResults &&
-              _transactions.map((tx, index) => {
-                const isLastRow = index === _transactions.length - 1
+              // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
+              // this will make sure the row updates with any updates in the local app state
+              // else show static subgraph table data
+              const locallyStoredTransaction = locallyStoredTransactionsMap.get(
+                tx.txId
+              )
+              const finalTx = locallyStoredTransaction ?? tx
 
-                // if transaction is present in local (pending + recently executed) transactions, subscribe to that in this row,
-                // this will make sure the row updates with any updates in the local app state
-                // else show static subgraph table data
-                const locallyStoredTransaction =
-                  locallyStoredTransactionsMap.get(tx.txId)
-                const finalTx = locallyStoredTransaction ?? tx
-
-                if (isDeposit(finalTx)) {
-                  return (
-                    <TransactionsTableDepositRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-3' : ''}
-                    />
-                  )
-                } else if (isWithdrawal(finalTx)) {
-                  return (
-                    <TransactionsTableWithdrawalRow
-                      key={`${finalTx.txId}-${finalTx.direction}`}
-                      tx={finalTx}
-                      className={!isLastRow ? 'border-b border-gray-3' : ''}
-                    />
-                  )
-                } else {
-                  return null
-                }
-              })}
-          </tbody>
-        </table>
-      }
+              if (isDeposit(finalTx)) {
+                return (
+                  <TransactionsTableDepositRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else if (isWithdrawal(finalTx)) {
+                return (
+                  <TransactionsTableClaimableRow
+                    key={`${finalTx.txId}-${finalTx.direction}`}
+                    tx={finalTx}
+                    className={!isLastRow ? 'border-b border-black' : ''}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+        </tbody>
+      </table>
     </>
   )
 }

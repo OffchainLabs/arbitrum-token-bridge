@@ -79,6 +79,8 @@ export type NodeBlockDeadlineStatus =
 export type L2ToL1EventResult = L2ToL1TransactionEvent
 
 export type L2ToL1EventResultPlus = L2ToL1EventResult & {
+  sender?: string
+  destinationAddress?: string
   l2TxHash?: string
   type: AssetType
   value: BigNumber
@@ -87,10 +89,13 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
+  chainId?: number
+  parentChainId?: number
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
+  timestamp?: BigNumber
 }
 
 export interface PendingWithdrawalsMap {
@@ -110,13 +115,6 @@ export interface BridgeToken {
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
-}
-
-export interface L1TokenData {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
 }
 
 export interface L2TokenData {
@@ -252,7 +250,6 @@ export type ArbTokenBridgeTransactions = {
 >
 
 export interface ArbTokenBridge {
-  walletAddress: string
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken

@@ -63,28 +63,22 @@ describe('Withdraw ERC20 Token', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20ToWithdraw))
           .then(() => {
-            cy.findByText('You’re moving')
+            cy.findByText("You're moving")
               .siblings()
               .last()
               .contains(formatAmount(ERC20ToWithdraw, { symbol: 'WETH' }))
               .should('be.visible')
-            cy.findByText(/You’ll pay in gas/i)
+            cy.findByText(/You'll now pay in gas fees/i)
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('L1 gas')
-              .parent()
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('L2 gas')
-              .parent()
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
+            cy.findByText(
+              /This transaction will initiate the withdrawal/i
+            ).should('be.visible')
+            cy.findByText(/When the withdrawal is ready for claiming/i).should(
+              'be.visible'
+            )
           })
       })
 

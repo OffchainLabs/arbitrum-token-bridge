@@ -3,7 +3,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import Tippy from '@tippyjs/react'
-
+import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
@@ -12,16 +12,16 @@ import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
-import { getL1TokenData } from '../../util/TokenUtils'
+import {
+  erc20DataToErc20BridgeToken,
+  fetchErc20Data,
+  isValidErc20
+} from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import {
-  toERC20BridgeToken,
-  useTokensFromLists,
-  useTokensFromUser
-} from './TokenSearchUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 
@@ -43,16 +43,17 @@ type TokenListSearchResult =
       status: ImportStatus
     }
 
-export type TokenImportDialogProps = UseDialogProps & { address: string }
+export type TokenImportDialogProps = UseDialogProps & { tokenAddress: string }
 
 export function TokenImportDialog({
   isOpen,
   onClose,
-  address
+  tokenAddress
 }: TokenImportDialogProps): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token, walletAddress },
+      arbTokenBridge: { bridgeTokens, token },
       selectedToken
     }
   } = useAppState()
@@ -71,7 +72,7 @@ export function TokenImportDialog({
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
-    eitherL1OrL2Address: address,
+    eitherL1OrL2Address: tokenAddress,
     l2Provider: l2.provider
   })
 
@@ -94,17 +95,18 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
-    if (!l1Address) {
+    if (!l1Address || !walletAddress) {
       return
     }
 
-    return getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
-    })
-  }, [l1, l2, walletAddress, l1Address])
+    const erc20Params = { address: l1Address, provider: l1.provider }
+
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+    }
+
+    return fetchErc20Data(erc20Params)
+  }, [l1, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -185,13 +187,13 @@ export function TokenImportDialog({
 
         // We couldn't find the address within our lists
         setStatus(ImportStatus.UNKNOWN)
-        setTokenToImport(toERC20BridgeToken(data))
+        setTokenToImport(erc20DataToErc20BridgeToken(data))
       })
       .catch(() => {
         setStatus(ImportStatus.ERROR)
       })
   }, [
-    address,
+    tokenAddress,
     bridgeTokens,
     getL1TokenDataFromL1Address,
     isL1AddressLoading,
@@ -209,7 +211,7 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[l1Address || address]
+    const foundToken = tokensFromUser[l1Address || tokenAddress]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -222,7 +224,7 @@ export function TokenImportDialog({
     }
   }, [
     isL1AddressLoading,
-    address,
+    tokenAddress,
     isOpen,
     l1Address,
     onClose,

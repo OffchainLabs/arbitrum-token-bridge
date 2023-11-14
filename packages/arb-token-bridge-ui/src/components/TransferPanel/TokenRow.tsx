@@ -6,7 +6,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
-import { Chain } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -24,12 +24,14 @@ import {
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -39,7 +41,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+    <div className="flex h-8 w-8 min-w-[2rem] items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
@@ -78,39 +80,44 @@ export function TokenRow({
   onClick,
   token
 }: TokenRowProps): JSX.Element {
+  const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, walletAddress },
+      arbTokenBridge: { bridgeTokens },
       isDepositMode
     }
   } = useAppState()
+  const { isLoading: isLoadingAccountType } = useAccountType()
   const {
     l1: { network: l1Network, provider: l1Provider },
     l2: { network: l2Network, provider: l2Provider }
   } = useNetworksAndSigners()
 
   const isSmallScreen = useMedia('(max-width: 419px)')
+  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
-  const tokenName = useMemo(
-    () =>
-      token
-        ? sanitizeTokenName(token.name, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'Ether',
-    [token, isDepositMode, l2Network, l1Network]
-  )
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chain: isDepositMode ? l1Network : l2Network
-          })
-        : 'ETH',
-    [token, isDepositMode, l2Network, l1Network]
-  )
+  const tokenName = useMemo(() => {
+    if (token) {
+      return sanitizeTokenName(token.name, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    return nativeCurrency.name
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1Network : l2Network
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
@@ -132,18 +139,20 @@ export function TokenRow({
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-    }
-
-    if (!token.logoURI) {
-      return undefined
+      return nativeCurrency.logoUrl
     }
 
     return token.logoURI
-  }, [token])
+  }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
+      if (nativeCurrency.isCustom) {
+        return isDepositMode
+          ? erc20L1Balances?.[nativeCurrency.address]
+          : ethL2Balance
+      }
+
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
@@ -160,6 +169,7 @@ export function TokenRow({
     ethL1Balance,
     ethL2Balance,
     token,
+    nativeCurrency,
     isDepositMode,
     erc20L1Balances,
     erc20L2Balances
@@ -215,7 +225,7 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token])
+  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -232,7 +242,7 @@ export function TokenRow({
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [token, bridgeTokens])
+  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
@@ -254,6 +264,8 @@ export function TokenRow({
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
 
+  const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
+
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
       isDepositMode ? l1Network.id : l2Network.id
@@ -272,6 +284,18 @@ export function TokenRow({
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
 
+    // We don't want users to be able to click on USDC before we know whether or not they are SCW users
+    if (
+      isLoadingAccountType &&
+      (tokenIsArbGoerliNativeUSDC || tokenIsArbOneNativeUSDC)
+    ) {
+      return (
+        <div className="mr-2">
+          <Loader color="#28A0F0" size="small" />
+        </div>
+      )
+    }
+
     return (
       <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
         {tokenBalance ? (
@@ -286,7 +310,15 @@ export function TokenRow({
         )}
       </span>
     )
-  }, [token?.decimals, tokenBalance, tokenIsAddedToTheBridge, tokenSymbol])
+  }, [
+    isLoadingAccountType,
+    token?.decimals,
+    tokenBalance,
+    tokenIsAddedToTheBridge,
+    tokenIsArbGoerliNativeUSDC,
+    tokenIsArbOneNativeUSDC,
+    tokenSymbol
+  ])
 
   return (
     <button
@@ -342,6 +374,7 @@ export function TokenRow({
               </Tooltip>
             )}
           </div>
+
           {token && (
             <div className="flex w-full flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
@@ -387,6 +420,19 @@ export function TokenRow({
                   {tokenListInfo}
                 </span>
               )}
+            </div>
+          )}
+
+          {isCustomFeeTokenRow && (
+            <div className="flex w-full flex-col items-start space-y-1">
+              <div className="flex w-full justify-between">
+                {isDepositMode && (
+                  <BlockExplorerTokenLink
+                    chain={l1Network}
+                    address={nativeCurrency.address}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>

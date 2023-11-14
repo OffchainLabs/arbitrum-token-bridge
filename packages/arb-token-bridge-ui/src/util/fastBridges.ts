@@ -50,7 +50,7 @@ export type FastBridgeInfo = {
 type DeepLinkBridgeInfo = {
   from: ChainId
   to: ChainId
-  tokenSymbol?: string
+  tokenSymbol: string
   amount: string
 }
 

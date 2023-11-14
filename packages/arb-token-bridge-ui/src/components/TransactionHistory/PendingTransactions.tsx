@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 import { MergedTransaction } from '../../state/app/state'
 import { isDeposit, isTokenDeposit } from '../../state/app/utils'
@@ -12,14 +14,47 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
+import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
+import { CustomMessageWarning } from './CustomMessageWarning'
+
+dayjs.extend(utc)
 
 const getOtherL2NetworkChainId = (chainId: number) => {
-  if (!isNetwork(chainId).isArbitrumOne && !isNetwork(chainId).isArbitrumNova) {
+  if (isNetwork(chainId).isEthereum) {
     console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
   }
   return isNetwork(chainId).isArbitrumOne
     ? ChainId.ArbitrumNova
     : ChainId.ArbitrumOne
+}
+
+const MergedTransactionCard = ({
+  transaction
+}: {
+  transaction: MergedTransaction
+}) => {
+  if (transaction.isCctp) {
+    return (
+      <motion.div key={transaction.txId} {...motionDivProps}>
+        {transaction.status === 'Confirmed' ? (
+          <ClaimableCardConfirmed tx={transaction} />
+        ) : (
+          <ClaimableCardUnconfirmed tx={transaction} />
+        )}
+      </motion.div>
+    )
+  }
+
+  return isDeposit(transaction) ? (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <DepositCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  ) : (
+    <motion.div key={transaction.txId} {...motionDivProps}>
+      <WithdrawalCard key={transaction.txId} tx={transaction} />
+    </motion.div>
+  )
 }
 
 export const PendingTransactions = ({
@@ -40,6 +75,11 @@ export const PendingTransactions = ({
   const bgClassName = isNetwork(l2Network.id).isArbitrumNova
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
+
+  // Show from 5th November 2023 to 7th November 2023
+  const showSubgraphMaintenanceMessage =
+    dayjs().utc().startOf('day').isAfter(dayjs('2023-11-05').startOf('day')) &&
+    dayjs().utc().startOf('day').isBefore(dayjs('2023-11-07').startOf('day'))
 
   return (
     <div
@@ -75,7 +115,7 @@ export const PendingTransactions = ({
       )}
 
       {/* No pending transactions */}
-      {!error && !loading && !transactions.length && (
+      {!error && !loading && transactions.length === 0 && (
         <span className="flex gap-x-2 text-sm text-white opacity-40">
           No pending transactions
         </span>
@@ -86,18 +126,28 @@ export const PendingTransactions = ({
           <PendingDepositWarning />
         )}
 
-      {/* Transaction cards */}
-      {transactions?.map(tx =>
-        isDeposit(tx) ? (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <DepositCard key={tx.txId} tx={tx} />
-          </motion.div>
-        ) : (
-          <motion.div key={tx.txId} {...motionDivProps}>
-            <WithdrawalCard key={tx.txId} tx={tx} />
-          </motion.div>
-        )
+      {showSubgraphMaintenanceMessage && (
+        <CustomMessageWarning>
+          <span>
+            The Graph is expected to undergo scheduled database maintenance
+            beginning Nov 6, 2023, 08:00 UTC. Transaction history may not appear
+            between 08:00-14:00 UTC on Nov 6, 2023. Please check back later or
+            visit{' '}
+            <ExternalLink
+              href="https://status.thegraph.com"
+              className="arb-hover text-blue-link underline"
+            >
+              The Graph&apos;s status page
+            </ExternalLink>{' '}
+            for the latest.
+          </span>
+        </CustomMessageWarning>
       )}
+
+      {/* Transaction cards */}
+      {transactions.map(tx => (
+        <MergedTransactionCard transaction={tx} key={tx.txId} />
+      ))}
     </div>
   )
 }

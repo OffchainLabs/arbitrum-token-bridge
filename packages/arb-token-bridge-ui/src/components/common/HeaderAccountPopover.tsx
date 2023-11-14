@@ -25,9 +25,10 @@ import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { useAppContextActions } from '../App/AppContext'
+import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -80,8 +81,9 @@ export function HeaderAccountPopover({
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel, openPreferences } =
+  const { openTransactionHistoryPanel, setTransactionHistoryTab } =
     useAppContextActions()
+  const [, setQueryParams] = useArbQueryParams()
 
   const [showCopied, setShowCopied] = useState(false)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
@@ -123,6 +125,7 @@ export function HeaderAccountPopover({
   }
 
   function openTransactionHistory() {
+    setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }
@@ -219,14 +222,14 @@ export function HeaderAccountPopover({
               </ExternalLink>
             )}
 
-            {/* Preferences */}
+            {/* Settings */}
             {isCorrectNetworkConnected && (
               <button
                 className={headerItemsClassName}
-                onClick={openPreferences}
+                onClick={() => setQueryParams({ settingsOpen: true })}
               >
                 <Cog6ToothIcon className="h-4 w-4 text-white" />
-                <span>Preferences</span>
+                <span>Settings</span>
               </button>
             )}
 
