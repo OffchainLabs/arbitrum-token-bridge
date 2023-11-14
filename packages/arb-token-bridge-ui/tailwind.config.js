@@ -54,9 +54,6 @@ module.exports = {
       fontFamily: {
         serif: "'Space Grotesk', sans-serif"
       },
-      width: {
-        '1/7': '14.2857%'
-      },
       maxWidth: {
         2: '0.5rem',
         4: '1rem',
