@@ -9,6 +9,7 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import { Erc20Data } from './TokenUtils'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -24,6 +25,7 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
+  nativeTokenData?: Erc20Data
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {

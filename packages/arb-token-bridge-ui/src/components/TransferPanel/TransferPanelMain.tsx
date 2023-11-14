@@ -67,6 +67,12 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getChainQueryParamForChain } from '../../types/ChainQueryParam'
+import {
+  useNativeCurrency,
+  NativeCurrencyErc20
+} from '../../hooks/useNativeCurrency'
+import { defaultErc20Decimals } from '../../defaults'
+import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
 
 enum NetworkType {
   l1 = 'l1',
@@ -279,7 +285,7 @@ function TokenBalance({
   prefix = '',
   tokenSymbolOverride
 }: {
-  forToken: ERC20BridgeToken | null
+  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
@@ -357,13 +363,6 @@ function NetworkListboxPlusBalancesContainer({
   )
 }
 
-export enum TransferPanelMainErrorMessage {
-  INSUFFICIENT_FUNDS,
-  GAS_ESTIMATION_FAILURE,
-  WITHDRAW_ONLY,
-  SC_WALLET_ETH_NOT_SUPPORTED
-}
-
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -371,16 +370,18 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainErrorMessage
+  errorMessage?: TransferPanelMainRichErrorMessage | string
 }) {
   const actions = useActions()
 
   const [{ fromProvider, toProvider, from, to }, setNetworks] = useNetworks()
-  const { parentLayer, layer } = useChainLayers()
+  const { layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(to.id)
   const { isSmartContractWallet } = useAccountType()
+
+  const nativeCurrency = useNativeCurrency({ provider: toProvider })
 
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
@@ -425,6 +426,12 @@ export function TransferPanelMain({
   })
 
   useEffect(() => {
+    if (nativeCurrency.isCustom) {
+      updateErc20L1Balances([nativeCurrency.address])
+    }
+  }, [nativeCurrency, updateErc20L1Balances])
+
+  useEffect(() => {
     if (
       !selectedToken ||
       !destinationAddressOrWalletAddress ||
@@ -457,11 +464,24 @@ export function TransferPanelMain({
 
   const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
-  const selectedTokenBalances = useMemo(() => {
-    const result: {
-      l1: BigNumber | null
-      l2: BigNumber | null
-    } = {
+  type Balances = {
+    l1: BigNumber | null
+    l2: BigNumber | null
+  }
+
+  const customFeeTokenBalances: Balances = useMemo(() => {
+    if (!nativeCurrency.isCustom) {
+      return { l1: ethL1Balance, l2: ethL2Balance }
+    }
+
+    return {
+      l1: erc20L1Balances?.[nativeCurrency.address] ?? null,
+      l2: ethL2Balance
+    }
+  }, [nativeCurrency, ethL1Balance, ethL2Balance, erc20L1Balances])
+
+  const selectedTokenBalances: Balances = useMemo(() => {
+    const result: Balances = {
       l1: null,
       l2: null
     }
@@ -555,29 +575,44 @@ export function TransferPanelMain({
   )
 
   const setMaxAmount = useCallback(async () => {
-    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
-
-    const tokenBalance = isDepositMode
-      ? selectedTokenBalances.l1
-      : selectedTokenBalances.l2
-
     if (selectedToken) {
-      if (!tokenBalance) {
-        return
+      const tokenBalance = isDepositMode
+        ? selectedTokenBalances.l1
+        : selectedTokenBalances.l2
+
+      if (tokenBalance) {
+        // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+        setAmount(
+          utils.formatUnits(
+            tokenBalance,
+            selectedToken?.decimals ?? defaultErc20Decimals
+          )
+        )
       }
 
-      // For tokens, we can set the max amount, and have the gas summary component handle the rest
-      setAmount(utils.formatUnits(tokenBalance, selectedToken?.decimals))
       return
     }
 
-    if (!ethBalance) {
+    const customFeeTokenL1Balance = customFeeTokenBalances.l1
+    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
+    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenL1Balance) {
+      setAmount(
+        utils.formatUnits(customFeeTokenL1Balance, nativeCurrency.decimals)
+      )
+      return
+    }
+
+    // We have already handled token deposits and deposits of the custom fee token
+    // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
+    const nativeCurrencyBalance = isDepositMode ? ethL1Balance : ethL2Balance
+
+    if (!nativeCurrencyBalance) {
       return
     }
 
     try {
       setLoadingMaxAmount(true)
-      const result = await estimateGas(ethBalance)
+      const result = await estimateGas(nativeCurrencyBalance)
 
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
@@ -589,15 +624,20 @@ export function TransferPanelMain({
         result.estimatedL2SubmissionCost
       )
 
-      const ethBalanceFloat = parseFloat(utils.formatEther(ethBalance))
+      const nativeCurrencyBalanceFloat = parseFloat(
+        utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
+      )
       const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(String(ethBalanceFloat - estimatedTotalGasFees * 1.4))
+      setAmount(
+        String(nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4)
+      )
     } catch (error) {
       console.error(error)
     } finally {
       setLoadingMaxAmount(false)
     }
   }, [
+    nativeCurrency,
     estimateGas,
     ethL1Balance,
     ethL2Balance,
@@ -606,7 +646,8 @@ export function TransferPanelMain({
     l2GasPrice,
     selectedToken,
     setAmount,
-    selectedTokenBalances
+    selectedTokenBalances,
+    customFeeTokenBalances
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
@@ -652,50 +693,44 @@ export function TransferPanelMain({
     isDepositMode
   ])
 
-  const errorMessageText = useMemo(() => {
+  const errorMessageElement = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE) {
-      return (
-        <span>
-          Gas estimation failed, join our{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          and reach out in #support for assistance.
-        </span>
-      )
+    if (typeof errorMessage === 'string') {
+      return errorMessage
     }
 
-    if (errorMessage === TransferPanelMainErrorMessage.WITHDRAW_ONLY) {
-      return (
-        <>
-          <span>This token can&apos;t be bridged over. </span>
-          <button
-            className="arb-hover underline"
-            onClick={openWithdrawOnlyDialog}
-          >
-            Learn more.
-          </button>
-        </>
-      )
-    }
+    switch (errorMessage) {
+      case TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE:
+        return (
+          <span>
+            Gas estimation failed, join our{' '}
+            <ExternalLink
+              href="https://discord.com/invite/ZpZuw7p"
+              className="underline"
+            >
+              Discord
+            </ExternalLink>{' '}
+            and reach out in #support for assistance.
+          </span>
+        )
 
-    if (
-      errorMessage === TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-    ) {
-      return "ETH transfers using smart contract wallets aren't supported yet."
+      case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+        return (
+          <>
+            <span>This token can&apos;t be bridged over.</span>{' '}
+            <button
+              className="arb-hover underline"
+              onClick={openWithdrawOnlyDialog}
+            >
+              Learn more.
+            </button>
+          </>
+        )
     }
-
-    return `Insufficient balance, please add more to ${
-      isDepositMode ? parentLayer : layer
-    }.`
-  }, [errorMessage, isDepositMode, layer, openWithdrawOnlyDialog, parentLayer])
+  }, [errorMessage, openWithdrawOnlyDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     setNetworks({
@@ -1031,10 +1066,27 @@ export function TransferPanelMain({
                   forToken={selectedToken}
                   prefix={selectedToken ? 'BALANCE: ' : ''}
                 />
-                <ETHBalance
-                  balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
-                  prefix={selectedToken ? '' : 'BALANCE: '}
-                />
+                {nativeCurrency.isCustom ? (
+                  <>
+                    <TokenBalance
+                      on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                      balance={
+                        app.isDepositMode
+                          ? customFeeTokenBalances.l1
+                          : customFeeTokenBalances.l2
+                      }
+                      forToken={nativeCurrency}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                    {/* Only show ETH balance on L1 */}
+                    {app.isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                  </>
+                ) : (
+                  <ETHBalance
+                    balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+                    prefix={selectedToken ? '' : 'BALANCE: '}
+                  />
+                )}
               </>
             )}
           </BalancesContainer>
@@ -1047,7 +1099,7 @@ export function TransferPanelMain({
               loading: isMaxAmount || loadingMaxAmount,
               onClick: setMaxAmount
             }}
-            errorMessage={errorMessageText}
+            errorMessage={errorMessageElement}
             disabled={isSwitchingL2Chain}
             value={isMaxAmount ? '' : amount}
             onChange={e => {
@@ -1132,10 +1184,28 @@ export function TransferPanelMain({
                       tokenSymbolOverride="USDC"
                     />
                   )}
-                  <ETHBalance
-                    balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
-                    prefix={selectedToken ? '' : 'BALANCE: '}
-                  />
+                  {nativeCurrency.isCustom ? (
+                    <>
+                      <TokenBalance
+                        on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                        balance={
+                          app.isDepositMode
+                            ? customFeeTokenBalances.l2
+                            : customFeeTokenBalances.l1
+                        }
+                        forToken={nativeCurrency}
+                        prefix={selectedToken ? '' : 'BALANCE: '}
+                      />
+                      {!app.isDepositMode && (
+                        <ETHBalance balance={ethL1Balance} />
+                      )}
+                    </>
+                  ) : (
+                    <ETHBalance
+                      balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                  )}
                 </>
               )
             )}

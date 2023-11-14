@@ -39,6 +39,7 @@ import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 declare global {
   interface Window {
@@ -123,12 +124,35 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const [networks] = useNetworks()
   const { childChain, childProvider, parentProvider, parentChain } =
     useNetworksRelationship(networks)
+  const { app } = useAppState()
+  const { selectedToken } = app
+  const nativeCurrency = useNativeCurrency({ provider: childProvider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
+
+  useEffect(() => {
+    if (!nativeCurrency.isCustom) {
+      return
+    }
+
+    const selectedTokenAddress = selectedToken?.address.toLowerCase()
+    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
+    // This handles a super weird edge case where, for example:
+    //
+    // Your setup is: from Arbitrum Goerli to Goerli, and you have $ARB selected as the token you want to bridge over.
+    // You then switch your destination network to a network that has $ARB as its native currency.
+    // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
+    if (
+      selectedTokenAddress === nativeCurrency.address ||
+      selectedTokenL2Address === nativeCurrency.address
+    ) {
+      actions.app.setSelectedToken(null)
+    }
+  }, [selectedToken, nativeCurrency])
 
   // Listen for account and network changes
   useEffect(() => {

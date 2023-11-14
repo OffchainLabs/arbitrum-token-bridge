@@ -11,16 +11,16 @@ import { useLatest } from 'react-use'
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
-import { getL1TokenData } from '../../util/TokenUtils'
+import {
+  erc20DataToErc20BridgeToken,
+  fetchErc20Data,
+  isValidErc20
+} from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import {
-  toERC20BridgeToken,
-  useTokensFromLists,
-  useTokensFromUser
-} from './TokenSearchUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -99,13 +99,14 @@ export function TokenImportDialog({
       return
     }
 
-    return getL1TokenData({
-      account: walletAddress,
-      erc20L1Address: l1Address,
-      l1Provider: fromProvider,
-      l2Provider: toProvider
-    })
-  }, [fromProvider, toProvider, walletAddress, l1Address])
+    const erc20Params = { address: l1Address, provider: fromProvider }
+
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+    }
+
+    return fetchErc20Data(erc20Params)
+  }, [fromProvider, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -186,7 +187,7 @@ export function TokenImportDialog({
 
         // We couldn't find the address within our lists
         setStatus(ImportStatus.UNKNOWN)
-        setTokenToImport(toERC20BridgeToken(data))
+        setTokenToImport(erc20DataToErc20BridgeToken(data))
       })
       .catch(() => {
         setStatus(ImportStatus.ERROR)

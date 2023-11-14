@@ -3,7 +3,6 @@ import { useAppState } from '../../state'
 import {
   ContractStorage,
   ERC20BridgeToken,
-  L1TokenData,
   TokenType
 } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -134,15 +133,4 @@ function tokenListsToSearchableTokenStorage(
     },
     {}
   )
-}
-
-export function toERC20BridgeToken(data: L1TokenData): ERC20BridgeToken {
-  return {
-    name: data.name,
-    type: TokenType.ERC20,
-    symbol: data.symbol,
-    address: data.address,
-    decimals: data.decimals,
-    listIds: new Set()
-  }
 }

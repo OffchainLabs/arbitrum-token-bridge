@@ -1,17 +1,16 @@
 import { useMemo } from 'react'
 
+import { useAppState } from '../../state'
 import { useIsSwitchingL2Chain } from '../../components/TransferPanel/TransferPanelMainUtils'
 import { useAppContextState } from '../../components/App/AppContext'
-import { useAppState } from '../../state'
 import { GasEstimationStatus } from '../../components/TransferPanel/TransferPanelSummary'
+import { UseTransferReadinessTransferReady } from '../../components/TransferPanel/useTransferReadiness'
 
 export function useSummaryVisibility({
-  disableDeposit,
-  disableWithdrawal,
+  transferReady: { deposit: depositReady, withdrawal: withdrawalReady },
   gasEstimationStatus
 }: {
-  disableDeposit: boolean
-  disableWithdrawal: boolean
+  transferReady: UseTransferReadinessTransferReady
   gasEstimationStatus: GasEstimationStatus
 }) {
   const {
@@ -33,14 +32,14 @@ export function useSummaryVisibility({
       return true
     }
 
-    return !(isDepositMode ? disableDeposit : disableWithdrawal)
+    return isDepositMode ? depositReady : withdrawalReady
   }, [
     isSwitchingL2Chain,
     gasEstimationStatus,
     isTransferring,
     isDepositMode,
-    disableDeposit,
-    disableWithdrawal
+    depositReady,
+    withdrawalReady
   ])
 
   return {

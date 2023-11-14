@@ -128,13 +128,14 @@ function parseTransferToMergedTransaction(
   }
 }
 
+type ParsedResponse = {
+  pending: MergedTransaction[]
+  completed: MergedTransaction[]
+}
 function parseSWRResponse(
   { pending, completed }: Response['data'],
   chainId: ChainId
-): {
-  pending: MergedTransaction[]
-  completed: MergedTransaction[]
-} {
+): ParsedResponse {
   return {
     pending: pending.map(pendingDeposit =>
       parseTransferToMergedTransaction(pendingDeposit, chainId)
@@ -159,20 +160,14 @@ export const useCCTPDeposits = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { data, error, isLoading } = useSWRImmutable(
+  return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
         return null
       }
 
-      return [
-        walletAddress,
-        l1ChainId,
-        pageNumber,
-        pageSize,
-        'cctp-deposits'
-      ] as const
+      return [walletAddress, l1ChainId, pageNumber, pageSize, 'cctp-deposits']
     },
     ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
       fetchCCTPDeposits({
@@ -182,8 +177,6 @@ export const useCCTPDeposits = ({
         pageSize: _pageSize
       }).then(deposits => parseSWRResponse(deposits, _l1ChainId))
   )
-
-  return { data, error, isLoading }
 }
 
 export const useCCTPWithdrawals = ({
@@ -193,7 +186,7 @@ export const useCCTPWithdrawals = ({
   pageSize,
   enabled
 }: fetchCctpParams) => {
-  const { data, error, isLoading, isValidating } = useSWRImmutable(
+  return useSWRImmutable(
     // Only fetch when we have walletAddress
     () => {
       if (!walletAddress || !enabled) {
@@ -206,7 +199,7 @@ export const useCCTPWithdrawals = ({
         pageNumber,
         pageSize,
         'cctp-withdrawals'
-      ] as const
+      ]
     },
     ([_walletAddress, _l1ChainId, _pageNumber, _pageSize]) =>
       fetchCCTPWithdrawals({
@@ -216,8 +209,6 @@ export const useCCTPWithdrawals = ({
         pageSize: _pageSize
       }).then(withdrawals => parseSWRResponse(withdrawals, _l1ChainId))
   )
-
-  return { data, error, isLoading, isValidating }
 }
 
 type PartialMergedTransaction = Partial<Omit<MergedTransaction, 'cctpData'>> & {
@@ -232,7 +223,6 @@ type CctpStore = {
     completed: MergedTransaction[]
   }) => void
   resetTransfers: () => void
-  setPendingTransfer: (transfer: MergedTransaction) => void
   updateTransfer: (transfer: PartialMergedTransaction) => void
 }
 
@@ -271,16 +261,6 @@ const useCctpStore = create<CctpStore>((set, get) => ({
       transfersIds: [...ids]
     })
   },
-  setPendingTransfer: async transfer => {
-    return set(prevState => ({
-      transfers: {
-        ...prevState.transfers,
-        [transfer.txId]: transfer
-      },
-      // Set the new transfer as first item (showing first in pending transaction)
-      transfersIds: [...new Set([transfer.txId].concat(prevState.transfersIds))]
-    }))
-  },
   updateTransfer: transfer => {
     const prevTransfer = get().transfers[transfer.txId]
     if (!prevTransfer) {
@@ -309,7 +289,6 @@ export function useCctpState() {
     transfers,
     resetTransfers,
     setTransfers,
-    setPendingTransfer,
     updateTransfer
   } = useCctpStore()
 
@@ -345,7 +324,6 @@ export function useCctpState() {
     }, [transfersIds, transfers])
 
   return {
-    setPendingTransfer,
     resetTransfers,
     setTransfers,
     transfersIds,
@@ -368,6 +346,7 @@ export function useUpdateCctpTransactions() {
       const provider =
         tx.direction === 'deposit' ? parentProvider : childProvider
       const receipt = await provider.getTransactionReceipt(tx.txId)
+
       return {
         receipt,
         tx
@@ -467,7 +446,8 @@ export function useCctpFetching({
   const {
     data: deposits,
     isLoading: isLoadingDeposits,
-    error: depositsError
+    error: depositsError,
+    mutate: mutateDeposits
   } = useCCTPDeposits({
     l1ChainId,
     walletAddress,
@@ -479,7 +459,8 @@ export function useCctpFetching({
   const {
     data: withdrawals,
     isLoading: isLoadingWithdrawals,
-    error: withdrawalsError
+    error: withdrawalsError,
+    mutate: mutateWithdrawals
   } = useCCTPWithdrawals({
     l1ChainId,
     walletAddress,
@@ -501,13 +482,62 @@ export function useCctpFetching({
     }
   }, [withdrawals, setTransfers])
 
+  const setPendingTransfer = useCallback(
+    (transfer: PartialMergedTransaction, type: 'deposit' | 'withdrawal') => {
+      const mutate = type === 'deposit' ? mutateDeposits : mutateWithdrawals
+      mutate(
+        {
+          pending: [transfer as MergedTransaction],
+          completed: []
+        },
+        {
+          populateCache(result: ParsedResponse, currentData) {
+            const transfer = result.pending[0]
+            if (!currentData || !transfer) {
+              return result
+            }
+            const index = currentData.pending.findIndex(
+              tx => tx.txId === transfer.txId
+            )
+            const existingTransfer = currentData.pending[index]
+            if (existingTransfer) {
+              const { cctpData, ...txData } = existingTransfer
+              const { cctpData: resultCctpData, ...resultTxData } = transfer
+
+              currentData.pending[index] = {
+                ...txData,
+                ...resultTxData,
+                cctpData: {
+                  ...cctpData,
+                  ...resultCctpData
+                }
+              }
+
+              return currentData
+            }
+
+            return {
+              pending: [...result.pending, ...currentData.pending],
+              completed: [...result.completed, ...currentData.completed]
+            }
+          },
+          revalidate: false
+        }
+      )
+    },
+    [mutateDeposits, mutateWithdrawals]
+  )
+
   return {
     deposits,
     withdrawals,
     isLoadingDeposits,
     isLoadingWithdrawals,
     depositsError,
-    withdrawalsError
+    withdrawalsError,
+    mutateDeposits,
+    mutateWithdrawals,
+    setPendingTransfer
   }
 }
 
@@ -591,7 +621,7 @@ export function useClaimCctp(tx: MergedTransaction) {
 }
 
 export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData) {
+  if (!tx.cctpData?.sourceChainId) {
     return ChainId.Mainnet
   }
 
@@ -604,7 +634,7 @@ export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
 }
 
 export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData) {
+  if (!tx.cctpData?.sourceChainId) {
     return ChainId.Mainnet
   }
 
