@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
@@ -8,7 +8,7 @@ import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
@@ -287,8 +287,8 @@ export function TransferPanelSummary({
     const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
 
     return depositGasFeeTooltip({
-      l1NetworkName: l1.network.name,
-      l2NetworkName: l2.network.name,
+      l1NetworkName: getNetworkName(l1.network.id),
+      l2NetworkName: getNetworkName(l2.network.id),
       depositToOrbit: isDepositToOrbitChain
     })[layer]
   }
