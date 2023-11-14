@@ -18,7 +18,7 @@ import { TabButton } from '../common/Tab'
 const roundedTabClasses =
   'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
-export const NewTransactionHistory = () => {
+export const TransactionHistory = () => {
   const { address } = useAccount()
 
   const {
