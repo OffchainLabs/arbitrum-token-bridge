@@ -55,8 +55,7 @@ const depositGasFeeTooltip = ({
   L2: `${
     depositToOrbit ? l1NetworkName : l2NetworkName
   } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  default: null
+  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
 })
 
 export function useGasSummary(
@@ -281,14 +280,17 @@ export function TransferPanelSummary({
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
   const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    const { isOrbitChain: isL2OrbitChain } = isNetwork(l2.network.id)
-    return isDepositMode
-      ? depositGasFeeTooltip({
-          l1NetworkName: l1.network.name,
-          l2NetworkName: l2.network.name,
-          depositToOrbit: isL2OrbitChain
-        })[layer ?? 'default']
-      : null
+    if (!isDepositMode) {
+      return null
+    }
+
+    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
+
+    return depositGasFeeTooltip({
+      l1NetworkName: l1.network.name,
+      l2NetworkName: l2.network.name,
+      depositToOrbit: isDepositToOrbitChain
+    })[layer]
   }
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
