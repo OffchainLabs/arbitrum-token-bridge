@@ -33,16 +33,23 @@ export function fetchTokenLists(
       const tokenListsWithBridgeTokenListId = responses
         .map(({ data, isValid }, index) => {
           const bridgeTokenListId = requestListArray[index]?.id
+          const { name, ...tokenListData } = data ?? {}
+          const tokenListName = requestListArray[index]?.name ?? name
 
           if (typeof bridgeTokenListId === 'undefined') {
-            return { ...data, isValid }
+            return {
+              ...tokenListData,
+              isValid,
+              name: tokenListName
+            }
           }
 
           return {
             l2ChainId: forL2ChainId,
             bridgeTokenListId,
             isValid,
-            ...data
+            name: tokenListName,
+            ...tokenListData
           }
         })
         .filter(list => list?.isValid)
