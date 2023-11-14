@@ -34,7 +34,7 @@ export function OneNovaTransferDialog(
     deepLinkInfo: {
       from: sourceChainId,
       to: destinationChainId,
-      tokenSymbol: selectedToken?.symbol || 'ETH',
+      tokenSymbol: selectedToken?.symbol ?? 'ETH',
       amount: props.amount
     },
     supportedFastBridgeNames: [FastBridgeNames.Hop]
