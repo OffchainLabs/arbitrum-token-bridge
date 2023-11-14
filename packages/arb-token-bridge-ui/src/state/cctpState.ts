@@ -12,11 +12,7 @@ import {
   getNetworkName,
   isNetwork
 } from '../util/networks'
-import {
-  fetchCCTPDeposits,
-  FetchCctpResponse,
-  fetchCCTPWithdrawals
-} from '../util/cctp/fetchCCTP'
+import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
 import { useSigner } from 'wagmi'
