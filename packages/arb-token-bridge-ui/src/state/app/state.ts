@@ -73,11 +73,11 @@ export interface MergedTransaction {
   chainId?: number
   parentChainId?: number
   cctpData?: {
-    sourceChainId: CCTPSupportedChainId
-    attestationHash: `0x${string}` | null
-    messageBytes: string | null
-    receiveMessageTransactionHash: `0x${string}` | null
-    receiveMessageTimestamp: string | null
+    sourceChainId?: CCTPSupportedChainId
+    attestationHash?: `0x${string}` | null
+    messageBytes?: string | null
+    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTimestamp?: string | null
   }
 }
 
