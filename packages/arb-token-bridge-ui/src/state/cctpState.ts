@@ -620,7 +620,7 @@ export function useClaimCctp(tx: MergedTransaction) {
 }
 
 export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData) {
+  if (!tx.cctpData?.sourceChainId) {
     return ChainId.Mainnet
   }
 
@@ -633,7 +633,7 @@ export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
 }
 
 export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData) {
+  if (!tx.cctpData?.sourceChainId) {
     return ChainId.Mainnet
   }
 
