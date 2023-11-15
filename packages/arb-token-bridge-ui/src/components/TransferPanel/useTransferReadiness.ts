@@ -166,14 +166,6 @@ export function useTransferReadiness({
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
 
-  const selectedTokenIsWithdrawOnly = useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    return isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-  }, [selectedToken, l2Network])
-
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return null
@@ -228,6 +220,11 @@ export function useTransferReadiness({
 
     // ERC-20
     if (selectedToken) {
+      const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
+        selectedToken.address,
+        l2Network.id
+      )
+
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
           errorMessage: UseTransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
@@ -391,7 +388,6 @@ export function useTransferReadiness({
     l1Network,
     l2Network,
     selectedToken,
-    selectedTokenIsWithdrawOnly,
     gasSummary,
     nativeCurrency,
     ethL1BalanceFloat,
