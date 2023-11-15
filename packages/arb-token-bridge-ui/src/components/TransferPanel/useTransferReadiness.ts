@@ -293,14 +293,11 @@ export function useTransferReadiness({
         })
 
       case 'success': {
-        const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
-          isSmartContractWallet,
-          isDepositMode
-        })
-
-        const defaultRequiredGasFees =
-          sanitizedEstimatedGasFees.estimatedL1GasFees +
-          sanitizedEstimatedGasFees.estimatedL2GasFees
+        const { estimatedL1GasFees, estimatedL2GasFees } =
+          sanitizeEstimatedGasFees(gasSummary, {
+            isSmartContractWallet,
+            isDepositMode
+          })
 
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
@@ -309,9 +306,6 @@ export function useTransferReadiness({
             if (customFeeTokenL1BalanceFloat === null) {
               return notReady()
             }
-
-            const { estimatedL1GasFees, estimatedL2GasFees } =
-              sanitizedEstimatedGasFees
 
             // We have to check if there's enough ETH to cover L1 gas
             if (estimatedL1GasFees > ethBalanceFloat) {
@@ -336,7 +330,8 @@ export function useTransferReadiness({
             return ready()
           }
 
-          if (defaultRequiredGasFees > ethBalanceFloat) {
+          // Everything is paid in ETH, so we sum it up
+          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
             return notReady({
               errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
@@ -351,7 +346,7 @@ export function useTransferReadiness({
         if (nativeCurrency.isCustom && isDepositMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
-          if (defaultRequiredGasFees > ethBalanceFloat) {
+          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
             return notReady({
               errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
@@ -363,10 +358,10 @@ export function useTransferReadiness({
           return ready()
         }
 
-        const notEnoughEthForGasFees =
-          Number(amount) + defaultRequiredGasFees > ethBalanceFloat
-
-        if (notEnoughEthForGasFees) {
+        if (
+          Number(amount) + estimatedL1GasFees + estimatedL2GasFees >
+          ethBalanceFloat
+        ) {
           return notReady({
             errorMessage: getInsufficientFundsForGasFeesErrorMessage({
               asset: ether.symbol,
