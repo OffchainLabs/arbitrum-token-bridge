@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -17,7 +18,6 @@ import {
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
-import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
@@ -31,11 +31,7 @@ import {
   useAppContextState
 } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
-import {
-  TransferPanelMain,
-  TransferPanelMainErrorMessage
-} from './TransferPanelMain'
-import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
+import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
@@ -55,22 +51,24 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK, ether } from '../../constants'
 import {
   getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
+import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   getUsdcTokenAddressFromSourceChainId,
+  useCctpFetching,
   useCctpState
 } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { DepositStatus } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -83,6 +81,7 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
+import { useTransferReadiness } from './useTransferReadiness'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -178,7 +177,14 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { updateTransfer, setPendingTransfer } = useCctpState()
+  const { setPendingTransfer } = useCctpFetching({
+    l1ChainId: l1Network.id,
+    l2ChainId: l2Network.id,
+    walletAddress,
+    pageSize: 10,
+    pageNumber: 0,
+    type: 'all'
+  })
 
   const {
     openTransactionHistoryPanel,
@@ -193,7 +199,6 @@ export function TransferPanel() {
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
-  const isSwitchingL2Chain = useIsSwitchingL2Chain()
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
@@ -219,6 +224,8 @@ export function TransferPanel() {
 
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
+  const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
+    useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
   const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
@@ -246,8 +253,7 @@ export function TransferPanel() {
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
 
-  const { error: destinationAddressError, destinationAddress } =
-    useDestinationAddressStore()
+  const { destinationAddress } = useDestinationAddressStore()
 
   function clearAmountInput() {
     // clear amount input on transfer panel
@@ -306,13 +312,19 @@ export function TransferPanel() {
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
 
-  const selectedTokenIsWithdrawOnly = useMemo(() => {
-    if (!selectedToken) {
-      return false
+  const customFeeTokenL1BalanceFloat = useMemo(() => {
+    if (!nativeCurrency.isCustom) {
+      return null
     }
 
-    return isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-  }, [selectedToken, l2Network])
+    const balance = erc20L1Balances?.[nativeCurrency.address]
+
+    if (!balance) {
+      return null
+    }
+
+    return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
+  }, [nativeCurrency, erc20L1Balances])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -370,6 +382,107 @@ export function TransferPanel() {
     } else {
       transfer()
     }
+  }
+
+  async function approveCustomFeeTokenForInbox(): Promise<boolean> {
+    if (typeof walletAddress === 'undefined') {
+      throw new Error('walletAddress is undefined')
+    }
+
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    const ethBridger = await EthBridger.fromProvider(l2Provider)
+    const { l2Network } = ethBridger
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('l2 network does not use custom fee token')
+    }
+
+    const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: l1Provider,
+      owner: walletAddress,
+      spender: l2Network.ethBridge.inbox
+    })
+
+    const amountBigNumber = utils.parseUnits(amount, nativeCurrency.decimals)
+
+    // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
+    if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const [confirmed] = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+        l1Signer
+      })
+      await approveCustomFeeTokenTx.wait()
+    }
+
+    return true
+  }
+
+  async function approveCustomFeeTokenForGateway(): Promise<boolean> {
+    if (typeof walletAddress === 'undefined') {
+      throw new Error('walletAddress is undefined')
+    }
+
+    if (!l1Signer) {
+      throw new Error('failed to find signer')
+    }
+
+    if (!selectedToken) {
+      throw new Error('no selected token')
+    }
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    const l2Network = erc20Bridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw new Error('l2 network does not use custom fee token')
+    }
+
+    const l1Gateway = await fetchErc20L1GatewayAddress({
+      erc20L1Address: selectedToken.address,
+      l1Provider,
+      l2Provider
+    })
+
+    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: l1Provider,
+      owner: walletAddress,
+      spender: l1Gateway
+    })
+
+    const estimatedL2GasFees = utils.parseUnits(
+      String(gasSummary.estimatedL2GasFees),
+      nativeCurrency.decimals
+    )
+
+    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the chain will be paid in the custom fee token
+    // We have to check if the allowance is enough to cover the fees
+    if (!customFeeTokenAllowanceForL1Gateway.gte(estimatedL2GasFees)) {
+      const waitForInput = openCustomFeeTokenApprovalDialog()
+      const [confirmed] = await waitForInput()
+
+      if (!confirmed) {
+        return false
+      }
+
+      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+        erc20L1Address: selectedToken.address,
+        l1Signer
+      })
+      await approveCustomFeeTokenTx.wait()
+    }
+
+    return true
   }
 
   const amountBigNumber = useMemo(() => {
@@ -566,7 +679,7 @@ export function TransferPanel() {
         })
       }
 
-      setPendingTransfer({
+      const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
         asset: 'USDC',
         assetType: AssetType.ERC20,
@@ -584,13 +697,10 @@ export function TransferPanel() {
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
         cctpData: {
-          sourceChainId,
-          attestationHash: null,
-          messageBytes: null,
-          receiveMessageTransactionHash: null,
-          receiveMessageTimestamp: null
+          sourceChainId
         }
-      })
+      }
+      setPendingTransfer(newTransfer, isDeposit ? 'deposit' : 'withdrawal')
 
       if (isDeposit) {
         showCctpDepositsTransactions()
@@ -612,15 +722,18 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        updateTransfer({
-          txId: depositForBurnTx.hash,
-          blockNum: depositTxReceipt.blockNumber,
-          status: 'Unconfirmed',
-          cctpData: {
-            attestationHash,
-            messageBytes
-          }
-        })
+        setPendingTransfer(
+          {
+            txId: depositForBurnTx.hash,
+            blockNum: depositTxReceipt.blockNumber,
+            status: 'Unconfirmed',
+            cctpData: {
+              attestationHash,
+              messageBytes
+            }
+          },
+          isDeposit ? 'deposit' : 'withdrawal'
+        )
       }
     } catch (e) {
     } finally {
@@ -765,6 +878,14 @@ export function TransferPanel() {
             }
           }
 
+          if (nativeCurrency.isCustom) {
+            const approved = await approveCustomFeeTokenForGateway()
+
+            if (!approved) {
+              return
+            }
+          }
+
           const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
             l1Provider,
@@ -834,6 +955,14 @@ export function TransferPanel() {
             }
           })
         } else {
+          if (nativeCurrency.isCustom) {
+            const approved = await approveCustomFeeTokenForInbox()
+
+            if (!approved) {
+              return
+            }
+          }
+
           await latestEth.current.deposit({
             amount: utils.parseUnits(amount, nativeCurrency.decimals),
             l1Signer,
@@ -1023,11 +1152,20 @@ export function TransferPanel() {
   const shouldRunGasEstimation = useMemo(() => {
     let balanceFloat: number | null
 
+    // Compare ERC-20 balance
     if (selectedToken) {
       balanceFloat = isDepositMode
         ? selectedTokenL1BalanceFloat
         : selectedTokenL2BalanceFloat
-    } else {
+    }
+    // Compare custom fee token balance
+    else if (nativeCurrency.isCustom) {
+      balanceFloat = isDepositMode
+        ? customFeeTokenL1BalanceFloat
+        : ethL2BalanceFloat
+    }
+    // Compare ETH balance
+    else {
       balanceFloat = isDepositMode ? ethL1BalanceFloat : ethL2BalanceFloat
     }
 
@@ -1040,10 +1178,12 @@ export function TransferPanel() {
     amount,
     selectedToken,
     isDepositMode,
+    nativeCurrency,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
+    selectedTokenL2BalanceFloat,
+    customFeeTokenL1BalanceFloat
   ])
 
   const gasSummary = useGasSummary(
@@ -1052,217 +1192,13 @@ export function TransferPanel() {
     shouldRunGasEstimation
   )
 
-  const transferPanelMainErrorMessage:
-    | TransferPanelMainErrorMessage
-    | undefined = useMemo(() => {
-    // ETH transfers using SC wallets not enabled yet
-    if (isSmartContractWallet && !selectedToken) {
-      return TransferPanelMainErrorMessage.SC_WALLET_ETH_NOT_SUPPORTED
-    }
-
-    const ethBalanceFloat = isDepositMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-
-    const selectedTokenBalanceFloat = isDepositMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-
-    // No error while loading ETH balance
-    if (ethBalanceFloat === null) {
-      return undefined
-    }
-
-    // ERC-20
-    if (selectedToken) {
-      if (isDepositMode && selectedTokenIsWithdrawOnly) {
-        return TransferPanelMainErrorMessage.WITHDRAW_ONLY
-      }
-
-      // No error while loading ERC-20 balance
-      if (selectedTokenBalanceFloat === null) {
-        return undefined
-      }
-
-      // Check amount against ERC-20 balance
-      if (Number(amount) > selectedTokenBalanceFloat) {
-        return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
-      }
-    }
-    // ETH
-    // Check amount against ETH balance
-    else if (Number(amount) > ethBalanceFloat) {
-      return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
-    }
-
-    // The amount entered is enough funds, but now let's include gas costs
-    switch (gasSummary.status) {
-      // No error while loading gas costs
-      case 'idle':
-      case 'loading':
-        return undefined
-
-      case 'error':
-        return TransferPanelMainErrorMessage.GAS_ESTIMATION_FAILURE
-
-      case 'success': {
-        const requiredGasFees: number = (() => {
-          // For SC wallets, the relayer pays the gas fees
-          if (isSmartContractWallet) {
-            if (isDepositMode) {
-              // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
-              return gasSummary.estimatedL2GasFees
-            }
-
-            return 0
-          }
-
-          return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
-        })()
-
-        if (selectedToken) {
-          // We checked if there's enough tokens above, but let's check if there's enough ETH for gas
-          if (requiredGasFees > ethBalanceFloat) {
-            return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
-          }
-
-          return undefined
-        }
-
-        const notEnoughEthForGasFees =
-          Number(amount) + requiredGasFees > ethBalanceFloat
-
-        if (notEnoughEthForGasFees) {
-          return TransferPanelMainErrorMessage.INSUFFICIENT_FUNDS
-        }
-
-        return undefined
-      }
-    }
-  }, [
+  const { transferReady, errorMessage } = useTransferReadiness({
     amount,
-    isDepositMode,
-    isSmartContractWallet,
-    selectedToken,
-    selectedTokenIsWithdrawOnly,
-    gasSummary,
-    ethL1BalanceFloat,
-    ethL2BalanceFloat,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
-  ])
-
-  const disableTransfer = useMemo(() => {
-    if (!amount) return true
-    if (isTransferring) return true
-    if (isSwitchingL2Chain) return true
-    if (destinationAddressError) return true
-
-    if (isSmartContractWallet && !selectedToken) {
-      return true
-    }
-
-    const ethBalanceFloat = isDepositMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-
-    const selectedTokenBalanceFloat = isDepositMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-
-    if (!ethBalanceFloat) {
-      return true
-    }
-
-    // Keep the button disabled while loading gas summary
-    if (
-      gasSummary.status !== 'success' &&
-      gasSummary.status !== 'unavailable'
-    ) {
-      return true
-    }
-
-    const requiredGasFees: number = (() => {
-      // For SC wallets, the relayer pays the gas fees
-      if (isSmartContractWallet) {
-        if (isDepositMode) {
-          // L2 fee is paid in callvalue and still needs to come from the SC wallet for retryable cost estimation to succeed
-          return gasSummary.estimatedL2GasFees
-        }
-
-        return 0
-      }
-
-      return gasSummary.estimatedL1GasFees + gasSummary.estimatedL2GasFees
-    })()
-
-    if (selectedToken) {
-      // Still loading ERC-20 balance
-      if (selectedTokenBalanceFloat === null) {
-        return true
-      }
-
-      if (Number(amount) > selectedTokenBalanceFloat) {
-        return true
-      }
-
-      // We checked if there's enough tokens, but let's check if there's enough ETH to cover gas
-      return requiredGasFees > ethBalanceFloat
-    }
-
-    const notEnoughEthForGasFees =
-      Number(amount) + requiredGasFees > ethBalanceFloat
-
-    return notEnoughEthForGasFees
-  }, [
-    amount,
-    destinationAddressError,
-    isSmartContractWallet,
-    isDepositMode,
-    gasSummary,
-    isSwitchingL2Chain,
-    isTransferring,
-    selectedToken,
-    ethL1BalanceFloat,
-    ethL2BalanceFloat,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat
-  ])
-
-  const disableDeposit = useMemo(() => {
-    if (disableTransfer) {
-      return true
-    }
-
-    if (selectedTokenIsWithdrawOnly) {
-      return true
-    }
-
-    return false
-  }, [disableTransfer, selectedTokenIsWithdrawOnly])
-
-  const disableWithdrawal = useMemo(() => {
-    if (disableTransfer) {
-      return true
-    }
-
-    if (selectedToken) {
-      const disabledTokens = [
-        '0x0e192d382a36de7011f795acc4391cd302003606',
-        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
-      ]
-
-      if (disabledTokens.includes(selectedToken.address.toLowerCase())) {
-        return true
-      }
-    }
-
-    return false
-  }, [disableTransfer, selectedToken])
+    gasSummary
+  })
 
   const { isSummaryVisible } = useSummaryVisibility({
-    disableDeposit,
-    disableWithdrawal,
+    transferReady,
     gasEstimationStatus: gasSummary.status
   })
 
@@ -1275,6 +1211,13 @@ export function TransferPanel() {
         token={selectedToken}
         isCctp={isCctp}
       />
+
+      {nativeCurrency.isCustom && (
+        <CustomFeeTokenApprovalDialog
+          {...customFeeTokenApprovalDialogProps}
+          customFeeToken={nativeCurrency}
+        />
+      )}
 
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}
@@ -1300,7 +1243,7 @@ export function TransferPanel() {
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
-          errorMessage={transferPanelMainErrorMessage}
+          errorMessage={errorMessage}
         />
 
         <div className="border-r border-gray-2" />
@@ -1343,7 +1286,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={disableDeposit}
+              disabled={!transferReady.deposit}
               onClick={() => {
                 if (
                   selectedToken &&
@@ -1373,7 +1316,7 @@ export function TransferPanel() {
             <Button
               variant="primary"
               loading={isTransferring}
-              disabled={disableWithdrawal}
+              disabled={!transferReady.withdrawal}
               onClick={() => {
                 if (
                   selectedToken &&

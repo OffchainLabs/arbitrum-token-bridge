@@ -54,6 +54,14 @@ export const formatAmount = <T extends number | BigNumber>(
 
   // Small number, show 4 or 5 decimals based on token name length
   if (value < 1) {
+    const maximumFractionDigits = isShortSymbol
+      ? MaximumFractionDigits.Long
+      : MaximumFractionDigits.Standard
+    const minDisplayValue = Math.pow(10, -maximumFractionDigits)
+    if (value < minDisplayValue) {
+      return `< 0.${'0'.repeat(maximumFractionDigits - 1)}1${suffix}`
+    }
+
     return (
       formatNumber(value, {
         maximumFractionDigits: isShortSymbol

@@ -9,6 +9,7 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
+import { Erc20Data } from './TokenUtils'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -24,6 +25,7 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
+  nativeTokenData?: Erc20Data
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
@@ -140,10 +142,6 @@ export enum ChainId {
   // L1
   Mainnet = 1,
   // L1 Testnets
-  /**
-   * Rinkeby is deprecated, but we are keeping it in order to detect it and point to Goerli instead.
-   */
-  Rinkeby = 4,
   Goerli = 5,
   Local = 1337,
   Sepolia = 11155111,
@@ -151,10 +149,6 @@ export enum ChainId {
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   // L2 Testnets
-  /**
-   * Arbitrum Rinkeby is deprecated, but we are keeping it in order to detect it and point to Arbitrum Goerli instead.
-   */
-  ArbitrumRinkeby = 421611,
   ArbitrumGoerli = 421613,
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
@@ -405,7 +399,6 @@ export function isNetwork(chainId: ChainId) {
 
   const isMainnet = chainId === ChainId.Mainnet
 
-  const isRinkeby = chainId === ChainId.Rinkeby
   const isGoerli = chainId === ChainId.Goerli
   const isSepolia = chainId === ChainId.Sepolia
   const isLocal = chainId === ChainId.Local
@@ -414,19 +407,17 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumNova = chainId === ChainId.ArbitrumNova
   const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
-  const isArbitrumRinkeby = chainId === ChainId.ArbitrumRinkeby
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const isEthereum = isMainnet || isRinkeby || isGoerli || isSepolia || isLocal
+  const isEthereum = isMainnet || isGoerli || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne ||
     isArbitrumNova ||
     isArbitrumGoerli ||
-    isArbitrumRinkeby ||
     isArbitrumLocal ||
     isArbitrumSepolia
 
@@ -434,11 +425,9 @@ export function isNetwork(chainId: ChainId) {
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isTestnet =
-    isRinkeby ||
     isGoerli ||
     isLocal ||
     isArbitrumGoerli ||
-    isArbitrumRinkeby ||
     isSepolia ||
     isArbitrumSepolia ||
     isXaiTestnet ||
@@ -461,7 +450,6 @@ export function isNetwork(chainId: ChainId) {
     isMainnet,
     isEthereum,
     // L1 Testnets
-    isRinkeby,
     isGoerli,
     isSepolia,
     // L2
@@ -469,7 +457,6 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumOne,
     isArbitrumNova,
     // L2 Testnets
-    isArbitrumRinkeby,
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
