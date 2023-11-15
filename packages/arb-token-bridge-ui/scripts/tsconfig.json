@@ -15,5 +15,6 @@
   },
   "compilerOptions": {
     // typescript options here
+    "moduleResolution": "NodeNext"
   }
 }

@@ -571,7 +571,7 @@ export function TransferPanelMain({
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [isDepositMode, walletAddress, l1.provider, l2.provider]
+    [walletAddress, isDepositMode, l2.provider, l1.provider]
   )
 
   const setMaxAmount = useCallback(async () => {
