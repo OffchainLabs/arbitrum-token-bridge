@@ -17,6 +17,7 @@ import { useDestinationAddressStore } from './AdvancedSettings'
 import { UseGasSummaryResult } from './TransferPanelSummary'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
+  UseTransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
@@ -66,10 +67,7 @@ function ready() {
 
 function notReady(
   params: {
-    errorMessage:
-      | string
-      | UseTransferReadinessTransferNotReadyRichErrorMessage
-      | undefined
+    errorMessage: string | UseTransferReadinessRichErrorMessage | undefined
   } = {
     errorMessage: undefined
   }
@@ -86,14 +84,9 @@ export type UseTransferReadinessTransferReady = {
   withdrawal: boolean
 }
 
-export enum UseTransferReadinessTransferNotReadyRichErrorMessage {
-  GAS_ESTIMATION_FAILURE,
-  TOKEN_WITHDRAW_ONLY
-}
-
 export type UseTransferReadinessResult = {
   transferReady: UseTransferReadinessTransferReady
-  errorMessage?: string | UseTransferReadinessTransferNotReadyRichErrorMessage
+  errorMessage?: string | UseTransferReadinessRichErrorMessage
 }
 
 export function useTransferReadiness({
@@ -237,8 +230,7 @@ export function useTransferReadiness({
     if (selectedToken) {
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
-          errorMessage:
-            UseTransferReadinessTransferNotReadyRichErrorMessage.TOKEN_WITHDRAW_ONLY
+          errorMessage: UseTransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
         })
       } else if (withdrawalDisabled(selectedToken.address)) {
         return notReady()
@@ -300,7 +292,7 @@ export function useTransferReadiness({
       case 'error':
         return notReady({
           errorMessage:
-            UseTransferReadinessTransferNotReadyRichErrorMessage.GAS_ESTIMATION_FAILURE
+            UseTransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
         })
 
       case 'success': {

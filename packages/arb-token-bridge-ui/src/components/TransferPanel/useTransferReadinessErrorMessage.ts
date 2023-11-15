@@ -1,4 +1,4 @@
-export enum UseTransferReadinessTransferNotReadyRichErrorMessage {
+export enum UseTransferReadinessRichErrorMessage {
   GAS_ESTIMATION_FAILURE,
   TOKEN_WITHDRAW_ONLY
 }
