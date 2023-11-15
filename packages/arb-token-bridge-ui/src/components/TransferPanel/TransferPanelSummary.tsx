@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
+import { twMerge } from 'tailwind-merge'
 
-import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
@@ -17,10 +16,8 @@ import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import {
   isTokenArbitrumGoerliNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  sanitizeTokenSymbol
+  isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
-import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
@@ -41,22 +38,6 @@ export type UseGasSummaryResult = {
   estimatedL1GasFees: number
   estimatedL2GasFees: number
 }
-
-const depositGasFeeTooltip = ({
-  l1NetworkName,
-  l2NetworkName,
-  depositToOrbit = false
-}: {
-  l1NetworkName: string
-  l2NetworkName: string
-  depositToOrbit?: boolean
-}) => ({
-  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
-  L2: `${
-    depositToOrbit ? l1NetworkName : l2NetworkName
-  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
-})
 
 export function useGasSummary(
   amount: BigNumber,
@@ -245,25 +226,19 @@ function TransferPanelSummaryContainer({
   className?: string
 }) {
   return (
-    <>
-      <div className="block lg:hidden">
-        <span className="text-xl text-gray-dark lg:text-2xl">Summary</span>
-        <div className="h-4" />
-      </div>
+    <div className="flex flex-col px-6">
+      <span className="mb-4 text-xl text-gray-dark lg:text-2xl">Summary</span>
 
-      <div
-        className={`flex flex-col space-y-4 text-lg lg:min-h-[257px] ${className}`}
-      >
+      <div className={twMerge('flex flex-col space-y-4', className)}>
         {children}
       </div>
 
       <div className="h-10" />
-    </>
+    </div>
   )
 }
 
 export function TransferPanelSummary({
-  amount,
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
@@ -274,39 +249,12 @@ export function TransferPanelSummary({
   } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    if (!isDepositMode) {
-      return null
-    }
-
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
-
-    return depositGasFeeTooltip({
-      l1NetworkName: getNetworkName(l1.network.id),
-      l2NetworkName: getNetworkName(l2.network.id),
-      depositToOrbit: isDepositToOrbitChain
-    })[layer]
-  }
-
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
-  const showBreakdown = !nativeCurrency.isCustom && isDepositMode
-
-  const tokenSymbol = useMemo(() => {
-    if (token) {
-      return sanitizeTokenSymbol(token.symbol, {
-        erc20L1Address: token.address,
-        chain: isDepositMode ? l1.network : l2.network
-      })
-    }
-
-    return nativeCurrency.symbol
-  }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -335,11 +283,7 @@ export function TransferPanelSummary({
 
         {isBridgingETH && (
           <>
-            <div>
-              <div className="h-2" />
-              <div className="lg:border-b lg:border-gray-2" />
-              <div className="h-2" />
-            </div>
+            <div className="lg:border-b lg:border-gray-2" />
             <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
           </>
         )}
@@ -353,126 +297,49 @@ export function TransferPanelSummary({
         <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
           Gas estimates are not available for this action.
         </div>
-        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          <span className="w-2/5 font-light">You&apos;re moving</span>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span>
-              {formatAmount(amount, {
-                symbol: tokenSymbol
-              })}
-            </span>
-          </div>
-        </div>
       </TransferPanelSummaryContainer>
     )
   }
 
   return (
     <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-3/5 font-light">You&apos;re moving</span>
-        <div className="flex w-2/5 flex-row justify-between tabular-nums">
-          <span>
-            {formatAmount(amount, {
-              symbol: tokenSymbol
-            })}
-          </span>
-
-          {showPrice && (
-            <span className="font-medium text-dark">
-              {formatUSD(ethToUSD(amount))}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-3/5 font-light">
-          You&apos;ll now pay in gas fees
-        </span>
-        <div className="flex w-2/5 justify-between tabular-nums">
-          {sameNativeCurrency ? (
-            <>
-              <span>
-                {formatAmount(estimatedTotalGasFees, {
-                  symbol: nativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-medium text-dark">
-                  {formatUSD(ethToUSD(estimatedTotalGasFees))}
-                </span>
-              )}
-            </>
-          ) : (
+      <div
+        className={twMerge(
+          'grid items-center justify-between text-right text-sm font-light tabular-nums text-gray-dark',
+          showPrice ? 'grid-cols-[2fr_1fr_1fr]' : ' grid-cols-[2fr_1fr]'
+        )}
+      >
+        <span className="text-left">You&apos;ll now pay in gas fees</span>
+        {sameNativeCurrency ? (
+          <>
             <span>
-              {formatAmount(estimatedL1GasFees, {
-                symbol: parentChainNativeCurrency.symbol
-              })}
-              {' + '}
-              {formatAmount(estimatedL2GasFees, {
+              {formatAmount(estimatedTotalGasFees, {
                 symbol: nativeCurrency.symbol
               })}
             </span>
-          )}
-        </div>
+
+            {showPrice && (
+              <span className="font-medium text-dark">
+                {formatUSD(ethToUSD(estimatedTotalGasFees))}
+              </span>
+            )}
+          </>
+        ) : (
+          <span>
+            {formatAmount(estimatedL1GasFees, {
+              symbol: parentChainNativeCurrency.symbol
+            })}
+            {' + '}
+            {formatAmount(estimatedL2GasFees, {
+              symbol: nativeCurrency.symbol
+            })}
+          </span>
+        )}
       </div>
-
-      {showBreakdown && (
-        <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
-          <div className="flex flex-row justify-between">
-            <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light">{parentLayer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(parentLayer)}>
-                <InformationCircleIcon className="h-4 w-4" />
-              </Tooltip>
-            </div>
-            <div className="flex w-2/5 flex-row justify-between tabular-nums">
-              <span className="font-light">
-                {formatAmount(estimatedL1GasFees, {
-                  symbol: parentChainNativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-light">
-                  {formatUSD(ethToUSD(estimatedL1GasFees))}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-row justify-between text-gray-dark">
-            <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light ">{layer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(layer)}>
-                <InformationCircleIcon className="h-4 w-4 " />
-              </Tooltip>
-            </div>
-            <div className="flex w-2/5 flex-row justify-between tabular-nums">
-              <span className="font-light">
-                {formatAmount(estimatedL2GasFees, {
-                  symbol: nativeCurrency.symbol
-                })}
-              </span>
-
-              {showPrice && (
-                <span className="font-light">
-                  {formatUSD(ethToUSD(estimatedL2GasFees))}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {!isDepositMode && (
         <>
-          <div>
-            <div className="h-2" />
-            <div className="border-b border-gray-5" />
-            <div className="h-2" />
-          </div>
+          <div className="border-b border-gray-5" />
           <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
             <p>
               This transaction will initiate the withdrawal on {l2.network.name}

@@ -17,10 +17,7 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import {
-  AdvancedSettings,
-  useDestinationAddressStore
-} from './AdvancedSettings'
+import { useDestinationAddressStore } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
 import {
@@ -69,6 +66,7 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
+import { EstimatedGas } from './EstimatedGas'
 
 enum NetworkType {
   l1 = 'l1',
@@ -1046,7 +1044,7 @@ export function TransferPanelMain({
   ])
 
   return (
-    <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
+    <div className="flex flex-col pb-6">
       <NetworkContainer network={from}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="From:" {...networkListboxProps.from} />
@@ -1134,6 +1132,7 @@ export function TransferPanelMain({
             </p>
           )}
         </div>
+        <EstimatedGas layer={app.isDepositMode ? 'parent' : 'child'} />
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
@@ -1210,9 +1209,9 @@ export function TransferPanelMain({
             )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
+        <EstimatedGas layer={app.isDepositMode ? 'child' : 'parent'} />
       </NetworkContainer>
 
-      <AdvancedSettings />
       <Dialog
         closeable
         title="Token not supported"

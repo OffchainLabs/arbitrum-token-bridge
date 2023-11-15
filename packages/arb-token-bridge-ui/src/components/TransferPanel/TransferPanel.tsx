@@ -53,6 +53,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK, ether } from '../../constants'
 import {
+  AdvancedSettings,
   getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
@@ -80,7 +81,6 @@ import {
   onTxError
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
-import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 
 const isAllowedL2 = async ({
@@ -1197,11 +1197,6 @@ export function TransferPanel() {
     gasSummary
   })
 
-  const { isSummaryVisible } = useSummaryVisibility({
-    transferReady,
-    gasEstimationStatus: gasSummary.status
-  })
-
   return (
     <>
       <TokenApprovalDialog
@@ -1239,49 +1234,20 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-x-6 lg:space-y-0 lg:rounded-xl">
+      <div className="flex flex-col bg-white px-6 py-6 shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:rounded">
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
           errorMessage={errorMessage}
         />
-
-        <div className="border-r border-gray-2" />
-
-        <div
-          style={
-            isSummaryVisible
-              ? {}
-              : {
-                  background: `url(/images/ArbitrumFaded.webp)`,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center'
-                }
-          }
-          className="transfer-panel-stats flex w-full flex-col justify-between bg-gray-2 px-6 py-6 lg:rounded-br-xl lg:rounded-tr-xl lg:bg-white lg:px-0 lg:pr-6"
-        >
-          <div className="flex flex-col">
-            <div className="hidden lg:block">
-              <span className="text-2xl text-gray-dark">Summary</span>
-              <div className="h-4" />
-            </div>
-
-            {isSummaryVisible ? (
-              <TransferPanelSummary
-                amount={parseFloat(amount)}
-                token={selectedToken}
-                gasSummary={gasSummary}
-              />
-            ) : (
-              <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
-                <span className="text-xl">
-                  Bridging summary will appear here.
-                </span>
-              </div>
-            )}
-          </div>
-
+        {gasSummary.status !== 'idle' && (
+          <TransferPanelSummary
+            amount={parseFloat(amount)}
+            token={selectedToken}
+            gasSummary={gasSummary}
+          />
+        )}
+        <div className="transfer-panel-stats">
           {isDepositMode ? (
             <Button
               variant="primary"
@@ -1351,6 +1317,8 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
+
+        <AdvancedSettings />
 
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}
