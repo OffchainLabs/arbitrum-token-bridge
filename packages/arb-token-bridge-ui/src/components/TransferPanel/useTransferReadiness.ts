@@ -358,10 +358,11 @@ export function useTransferReadiness({
           return ready()
         }
 
-        if (
-          Number(amount) + estimatedL1GasFees + estimatedL2GasFees >
-          ethBalanceFloat
-        ) {
+        // Everything is in the same currency
+        // This case also handles custom fee token withdrawals, as `ethBalanceFloat` will reflect the custom fee token balance on the Orbit chain
+        const total = Number(amount) + estimatedL1GasFees + estimatedL2GasFees
+
+        if (total > ethBalanceFloat) {
           return notReady({
             errorMessage: getInsufficientFundsForGasFeesErrorMessage({
               asset: ether.symbol,
