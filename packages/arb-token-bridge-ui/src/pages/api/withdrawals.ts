@@ -6,12 +6,10 @@ import { getL2SubgraphClient } from '../../util/SubgraphUtils'
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
   query: {
+    sender?: string
+    receiver?: string
     l2ChainId: string
     search?: string
-    sender?: string
-    senderNot?: string
-    receiver?: string
-    receiverNot?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -30,12 +28,10 @@ export default async function handler(
 ) {
   try {
     const {
+      sender,
+      receiver,
       search = '',
       l2ChainId,
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -63,46 +59,52 @@ export default async function handler(
       })
     }
 
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `l2BlockNum_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `l2BlockNum_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `l2TxHash_contains: "${search}"` : ''}
+    `
+
     const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
       query: gql`{
-            withdrawals(
-                where: {
-                ${sender ? `sender: "${sender}",` : ''}
-                ${senderNot ? `sender_not: "${senderNot}",` : ''}
-                ${receiver ? `receiver: "${receiver}",` : ''}
-                ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}
-                ${
-                  typeof fromBlock !== 'undefined'
-                    ? `l2BlockNum_gte: ${Number(fromBlock)}`
-                    : ''
-                }
-                  ${
-                    typeof toBlock !== 'undefined'
-                      ? `l2BlockNum_lte: ${Number(toBlock)}`
-                      : ''
-                  }  
-                  ${search ? `l2TxHash_contains: "${search}"` : ''}
-                }
-                orderBy: l2BlockTimestamp
-                orderDirection: desc
-                first: ${Number(pageSize)},
-                skip: ${Number(page) * Number(pageSize)}
-            ) {
-                id,
-                type,
-                sender,
-                receiver,
-                ethValue,
-                l1Token {
-                    id
-                },
-                tokenAmount,
-                isClassic,
-                l2BlockTimestamp,
-                l2TxHash,
-                l2BlockNum
-            }
-        }`
+        withdrawals(
+          where: {            
+            or: [
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
+              }
+            ]
+          }
+          orderBy: l2BlockTimestamp
+          orderDirection: desc
+          first: ${Number(pageSize)},
+          skip: ${Number(page) * Number(pageSize)}
+        ) {
+          id,
+          type,
+          sender,
+          receiver,
+          ethValue,
+          l1Token {
+            id
+          },
+          tokenAmount,
+          isClassic,
+          l2BlockTimestamp,
+          l2TxHash,
+          l2BlockNum
+        }
+    }`
     })
 
     const transactions: FetchWithdrawalsFromSubgraphResult[] =

@@ -6,12 +6,10 @@ import { getL1SubgraphClient } from '../../util/SubgraphUtils'
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
+    sender?: string
+    receiver?: string
     l2ChainId: string
     search?: string
-    sender?: string
-    senderNot?: string
-    receiver?: string
-    receiverNot?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -30,12 +28,10 @@ export default async function handler(
 ) {
   try {
     const {
+      sender,
+      receiver,
       search = '',
       l2ChainId,
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -63,25 +59,31 @@ export default async function handler(
       })
     }
 
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `blockCreatedAt_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `blockCreatedAt_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `transactionHash_contains: "${search}"` : ''}
+    `
+
     const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
       query: gql(`{
         deposits(
           where: {            
-            ${sender ? `sender: "${sender}",` : ''}
-            ${senderNot ? `sender_not: "${senderNot}",` : ''}
-            ${receiver ? `receiver: "${receiver}",` : ''}
-            ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}   
-            ${
-              typeof fromBlock !== 'undefined'
-                ? `blockCreatedAt_gte: ${Number(fromBlock)}`
-                : ''
-            }
-            ${
-              typeof toBlock !== 'undefined'
-                ? `blockCreatedAt_lte: ${Number(toBlock)}`
-                : ''
-            }  
-            ${search ? `transactionHash_contains: "${search}"` : ''}
+            or: [
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
+              }
+            ]
           }
           orderBy: blockCreatedAt
           orderDirection: desc

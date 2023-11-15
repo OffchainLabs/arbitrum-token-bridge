@@ -6,6 +6,7 @@ import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
+import { AssetType } from './arbTokenBridge.types'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => Promise<void>
@@ -36,7 +37,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       if (!signer) {
         throw 'Signer is undefined'
       }
-      if (tx.asset.toLowerCase() === 'eth') {
+      if (tx.assetType === AssetType.ETH) {
         res = await arbTokenBridge.eth.triggerOutbox({
           id: tx.uniqueId.toString(),
           l1Signer: signer

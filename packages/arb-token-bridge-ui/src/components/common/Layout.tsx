@@ -4,11 +4,9 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { ExternalLink } from './ExternalLink'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
-
-import { PORTAL_DOMAIN } from '../../constants'
+import { ExternalLink } from './ExternalLink'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -40,13 +38,13 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        The Arbitrum Odyssey has officially returned! Complete missions and
-        start collecting badges by visiting the{' '}
+        Arbitrum Orbit is mainnet-ready! Learn more about launching a customized
+        chain{' '}
         <ExternalLink
-          href={`${PORTAL_DOMAIN}/odyssey`}
+          href="https://arbitrum.io/orbit"
           className="arb-hover underline"
         >
-          Arbitrum Portal
+          here
         </ExternalLink>
         .
       </SiteBanner>

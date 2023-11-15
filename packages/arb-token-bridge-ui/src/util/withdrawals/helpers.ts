@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
-import { getL1TokenData } from '../TokenUtils'
+import { fetchErc20Data } from '../TokenUtils'
 import {
   AssetType,
   L2ToL1EventResult,
@@ -14,6 +14,16 @@ import {
   WithdrawalInitiated
 } from '../../hooks/arbTokenBridge.types'
 import { getExecutedMessagesCacheKey } from '../../hooks/useArbTokenBridge'
+import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+
+/**
+ * `l2TxHash` exists on result from subgraph
+ * `transactionHash` exists on result from event logs
+ */
+export type EthWithdrawal = L2ToL1EventResult & {
+  l2TxHash?: string
+  transactionHash?: string
+}
 
 export const updateAdditionalWithdrawalData = async (
   withdrawalTx: L2ToL1EventResultPlus,
@@ -29,10 +39,25 @@ export const updateAdditionalWithdrawalData = async (
   return l2toL1TxWithDeadline
 }
 
+export async function attachTimestampToTokenWithdrawal({
+  withdrawal,
+  l2Provider
+}: {
+  withdrawal: WithdrawalInitiated
+  l2Provider: Provider
+}) {
+  const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
+  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const [event] = l2TxReceipt.getL2ToL1Events()
+
+  return {
+    ...withdrawal,
+    timestamp: event?.timestamp
+  }
+}
+
 export async function mapETHWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
-  event: L2ToL1EventResult & { l2TxHash?: string; transactionHash?: string },
+  event: EthWithdrawal,
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainId: number
@@ -45,15 +70,17 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     l2ChainId
   )
 
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
+
   return {
     ...event,
     sender: event.caller,
     destinationAddress: event.destination,
     type: AssetType.ETH,
     value: callvalue,
-    symbol: 'ETH',
+    symbol: nativeCurrency.symbol,
     outgoingMessageState,
-    decimals: 18,
+    decimals: nativeCurrency.decimals,
     l2TxHash: event.l2TxHash || event.transactionHash
   }
 }
@@ -134,19 +161,21 @@ export async function attachNodeBlockDeadlineToEvent(
   }
 }
 
+export function isTokenWithdrawal(
+  withdrawal: WithdrawalInitiated | EthWithdrawal
+): withdrawal is WithdrawalInitiated {
+  return typeof (withdrawal as WithdrawalInitiated).l1Token !== 'undefined'
+}
+
 export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
   result: WithdrawalInitiated,
   l1Provider: Provider,
   l2Provider: Provider,
   l2ChainID: number
 ): Promise<L2ToL1EventResultPlus | undefined> {
-  const { symbol, decimals } = await getL1TokenData({
-    // we don't care about allowance in this call, so we're just using vitalik.eth
-    // didn't want to use address zero in case contracts have checks for it
-    account: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
-    erc20L1Address: result.l1Token,
-    l1Provider,
-    l2Provider
+  const { symbol, decimals } = await fetchErc20Data({
+    address: result.l1Token,
+    provider: l1Provider
   })
 
   const txReceipt = await l2Provider.getTransactionReceipt(result.txHash)
@@ -211,8 +240,6 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
 }
 
 export async function mapWithdrawalToL2ToL1EventResult(
-  // `l2TxHash` exists on result from subgraph
-  // `transactionHash` exists on result from event logs
   withdrawal: FetchWithdrawalsFromSubgraphResult,
   l1Provider: Provider,
   l2Provider: Provider,
@@ -239,12 +266,11 @@ export async function mapWithdrawalToL2ToL1EventResult(
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
     // Token withdrawal
-    const { symbol, decimals } = await getL1TokenData({
-      account: withdrawal.sender,
-      erc20L1Address: withdrawal.l1Token.id,
-      l1Provider,
-      l2Provider
+    const { symbol, decimals } = await fetchErc20Data({
+      address: withdrawal.l1Token.id,
+      provider: l1Provider
     })
+
     return {
       ...event,
       sender: withdrawal.sender,
@@ -259,6 +285,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
     } as L2ToL1EventResultPlus
   }
 
+  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
+
   // Else, Eth withdrawal
   return {
     ...event,
@@ -268,7 +296,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     value: BigNumber.from(withdrawal.ethValue),
     outgoingMessageState,
     l2TxHash: l2TxReceipt.transactionHash,
-    symbol: 'ETH',
-    decimals: 18
+    symbol: nativeCurrency.symbol,
+    decimals: nativeCurrency.decimals
   } as L2ToL1EventResultPlus
 }

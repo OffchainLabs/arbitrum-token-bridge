@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useLatest } from 'react-use'
 import { useAccount } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
@@ -9,9 +8,8 @@ import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
@@ -23,6 +21,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -41,15 +40,23 @@ export type UseGasSummaryResult = {
   status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
-  estimatedTotalGasFees: number
 }
 
-const layerToGasFeeTooltip: { [key in ChainLayer]: string } = {
-  L1: 'L1 fees go to Ethereum Validators.',
-  L2: "L2 fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded.",
-  Orbit:
-    "Orbit fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower you'll be refunded."
-}
+const depositGasFeeTooltip = ({
+  l1NetworkName,
+  l2NetworkName,
+  depositToOrbit = false
+}: {
+  l1NetworkName: string
+  l2NetworkName: string
+  depositToOrbit?: boolean
+}) => ({
+  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
+  L2: `${
+    depositToOrbit ? l1NetworkName : l2NetworkName
+  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
+  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
+})
 
 export function useGasSummary(
   amount: BigNumber,
@@ -61,7 +68,6 @@ export function useGasSummary(
   } = useAppState()
   const networksAndSigners = useNetworksAndSigners()
   const { l1, l2 } = networksAndSigners
-  const latestNetworksAndSigners = useLatest(networksAndSigners)
   const { address: walletAddress } = useAccount()
 
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -81,10 +87,10 @@ export function useGasSummary(
   })
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(
-    () => parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice))),
-    [result.estimatedL1Gas, l1GasPrice]
-  )
+  const estimatedL1GasFees = useMemo(() => {
+    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
+  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -97,11 +103,6 @@ export function useGasSummary(
         )
       ),
     [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
-  )
-
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   useEffect(() => {
@@ -136,6 +137,9 @@ export function useGasSummary(
         if (isDepositMode) {
           if (token) {
             const estimateGasResult = await depositTokenEstimateGas({
+              amount,
+              address: walletAddress,
+              erc20L1Address: token.address,
               l1Provider: l1.provider,
               l2Provider: l2.provider
             })
@@ -158,18 +162,7 @@ export function useGasSummary(
               estimatedL2Gas: BigNumber
             }
 
-            // TODO: Update, as this only handles LPT
             if (
-              tokenRequiresApprovalOnL2(
-                token.address,
-                latestNetworksAndSigners.current.l2.network.id
-              )
-            ) {
-              estimateGasResult = {
-                estimatedL1Gas: BigNumber.from(5_000),
-                estimatedL2Gas: BigNumber.from(10_000)
-              }
-            } else if (
               isTokenArbitrumOneNativeUSDC(token.address) ||
               isTokenArbitrumGoerliNativeUSDC(token.address)
             ) {
@@ -232,8 +225,7 @@ export function useGasSummary(
   return {
     status,
     estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
+    estimatedL2GasFees
   }
 }
 
@@ -275,34 +267,60 @@ export function TransferPanelSummary({
   token,
   gasSummary
 }: TransferPanelSummaryProps) {
-  const isETH = token === null
-  const {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    estimatedTotalGasFees
-  } = gasSummary
+  const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
-  const { app } = useAppState()
+  const {
+    app: { isDepositMode }
+  } = useAppState()
   const { ethToUSD } = useETHPrice()
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
 
-  const { isMainnet } = isNetwork(l1.network.id)
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const tokenSymbol = useMemo(
-    () =>
-      token
-        ? sanitizeTokenSymbol(token.symbol, {
-            erc20L1Address: token.address,
-            chain: app.isDepositMode ? l1.network : l2.network
-          })
-        : 'ETH',
-    [token, app.isDepositMode, l1.network, l2.network]
+  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
+    if (!isDepositMode) {
+      return null
+    }
+
+    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
+
+    return depositGasFeeTooltip({
+      l1NetworkName: getNetworkName(l1.network.id),
+      l2NetworkName: getNetworkName(l2.network.id),
+      depositToOrbit: isDepositToOrbitChain
+    })[layer]
+  }
+
+  const isBridgingETH = token === null && !nativeCurrency.isCustom
+  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
+  const showBreakdown = !nativeCurrency.isCustom && isDepositMode
+
+  const tokenSymbol = useMemo(() => {
+    if (token) {
+      return sanitizeTokenSymbol(token.symbol, {
+        erc20L1Address: token.address,
+        chain: isDepositMode ? l1.network : l2.network
+      })
+    }
+
+    return nativeCurrency.symbol
+  }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
+
+  const sameNativeCurrency = useMemo(
+    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
+    () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [nativeCurrency, parentChainNativeCurrency]
+  )
+
+  const estimatedTotalGasFees = useMemo(
+    () => estimatedL1GasFees + estimatedL2GasFees,
+    [estimatedL1GasFees, estimatedL2GasFees]
   )
 
   if (status === 'loading') {
-    const bgClassName = app.isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
+    const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
@@ -315,7 +333,7 @@ export function TransferPanelSummary({
           <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
         </div>
 
-        {isETH && (
+        {isBridgingETH && (
           <>
             <div>
               <div className="h-2" />
@@ -352,15 +370,15 @@ export function TransferPanelSummary({
   return (
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You&apos;re moving</span>
-        <div className="flex w-3/5 flex-row justify-between">
+        <span className="w-3/5 font-light">You&apos;re moving</span>
+        <div className="flex w-2/5 flex-row justify-between">
           <span>
             {formatAmount(amount, {
               symbol: tokenSymbol
             })}
           </span>
-          {/* Only show USD price for ETH */}
-          {isETH && isMainnet && (
+
+          {showPrice && (
             <span className="font-medium text-dark">
               {formatUSD(ethToUSD(amount))}
             </span>
@@ -369,87 +387,101 @@ export function TransferPanelSummary({
       </div>
 
       <div className="flex flex-row items-center justify-between text-sm text-gray-dark lg:text-base">
-        <span className="w-2/5 font-light">You&apos;ll pay in gas fees</span>
-        <div className="flex w-3/5 justify-between">
-          <span>
-            {formatAmount(estimatedTotalGasFees, {
-              symbol: 'ETH'
-            })}
-          </span>
-          {isMainnet && (
-            <span className="font-medium text-dark">
-              {formatUSD(ethToUSD(estimatedTotalGasFees))}
+        <span className="w-3/5 font-light">
+          You&apos;ll now pay in gas fees
+        </span>
+        <div className="flex w-2/5 justify-between">
+          {sameNativeCurrency ? (
+            <>
+              <span>
+                {formatAmount(estimatedTotalGasFees, {
+                  symbol: nativeCurrency.symbol
+                })}
+              </span>
+
+              {showPrice && (
+                <span className="font-medium text-dark">
+                  {formatUSD(ethToUSD(estimatedTotalGasFees))}
+                </span>
+              )}
+            </>
+          ) : (
+            <span>
+              {formatAmount(estimatedL1GasFees, {
+                symbol: parentChainNativeCurrency.symbol
+              })}
+              {' + '}
+              {formatAmount(estimatedL2GasFees, {
+                symbol: nativeCurrency.symbol
+              })}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light">{parentLayer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[parentLayer]}>
-              <InformationCircleIcon className="h-4 w-4" />
-            </Tooltip>
-          </div>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light">
-              {formatAmount(estimatedL1GasFees, {
-                symbol: 'ETH'
-              })}
-            </span>
-            {isMainnet && (
+      {showBreakdown && (
+        <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
+          <div className="flex flex-row justify-between">
+            <div className="flex flex-row items-center space-x-2">
+              <span className="pl-4 font-light">{parentLayer} gas</span>
+              <Tooltip content={layerGasFeeTooltipContent(parentLayer)}>
+                <InformationCircleIcon className="h-4 w-4" />
+              </Tooltip>
+            </div>
+            <div className="flex w-2/5 flex-row justify-between">
               <span className="font-light">
-                {formatUSD(ethToUSD(estimatedL1GasFees))}
+                {formatAmount(estimatedL1GasFees, {
+                  symbol: parentChainNativeCurrency.symbol
+                })}
               </span>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-row justify-between text-gray-dark">
-          <div className="flex flex-row items-center space-x-2">
-            <span className="pl-4 font-light ">{layer} gas</span>
-            <Tooltip content={layerToGasFeeTooltip[layer]}>
-              <InformationCircleIcon className="h-4 w-4 " />
-            </Tooltip>
-          </div>
-          <div className="flex w-3/5 flex-row justify-between">
-            <span className="font-light">
-              {formatAmount(estimatedL2GasFees, {
-                symbol: 'ETH'
-              })}
-            </span>
-            {isMainnet && (
-              <span className="font-light">
-                {formatUSD(ethToUSD(estimatedL2GasFees))}
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {isETH && (
+              {showPrice && (
+                <span className="font-light">
+                  {formatUSD(ethToUSD(estimatedL1GasFees))}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-row justify-between text-gray-dark">
+            <div className="flex flex-row items-center space-x-2">
+              <span className="pl-4 font-light ">{layer} gas</span>
+              <Tooltip content={layerGasFeeTooltipContent(layer)}>
+                <InformationCircleIcon className="h-4 w-4 " />
+              </Tooltip>
+            </div>
+            <div className="flex w-2/5 flex-row justify-between">
+              <span className="font-light">
+                {formatAmount(estimatedL2GasFees, {
+                  symbol: nativeCurrency.symbol
+                })}
+              </span>
+
+              {showPrice && (
+                <span className="font-light">
+                  {formatUSD(ethToUSD(estimatedL2GasFees))}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!isDepositMode && (
         <>
           <div>
             <div className="h-2" />
             <div className="border-b border-gray-5" />
             <div className="h-2" />
           </div>
-          <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-            <span className="w-2/5 font-light text-gray-dark">
-              Total amount
-            </span>
-            <div className="flex w-3/5 flex-row justify-between">
-              <span>
-                {formatAmount(amount + estimatedTotalGasFees, {
-                  symbol: 'ETH'
-                })}
-              </span>
-              {isMainnet && (
-                <span className="font-medium text-dark">
-                  {formatUSD(ethToUSD(amount + estimatedTotalGasFees))}
-                </span>
-              )}
-            </div>
+          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
+            <p>
+              This transaction will initiate the withdrawal on {l2.network.name}
+              .
+            </p>
+            <p>
+              When the withdrawal is ready for claiming on {l1.network.name},
+              you will have to pay gas fees for the claim transaction.
+            </p>
           </div>
         </>
       )}
