@@ -904,6 +904,8 @@ export function TransferPanelMain({
             // Otherwise we want to keep the current chain, in case it's Nova.
             if (isEthereum && isOrbitChainCurrentlySelected) {
               updatePreferredL2Chain(defaultPartnerChain)
+              // Set selected token back to ETH
+              actions.app.setSelectedToken(null)
               return
             }
 
@@ -923,6 +925,8 @@ export function TransferPanelMain({
 
             updatePreferredL2Chain(network.id)
             setTo(network)
+            // Set selected token back to ETH
+            actions.app.setSelectedToken(null)
           }
         }
       }
@@ -939,6 +943,8 @@ export function TransferPanelMain({
         onChange: async network => {
           const { isEthereum } = isNetwork(network.id)
 
+          alert('From start.')
+
           if (shouldOpenOneNovaDialog([network.id, to.id])) {
             setOneNovaTransferDestinationNetworkId(to.id)
             openOneNovaTransferDialog()
@@ -948,6 +954,9 @@ export function TransferPanelMain({
           try {
             // In withdraw mode we always switch to the L2 network.
             await switchNetworkAsync?.(network.id)
+
+            // Set selected token back to ETH
+            actions.app.setSelectedToken(null)
 
             const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
@@ -990,6 +999,8 @@ export function TransferPanelMain({
                 // We can't withdraw from an Orbit chain to Ethereum.
                 await switchNetworkAsync?.(defaultPartnerChain)
                 updatePreferredL2Chain(defaultPartnerChain)
+                // Set selected token back to ETH
+                actions.app.setSelectedToken(null)
                 return
               } catch (error: any) {
                 if (!isUserRejectedError(error)) {
@@ -1000,6 +1011,8 @@ export function TransferPanelMain({
             }
             // Connected to Arbitrum.
             updatePreferredL2Chain(defaultPartnerChain)
+            // Set selected token back to ETH
+            actions.app.setSelectedToken(null)
           }
 
           if (isOrbitChain) {
@@ -1016,19 +1029,18 @@ export function TransferPanelMain({
               l2.network.id
             ).isOrbitChain
             if (isOrbitChainCurrentlySelected) {
-              // long-term we will have to change to Orbit chain's parent network
-              // right now only Arbitrum Goerli is support so it's fine
               await switchNetworkAsync?.(defaultPartnerChain)
             }
 
             updatePreferredL2Chain(network.id)
+            // Set selected token back to ETH
+            actions.app.setSelectedToken(null)
           }
-
-          setTo(network)
         }
       }
     }
   }, [
+    actions.app,
     l1.network,
     l2.network,
     from,
