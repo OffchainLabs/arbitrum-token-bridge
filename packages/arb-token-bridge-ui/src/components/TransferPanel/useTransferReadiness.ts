@@ -20,7 +20,7 @@ import {
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
-} from './TransferPanelMainErrorMessage'
+} from './useTransferReadinessErrorMessage'
 import { ether } from '../../constants'
 
 function sanitizeEstimatedGasFees(
