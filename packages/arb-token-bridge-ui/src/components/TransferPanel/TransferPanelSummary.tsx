@@ -371,7 +371,7 @@ export function TransferPanelSummary({
     <TransferPanelSummaryContainer>
       <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
         <span className="w-3/5 font-light">You&apos;re moving</span>
-        <div className="flex w-2/5 flex-row justify-between">
+        <div className="flex w-2/5 flex-row justify-between tabular-nums">
           <span>
             {formatAmount(amount, {
               symbol: tokenSymbol
@@ -390,7 +390,7 @@ export function TransferPanelSummary({
         <span className="w-3/5 font-light">
           You&apos;ll now pay in gas fees
         </span>
-        <div className="flex w-2/5 justify-between">
+        <div className="flex w-2/5 justify-between tabular-nums">
           {sameNativeCurrency ? (
             <>
               <span>
@@ -428,7 +428,7 @@ export function TransferPanelSummary({
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
-            <div className="flex w-2/5 flex-row justify-between">
+            <div className="flex w-2/5 flex-row justify-between tabular-nums">
               <span className="font-light">
                 {formatAmount(estimatedL1GasFees, {
                   symbol: parentChainNativeCurrency.symbol
@@ -449,7 +449,7 @@ export function TransferPanelSummary({
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>
-            <div className="flex w-2/5 flex-row justify-between">
+            <div className="flex w-2/5 flex-row justify-between tabular-nums">
               <span className="font-light">
                 {formatAmount(estimatedL2GasFees, {
                   symbol: nativeCurrency.symbol
