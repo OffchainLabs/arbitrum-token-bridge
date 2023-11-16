@@ -123,7 +123,7 @@ export async function fetchErc20Data({
 
     return erc20Data
   } catch (error) {
-    // log on sentry in case multi-caller fails
+    // log some extra info on sentry in case multi-caller fails
     Sentry.configureScope(function (scope) {
       scope.setExtra('token_chain_id', chainId)
       scope.setExtra('token_address', address)
@@ -169,14 +169,23 @@ export type FetchErc20AllowanceParams = FetchErc20DataProps & {
  */
 export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
   const { address, provider, owner, spender } = params
-
-  // todo: fall back if there is no multicall?
-  const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([address], {
-    allowance: { owner, spender }
-  })
-
-  return tokenData?.allowance ?? constants.Zero
+  try {
+    const multiCaller = await MultiCaller.fromProvider(provider)
+    const [tokenData] = await multiCaller.getTokenData([address], {
+      allowance: { owner, spender }
+    })
+    return tokenData?.allowance ?? constants.Zero
+  } catch (e) {
+    //  fall back if there is no multicall
+    const erc20 = ERC20__factory.connect(address, provider)
+    try {
+      const allowance = await erc20.allowance(owner, spender)
+      return allowance ?? constants.Zero
+    } catch (err) {
+      // contract is not a valid Erc20 token, exit
+      throw err
+    }
+  }
 }
 
 /**

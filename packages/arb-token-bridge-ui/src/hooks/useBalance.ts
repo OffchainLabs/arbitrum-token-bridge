@@ -86,7 +86,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
           return acc
         }, {} as Erc20Balances)
       } catch (error) {
-        // log on sentry in case multi-caller fails
+        // log some extra info on sentry in case multi-caller fails
         Sentry.configureScope(function (scope) {
           scope.setExtra('token_addresses', _addresses)
           Sentry.captureException(error)
