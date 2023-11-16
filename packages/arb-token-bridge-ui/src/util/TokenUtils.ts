@@ -273,7 +273,7 @@ type SanitizeTokenOptions = {
 }
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
 export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
