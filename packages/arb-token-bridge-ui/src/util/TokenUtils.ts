@@ -175,20 +175,11 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
     })
     return tokenData?.allowance ?? constants.Zero
   } catch (e) {
-    //  fall back if there is no multicall
-    const erc20 = ERC20__factory.connect(address, provider)
-    try {
-      const allowance = await erc20.allowance(owner, spender)
-      return allowance ?? constants.Zero
-    } catch (error) {
-      // contract is not a valid Erc20 token
-      Sentry.configureScope(function (scope) {
-        scope.setExtra('token_address', address)
-        Sentry.captureException(error)
-      })
-
-      return constants.Zero // return fallback value
-    }
+    // log the issue on sentry, later, fall back if there is no multicall
+    Sentry.configureScope(function (scope) {
+      scope.setExtra('token_address', address)
+      Sentry.captureException(e)
+    })
   }
 }
 
