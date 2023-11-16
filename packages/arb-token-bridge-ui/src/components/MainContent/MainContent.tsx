@@ -105,15 +105,7 @@ export function MainContent() {
         {/* if the user has some pending claim txns or retryables to redeem, show that banner here */}
         <TransactionStatusInfo deposits={depositsData.transformedDeposits} />
 
-        <AnimatePresence>
-          <motion.div
-            key="transfer-panel"
-            {...motionDivProps}
-            className="relative z-10"
-          >
-            <TransferPanel />
-          </motion.div>
-        </AnimatePresence>
+        <TransferPanel />
       </div>
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}
