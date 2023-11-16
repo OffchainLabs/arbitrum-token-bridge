@@ -265,7 +265,9 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+      <span className="tabular-nums">
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
@@ -310,7 +312,7 @@ function TokenBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>
+      <span className="tabular-nums">
         {formatAmount(balance, {
           decimals: forToken.decimals,
           symbol
