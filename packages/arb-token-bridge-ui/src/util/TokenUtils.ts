@@ -174,12 +174,13 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
       allowance: { owner, spender }
     })
     return tokenData?.allowance ?? constants.Zero
-  } catch (e) {
+  } catch (error) {
     // log the issue on sentry, later, fall back if there is no multicall
     Sentry.configureScope(function (scope) {
       scope.setExtra('token_address', address)
-      Sentry.captureException(e)
+      Sentry.captureException(error)
     })
+    throw error
   }
 }
 
