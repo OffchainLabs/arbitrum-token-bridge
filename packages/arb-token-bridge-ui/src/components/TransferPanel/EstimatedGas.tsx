@@ -11,6 +11,7 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
+import { Loader } from '../common/atoms/Loader'
 
 const depositGasFeeTooltip = ({
   l1NetworkName,
@@ -28,6 +29,14 @@ const depositGasFeeTooltip = ({
   Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
 })
 
+function StyledLoader() {
+  return (
+    <span className="flex justify-end">
+      <Loader size="small" />
+    </span>
+  )
+}
+
 export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const {
     app: { isDepositMode, selectedToken }
@@ -39,6 +48,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
   const isParentChain = chain === 'parent'
   const {
+    gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
   const l1NetworkName = getNetworkName(l1.network.id)
@@ -78,7 +88,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   return (
     <div
       className={twMerge(
-        'grid rounded-md bg-white/25 px-3 py-2 text-right text-sm font-light text-white',
+        'grid items-center rounded-md bg-white/25 px-3 py-2 text-right text-sm font-light text-white',
         showPrice ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'
       )}
     >
@@ -88,18 +98,27 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>
       </div>
-      <span className="text-right tabular-nums">
-        {formatAmount(estimatedGasFee, {
-          symbol: isParentChain
-            ? parentChainNativeCurrency.symbol
-            : nativeCurrency.symbol
-        })}
-      </span>
+      {gasSummaryStatus === 'loading' ? (
+        <>
+          {showPrice && <span></span>}
+          <StyledLoader />
+        </>
+      ) : (
+        <>
+          <span className="text-right tabular-nums">
+            {formatAmount(estimatedGasFee, {
+              symbol: isParentChain
+                ? parentChainNativeCurrency.symbol
+                : nativeCurrency.symbol
+            })}
+          </span>
 
-      {showPrice && (
-        <span className="tabular-nums">
-          {formatUSD(ethToUSD(estimatedGasFee))}
-        </span>
+          {showPrice && (
+            <span className="tabular-nums">
+              {formatUSD(ethToUSD(estimatedGasFee))}
+            </span>
+          )}
+        </>
       )}
     </div>
   )
