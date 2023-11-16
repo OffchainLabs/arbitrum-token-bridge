@@ -46,13 +46,9 @@ export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
   const isBridgingETH = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
   const gasForLayer = isParentLayer ? parentLayer : childLayer
+  // only hide gas estimation for parent layer at withdrawal mode
 
-  const showBreakdown = useMemo(() => {
-    if (!isDepositMode && isParentLayer) {
-      return false
-    }
-    return !nativeCurrency.isCustom
-  }, [isDepositMode, isParentLayer, nativeCurrency.isCustom])
+  const showBreakdown = isDepositMode || !isParentLayer
 
   const estimatedGasFee = useMemo(() => {
     if (!isDepositMode && !isParentLayer) {
@@ -98,7 +94,7 @@ export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
       </div>
       <span className="text-right tabular-nums">
         {formatAmount(estimatedGasFee, {
-          symbol: isDepositMode
+          symbol: isParentLayer
             ? parentChainNativeCurrency.symbol
             : nativeCurrency.symbol
         })}

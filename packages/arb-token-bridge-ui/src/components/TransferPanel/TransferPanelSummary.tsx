@@ -111,47 +111,42 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         )}
       >
         <span className="text-left">You&apos;ll now pay in gas fees</span>
-        {sameNativeCurrency ? (
-          <>
-            <span>
-              {formatAmount(estimatedTotalGasFees, {
-                symbol: nativeCurrency.symbol
-              })}
-            </span>
 
-            {showPrice && (
-              <span className="font-medium text-dark">
-                {formatUSD(ethToUSD(estimatedTotalGasFees))}
-              </span>
-            )}
-          </>
-        ) : (
-          <span>
-            {formatAmount(estimatedL1GasFees, {
-              symbol: parentChainNativeCurrency.symbol
-            })}
-            {' + '}
-            {formatAmount(estimatedL2GasFees, {
+        <span>
+          {!sameNativeCurrency && isDepositMode && (
+            <>
+              {formatAmount(estimatedL1GasFees, {
+                symbol: parentChainNativeCurrency.symbol
+              })}
+              {' + '}
+            </>
+          )}
+          {formatAmount(
+            sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
+            {
               symbol: nativeCurrency.symbol
-            })}
+            }
+          )}
+        </span>
+
+        {showPrice && (
+          <span className="font-medium text-dark">
+            {formatUSD(ethToUSD(estimatedTotalGasFees))}
           </span>
         )}
       </div>
 
       {!isDepositMode && (
-        <>
+        <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
           <div className="border-b border-gray-5" />
-          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
-            <p>
-              This transaction will initiate the withdrawal on {l2.network.name}
-              .
-            </p>
-            <p>
-              When the withdrawal is ready for claiming on {l1.network.name},
-              you will have to pay gas fees for the claim transaction.
-            </p>
-          </div>
-        </>
+          <p>
+            This transaction will initiate the withdrawal on {l2.network.name}.
+          </p>
+          <p>
+            When the withdrawal is ready for claiming on {l1.network.name}, you
+            will have to pay gas fees for the claim transaction.
+          </p>
+        </div>
       )}
     </TransferPanelSummaryContainer>
   )

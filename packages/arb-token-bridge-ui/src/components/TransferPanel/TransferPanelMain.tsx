@@ -1089,7 +1089,7 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
-        <div className="flex flex-col space-y-1 pb-2.5">
+        <div className="flex flex-col space-y-1">
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,
