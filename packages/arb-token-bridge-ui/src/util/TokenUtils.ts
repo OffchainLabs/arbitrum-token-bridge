@@ -117,7 +117,7 @@ export async function fetchErc20Data({
     try {
       setErc20DataCache({ chainId, address, erc20Data })
     } catch (e) {
-      console.warn(`Failed to store ERC-20 data to cache.`)
+      console.warn('Failed to store ERC-20 data to cache.')
       console.warn(e)
     }
 
@@ -181,9 +181,14 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
     try {
       const allowance = await erc20.allowance(owner, spender)
       return allowance ?? constants.Zero
-    } catch (err) {
-      // contract is not a valid Erc20 token, exit
-      throw err
+    } catch (error) {
+      // contract is not a valid Erc20 token
+      Sentry.configureScope(function (scope) {
+        scope.setExtra('token_address', address)
+        Sentry.captureException(error)
+      })
+
+      return constants.Zero // return fallback value
     }
   }
 }
