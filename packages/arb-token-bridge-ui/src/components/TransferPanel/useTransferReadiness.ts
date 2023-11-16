@@ -14,7 +14,6 @@ import {
 import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
-import { UseGasSummaryResult } from './TransferPanelSummary'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   TransferPanelMainRichErrorMessage,
@@ -23,6 +22,10 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './TransferPanelMainErrorMessage'
 import { ether } from '../../constants'
+import {
+  UseGasSummaryResult,
+  useGasSummaryStore
+} from '../../hooks/TransferPanel/useGasSummaryStore'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -61,11 +64,9 @@ export type UseTransferReadinessResult = {
 }
 
 export function useTransferReadiness({
-  amount,
-  gasSummary
+  amount
 }: {
   amount: string
-  gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
   const {
     app: { isDepositMode, selectedToken }
@@ -90,6 +91,7 @@ export function useTransferReadiness({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
+  const { gasSummary } = useGasSummaryStore()
 
   const ethL1BalanceFloat = useMemo(
     () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),

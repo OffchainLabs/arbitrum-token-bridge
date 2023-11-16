@@ -24,7 +24,7 @@ import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
-import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import { TransferPanelSummary } from './TransferPanelSummary'
 import {
   TransactionHistoryTab,
   useAppContextActions,
@@ -82,6 +82,10 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
+import {
+  useGasSummary,
+  useGasSummaryStore
+} from '../../hooks/TransferPanel/useGasSummaryStore'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -1186,15 +1190,12 @@ export function TransferPanel() {
     customFeeTokenL1BalanceFloat
   ])
 
-  const gasSummary = useGasSummary(
-    amountBigNumber,
-    selectedToken,
-    shouldRunGasEstimation
-  )
+  useGasSummary(amountBigNumber, selectedToken, shouldRunGasEstimation)
+
+  const { gasSummary } = useGasSummaryStore()
 
   const { transferReady, errorMessage } = useTransferReadiness({
-    amount,
-    gasSummary
+    amount
   })
 
   return (
@@ -1240,13 +1241,10 @@ export function TransferPanel() {
           setAmount={setAmount}
           errorMessage={errorMessage}
         />
-        {gasSummary.status !== 'idle' && (
-          <TransferPanelSummary
-            amount={parseFloat(amount)}
-            token={selectedToken}
-            gasSummary={gasSummary}
-          />
-        )}
+        <TransferPanelSummary
+          amount={parseFloat(amount)}
+          token={selectedToken}
+        />
         <div className="transfer-panel-stats">
           {isDepositMode ? (
             <Button

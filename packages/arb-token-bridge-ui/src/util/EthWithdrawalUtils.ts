@@ -1,12 +1,15 @@
 import { EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import * as Sentry from '@sentry/react'
 import { NodeInterface__factory } from '@arbitrum/sdk/dist/lib/abi/factories/NodeInterface__factory'
 import { NODE_INTERFACE_ADDRESS } from '@arbitrum/sdk/dist/lib/dataEntities/constants'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 
+/**
+ * Gas estimate for withdrawal init transaction on child chain
+ */
 export async function withdrawEthEstimateGas({
   amount,
   address,
@@ -17,6 +20,8 @@ export async function withdrawEthEstimateGas({
   l2Provider: Provider
 }): Promise<GasEstimates> {
   const ethBridger = await EthBridger.fromProvider(l2Provider)
+
+  const estimatedL1Gas = constants.Zero
 
   const withdrawalRequest = await ethBridger.getWithdrawalRequest({
     amount,
@@ -35,22 +40,18 @@ export async function withdrawEthEstimateGas({
       false,
       withdrawalRequest.txRequest.data
     )
-    // This is the gas needed to pay for the batch posting fee
-    const estimatedL1Gas = BigNumber.from(gasComponents.gasEstimateForL1)
 
     // add 30% to the estimated total gas as buffer
-    const estimatedTotalGas = BigNumber.from(
+    const estimatedL2Gas = BigNumber.from(
       Math.ceil(Number(gasComponents.gasEstimate) * 1.3)
     )
-
-    const estimatedL2Gas = estimatedTotalGas.sub(estimatedL1Gas)
 
     return { estimatedL1Gas, estimatedL2Gas }
   } catch (error) {
     Sentry.captureException(error)
-    const estimatedL1Gas = BigNumber.from(130_000)
+
     // figures based on gas estimation returned
-    const estimatedTotalGas = await l2Provider
+    const estimatedL2Gas = await l2Provider
       .estimateGas(withdrawalRequest.txRequest)
       .catch(error => {
         Sentry.captureException(error)
@@ -60,7 +61,7 @@ export async function withdrawEthEstimateGas({
 
     return {
       estimatedL1Gas,
-      estimatedL2Gas: estimatedTotalGas.sub(estimatedL1Gas)
+      estimatedL2Gas
     }
   }
 }

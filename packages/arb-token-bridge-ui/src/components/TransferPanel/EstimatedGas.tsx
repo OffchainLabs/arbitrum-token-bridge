@@ -1,4 +1,7 @@
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { useMemo } from 'react'
+import { twMerge } from 'tailwind-merge'
+
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
@@ -7,11 +10,7 @@ import { Tooltip } from '../common/Tooltip'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useGasSummary } from './TransferPanelSummary'
-import { useMemo } from 'react'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { constants, utils } from 'ethers'
-import { twMerge } from 'tailwind-merge'
+import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
 
 const depositGasFeeTooltip = ({
   l1NetworkName,
@@ -38,26 +37,10 @@ export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
   const { ethToUSD } = useETHPrice()
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
-  const [{ amount }] = useArbQueryParams()
-  const amountBigNumber = useMemo(() => {
-    try {
-      const amountSafe = amount || '0'
-
-      if (selectedToken) {
-        return utils.parseUnits(amountSafe, selectedToken.decimals)
-      }
-
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
-    } catch (error) {
-      return constants.Zero
-    }
-  }, [amount, selectedToken, nativeCurrency])
   const isParentLayer = layer === 'parent'
-  const { status, estimatedL1GasFees, estimatedL2GasFees } = useGasSummary(
-    amountBigNumber,
-    selectedToken,
-    true
-  )
+  const {
+    gasSummary: { status, estimatedL1GasFees, estimatedL2GasFees }
+  } = useGasSummaryStore()
   const l1NetworkName = getNetworkName(l1.network.id)
   const l2NetworkName = getNetworkName(l2.network.id)
   const isBridgingETH = selectedToken === null && !nativeCurrency.isCustom
