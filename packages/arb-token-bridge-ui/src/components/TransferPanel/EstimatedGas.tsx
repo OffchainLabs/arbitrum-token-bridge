@@ -28,7 +28,7 @@ const depositGasFeeTooltip = ({
   Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
 })
 
-export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
+export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const {
     app: { isDepositMode, selectedToken }
   } = useAppState()
@@ -37,25 +37,25 @@ export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
   const { ethToUSD } = useETHPrice()
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
-  const isParentLayer = layer === 'parent'
+  const isParentChain = chain === 'parent'
   const {
-    gasSummary: { status, estimatedL1GasFees, estimatedL2GasFees }
+    gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
   const l1NetworkName = getNetworkName(l1.network.id)
   const l2NetworkName = getNetworkName(l2.network.id)
   const isBridgingETH = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
-  const gasForLayer = isParentLayer ? parentLayer : childLayer
+  const layer = isParentChain ? parentLayer : childLayer
 
   // only hide gas estimation for parent layer at withdrawal mode
-  const showBreakdown = isDepositMode || !isParentLayer
+  const showBreakdown = isDepositMode || !isParentChain
 
   const estimatedGasFee = useMemo(() => {
-    if (!isDepositMode && !isParentLayer) {
+    if (!isDepositMode && !isParentChain) {
       return estimatedL1GasFees + estimatedL2GasFees
     }
-    return isParentLayer ? estimatedL1GasFees : estimatedL2GasFees
-  }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentLayer])
+    return isParentChain ? estimatedL1GasFees : estimatedL2GasFees
+  }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentChain])
 
   const layerGasFeeTooltipContent = (layer: ChainLayer) => {
     if (!isDepositMode) {
@@ -75,26 +75,22 @@ export function EstimatedGas({ layer }: { layer: 'parent' | 'child' }) {
     return null
   }
 
-  if (status !== 'success') {
-    return null
-  }
-
   return (
     <div
       className={twMerge(
         'grid rounded-md bg-white/25 px-3 py-2 text-right text-sm font-light text-white',
-        showPrice ? 'grid-cols-[2fr_1fr_1fr]' : ' grid-cols-[2fr_1fr]'
+        showPrice ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'
       )}
     >
       <div className="flex flex-row items-center gap-1">
         <span className="text-left">Gas fee</span>
-        <Tooltip content={layerGasFeeTooltipContent(gasForLayer)}>
+        <Tooltip content={layerGasFeeTooltipContent(layer)}>
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>
       </div>
       <span className="text-right tabular-nums">
         {formatAmount(estimatedGasFee, {
-          symbol: isParentLayer
+          symbol: isParentChain
             ? parentChainNativeCurrency.symbol
             : nativeCurrency.symbol
         })}
