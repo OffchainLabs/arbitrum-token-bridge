@@ -41,10 +41,10 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { isConfirmed } = useRemainingTime(tx)
 
   const chainId = useChainId()
-  const { isArbitrum, isEthereum } = isNetwork(chainId)
+  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(chainId)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
-    isEthereum: isSourceChainIdEthereum,
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
 
@@ -68,14 +68,14 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
     return (
       (isSourceChainIdEthereum && isArbitrum) ||
-      (isSourceChainIdArbitrum && isEthereum)
+      (isSourceChainIdArbitrum && isEthereumMainnetOrTestnet)
     )
   }, [
     l2.network.id,
     isSourceChainIdEthereum,
     isArbitrum,
     isSourceChainIdArbitrum,
-    isEthereum
+    isEthereumMainnetOrTestnet
   ])
 
   const isClaimButtonDisabled = useMemo(() => {

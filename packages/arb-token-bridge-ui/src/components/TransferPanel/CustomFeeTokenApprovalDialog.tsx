@@ -29,7 +29,7 @@ export function CustomFeeTokenApprovalDialog(
   const { selectedToken } = app
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { isMainnet } = isNetwork(l1.network.id)
+  const { isEthereumMainnet } = isNetwork(l1.network.id)
 
   const { data: l1Signer } = useSigner({ chainId: l1.network.id })
   const l1GasPrice = useGasPrice({ provider: l1.provider })
@@ -46,8 +46,8 @@ export function CustomFeeTokenApprovalDialog(
   const approvalFeeText = useMemo(() => {
     const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
     const usd = formatUSD(ethToUSD(estimatedGasFees))
-    return `${eth}${isMainnet ? ` (${usd})` : ''}`
-  }, [estimatedGasFees, ethToUSD, isMainnet])
+    return `${eth}${isEthereumMainnet ? ` (${usd})` : ''}`
+  }, [estimatedGasFees, ethToUSD, isEthereumMainnet])
 
   useEffect(() => {
     if (!isOpen) {

@@ -778,8 +778,8 @@ export function TransferPanel() {
     // Make sure Ethereum and/or Orbit chains are not selected as a pair.
     const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
       id => {
-        const { isEthereum, isOrbitChain } = isNetwork(id)
-        return isEthereum || isOrbitChain
+        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(id)
+        return isEthereumMainnetOrTestnet || isOrbitChain
       }
     )
     if (ethereumOrOrbitPairsSelected) {
@@ -806,7 +806,9 @@ export function TransferPanel() {
           )
         }
 
-        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
+        const isParentChainEthereum = isNetwork(
+          l1Network.id
+        ).isEthereumMainnetOrTestnet
         // Only switch to L1 if the selected L1 network is Ethereum.
         // Or if connected to an Orbit chain as it can't make deposits.
         if (

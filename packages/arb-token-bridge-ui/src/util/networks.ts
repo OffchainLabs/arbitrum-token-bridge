@@ -99,7 +99,7 @@ function getCustomChainIds(l2ChainID: number): ChainId[] {
 export function getL2ChainIds(l1ChainId: number): ChainId[] {
   // Ethereum as the parent chain
   switch (l1ChainId) {
-    case ChainId.Mainnet:
+    case ChainId.Ethereum:
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
     case ChainId.Goerli:
       return [
@@ -140,7 +140,7 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
 
 export enum ChainId {
   // L1
-  Mainnet = 1,
+  Ethereum = 1,
   // L1 Testnets
   Goerli = 5,
   Local = 1337,
@@ -164,7 +164,7 @@ export const supportedCustomOrbitParentChains = [
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: loadEnvironmentVariableWithFallback({
+  [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
     fallback: MAINNET_INFURA_RPC_URL
   }),
@@ -190,7 +190,7 @@ export const rpcURLs: { [chainId: number]: string } = {
 
 export const explorerUrls: { [chainId: number]: string } = {
   // L1
-  [ChainId.Mainnet]: 'https://etherscan.io',
+  [ChainId.Ethereum]: 'https://etherscan.io',
   // L1 Testnets
   [ChainId.Goerli]: 'https://goerli.etherscan.io',
   [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
@@ -207,7 +207,7 @@ export const explorerUrls: { [chainId: number]: string } = {
 
 export const getExplorerUrl = (chainId: ChainId) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return explorerUrls[chainId] ?? explorerUrls[ChainId.Mainnet]! //defaults to etherscan, can never be null
+  return explorerUrls[chainId] ?? explorerUrls[ChainId.Ethereum]! //defaults to etherscan, can never be null
 }
 
 export const getBlockTime = (chainId: ChainId) => {
@@ -250,7 +250,7 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 // Default L2 Chain to use for a certain chainId
 export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   // L1
-  [ChainId.Mainnet]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
+  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
   // L1 Testnets
   [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
   [ChainId.Sepolia]: [ChainId.ArbitrumSepolia],
@@ -397,7 +397,7 @@ export function registerLocalNetwork(
 export function isNetwork(chainId: ChainId) {
   const customChains = getCustomChainsFromLocalStorage()
 
-  const isMainnet = chainId === ChainId.Mainnet
+  const isEthereumMainnet = chainId === ChainId.Ethereum
 
   const isGoerli = chainId === ChainId.Goerli
   const isSepolia = chainId === ChainId.Sepolia
@@ -412,7 +412,8 @@ export function isNetwork(chainId: ChainId) {
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const isEthereum = isMainnet || isGoerli || isSepolia || isLocal
+  const isEthereumMainnetOrTestnet =
+    isEthereumMainnet || isGoerli || isSepolia || isLocal
 
   const isArbitrum =
     isArbitrumOne ||
@@ -437,7 +438,7 @@ export function isNetwork(chainId: ChainId) {
   const isSupported =
     isArbitrumOne ||
     isArbitrumNova ||
-    isMainnet ||
+    isEthereumMainnet ||
     isGoerli ||
     isArbitrumGoerli ||
     isSepolia ||
@@ -447,8 +448,8 @@ export function isNetwork(chainId: ChainId) {
 
   return {
     // L1
-    isMainnet,
-    isEthereum,
+    isEthereumMainnet,
+    isEthereumMainnetOrTestnet,
     // L1 Testnets
     isGoerli,
     isSepolia,
@@ -460,7 +461,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
-    isOrbitChain: !isEthereum && !isArbitrum,
+    isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
     isXaiTestnet,
     isStylusTestnet,
     // Testnet
@@ -478,8 +479,8 @@ export function getNetworkName(chainId: number) {
   }
 
   switch (chainId) {
-    case ChainId.Mainnet:
-      return 'Mainnet'
+    case ChainId.Ethereum:
+      return 'Ethereum'
 
     case ChainId.Goerli:
       return 'Goerli'
@@ -522,7 +523,7 @@ export function getNetworkLogo(
 ) {
   switch (chainId) {
     // L1 networks
-    case ChainId.Mainnet:
+    case ChainId.Ethereum:
     case ChainId.Goerli:
     case ChainId.Sepolia:
       return '/images/EthereumLogo.svg'
@@ -571,7 +572,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
   ]
 
   const mainnetNetworks = [
-    ChainId.Mainnet,
+    ChainId.Ethereum,
     ChainId.ArbitrumOne,
     ChainId.ArbitrumNova
   ]
