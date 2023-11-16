@@ -25,6 +25,11 @@ import {
   withDefault
 } from 'use-query-params'
 
+import {
+  ChainQueryParam,
+  isValidChainQueryParam
+} from '../types/ChainQueryParam'
+
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
@@ -37,6 +42,8 @@ export const useArbQueryParams = () => {
     ]
   */
   return useQueryParams({
+    from: ChainParam,
+    to: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
@@ -94,6 +101,23 @@ export const AmountQueryParam = {
     // toString() casts the potential string array into a string
     const amountStr = amount?.toString() ?? ''
     return sanitizeAmountQueryParam(amountStr)
+  }
+}
+
+export const ChainParam = {
+  encode: (value: string | (string | null)[] | null | undefined) => value,
+  decode: (
+    value: string | (string | null)[] | null | undefined
+  ): ChainQueryParam | undefined => {
+    if (typeof value !== 'string') {
+      return undefined
+    }
+
+    if (!isValidChainQueryParam(value)) {
+      return undefined
+    }
+
+    return value
   }
 }
 
