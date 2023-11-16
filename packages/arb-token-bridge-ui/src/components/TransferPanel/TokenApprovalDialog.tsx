@@ -51,7 +51,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
-  const { isMainnet, isTestnet } = isNetwork(l1.network.id)
+  const { isEthereumMainnet, isTestnet } = isNetwork(l1.network.id)
   const provider = isDepositMode ? l1.provider : l2.provider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
@@ -72,8 +72,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const approvalFeeText = useMemo(() => {
     const eth = formatAmount(estimatedGasFees, { symbol: ether.symbol })
     const usd = formatUSD(ethToUSD(estimatedGasFees))
-    return `${eth}${isMainnet ? ` (${usd})` : ''}`
-  }, [estimatedGasFees, ethToUSD, isMainnet])
+    return `${eth}${isEthereumMainnet ? ` (${usd})` : ''}`
+  }, [estimatedGasFees, ethToUSD, isEthereumMainnet])
 
   useEffect(() => {
     if (!isOpen) {

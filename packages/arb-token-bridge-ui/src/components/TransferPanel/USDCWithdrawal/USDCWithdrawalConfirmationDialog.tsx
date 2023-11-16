@@ -47,7 +47,7 @@ export function USDCWithdrawalConfirmationDialog(
         : CommonAddress.ArbitrumOne.USDC,
       toTokenAddress: isArbitrumGoerli
         ? CommonAddress.Goerli.USDC
-        : CommonAddress.Mainnet.USDC,
+        : CommonAddress.Ethereum.USDC,
       amount: props.amount,
       transferMode: 'withdraw'
     })
