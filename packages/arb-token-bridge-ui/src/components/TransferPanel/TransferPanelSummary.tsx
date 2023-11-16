@@ -38,7 +38,8 @@ function TransferPanelSummaryContainer({
 
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
-    gasSummary: { status, estimatedL1GasFees, estimatedL2GasFees }
+    gasSummaryStatus,
+    gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
 
   const {
@@ -50,8 +51,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
-  const isBridgingETH = token === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
+  const isBridgingEth = token === null && !nativeCurrency.isCustom
+  const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -64,11 +65,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [estimatedL1GasFees, estimatedL2GasFees]
   )
 
-  if (status === 'idle') {
-    return null
-  }
-
-  if (status === 'loading') {
+  if (gasSummaryStatus === 'loading') {
     const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
 
     return (
@@ -89,7 +86,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     )
   }
 
-  if (status === 'unavailable') {
+  if (gasSummaryStatus === 'unavailable') {
     return (
       <TransferPanelSummaryContainer>
         <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">

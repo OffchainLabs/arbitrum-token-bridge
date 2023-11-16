@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'

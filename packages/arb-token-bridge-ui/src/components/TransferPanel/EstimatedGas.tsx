@@ -43,8 +43,8 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   } = useGasSummaryStore()
   const l1NetworkName = getNetworkName(l1.network.id)
   const l2NetworkName = getNetworkName(l2.network.id)
-  const isBridgingETH = selectedToken === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
+  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
+  const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
   const layer = isParentChain ? parentLayer : childLayer
 
   // only hide gas estimation for parent layer at withdrawal mode

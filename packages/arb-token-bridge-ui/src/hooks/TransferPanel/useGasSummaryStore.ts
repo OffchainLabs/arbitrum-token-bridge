@@ -1,7 +1,7 @@
 import { BigNumber, constants, utils } from 'ethers'
 import { create } from 'zustand'
 import { useAccount } from 'wagmi'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TransferPanelSummaryToken } from '../../components/TransferPanel/TransferPanelSummary'
 import { useNetworksAndSigners } from '../useNetworksAndSigners'
@@ -17,14 +17,21 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 
+const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
+  // Estimated L1 gas, denominated in Wei, represented as a BigNumber
+  estimatedL1Gas: constants.Zero,
+  // Estimated L2 gas, denominated in Wei, represented as a BigNumber
+  estimatedL2Gas: constants.Zero,
+  // Estimated L2 submission cost is precalculated and includes gas price
+  estimatedL2SubmissionCost: constants.Zero
+}
+
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
-  status: 'idle',
   estimatedL1GasFees: 0,
   estimatedL2GasFees: 0
 }
 
 export type GasEstimationStatus =
-  | 'idle'
   | 'loading'
   | 'success'
   | 'error'
@@ -37,45 +44,99 @@ export type GasEstimationResult = {
 }
 
 export type UseGasSummaryResult = {
-  status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
 }
 
 export function useGasSummary(
   amount: BigNumber,
-  token: TransferPanelSummaryToken | null,
-  shouldRunGasEstimation: boolean
-) {
+  token: TransferPanelSummaryToken | null
+): void {
   const {
-    app: { arbTokenBridge, isDepositMode }
+    app: { arbTokenBridge, isDepositMode, arbTokenBridgeLoaded }
   } = useAppState()
   const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
+  const {
+    l1: { provider: l1Provider, network: l1Network },
+    l2: { provider: l2Provider, network: l2Network }
+  } = networksAndSigners
   const { address: walletAddress } = useAccount()
-  const { gasSummary, setGasSummary } = useGasSummaryStore()
+  const { gasSummary, setGasSummary, setGasSummaryStatus } =
+    useGasSummaryStore()
 
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
-  const l2GasPrice = useGasPrice({ provider: l2.provider })
+  const l1GasPrice = useGasPrice({ provider: l1Provider })
+  const l2GasPrice = useGasPrice({ provider: l2Provider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
-  const amountDebounced = useDebouncedValue(amount, 1500)
+  const amountDebounced = useDebouncedValue(amount, 1_500)
 
-  const [status, setStatus] = useState<GasEstimationStatus>('idle')
-  const [result, setResult] = useState<GasEstimationResult>({
-    // Estimated L1 gas, denominated in Wei, represented as a BigNumber
-    estimatedL1Gas: constants.Zero,
-    // Estimated L2 gas, denominated in Wei, represented as a BigNumber
-    estimatedL2Gas: constants.Zero,
-    // Estimated L2 submission cost is precalculated and includes gas price
-    estimatedL2SubmissionCost: constants.Zero
-  })
+  const [result, setResult] = useState<GasEstimationResult>(
+    INITIAL_GAS_ESTIMATION_RESULT
+  )
+
+  const estimateGas = useCallback(async () => {
+    if (!walletAddress) {
+      return
+    }
+
+    const estimateGasFunctionParams = {
+      amount,
+      address: walletAddress,
+      l2Provider
+    }
+
+    let estimateGasResult: GasEstimationResult = INITIAL_GAS_ESTIMATION_RESULT
+
+    try {
+      setGasSummaryStatus('loading')
+
+      if (isDepositMode) {
+        estimateGasResult = token
+          ? await depositTokenEstimateGas({
+              ...estimateGasFunctionParams,
+              l1Provider,
+              erc20L1Address: token.address
+            })
+          : await depositEthEstimateGas({
+              ...estimateGasFunctionParams,
+              l1Provider
+            })
+      } else {
+        const partialEstimateGasResult = token
+          ? await withdrawTokenEstimateGas({
+              ...estimateGasFunctionParams,
+              erc20L1Address: token.address
+            })
+          : await withdrawEthEstimateGas(estimateGasFunctionParams)
+
+        estimateGasResult = {
+          ...partialEstimateGasResult,
+          estimatedL2SubmissionCost: constants.Zero
+        }
+      }
+
+      setResult(estimateGasResult)
+      setGasSummaryStatus('success')
+    } catch (error) {
+      console.error(error)
+      setGasSummaryStatus('error')
+    }
+  }, [
+    // Re-run gas estimation when:
+    isDepositMode, // when user switches deposit/withdraw mode
+    amount,
+    token, // when the token changes
+    l1Provider,
+    l2Provider,
+    walletAddress, // when user switches account or if user is not connected
+    setGasSummaryStatus
+  ])
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL1GasFees = useMemo(() => {
     const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
     return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
+  }, [isDepositMode, l1GasPrice, l2GasPrice, result.estimatedL1Gas])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -91,144 +152,86 @@ export function useGasSummary(
   )
 
   useEffect(() => {
-    // When the user starts typing, set the status to `loading` for better UX
-    // The value is debounced, so we'll start fetching the gas estimates only when the user stops typing
-    if (shouldRunGasEstimation) {
-      setStatus('loading')
+    // Since we are using a debounced value, it's possible for the value to be outdated
+    // Wait for it to sync before running the gas estimation
+    if (!amountDebounced.eq(amount)) {
+      return
     }
-  }, [amount, shouldRunGasEstimation])
 
-  useEffect(() => {
-    async function estimateGas() {
-      // Since we are using a debounced value, it's possible for the value to be outdated
-      // Wait for it to sync before running the gas estimation
-      if (!amountDebounced.eq(amount)) {
+    if (!isDepositMode) {
+      if (
+        isTokenArbitrumOneNativeUSDC(token?.address) ||
+        isTokenArbitrumGoerliNativeUSDC(token?.address)
+      ) {
+        setGasSummaryStatus('unavailable')
         return
-      }
-
-      // Don't run gas estimation if the value is zero or the flag is not set
-      if (amountDebounced.isZero() || !shouldRunGasEstimation) {
-        setStatus('idle')
-        return
-      }
-
-      if (!walletAddress) {
-        return
-      }
-
-      try {
-        setStatus('loading')
-
-        if (isDepositMode) {
-          if (token) {
-            const estimateGasResult = await depositTokenEstimateGas({
-              amount,
-              address: walletAddress,
-              erc20L1Address: token.address,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
-            })
-
-            setResult(estimateGasResult)
-          } else {
-            const estimateGasResult = await depositEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
-            })
-
-            setResult(estimateGasResult)
-          }
-        } else {
-          if (token) {
-            let estimateGasResult: {
-              estimatedL1Gas: BigNumber
-              estimatedL2Gas: BigNumber
-            }
-
-            if (
-              isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumGoerliNativeUSDC(token.address)
-            ) {
-              estimateGasResult = {
-                estimatedL1Gas: constants.Zero,
-                estimatedL2Gas: constants.Zero
-              }
-              setStatus('unavailable')
-              return
-            } else {
-              estimateGasResult = await withdrawTokenEstimateGas({
-                amount: amountDebounced,
-                erc20L1Address: token.address,
-                address: walletAddress,
-                l2Provider: l2.provider
-              })
-            }
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          } else {
-            const estimateGasResult = await withdrawEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l2Provider: l2.provider
-            })
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          }
-        }
-
-        setStatus('success')
-      } catch (error) {
-        console.error(error)
-        setStatus('error')
       }
     }
 
-    if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
+    if (
+      arbTokenBridgeLoaded &&
+      arbTokenBridge &&
+      arbTokenBridge.eth &&
+      arbTokenBridge.token
+    ) {
       estimateGas()
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     // Re-run gas estimation when:
+    estimateGas,
     isDepositMode, // when user switches deposit/withdraw mode
     amount, // when user changes the amount (check against the debounced value)
     amountDebounced,
     token, // when the token changes
-    shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
-    l1.network.id, // when L1 and L2 network id changes
-    l2.network.id,
-    walletAddress // when user switches account or if user is not connected
+    l1Network.id, // when L1 and L2 network id changes
+    l2Network.id,
+    arbTokenBridgeLoaded,
+    walletAddress, // when user switches account or if user is not connected
+    setGasSummaryStatus
   ])
 
-  const gasSummaryResult = {
-    status,
-    estimatedL1GasFees,
-    estimatedL2GasFees
-  }
+  useEffect(() => {
+    // rather than a deep equal, we are checking all the properties to see if they are sync
 
-  // rather than a deep equal, we are checking all the properties to see if they are sync
-  if (
-    gasSummary.status !== status ||
-    (gasSummary.estimatedL1GasFees !== estimatedL1GasFees &&
-      gasSummary.estimatedL2GasFees !== estimatedL2GasFees)
-  ) {
-    setGasSummary(gasSummaryResult)
-  }
+    if (
+      gasSummary.estimatedL1GasFees !== estimatedL1GasFees ||
+      gasSummary.estimatedL2GasFees !== estimatedL2GasFees
+    ) {
+      setGasSummary({
+        estimatedL1GasFees,
+        estimatedL2GasFees
+      })
+    }
+  }, [
+    result,
+    isDepositMode,
+    l1GasPrice,
+    l2GasPrice,
+    gasSummary,
+    estimatedL1GasFees,
+    estimatedL2GasFees,
+    setGasSummary
+  ])
 }
 
 type GasSummaryStore = {
+  gasSummaryStatus: GasEstimationStatus
   gasSummary: UseGasSummaryResult
+  setGasSummaryStatus: (gasSummaryStatus: GasEstimationStatus) => void
   setGasSummary: (gasSummary: UseGasSummaryResult) => void
 }
 
 export const useGasSummaryStore = create<GasSummaryStore>()(set => ({
+  gasSummaryStatus: 'loading',
   gasSummary: INITIAL_GAS_SUMMARY_RESULT,
-  setGasSummary: gasSummary => set(() => ({ gasSummary }))
+  setGasSummaryStatus: gasSummaryStatus =>
+    set(() => ({
+      gasSummaryStatus
+    })),
+  setGasSummary: gasSummary =>
+    set(() => ({
+      gasSummary
+    }))
 }))

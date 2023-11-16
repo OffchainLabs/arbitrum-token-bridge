@@ -44,7 +44,6 @@ import {
   isTokenGoerliUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -243,15 +242,6 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
-
   const nativeCurrency = useNativeCurrency({ provider: l2Provider })
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
@@ -269,66 +259,6 @@ export function TransferPanel() {
     connectionState,
     setImportTokenModalStatus
   })
-
-  const ethL1BalanceFloat = useMemo(
-    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
-    [ethL1Balance]
-  )
-
-  const ethL2BalanceFloat = useMemo(
-    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
-    [ethL2Balance]
-  )
-
-  const selectedTokenL1BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
-      return null
-    }
-
-    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L1Balances])
-
-  const selectedTokenL2BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
-      return null
-    }
-
-    const isL2NativeUSDC =
-      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
-
-    const selectedTokenL2Address = isL2NativeUSDC
-      ? selectedToken.address.toLowerCase()
-      : (selectedToken.l2Address || '').toLowerCase()
-
-    const balance = erc20L2Balances?.[selectedTokenL2Address]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L2Balances])
-
-  const customFeeTokenL1BalanceFloat = useMemo(() => {
-    if (!nativeCurrency.isCustom) {
-      return null
-    }
-
-    const balance = erc20L1Balances?.[nativeCurrency.address]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
-  }, [nativeCurrency, erc20L1Balances])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isConnected = typeof l1Network !== 'undefined'
@@ -502,6 +432,10 @@ export function TransferPanel() {
       return constants.Zero
     }
   }, [amount, selectedToken, nativeCurrency])
+
+  useGasSummary(amountBigNumber, selectedToken)
+
+  const { gasSummary } = useGasSummaryStore()
 
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
@@ -1151,48 +1085,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
   }
-
-  // Only run gas estimation when it makes sense, i.e. when there is enough funds
-  const shouldRunGasEstimation = useMemo(() => {
-    let balanceFloat: number | null
-
-    // Compare ERC-20 balance
-    if (selectedToken) {
-      balanceFloat = isDepositMode
-        ? selectedTokenL1BalanceFloat
-        : selectedTokenL2BalanceFloat
-    }
-    // Compare custom fee token balance
-    else if (nativeCurrency.isCustom) {
-      balanceFloat = isDepositMode
-        ? customFeeTokenL1BalanceFloat
-        : ethL2BalanceFloat
-    }
-    // Compare ETH balance
-    else {
-      balanceFloat = isDepositMode ? ethL1BalanceFloat : ethL2BalanceFloat
-    }
-
-    if (!balanceFloat) {
-      return false
-    }
-
-    return Number(amount) <= balanceFloat
-  }, [
-    amount,
-    selectedToken,
-    isDepositMode,
-    nativeCurrency,
-    ethL1BalanceFloat,
-    ethL2BalanceFloat,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat
-  ])
-
-  useGasSummary(amountBigNumber, selectedToken, shouldRunGasEstimation)
-
-  const { gasSummary } = useGasSummaryStore()
 
   const { transferReady, errorMessage } = useTransferReadiness({
     amount
