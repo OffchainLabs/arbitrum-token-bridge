@@ -48,7 +48,7 @@ export const NetworkSelectionContainer = () => {
     useAccountType()
 
   const l1Networks = supportedNetworks.filter(
-    network => isNetwork(network).isEthereum
+    network => isNetwork(network).isEthereumMainnetOrTestnet
   )
   const l2Networks = supportedNetworks.filter(
     network => isNetwork(network).isArbitrum

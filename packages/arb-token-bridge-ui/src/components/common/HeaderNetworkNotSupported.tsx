@@ -12,7 +12,7 @@ export function HeaderNetworkNotSupported() {
         <ChevronDownIcon className="h-4 w-4" />
       </div>
       <span className="pl-11 text-left text-sm text-brick lg:hidden lg:text-center">
-        Please change your network in your wallet to either Mainnet or Arbitrum
+        Please change your network in your wallet to either Ethereum or Arbitrum
       </span>
     </div>
   )

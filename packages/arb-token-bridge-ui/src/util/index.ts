@@ -6,7 +6,7 @@ export enum ConnectionState {
 }
 
 export enum TargetChainKey {
-  Mainnet = 'mainnet',
+  Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',

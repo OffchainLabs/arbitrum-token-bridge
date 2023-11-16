@@ -22,10 +22,10 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Mainnet/i })
+              .findByRole('button', { name: /From: Ethereum/i })
               .should('be.visible'),
           {
-            errorMsg: "Can't find /From: Mainnet/i",
+            errorMsg: "Can't find /From: Ethereum/i",
             timeout: 10000,
             interval: 500
           }
@@ -119,13 +119,12 @@ describe('Switch Networks', () => {
               .should('be.visible')
               .click()
 
-            cy.findByRole('button', { name: /Switch to Mainnet/i }).click()
+          cy.findByRole('button', { name: /Switch to Ethereum/i }).click()
 
-            cy.allowMetamaskToSwitchNetwork().then(() => {
-              cy.findByRole('button', {
-                name: /Selected Network : Mainnet/i
-              }).should('be.visible')
-            })
+          cy.allowMetamaskToSwitchNetwork().then(() => {
+            cy.findByRole('button', {
+              name: /Selected Network : Ethereum/i
+            }).should('be.visible')
           })
         })
       })
@@ -158,14 +157,14 @@ describe('Switch Networks', () => {
           ).then(() => {
             context('Allow Network change from wrong network UI list', () => {
               cy.findByRole('button', {
-                name: /Switch to Mainnet/i
+                name: /Switch to Ethereum/i
               })
                 .should('be.visible')
                 .click()
 
               cy.allowMetamaskToSwitchNetwork().then(() => {
                 cy.findByRole('button', {
-                  name: /Selected Network : Mainnet/i
+                  name: /Selected Network : Ethereum/i
                 }).should('be.visible')
               })
             })

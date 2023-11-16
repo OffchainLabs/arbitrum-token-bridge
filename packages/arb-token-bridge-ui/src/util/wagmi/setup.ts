@@ -71,12 +71,12 @@ const appInfo = {
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
   if (targetChainKey === null) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   // Default to Ethereum Mainnet if invalid
   if (!(Object.values(TargetChainKey) as string[]).includes(targetChainKey)) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   return targetChainKey as TargetChainKey
@@ -84,9 +84,9 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
-    case TargetChainKey.Mainnet:
+    case TargetChainKey.Ethereum:
     default:
-      return ChainId.Mainnet
+      return ChainId.Ethereum
 
     case TargetChainKey.ArbitrumOne:
       return ChainId.ArbitrumOne
