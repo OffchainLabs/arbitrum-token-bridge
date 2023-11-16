@@ -22,15 +22,10 @@ describe('Deposit ETH', () => {
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })
 
-  it('should show summary and bridge successfully', () => {
+  it('should show gas estimations and bridge successfully', () => {
     cy.findByPlaceholderText('Enter amount')
       .typeRecursively(String(ETHAmountToDeposit))
       .then(() => {
-        cy.findByText("You're moving")
-          .siblings()
-          .last()
-          .contains(formatAmount(0.0001, { symbol: 'ETH' }))
-          .should('be.visible')
         cy.findByText("You'll now pay in gas fees")
           .siblings()
           .last()

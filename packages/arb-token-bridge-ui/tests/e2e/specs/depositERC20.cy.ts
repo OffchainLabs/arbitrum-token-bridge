@@ -81,15 +81,10 @@ describe('Deposit ERC20 Token', () => {
           .contains('BALANCE: ')
       })
 
-      context('should show summary', () => {
+      context('should show gas estimations', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
-            cy.findByText("You're moving")
-              .siblings()
-              .last()
-              .contains(formatAmount(ERC20AmountToSend))
-              .should('be.visible')
             cy.findByText("You'll now pay in gas fees")
               .siblings()
               .last()

@@ -215,9 +215,9 @@ export function useGasSummary(
 
   // rather than a deep equal, we are checking all the properties to see if they are sync
   if (
-    gasSummary.status !== status &&
-    gasSummary.estimatedL1GasFees !== estimatedL1GasFees &&
-    gasSummary.estimatedL2GasFees !== estimatedL2GasFees
+    gasSummary.status !== status ||
+    (gasSummary.estimatedL1GasFees !== estimatedL1GasFees &&
+      gasSummary.estimatedL2GasFees !== estimatedL2GasFees)
   ) {
     setGasSummary(gasSummaryResult)
   }

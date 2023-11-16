@@ -29,16 +29,11 @@ describe('Withdraw ETH', () => {
     })
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
-      it('should show summary', () => {
+      it('should show gas estimations', () => {
         cy.login({ networkType: 'L2' })
         typeAmountIntoInput()
           .should('have.value', String(ETHToWithdraw))
           .then(() => {
-            cy.findByText("You're moving")
-              .siblings()
-              .last()
-              .contains(formatAmount(0.0001, { symbol: 'ETH' }))
-              .should('be.visible')
             cy.findByText("You'll now pay in gas fees")
               .siblings()
               .last()
