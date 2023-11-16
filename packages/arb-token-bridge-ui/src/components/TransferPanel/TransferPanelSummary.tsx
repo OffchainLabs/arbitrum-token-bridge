@@ -73,20 +73,17 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-        <div
-          className={`h-[28px] w-full opacity-10 lg:h-[56px] ${bgClassName}`}
-        />
-        <div className="flex flex-col space-y-2 pl-4">
-          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-          <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-        </div>
-
-        {isBridgingETH && (
-          <>
-            <div className="lg:border-b lg:border-gray-2" />
-            <div className={`h-[28px] w-full opacity-10 ${bgClassName}`} />
-          </>
+        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
+        {!isDepositMode && (
+          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
+            <div className="lg:border-b lg:border-gray-5" />
+            <div
+              className={twMerge('h-[24px] w-full opacity-10', bgClassName)}
+            />
+            <div
+              className={twMerge('h-[48px] w-full opacity-10', bgClassName)}
+            />
+          </div>
         )}
       </TransferPanelSummaryContainer>
     )
@@ -107,7 +104,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       <div
         className={twMerge(
           'grid items-center justify-between text-right text-sm font-light tabular-nums text-gray-dark',
-          showPrice ? 'grid-cols-[2fr_1fr_1fr]' : ' grid-cols-[2fr_1fr]'
+          showPrice ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'
         )}
       >
         <span className="text-left">You&apos;ll now pay in gas fees</span>
