@@ -125,7 +125,6 @@ export async function fetchErc20Data({
   } catch (error) {
     // log some extra info on sentry in case multi-caller fails
     Sentry.configureScope(function (scope) {
-      scope.setExtra('token_chain_id', chainId)
       scope.setExtra('token_address', address)
       Sentry.captureException(error)
     })
