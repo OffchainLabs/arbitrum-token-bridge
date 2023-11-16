@@ -207,7 +207,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
 
-    const isParentChainEthereum = isNetwork(l1NetworkChainId).isEthereum
+    const isParentChainEthereum =
+      isNetwork(l1NetworkChainId).isEthereumMainnetOrTestnet
 
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })

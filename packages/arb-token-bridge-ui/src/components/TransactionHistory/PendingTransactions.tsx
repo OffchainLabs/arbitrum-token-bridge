@@ -16,7 +16,7 @@ import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
-  if (isNetwork(chainId).isEthereum) {
+  if (isNetwork(chainId).isEthereumMainnetOrTestnet) {
     console.warn(`[getOtherL2NetworkChainId] Unexpected chain id: ${chainId}`)
   }
   return isNetwork(chainId).isArbitrumOne

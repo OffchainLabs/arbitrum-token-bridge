@@ -483,7 +483,7 @@ export function TransferPanelMain({
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Mainnet.USDC] ?? null,
+        l1: erc20L1Balances[CommonAddress.Ethereum.USDC] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
@@ -768,10 +768,10 @@ export function TransferPanelMain({
       listIds: new Set<number>()
     }
     if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Mainnet.USDC)
+      token.updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
-        address: CommonAddress.Mainnet.USDC,
+        address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
     } else if (isArbGoerliUSDC) {
@@ -850,7 +850,7 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereum } = isNetwork(network.id)
+            const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
 
             if (shouldOpenOneNovaDialog([network.id, to.id])) {
               setOneNovaTransferDestinationNetworkId(to.id)
@@ -864,7 +864,7 @@ export function TransferPanelMain({
               const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
               // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
               // Otherwise we want to keep the current chain, in case it's Nova.
-              if (isEthereum && isOrbitChainSelected) {
+              if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
                 updatePreferredL2Chain(
                   mapChainToDefaultPartnerChain(network.id)
                 )
@@ -883,7 +883,9 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            const { isEthereum, isOrbitChain } = isNetwork(network.id)
+            const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+              network.id
+            )
             const defaultPartnerChain = mapChainToDefaultPartnerChain(
               network.id
             )
@@ -904,7 +906,7 @@ export function TransferPanelMain({
             ).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereum && isOrbitChainCurrentlySelected) {
+            if (isEthereumMainnetOrTestnet && isOrbitChainCurrentlySelected) {
               updatePreferredL2Chain(defaultPartnerChain)
               return
             }
@@ -939,7 +941,7 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network.id)
+          const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
 
           if (shouldOpenOneNovaDialog([network.id, to.id])) {
             setOneNovaTransferDestinationNetworkId(to.id)
@@ -954,7 +956,7 @@ export function TransferPanelMain({
             const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereum && isOrbitChainSelected) {
+            if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
               updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
               return
             }
@@ -971,7 +973,9 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum, isOrbitChain } = isNetwork(network.id)
+          const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+            network.id
+          )
           const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
 
           if (network.id === from.id) {
@@ -985,7 +989,7 @@ export function TransferPanelMain({
             return
           }
 
-          if (isEthereum) {
+          if (isEthereumMainnetOrTestnet) {
             if (isConnectedToOrbitChain) {
               try {
                 // If connected to an Orbit chain, we need to change network to Arbitrum.
