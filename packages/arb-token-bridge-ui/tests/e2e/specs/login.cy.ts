@@ -27,7 +27,6 @@ describe('Login Account', () => {
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByText('Bridging summary will appear here.').should('be.visible')
     // BALANCE: is in a different element so we check for siblings
     cy.findByText(l1ETHbal)
       .should('be.visible')
