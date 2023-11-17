@@ -17,11 +17,11 @@ import { useDestinationAddressStore } from './AdvancedSettings'
 import { UseGasSummaryResult } from './TransferPanelSummary'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
-  UseTransferReadinessRichErrorMessage,
+  TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
-} from './useTransferReadinessErrorMessage'
+} from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 
 function sanitizeEstimatedGasFees(
@@ -67,7 +67,7 @@ function ready() {
 
 function notReady(
   params: {
-    errorMessage: string | UseTransferReadinessRichErrorMessage | undefined
+    errorMessage: string | TransferReadinessRichErrorMessage | undefined
   } = {
     errorMessage: undefined
   }
@@ -86,7 +86,7 @@ export type UseTransferReadinessTransferReady = {
 
 export type UseTransferReadinessResult = {
   transferReady: UseTransferReadinessTransferReady
-  errorMessage?: string | UseTransferReadinessRichErrorMessage
+  errorMessage?: string | TransferReadinessRichErrorMessage
 }
 
 export function useTransferReadiness({
@@ -227,7 +227,7 @@ export function useTransferReadiness({
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
-          errorMessage: UseTransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
+          errorMessage: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
         })
       } else if (withdrawalDisabled(selectedToken.address)) {
         return notReady()
@@ -288,8 +288,7 @@ export function useTransferReadiness({
 
       case 'error':
         return notReady({
-          errorMessage:
-            UseTransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
+          errorMessage: TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
         })
 
       case 'success': {
