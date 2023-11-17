@@ -60,7 +60,7 @@ function withdrawalDisabled(token: string) {
 function ready() {
   const result: UseTransferReadinessResult = {
     transferReady: { deposit: true, withdrawal: true }
-  } as const
+  }
 
   return result
 }
@@ -74,7 +74,7 @@ function notReady(
 ) {
   const result: UseTransferReadinessResult = {
     transferReady: { deposit: false, withdrawal: false }
-  } as const
+  }
 
   return { ...result, ...params }
 }
