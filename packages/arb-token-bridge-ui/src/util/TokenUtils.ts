@@ -3,6 +3,7 @@ import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
@@ -98,29 +99,37 @@ export async function fetchErc20Data({
     return cachedErc20Data
   }
 
-  // todo: fall back if there is no multicall?
-  const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([address], {
-    name: true,
-    symbol: true,
-    decimals: true
-  })
-
-  const erc20Data: Erc20Data = {
-    name: tokenData?.name ?? getDefaultTokenName(address),
-    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
-    decimals: tokenData?.decimals ?? defaultErc20Decimals,
-    address
-  }
-
   try {
-    setErc20DataCache({ chainId, address, erc20Data })
-  } catch (e) {
-    console.warn(`Failed to store ERC-20 data to cache.`)
-    console.warn(e)
-  }
+    const multiCaller = await MultiCaller.fromProvider(provider)
+    const [tokenData] = await multiCaller.getTokenData([address], {
+      name: true,
+      symbol: true,
+      decimals: true
+    })
 
-  return erc20Data
+    const erc20Data: Erc20Data = {
+      name: tokenData?.name ?? getDefaultTokenName(address),
+      symbol: tokenData?.symbol ?? getDefaultTokenSymbol(address),
+      decimals: tokenData?.decimals ?? defaultErc20Decimals,
+      address
+    }
+
+    try {
+      setErc20DataCache({ chainId, address, erc20Data })
+    } catch (e) {
+      console.warn('Failed to store ERC-20 data to cache.')
+      console.warn(e)
+    }
+
+    return erc20Data
+  } catch (error) {
+    // log some extra info on sentry in case multi-caller fails
+    Sentry.configureScope(function (scope) {
+      scope.setExtra('token_address', address)
+      Sentry.captureException(error)
+    })
+    throw error
+  }
 }
 
 export async function isValidErc20({
@@ -159,14 +168,20 @@ export type FetchErc20AllowanceParams = FetchErc20DataProps & {
  */
 export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
   const { address, provider, owner, spender } = params
-
-  // todo: fall back if there is no multicall?
-  const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([address], {
-    allowance: { owner, spender }
-  })
-
-  return tokenData?.allowance ?? constants.Zero
+  try {
+    const multiCaller = await MultiCaller.fromProvider(provider)
+    const [tokenData] = await multiCaller.getTokenData([address], {
+      allowance: { owner, spender }
+    })
+    return tokenData?.allowance ?? constants.Zero
+  } catch (error) {
+    // log the issue on sentry, later, fall back if there is no multicall
+    Sentry.configureScope(function (scope) {
+      scope.setExtra('token_address', address)
+      Sentry.captureException(error)
+    })
+    throw error
+  }
 }
 
 /**
@@ -258,7 +273,7 @@ type SanitizeTokenOptions = {
 }
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
 export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()

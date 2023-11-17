@@ -95,7 +95,7 @@ export function WithdrawalCardContainer({
     layout: { isTransferPanelVisible }
   } = useAppContextState()
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
-  const { isEthereum } = isNetwork(sourceChainId)
+  const { isEthereumMainnetOrTestnet } = isNetwork(sourceChainId)
 
   const bgClassName = useMemo(() => {
     switch (tx.status) {
@@ -136,9 +136,9 @@ export function WithdrawalCardContainer({
           <Image
             src={
               // Network destination logo
-              isEthereum
+              isEthereumMainnetOrTestnet
                 ? getNetworkLogo(ChainId.ArbitrumOne)
-                : getNetworkLogo(ChainId.Mainnet)
+                : getNetworkLogo(ChainId.Ethereum)
             }
             className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
             alt={tx.direction}

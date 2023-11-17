@@ -21,6 +21,8 @@ import {
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 
+const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
+
 type Contracts = {
   customGateway: string
   multicall: string
@@ -129,6 +131,39 @@ const ZodOrbitConfig = z.object({
   })
 })
 
+function getOrbitConfigsFromLocalStorage(): OrbitConfig[] {
+  const configs = localStorage.getItem(orbitConfigsLocalStorageKey)
+
+  if (!configs) {
+    return []
+  }
+
+  return JSON.parse(configs)
+}
+
+function getOrbitConfigFromLocalStorageById(
+  chainId: ChainId
+): OrbitConfig | undefined {
+  const configs = getOrbitConfigsFromLocalStorage()
+  return configs.find(config => config.chainInfo.chainId === chainId)
+}
+
+function removeOrbitConfigFromLocalStorage(chainId: ChainId) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  const newConfigs = configs.filter(
+    config => config.chainInfo.chainId !== chainId
+  )
+  localStorage.setItem(orbitConfigsLocalStorageKey, JSON.stringify(newConfigs))
+}
+
+function saveOrbitConfigToLocalStorage(data: OrbitConfig) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  localStorage.setItem(
+    orbitConfigsLocalStorageKey,
+    JSON.stringify([...configs, data])
+  )
+}
+
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   return {
     chainID: data.chainInfo.chainId,
@@ -221,6 +256,7 @@ export const AddCustomChain = () => {
       // let's still try to add it here to handle eventual errors
       addCustomChain({ customChain })
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
+      saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
@@ -308,6 +344,9 @@ export const AddCustomChain = () => {
                             removeCustomChainFromLocalStorage(
                               customChain.chainID
                             )
+                            removeOrbitConfigFromLocalStorage(
+                              customChain.chainID
+                            )
                             // reload to apply changes
                             location.reload()
                           }}
@@ -317,7 +356,11 @@ export const AddCustomChain = () => {
                         <a
                           className="rounded p-4 text-left hover:bg-gray-3"
                           href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                            JSON.stringify(customChain)
+                            JSON.stringify(
+                              getOrbitConfigFromLocalStorageById(
+                                customChain.chainID
+                              )
+                            )
                           )}`}
                           download={`${customChain.name
                             .split(' ')
