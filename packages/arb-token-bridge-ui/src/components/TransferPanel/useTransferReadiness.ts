@@ -23,6 +23,7 @@ import {
 } from './TransferPanelMainErrorMessage'
 import { ether } from '../../constants'
 import {
+  GasEstimationStatus,
   UseGasSummaryResult,
   useGasSummaryStore
 } from '../../hooks/TransferPanel/useGasSummaryStore'
@@ -64,9 +65,11 @@ export type UseTransferReadinessResult = {
 }
 
 export function useTransferReadiness({
-  amount
+  amount,
+  gasSummary
 }: {
   amount: string
+  gasSummary: UseGasSummaryResult & { status: GasEstimationStatus }
 }): UseTransferReadinessResult {
   const {
     app: { isDepositMode, selectedToken }
@@ -91,7 +94,6 @@ export function useTransferReadiness({
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
-  const { gasSummaryStatus, gasSummary } = useGasSummaryStore()
 
   const ethL1BalanceFloat = useMemo(
     () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
@@ -184,7 +186,10 @@ export function useTransferReadiness({
     }
 
     // Keep the button disabled while loading gas summary
-    if (gasSummaryStatus !== 'success' && gasSummaryStatus !== 'unavailable') {
+    if (
+      gasSummary.status !== 'success' &&
+      gasSummary.status !== 'unavailable'
+    ) {
       return true
     }
 
@@ -361,7 +366,7 @@ export function useTransferReadiness({
     }
 
     // The amount entered is enough funds, but now let's include gas costs
-    switch (gasSummaryStatus) {
+    switch (gasSummary.status) {
       // No error while loading gas costs
       case 'loading':
         return undefined
@@ -457,8 +462,7 @@ export function useTransferReadiness({
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat,
-    gasSummaryStatus
+    customFeeTokenL1BalanceFloat
   ])
 
   return {

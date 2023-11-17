@@ -435,7 +435,7 @@ export function TransferPanel() {
 
   useGasSummary(amountBigNumber, selectedToken)
 
-  const { gasSummary } = useGasSummaryStore()
+  const { gasSummary, gasSummaryStatus } = useGasSummaryStore()
 
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
@@ -1089,7 +1089,8 @@ export function TransferPanel() {
   }
 
   const { transferReady, errorMessage } = useTransferReadiness({
-    amount
+    amount,
+    gasSummary: { ...gasSummary, status: gasSummaryStatus }
   })
 
   return (
