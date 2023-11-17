@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import {
   GasEstimatorProps,
   GasEstimates
-} from '../__experiments__/GasEstimator'
+} from '../token-bridge-sdk/GasEstimator'
 import { BigNumber, constants } from 'ethers'
 import { AssetType } from './arbTokenBridge.types'
 import { isNetwork } from '../util/networks'
-import { Erc20DepositGasEstimator } from '../__experiments__/Erc20DepositGasEstimator'
-import { Erc20WithdrawalGasEstimator } from '../__experiments__/Erc20WithdrawalGasEstimator'
+import { Erc20DepositGasEstimator } from '../token-bridge-sdk/Erc20DepositGasEstimator'
+import { Erc20WithdrawalGasEstimator } from '../token-bridge-sdk/Erc20WithdrawalGasEstimator'
 
 export const useGasEstimatesExperiment = ({
   sourceChainProvider,

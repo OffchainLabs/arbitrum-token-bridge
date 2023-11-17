@@ -11,11 +11,11 @@ import { PropsWithChildren, useEffect, useState } from 'react'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 import { Loader } from '../components/common/atoms/Loader'
-import { BridgeTransferType } from '../__experiments__/BridgeTransfer'
-import { BridgeTransferStarterFactory } from '../__experiments__/BridgeTransferStarterFactory'
-import { Erc20Deposit } from '../__experiments__/Erc20Deposit'
+import { BridgeTransferType } from '../token-bridge-sdk/BridgeTransfer'
+import { BridgeTransferStarterFactory } from '../token-bridge-sdk/BridgeTransferStarterFactory'
+import { Erc20Deposit } from '../token-bridge-sdk/Erc20Deposit'
 import { useSwitchNetworkWithConfig } from '../hooks/useSwitchNetworkWithConfig'
-import { Erc20Withdrawal } from '../__experiments__/Erc20Withdrawal'
+import { Erc20Withdrawal } from '../token-bridge-sdk/Erc20Withdrawal'
 import { ChainId } from '../util/networks'
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(null)
