@@ -11,7 +11,7 @@ import {
 import { useAccountType } from '../../hooks/useAccountType'
 
 export function HeaderNetworkInformation({
-  chainId = ChainId.Mainnet
+  chainId = ChainId.Ethereum
 }: {
   chainId: ChainId
 }) {

@@ -147,7 +147,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
-      cy.wait(2000)
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
     })
@@ -226,7 +226,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
-      cy.wait(2000)
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })

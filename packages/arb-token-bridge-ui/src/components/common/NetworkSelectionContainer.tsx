@@ -110,7 +110,7 @@ export const NetworkSelectionContainer = () => {
     // When user was connected to an unsupported chain and disconnected
     // set mainnet as selected chain
     if (!isConnected && !walletConnectChain) {
-      setSelectedChainId(ChainId.Mainnet)
+      setSelectedChainId(ChainId.Ethereum)
     }
     // sync query param with network dropdown
     setWalletConnectChain(selectedChainId)
