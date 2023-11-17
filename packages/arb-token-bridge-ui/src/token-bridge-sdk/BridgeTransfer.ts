@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers'
-import { ContractReceipt, ContractTransaction, BigNumber } from 'ethers'
+import { ContractReceipt, ContractTransaction } from 'ethers'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
@@ -89,7 +89,7 @@ export abstract class BridgeTransfer {
       if (this.isStatusFinal(this.status) || this.isUserActionRequired) {
         clearInterval(intervalId)
       }
-    }, props.intervalMs ?? 15_000)
+    }, props.intervalMs ?? 10000)
   }
 
   public abstract fetchTimeRemaining(): Promise<string>

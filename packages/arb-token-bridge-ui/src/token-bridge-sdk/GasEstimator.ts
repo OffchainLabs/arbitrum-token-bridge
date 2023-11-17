@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { Provider } from '@ethersproject/providers'
 
@@ -22,6 +22,8 @@ export type GasEstimatorProps = {
   sourceChainErc20ContractAddress?: string
   destinationChainErc20ContractAddress?: string
 
+  sourceChainSigner: Signer
+
   amount: BigNumber
   // account: string
 }
@@ -29,9 +31,10 @@ export type GasEstimatorProps = {
 export abstract class GasEstimator {
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
-  public sourceChainErc20ContractAddress?: string
-  public destinationChainErc20ContractAddress?: string
+  public sourceChainErc20ContractAddress
+  public destinationChainErc20ContractAddress
   public amount: BigNumber
+  public sourceChainSigner: Signer
 
   constructor(props: GasEstimatorProps) {
     this.sourceChainProvider = props.sourceChainProvider
@@ -40,6 +43,7 @@ export abstract class GasEstimator {
     this.destinationChainErc20ContractAddress =
       props.destinationChainErc20ContractAddress
     this.amount = props.amount
+    this.sourceChainSigner = props.sourceChainSigner
   }
 
   public abstract getGasEstimates(): Promise<GasEstimates>

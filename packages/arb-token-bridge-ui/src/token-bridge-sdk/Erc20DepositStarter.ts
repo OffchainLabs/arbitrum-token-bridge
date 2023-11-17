@@ -8,7 +8,10 @@ import {
 import { Erc20Deposit } from './Erc20Deposit'
 import { ContractTransaction } from 'ethers'
 import { BridgeTransfer } from './BridgeTransfer'
-import { getL1TokenAllowance } from '../util/TokenUtils'
+import {
+  fetchErc20Allowance,
+  fetchErc20L1GatewayAddress
+} from '../util/TokenUtils'
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public async requiresApproval(
@@ -16,17 +19,23 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
   ): Promise<boolean> {
     debugger
 
-    const account = await props.sourceChainSigner.getAddress()
+    const owner = await props.sourceChainSigner.getAddress()
 
     if (typeof this.sourceChainErc20ContractAddress === 'undefined') {
       throw new Error('unexpected')
     }
 
-    const allowance = await getL1TokenAllowance({
-      account,
+    const l1GatewayAddress = await fetchErc20L1GatewayAddress({
       erc20L1Address: this.sourceChainErc20ContractAddress,
       l1Provider: this.sourceChainProvider,
       l2Provider: this.destinationChainProvider
+    })
+
+    const allowance = await fetchErc20Allowance({
+      address: this.sourceChainErc20ContractAddress,
+      provider: this.sourceChainProvider,
+      owner,
+      spender: l1GatewayAddress
     })
 
     return allowance.lt(props.amount)

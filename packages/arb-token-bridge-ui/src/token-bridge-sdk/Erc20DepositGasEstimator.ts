@@ -3,12 +3,18 @@ import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 import { GasEstimator, GasEstimatorProps } from './GasEstimator'
 
 export class Erc20DepositGasEstimator extends GasEstimator {
-  constructor(props: GasEstimatorProps) {
+  constructor(
+    props: GasEstimatorProps & { sourceChainErc20ContractAddress: string }
+  ) {
     super(props)
   }
 
   public async getGasEstimates() {
+    const address = await this.sourceChainSigner.getAddress()
     const result = await depositTokenEstimateGas({
+      amount: this.amount,
+      address,
+      erc20L1Address: this.sourceChainErc20ContractAddress!,
       l1Provider: this.sourceChainProvider,
       l2Provider: this.destinationChainProvider
     })
