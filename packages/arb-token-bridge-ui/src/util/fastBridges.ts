@@ -60,7 +60,7 @@ export function getFastBridges({
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
-      case ChainId.Mainnet:
+      case ChainId.Ethereum:
         return 'ethereum'
       case ChainId.ArbitrumOne:
         return 'arbitrum'

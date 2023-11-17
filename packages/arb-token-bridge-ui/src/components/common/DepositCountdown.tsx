@@ -22,10 +22,10 @@ function getEstimatedDepositDurationInMinutes(
     return 15
   }
 
-  const { isEthereum, isTestnet } = isNetwork(parentChainId)
+  const { isEthereumMainnetOrTestnet, isTestnet } = isNetwork(parentChainId)
 
   // this covers orbit chains
-  if (!isEthereum) {
+  if (!isEthereumMainnetOrTestnet) {
     return 1
   }
 
