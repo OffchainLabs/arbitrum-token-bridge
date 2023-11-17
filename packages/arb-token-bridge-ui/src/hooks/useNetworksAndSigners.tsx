@@ -30,10 +30,16 @@ import * as Sentry from '@sentry/react'
 
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
-import { chainIdToDefaultL2ChainId, isNetwork, rpcURLs } from '../util/networks'
+import {
+  chainIdToDefaultL2ChainId,
+  getNetworkName,
+  isNetwork,
+  rpcURLs
+} from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
+import { errorToast } from '../components/common/atoms/Toast'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
 
@@ -337,8 +343,14 @@ export function NetworksAndSignersProvider(
             provider: chainProvider
           }
         })
+
+        // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
+        // else, the child chain will reset to default when switching back from parent
+        setQueryParams({
+          l2ChainId: chain.chainID
+        })
       })
-      .catch(() => {
+      .catch(error => {
         // Web3Provider is connected to a Chain. We instantiate a provider for the ParentChain.
         if (providerChainId !== _selectedL2ChainId && !isConnectedToArbitrum) {
           // Make sure the Chain provider chainid match the selected chainid
@@ -349,6 +361,14 @@ export function NetworksAndSignersProvider(
           })
           return
         }
+
+        // show a toast message if connecting to the valid network resulted in failure
+        if (_selectedL2ChainId && error && error.event === 'noNetwork') {
+          errorToast(
+            `Failed to connect to ${getNetworkName(_selectedL2ChainId)}.`
+          )
+        }
+
         getChain(provider as Web3Provider)
           .then(async chain => {
             const parentChainId = chain.partnerChainID
@@ -375,6 +395,12 @@ export function NetworksAndSignersProvider(
                 network: getWagmiChain(chain.chainID),
                 provider: chainProvider
               }
+            })
+
+            // set the child(l2/l3) chain id in query params so that it remembers it when switching back from parent
+            // else, the child chain will reset to default when switching back from parent
+            setQueryParams({
+              l2ChainId: chain.chainID
             })
           })
           .catch(() => {

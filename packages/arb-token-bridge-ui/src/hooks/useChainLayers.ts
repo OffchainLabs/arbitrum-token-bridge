@@ -4,9 +4,9 @@ import { useNetworksAndSigners } from './useNetworksAndSigners'
 export type ChainLayer = 'L1' | 'L2' | 'Orbit'
 
 function getChainLayerByChainId(chainId: number): ChainLayer {
-  const { isEthereum, isArbitrum } = isNetwork(chainId)
+  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
 
-  if (isEthereum) {
+  if (isEthereumMainnetOrTestnet) {
     return 'L1'
   }
   if (isArbitrum) {

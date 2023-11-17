@@ -50,17 +50,17 @@ export type FastBridgeInfo = {
 export function getFastBridges({
   from,
   to,
-  tokenSymbol = 'ETH',
+  tokenSymbol,
   amount
 }: {
   from: ChainId
   to: ChainId
-  tokenSymbol?: string
+  tokenSymbol: string
   amount: string
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
-      case ChainId.Mainnet:
+      case ChainId.Ethereum:
         return 'ethereum'
       case ChainId.ArbitrumOne:
         return 'arbitrum'

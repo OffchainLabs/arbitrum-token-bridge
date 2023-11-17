@@ -309,7 +309,7 @@ export function TransactionsTableClaimableRow({
   const { l1, l2 } = useNetworksAndSigners()
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
-    isEthereum: isSourceChainIdEthereum,
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()

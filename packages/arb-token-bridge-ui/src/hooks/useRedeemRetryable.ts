@@ -13,6 +13,7 @@ import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
+import { AssetType } from './arbTokenBridge.types'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -83,7 +84,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
       tx.txId,
       retryableTicket,
-      tx.asset.toLowerCase() === 'eth',
+      tx.assetType === AssetType.ETH,
       L1ToL2MessageStatus.REDEEMED
     )
   }

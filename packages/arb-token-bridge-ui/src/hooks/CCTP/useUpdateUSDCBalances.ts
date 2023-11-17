@@ -11,13 +11,13 @@ function getL1AddressFromAddress(address: string) {
     case CommonAddress.ArbitrumGoerli['USDC.e']:
       return CommonAddress.Goerli.USDC
 
-    case CommonAddress.Mainnet.USDC:
+    case CommonAddress.Ethereum.USDC:
     case CommonAddress.ArbitrumOne.USDC:
     case CommonAddress.ArbitrumOne['USDC.e']:
-      return CommonAddress.Mainnet.USDC
+      return CommonAddress.Ethereum.USDC
 
     default:
-      return CommonAddress.Mainnet.USDC
+      return CommonAddress.Ethereum.USDC
   }
 }
 
