@@ -523,14 +523,6 @@ type ValidTargetChainKey = keyof typeof ChainId & keyof typeof TargetChainKey
 export function getNetworkNameQueryParam(
   chainId: ChainId
 ): ValidTargetChainKey {
-  const { isRinkeby, isArbitrumRinkeby } = isNetwork(chainId)
-  if (isRinkeby) {
-    return 'Goerli'
-  }
-  if (isArbitrumRinkeby) {
-    return 'ArbitrumGoerli'
-  }
-  // this excludes Rinkeby and Arbitrum Rinkeby
   return ChainId[chainId] as ValidTargetChainKey
 }
 

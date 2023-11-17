@@ -31,7 +31,7 @@ export const NetworkSelectionContainer = () => {
     setQueryParams
   ] = useArbQueryParams()
   const [selectedChainId, setSelectedChainId] = useState(
-    getWalletConnectChain(walletConnectChain ?? TargetChainKey.Mainnet)
+    getWalletConnectChain(walletConnectChain ?? TargetChainKey.Ethereum)
   )
   const { switchNetwork } = useSwitchNetworkWithConfig()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
