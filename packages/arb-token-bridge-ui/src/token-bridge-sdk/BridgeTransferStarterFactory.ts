@@ -12,7 +12,7 @@ export class BridgeTransferStarterFactory {
   ): Promise<BridgeTransferStarter> {
     const sourceChainId = (await props.sourceChainProvider.getNetwork()).chainId
 
-    if (isNetwork(sourceChainId).isEthereum) {
+    if (isNetwork(sourceChainId).isEthereumMainnetOrTestnet) {
       // todo: add case for ETH deposit as well
       return new Erc20DepositStarter(props)
     } else {
