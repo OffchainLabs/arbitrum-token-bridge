@@ -7,9 +7,15 @@ import { Loader } from '../components/common/atoms/Loader'
 import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
-const App = dynamic(() => import('./experiment'), {
+const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
-  loading: () => null
+  loading: () => (
+    <AppConnectionFallbackContainer>
+      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+        <Loader size="large" color="white" />
+      </div>
+    </AppConnectionFallbackContainer>
+  )
 })
 
 export default function Index() {

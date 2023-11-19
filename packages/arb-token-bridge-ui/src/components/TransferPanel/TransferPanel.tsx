@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { BigNumber, ContractTransaction, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
@@ -82,6 +82,9 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
+import { BridgeTransferStarterV2 } from '../../token-bridge-sdk/v2/BridgeTransferStarterV2'
+import { BridgeTransferStarterFactoryV2 } from '../../token-bridge-sdk/v2/BridgeTransferStarterFactoryV2'
+import { NewTransaction } from '../../hooks/useTransactions'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -148,7 +151,7 @@ export function TransferPanel() {
       selectedToken,
       isDepositMode,
       arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
+      arbTokenBridge: { eth, token, transactions },
       warningTokens
     }
   } = useAppState()
@@ -790,6 +793,14 @@ export function TransferPanel() {
 
     try {
       if (isDepositMode) {
+        /*
+
+        ------------------------------
+        ----------- DEPOSIT ----------
+        ------------------------------
+
+
+        */
         if (!l1Signer) {
           throw signerUndefinedError
         }
@@ -991,6 +1002,14 @@ export function TransferPanel() {
           })
         }
       } else {
+        /*
+
+        ------------------------------
+        ----------- WITHDRAW ----------
+        ------------------------------
+
+        */
+
         if (!l2Signer) {
           throw signerUndefinedError
         }
@@ -1150,6 +1169,123 @@ export function TransferPanel() {
     }
   }
 
+  const [bridgeTransferStarterV2, setBridgeTransferStarterV2] =
+    useState<BridgeTransferStarterV2>()
+
+  useEffect(() => {
+    const updateBridgeTransferStarter = async () => {
+      const bridgeState = {
+        amount: amountBigNumber,
+        isSmartContractWallet,
+        destinationAddress,
+        sourceChainProvider: isDepositMode ? l1Provider : l2Provider,
+        destinationChainProvider: isDepositMode ? l2Provider : l1Provider,
+        sourceChainSigner: isDepositMode ? l1Signer : l2Signer,
+        destinationChainSigner: isDepositMode ? l2Signer : l1Signer,
+        nativeCurrency,
+        nativeCurrencyBalance: isDepositMode ? ethL1Balance : ethL2Balance,
+        selectedToken: selectedToken
+          ? {
+              ...selectedToken,
+              sourceChainErc20ContractAddress: selectedToken?.address,
+              destinationChainErc20ContractAddress: selectedToken?.l2Address
+            }
+          : null,
+        selectedTokenBalance: selectedToken
+          ? isDepositMode
+            ? erc20L1Balances?.[selectedToken.address.toLowerCase()] ?? null
+            : erc20L2Balances?.[selectedToken.address.toLowerCase()] ?? null
+          : null
+      }
+
+      const bridgeTransferStarter = await BridgeTransferStarterFactoryV2.init(
+        bridgeState
+      )
+
+      setBridgeTransferStarterV2(bridgeTransferStarter)
+    }
+
+    updateBridgeTransferStarter()
+  }, [
+    amountBigNumber,
+    destinationAddress,
+    erc20L1Balances,
+    erc20L2Balances,
+    ethL1Balance,
+    ethL2Balance,
+    isDepositMode,
+    isSmartContractWallet,
+    l1Provider,
+    l1Signer,
+    l2Provider,
+    l2Signer,
+    nativeCurrency,
+    selectedToken
+  ])
+
+  const customFeeTokenApproval = async () => {
+    const waitForInput = openCustomFeeTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const canonicalBridgeDepositConfirmation = async () => {
+    const waitForInput = openDepositConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const tokenAllowanceApproval = async () => {
+    const waitForInput = openTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const showDelayInSmartContractTransaction = async () => {
+    // a custom 3 second delay to show a tooltip after SC transaction goes through
+    // to give a visual feedback to the user that something happened
+    await setTimeout(() => {
+      setShowSCWalletTooltip(true)
+    }, 3000)
+    return true
+  }
+
+  const confirmationCallbacks = {
+    customFeeTokenApproval,
+    canonicalBridgeDepositConfirmation,
+    tokenAllowanceApproval,
+    showDelayInSmartContractTransaction
+  }
+
+  const commonTxLifecycle = {
+    onTxSubmit: (
+      tx: ContractTransaction,
+      oldBridgeCompatibleTxObjToBeRemovedLater: NewTransaction
+    ) => {
+      console.log('tx submitted', oldBridgeCompatibleTxObjToBeRemovedLater)
+      // add transaction to the transaction history
+      transactions.addTransaction(oldBridgeCompatibleTxObjToBeRemovedLater)
+      openTransactionHistoryPanel()
+      setTransferring(false)
+      clearAmountInput()
+    },
+    onTxError
+  }
+
+  const transferV2 = async () => {
+    if (!bridgeTransferStarterV2) {
+      throw Error('Starter not initialized yet!')
+    }
+
+    setTransferring(true)
+    const brigeTransferV2Result = await bridgeTransferStarterV2.transfer({
+      confirmationCallbacks,
+      txLifecycle: commonTxLifecycle
+    })
+    console.log('tx receipt received - ', brigeTransferV2Result)
+    transactions.updateTransaction(brigeTransferV2Result.sourceChainTxReceipt)
+  }
+
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(() => {
     let balanceFloat: number | null
@@ -1290,18 +1426,20 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.deposit}
               onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
-                ) {
-                  transferCctp('deposits')
-                } else if (selectedToken) {
-                  depositToken()
-                } else {
-                  transfer()
-                }
+                // if (
+                //   selectedToken &&
+                //   (isTokenMainnetUSDC(selectedToken.address) ||
+                //     isTokenGoerliUSDC(selectedToken.address)) &&
+                //   !isArbitrumNova
+                // ) {
+                //   transferCctp('deposits')
+                // } else if (selectedToken) {
+                //   depositToken()
+                // } else {
+                //   transfer()
+                // }
+                transferV2()
+                // transfer()
               }}
               className={twMerge(
                 'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
