@@ -1,6 +1,7 @@
 export enum TransferReadinessRichErrorMessage {
   GAS_ESTIMATION_FAILURE,
-  TOKEN_WITHDRAW_ONLY
+  TOKEN_WITHDRAW_ONLY,
+  TOKEN_TRANSFER_DISABLED
 }
 
 export type GetInsufficientFundsErrorMessageParams = {
