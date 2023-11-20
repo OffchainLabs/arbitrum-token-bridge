@@ -8,19 +8,20 @@ import { approveCustomFeeTokenForInbox } from './core/approveCustomFeeTokenForIn
 import { utils } from 'ethers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NewTransaction } from '../../hooks/useTransactions'
+import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForDepositOrWithdrawal'
 
 export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
     super(props)
   }
 
-  public async transfer({ confirmationCallbacks, txLifecycle }: TransferProps) {
+  public async transfer({ externalCallbacks, txLifecycle }: TransferProps) {
     const {
       amount,
       destinationAddress,
       sourceChainProvider,
       destinationChainProvider,
-      sourceChainSigner,
+      connectedSigner,
       nativeCurrency
     } = this
 
@@ -34,19 +35,30 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
     // it also had some analytics code related to that
     // todo: on bridge UI - actually switch the network when users press the round switch button, so that users are always connected to the correct FROM network
 
-    if (!sourceChainSigner) throw Error('Signer not connected!')
+    if (!connectedSigner) throw Error('Signer not connected!')
 
-    const address = await sourceChainSigner.getAddress()
+    // check if the signer connected is a valid baseChain signer
+    const isValidDepositChain = await checkSignerIsValidForDepositOrWithdrawal({
+      connectedSigner,
+      destinationChainId,
+      transferType: 'deposit'
+    })
+    if (!isValidDepositChain)
+      throw Error(
+        'Connected signer is not valid for deposits. Please connect to valid network.'
+      )
+
+    const address = await connectedSigner.getAddress()
 
     if (nativeCurrency.isCustom) {
       const customFeeTokenApproval = await approveCustomFeeTokenForInbox({
         address,
         amount,
-        l1Signer: sourceChainSigner,
+        l1Signer: connectedSigner,
         l1Provider: sourceChainProvider,
         l2Provider: destinationChainProvider,
         nativeCurrency,
-        customFeeTokenApproval: confirmationCallbacks['customFeeTokenApproval']
+        customFeeTokenApproval: externalCallbacks['customFeeTokenApproval']
       })
 
       if (!customFeeTokenApproval) {
@@ -59,7 +71,7 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
     try {
       const tx = await ethBridger.deposit({
         amount,
-        l1Signer: sourceChainSigner
+        l1Signer: connectedSigner
       })
 
       // todo: Make the callbacks better
@@ -78,17 +90,20 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
       } as NewTransaction
 
       if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx, oldBridgeCompatibleTxObjToBeRemovedLater)
+        txLifecycle.onTxSubmit({ tx, oldBridgeCompatibleTxObjToBeRemovedLater })
       }
 
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm({
+          txReceipt,
+          oldBridgeCompatibleTxObjToBeRemovedLater
+        })
       }
 
       return {
-        sourceChainTxReceipt: receipt
+        sourceChainTxReceipt: txReceipt
       }
     } catch (error: any) {
       if (txLifecycle?.onTxError) {

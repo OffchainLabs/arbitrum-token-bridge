@@ -9,22 +9,27 @@ import { utils } from 'ethers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NewTransaction } from '../../hooks/useTransactions'
 import { checkForWarningTokens } from './core/checkForWarningTokens'
-import { fetchErc20Data, getL2ERC20Address } from '../../util/TokenUtils'
+import {
+  fetchErc20Data,
+  fetchErc20L1GatewayAddress,
+  getL2ERC20Address
+} from '../../util/TokenUtils'
 import { isNonCanonicalToken } from './core/isNonCanonicalToken'
 import { approveTokenAllowance } from './core/approveTokenAllowance'
+import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForDepositOrWithdrawal'
 
 export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
     super(props)
   }
 
-  public async transfer({ confirmationCallbacks, txLifecycle }: TransferProps) {
+  public async transfer({ externalCallbacks, txLifecycle }: TransferProps) {
     const {
       amount,
       destinationAddress,
       sourceChainProvider,
       destinationChainProvider,
-      sourceChainSigner,
+      connectedSigner,
       nativeCurrency,
       selectedToken,
       isSmartContractWallet
@@ -40,18 +45,37 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
     // it also had some analytics code related to that
     // todo: on bridge UI - actually switch the network when users press the round switch button, so that users are always connected to the correct FROM network
 
-    if (!sourceChainSigner) throw Error('Signer not connected!')
+    if (!connectedSigner) throw Error('Signer not connected!')
+
+    // check if the signer connected is a valid baseChain signer
+    const isValidDepositChain = await checkSignerIsValidForDepositOrWithdrawal({
+      connectedSigner,
+      destinationChainId,
+      transferType: 'deposit'
+    })
+    if (!isValidDepositChain)
+      throw Error(
+        'Connected signer is not valid for deposits. Please connect to valid network.'
+      )
 
     if (!selectedToken) throw Error('No token selected')
 
     const tokenAddress = selectedToken.sourceChainErc20ContractAddress
-    if (!tokenAddress) throw Error('Token not deployed on source chain!')
+    if (!tokenAddress) throw Error('Token not deployed on source chain.')
+
+    const address = await connectedSigner.getAddress()
 
     // throw warning if the token is a part of warning token list
     const warning = await checkForWarningTokens(tokenAddress)
     if (warning) throw Error(warning)
 
-    const address = await sourceChainSigner.getAddress()
+    // check for first time token deployment from user
+    const userConfirmationForFirstTimeTokenBridging = await externalCallbacks[
+      'firstTimeTokenBridgingConfirmation'
+    ]?.()
+    if (!userConfirmationForFirstTimeTokenBridging) {
+      throw Error('User declined bridging the token for the first time')
+    }
 
     // check that a registration is not currently in progress
     const l2RoutedAddress = await getL2ERC20Address({
@@ -74,7 +98,7 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
 
     // check if the token is non-canonical
     if (isNonCanonicalToken(tokenAddress)) {
-      const canonicalBridgeDepositConfirmation = await confirmationCallbacks[
+      const canonicalBridgeDepositConfirmation = await externalCallbacks[
         'canonicalBridgeDepositConfirmation'
       ]?.()
 
@@ -87,11 +111,11 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
       const customFeeTokenApproval = await approveCustomFeeTokenForInbox({
         address,
         amount,
-        l1Signer: sourceChainSigner,
+        l1Signer: connectedSigner,
         l1Provider: sourceChainProvider,
         l2Provider: destinationChainProvider,
         nativeCurrency,
-        customFeeTokenApproval: confirmationCallbacks['customFeeTokenApproval']
+        customFeeTokenApproval: externalCallbacks['customFeeTokenApproval']
       })
 
       if (!customFeeTokenApproval) {
@@ -99,23 +123,33 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
       }
     }
 
+    const l1GatewayAddress = await fetchErc20L1GatewayAddress({
+      erc20L1Address: tokenAddress,
+      l1Provider: sourceChainProvider,
+      l2Provider: destinationChainProvider
+    })
+
     const tokenAllowanceApproval = await approveTokenAllowance({
       address,
       amount,
-      sourceChainErc20ContractAddress: tokenAddress,
-      l1Signer: sourceChainSigner,
+      tokenAddress,
+      spender: l1GatewayAddress,
+      nativeCurrency,
+      l1Signer: connectedSigner,
       l1Provider: sourceChainProvider,
       l2Provider: destinationChainProvider,
-      nativeCurrency,
-      tokenAllowanceApproval: confirmationCallbacks['tokenAllowanceApproval']
+      tokenAllowanceApproval: externalCallbacks['tokenAllowanceApproval']
     })
 
     if (!tokenAllowanceApproval) {
       throw Error('Token allowance not approved')
     }
 
-    if (isSmartContractWallet) {
-      await confirmationCallbacks['showDelayInSmartContractTransaction']?.()
+    if (
+      isSmartContractWallet &&
+      externalCallbacks['showDelayInSmartContractTransaction']
+    ) {
+      await externalCallbacks['showDelayInSmartContractTransaction']?.()
     }
 
     const erc20Bridger = await Erc20Bridger.fromProvider(
@@ -139,7 +173,7 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
 
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
-        l1Signer: sourceChainSigner
+        l1Signer: connectedSigner
       })
 
       const oldBridgeCompatibleTxObjToBeRemovedLater = {
@@ -157,17 +191,20 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
       } as NewTransaction
 
       if (txLifecycle?.onTxSubmit) {
-        txLifecycle.onTxSubmit(tx, oldBridgeCompatibleTxObjToBeRemovedLater)
+        txLifecycle.onTxSubmit({ tx, oldBridgeCompatibleTxObjToBeRemovedLater })
       }
 
-      const receipt = await tx.wait()
+      const txReceipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
-        txLifecycle.onTxConfirm(receipt)
+        txLifecycle.onTxConfirm({
+          txReceipt,
+          oldBridgeCompatibleTxObjToBeRemovedLater
+        })
       }
 
       return {
-        sourceChainTxReceipt: receipt
+        sourceChainTxReceipt: txReceipt
       }
     } catch (error) {
       if (txLifecycle?.onTxError) {

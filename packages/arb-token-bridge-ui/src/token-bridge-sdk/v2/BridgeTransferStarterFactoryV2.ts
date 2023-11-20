@@ -12,22 +12,14 @@ import { isNetwork } from '../../util/networks'
 import { EthDepositStarterV2 } from './EthDepositV2'
 import { Erc20DepositStarterV2 } from './Erc20DepositV2'
 import { TokenType } from '../../hooks/arbTokenBridge.types'
+import { CctpDepositV2 } from './CctpDepositV2'
 
 export class BridgeTransferStarterFactoryV2 {
   public static async init(
     props: BridgeTransferStarterV2Props
   ): Promise<BridgeTransferStarterV2 | undefined> {
-    const {
-      amount,
-      isSmartContractWallet,
-      destinationAddress,
-      sourceChainProvider,
-      destinationChainProvider,
-      sourceChainSigner,
-      destinationChainSigner,
-      nativeCurrency,
-      selectedToken
-    } = props
+    const { sourceChainProvider, destinationChainProvider, selectedToken } =
+      props
 
     const sourceChainNetwork = await sourceChainProvider.getNetwork()
     const destinationChainNetwork = await destinationChainProvider.getNetwork()
@@ -60,7 +52,7 @@ export class BridgeTransferStarterFactoryV2 {
     if (isDeposit && isUsdcTransfer) {
       // return Cctp deposit
       console.log('bridge-sdk mode: CCTP Deposit')
-      return
+      return new CctpDepositV2(props)
     }
 
     if (!isDeposit && isUsdcTransfer) {

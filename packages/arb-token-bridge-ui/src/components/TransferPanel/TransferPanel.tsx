@@ -82,7 +82,11 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
-import { BridgeTransferStarterV2 } from '../../token-bridge-sdk/v2/BridgeTransferStarterV2'
+import {
+  BridgeTransferStarterV2,
+  MergedTransactionCctp,
+  TransferProps
+} from '../../token-bridge-sdk/v2/BridgeTransferStarterV2'
 import { BridgeTransferStarterFactoryV2 } from '../../token-bridge-sdk/v2/BridgeTransferStarterFactoryV2'
 import { NewTransaction } from '../../hooks/useTransactions'
 
@@ -179,6 +183,8 @@ export function TransferPanel() {
   const { data: l2Signer } = useSigner({
     chainId: l2Network.id
   })
+
+  const { data: signer } = useSigner()
 
   const { setPendingTransfer } = useCctpFetching({
     l1ChainId: l1Network.id,
@@ -346,28 +352,28 @@ export function TransferPanel() {
     return false
   }, [selectedToken])
 
+  function getDialogType(): TokenDepositCheckDialogType | null {
+    let type: TokenDepositCheckDialogType | null = null
+
+    if (isBridgingANewStandardToken) {
+      type = 'new-token'
+    } else {
+      const isUserAddedToken =
+        selectedToken &&
+        selectedToken?.listIds.size === 0 &&
+        typeof selectedToken.l2Address === 'undefined'
+
+      if (isUserAddedToken) {
+        type = 'user-added-token'
+      }
+    }
+
+    return type
+  }
+
   async function depositToken() {
     if (!selectedToken) {
       throw new Error('Invalid app state: no selected token')
-    }
-
-    function getDialogType(): TokenDepositCheckDialogType | null {
-      let type: TokenDepositCheckDialogType | null = null
-
-      if (isBridgingANewStandardToken) {
-        type = 'new-token'
-      } else {
-        const isUserAddedToken =
-          selectedToken &&
-          selectedToken?.listIds.size === 0 &&
-          typeof selectedToken.l2Address === 'undefined'
-
-        if (isUserAddedToken) {
-          type = 'user-added-token'
-        }
-      }
-
-      return type
     }
 
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
@@ -1180,8 +1186,7 @@ export function TransferPanel() {
         destinationAddress,
         sourceChainProvider: isDepositMode ? l1Provider : l2Provider,
         destinationChainProvider: isDepositMode ? l2Provider : l1Provider,
-        sourceChainSigner: isDepositMode ? l1Signer : l2Signer,
-        destinationChainSigner: isDepositMode ? l2Signer : l1Signer,
+        connectedSigner: signer,
         nativeCurrency,
         nativeCurrencyBalance: isDepositMode ? ethL1Balance : ethL2Balance,
         selectedToken: selectedToken
@@ -1215,10 +1220,9 @@ export function TransferPanel() {
     ethL2Balance,
     isDepositMode,
     isSmartContractWallet,
+    signer,
     l1Provider,
-    l1Signer,
     l2Provider,
-    l2Signer,
     nativeCurrency,
     selectedToken
   ])
@@ -1236,6 +1240,14 @@ export function TransferPanel() {
   }
 
   const tokenAllowanceApproval = async () => {
+    setIsCctp(false)
+    const waitForInput = openTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const tokenAllowanceApprovalCctp = async () => {
+    setIsCctp(true)
     const waitForInput = openTokenApprovalDialog()
     const [confirmed] = await waitForInput()
     return confirmed
@@ -1250,40 +1262,120 @@ export function TransferPanel() {
     return true
   }
 
-  const confirmationCallbacks = {
+  const firstTimeTokenBridgingConfirmation = async () => {
+    // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
+    const dialogType = getDialogType()
+    if (dialogType) {
+      setTokenDepositCheckDialogType(dialogType)
+      const waitForInput = openTokenCheckDialog()
+      const [confirmed] = await waitForInput()
+      return confirmed
+    } else {
+      // else pass the check
+      return true
+    }
+  }
+
+  const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
+    const waitForInput = openUSDCDepositConfirmationDialog()
+    const [confirmed, primaryButtonClicked] = await waitForInput()
+
+    // user declined to transfer altogether
+    if (!confirmed) {
+      return false
+    }
+
+    // user has selected normal bridge (USDC.e)
+    if (primaryButtonClicked === 'bridged') {
+      return 'bridge-normal-usdce'
+    }
+
+    // user wants to bridge to native usdc using Circle's CCTP on destination chain
+    return 'bridge-cctp-usd'
+  }
+
+  const externalCallbacks = {
     customFeeTokenApproval,
     canonicalBridgeDepositConfirmation,
     tokenAllowanceApproval,
-    showDelayInSmartContractTransaction
+    showDelayInSmartContractTransaction,
+    firstTimeTokenBridgingConfirmation,
+    confirmUsdcDepositFromNormalOrCctpBridge,
+    tokenAllowanceApprovalCctp
   }
 
-  const commonTxLifecycle = {
-    onTxSubmit: (
-      tx: ContractTransaction,
-      oldBridgeCompatibleTxObjToBeRemovedLater: NewTransaction
-    ) => {
-      console.log('tx submitted', oldBridgeCompatibleTxObjToBeRemovedLater)
-      // add transaction to the transaction history
-      transactions.addTransaction(oldBridgeCompatibleTxObjToBeRemovedLater)
-      openTransactionHistoryPanel()
-      setTransferring(false)
-      clearAmountInput()
+  const commonTxLifecycle: TransferProps['txLifecycle'] = {
+    onTxSubmit: ({ tx, oldBridgeCompatibleTxObjToBeRemovedLater }) => {
+      if (
+        !(oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransaction).isCctp
+      ) {
+        // for normal case
+        const transactionHistoryObject =
+          oldBridgeCompatibleTxObjToBeRemovedLater as NewTransaction
+
+        // add transaction to the transaction history
+        transactions.addTransaction(transactionHistoryObject)
+        openTransactionHistoryPanel()
+        setTransferring(false)
+        clearAmountInput()
+      } else {
+        // for cctp case
+        const transactionHistoryObject =
+          oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransaction
+
+        setPendingTransfer(
+          transactionHistoryObject,
+          transactionHistoryObject.isWithdrawal ? 'withdrawal' : 'deposit'
+        )
+
+        if (!transactionHistoryObject.isWithdrawal) {
+          showCctpDepositsTransactions()
+        } else {
+          showCctpWithdrawalsTransactions()
+        }
+        setTransactionHistoryTab(TransactionHistoryTab.CCTP)
+        openTransactionHistoryPanel()
+        setTransferring(false)
+        clearAmountInput()
+      }
+    },
+    onTxConfirm: ({ txReceipt, oldBridgeCompatibleTxObjToBeRemovedLater }) => {
+      // in case of CCTP
+      const transactionHistoryObject =
+        oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransactionCctp
+      if (transactionHistoryObject.isCctp) {
+        const { attestationHash, messageBytes } = transactionHistoryObject
+        setPendingTransfer(
+          {
+            txId: txReceipt.transactionHash,
+            blockNum: txReceipt.blockNumber,
+            status: 'Unconfirmed',
+            cctpData: {
+              attestationHash,
+              messageBytes
+            }
+          },
+          transactionHistoryObject.isWithdrawal ? 'withdrawal' : 'deposit'
+        )
+      }
     },
     onTxError
   }
 
   const transferV2 = async () => {
-    if (!bridgeTransferStarterV2) {
-      throw Error('Starter not initialized yet!')
+    try {
+      if (!bridgeTransferStarterV2) throw Error('Starter not initialized yet!')
+      setTransferring(true)
+      const brigeTransferV2Result = await bridgeTransferStarterV2.transfer({
+        externalCallbacks,
+        txLifecycle: commonTxLifecycle
+      })
+      console.log('tx receipt received - ', brigeTransferV2Result)
+      transactions.updateTransaction(brigeTransferV2Result.sourceChainTxReceipt)
+    } catch (error) {
+      // handle for different types of error logged by SDK here, to show error popup/ log in sentry / show other UIs etc
+      throw error
     }
-
-    setTransferring(true)
-    const brigeTransferV2Result = await bridgeTransferStarterV2.transfer({
-      confirmationCallbacks,
-      txLifecycle: commonTxLifecycle
-    })
-    console.log('tx receipt received - ', brigeTransferV2Result)
-    transactions.updateTransaction(brigeTransferV2Result.sourceChainTxReceipt)
   }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds

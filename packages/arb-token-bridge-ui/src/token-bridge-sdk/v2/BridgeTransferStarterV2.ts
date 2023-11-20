@@ -1,24 +1,48 @@
 import { Provider, TransactionReceipt } from '@ethersproject/providers'
-import { BigNumber, ContractTransaction, Signer } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
 import { NewTransaction } from '../../hooks/useTransactions'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { MergedTransaction } from '../../state/app/state'
 
-type SelectedToken = ERC20BridgeToken & {
+export type SelectedToken = ERC20BridgeToken & {
   sourceChainErc20ContractAddress: string
   destinationChainErc20ContractAddress?: string
 }
 
-export type ConfirmationCallbacks = { [key: string]: () => Promise<boolean> }
+export type ExternalCallback = () => Promise<boolean | string>
+
+export type ExternalCallbacks = {
+  [key: string]: ExternalCallback
+}
+
+export type MergedTransactionCctp = MergedTransaction & {
+  messageBytes: `0x${string}` | null
+  attestationHash: `0x${string}` | null
+}
+
+type OldBridgeCompatibleTxObjToBeRemovedLater =
+  | NewTransaction
+  | MergedTransaction
+  | MergedTransactionCctp
 
 export type TransferProps = {
-  confirmationCallbacks: ConfirmationCallbacks
+  externalCallbacks: ExternalCallbacks
   txLifecycle?: Partial<{
-    onTxSubmit: (
-      tx: ContractTransaction,
-      oldBridgeCompatibleTxObjToBeRemovedLater: NewTransaction
-    ) => void
-    onTxConfirm: (txReceipt: TransactionReceipt) => void
+    onTxSubmit: ({
+      tx,
+      oldBridgeCompatibleTxObjToBeRemovedLater
+    }: {
+      tx: { hash: string }
+      oldBridgeCompatibleTxObjToBeRemovedLater: OldBridgeCompatibleTxObjToBeRemovedLater
+    }) => void
+    onTxConfirm: ({
+      txReceipt,
+      oldBridgeCompatibleTxObjToBeRemovedLater
+    }: {
+      txReceipt: TransactionReceipt
+      oldBridgeCompatibleTxObjToBeRemovedLater: OldBridgeCompatibleTxObjToBeRemovedLater
+    }) => void
     onTxError: (error: any) => void
   }>
 }
@@ -33,15 +57,14 @@ export type BridgeTransferStarterV2Props = {
   destinationAddress?: string
   sourceChainProvider: Provider
   destinationChainProvider: Provider
-  sourceChainSigner?: Signer | null
-  destinationChainSigner?: Signer | null
+  connectedSigner?: Signer | null
   nativeCurrency: NativeCurrency
   nativeCurrencyBalance: BigNumber | null
   selectedToken: SelectedToken | null
   selectedTokenBalance: BigNumber | null
 
   // functions that can be added to SDK which act as confirmation of some actions
-  // confirmationCallbacks: ConfirmationCallbacks
+  // externalCallbacks: ExternalCallbacks
 }
 
 type TransferReadinessResultError = {
@@ -73,12 +96,11 @@ export abstract class BridgeTransferStarterV2 {
   sourceChainProvider: Provider
   // sourceChainNetwork: Network
   // sourceChainId: number
-  sourceChainSigner?: Signer | null
+  connectedSigner?: Signer | null
 
   destinationChainProvider: Provider
   // destinationChainNetwork: Network
   // destinationChainId: number
-  destinationChainSigner?: Signer | null
 
   nativeCurrency: NativeCurrency
   nativeCurrencyBalance: BigNumber | null
@@ -86,7 +108,7 @@ export abstract class BridgeTransferStarterV2 {
   selectedToken: SelectedToken | null
   selectedTokenBalance: BigNumber | null
 
-  // confirmationCallbacks: ConfirmationCallbacks
+  // externalCallbacks: ExternalCallbacks
 
   constructor(props: BridgeTransferStarterV2Props) {
     this.amount = props.amount
@@ -94,8 +116,7 @@ export abstract class BridgeTransferStarterV2 {
     this.destinationAddress = props.destinationAddress
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
-    this.sourceChainSigner = props.sourceChainSigner
-    this.destinationChainSigner = props.destinationChainSigner
+    this.connectedSigner = props.connectedSigner
     this.nativeCurrency = props.nativeCurrency
     this.nativeCurrencyBalance = props.nativeCurrencyBalance
 

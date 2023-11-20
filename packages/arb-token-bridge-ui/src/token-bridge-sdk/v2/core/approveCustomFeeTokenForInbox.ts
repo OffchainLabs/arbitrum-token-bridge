@@ -3,6 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { BigNumber, Signer, utils } from 'ethers'
 import { fetchErc20Allowance } from '../../../util/TokenUtils'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
+import { ExternalCallback } from '../BridgeTransferStarterV2'
 
 type ApproveCustomFeeTokenProps = {
   address: string
@@ -11,7 +12,7 @@ type ApproveCustomFeeTokenProps = {
   l1Provider: Provider
   l2Provider: Provider
   nativeCurrency: NativeCurrency
-  customFeeTokenApproval?: () => Promise<boolean>
+  customFeeTokenApproval?: ExternalCallback
 }
 
 export async function approveCustomFeeTokenForInbox({

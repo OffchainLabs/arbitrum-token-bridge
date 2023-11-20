@@ -9,6 +9,7 @@ export const checkForWarningTokens = async (
   selectedErc20ContractAddress: string
 ) => {
   try {
+    // todo: later set this in local or session storage maybe?
     const warningTokens = (await axios.get(warningTokensUrl)).data
 
     const warningToken =
