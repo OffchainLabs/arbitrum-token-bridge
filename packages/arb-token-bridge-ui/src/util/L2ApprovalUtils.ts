@@ -1,4 +1,8 @@
+import { BigNumber } from 'ethers'
 import { ChainId } from '../util/networks'
+import { JsonRpcProvider, Provider } from '@ethersproject/providers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { fetchErc20L2GatewayAddress } from './TokenUtils'
 
 export type RequireL2ApproveToken = {
   symbol: string
@@ -52,4 +56,29 @@ export function tokenRequiresApprovalOnL2(
   return (L2ApproveTokens[l2ChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
+}
+
+export const isAllowedL2 = async ({
+  l1TokenAddress,
+  l2TokenAddress,
+  walletAddress,
+  amountNeeded,
+  l2Provider
+}: {
+  l1TokenAddress: string
+  l2TokenAddress: string
+  walletAddress: string
+  amountNeeded: BigNumber
+  l2Provider: Provider
+}) => {
+  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
+
+  const gatewayAddress = await fetchErc20L2GatewayAddress({
+    erc20L1Address: l1TokenAddress,
+    l2Provider
+  })
+
+  return (await token.allowance(walletAddress, gatewayAddress)).gte(
+    amountNeeded
+  )
 }

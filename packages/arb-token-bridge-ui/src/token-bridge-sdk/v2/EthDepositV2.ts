@@ -9,6 +9,7 @@ import { utils } from 'ethers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NewTransaction } from '../../hooks/useTransactions'
 import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForDepositOrWithdrawal'
+import { checkValidDestinationAddress } from './core/checkValidDestinationAddress'
 
 export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
@@ -16,59 +17,73 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
   }
 
   public async transfer({ externalCallbacks, txLifecycle }: TransferProps) {
-    const {
-      amount,
-      destinationAddress,
-      sourceChainProvider,
-      destinationChainProvider,
-      connectedSigner,
-      nativeCurrency
-    } = this
-
-    const sourceChainNetwork = await sourceChainProvider.getNetwork()
-    const sourceChainId = sourceChainNetwork.chainId
-
-    const destinationChainNetwork = await destinationChainProvider.getNetwork()
-    const destinationChainId = destinationChainNetwork.chainId
-
-    // todo: removed code for switchNetworkAndTransfer + analytics, but now since the classes are pure (dont allow cross chain switching) we can ignore that?
-    // it also had some analytics code related to that
-    // todo: on bridge UI - actually switch the network when users press the round switch button, so that users are always connected to the correct FROM network
-
-    if (!connectedSigner) throw Error('Signer not connected!')
-
-    // check if the signer connected is a valid baseChain signer
-    const isValidDepositChain = await checkSignerIsValidForDepositOrWithdrawal({
-      connectedSigner,
-      destinationChainId,
-      transferType: 'deposit'
-    })
-    if (!isValidDepositChain)
-      throw Error(
-        'Connected signer is not valid for deposits. Please connect to valid network.'
-      )
-
-    const address = await connectedSigner.getAddress()
-
-    if (nativeCurrency.isCustom) {
-      const customFeeTokenApproval = await approveCustomFeeTokenForInbox({
-        address,
+    try {
+      const {
         amount,
-        l1Signer: connectedSigner,
-        l1Provider: sourceChainProvider,
-        l2Provider: destinationChainProvider,
+        destinationAddress,
+        sourceChainProvider,
+        destinationChainProvider,
+        connectedSigner,
         nativeCurrency,
-        customFeeTokenApproval: externalCallbacks['customFeeTokenApproval']
+        isSmartContractWallet
+      } = this
+
+      const sourceChainNetwork = await sourceChainProvider.getNetwork()
+      const sourceChainId = sourceChainNetwork.chainId
+
+      const destinationChainNetwork =
+        await destinationChainProvider.getNetwork()
+      const destinationChainId = destinationChainNetwork.chainId
+
+      // todo: removed code for switchNetworkAndTransfer + analytics, but now since the classes are pure (dont allow cross chain switching) we can ignore that?
+      // it also had some analytics code related to that
+      // todo: on bridge UI - actually switch the network when users press the round switch button, so that users are always connected to the correct FROM network
+
+      if (!connectedSigner) throw Error('Signer not connected!')
+
+      // check if the signer connected is a valid signer
+      const isValidDepositChain =
+        await checkSignerIsValidForDepositOrWithdrawal({
+          connectedSigner,
+          destinationChainId,
+          transferType: 'deposit'
+        })
+      if (!isValidDepositChain)
+        throw Error(
+          'Connected signer is not valid for deposits. Please connect to valid network.'
+        )
+
+      // validate the destination address, else throw error
+      await checkValidDestinationAddress({
+        destinationAddress,
+        isSmartContractWallet
       })
 
-      if (!customFeeTokenApproval) {
-        throw Error('Custom fee token not approved')
+      if (isSmartContractWallet) {
+        throw Error("ETH transfers aren't enabled for smart contract wallets.")
       }
-    }
 
-    const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
+      const address = await connectedSigner.getAddress()
 
-    try {
+      // approve custom native currency token if applicable
+      if (nativeCurrency.isCustom) {
+        const customFeeTokenApproval = await approveCustomFeeTokenForInbox({
+          address,
+          amount,
+          l1Signer: connectedSigner,
+          l1Provider: sourceChainProvider,
+          l2Provider: destinationChainProvider,
+          nativeCurrency,
+          customFeeTokenApproval: externalCallbacks['customFeeTokenApproval']
+        })
+
+        if (!customFeeTokenApproval) {
+          throw Error('Custom fee token not approved')
+        }
+      }
+
+      const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
+
       const tx = await ethBridger.deposit({
         amount,
         l1Signer: connectedSigner

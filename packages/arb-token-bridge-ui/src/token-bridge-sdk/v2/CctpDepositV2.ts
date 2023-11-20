@@ -15,53 +15,62 @@ import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAtte
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
+import { checkValidDestinationAddress } from './core/checkValidDestinationAddress'
 
-export class CctpDepositV2 extends BridgeTransferStarterV2 {
+export class CctpDepositStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
     super(props)
   }
 
   public async transfer({ externalCallbacks, txLifecycle }: TransferProps) {
-    const {
-      amount,
-      destinationAddress,
-      sourceChainProvider,
-      destinationChainProvider,
-      connectedSigner,
-      nativeCurrency,
-      selectedToken,
-      isSmartContractWallet
-    } = this
-
-    const sourceChainNetwork = await sourceChainProvider.getNetwork()
-    const sourceChainId = sourceChainNetwork.chainId
-
-    const destinationChainNetwork = await destinationChainProvider.getNetwork()
-    const destinationChainId = destinationChainNetwork.chainId
-
-    if (!connectedSigner) throw Error('Signer not connected!')
-
-    if (!selectedToken) throw Error('No token selected')
-
-    const tokenAddress = selectedToken.sourceChainErc20ContractAddress
-    if (!tokenAddress) throw Error('Token not deployed on source chain!')
-
-    const address = await connectedSigner.getAddress()
-    if (!address)
-      throw Error('Please connect your wallet before making the transfer')
-
-    // check if the signer connected is a valid baseChain signer
-    const isValidDepositChain = await checkSignerIsValidForDepositOrWithdrawal({
-      connectedSigner,
-      destinationChainId,
-      transferType: 'deposit'
-    })
-    if (!isValidDepositChain)
-      throw Error(
-        'Connected signer is not valid for deposits. Please connect to valid network.'
-      )
-
     try {
+      const {
+        amount,
+        destinationAddress,
+        sourceChainProvider,
+        destinationChainProvider,
+        connectedSigner,
+        nativeCurrency,
+        selectedToken,
+        isSmartContractWallet
+      } = this
+
+      const sourceChainNetwork = await sourceChainProvider.getNetwork()
+      const sourceChainId = sourceChainNetwork.chainId
+
+      const destinationChainNetwork =
+        await destinationChainProvider.getNetwork()
+      const destinationChainId = destinationChainNetwork.chainId
+
+      if (!connectedSigner) throw Error('Signer not connected!')
+
+      if (!selectedToken) throw Error('No token selected')
+
+      const tokenAddress = selectedToken.sourceChainErc20ContractAddress
+      if (!tokenAddress) throw Error('Token not deployed on source chain!')
+
+      const address = await connectedSigner.getAddress()
+      if (!address)
+        throw Error('Please connect your wallet before making the transfer')
+
+      // check if the signer connected is a valid signer
+      const isValidDepositChain =
+        await checkSignerIsValidForDepositOrWithdrawal({
+          connectedSigner,
+          destinationChainId,
+          transferType: 'deposit'
+        })
+      if (!isValidDepositChain)
+        throw Error(
+          'Connected signer is not valid for deposits. Please connect to valid network.'
+        )
+
+      // validate the destination address, else throw error
+      await checkValidDestinationAddress({
+        destinationAddress,
+        isSmartContractWallet
+      })
+
       const usdcDepositConfirmationAndMode = await externalCallbacks[
         'confirmUsdcDepositFromNormalOrCctpBridge'
       ]?.()
@@ -129,7 +138,7 @@ export class CctpDepositV2 extends BridgeTransferStarterV2 {
       )
       await tx.wait()
 
-      // burn token on base-chain to be transferred to native arbitrum chain (deposit)
+      // burn token on the selected chain to be transferred from cctp contracts to the other chain
       const depositForBurnTx = await cctpContracts(
         sourceChainId
       ).depositForBurn({

@@ -12,7 +12,10 @@ import { isNetwork } from '../../util/networks'
 import { EthDepositStarterV2 } from './EthDepositV2'
 import { Erc20DepositStarterV2 } from './Erc20DepositV2'
 import { TokenType } from '../../hooks/arbTokenBridge.types'
-import { CctpDepositV2 } from './CctpDepositV2'
+import { CctpDepositStarterV2 } from './CctpDepositV2'
+import { CctpWithdrawalStarterV2 } from './CctpWithdrawalV2'
+import { EthWithdrawalStarterV2 } from './EthWithdrawalV2'
+import { Erc20WithdrawalStarterV2 } from './Erc20WithdrawalV2'
 
 export class BridgeTransferStarterFactoryV2 {
   public static async init(
@@ -38,9 +41,7 @@ export class BridgeTransferStarterFactoryV2 {
     const isNativeCurrencyTransfer =
       !selectedToken || selectedToken?.type !== TokenType.ERC20
 
-    const tokenAddress = isDeposit
-      ? selectedToken?.sourceChainErc20ContractAddress
-      : selectedToken?.destinationChainErc20ContractAddress
+    const tokenAddress = selectedToken?.sourceChainErc20ContractAddress
 
     const isUsdcTransfer =
       tokenAddress &&
@@ -52,13 +53,13 @@ export class BridgeTransferStarterFactoryV2 {
     if (isDeposit && isUsdcTransfer) {
       // return Cctp deposit
       console.log('bridge-sdk mode: CCTP Deposit')
-      return new CctpDepositV2(props)
+      return new CctpDepositStarterV2(props)
     }
 
     if (!isDeposit && isUsdcTransfer) {
       // return Cctp withdrawal
       console.log('bridge-sdk mode: CCTP Withdrawal')
-      return
+      return new CctpWithdrawalStarterV2(props)
     }
 
     if (isDeposit && isNativeCurrencyTransfer) {
@@ -70,7 +71,7 @@ export class BridgeTransferStarterFactoryV2 {
     if (!isDeposit && isNativeCurrencyTransfer) {
       // return Eth withdrawal
       console.log('bridge-sdk mode: Eth Withdrawal')
-      return
+      return new EthWithdrawalStarterV2(props)
     }
 
     if (isDeposit && !isNativeCurrencyTransfer) {
@@ -82,19 +83,10 @@ export class BridgeTransferStarterFactoryV2 {
     if (!isDeposit && !isNativeCurrencyTransfer) {
       // return Erc20 withdrawal
       console.log('bridge-sdk mode: Erc20 Withdrawal')
-      return
+      return new Erc20WithdrawalStarterV2(props)
     }
 
+    // else throw an error - chain pair not valid eg. L1-to-L3 transfer
     throw Error('bridge-sdk mode: unhandled mode detected')
-
-    // else throw an error - chain pair not valid
-
-    // if (isNetwork(sourceChainId).isEthereumMainnetOrTestnet) {
-    //   // todo: add case for ETH deposit as well
-    //   return new Erc20DepositStarter(props)
-    // } else {
-    //   // todo: add case for ERC20 deposit as well
-    //   return new Erc20WithdrawalStarter(props)
-    // }
   }
 }
