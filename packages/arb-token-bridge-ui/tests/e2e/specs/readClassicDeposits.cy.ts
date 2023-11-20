@@ -41,7 +41,7 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'L1',
-        networkName: 'mainnet'
+        networkName: 'ethereum'
       })
       window.localStorage.setItem(
         'arbTransactions',
@@ -80,7 +80,7 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'L1',
-        networkName: 'mainnet'
+        networkName: 'ethereum'
       })
       window.localStorage.setItem(
         'arbTransactions',

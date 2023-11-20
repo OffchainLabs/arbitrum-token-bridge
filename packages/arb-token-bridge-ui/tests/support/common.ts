@@ -10,7 +10,7 @@ export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'
-  | 'mainnet'
+  | 'ethereum'
   | 'goerli'
   | 'sepolia'
 
