@@ -5,10 +5,10 @@ import { isNetwork } from '../util/networks'
 import { UseNetworksState } from './useNetworks'
 
 type UseNetworksRelationshipState = {
-  childProvider: StaticJsonRpcProvider
   childChain: Chain
+  childChainProvider: StaticJsonRpcProvider
   parentChain: Chain
-  parentProvider: StaticJsonRpcProvider
+  parentChainProvider: StaticJsonRpcProvider
 }
 export function useNetworksRelationship({
   fromProvider,
