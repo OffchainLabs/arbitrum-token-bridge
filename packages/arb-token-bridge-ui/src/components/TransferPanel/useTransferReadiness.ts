@@ -23,6 +23,7 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -225,9 +226,19 @@ export function useTransferReadiness({
         l2Network.id
       )
 
+      const selectedTokenIsDisabled = isTransferDisabledToken(
+        selectedToken.address,
+        l2Network.id
+      )
+
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
           errorMessage: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
+        })
+      } else if (selectedTokenIsDisabled) {
+        return notReady({
+          errorMessage:
+            TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED
         })
       } else if (withdrawalDisabled(selectedToken.address)) {
         return notReady()

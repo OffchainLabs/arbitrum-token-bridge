@@ -720,6 +720,7 @@ export function TransferPanelMain({
         )
 
       case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
         return (
           <>
             <span>This token can&apos;t be bridged over.</span>{' '}
