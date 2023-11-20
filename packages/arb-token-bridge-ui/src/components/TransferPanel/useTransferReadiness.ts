@@ -16,11 +16,11 @@ import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
-  TransferPanelMainRichErrorMessage,
+  TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
-} from './TransferPanelMainErrorMessage'
+} from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 import {
   GasEstimationStatus,
@@ -54,6 +54,35 @@ function sanitizeEstimatedGasFees(
   }
 }
 
+function withdrawalDisabled(token: string) {
+  return [
+    '0x0e192d382a36de7011f795acc4391cd302003606',
+    '0x488cc08935458403a0458e45e20c0159c8ab2c92'
+  ].includes(token.toLowerCase())
+}
+
+function ready() {
+  const result: UseTransferReadinessResult = {
+    transferReady: { deposit: true, withdrawal: true }
+  }
+
+  return result
+}
+
+function notReady(
+  params: {
+    errorMessage: string | TransferReadinessRichErrorMessage | undefined
+  } = {
+    errorMessage: undefined
+  }
+) {
+  const result: UseTransferReadinessResult = {
+    transferReady: { deposit: false, withdrawal: false }
+  }
+
+  return { ...result, ...params }
+}
+
 export type UseTransferReadinessTransferReady = {
   deposit: boolean
   withdrawal: boolean
@@ -61,7 +90,7 @@ export type UseTransferReadinessTransferReady = {
 
 export type UseTransferReadinessResult = {
   transferReady: UseTransferReadinessTransferReady
-  errorMessage?: string | TransferPanelMainRichErrorMessage
+  errorMessage?: string | TransferReadinessRichErrorMessage
 }
 
 export function useTransferReadiness({
@@ -141,14 +170,6 @@ export function useTransferReadiness({
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
   }, [selectedToken, erc20L2Balances])
 
-  const selectedTokenIsWithdrawOnly = useMemo(() => {
-    if (!selectedToken) {
-      return false
-    }
-
-    return isWithdrawOnlyToken(selectedToken.address, l2Network.id)
-  }, [selectedToken, l2Network])
-
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {
       return null
@@ -163,144 +184,23 @@ export function useTransferReadiness({
     return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
   }, [nativeCurrency, erc20L1Balances])
 
-  const disableTransfer = useMemo(() => {
-    if (!amount) return true
-    if (isTransferring) return true
-    if (isSwitchingL2Chain) return true
-    if (destinationAddressError) return true
-
-    if (isSmartContractWallet && !selectedToken) {
-      return true
+  return useMemo(() => {
+    if (!amount) {
+      return notReady()
     }
 
-    const ethBalanceFloat = isDepositMode
-      ? ethL1BalanceFloat
-      : ethL2BalanceFloat
-
-    const selectedTokenBalanceFloat = isDepositMode
-      ? selectedTokenL1BalanceFloat
-      : selectedTokenL2BalanceFloat
-
-    if (!ethBalanceFloat) {
-      return true
+    if (isTransferring || isSwitchingL2Chain || destinationAddressError) {
+      return notReady()
     }
 
-    // Keep the button disabled while loading gas summary
-    if (
-      gasSummary.status !== 'success' &&
-      gasSummary.status !== 'unavailable'
-    ) {
-      return true
-    }
-
-    const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
-      isSmartContractWallet,
-      isDepositMode
-    })
-
-    const defaultRequiredGasFees =
-      sanitizedEstimatedGasFees.estimatedL1GasFees +
-      sanitizedEstimatedGasFees.estimatedL2GasFees
-
-    if (selectedToken) {
-      // Still loading ERC-20 balance
-      if (selectedTokenBalanceFloat === null) {
-        return true
-      }
-
-      // First, check if there's enough tokens
-      if (Number(amount) > selectedTokenBalanceFloat) {
-        return true
-      }
-
-      // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
-      if (nativeCurrency.isCustom && isDepositMode) {
-        // Still loading custom fee token balance
-        if (customFeeTokenL1BalanceFloat === null) {
-          return true
-        }
-
-        const { estimatedL1GasFees, estimatedL2GasFees } =
-          sanitizedEstimatedGasFees
-
-        // We have to check if there's enough ETH to cover L1 gas, and enough of the custom fee token to cover L2 gas
-        return (
-          estimatedL1GasFees > ethBalanceFloat ||
-          estimatedL2GasFees > customFeeTokenL1BalanceFloat
-        )
-      }
-
-      // We checked if there's enough tokens, but let's check if there's enough ETH to cover gas
-      return defaultRequiredGasFees > ethBalanceFloat
-    }
-
-    if (nativeCurrency.isCustom && isDepositMode) {
-      // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
-      // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
-      return defaultRequiredGasFees > ethBalanceFloat
-    }
-
-    const notEnoughEthForGasFees =
-      Number(amount) + defaultRequiredGasFees > ethBalanceFloat
-
-    return notEnoughEthForGasFees
-  }, [
-    amount,
-    destinationAddressError,
-    isSmartContractWallet,
-    isDepositMode,
-    gasSummary,
-    isSwitchingL2Chain,
-    isTransferring,
-    selectedToken,
-    ethL1BalanceFloat,
-    ethL2BalanceFloat,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
-    nativeCurrency,
-    customFeeTokenL1BalanceFloat
-  ])
-
-  const disableDeposit = useMemo(() => {
-    if (disableTransfer) {
-      return true
-    }
-
-    if (selectedTokenIsWithdrawOnly) {
-      return true
-    }
-
-    return false
-  }, [disableTransfer, selectedTokenIsWithdrawOnly])
-
-  const disableWithdrawal = useMemo(() => {
-    if (disableTransfer) {
-      return true
-    }
-
-    if (selectedToken) {
-      const disabledTokens = [
-        '0x0e192d382a36de7011f795acc4391cd302003606',
-        '0x488cc08935458403a0458e45e20c0159c8ab2c92'
-      ]
-
-      if (disabledTokens.includes(selectedToken.address.toLowerCase())) {
-        return true
-      }
-    }
-
-    return false
-  }, [disableTransfer, selectedToken])
-
-  const transferPanelMainErrorMessage:
-    | string
-    | TransferPanelMainRichErrorMessage
-    | undefined = useMemo(() => {
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
-      return getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
-        { asset: nativeCurrency.symbol }
-      )
+      return notReady({
+        errorMessage:
+          getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
+            { asset: nativeCurrency.symbol }
+          )
+      })
     }
 
     const sourceChain = isDepositMode ? l1Network.name : l2Network.name
@@ -319,25 +219,36 @@ export function useTransferReadiness({
 
     // No error while loading balance
     if (ethBalanceFloat === null) {
-      return undefined
+      return notReady()
     }
 
     // ERC-20
     if (selectedToken) {
+      const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
+        selectedToken.address,
+        l2Network.id
+      )
+
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
-        return TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY
+        return notReady({
+          errorMessage: TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY
+        })
+      } else if (withdrawalDisabled(selectedToken.address)) {
+        return notReady()
       }
 
       // No error while loading balance
       if (selectedTokenBalanceFloat === null) {
-        return undefined
+        return notReady()
       }
 
       // Check amount against ERC-20 balance
       if (Number(amount) > selectedTokenBalanceFloat) {
-        return getInsufficientFundsErrorMessage({
-          asset: selectedToken.symbol,
-          chain: sourceChain
+        return notReady({
+          errorMessage: getInsufficientFundsErrorMessage({
+            asset: selectedToken.symbol,
+            chain: sourceChain
+          })
         })
       }
     }
@@ -345,23 +256,27 @@ export function useTransferReadiness({
     else if (nativeCurrency.isCustom) {
       // No error while loading balance
       if (customFeeTokenBalanceFloat === null) {
-        return undefined
+        return notReady()
       }
 
       // Check amount against custom fee token balance
       if (Number(amount) > customFeeTokenBalanceFloat) {
-        return getInsufficientFundsErrorMessage({
-          asset: nativeCurrency.symbol,
-          chain: sourceChain
+        return notReady({
+          errorMessage: getInsufficientFundsErrorMessage({
+            asset: nativeCurrency.symbol,
+            chain: sourceChain
+          })
         })
       }
     }
     // ETH
     // Check amount against ETH balance
     else if (Number(amount) > ethBalanceFloat) {
-      return getInsufficientFundsErrorMessage({
-        asset: ether.symbol,
-        chain: sourceChain
+      return notReady({
+        errorMessage: getInsufficientFundsErrorMessage({
+          asset: ether.symbol,
+          chain: sourceChain
+        })
       })
     }
 
@@ -369,93 +284,108 @@ export function useTransferReadiness({
     switch (gasSummary.status) {
       // No error while loading gas costs
       case 'loading':
-        return undefined
+        return notReady()
+
+      case 'unavailable':
+        return ready()
 
       case 'error':
-        return TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE
-
-      case 'success': {
-        const sanitizedEstimatedGasFees = sanitizeEstimatedGasFees(gasSummary, {
-          isSmartContractWallet,
-          isDepositMode
+        return notReady({
+          errorMessage: TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
         })
 
-        const defaultRequiredGasFees =
-          sanitizedEstimatedGasFees.estimatedL1GasFees +
-          sanitizedEstimatedGasFees.estimatedL2GasFees
+      case 'success': {
+        const { estimatedL1GasFees, estimatedL2GasFees } =
+          sanitizeEstimatedGasFees(gasSummary, {
+            isSmartContractWallet,
+            isDepositMode
+          })
 
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token
           if (nativeCurrency.isCustom && isDepositMode) {
             // Still loading custom fee token balance
             if (customFeeTokenL1BalanceFloat === null) {
-              return undefined
+              return notReady()
             }
-
-            const { estimatedL1GasFees, estimatedL2GasFees } =
-              sanitizedEstimatedGasFees
 
             // We have to check if there's enough ETH to cover L1 gas
             if (estimatedL1GasFees > ethBalanceFloat) {
-              return getInsufficientFundsForGasFeesErrorMessage({
-                asset: ether.symbol,
-                chain: sourceChain
+              return notReady({
+                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
+                  asset: ether.symbol,
+                  chain: sourceChain
+                })
               })
             }
 
             // We have to check if there's enough of the custom fee token to cover L2 gas
             if (estimatedL2GasFees > customFeeTokenL1BalanceFloat) {
-              return getInsufficientFundsForGasFeesErrorMessage({
-                asset: nativeCurrency.symbol,
-                chain: sourceChain
+              return notReady({
+                errorMessage: getInsufficientFundsForGasFeesErrorMessage({
+                  asset: nativeCurrency.symbol,
+                  chain: sourceChain
+                })
               })
             }
+
+            return ready()
           }
 
-          if (defaultRequiredGasFees > ethBalanceFloat) {
-            return getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
-              chain: sourceChain
+          // Everything is paid in ETH, so we sum it up
+          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
+            return notReady({
+              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
+                asset: ether.symbol,
+                chain: sourceChain
+              })
             })
           }
 
-          return undefined
+          return ready()
         }
 
         if (nativeCurrency.isCustom && isDepositMode) {
           // Deposits of the custom fee token will be paid in ETH, so we have to check if there's enough ETH to cover L1 gas
           // Withdrawals of the custom fee token will be treated same as ETH withdrawals (in the case below)
-          if (defaultRequiredGasFees > ethBalanceFloat) {
-            return getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
-              chain: sourceChain
+          if (estimatedL1GasFees + estimatedL2GasFees > ethBalanceFloat) {
+            return notReady({
+              errorMessage: getInsufficientFundsForGasFeesErrorMessage({
+                asset: ether.symbol,
+                chain: sourceChain
+              })
             })
           }
 
-          return undefined
+          return ready()
         }
 
-        const notEnoughEthForGasFees =
-          Number(amount) + defaultRequiredGasFees > ethBalanceFloat
+        // Everything is in the same currency
+        // This case also handles custom fee token withdrawals, as `ethBalanceFloat` will reflect the custom fee token balance on the Orbit chain
+        const total = Number(amount) + estimatedL1GasFees + estimatedL2GasFees
 
-        if (notEnoughEthForGasFees) {
-          return getInsufficientFundsForGasFeesErrorMessage({
-            asset: ether.symbol,
-            chain: sourceChain
+        if (total > ethBalanceFloat) {
+          return notReady({
+            errorMessage: getInsufficientFundsForGasFeesErrorMessage({
+              asset: ether.symbol,
+              chain: sourceChain
+            })
           })
         }
 
-        return undefined
+        return ready()
       }
     }
   }, [
     amount,
     isDepositMode,
     isSmartContractWallet,
+    isTransferring,
+    isSwitchingL2Chain,
+    destinationAddressError,
     l1Network,
     l2Network,
     selectedToken,
-    selectedTokenIsWithdrawOnly,
     gasSummary,
     nativeCurrency,
     ethL1BalanceFloat,
@@ -464,9 +394,4 @@ export function useTransferReadiness({
     selectedTokenL2BalanceFloat,
     customFeeTokenL1BalanceFloat
   ])
-
-  return {
-    transferReady: { deposit: !disableDeposit, withdrawal: !disableWithdrawal },
-    errorMessage: transferPanelMainErrorMessage
-  }
 }
