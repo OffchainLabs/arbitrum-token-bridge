@@ -86,10 +86,10 @@ export function sanitizeQueryParams({
 }
 
 export type UseNetworksState = {
-  from: Chain
-  fromProvider: StaticJsonRpcProvider
-  to: Chain
-  toProvider: StaticJsonRpcProvider
+  sourceChain: Chain
+  sourceChainProvider: StaticJsonRpcProvider
+  destinationChain: Chain
+  destinationChainProvider: StaticJsonRpcProvider
 }
 
 export type UseNetworksSetStateParams = { fromId: ChainId; toId?: ChainId }
