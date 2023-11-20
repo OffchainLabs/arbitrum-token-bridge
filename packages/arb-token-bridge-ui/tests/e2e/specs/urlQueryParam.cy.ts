@@ -50,7 +50,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 5000,
+              timeout: 8000,
               interval: 500
             }
           ).then(() => {
@@ -87,7 +87,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 5000,
+              timeout: 8000,
               interval: 500
             }
           ).then(() => {
@@ -125,7 +125,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 5000,
+              timeout: 8000,
               interval: 500
             }
           ).then(() => {
@@ -161,7 +161,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
-      cy.wait(2000)
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
     })
@@ -175,7 +175,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
-      cy.wait(2000)
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
     })
@@ -201,7 +201,7 @@ describe('User enters site with query params on URL', () => {
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
-      cy.wait(2000)
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
