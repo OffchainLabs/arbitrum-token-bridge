@@ -100,7 +100,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
       </div>
       {gasSummaryStatus === 'loading' ? (
         <>
-          {showPrice && <span></span>}
+          {showPrice && <span />}
           <StyledLoader />
         </>
       ) : (

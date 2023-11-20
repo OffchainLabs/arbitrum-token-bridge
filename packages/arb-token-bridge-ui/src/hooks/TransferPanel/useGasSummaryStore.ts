@@ -155,6 +155,7 @@ export function useGasSummary(
     // Since we are using a debounced value, it's possible for the value to be outdated
     // Wait for it to sync before running the gas estimation
     if (!amountDebounced.eq(amount)) {
+      setGasSummaryStatus('loading')
       return
     }
 

@@ -24,8 +24,7 @@ import {
 import { ether } from '../../constants'
 import {
   GasEstimationStatus,
-  UseGasSummaryResult,
-  useGasSummaryStore
+  UseGasSummaryResult
 } from '../../hooks/TransferPanel/useGasSummaryStore'
 
 function sanitizeEstimatedGasFees(
@@ -185,7 +184,7 @@ export function useTransferReadiness({
   }, [nativeCurrency, erc20L1Balances])
 
   return useMemo(() => {
-    if (!amount) {
+    if (!Number(amount)) {
       return notReady()
     }
 
