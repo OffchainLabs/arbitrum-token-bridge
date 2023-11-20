@@ -131,10 +131,10 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
     return [
       {
-        from: fromChain,
-        fromProvider: getProviderForChain(fromChain),
-        to: toChain,
-        toProvider: getProviderForChain(toChain)
+        sourceChain: fromChain,
+        sourceChainProvider: getProviderForChain(fromChain),
+        destinationChain: toChain,
+        destinationChainProvider: getProviderForChain(toChain)
       },
       setState
     ]

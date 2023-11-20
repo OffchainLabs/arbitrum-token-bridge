@@ -11,36 +11,45 @@ type UseNetworksRelationshipState = {
   parentChainProvider: StaticJsonRpcProvider
 }
 export function useNetworksRelationship({
-  fromProvider,
-  from,
-  toProvider,
-  to
+  destinationChain,
+  destinationChainProvider,
+  sourceChain,
+  sourceChainProvider
 }: UseNetworksState): UseNetworksRelationshipState {
-  const fromNetwork = fromProvider.network
-  const toNetwork = toProvider.network
+  const sourceNetwork = sourceChainProvider.network
+  const destinationNetwork = destinationChainProvider.network
   const {
-    isEthereumMainnet: isFromNetworkEthereum,
-    isArbitrum: isFromNetworkArbitrum
-  } = isNetwork(fromNetwork.chainId)
-  const { isOrbitChain: isToNetworkOrbitChain } = isNetwork(toNetwork.chainId)
-  const isFromNetworkParent =
-    isFromNetworkEthereum || (isFromNetworkArbitrum && isToNetworkOrbitChain)
+    isEthereumMainnet: isSourceNetworkEthereum,
+    isArbitrum: isSourceNetworkArbitrum
+  } = isNetwork(sourceNetwork.chainId)
+  const { isOrbitChain: isDestinationNetworkOrbitChain } = isNetwork(
+    destinationNetwork.chainId
+  )
+  const isSourceNetworkParent =
+    isSourceNetworkEthereum ||
+    (isSourceNetworkArbitrum && isDestinationNetworkOrbitChain)
 
   return useMemo(() => {
-    if (isFromNetworkParent) {
+    if (isSourceNetworkParent) {
       return {
-        parentChain: from,
-        parentProvider: fromProvider,
-        childProvider: toProvider,
-        childChain: to
+        childChain: destinationChain,
+        childChainProvider: destinationChainProvider,
+        parentChain: sourceChain,
+        parentChainProvider: sourceChainProvider
       }
     }
 
     return {
-      parentChain: to,
-      parentProvider: toProvider,
-      childProvider: fromProvider,
-      childChain: from
+      childChain: sourceChain,
+      childChainProvider: sourceChainProvider,
+      parentChain: destinationChain,
+      parentChainProvider: destinationChainProvider
     }
-  }, [fromProvider, from, toProvider, to, isFromNetworkParent])
+  }, [
+    isSourceNetworkParent,
+    sourceChain,
+    destinationChain,
+    destinationChainProvider,
+    sourceChainProvider
+  ])
 }
