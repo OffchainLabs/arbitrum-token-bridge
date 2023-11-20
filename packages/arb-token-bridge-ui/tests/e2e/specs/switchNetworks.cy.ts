@@ -17,7 +17,7 @@ describe('Switch Networks', () => {
         // to view the correct list of networks (and not testnets), first navigate to mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'ethereum'
+          networkName: 'mainnet'
         })
         cy.waitUntil(
           () =>
@@ -49,7 +49,7 @@ describe('Switch Networks', () => {
       // it('should change network to Arbitrum One successfully', () => {
       //   cy.login({
       //     networkType: 'L1',
-      //     networkName: 'ethereum'
+      //     networkName: 'mainnet'
       //   })
       //   cy.waitUntil(
       //     () =>
@@ -78,7 +78,7 @@ describe('Switch Networks', () => {
       it('should change network to Arbitrum Nova successfully', () => {
         cy.login({
           networkType: 'L1',
-          networkName: 'ethereum'
+          networkName: 'mainnet'
         })
         cy.waitUntil(
           () =>
