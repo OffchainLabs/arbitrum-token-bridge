@@ -3,7 +3,8 @@ import {
   invalidTokenAddress,
   ERC20TokenName,
   ERC20TokenSymbol,
-  importTokenThroughUI
+  importTokenThroughUI,
+  getL2NetworkConfig
 } from '../../support/common'
 
 const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
@@ -245,9 +246,9 @@ describe('Import token', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
           networkType: 'L1',
-          url: '/',
           query: {
             token: invalidTokenAddress,
+            l2ChainId: getL2NetworkConfig().chainId,
             walletConnectChain: 'custom-localhost'
           }
         })

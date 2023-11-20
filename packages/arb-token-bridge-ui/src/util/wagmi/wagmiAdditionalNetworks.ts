@@ -121,7 +121,7 @@ export const stylusTestnet: Chain = {
 export const localL1Network: Chain = {
   id: ChainId.Local,
   name: 'EthLocal',
-  network: 'localhost',
+  network: 'custom-localhost',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
