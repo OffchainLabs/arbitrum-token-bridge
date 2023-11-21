@@ -838,7 +838,7 @@ export function TransferPanelMain({
           return false
         }
 
-        // If the destination chain is an Orbit Chain,
+        // If the source chain is an Orbit Chain,
         // and this is the Destination network list options
         if (isFromOrbitChain && isDestinationChainList) {
           // we do not show Ethereum Mainnet or Testnet as options
