@@ -6,9 +6,9 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+// import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+// import { JsonRpcProvider } from '@ethersproject/providers'
+// import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -38,14 +38,14 @@ import {
   tokenRequiresApprovalOnL2
 } from '../../util/L2ApprovalUtils'
 import {
-  getL2ERC20Address,
-  fetchErc20Allowance,
-  fetchErc20L1GatewayAddress,
-  fetchErc20L2GatewayAddress,
+  // getL2ERC20Address,
+  // fetchErc20Allowance,
+  // fetchErc20L1GatewayAddress,
+  // fetchErc20L2GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
-  isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
-  isTokenMainnetUSDC
+  isTokenArbitrumOneNativeUSDC
+  // isTokenGoerliUSDC,
+  // isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
