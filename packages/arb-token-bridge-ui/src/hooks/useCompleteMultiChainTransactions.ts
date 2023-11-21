@@ -211,7 +211,12 @@ const useTransactionListByDirection = (
   )
 
   useEffect(() => {
-    const fetchedSomeData = data && data.some(item => item.length > 0)
+    if (!data) {
+      return
+    }
+
+    const fetchedSomeData = data.some(item => item.length > 0)
+
     if (fetchedSomeData) {
       // include the new data with the previously fetched data
       // the data is grouped by chain pairs

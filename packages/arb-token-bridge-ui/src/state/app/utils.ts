@@ -283,12 +283,12 @@ export const getStandardizedTimestamp = (date: string | BigNumber) => {
   return date.toNumber()
 }
 
-export const getStandardizedTime = (standatdisedTimestamp: number) => {
-  return dayjs(standatdisedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
+export const getStandardizedTime = (standardizedTimestamp: number) => {
+  return dayjs(standardizedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
 }
 
-export const getStandardizedDate = (standatdisedTimestamp: number) => {
-  return dayjs(standatdisedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
+export const getStandardizedDate = (standardizedTimestamp: number) => {
+  return dayjs(standardizedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
 }
 
 export const findMatchingL1TxForWithdrawal = (
