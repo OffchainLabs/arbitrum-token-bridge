@@ -119,13 +119,6 @@ export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
 }
 
-export interface L1TokenData {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
-}
-
 export interface L2TokenData {
   balance: BigNumber
   contract: StandardArbERC20

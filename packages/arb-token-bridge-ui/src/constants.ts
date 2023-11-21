@@ -1,4 +1,4 @@
-export const TOS_VERSION = 1
+export const TOS_VERSION = 2
 
 export const TOS_LOCALSTORAGE_KEY = 'arbitrum:bridge:tos-v' + TOS_VERSION
 
@@ -25,3 +25,5 @@ export const ORBIT_QUICKSTART_LINK =
 
 export const CCTP_DOCUMENTATION =
   'https://www.circle.com/en/cross-chain-transfer-protocol'
+
+export const ether = { name: 'Ether', symbol: 'ETH', decimals: 18 } as const

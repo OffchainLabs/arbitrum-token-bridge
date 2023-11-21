@@ -11,7 +11,7 @@ import {
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
-import { getL1TokenData } from '../TokenUtils'
+import { fetchErc20Data } from '../TokenUtils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -148,14 +148,11 @@ const updateTokenDepositStatusData = async ({
   }
 
   // fallback to on-chain token information if subgraph doesn't have it
-  const { sender, tokenAddress, assetName } = updatedDepositTx
+  const { tokenAddress, assetName } = updatedDepositTx
   if (!assetName && tokenAddress) {
-    const { symbol } = await getL1TokenData({
-      account: sender,
-      erc20L1Address: tokenAddress,
-      l1Provider,
-      l2Provider,
-      throwOnInvalidERC20: false
+    const { symbol } = await fetchErc20Data({
+      address: tokenAddress,
+      provider: l1Provider
     })
     updatedDepositTx.assetName = symbol
   }

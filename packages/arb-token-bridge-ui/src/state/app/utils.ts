@@ -4,6 +4,7 @@ import { ethers, BigNumber } from 'ethers'
 
 import { DepositStatus, MergedTransaction } from './state'
 import {
+  AssetType,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
@@ -41,11 +42,11 @@ export const getDepositStatus = (tx: Transaction) => {
     case L1ToL2MessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case L1ToL2MessageStatus.EXPIRED:
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
     case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
@@ -71,6 +72,7 @@ export const transformDeposits = (
         : null,
       txId: tx.txID,
       asset: tx.assetName || '',
+      assetType: tx.assetType,
       value: tx.value,
       uniqueId: null, // not needed
       isWithdrawal: false,
@@ -99,6 +101,7 @@ export const transformDeposit = (tx: Deposit): MergedTransaction => {
       : null,
     txId: tx.txID,
     asset: tx.assetName || '',
+    assetType: tx.assetType,
     value: tx.value,
     uniqueId: null, // not needed
     isWithdrawal: false,
@@ -132,6 +135,7 @@ export const transformWithdrawal = (
     resolvedAt: null,
     txId: tx.l2TxHash || 'l2-tx-hash-not-found',
     asset: tx.symbol || '',
+    assetType: tx.type,
     value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
     uniqueId: uniqueIdOrHash,
     isWithdrawal: true,
@@ -164,6 +168,7 @@ export const transformWithdrawals = (
       resolvedAt: null,
       txId: tx.l2TxHash || 'l2-tx-hash-not-found',
       asset: tx.symbol || '',
+      assetType: tx.type,
       value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
       uniqueId: uniqueIdOrHash,
       isWithdrawal: true,

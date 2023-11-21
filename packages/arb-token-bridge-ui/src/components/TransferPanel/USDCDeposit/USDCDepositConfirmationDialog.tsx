@@ -63,7 +63,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
       to: to.id,
       fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.Goerli.USDC
-        : CommonAddress.Mainnet.USDC,
+        : CommonAddress.Ethereum.USDC,
       toTokenAddress: isArbitrumGoerli
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,

@@ -6,7 +6,6 @@ import dayjs from 'dayjs'
 import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getNetworkName } from '../../util/networks'
-import { useCallback } from 'react'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 
@@ -62,13 +61,6 @@ export const NewTransactionHistory = () => {
     paused
   } = useCompleteMultiChainTransactions()
 
-  const getTokenSymbol = useCallback((tx: MergedTransaction) => {
-    return sanitizeTokenSymbol(tx.asset, {
-      erc20L1Address: tx.tokenAddress,
-      chain: getWagmiChain(tx.parentChainId)
-    })
-  }, [])
-
   if (loading || transactions.length === 0) {
     return <div className="text-white">Fetching transactions...</div>
   }
@@ -90,11 +82,15 @@ export const NewTransactionHistory = () => {
           <th />
         </thead>
         <tbody>
-          {transactions.map((tx, index) => (
-            <tr key={index}>
+          {transactions.map(tx => (
+            <tr key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}>
               <td>{getRelativeTime(tx)}</td>
               <td>
-                {tx.value} {getTokenSymbol(tx)}
+                {tx.value}{' '}
+                {sanitizeTokenSymbol(tx.asset, {
+                  erc20L1Address: tx.tokenAddress,
+                  chain: getWagmiChain(tx.parentChainId)
+                })}
               </td>
               <td>{getNetworkName(getSourceChainId(tx))}</td>
               <td>{getNetworkName(getDestChainId(tx))}</td>
