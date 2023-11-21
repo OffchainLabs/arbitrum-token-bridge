@@ -8,10 +8,10 @@ const chainQueryParams = [
   'ethereum',
   'goerli',
   'sepolia',
-  'arbitrumOne',
-  'arbitrumNova',
-  'arbitrumGoerli',
-  'arbitrumSepolia',
+  'arbitrum-one',
+  'arbitrum-nova',
+  'arbitrum-goerli',
+  'arbitrum-sepolia',
   'stylus-testnet',
   'xai-testnet'
 ] as const
@@ -33,13 +33,13 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'goerli'
 
     case ChainId.ArbitrumOne:
-      return 'arbitrumOne'
+      return 'arbitrum-one'
 
     case ChainId.ArbitrumNova:
-      return 'arbitrumNova'
+      return 'arbitrum-nova'
 
     case ChainId.ArbitrumGoerli:
-      return 'arbitrumGoerli'
+      return 'arbitrum-goerli'
 
     case ChainId.StylusTestnet:
       return 'stylus-testnet'
@@ -51,7 +51,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'sepolia'
 
     case ChainId.ArbitrumSepolia:
-      return 'arbitrumSepolia'
+      return 'arbitrum-sepolia'
 
     default:
       throw new Error(
@@ -71,16 +71,16 @@ export function getChainForChainQueryParam(value: ChainQueryParam): Chain {
     case 'sepolia':
       return chains.sepolia
 
-    case 'arbitrumOne':
+    case 'arbitrum-one':
       return chains.arbitrum
 
-    case 'arbitrumNova':
+    case 'arbitrum-nova':
       return customChains.arbitrumNova
 
-    case 'arbitrumGoerli':
+    case 'arbitrum-goerli':
       return chains.arbitrumGoerli
 
-    case 'arbitrumSepolia':
+    case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
 
     case 'stylus-testnet':

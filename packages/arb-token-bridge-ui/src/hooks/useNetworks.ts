@@ -60,7 +60,7 @@ export function sanitizeQueryParams({
 } {
   // when both `from` and `to` are undefined, default to Ethereum and Arbitrum One
   if (typeof from === 'undefined' && typeof to === 'undefined') {
-    return { from: 'ethereum', to: 'arbitrumOne' }
+    return { from: 'ethereum', to: 'arbitrum-one' }
   }
 
   // only `from` is undefined

@@ -33,13 +33,13 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
       return [mainnet]
 
     case ChainId.ArbitrumGoerli:
-      return [goerli, xaiTestnet, stylusTestnet]
+      return [goerli, xaiTestnet]
 
     case ChainId.ArbitrumSepolia:
-      return [sepolia]
+      return [sepolia, stylusTestnet]
 
     case ChainId.StylusTestnet:
-      return [arbitrumGoerli]
+      return [arbitrumSepolia]
 
     case ChainId.XaiTestnet:
       return [arbitrumGoerli]
