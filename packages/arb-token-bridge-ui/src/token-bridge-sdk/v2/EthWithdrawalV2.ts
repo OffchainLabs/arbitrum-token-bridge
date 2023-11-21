@@ -23,7 +23,8 @@ export class EthWithdrawalStarterV2 extends BridgeTransferStarterV2 {
         sourceChainProvider,
         destinationChainProvider,
         connectedSigner,
-        isSmartContractWallet
+        isSmartContractWallet,
+        nativeCurrency
       } = this
 
       const sourceChainNetwork = await sourceChainProvider.getNetwork()
@@ -84,7 +85,7 @@ export class EthWithdrawalStarterV2 extends BridgeTransferStarterV2 {
       const oldBridgeCompatibleTxObjToBeRemovedLater = {
         type: 'withdraw',
         status: 'pending',
-        value: utils.formatEther(amount),
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,

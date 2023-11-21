@@ -1156,9 +1156,30 @@ export function TransferPanel() {
   const [bridgeTransferStarterV2, setBridgeTransferStarterV2] =
     useState<BridgeTransferStarterV2>()
 
-  useEffect(() => {
-    const updateBridgeTransferStarter = async () => {
-      const bridgeState = {
+  // composite key of all Bridge-state dependencies that can be compared quickly by memo function
+  // and gets rid of objects that can change in reference (like providers)
+  const _bridgeStateKey = JSON.stringify([
+    amountBigNumber,
+    destinationAddress,
+    erc20L1Balances,
+    erc20L2Balances,
+    ethL1Balance,
+    ethL2Balance,
+    isDepositMode,
+    isSmartContractWallet,
+    walletAddress,
+    l1Network.id,
+    l2Network.id,
+    nativeCurrency,
+    selectedToken
+  ])
+
+  const BRIDGE_STATE = useMemo(
+    // All the information we need to replicate the state of the UI
+    // Initialize the bridge-sdk using this state
+    () => {
+      console.log('BRIDGE STATE CHANGED!')
+      return {
         amount: amountBigNumber,
         isSmartContractWallet,
         destinationAddress,
@@ -1180,30 +1201,21 @@ export function TransferPanel() {
             : erc20L2Balances?.[selectedToken.address.toLowerCase()] ?? null
           : null
       }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [_bridgeStateKey]
+  )
 
+  useEffect(() => {
+    // Reinitialize the bridge-sdk everytime there is a change in the bridge state
+    const updateBridgeTransferStarter = async () => {
       const bridgeTransferStarter = await BridgeTransferStarterFactoryV2.init(
-        bridgeState
+        BRIDGE_STATE
       )
-
       setBridgeTransferStarterV2(bridgeTransferStarter)
     }
-
     updateBridgeTransferStarter()
-  }, [
-    amountBigNumber,
-    destinationAddress,
-    erc20L1Balances,
-    erc20L2Balances,
-    ethL1Balance,
-    ethL2Balance,
-    isDepositMode,
-    isSmartContractWallet,
-    signer,
-    l1Provider,
-    l2Provider,
-    nativeCurrency,
-    selectedToken
-  ])
+  }, [BRIDGE_STATE])
 
   const customFeeTokenApproval = async () => {
     const waitForInput = openCustomFeeTokenApprovalDialog()
@@ -1284,20 +1296,22 @@ export function TransferPanel() {
     return confirmed
   }
 
+  // SDK should not care about UI confirmations or popups, so in SDK we expose callbacks
+  // If provided, the SDK will call these functions before proceeding to next steps
   const externalCallbacks = {
     customFeeTokenApproval,
     canonicalBridgeDepositConfirmation,
     tokenAllowanceApproval,
     showDelayInSmartContractTransaction,
     firstTimeTokenBridgingConfirmation,
-
     confirmUsdcDepositFromNormalOrCctpBridge,
     confirmUsdcWithdrawalForCctp,
     tokenAllowanceApprovalCctp,
-
     confirmWithdrawal
   }
 
+  // After done with the transfer, here is a consolidate version of the tx lifecycle methods
+  // A bit of cases here, but we can remove them as SDK matures and there is a better way of handling tx tracking in sdk
   const commonTxLifecycle: TransferProps['txLifecycle'] = {
     onTxSubmit: ({ tx, oldBridgeCompatibleTxObjToBeRemovedLater }) => {
       if (
@@ -1359,6 +1373,7 @@ export function TransferPanel() {
     }
   }
 
+  // Final transfer function, just call this on the press of the Move button :)
   const transferV2 = async () => {
     try {
       if (!bridgeTransferStarterV2) throw Error('Starter not initialized yet!')

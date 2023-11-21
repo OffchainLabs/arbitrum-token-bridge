@@ -94,7 +94,7 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
       const oldBridgeCompatibleTxObjToBeRemovedLater = {
         type: 'deposit-l1',
         status: 'pending',
-        value: utils.formatEther(amount),
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
         txID: tx.hash,
         assetName: 'ETH',
         assetType: AssetType.ETH,

@@ -15,6 +15,7 @@ import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { checkValidDestinationAddress } from './core/checkValidDestinationAddress'
+import { utils } from 'ethers'
 
 export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
@@ -155,7 +156,7 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
         resolvedAt: null,
         status: 'pending',
         uniqueId: null,
-        value: amount.toString(),
+        value: utils.formatUnits(amount, selectedToken.decimals),
         depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
         destination: recipient,
         sender: address,
