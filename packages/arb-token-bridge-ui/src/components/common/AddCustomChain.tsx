@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import { addCustomChain } from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { constants } from 'ethers'
 import { z } from 'zod'
 
 import {
@@ -13,9 +15,13 @@ import {
   getNetworkName,
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
-  supportedCustomOrbitParentChains
+  supportedCustomOrbitParentChains,
+  rpcURLs
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
+import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
+
+const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 
 type Contracts = {
   customGateway: string
@@ -40,6 +46,7 @@ type OrbitConfig = {
     parentChainId: number
     rpcUrl: string
     explorerUrl: string
+    nativeToken?: string
   }
   coreContracts: {
     rollup: string
@@ -105,7 +112,8 @@ const ZodOrbitConfig = z.object({
     chainId: zChainId,
     parentChainId: zParentChainId,
     rpcUrl: z.string().url(),
-    explorerUrl: z.string().url()
+    explorerUrl: z.string().url(),
+    nativeToken: zAddress.optional()
   }),
   coreContracts: z.object({
     rollup: zAddress,
@@ -122,6 +130,39 @@ const ZodOrbitConfig = z.object({
     l3Contracts: zContract
   })
 })
+
+function getOrbitConfigsFromLocalStorage(): OrbitConfig[] {
+  const configs = localStorage.getItem(orbitConfigsLocalStorageKey)
+
+  if (!configs) {
+    return []
+  }
+
+  return JSON.parse(configs)
+}
+
+function getOrbitConfigFromLocalStorageById(
+  chainId: ChainId
+): OrbitConfig | undefined {
+  const configs = getOrbitConfigsFromLocalStorage()
+  return configs.find(config => config.chainInfo.chainId === chainId)
+}
+
+function removeOrbitConfigFromLocalStorage(chainId: ChainId) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  const newConfigs = configs.filter(
+    config => config.chainInfo.chainId !== chainId
+  )
+  localStorage.setItem(orbitConfigsLocalStorageKey, JSON.stringify(newConfigs))
+}
+
+function saveOrbitConfigToLocalStorage(data: OrbitConfig) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  localStorage.setItem(
+    orbitConfigsLocalStorageKey,
+    JSON.stringify([...configs, data])
+  )
+}
 
 function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   return {
@@ -143,6 +184,7 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 900000,
+    nativeToken: data.chainInfo.nativeToken,
     isArbitrum: true,
     tokenBridge: {
       l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
@@ -163,6 +205,28 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   }
 }
 
+async function fetchNativeToken(
+  data: OrbitConfig
+): Promise<
+  | { nativeToken: undefined; nativeTokenData: undefined }
+  | { nativeToken: string; nativeTokenData: Erc20Data }
+> {
+  const nativeToken = data.chainInfo.nativeToken
+  const nativeTokenIsEther =
+    typeof nativeToken === 'undefined' || nativeToken === constants.AddressZero
+
+  if (nativeTokenIsEther) {
+    return { nativeToken: undefined, nativeTokenData: undefined }
+  }
+
+  const nativeTokenData = await fetchErc20Data({
+    address: nativeToken,
+    provider: new StaticJsonRpcProvider(rpcURLs[data.chainInfo.parentChainId])
+  })
+
+  return { nativeToken, nativeTokenData }
+}
+
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -170,7 +234,7 @@ export const AddCustomChain = () => {
 
   const customChains = getCustomChainsFromLocalStorage()
 
-  function onAddChain() {
+  async function onAddChain() {
     setAddingChain(true)
     setError(null)
 
@@ -187,11 +251,12 @@ export const AddCustomChain = () => {
       ZodOrbitConfig.parse(data)
 
       const customChain = mapOrbitConfigToOrbitChain(data)
+      const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
       addCustomChain({ customChain })
-
-      saveCustomChainToLocalStorage(customChain)
+      saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
+      saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
@@ -279,6 +344,9 @@ export const AddCustomChain = () => {
                             removeCustomChainFromLocalStorage(
                               customChain.chainID
                             )
+                            removeOrbitConfigFromLocalStorage(
+                              customChain.chainID
+                            )
                             // reload to apply changes
                             location.reload()
                           }}
@@ -288,7 +356,11 @@ export const AddCustomChain = () => {
                         <a
                           className="rounded p-4 text-left hover:bg-gray-3"
                           href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                            JSON.stringify(customChain)
+                            JSON.stringify(
+                              getOrbitConfigFromLocalStorageById(
+                                customChain.chainID
+                              )
+                            )
                           )}`}
                           download={`${customChain.name
                             .split(' ')

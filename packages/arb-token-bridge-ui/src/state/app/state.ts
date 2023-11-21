@@ -17,6 +17,7 @@ import {
 
 import {
   ArbTokenBridge,
+  AssetType,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatus
@@ -66,6 +67,7 @@ export interface MergedTransaction {
   resolvedAt: number | null
   txId: string
   asset: string
+  assetType: AssetType
   value: string | null
   uniqueId: BigNumber | null
   isWithdrawal: boolean
@@ -79,11 +81,11 @@ export interface MergedTransaction {
   chainId: number
   parentChainId: number
   cctpData?: {
-    sourceChainId: CCTPSupportedChainId
-    attestationHash: `0x${string}` | null
-    messageBytes: string | null
-    receiveMessageTransactionHash: `0x${string}` | null
-    receiveMessageTimestamp: number | null
+    sourceChainId?: CCTPSupportedChainId
+    attestationHash?: `0x${string}` | null
+    messageBytes?: string | null
+    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTimestamp?: number | null
   }
 }
 

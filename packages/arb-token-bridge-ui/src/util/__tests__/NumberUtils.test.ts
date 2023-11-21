@@ -14,6 +14,12 @@ describe('formatAmount', () => {
       expect(getResultFromNumber(0)).toBe('0 TOK')
     })
 
+    it('should return < 0.00001 for value < 0.00001', () => {
+      expect(getResultFromNumber(0.00000012)).toBe('< 0.00001 TOK')
+      expect(getResultFromNumber(0.0000012)).toBe('< 0.00001 TOK')
+      expect(getResultFromNumber(0.000009)).toBe('< 0.00001 TOK')
+    })
+
     it('should return the full number with 5 decimals for value lower than 1', () => {
       expect(getResultFromBigNumber('30')).toBe('0.00003 TOK')
       expect(getResultFromBigNumber('123456')).toBe('0.12346 TOK')
@@ -85,6 +91,12 @@ describe('formatAmount', () => {
     it('should return 0 for value = 0', () => {
       expect(getResultFromBigNumber('0')).toBe('0 LONGTOKEN')
       expect(getResultFromNumber(0)).toBe('0 LONGTOKEN')
+    })
+
+    it('should return < 0.0001 for value < 0.0001', () => {
+      expect(getResultFromNumber(0.0000012)).toBe('< 0.0001 LONGTOKEN')
+      expect(getResultFromNumber(0.000012)).toBe('< 0.0001 LONGTOKEN')
+      expect(getResultFromNumber(0.00009)).toBe('< 0.0001 LONGTOKEN')
     })
 
     it('should return the full number with 4 decimals for value lower than 1', () => {

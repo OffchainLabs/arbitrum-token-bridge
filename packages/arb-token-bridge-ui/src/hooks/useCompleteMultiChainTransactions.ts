@@ -71,7 +71,7 @@ function sortByTimestampDescending(
 
 const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
-    parentChain: ChainId.Mainnet,
+    parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
   },
   {
@@ -211,29 +211,22 @@ const useTransactionListByDirection = (
   )
 
   useEffect(() => {
-    if (data) {
+    const fetchedSomeData = data && data.some(item => item.length > 0)
+    if (fetchedSomeData) {
       // include the new data with the previously fetched data
       // the data is grouped by chain pairs
-      setTransactions(prevTransactions =>
-        data.map((transactionsForChainPair, chainPairIndex) => [
+      setTransactions(prevTransactions => {
+        return data.map((transactionsForChainPair, chainPairIndex) => [
           ...(prevTransactions[chainPairIndex] ?? []),
           ...(transactionsForChainPair ?? [])
         ])
-      )
-
-      // if there is not a single full page in any of the data fetched, then there is no more to fetch
-      const shouldFetchNextPage = data.some((_, chainPairIndex) =>
-        shouldFetchNextPageForChainPair(chainPairIndex)
-      )
-
-      if (!shouldFetchNextPage) {
-        setLoading(false)
-        return
-      }
+      })
 
       setPage(prevPage => prevPage + 1)
+    } else {
+      setLoading(false)
     }
-  }, [data, shouldFetchNextPageForChainPair])
+  }, [data])
 
   return {
     data: transactions.flat(),
@@ -283,15 +276,15 @@ export const useCompleteMultiChainTransactions = () => {
   const { address } = useAccount()
 
   const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading ? ['complete_tx_list', address, page] : null,
-    ([, , _page]) => {
+    address && !loading ? ['complete_tx_list', address, page, data] : null,
+    ([, , _page, _data]) => {
       // TODO: Need to allow more than MAX_BATCH_SIZE if they are for diff chain pairs
       // MAX_BATCH_SIZE refers to the same chain pair only
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(transformTransaction)
+        _data.slice(startIndex, endIndex).map(transformTransaction)
       )
     }
   )

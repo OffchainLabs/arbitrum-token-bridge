@@ -22,11 +22,11 @@ type Contracts = {
 }
 
 const contracts: Record<CCTPSupportedChainId, Contracts> = {
-  [ChainId.Mainnet]: {
+  [ChainId.Ethereum]: {
     tokenMessengerContractAddress: '0xbd3fa81b58ba92a82136038b25adec7066af3155',
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumOne,
-    usdcContractAddress: CommonAddress.Mainnet.USDC,
+    usdcContractAddress: CommonAddress.Ethereum.USDC,
     messageTransmitterContractAddress:
       '0xc30362313fbba5cf9163f0bb16a0e01f01a896ca',
     attestationApiUrl: 'https://iris-api.circle.com/v1',
@@ -44,8 +44,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
   },
   [ChainId.ArbitrumOne]: {
     tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
-    targetChainDomain: ChainDomain.Mainnet,
-    targetChainId: ChainId.Mainnet,
+    targetChainDomain: ChainDomain.Ethereum,
+    targetChainId: ChainId.Ethereum,
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
     messageTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
@@ -54,7 +54,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
   },
   [ChainId.ArbitrumGoerli]: {
     tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
-    targetChainDomain: ChainDomain.Mainnet,
+    targetChainDomain: ChainDomain.Ethereum,
     targetChainId: ChainId.Goerli,
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
     messageTransmitterContractAddress:
@@ -76,10 +76,10 @@ export type AttestationResponse =
 
 export function getContracts(chainId: ChainId | undefined) {
   if (!chainId) {
-    return contracts[ChainId.Mainnet]
+    return contracts[ChainId.Ethereum]
   }
   return (
-    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Mainnet]
+    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Ethereum]
   )
 }
 
