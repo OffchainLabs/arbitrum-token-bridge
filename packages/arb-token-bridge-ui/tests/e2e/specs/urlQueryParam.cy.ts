@@ -214,6 +214,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: 'asdfs', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(8000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })
   })
@@ -239,6 +242,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: '0.0001', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(8000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
     })
   })
@@ -250,6 +256,9 @@ describe('User enters site with query params on URL', () => {
         query: { amount: '123,3,43', ...defaultQueryParams }
       })
 
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(8000)
+
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })
   })
@@ -260,6 +269,9 @@ describe('User enters site with query params on URL', () => {
         networkType: 'L1',
         query: { amount: '0, 123.222, 0.3', ...defaultQueryParams }
       })
+
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(8000)
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })

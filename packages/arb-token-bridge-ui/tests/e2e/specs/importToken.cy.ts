@@ -4,7 +4,8 @@ import {
   ERC20TokenName,
   ERC20TokenSymbol,
   importTokenThroughUI,
-  getL2NetworkConfig
+  getL2NetworkConfig,
+  getL1NetworkConfig
 } from '../../support/common'
 
 const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
@@ -249,9 +250,12 @@ describe('Import token', () => {
           query: {
             token: invalidTokenAddress,
             l2ChainId: getL2NetworkConfig().chainId,
-            walletConnectChain: 'custom-localhost'
+            walletConnectChain: getL1NetworkConfig().networkName
           }
         })
+
+        // arbitrary wait because ci is unstable when page refresh might happen
+        cy.wait(8000)
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
