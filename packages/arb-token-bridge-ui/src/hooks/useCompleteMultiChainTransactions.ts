@@ -75,7 +75,7 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
     chain: ChainId.ArbitrumOne
   },
   {
-    parentChain: ChainId.Mainnet,
+    parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumNova
   },
   // Testnet

@@ -102,10 +102,11 @@ export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
 
 function getTxDurationInMinutes(tx: MergedTransaction) {
   const { parentChainId } = tx
-  const { isEthereum, isMainnet, isTestnet } = isNetwork(parentChainId)
+  const { isEthereumMainnet, isEthereumMainnetOrTestnet, isTestnet } =
+    isNetwork(parentChainId)
 
   if (isDeposit(tx)) {
-    if (!isEthereum) {
+    if (!isEthereumMainnetOrTestnet) {
       return 1
     }
 
@@ -115,7 +116,7 @@ function getTxDurationInMinutes(tx: MergedTransaction) {
   // Withdrawals
   const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
-  if (isMainnet) {
+  if (isEthereumMainnet) {
     return SEVEN_DAYS_IN_MINUTES
   }
 
