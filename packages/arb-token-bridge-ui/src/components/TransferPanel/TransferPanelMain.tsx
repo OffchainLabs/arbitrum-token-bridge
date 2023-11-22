@@ -816,17 +816,79 @@ export function TransferPanelMain({
     }
 
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
+      const isFromOrbitChain = isNetwork(from.id).isOrbitChain
+      const isToOrbitChain = isNetwork(to.id).isOrbitChain
+      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
+
       // Add L1 network to the list
       return [l1.network, ...options].filter(option => {
+        const isSourceChainList = direction === 'from'
+        const isDestinationChainList = direction === 'to'
+        const isSameAsSourceChain = option.id === from.id
+        const isSameAsDestinationChain = option.id === to.id
+        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+          option.id
+        )
         // Remove the origin network from the destination list for contract wallets
         // It's done so that the origin network is not changed
         if (
           isSmartContractWallet &&
-          direction === 'to' &&
-          option.id === from.id
+          isDestinationChainList &&
+          isSameAsSourceChain
         ) {
           return false
         }
+
+        // If this is the Source network list options
+        // and the selected source is an Arbitrum Base chain
+        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isSourceChainList &&
+          isOrbitChain &&
+          !isSameAsDestinationChain
+        ) {
+          return false
+        }
+
+        // If this is the Destination network list options
+        // and the selected destination is an Arbitrum chain
+        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isDestinationChainList &&
+          isOrbitChain &&
+          !isSameAsSourceChain
+        ) {
+          return false
+        }
+
+        // If the source chain is an Orbit Chain,
+        // and this is the Destination network list options
+        if (isFromOrbitChain && isDestinationChainList) {
+          // we do not show Ethereum Mainnet or Testnet as options
+          if (isEthereumMainnetOrTestnet) {
+            return false
+          }
+          // we do not show other Orbit chains as options
+          if (isOrbitChain && !isSameAsSourceChain) {
+            return false
+          }
+        }
+
+        // If the destination chain is an Orbit Chain,
+        // and this is the Source network list options
+        if (isToOrbitChain && isSourceChainList) {
+          // we do not show Ethereum Mainnet or Testnet as options
+          if (isEthereumMainnetOrTestnet) {
+            return false
+          }
+          // we do not show other Orbit chains as options
+          if (isOrbitChain && !isSameAsDestinationChain) {
+            return false
+          }
+        }
+
         // Remove selected network from the list
         return option.id !== selectedChainId
       })
