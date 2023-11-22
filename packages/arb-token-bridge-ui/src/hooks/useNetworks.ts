@@ -143,7 +143,6 @@ export function sanitizeQueryParams({
     }
   }
 
-  // both values are defined
   if (
     !isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
@@ -165,6 +164,18 @@ export function sanitizeQueryParams({
 
   if (!isSupportedChainId(destinationChainId)) {
     // Set destinationChainId according to sourceChainId
+    const [defaultDestinationChainId] = getPartnerChainsQueryParams(
+      sourceChainId!
+    )
+    return {
+      sourceChainId: sourceChainId!,
+      destinationChainId: defaultDestinationChainId!
+    }
+  }
+
+  if (
+    !getPartnerChainsQueryParams(sourceChainId!).includes(destinationChainId!)
+  ) {
     const [defaultDestinationChainId] = getPartnerChainsQueryParams(
       sourceChainId!
     )
