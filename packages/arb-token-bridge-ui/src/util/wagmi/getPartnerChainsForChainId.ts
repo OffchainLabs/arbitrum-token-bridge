@@ -7,16 +7,25 @@ import {
   arbitrumGoerli
 } from 'wagmi/chains'
 
-import { ChainId } from '../../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../networks'
 import {
   arbitrumNova,
   arbitrumSepolia,
+  chainToWagmiChain,
   stylusTestnet,
   xaiTestnet
 } from './wagmiAdditionalNetworks'
 
-export function getPartnerChainsForChain(chain: Chain): Chain[] {
-  switch (chain.id) {
+const customWagmiChains = getCustomChainsFromLocalStorage()
+const customArbitrumGoerliChains = customWagmiChains
+  .filter(chain => chain.partnerChainID === ChainId.ArbitrumGoerli)
+  .map(chain => chainToWagmiChain(chain))
+const customArbitrumSepoliaChains = customWagmiChains
+  .filter(chain => chain.partnerChainID === ChainId.ArbitrumSepolia)
+  .map(chain => chainToWagmiChain(chain))
+
+export function getPartnerChainsForChainId(chainId: number): Chain[] {
+  switch (chainId) {
     case ChainId.Ethereum:
       return [arbitrumOne, arbitrumNova]
 
@@ -33,10 +42,10 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
       return [mainnet]
 
     case ChainId.ArbitrumGoerli:
-      return [goerli, xaiTestnet]
+      return [goerli, xaiTestnet, ...customArbitrumGoerliChains]
 
     case ChainId.ArbitrumSepolia:
-      return [sepolia, stylusTestnet]
+      return [sepolia, stylusTestnet, ...customArbitrumSepoliaChains]
 
     case ChainId.StylusTestnet:
       return [arbitrumSepolia]
@@ -46,7 +55,7 @@ export function getPartnerChainsForChain(chain: Chain): Chain[] {
 
     default:
       throw new Error(
-        `[getPartnerChainsForChain] Unexpected chain id: ${chain.id}`
+        `[getPartnerChainsForChain] Unexpected chain id: ${chainId}`
       )
   }
 }
