@@ -4,7 +4,11 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import { ChainId, rpcURLs } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  rpcURLs
+} from '../util/networks'
 import {
   sepolia,
   arbitrumNova,
@@ -41,6 +45,9 @@ function getChainByChainId(chainId: ChainId): Chain {
   return chain ?? mainnet
 }
 
+const customChainIds = getCustomChainsFromLocalStorage().map(
+  chain => chain.chainID
+)
 function isSupportedChainId(chainId: ChainId | undefined): boolean {
   if (!chainId) {
     return false
@@ -57,7 +64,8 @@ function isSupportedChainId(chainId: ChainId | undefined): boolean {
     stylusTestnet.id,
     xaiTestnet.id,
     arbitrumLocal.id,
-    local.id
+    local.id,
+    ...customChainIds
   ].includes(chainId)
 }
 
