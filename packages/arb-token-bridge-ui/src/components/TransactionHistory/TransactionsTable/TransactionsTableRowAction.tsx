@@ -6,7 +6,6 @@ import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
@@ -16,6 +15,8 @@ import { errorToast } from '../../common/atoms/Toast'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../../hooks/useSwitchNetworkWithConfig'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 const GetHelpButton = ({
   variant,
@@ -44,15 +45,13 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const l1NetworkName = getNetworkName(l1Network.id)
-  const l2NetworkName = getNetworkName(l2Network.id)
-  const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
+  const { childChain } = useNetworksRelationship(networks)
+  const networkName = getNetworkName(networks.sourceChain.id)
+  const targetNetworkName = getNetworkName(networks.destinationChain.id)
 
+  // TODO: [1307] - chainId might be different than networks.source/destination
   const chainId = useChainId()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
@@ -61,7 +60,7 @@ export function TransactionsTableRowAction({
   const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(l2Network.id).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -72,7 +71,7 @@ export function TransactionsTableRowAction({
       (type === 'deposits' && isArbitrum) ||
       (type === 'withdrawals' && isEthereumMainnetOrTestnet)
     )
-  }, [isArbitrum, isEthereumMainnetOrTestnet, l2Network.id, type])
+  }, [isArbitrum, isEthereumMainnetOrTestnet, childChain.id, type])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed
@@ -111,9 +110,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            {`Please switch to ${
-              type === 'deposits' ? l2NetworkName : l1NetworkName
-            } to claim your ${type === 'deposits' ? 'deposit' : 'withdrawal'}.`}
+            {`Please switch to ${targetNetworkName} to claim your ${
+              type === 'deposits' ? 'deposit' : 'withdrawal'
+            }.`}
           </span>
         }
       >
@@ -125,9 +124,7 @@ export function TransactionsTableRowAction({
           onClick={async () => {
             try {
               if (!currentChainIsValid) {
-                return switchNetwork?.(
-                  type === 'deposits' ? l2Network.id : l1Network.id
-                )
+                return switchNetwork?.(networks.destinationChain.id)
               }
               if (tx.isCctp) {
                 return await claimCctp()
