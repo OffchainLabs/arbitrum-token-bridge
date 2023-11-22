@@ -103,7 +103,7 @@ export async function depositTokenEstimateGas(
     l2Provider,
     from: address,
     retryableGasOverrides: {
-      gasLimit: { percentIncrease: BigNumber.from(40) }
+      gasLimit: { percentIncrease: BigNumber.from(30) }
     }
   })
 
