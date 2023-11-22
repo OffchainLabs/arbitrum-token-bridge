@@ -20,9 +20,15 @@ const customWagmiChains = getCustomChainsFromLocalStorage()
 const customArbitrumGoerliChains = customWagmiChains
   .filter(chain => chain.partnerChainID === ChainId.ArbitrumGoerli)
   .map(chain => chainToWagmiChain(chain))
+const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(
+  chain => chain.id
+)
 const customArbitrumSepoliaChains = customWagmiChains
   .filter(chain => chain.partnerChainID === ChainId.ArbitrumSepolia)
   .map(chain => chainToWagmiChain(chain))
+const customArbitrumSepoliaChainsIds = customArbitrumGoerliChains.map(
+  chain => chain.id
+)
 
 export function getPartnerChainsForChainId(chainId: number): Chain[] {
   switch (chainId) {
@@ -54,6 +60,14 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumGoerli]
 
     default:
+      // Orbit chains
+      if (customArbitrumGoerliChainsIds.includes(chainId)) {
+        return [arbitrumGoerli]
+      }
+
+      if (customArbitrumSepoliaChainsIds.includes(chainId)) {
+        return [arbitrumSepolia]
+      }
       throw new Error(
         `[getPartnerChainsForChain] Unexpected chain id: ${chainId}`
       )
