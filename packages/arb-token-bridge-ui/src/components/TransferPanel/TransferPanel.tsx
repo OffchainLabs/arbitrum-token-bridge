@@ -1378,6 +1378,74 @@ export function TransferPanel() {
     try {
       if (!bridgeTransferStarterV2) throw Error('Starter not initialized yet!')
       setTransferring(true)
+
+      const {
+        amount,
+        isSmartContractWallet,
+        destinationAddress,
+        sourceChainProvider,
+        destinationChainProvider,
+        connectedSigner,
+        nativeCurrency,
+        nativeCurrencyBalance,
+        selectedToken,
+        selectedTokenBalance
+      } = BRIDGE_STATE
+
+      const sourceChainNetwork = await sourceChainProvider.getNetwork()
+      const sourceChainId = sourceChainNetwork.chainId
+
+      const destinationChainNetwork =
+        await destinationChainProvider.getNetwork()
+      const destinationChainId = destinationChainNetwork.chainId
+
+      /*
+
+      ----------------------------------------
+      INPUT VALIDATION PHASE
+      ----------------------------------------
+
+      */
+
+      const address = await connectedSigner?.getAddress()
+      if (!connectedSigner || !address) throw 'Signer is not connected'
+
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet
+      })
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
+      /*
+
+      ----------------------------------------
+      NATIVE CURRENCY REQUIRES APPROVAL?
+      ----------------------------------------
+
+      */
+
+      const requiresNativeCurrencyApproval =
+        await bridgeTransferStarterV2.requiresNativeCurrencyApproval({
+          address,
+          amount,
+          sourceChainProvider,
+          destinationChainProvider,
+          nativeCurrency
+        })
+
+      if (requiresNativeCurrencyApproval) {
+        if (await customFeeTokenApproval()) {
+          // show custom fee token approval popup
+          await bridgeTransferStarterV2.approveNativeCurrency({
+            connectedSigner,
+            destinationChainProvider
+          })
+        }
+      }
+
       const brigeTransferV2Result = await bridgeTransferStarterV2.transfer({
         externalCallbacks,
         txLifecycle: commonTxLifecycle

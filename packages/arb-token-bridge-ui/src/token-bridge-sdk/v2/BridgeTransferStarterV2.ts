@@ -4,6 +4,8 @@ import { NativeCurrency } from '../../hooks/useNativeCurrency'
 import { NewTransaction } from '../../hooks/useTransactions'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../state/app/state'
+import { RequiresNativeCurrencyApprovalProps } from './core/requiresNativeCurrencyApproval'
+import { ApproveNativeCurrencyProps } from './core/approveNativeCurrency'
 
 export type SelectedToken = ERC20BridgeToken & {
   sourceChainErc20ContractAddress: string
@@ -123,6 +125,14 @@ export abstract class BridgeTransferStarterV2 {
     this.selectedToken = props.selectedToken
     this.selectedTokenBalance = props.selectedTokenBalance
   }
+
+  public abstract requiresNativeCurrencyApproval(
+    props: RequiresNativeCurrencyApprovalProps
+  ): Promise<boolean>
+
+  public abstract approveNativeCurrency(
+    props: ApproveNativeCurrencyProps
+  ): Promise<void>
 
   public abstract transfer(
     props: TransferProps

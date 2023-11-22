@@ -4,7 +4,7 @@ import {
   BridgeTransferStarterV2Props,
   TransferProps
 } from './BridgeTransferStarterV2'
-import { approveCustomFeeTokenForInbox } from './core/approveCustomFeeTokenForInbox'
+import { approveCustomFeeTokenForInbox } from './core/approveNativeCurrency'
 import { utils } from 'ethers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NewTransaction } from '../../hooks/useTransactions'

@@ -4,90 +4,65 @@ import {
   BridgeTransferStarterV2Props,
   TransferProps
 } from './BridgeTransferStarterV2'
-import { approveCustomFeeTokenForInbox } from './core/approveCustomFeeTokenForInbox'
 import { utils } from 'ethers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NewTransaction } from '../../hooks/useTransactions'
 import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForDepositOrWithdrawal'
 import { checkValidDestinationAddress } from './core/checkValidDestinationAddress'
 
+import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
+import { approveNativeCurrency } from './core/approveNativeCurrency'
+import { getChainIdFromProvider } from './core/getChainIdFromProvider'
+
 export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
   constructor(props: BridgeTransferStarterV2Props) {
     super(props)
   }
 
-  public async transfer({ externalCallbacks, txLifecycle }: TransferProps) {
+  public requiresNativeCurrencyApproval = requiresNativeCurrencyApproval
+
+  public approveNativeCurrency = approveNativeCurrency
+
+  public async transfer({
+    amount,
+    destinationAddress,
+    sourceChainProvider,
+    destinationChainProvider,
+    connectedSigner,
+    nativeCurrency,
+    isSmartContractWallet,
+    txLifecycle
+  }) {
     try {
-      const {
-        amount,
-        destinationAddress,
-        sourceChainProvider,
-        destinationChainProvider,
-        connectedSigner,
-        nativeCurrency,
-        isSmartContractWallet
-      } = this
+      const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
 
-      const sourceChainNetwork = await sourceChainProvider.getNetwork()
-      const sourceChainId = sourceChainNetwork.chainId
+      const destinationChainId = await getChainIdFromProvider(
+        destinationChainProvider
+      )
 
-      const destinationChainNetwork =
-        await destinationChainProvider.getNetwork()
-      const destinationChainId = destinationChainNetwork.chainId
-
-      // todo: removed code for switchNetworkAndTransfer + analytics, but now since the classes are pure (dont allow cross chain switching) we can ignore that?
-      // it also had some analytics code related to that
-      // todo: on bridge UI - actually switch the network when users press the round switch button, so that users are always connected to the correct FROM network
-
-      if (!connectedSigner) throw Error('Signer not connected!')
-
-      // check if the signer connected is a valid signer
-      const isValidDepositChain =
-        await checkSignerIsValidForDepositOrWithdrawal({
-          connectedSigner,
-          destinationChainId,
-          transferType: 'deposit'
-        })
-      if (!isValidDepositChain)
-        throw Error(
-          'Connected signer is not valid for deposits. Please connect to valid network.'
-        )
-
-      // validate the destination address, else throw error
-      await checkValidDestinationAddress({
-        destinationAddress,
-        isSmartContractWallet
-      })
+      const address = await connectedSigner.getAddress()
 
       if (isSmartContractWallet) {
         throw Error("ETH transfers aren't enabled for smart contract wallets.")
       }
 
-      const address = await connectedSigner.getAddress()
-
-      // approve custom native currency token if applicable
-      if (nativeCurrency.isCustom) {
-        const customFeeTokenApproval = await approveCustomFeeTokenForInbox({
-          address,
-          amount,
-          l1Signer: connectedSigner,
-          l1Provider: sourceChainProvider,
-          l2Provider: destinationChainProvider,
-          nativeCurrency,
-          customFeeTokenApproval: externalCallbacks['customFeeTokenApproval']
-        })
-
-        if (!customFeeTokenApproval) {
-          throw Error('Custom fee token not approved')
-        }
-      }
-
       const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
-
       const tx = await ethBridger.deposit({
         amount,
         l1Signer: connectedSigner
       })
+
+      return {
+        type: 'eth_deposit',
+        status: 'pending',
+        sourceChain: {
+          provider: sourceChainProvider,
+          tx
+        },
+        destination: {
+          provider: destinationChainProvider
+        }
+      }
 
       // todo: Make the callbacks better
       // make the callback return a unified BridgeTransfer object and make it track/poll status on it's own
