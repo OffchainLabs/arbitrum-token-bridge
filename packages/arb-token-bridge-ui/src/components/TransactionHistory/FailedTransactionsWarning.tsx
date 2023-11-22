@@ -7,7 +7,8 @@
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { GET_HELP_LINK } from '../../constants'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { MergedTransaction } from '../../state/app/state'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
@@ -18,10 +19,9 @@ export const FailedTransactionsWarning = ({
 }: {
   transactions: MergedTransaction[]
 }) => {
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.id)
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const l2NetworkName = getNetworkName(childChain.id)
 
   const numFailedTransactions = transactions?.length
 
