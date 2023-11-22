@@ -10,7 +10,6 @@ import { useAccount, useNetwork } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
 import { useAppState } from '../../state'
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
@@ -34,6 +33,8 @@ import { MergedTransaction } from '../../state/app/state'
 import dayjs from 'dayjs'
 import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
 import { CustomMessageWarning } from './CustomMessageWarning'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const TransactionHistory = ({
   depositsPageParams,
@@ -59,7 +60,8 @@ export const TransactionHistory = ({
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
   const { chain } = useNetwork()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isSmartContractWallet } = useAccountType()
   const {
     showCctpDepositsTransactions,
@@ -77,8 +79,8 @@ export const TransactionHistory = ({
   const { address } = useAccount()
   const { isLoadingDeposits, depositsError: cctpDepositsError } =
     useCctpFetching({
-      l1ChainId: l1.network.id,
-      l2ChainId: l2.network.id,
+      l1ChainId: parentChain.id,
+      l2ChainId: childChain.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -86,8 +88,8 @@ export const TransactionHistory = ({
     })
   const { isLoadingWithdrawals, withdrawalsError: cctpWithdrawalsError } =
     useCctpFetching({
-      l1ChainId: l1.network.id,
-      l2ChainId: l2.network.id,
+      l1ChainId: parentChain.id,
+      l2ChainId: childChain.id,
       walletAddress: address,
       pageSize: 10,
       pageNumber: 0,
@@ -109,7 +111,7 @@ export const TransactionHistory = ({
     cctpDepositsError ||
     cctpWithdrawalsError
 
-  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+  const isOrbitChainSelected = isNetwork(childChain.id).isOrbitChain
 
   const pendingTransactions = useMemo(() => {
     const pendingCctpTransactions = pendingIdsCctp
@@ -181,7 +183,7 @@ export const TransactionHistory = ({
 
   return (
     <div className="flex flex-col justify-around gap-6">
-      {isNetwork(l2.network.id).isOrbitChain && (
+      {isNetwork(childChain.id).isOrbitChain && (
         <CustomMessageWarning>
           Fetching transaction history details might be slower for Orbit chains.
         </CustomMessageWarning>
@@ -212,14 +214,14 @@ export const TransactionHistory = ({
             >
               {/* Deposits */}
               <Image
-                src={getNetworkLogo(l2.network.id)}
+                src={getNetworkLogo(childChain.id)}
                 className="hidden h-6 w-auto md:block"
                 alt="Deposit"
                 height={24}
                 width={24}
               />
               <span className="text-xs md:text-base">{`To ${getNetworkName(
-                l2.network.id
+                childChain.id
               )}`}</span>
             </TabButton>
             <TabButton
@@ -233,14 +235,14 @@ export const TransactionHistory = ({
             >
               {/* Withdrawals */}
               <Image
-                src={getNetworkLogo(l1.network.id)}
+                src={getNetworkLogo(parentChain.id)}
                 className="hidden h-6 w-auto md:block"
                 alt="Withdraw"
                 width={24}
                 height={24}
               />
               <span className="text-xs md:text-base">{`To ${getNetworkName(
-                l1.network.id
+                parentChain.id
               )}`}</span>
             </TabButton>
             {displayCctp && (

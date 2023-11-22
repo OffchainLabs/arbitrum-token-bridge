@@ -6,7 +6,6 @@ import { isDeposit, isTokenDeposit } from '../../state/app/utils'
 import { motionDivProps } from '../MainContent/MainContent'
 import { DepositCard } from '../TransferPanel/DepositCard'
 import { WithdrawalCard } from '../TransferPanel/WithdrawalCard'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 import { Loader } from '../common/atoms/Loader'
@@ -14,6 +13,8 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { ClaimableCardConfirmed } from '../TransferPanel/ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from '../TransferPanel/ClaimableCardUnconfirmed'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const getOtherL2NetworkChainId = (chainId: number) => {
   if (isNetwork(chainId).isEthereumMainnetOrTestnet) {
@@ -61,13 +62,12 @@ export const PendingTransactions = ({
   loading: boolean
   error: boolean
 }) => {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+
   const { switchNetwork } = useSwitchNetworkWithConfig()
 
-  const bgClassName = isNetwork(l2Network.id).isArbitrumNova
+  const bgClassName = isNetwork(childChain.id).isArbitrumNova
     ? 'bg-gray-dark'
     : 'bg-ocl-blue'
 
@@ -80,18 +80,18 @@ export const PendingTransactions = ({
         <div className="flex flex-nowrap items-center gap-x-3 whitespace-nowrap">
           {loading && <Loader color="white" size="small" />}
           Pending Transactions:{' '}
-          {`${getNetworkName(l2Network.id)}/${getNetworkName(l1Network.id)}`}
+          {`${getNetworkName(childChain.id)}/${getNetworkName(parentChain.id)}`}
         </div>
 
         {/* For mainnets, show the corresponding network to switch - One < > Nova */}
-        {!isNetwork(l2Network.id).isTestnet && (
+        {!isNetwork(childChain.id).isTestnet && (
           <ExternalLink
             className="arb-hover cursor-pointer text-sm text-white underline"
             onClick={() => {
-              switchNetwork?.(getOtherL2NetworkChainId(l2Network.id))
+              switchNetwork?.(getOtherL2NetworkChainId(childChain.id))
             }}
           >{`See ${getNetworkName(
-            getOtherL2NetworkChainId(l2Network.id)
+            getOtherL2NetworkChainId(childChain.id)
           )}`}</ExternalLink>
         )}
       </div>

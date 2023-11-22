@@ -18,6 +18,8 @@ import { MergedTransaction } from '../../../state/app/state'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { getNetworkName } from '../../../util/networks'
 import { useAppContextActions, useAppContextState } from '../../App/AppContext'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export function TransactionsTableCctp() {
   const { address } = useAccount()
@@ -33,7 +35,8 @@ export function TransactionsTableCctp() {
     pageNumber: 0,
     pageSize: 10
   })
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { transfers, depositIds, withdrawalIds } = useCctpState()
   const {
     depositsError,
@@ -41,8 +44,8 @@ export function TransactionsTableCctp() {
     isLoadingDeposits,
     isLoadingWithdrawals
   } = useCctpFetching({
-    l1ChainId: l1.network.id,
-    l2ChainId: l2.network.id,
+    l1ChainId: parentChain.id,
+    l2ChainId: childChain.id,
     walletAddress: address,
     pageSize: pageParams.pageSize,
     pageNumber: pageParams.pageNumber,
@@ -93,18 +96,18 @@ export function TransactionsTableCctp() {
       {
         handleClick: () => showCctpDepositsTransactions(),
         isActive: isTransactionHistoryShowingCctpDeposits,
-        text: `To ${getNetworkName(l2.network.id)}`
+        text: `To ${getNetworkName(childChain.id)}`
       },
       {
         handleClick: () => showCctpWithdrawalsTransactions(),
         isActive: !isTransactionHistoryShowingCctpDeposits,
-        text: `To ${getNetworkName(l1.network.id)}`
+        text: `To ${getNetworkName(parentChain.id)}`
       }
     ]
   }, [
     isTransactionHistoryShowingCctpDeposits,
-    l1.network.id,
-    l2.network.id,
+    childChain.id,
+    parentChain.id,
     showCctpDepositsTransactions,
     showCctpWithdrawalsTransactions
   ])

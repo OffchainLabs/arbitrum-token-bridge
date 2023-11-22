@@ -17,10 +17,11 @@ import { TableBodyLoading } from './TableBodyLoading'
 import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { ExternalLink } from '../../common/ExternalLink'
 import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export type PageParams = {
   searchString: string
@@ -92,7 +93,8 @@ export const CustomAddressTxExplorer = ({
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const isDifferentSenderTx = useMemo(() => {
     if (!tx.sender || !address) {
@@ -117,14 +119,19 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isDifferentSenderTx ? l2.network.id : l1.network.id
+      return isDifferentSenderTx ? childChain.id : parentChain.id
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isDifferentSenderTx ? l1.network.id : l2.network.id
-  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
+    return isDifferentSenderTx ? parentChain.id : childChain.id
+  }, [
+    isDifferentSenderTx,
+    isCustomDestinationTx,
+    childChain.id,
+    parentChain.id
+  ])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null
