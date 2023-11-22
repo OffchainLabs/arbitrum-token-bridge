@@ -21,7 +21,7 @@ import {
   addressIsSmartContract,
   addressIsDenylisted
 } from '../../util/AddressUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -112,7 +112,7 @@ export const AdvancedSettings = () => {
   const {
     app: { selectedToken, isDepositMode }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [{ destinationChain, destinationChainProvider }] = useNetworks()
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
@@ -150,7 +150,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: (isDepositMode ? l2 : l1).provider
+        destinationProvider: destinationChainProvider
       })
       if (isSubscribed) {
         setWarning(result)
@@ -161,7 +161,7 @@ export const AdvancedSettings = () => {
     return () => {
       isSubscribed = false
     }
-  }, [destinationAddress, isDepositMode, isEOA, l2, l1])
+  }, [destinationAddress, isDepositMode, isEOA, destinationChainProvider])
 
   const collapsible = useMemo(() => {
     // cannot collapse if:
@@ -278,7 +278,7 @@ export const AdvancedSettings = () => {
             <ExternalLink
               className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
               href={`${getExplorerUrl(
-                (isDepositMode ? l2 : l1).network.id
+                destinationChain.id
               )}/address/${destinationAddress}`}
             >
               <ArrowDownTrayIcon
