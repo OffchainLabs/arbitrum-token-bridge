@@ -818,6 +818,7 @@ export function TransferPanelMain({
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
       const isFromOrbitChain = isNetwork(from.id).isOrbitChain
       const isToOrbitChain = isNetwork(to.id).isOrbitChain
+      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
 
       // Add L1 network to the list
       return [l1.network, ...options].filter(option => {
@@ -834,6 +835,30 @@ export function TransferPanelMain({
           isSmartContractWallet &&
           isDestinationChainList &&
           isSameAsSourceChain
+        ) {
+          return false
+        }
+
+        // If this is the Source network list options
+        // and the selected source is an Arbitrum Base chain
+        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isSourceChainList &&
+          isOrbitChain &&
+          !isSameAsDestinationChain
+        ) {
+          return false
+        }
+
+        // If this is the Destination network list options
+        // and the selected destination is an Arbitrum chain
+        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isDestinationChainList &&
+          isOrbitChain &&
+          !isSameAsSourceChain
         ) {
           return false
         }
