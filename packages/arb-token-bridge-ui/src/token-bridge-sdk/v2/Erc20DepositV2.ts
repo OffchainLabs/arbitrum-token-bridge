@@ -185,6 +185,7 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
         l1Signer: connectedSigner
       })
 
+      /// move THIS TO UI LAYER
       const oldBridgeCompatibleTxObjToBeRemovedLater = {
         type: 'deposit-l1',
         status: 'pending',

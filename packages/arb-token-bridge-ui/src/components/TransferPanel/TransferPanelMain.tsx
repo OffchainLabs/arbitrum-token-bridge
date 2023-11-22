@@ -734,15 +734,21 @@ export function TransferPanelMain({
     }
   }, [errorMessage, openWithdrawOnlyDialog])
 
-  const switchNetworksOnTransferPanel = useCallback(() => {
-    const newFrom = to
-    const newTo = from
+  const switchNetworksOnTransferPanel = useCallback(async () => {
+    try {
+      await switchNetworkAsync?.(to.id)
 
-    setFrom(newFrom)
-    setTo(newTo)
+      const newFrom = to
+      const newTo = from
 
-    actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [actions.app, app.isDepositMode, from, to])
+      setFrom(newFrom)
+      setTo(newTo)
+
+      actions.app.setIsDepositMode(!app.isDepositMode)
+    } catch (e) {
+      // user rejected request, abort
+    }
+  }, [actions.app, app.isDepositMode, from, to, switchNetworkAsync])
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
