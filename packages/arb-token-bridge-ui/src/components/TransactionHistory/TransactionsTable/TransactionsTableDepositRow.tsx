@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge'
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useRedeemRetryable } from '../../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../../util/CommonUtils'
 import { DepositCountdown } from '../../common/DepositCountdown'
 import { ExternalLink } from '../../common/ExternalLink'
@@ -26,6 +25,8 @@ import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAd
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../../hooks/useChainLayers'
 import { AssetType } from '../../../hooks/arbTokenBridge.types'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -159,7 +160,8 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const l2TxHash = (() => {
     if (tx.l1ToL2MsgData?.l2TxID) {
@@ -176,9 +178,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         aria-label={`${parentLayer} Transaction Link`}
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(l1.network.id)}:{' '}
+        {getNetworkName(parentChain.id)}:{' '}
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(parentChain.id)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -191,9 +193,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
           aria-label={`${layer} Transaction Link`}
         >
           <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-          {getNetworkName(l2.network.id)}:{' '}
+          {getNetworkName(childChain.id)}:{' '}
           <ExternalLink
-            href={`${getExplorerUrl(l2.network.id)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(childChain.id)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
@@ -211,7 +213,8 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { l1 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -261,9 +264,9 @@ export function TransactionsTableDepositRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l1.network
+        chainId: parentChain.id
       }),
-    [l1.network, tx.asset, tx.tokenAddress]
+    [parentChain.id, tx.asset, tx.tokenAddress]
   )
 
   const customAddressTxPadding = useMemo(

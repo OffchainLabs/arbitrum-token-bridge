@@ -6,7 +6,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
-import { isNetwork } from './networks'
+import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 
@@ -269,7 +269,7 @@ export async function l1TokenIsDisabled({
 
 type SanitizeTokenOptions = {
   erc20L1Address?: string | null // token address on L1
-  chain: Chain // chain for which we want to retrieve the token name / symbol
+  chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
@@ -307,7 +307,7 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
@@ -330,7 +330,7 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||

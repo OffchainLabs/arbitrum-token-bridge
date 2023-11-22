@@ -2,11 +2,9 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
 import { ExternalLink } from '../../common/ExternalLink'
 import { shortenTxHash } from '../../../util/CommonUtils'
@@ -29,6 +27,8 @@ import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../../state/cctpState'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -229,9 +229,10 @@ function ClaimableRowTime({ tx }: CommonProps) {
 }
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
+  const toNetworkId = isSourceChainArbitrum ? parentChain.id : childChain.id
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
@@ -272,9 +273,10 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 }
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
+  const fromNetworkId = isSourceChainArbitrum ? childChain.id : parentChain.id
 
   return (
     <div className="flex flex-col space-y-3">
@@ -306,7 +308,8 @@ export function TransactionsTableClaimableRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
@@ -324,9 +327,15 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isSourceChainIdEthereum ? l1.network : l2.network
+        chainId: isSourceChainIdEthereum ? parentChain.id : childChain.id
       }),
-    [tx.asset, tx.tokenAddress, isSourceChainIdEthereum, l1.network, l2.network]
+    [
+      tx.asset,
+      tx.tokenAddress,
+      isSourceChainIdEthereum,
+      parentChain.id,
+      childChain.id
+    ]
   )
 
   const customAddressTxPadding = useMemo(
