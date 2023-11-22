@@ -106,7 +106,7 @@ export async function depositTokenEstimateGas(
 
   return {
     estimatedL1Gas: await l1Provider.estimateGas(txRequest),
-    estimatedL2Gas: retryableData.gasLimit,
+    estimatedL2Gas: retryableData.gasLimit.mul(14).div(10), // adds 40% buffer
     estimatedL2SubmissionCost: retryableData.maxSubmissionCost
   }
 }
