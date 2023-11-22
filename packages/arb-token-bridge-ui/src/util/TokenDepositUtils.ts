@@ -101,12 +101,15 @@ export async function depositTokenEstimateGas(
     erc20L1Address,
     l1Provider,
     l2Provider,
-    from: address
+    from: address,
+    retryableGasOverrides: {
+      gasLimit: { percentIncrease: BigNumber.from(40) }
+    }
   })
 
   return {
     estimatedL1Gas: await l1Provider.estimateGas(txRequest),
-    estimatedL2Gas: retryableData.gasLimit.mul(14).div(10), // adds 40% buffer
+    estimatedL2Gas: retryableData.gasLimit,
     estimatedL2SubmissionCost: retryableData.maxSubmissionCost
   }
 }
