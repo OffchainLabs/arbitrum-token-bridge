@@ -10,11 +10,12 @@ import { useAppState } from '../../state'
 import { useDeposits } from '../../hooks/useDeposits'
 import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
 import { useWithdrawals } from '../../hooks/useWithdrawals'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { isNetwork } from '../../util/networks'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const motionDivProps = {
   layout: true,
@@ -45,7 +46,8 @@ export function MainContent() {
     app: { arbTokenBridge }
   } = useAppState()
 
-  const { l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
     searchString: '',
@@ -61,8 +63,8 @@ export function MainContent() {
     })
 
   const pageSize = useMemo(
-    () => (isNetwork(l2.network.id).isOrbitChain ? 5 : 10),
-    [l2.network.id]
+    () => (isNetwork(childChain.id).isOrbitChain ? 5 : 10),
+    [childChain.id]
   )
 
   const {
