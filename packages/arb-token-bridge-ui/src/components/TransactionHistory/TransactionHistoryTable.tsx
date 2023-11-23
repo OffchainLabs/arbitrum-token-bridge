@@ -168,16 +168,17 @@ export const TransactionHistoryTable = ({
               }
 
               return (
-                <div style={{ ...style, height: `${getRowHeight(index)}px` }}>
+                <div
+                  key={key}
+                  style={{ ...style, height: `${getRowHeight(index)}px` }}
+                >
                   {tx.isWithdrawal ? (
                     <TransactionsTableClaimableRow
-                      key={key}
                       tx={tx}
                       className={isEvenRow ? 'bg-cyan' : 'bg-white'}
                     />
                   ) : (
                     <TransactionsTableDepositRow
-                      key={key}
                       tx={tx}
                       className={isEvenRow ? 'bg-cyan' : 'bg-white'}
                     />
