@@ -11,6 +11,7 @@ type SidePanelProps = {
   onClose?: () => void
   children: React.ReactNode
   panelClassNameOverrides?: string
+  scrollable?: boolean
 }
 
 export const SidePanel = ({
@@ -18,7 +19,8 @@ export const SidePanel = ({
   heading,
   onClose,
   children,
-  panelClassNameOverrides = ''
+  panelClassNameOverrides = '',
+  scrollable = true
 }: SidePanelProps) => {
   const ANIMATION_DURATION = 300
 
@@ -61,7 +63,7 @@ export const SidePanel = ({
           className={twMerge(
             'fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end',
             // we don't apply scroll behavior when animating as it has side effects
-            isAnimating ? '' : 'overflow-y-auto'
+            isAnimating || !scrollable ? '' : 'overflow-y-auto'
           )}
         >
           {/* The heading of dialog  */}

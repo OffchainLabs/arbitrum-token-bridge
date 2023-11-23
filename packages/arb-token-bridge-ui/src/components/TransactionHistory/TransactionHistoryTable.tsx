@@ -1,8 +1,13 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { AutoSizer, Column, Table } from 'react-virtualized'
 
 import { MergedTransaction } from '../../state/app/state'
-import { getStandardizedDate, getStandardizedTime } from '../../state/app/utils'
+import {
+  getStandardizedDate,
+  getStandardizedTime,
+  isCustomDestinationAddressTx
+} from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
@@ -63,7 +68,7 @@ const TableHeader = ({
 }: PropsWithChildren<{ className?: string }>) => (
   <th
     className={twMerge(
-      'h-full w-1/5 py-4 pl-2 text-left text-sm font-normal',
+      'h-full w-full py-4 pl-2 text-left text-sm font-normal',
       className
     )}
   >
@@ -75,78 +80,148 @@ export const TransactionHistoryTable = ({
   transactions,
   className,
   loading,
-  error
+  error,
+  rowHeight,
+  rowHeightCustomDestinationAddress
 }: {
   transactions: MergedTransaction[]
   className?: string
   loading: boolean
   error: unknown
+  rowHeight: number
+  rowHeightCustomDestinationAddress: number
 }) => {
-  return (
-    <div
-      className={twMerge(
-        'flex max-h-full flex-col overflow-auto rounded-lg bg-white',
-        className
-      )}
-    >
-      <div className="flex-1 overflow-y-auto">
-        <table className="min-h-[80px] w-full">
-          <thead className="sticky top-0 z-50 bg-white">
-            <TableHeader className="pl-6">Status</TableHeader>
-            <TableHeader>Date</TableHeader>
-            <TableHeader>Token</TableHeader>
-            <TableHeader>Networks</TableHeader>
-            <TableHeader />
-          </thead>
-          <tbody className={transactions.length === 0 ? 'relative h-16' : ''}>
-            {transactions.length === 0 ? (
-              error ? (
-                <div className="absolute left-0 top-0 flex space-x-2 px-6 pt-2 text-sm text-error">
-                  <span>
-                    We seem to be having a difficult time loading your data.
-                    Please give it a moment and then try refreshing the page. If
-                    the problem persists please file a ticket{' '}
-                    <ExternalLink
-                      className="arb-hover text-blue-link underline"
-                      href={GET_HELP_LINK}
-                    >
-                      here
-                    </ExternalLink>
-                    .
-                  </span>
-                </div>
-              ) : (
-                <div className="absolute left-0 top-0 p-6 text-sm font-semibold">
-                  <span className={loading ? 'animate-pulse' : ''}>
-                    {loading ? (
-                      <div className="flex space-x-2">
-                        <Loader size="small" color="black" />
-                        <span>Loading...</span>
-                      </div>
-                    ) : (
-                      'Looks like no transactions here yet!'
-                    )}
-                  </span>
-                </div>
-              )
-            ) : (
-              transactions.map(tx =>
-                tx.isWithdrawal ? (
-                  <TransactionsTableClaimableRow
-                    key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-                    tx={tx}
-                  />
-                ) : (
-                  <TransactionsTableDepositRow
-                    key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}
-                    tx={tx}
-                  />
-                )
-              )
-            )}
-          </tbody>
-        </table>
+  const isTxHistoryEmpty = transactions.length === 0
+
+  const getRowHeight = useCallback(
+    (index: number) => {
+      const tx = transactions[index]
+
+      if (!tx) {
+        return 0
+      }
+
+      return isCustomDestinationAddressTx(tx)
+        ? rowHeightCustomDestinationAddress
+        : rowHeight
+    },
+    [transactions, rowHeight, rowHeightCustomDestinationAddress]
+  )
+
+  if (isTxHistoryEmpty) {
+    if (error) {
+      return (
+        <div className="flex space-x-2 bg-white p-4 text-sm text-error">
+          <span>
+            We seem to be having a difficult time loading your data. Please give
+            it a moment and then try refreshing the page. If the problem
+            persists please file a ticket{' '}
+            <ExternalLink
+              className="arb-hover text-blue-link underline"
+              href={GET_HELP_LINK}
+            >
+              here
+            </ExternalLink>
+            .
+          </span>
+        </div>
+      )
+    }
+    if (loading) {
+      return (
+        <div className="flex space-x-2 bg-white p-4">
+          <Loader wrapperClass="animate-pulse" color="black" size="small" />
+          <span className="animate-pulse text-sm">Loading transactions...</span>
+        </div>
+      )
+    }
+    return (
+      <div className="bg-white p-4 text-sm">
+        Looks like no transactions here yet!
       </div>
+    )
+  }
+
+  return (
+    <div className={twMerge('flex h-full flex-col rounded-lg', className)}>
+      <AutoSizer>
+        {({ width, height }) => (
+          <Table
+            width={width}
+            height={height - 52}
+            rowHeight={({ index }) => getRowHeight(index)}
+            rowCount={transactions.length}
+            headerHeight={52}
+            headerRowRenderer={props => (
+              <div className="flex bg-white" style={{ width: width }}>
+                {props.columns}
+              </div>
+            )}
+            className="table-auto"
+            rowGetter={({ index }) => transactions[index]}
+            rowRenderer={({ index, key, style }) => {
+              const tx = transactions[index]
+              const isEvenRow = index % 2 === 0
+
+              if (!tx) {
+                return null
+              }
+
+              return (
+                <div style={{ ...style, height: `${getRowHeight(index)}px` }}>
+                  {tx.isWithdrawal ? (
+                    <TransactionsTableClaimableRow
+                      key={key}
+                      tx={tx}
+                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                    />
+                  ) : (
+                    <TransactionsTableDepositRow
+                      key={key}
+                      tx={tx}
+                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                    />
+                  )}
+                </div>
+              )
+            }}
+          >
+            {/* TODO: FIX LAYOUT FOR HEADERS AND COLUMNS: WIDTH AND PADDING */}
+            <Column
+              label="Status"
+              dataKey="status"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-8">Status</TableHeader>
+              )}
+            />
+            <Column
+              label="Date"
+              dataKey="date"
+              width={width / 5}
+              headerRenderer={() => (
+                <TableHeader className="pl-6">Date</TableHeader>
+              )}
+            />
+            <Column
+              label="Token"
+              dataKey="token"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-12">Token</TableHeader>
+              )}
+            />
+            <Column
+              label="Networks"
+              dataKey="networks"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-6">Networks</TableHeader>
+              )}
+            />
+          </Table>
+        )}
+      </AutoSizer>
     </div>
   )
 }

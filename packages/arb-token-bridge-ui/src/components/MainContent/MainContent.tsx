@@ -52,6 +52,7 @@ export function MainContent() {
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
         onClose={closeTransactionHistoryPanel}
+        scrollable={false}
       >
         <TransactionHistory />
       </SidePanel>

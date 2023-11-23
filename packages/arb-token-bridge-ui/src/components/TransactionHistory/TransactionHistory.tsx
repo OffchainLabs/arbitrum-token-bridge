@@ -76,7 +76,7 @@ export const TransactionHistory = () => {
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <Tab.Group key={address} as="div" className="h-full overflow-hidden pb-24">
+    <Tab.Group key={address} as="div" className="h-full overflow-hidden">
       <Tab.List className="flex">
         <TabButton
           aria-label="show pending transactions"
@@ -104,6 +104,8 @@ export const TransactionHistory = () => {
             className="rounded-tl-none"
             loading={loading}
             error={error}
+            rowHeight={94}
+            rowHeightCustomDestinationAddress={126}
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
@@ -111,6 +113,8 @@ export const TransactionHistory = () => {
             transactions={settledTransactions}
             loading={loading}
             error={error}
+            rowHeight={85}
+            rowHeightCustomDestinationAddress={117}
           />
         </Tab.Panel>
       </Tab.Panels>
