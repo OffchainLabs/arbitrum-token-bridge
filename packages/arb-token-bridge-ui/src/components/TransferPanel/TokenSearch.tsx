@@ -1,4 +1,10 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect
+} from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import { AutoSizer, List } from 'react-virtualized'
 import {
@@ -68,6 +74,7 @@ function TokenListsPanel() {
     app: { arbTokenBridge }
   } = useAppState()
   const {
+    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { bridgeTokens, token } = arbTokenBridge
@@ -94,7 +101,12 @@ function TokenListsPanel() {
     if (isActive) {
       token.removeTokensFromList(bridgeTokenList.id)
     } else {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      addBridgeTokenListToBridge(
+        bridgeTokenList,
+        arbTokenBridge,
+        l1Network.id,
+        l2Network.id
+      )
     }
   }
 
@@ -156,7 +168,7 @@ function TokensPanel({
     }
   } = useAppState()
   const {
-    l1: { provider: L1Provider },
+    l1: { provider: L1Provider, network: l1Network },
     l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
@@ -164,11 +176,11 @@ function TokensPanel({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: L1Provider, walletAddress, chain: l1Network.id })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: L2Provider, walletAddress, chain: l2Network.id })
 
   const nativeCurrency = useNativeCurrency({ provider: L2Provider })
 

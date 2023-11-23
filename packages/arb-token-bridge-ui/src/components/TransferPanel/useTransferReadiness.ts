@@ -114,11 +114,11 @@ export function useTransferReadiness({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: l1Provider, walletAddress, chain: l1Network.id })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: l2Provider, walletAddress, chain: l2Network.id })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(

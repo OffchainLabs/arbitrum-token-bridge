@@ -49,6 +49,7 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
+import { SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID } from '../util/TokenListUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -112,14 +113,16 @@ export const useArbTokenBridge = (
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress,
+    chain: l1.network.id
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress,
+    chain: l2.network.id
   })
 
   interface ExecutedMessagesCache {
@@ -639,9 +642,15 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
+  const addTokensFromList = async (
+    arbTokenList: TokenList,
+    listId: number,
+    l1ChainId: number,
+    l2ChainId: number
+  ) => {
+    const { isArbitrum: isL1Arbitrum } = isNetwork(l1ChainId)
+    const isArbAndIsWithOrbitChain =
+      listId === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID && isL1Arbitrum
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -651,7 +660,7 @@ export const useArbTokenBridge = (
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
+      if (![l1ChainId, l2ChainId].includes(chainId)) {
         continue
       }
 
@@ -666,11 +675,22 @@ export const useArbTokenBridge = (
             }
           }
         }
+
+        if (isArbAndIsWithOrbitChain && chainId === l1ChainId) {
+          return {
+            [l1ChainId]: {
+              tokenAddress: address
+            }
+          } as Extensions['bridgeInfo']
+        }
+
         const isExtensions = (obj: any): obj is Extensions => {
           if (!obj) return false
-          if (!obj['bridgeInfo']) return false
-          return Object.keys(obj['bridgeInfo'])
-            .map(key => obj['bridgeInfo'][key])
+          const _bridgeInfo = obj['bridgeInfo']
+          if (!_bridgeInfo) return false
+
+          return Object.keys(_bridgeInfo)
+            .map(key => _bridgeInfo[key])
             .every(
               e =>
                 e &&
@@ -686,8 +706,16 @@ export const useArbTokenBridge = (
         }
       })()
 
+      console.log(
+        'in add tokens from list!',
+        bridgeInfo,
+        l1ChainId,
+        l2ChainId,
+        chainId
+      )
+
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        const l1Address = bridgeInfo[l1ChainId]?.tokenAddress.toLowerCase()
 
         if (!l1Address) {
           return
@@ -698,7 +726,9 @@ export const useArbTokenBridge = (
           type: TokenType.ERC20,
           symbol,
           address: l1Address,
-          l2Address: address.toLowerCase(),
+          l2Address: isArbAndIsWithOrbitChain
+            ? undefined
+            : address.toLowerCase(),
           decimals,
           logoURI,
           listIds: new Set([listId])
@@ -726,6 +756,7 @@ export const useArbTokenBridge = (
           l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
       )
     )
+    console.log('l1AddressesOfBridgedTokens? ', l1AddressesOfBridgedTokens)
     for (const l1TokenData of candidateUnbridgedTokensToAdd) {
       if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
         bridgeTokensToAdd[l1TokenData.address] = l1TokenData
@@ -739,12 +770,14 @@ export const useArbTokenBridge = (
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
+      if (isNetwork(l2ChainId).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumGoerli) {
+      if (isNetwork(l2ChainId).isArbitrumGoerli) {
         l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
       }
+
+      console.log('bridgeTokensToAdd: ', bridgeTokensToAdd)
 
       for (const tokenAddress in bridgeTokensToAdd) {
         const tokenToAdd = bridgeTokensToAdd[tokenAddress]
@@ -840,7 +873,7 @@ export const useArbTokenBridge = (
 
     updateErc20L1Balance([l1AddressLowerCased])
     if (l2Address) {
-      updateErc20L2Balance([l2Address])
+      updateErc20L2Balance([l2Address.toLowerCase()])
     }
   }
 
@@ -868,7 +901,13 @@ export const useArbTokenBridge = (
         updateErc20L2Balance([l2Address])
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      setBridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances
+    ]
   )
 
   const updateEthBalances = async () => {

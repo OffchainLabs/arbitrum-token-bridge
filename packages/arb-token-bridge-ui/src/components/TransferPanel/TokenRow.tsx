@@ -131,11 +131,11 @@ export function TokenRow({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: l1Provider, walletAddress, chain: l1Network.id })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: l2Provider, walletAddress, chain: l2Network.id })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -155,6 +155,9 @@ export function TokenRow({
 
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
+
+    console.log('erc20L1Balances: ', erc20L1Balances)
+    console.log('erc20L2Balances: ', erc20L2Balances)
 
     if (isDepositMode) {
       return erc20L1Balances?.[token.address.toLowerCase()]
@@ -237,12 +240,22 @@ export function TokenRow({
       return true
     }
 
+    if (isArbitrumToken) {
+      return true
+    }
+
     if (tokenIsArbOneNativeUSDC || tokenIsArbGoerliNativeUSDC) {
       return true
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
+  }, [
+    bridgeTokens,
+    token,
+    isArbitrumToken,
+    tokenIsArbOneNativeUSDC,
+    tokenIsArbGoerliNativeUSDC
+  ])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {

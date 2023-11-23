@@ -19,6 +19,7 @@ type Erc20Balances = {
 export type UseBalanceProps = {
   provider: Provider
   walletAddress: string | undefined
+  chain?: number
 }
 
 const merge: Middleware = (useSWRNext: SWRHook) => {
@@ -41,7 +42,11 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
   }
 }
 
-const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
+const useBalance = ({
+  provider,
+  walletAddress,
+  chain = undefined
+}: UseBalanceProps) => {
   const chainId = useChainId({ provider })
   const walletAddressLowercased = useMemo(
     () => walletAddress?.toLowerCase(),
@@ -70,12 +75,16 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
       ) {
         return {}
       }
+      console.log('chain?', chain)
 
       try {
         const multiCaller = await MultiCaller.fromProvider(provider)
         const addressesBalances = await multiCaller.getTokenData(_addresses, {
           balanceOf: { account: walletAddressLowercased }
         })
+        console.log('addresses?', _addresses)
+        console.log('walletAddressLowercased?', walletAddressLowercased)
+        console.log('addressesBalances? ', addressesBalances)
 
         return _addresses.reduce((acc, address, index) => {
           const balance = addressesBalances[index]
@@ -94,7 +103,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         return {}
       }
     },
-    [provider, walletAddressLowercased]
+    [chain, provider, walletAddressLowercased]
   )
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(

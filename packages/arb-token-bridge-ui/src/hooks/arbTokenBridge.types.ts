@@ -168,7 +168,12 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: number) => void
+  addTokensFromList: (
+    tokenList: TokenList,
+    listID: number,
+    l1ChainId: number,
+    l2ChainId: number
+  ) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {

@@ -391,14 +391,16 @@ export function TransferPanelMain({
     erc20: [erc20L1Balances, updateErc20L1Balances]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: l1WalletAddress
+    walletAddress: l1WalletAddress,
+    chain: l1.network.id
   })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances, updateErc20L2Balances]
   } = useBalance({
     provider: l2.provider,
-    walletAddress: l2WalletAddress
+    walletAddress: l2WalletAddress,
+    chain: l2.network.id
   })
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress

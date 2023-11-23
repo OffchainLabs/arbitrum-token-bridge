@@ -125,13 +125,20 @@ export const validateTokenList = (tokenList: TokenList) => {
 
 export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
-  arbTokenBridge: ArbTokenBridge
+  arbTokenBridge: ArbTokenBridge,
+  l1ChainId: number,
+  l2ChainId: number
 ) => {
   fetchTokenListFromURL(bridgeTokenList.url).then(
     ({ isValid, data: tokenList }) => {
       if (!isValid) return
 
-      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+      arbTokenBridge.token.addTokensFromList(
+        tokenList!,
+        bridgeTokenList.id,
+        l1ChainId,
+        l2ChainId
+      )
     }
   )
 }

@@ -31,13 +31,15 @@ export function useUpdateUSDCBalances({
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress,
+    chain: l1.network.id
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress,
+    chain: l2.network.id
   })
 
   const updateUSDCBalances = useCallback(
