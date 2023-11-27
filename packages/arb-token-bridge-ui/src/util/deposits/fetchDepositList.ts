@@ -107,7 +107,7 @@ export async function fetchDepositList({
       timestampCreated: tx.timestamp,
       isClassic: tx.isClassic,
       parentChainId: l1ChainId,
-      chainId: l2ChainId
+      childChainId: l2ChainId
     }
   })
 }

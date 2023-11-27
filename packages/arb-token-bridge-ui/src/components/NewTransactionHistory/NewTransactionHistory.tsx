@@ -14,11 +14,11 @@ function isDeposit(tx: MergedTransaction) {
 }
 
 function getSourceChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.parentChainId : tx.chainId
+  return isDeposit(tx) ? tx.parentChainId : tx.childChainId
 }
 
 function getDestChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.chainId : tx.parentChainId
+  return isDeposit(tx) ? tx.childChainId : tx.parentChainId
 }
 
 function getTxStatus(tx: MergedTransaction) {
@@ -83,7 +83,7 @@ export const NewTransactionHistory = () => {
         </thead>
         <tbody>
           {transactions.map(tx => (
-            <tr key={`${tx.parentChainId}-${tx.chainId}-${tx.txId}`}>
+            <tr key={`${tx.parentChainId}-${tx.childChainId}-${tx.txId}`}>
               <td>{getRelativeTime(tx)}</td>
               <td>
                 {tx.value}{' '}

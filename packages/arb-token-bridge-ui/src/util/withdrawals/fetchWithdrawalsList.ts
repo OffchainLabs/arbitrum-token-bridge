@@ -93,7 +93,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'subgraph',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
   }
@@ -105,7 +105,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
 
@@ -116,7 +116,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
 

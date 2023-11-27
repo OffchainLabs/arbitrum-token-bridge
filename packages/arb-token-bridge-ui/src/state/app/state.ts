@@ -70,7 +70,7 @@ export interface MergedTransaction {
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
-  chainId: number
+  childChainId: number
   parentChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId

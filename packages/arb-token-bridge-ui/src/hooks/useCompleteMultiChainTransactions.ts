@@ -34,7 +34,7 @@ export type AdditionalTransferProperties = {
   direction: 'deposit' | 'withdrawal'
   source: 'subgraph' | 'event_logs'
   parentChainId: ChainId
-  chainId: ChainId
+  childChainId: ChainId
 }
 
 export type Deposit = Transaction
@@ -54,7 +54,7 @@ function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
   }
 
   if (isWithdrawalFromSubgraph(tx)) {
-    return getStandardizedTimestamp(tx.timestamp)
+    return getStandardizedTimestamp(tx.l2BlockTimestamp)
   }
 
   return getStandardizedTimestamp(tx.timestamp ?? '0')
@@ -110,14 +110,14 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 
 async function transformTransaction(tx: DepositOrWithdrawal) {
   const parentChainProvider = getProvider(tx.parentChainId)
-  const chainProvider = getProvider(tx.chainId)
+  const childChainProvider = getProvider(tx.childChainId)
 
   if (isDeposit(tx)) {
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx: tx,
         l1Provider: parentChainProvider,
-        l2Provider: chainProvider
+        l2Provider: childChainProvider
       })
     )
   }
@@ -128,20 +128,20 @@ async function transformTransaction(tx: DepositOrWithdrawal) {
     withdrawal = await mapWithdrawalToL2ToL1EventResult({
       withdrawal: tx,
       l1Provider: parentChainProvider,
-      l2Provider: chainProvider
+      l2Provider: childChainProvider
     })
   } else {
     if (isTokenWithdrawal(tx)) {
       withdrawal = await mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
         result: tx,
         l1Provider: parentChainProvider,
-        l2Provider: chainProvider
+        l2Provider: childChainProvider
       })
     } else {
       withdrawal = await mapETHWithdrawalToL2ToL1EventResult({
         event: tx,
         l1Provider: parentChainProvider,
-        l2Provider: chainProvider
+        l2Provider: childChainProvider
       })
     }
   }

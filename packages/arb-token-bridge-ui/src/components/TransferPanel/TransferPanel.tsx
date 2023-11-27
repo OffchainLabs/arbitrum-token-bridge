@@ -698,7 +698,7 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         },
         parentChainId: l1Network.id,
-        chainId: l2Network.id
+        childChainId: l2Network.id
       }
 
       openTransactionHistoryPanel()

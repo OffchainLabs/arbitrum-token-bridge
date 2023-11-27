@@ -11,11 +11,11 @@ export type FetchWithdrawalsFromSubgraphResult = {
   }
   tokenAmount: string
   isClassic: boolean
-  timestamp: string
+  l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
   parentChainId: number
-  chainId: number
+  childChainId: number
 }
 
 /**
