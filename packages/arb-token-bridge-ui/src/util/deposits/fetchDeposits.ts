@@ -1,6 +1,5 @@
 import { Provider } from '@ethersproject/providers'
 import { utils } from 'ethers'
-import { updateAdditionalDepositData } from './helpers'
 import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
@@ -126,11 +125,5 @@ export const fetchDeposits = async ({
     }
   )
 
-  const finalTransactions: Transaction[] = await Promise.all(
-    ethDepositsFromSubgraph.map(depositTx =>
-      updateAdditionalDepositData(depositTx, l1Provider, l2Provider)
-    )
-  )
-
-  return finalTransactions
+  return ethDepositsFromSubgraph
 }
