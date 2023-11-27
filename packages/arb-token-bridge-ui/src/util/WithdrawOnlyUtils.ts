@@ -1,4 +1,4 @@
-// tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation) or they are being discontinued.
+// tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
 import { ChainId } from '../util/networks'
