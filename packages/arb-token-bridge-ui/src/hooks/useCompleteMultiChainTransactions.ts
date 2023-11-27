@@ -30,21 +30,12 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 
 const PAGE_SIZE = 100
 
-export type AdditionalTransferProperties = {
-  direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
-  parentChainId: ChainId
-  childChainId: ChainId
-}
-
 export type Deposit = Transaction
 
-export type Withdrawal = (
+export type Withdrawal =
   | FetchWithdrawalsFromSubgraphResult
   | WithdrawalInitiated
   | EthWithdrawal
-) &
-  AdditionalTransferProperties
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 
@@ -100,7 +91,7 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
-): tx is FetchWithdrawalsFromSubgraphResult & AdditionalTransferProperties {
+): tx is FetchWithdrawalsFromSubgraphResult {
   return tx.source === 'subgraph'
 }
 
@@ -108,7 +99,9 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(tx: DepositOrWithdrawal) {
+async function transformTransaction(
+  tx: DepositOrWithdrawal
+): Promise<MergedTransaction | undefined> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
