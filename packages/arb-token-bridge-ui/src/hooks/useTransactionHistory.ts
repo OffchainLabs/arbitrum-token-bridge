@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
 import { ChainId, rpcURLs } from '../util/networks'
@@ -153,7 +152,7 @@ function getProvider(chainId: ChainId) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = () => {
+const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
   const [deposits, setDeposits] = useState<Deposit[][]>([])
   const [withdrawals, setWithdrawals] = useState<Withdrawal[][]>([])
 
@@ -162,8 +161,6 @@ const useTransactionHistoryWithoutStatuses = () => {
 
   const [depositsLoading, setDepositsLoading] = useState(true)
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
-
-  const { address } = useAccount()
 
   const shouldFetchNextPageForChainPair = useCallback(
     (chainPairIndex: number, direction: 'deposits' | 'withdrawals') => {
@@ -289,7 +286,7 @@ const useTransactionHistoryWithoutStatuses = () => {
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useTransactionHistory = () => {
+export const useTransactionHistory = (address: string | undefined) => {
   // max number of transactions mapped in parallel, for the same chain pair
   // we can batch more than MAX_BATCH_SIZE at a time if they use a different RPC
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
@@ -300,8 +297,7 @@ export const useTransactionHistory = () => {
   const [fetching, setFetching] = useState(true)
   const [paused, setPaused] = useState(false)
 
-  const { data, loading, error } = useTransactionHistoryWithoutStatuses()
-  const { address } = useAccount()
+  const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const { data: mapData, error: mapError } = useSWRImmutable(
     address && !loading ? ['complete_tx_list', address, page, data] : null,

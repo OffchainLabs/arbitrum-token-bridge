@@ -1,6 +1,7 @@
 // DO NOT REVIEW, THIS WILL CHANGE A LOT WITH THE UI PR
 // IT IS ONLY FOR TESTING
 
+import { useAccount } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
@@ -55,11 +56,13 @@ function getRelativeTime(tx: MergedTransaction) {
 }
 
 export const NewTransactionHistory = () => {
+  const { address } = useAccount()
+
   const {
     data: { transactions, total },
     loading,
     paused
-  } = useTransactionHistory()
+  } = useTransactionHistory(address)
 
   if (loading || transactions.length === 0) {
     return <div className="text-white">Fetching transactions...</div>
