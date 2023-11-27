@@ -151,20 +151,26 @@ function getProvider(chainId: ChainId) {
 }
 
 /**
- * Fetches transaction history only, and only for a specific direction.
- * The query could be e.g. deposits or withdrawals.
+ * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionListByDirection = (
-  direction: 'deposits' | 'withdrawals'
-) => {
-  const [transactions, setTransactions] = useState<DepositOrWithdrawal[][]>([])
-  const [page, setPage] = useState(0)
-  const [loading, setLoading] = useState(true)
+const useTransactionHistoryWithoutStatuses = () => {
+  const [deposits, setDeposits] = useState<Deposit[][]>([])
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[][]>([])
+
+  const [depositsPage, setDepositsPage] = useState(0)
+  const [withdrawalsPage, setWithdrawalsPage] = useState(0)
+
+  const [depositsLoading, setDepositsLoading] = useState(true)
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
 
   const { address } = useAccount()
 
   const shouldFetchNextPageForChainPair = useCallback(
-    (chainPairIndex: number) => {
+    (chainPairIndex: number, direction: 'deposits' | 'withdrawals') => {
+      const isDeposits = direction === 'deposits'
+      const page = isDeposits ? depositsPage : withdrawalsPage
+      const transactions = isDeposits ? deposits : withdrawals
+
       if (page === 0) {
         return true
       }
@@ -174,92 +180,116 @@ const useTransactionListByDirection = (
       // we check for >= in case some txs were included by initiating a transfer
       return txCountForChainPair / page >= PAGE_SIZE
     },
-    [page, transactions]
+    [depositsPage, withdrawalsPage, deposits, withdrawals]
   )
 
-  const { data, error } = useSWRImmutable(
-    address ? ['tx_list', direction, address, page] : null,
-    ([, _direction, _address, _page]) => {
+  const { data: depositsData, error: depositsError } = useSWRImmutable(
+    address ? ['tx_list', 'deposits', address, depositsPage] : null,
+    ([, , _address, _page]) => {
       return Promise.all(
         multiChainFetchList.map((chainPair, chainPairIndex) => {
-          if (!shouldFetchNextPageForChainPair(chainPairIndex)) {
+          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'deposits')) {
             return []
           }
 
-          const params = {
+          return fetchDepositList({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
             l2Provider: getProvider(chainPair.chain),
             pageNumber: _page,
             pageSize: PAGE_SIZE
-          }
-
-          return _direction === 'deposits'
-            ? fetchDepositList(params)
-            : fetchWithdrawalList(params)
+          })
         })
       )
     }
   )
 
-  useEffect(() => {
-    if (!data) {
-      return
-    }
+  const { data: withdrawalsData, error: withdrawalsError } = useSWRImmutable(
+    address ? ['tx_list', 'withdrawals', address, withdrawalsPage] : null,
+    ([, , _address, _page]) => {
+      return Promise.all(
+        multiChainFetchList.map((chainPair, chainPairIndex) => {
+          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'withdrawals')) {
+            return []
+          }
 
-    const fetchedSomeData = data.some(item => item.length > 0)
+          return fetchWithdrawalList({
+            sender: _address,
+            receiver: _address,
+            l1Provider: getProvider(chainPair.parentChain),
+            l2Provider: getProvider(chainPair.chain),
+            pageNumber: _page,
+            pageSize: PAGE_SIZE
+          })
+        })
+      )
+    }
+  )
+
+  function addDeposits(transactions: Deposit[][]) {
+    const fetchedSomeData = transactions.some(item => item.length > 0)
 
     if (fetchedSomeData) {
-      // include the new data with the previously fetched data
-      // the data is grouped by chain pairs
-      setTransactions(prevTransactions => {
-        return data.map((transactionsForChainPair, chainPairIndex) => [
-          ...(prevTransactions[chainPairIndex] ?? []),
+      setDeposits(prevDeposits => {
+        return transactions.map((transactionsForChainPair, chainPairIndex) => [
+          ...(prevDeposits[chainPairIndex] ?? []),
           ...(transactionsForChainPair ?? [])
         ])
       })
-
-      setPage(prevPage => prevPage + 1)
+      setDepositsPage(prevPage => prevPage + 1)
     } else {
-      setLoading(false)
+      setDepositsLoading(false)
     }
-  }, [data])
+  }
+
+  function addWithdrawals(transactions: Withdrawal[][]) {
+    const fetchedSomeData = transactions.some(item => item.length > 0)
+
+    if (fetchedSomeData) {
+      setWithdrawals(prevWithdrawal => {
+        return transactions.map((transactionsForChainPair, chainPairIndex) => [
+          ...(prevWithdrawal[chainPairIndex] ?? []),
+          ...(transactionsForChainPair ?? [])
+        ])
+      })
+      setWithdrawalsPage(prevPage => prevPage + 1)
+    } else {
+      setWithdrawalsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!depositsData) {
+      return
+    }
+    addDeposits(depositsData)
+  }, [depositsData])
+
+  useEffect(() => {
+    if (!withdrawalsData) {
+      return
+    }
+    addWithdrawals(withdrawalsData)
+  }, [withdrawalsData])
+
+  // merge deposits and withdrawals and sort them by date
+  const transactions = [...deposits, ...withdrawals]
+    .flat()
+    .sort(sortByTimestampDescending)
 
   return {
-    data: transactions.flat(),
-    loading,
-    error
+    data: transactions,
+    loading: depositsLoading || withdrawalsLoading,
+    error: depositsError ?? withdrawalsError
   }
-}
-
-/**
- * Fetches transaction history only, without mapping additional info that would require a lot of RPC calls.
- * The data is collected for multiple chain pairs, and sorted by date.
- */
-const useMultiChainTransactionList = () => {
-  const deposits = useTransactionListByDirection('deposits')
-  const withdrawals = useTransactionListByDirection('withdrawals')
-
-  const groupedTransactions = [deposits, withdrawals]
-
-  // merge grouped transactions and sort them by date
-  const data = groupedTransactions
-    .flatMap(grp => grp.data)
-    .sort(sortByTimestampDescending)
-  // checks if any source is loading
-  const loading = groupedTransactions.map(grp => grp.loading).some(Boolean)
-  // get first error
-  const error = groupedTransactions.map(grp => grp.error).filter(Boolean)[0]
-
-  return { data, loading, error }
 }
 
 /**
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useCompleteMultiChainTransactions = () => {
+export const useTransactionHistory = () => {
   // max number of transactions mapped in parallel, for the same chain pair
   // we can batch more than MAX_BATCH_SIZE at a time if they use a different RPC
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
@@ -270,7 +300,7 @@ export const useCompleteMultiChainTransactions = () => {
   const [fetching, setFetching] = useState(true)
   const [paused, setPaused] = useState(false)
 
-  const { data, loading, error } = useMultiChainTransactionList()
+  const { data, loading, error } = useTransactionHistoryWithoutStatuses()
   const { address } = useAccount()
 
   const { data: mapData, error: mapError } = useSWRImmutable(

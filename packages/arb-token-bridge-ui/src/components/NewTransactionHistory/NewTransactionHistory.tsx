@@ -3,7 +3,7 @@
 
 import dayjs from 'dayjs'
 
-import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getNetworkName } from '../../util/networks'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
@@ -59,7 +59,7 @@ export const NewTransactionHistory = () => {
     data: { transactions, total },
     loading,
     paused
-  } = useCompleteMultiChainTransactions()
+  } = useTransactionHistory()
 
   if (loading || transactions.length === 0) {
     return <div className="text-white">Fetching transactions...</div>

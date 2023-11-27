@@ -6,7 +6,7 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-import { Withdrawal } from '../../hooks/useCompleteMultiChainTransactions'
+import { Withdrawal } from '../../hooks/useTransactionHistory'
 
 export type FetchWithdrawalsParams = {
   sender?: string

@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { fetchDepositsFromSubgraph } from './fetchDepositsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Deposit } from '../../hooks/useCompleteMultiChainTransactions'
+import { Deposit } from '../../hooks/useTransactionHistory'
 
 export type FetchDepositParams = {
   sender?: string
