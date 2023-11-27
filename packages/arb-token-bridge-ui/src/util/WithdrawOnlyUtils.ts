@@ -116,6 +116,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40',
       l1Address: '0x18084fba666a33d37592fa2633fd49a74dd93a88',
       l2Address: '0x7E2a1eDeE171C5B19E6c54D73752396C0A572594'
+    },
+    {
+      symbol: 'RDNT',
+      l2CustomAddr: '0x3082CC23568eA640225c2467653dB90e9250AaA0',
+      l1Address: '0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893',
+      l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
     }
   ],
   [ChainId.ArbitrumNova]: []
