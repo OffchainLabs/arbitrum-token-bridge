@@ -723,7 +723,15 @@ export function TransferPanelMain({
       case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
         return (
           <>
-            <span>This token can&apos;t be bridged over.</span>{' '}
+            <span>
+              Unfortunately, ${selectedToken?.symbol} has a custom bridge
+              solution that is incompatible with the canonical Arbitrum bridge.
+              <br />
+              For more information please contact the ${
+                selectedToken?.symbol
+              }{' '}
+              developer team directly or explore their docs.
+            </span>{' '}
             <button
               className="arb-hover underline"
               onClick={openWithdrawOnlyDialog}
@@ -733,7 +741,7 @@ export function TransferPanelMain({
           </>
         )
     }
-  }, [errorMessage, openWithdrawOnlyDialog])
+  }, [errorMessage, openWithdrawOnlyDialog, selectedToken])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
