@@ -1,9 +1,9 @@
 import useSWRImmutable from 'swr/immutable'
+import { useCallback, useEffect, useState } from 'react'
 
 import { ChainId, rpcURLs } from '../util/networks'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { useCallback, useEffect, useState } from 'react'
 import { fetchWithdrawalList } from '../util/withdrawals/fetchWithdrawalsList'
 import { fetchDepositList } from '../util/deposits/fetchDepositList'
 import {
