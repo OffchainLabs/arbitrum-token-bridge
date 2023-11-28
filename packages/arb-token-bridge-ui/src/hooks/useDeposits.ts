@@ -4,7 +4,7 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
-import { isPending, transformDeposits } from '../state/app/utils'
+import { isPending, transformDeposit } from '../state/app/utils'
 import {
   FetchDepositParams,
   fetchDeposits
@@ -31,7 +31,7 @@ export const fetchCompleteDepositData = async (
   // filter out pending deposits
   const pendingDepositsMap = new Map<string, boolean>()
   // get their complete transformed data (so that we get their exact status)
-  const completeDepositData = transformDeposits(deposits)
+  const completeDepositData = deposits.map(transformDeposit)
   completeDepositData.forEach(completeTxData => {
     if (isPending(completeTxData)) {
       pendingDepositsMap.set(completeTxData.txId, true)
