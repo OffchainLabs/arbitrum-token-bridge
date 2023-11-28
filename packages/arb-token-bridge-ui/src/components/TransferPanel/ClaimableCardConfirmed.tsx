@@ -13,7 +13,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { CustomAddressTxExplorer } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useChainId } from 'wagmi'
 
 import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import {
@@ -183,7 +182,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
                 try {
                   if (!currentChainIsValid) {
                     return switchNetwork?.(
-                      isSourceChainIdEthereum ? l2.network.id : l1.network.id
+                      isSourceChainIdEthereum ? parentChain.id : childChain.id
                     )
                   }
                   if (tx.isCctp) {
