@@ -110,24 +110,6 @@ export class Erc20WithdrawalStarterV2 extends BridgeTransferStarterV2 {
         destinationChainProvider
       }
 
-      // const oldBridgeCompatibleTxObjToBeRemovedLater = {
-      //   type: 'withdraw',
-      //   status: 'pending',
-      //   value: utils.formatUnits(amount, decimals),
-      //   txID: tx.hash,
-      //   assetName: symbol,
-      //   assetType: AssetType.ERC20,
-      //   tokenAddress,
-      //   sender: address,
-      //   destination: destinationAddress ?? address,
-      //   l1NetworkID: destinationChainId.toString(),
-      //   l2NetworkID: sourceChainId.toString()
-      // } as NewTransaction
-
-      // if (txLifecycle?.onTxSubmit) {
-      //   txLifecycle.onTxSubmit({ tx, oldBridgeCompatibleTxObjToBeRemovedLater })
-      // }
-
       // const txReceipt = await tx.wait()
 
       // if (txLifecycle?.onTxConfirm) {

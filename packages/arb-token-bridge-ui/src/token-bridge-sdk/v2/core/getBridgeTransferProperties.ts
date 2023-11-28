@@ -17,7 +17,7 @@ export const getBridgeTransferProperties = async ({
 }: {
   sourceChainProvider: Provider
   destinationChainProvider: Provider
-  selectedToken?: SelectedToken
+  selectedToken?: SelectedToken | null
 }) => {
   const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
   const destinationChainId = await getChainIdFromProvider(

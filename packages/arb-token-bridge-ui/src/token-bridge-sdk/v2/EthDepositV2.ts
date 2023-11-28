@@ -48,25 +48,6 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
         destinationChainProvider
       }
 
-      //   // todo: Make the callbacks better
-      //   // make the callback return a unified BridgeTransfer object and make it track/poll status on it's own
-      //   const oldBridgeCompatibleTxObjToBeRemovedLater = {
-      //     type: 'deposit-l1',
-      //     status: 'pending',
-      //     value: utils.formatUnits(amount, nativeCurrency.decimals),
-      //     txID: tx.hash,
-      //     assetName: 'ETH',
-      //     assetType: AssetType.ETH,
-      //     sender: address,
-      //     destination: destinationAddress ?? address,
-      //     l1NetworkID: sourceChainId.toString(),
-      //     l2NetworkID: destinationChainId.toString()
-      //   } as NewTransaction
-
-      //   if (txLifecycle?.onTxSubmit) {
-      //     txLifecycle.onTxSubmit({ tx, oldBridgeCompatibleTxObjToBeRemovedLater })
-      //   }
-
       //   const txReceipt = await tx.wait()
 
       //   if (txLifecycle?.onTxConfirm) {

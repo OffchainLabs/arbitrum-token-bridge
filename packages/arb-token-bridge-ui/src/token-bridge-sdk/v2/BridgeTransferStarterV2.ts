@@ -1,5 +1,4 @@
-import { Provider, TransactionReceipt } from '@ethersproject/providers'
-import { NewTransaction } from '../../hooks/useTransactions'
+import { Provider } from '@ethersproject/providers'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../state/app/state'
 import { RequiresNativeCurrencyApprovalProps } from './core/requiresNativeCurrencyApproval'
@@ -16,20 +15,12 @@ type TxStatus = 'pending' | 'success' | 'error'
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type TransferType = `${Asset}_${TxType}`
 
-export type SelectedToken = ERC20BridgeToken & {
-  sourceChainErc20ContractAddress: string
-  destinationChainErc20ContractAddress?: string
-}
+export type SelectedToken = ERC20BridgeToken
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: `0x${string}` | null
   attestationHash: `0x${string}` | null
 }
-
-type OldBridgeCompatibleTxObjToBeRemovedLater =
-  | NewTransaction
-  | MergedTransaction
-  | MergedTransactionCctp
 
 export type TransferProps = {
   amount: BigNumber
@@ -50,41 +41,15 @@ export type BridgeTransfer = {
 }
 
 export type BridgeTransferStarterV2Props = {
-  // amount: BigNumber
-  // isSmartContractWallet: boolean
-  // destinationAddress?: string
   sourceChainProvider: Provider
   destinationChainProvider: Provider
-  // connectedSigner?: Signer | null
-  // nativeCurrency: NativeCurrency
-  // nativeCurrencyBalance: BigNumber | null
-  selectedToken?: SelectedToken
-  // selectedTokenBalance: BigNumber | null
-  // functions that can be added to SDK which act as confirmation of some actions
-  // externalCallbacks: ExternalCallbacks
+  selectedToken: SelectedToken | null
 }
 
 export abstract class BridgeTransferStarterV2 {
-  // amount: BigNumber
-  // isSmartContractWallet: boolean
-  // destinationAddress?: string
-
   public sourceChainProvider: Provider
-  // sourceChainNetwork: Network
-  // sourceChainId: number
-  // connectedSigner?: Signer | null
-
   public destinationChainProvider: Provider
-  // destinationChainNetwork: Network
-  // destinationChainId: number
-
-  // nativeCurrency: NativeCurrency
-  // nativeCurrencyBalance: BigNumber | null
-
-  public selectedToken: SelectedToken | undefined
-  // selectedTokenBalance: BigNumber | null
-
-  // externalCallbacks: ExternalCallbacks
+  public selectedToken: SelectedToken | null
 
   abstract transferType: TransferType
 

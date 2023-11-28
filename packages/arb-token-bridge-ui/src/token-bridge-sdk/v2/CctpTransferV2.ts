@@ -1,22 +1,14 @@
 import {
   BridgeTransferStarterV2,
   BridgeTransferStarterV2Props,
-  TransferProps
+  SelectedToken,
+  TransferProps,
+  TransferType
 } from './BridgeTransferStarterV2'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { approveTokenAllowance } from './core/approveTokenAllowance'
-import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForTransferType'
-import { Erc20DepositStarterV2 } from './Erc20DepositV2'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { formatAmount } from '../../util/NumberUtils'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
 import { cctpContracts } from './core/cctpContracts'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getStandardizedTimestamp } from '../../state/app/utils'
-import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { checkValidDestinationAddress } from './core/checkValidDestinationAddress'
-import { utils } from 'ethers'
 import {
   RequiresTokenApprovalProps,
   requiresTokenApproval
@@ -24,16 +16,27 @@ import {
 import { getChainIdFromProvider } from './core/getChainIdFromProvider'
 import { getProviderFromSigner } from './core/getProviderFromSigner'
 import { getAddressFromSigner } from './core/getAddressFromSigner'
-import { getBridgeTransferProperties } from './core/getBridgeTransferProperties'
+import { ApproveTokenProps, approveToken } from './core/approveToken'
+import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
+import { approveNativeCurrency } from './core/approveNativeCurrency'
 
 export class CctpTransferStarterV2 extends BridgeTransferStarterV2 {
-  constructor(props: BridgeTransferStarterV2Props) {
+  public transferType: TransferType
+
+  constructor(props: BridgeTransferStarterV2Props & { isDeposit: boolean }) {
     super(props)
+    this.transferType = props.isDeposit ? 'usdc_deposit' : 'usdc_withdrawal'
   }
+
+  public requiresNativeCurrencyApproval = requiresNativeCurrencyApproval
+
+  public approveNativeCurrency = approveNativeCurrency
+
   public async requiresTokenApproval({
     amount,
     address,
     sourceChainProvider,
+    selectedToken,
     destinationAddress
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
@@ -44,9 +47,25 @@ export class CctpTransferStarterV2 extends BridgeTransferStarterV2 {
     return await requiresTokenApproval({
       address: recipient,
       amount,
-      tokenAddress: usdcContractAddress,
+      selectedToken: { ...selectedToken, address: usdcContractAddress },
       spender: tokenMessengerContractAddress,
       sourceChainProvider
+    })
+  }
+
+  public async approveToken({
+    connectedSigner,
+    selectedToken,
+    destinationChainProvider
+  }: ApproveTokenProps) {
+    const sourceChainProvider = getProviderFromSigner(connectedSigner)
+    const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
+
+    const { usdcContractAddress } = getContracts(sourceChainId)
+    return await approveToken({
+      connectedSigner,
+      selectedToken: { ...selectedToken, address: usdcContractAddress },
+      destinationChainProvider
     })
   }
 
@@ -56,61 +75,12 @@ export class CctpTransferStarterV2 extends BridgeTransferStarterV2 {
     destinationChainProvider,
     connectedSigner,
     selectedToken
-  }: TransferProps) {
+  }: TransferProps & { selectedToken: SelectedToken }) {
     try {
-      // const {
-      //   amount,
-      //   destinationAddress,
-      //   sourceChainProvider,
-      //   destinationChainProvider,
-      //   connectedSigner,
-      //   nativeCurrency,
-      //   selectedToken,
-      //   isSmartContractWallet
-      // } = this
-
       const sourceChainProvider = getProviderFromSigner(connectedSigner)
       const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
 
       const address = await getAddressFromSigner(connectedSigner)
-
-      const { isDeposit } = await getBridgeTransferProperties({
-        sourceChainProvider,
-        destinationChainProvider,
-        selectedToken
-      })
-
-      // const destinationChainNetwork =
-      //   await destinationChainProvider.getNetwork()
-      // const destinationChainId = destinationChainNetwork.chainId
-
-      // if (!connectedSigner) throw Error('Signer not connected!')
-
-      // if (!selectedToken) throw Error('No token selected')
-
-      // const tokenAddress = selectedToken.sourceChainErc20ContractAddress
-      // if (!tokenAddress) throw Error('Token not deployed on source chain!')
-
-      // if (!address)
-      //   throw Error('Please connect your wallet before making the transfer')
-
-      // // check if the signer connected is a valid signer
-      // const isValidDepositChain =
-      //   await checkSignerIsValidForDepositOrWithdrawal({
-      //     connectedSigner,
-      //     destinationChainId,
-      //     transferType: 'deposit'
-      //   })
-      // if (!isValidDepositChain)
-      //   throw Error(
-      //     'Connected signer is not valid for deposits. Please connect to valid network.'
-      //   )
-
-      // // validate the destination address, else throw error
-      // await checkValidDestinationAddress({
-      //   destinationAddress,
-      //   isSmartContractWallet
-      // })
 
       // const usdcDepositConfirmationAndMode = await externalCallbacks[
       //   'confirmUsdcDepositFromNormalOrCctpBridge'
@@ -147,23 +117,6 @@ export class CctpTransferStarterV2 extends BridgeTransferStarterV2 {
       }
 
       const recipient = destinationAddress || address
-      // const { usdcContractAddress, tokenMessengerContractAddress } =
-      //   getContracts(sourceChainId)
-      // const tokenAllowanceApproval = await approveTokenAllowance({
-      //   address: recipient,
-      //   amount,
-      //   tokenAddress: usdcContractAddress,
-      //   spender: tokenMessengerContractAddress,
-      //   nativeCurrency,
-      //   l1Signer: connectedSigner,
-      //   l1Provider: sourceChainProvider,
-      //   l2Provider: destinationChainProvider,
-      //   tokenAllowanceApproval: externalCallbacks['tokenAllowanceApprovalCctp']
-      // })
-
-      // if (!tokenAllowanceApproval) {
-      //   throw Error('Token allowance not approved')
-      // }
 
       // if (
       //   isSmartContractWallet &&
@@ -193,15 +146,11 @@ export class CctpTransferStarterV2 extends BridgeTransferStarterV2 {
       }
 
       return {
-        type: 'cctp_withdrawal',
+        transferType: this.transferType,
         status: 'pending',
-        sourceChain: {
-          provider: sourceChainProvider,
-          tx: { hash: depositForBurnTx.hash }
-        },
-        destination: {
-          provider: destinationChainProvider
-        }
+        sourceChainProvider,
+        sourceChainTransaction: depositForBurnTx,
+        destinationChainProvider
       }
 
       // if (isSmartContractWallet) {
