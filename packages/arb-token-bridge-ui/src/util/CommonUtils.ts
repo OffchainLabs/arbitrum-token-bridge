@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react'
+
 export function shortenAddress(address: string) {
   const addressLength = address.length
 
@@ -32,7 +34,12 @@ export const createBlockExplorerUrlForToken = ({
   if (!tokenAddress) {
     return undefined
   }
-  const url = new URL(explorerLink)
-  url.pathname += `token/${tokenAddress}`
-  return url.toString()
+  try {
+    const url = new URL(explorerLink)
+    url.pathname += `token/${tokenAddress}`
+    return url.toString()
+  } catch (error) {
+    Sentry.captureException(error)
+    return undefined
+  }
 }
