@@ -51,6 +51,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC,
+  isTokenUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import {
@@ -59,7 +60,7 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
+import { removeLinkForwardSlash, shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
@@ -286,6 +287,13 @@ function TokenBalance({
   tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const isL1 = on === NetworkType.l1
+  const chain = isL1 ? l1.network : l2.network
+
+  const isERC20BridgeToken = (
+    token: ERC20BridgeToken | NativeCurrencyErc20 | null
+  ): token is ERC20BridgeToken =>
+    token !== null && !token.hasOwnProperty('isCustom')
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -296,10 +304,10 @@ function TokenBalance({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(forToken.symbol, {
         erc20L1Address: forToken.address,
-        chain: on === NetworkType.l1 ? l1.network : l2.network
+        chain
       })
     )
-  }, [forToken, tokenSymbolOverride, on, l1, l2])
+  }, [forToken, tokenSymbolOverride, chain])
 
   if (!forToken) {
     return null
@@ -314,10 +322,23 @@ function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span className="tabular-nums">
         {formatAmount(balance, {
-          decimals: forToken.decimals,
-          symbol
+          decimals: forToken.decimals
         })}
-      </span>
+      </span>{' '}
+      {chain.blockExplorers &&
+      isERC20BridgeToken(forToken) &&
+      !isTokenUSDC(forToken.address) ? (
+        <ExternalLink
+          className="underline hover:text-white/70"
+          href={`${removeLinkForwardSlash(
+            chain.blockExplorers.default.url
+          )}/token/${isL1 ? forToken.address : forToken.l2Address}`}
+        >
+          <span>{symbol}</span>
+        </ExternalLink>
+      ) : (
+        <span>{symbol}</span>
+      )}
     </p>
   )
 }

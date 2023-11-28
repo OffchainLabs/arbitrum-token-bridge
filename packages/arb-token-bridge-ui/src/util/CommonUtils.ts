@@ -18,3 +18,10 @@ export function shortenTxHash(txHash: string) {
 
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'
+
+export const removeLinkForwardSlash = (link: string) => {
+  if (link.endsWith('/')) {
+    return link.substring(0, link.length - 1)
+  }
+  return link
+}
