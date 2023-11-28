@@ -4,7 +4,7 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
-import { isPending, transformWithdrawals } from '../state/app/utils'
+import { isPending, transformWithdrawal } from '../state/app/utils'
 import {
   FetchWithdrawalsParams,
   fetchWithdrawals
@@ -42,9 +42,9 @@ const fetchCompleteWithdrawalData = async (
 
   // filter out pending withdrawals
   const pendingWithdrawalMap = new Map<string, boolean>()
-  const completeWithdrawalData = transformWithdrawals(
-    withdrawals.sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
-  )
+  const completeWithdrawalData = withdrawals
+    .sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
+    .map(transformWithdrawal)
 
   completeWithdrawalData.forEach(completeTxData => {
     if (isPending(completeTxData)) {
