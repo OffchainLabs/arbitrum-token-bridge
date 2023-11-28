@@ -16,6 +16,7 @@ import {
   shouldIncludeSentTxs,
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
+import { updateAdditionalWithdrawalData } from '../util/withdrawals/helpers'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -27,7 +28,17 @@ const fetchCompleteWithdrawalData = async (
   params: FetchWithdrawalsParams
 ): Promise<CompleteWithdrawalData> => {
   // get the original deposits
-  const withdrawals = await fetchWithdrawals(params)
+  const withdrawalsWithoutStatuses = await fetchWithdrawals(params)
+
+  const withdrawals: L2ToL1EventResultPlus[] = await Promise.all(
+    withdrawalsWithoutStatuses.map(withdrawal =>
+      updateAdditionalWithdrawalData(
+        withdrawal,
+        params.l1Provider,
+        params.l2Provider
+      )
+    )
+  )
 
   // filter out pending withdrawals
   const pendingWithdrawalMap = new Map<string, boolean>()
