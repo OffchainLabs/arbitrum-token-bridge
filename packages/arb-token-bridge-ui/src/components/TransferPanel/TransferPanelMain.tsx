@@ -287,8 +287,8 @@ function TokenBalance({
   tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
-  const isL1 = on === NetworkType.l1
-  const chain = isL1 ? l1.network : l2.network
+  const isParentChain = on === NetworkType.l1
+  const chain = isParentChain ? l1.network : l2.network
 
   const isERC20BridgeToken = (
     token: ERC20BridgeToken | NativeCurrencyErc20 | null
@@ -329,10 +329,10 @@ function TokenBalance({
       isERC20BridgeToken(forToken) &&
       !isTokenUSDC(forToken.address) ? (
         <ExternalLink
-          className="underline hover:text-white/70"
+          className="arb-hover underline"
           href={`${removeLinkForwardSlash(
             chain.blockExplorers.default.url
-          )}/token/${isL1 ? forToken.address : forToken.l2Address}`}
+          )}/token/${isParentChain ? forToken.address : forToken.l2Address}`}
         >
           <span>{symbol}</span>
         </ExternalLink>
