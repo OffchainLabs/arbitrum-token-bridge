@@ -2,7 +2,6 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, Signer } from 'ethers'
 import { fetchErc20Allowance } from '../../../util/TokenUtils'
-import { NativeCurrency } from '../../../hooks/useNativeCurrency'
 import { ExternalCallback } from '../BridgeTransferStarterV2'
 
 type ApproveTokenAllowanceProps = {
@@ -12,7 +11,6 @@ type ApproveTokenAllowanceProps = {
   l1Signer: Signer
   l1Provider: Provider
   l2Provider: Provider
-  nativeCurrency: NativeCurrency
   spender: string
   tokenAllowanceApproval?: ExternalCallback
 }
@@ -29,7 +27,7 @@ export async function approveTokenAllowance({
     return false
   }
 }: ApproveTokenAllowanceProps): Promise<boolean> {
-  const allowanceForL1Gateway = await fetchErc20Allowance({
+  const allowanceForSpender = await fetchErc20Allowance({
     address: tokenAddress,
     provider: l1Provider,
     owner: address,
@@ -37,7 +35,7 @@ export async function approveTokenAllowance({
   })
 
   // need for approval - allowance exhausted
-  if (!allowanceForL1Gateway.gte(amount)) {
+  if (!allowanceForSpender.gte(amount)) {
     const approval = await tokenAllowanceApproval()
 
     // if user doesn't approve

@@ -736,7 +736,7 @@ export function TransferPanelMain({
 
   const switchNetworksOnTransferPanel = useCallback(async () => {
     try {
-      await switchNetworkAsync?.(to.id)
+      // await switchNetworkAsync?.(to.id)
 
       const newFrom = to
       const newTo = from

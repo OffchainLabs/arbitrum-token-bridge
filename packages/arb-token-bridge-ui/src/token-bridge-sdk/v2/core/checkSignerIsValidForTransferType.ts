@@ -1,23 +1,30 @@
 import { Signer } from 'ethers'
 import { isNetwork } from '../../../util/networks'
+import { TransferType } from '../BridgeTransferStarterV2'
+import { getProviderFromSigner } from './getProviderFromSigner'
+import { getChainIdFromProvider } from './getChainIdFromProvider'
+import { Provider } from '@ethersproject/providers'
 
 /*
     Returns boolean value to indicate whether the connected signer supports deposit or withdrawal.
     We should throw an error if the user tries to perform deposit/withdrawal if not connected to network supporting it.
     Helpful in showing a prompt to switch to correct network.
 */
-export const checkSignerIsValidForDepositOrWithdrawal = async ({
+export const checkSignerIsValidForTransferType = async ({
   connectedSigner,
-  destinationChainId,
+  destinationChainProvider,
   transferType
 }: {
   connectedSigner: Signer
-  destinationChainId: number
-  transferType: 'deposit' | 'withdrawal'
+  destinationChainProvider: Provider
+  transferType: TransferType
 }) => {
-  if (connectedSigner.provider) {
-    const signerChainId = (await connectedSigner.provider?.getNetwork?.())
-      .chainId
+  const sourceChainProvider = getProviderFromSigner(connectedSigner)
+  if (sourceChainProvider) {
+    const signerChainId = await getChainIdFromProvider(sourceChainProvider)
+    const destinationChainId = await getChainIdFromProvider(
+      destinationChainProvider
+    )
 
     const isBaseChainEthereum =
       isNetwork(signerChainId).isEthereumMainnetOrTestnet
@@ -29,9 +36,10 @@ export const checkSignerIsValidForDepositOrWithdrawal = async ({
 
     const isValidWithdrawalChain = !isValidDepositChain
 
-    if (transferType === 'deposit' && !isValidDepositChain) return false
+    if (transferType.includes('deposit') && !isValidDepositChain) return false
 
-    if (transferType === 'withdrawal' && !isValidWithdrawalChain) return false
+    if (transferType.includes('withdrawal') && !isValidWithdrawalChain)
+      return false
 
     return true
   }

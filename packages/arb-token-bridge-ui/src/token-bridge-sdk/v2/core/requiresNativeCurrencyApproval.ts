@@ -1,25 +1,28 @@
 import { EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import { fetchErc20Allowance } from '../../../util/TokenUtils'
 import { NativeCurrency } from '../../../hooks/useNativeCurrency'
+import { getProviderFromSigner } from './getProviderFromSigner'
+import { getAddressFromSigner } from './getAddressFromSigner'
 
 export type RequiresNativeCurrencyApprovalProps = {
-  address: string
   amount: BigNumber
-  sourceChainProvider: Provider
+  connectedSigner: Signer
   destinationChainProvider: Provider
   nativeCurrency: NativeCurrency
 }
 
 export async function requiresNativeCurrencyApproval({
-  address,
   amount,
-  sourceChainProvider,
+  connectedSigner,
   destinationChainProvider,
   nativeCurrency
 }: RequiresNativeCurrencyApprovalProps) {
   if (!nativeCurrency.isCustom) return false
+
+  const sourceChainProvider = getProviderFromSigner(connectedSigner)
+  const address = await getAddressFromSigner(connectedSigner)
 
   const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
   const { l2Network } = ethBridger

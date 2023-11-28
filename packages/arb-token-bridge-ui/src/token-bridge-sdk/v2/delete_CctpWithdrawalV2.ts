@@ -5,7 +5,7 @@ import {
 } from './BridgeTransferStarterV2'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { approveTokenAllowance } from './core/approveTokenAllowance'
-import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForDepositOrWithdrawal'
+import { checkSignerIsValidForDepositOrWithdrawal } from './core/checkSignerIsValidForTransferType'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { formatAmount } from '../../util/NumberUtils'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
