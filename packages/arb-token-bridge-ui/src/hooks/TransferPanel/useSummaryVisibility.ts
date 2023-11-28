@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
 import { useAppState } from '../../state'
-import { useIsSwitchingL2Chain } from '../../components/TransferPanel/TransferPanelMainUtils'
 import { useAppContextState } from '../../components/App/AppContext'
 import { GasEstimationStatus } from '../../components/TransferPanel/TransferPanelSummary'
 import { UseTransferReadinessTransferReady } from '../../components/TransferPanel/useTransferReadiness'
@@ -21,10 +20,8 @@ export function useSummaryVisibility({
     layout: { isTransferring }
   } = useAppContextState()
 
-  const isSwitchingL2Chain = useIsSwitchingL2Chain()
-
   const isSummaryVisible = useMemo(() => {
-    if (isSwitchingL2Chain || gasEstimationStatus === 'error') {
+    if (gasEstimationStatus === 'error') {
       return false
     }
 
@@ -34,7 +31,6 @@ export function useSummaryVisibility({
 
     return isDepositMode ? depositReady : withdrawalReady
   }, [
-    isSwitchingL2Chain,
     gasEstimationStatus,
     isTransferring,
     isDepositMode,

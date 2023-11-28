@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import {
   ContractStorage,
   ERC20BridgeToken,
@@ -8,26 +7,21 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { TokenListWithId } from '../../util/TokenListUtils'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
-  const {
-    l1: { network: l1Network },
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-
-  const { data: tokenLists = [] } = useTokenLists(l2Network.id)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { data: tokenLists = [] } = useTokenLists(childChain.id)
 
   return useMemo(() => {
-    if (typeof l1Network === 'undefined' || typeof l2Network === 'undefined') {
-      return {}
-    }
-
     return tokenListsToSearchableTokenStorage(
       tokenLists,
-      String(l1Network.id),
-      String(l2Network.id)
+      String(parentChain.id),
+      String(childChain.id)
     )
-  }, [tokenLists, l1Network, l2Network])
+  }, [tokenLists, parentChain.id, childChain.id])
 }
 
 export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {

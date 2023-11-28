@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../state/app/state'
 import {
   WithdrawalCardContainer,
@@ -28,20 +27,24 @@ import { GET_HELP_LINK } from '../../constants'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const l1NetworkName = getNetworkName(l1.network.id)
-  const l2NetworkName = getNetworkName(l2.network.id)
+  const parentNetworkName = getNetworkName(parentChain.id)
+  const childNetworkName = getNetworkName(childChain.id)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const chainId = useChainId()
-  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(
+    networks.sourceChain.id
+  )
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
@@ -52,14 +55,14 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   if (tx.isCctp) {
     toNetworkId = getTargetChainIdFromSourceChain(tx)
   } else {
-    toNetworkId = tx.isWithdrawal ? l1.network.id : l2.network.id
+    toNetworkId = tx.isWithdrawal ? parentChain.id : childChain.id
   }
 
-  const networkName = getNetworkName(toNetworkId)
-  const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
+  const toNetworkName = getNetworkName(toNetworkId)
+  const isOrbitChainSelected = isNetwork(childChain.id).isOrbitChain
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(l2.network.id).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -71,7 +74,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
       (isSourceChainIdArbitrum && isEthereumMainnetOrTestnet)
     )
   }, [
-    l2.network.id,
+    childChain.id,
     isSourceChainIdEthereum,
     isArbitrum,
     isSourceChainIdArbitrum,
@@ -97,8 +100,8 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    if (shouldTrackAnalytics(networkName)) {
-      trackEvent('Tx Error: Get Help Click', { network: networkName })
+    if (shouldTrackAnalytics(toNetworkName)) {
+      trackEvent('Tx Error: Get Help Click', { network: toNetworkName })
     }
   }
 
@@ -106,9 +109,9 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isSourceChainIdEthereum ? l1.network : l2.network
+        chainId: isSourceChainIdEthereum ? parentChain.id : childChain.id
       }),
-    [tx, isSourceChainIdEthereum, l1, l2]
+    [tx, isSourceChainIdEthereum, parentChain.id, childChain.id]
   )
 
   if (isOrbitChainSelected && tx.isCctp) {
@@ -165,7 +168,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             content={
               <span>
                 {`Please switch to ${
-                  isSourceChainIdEthereum ? l2NetworkName : l1NetworkName
+                  isSourceChainIdEthereum ? parentNetworkName : childNetworkName
                 } to claim your ${
                   isSourceChainIdEthereum ? 'deposit' : 'withdrawal'
                 }.`}

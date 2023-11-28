@@ -13,7 +13,6 @@ import {
 } from './TransactionsTable'
 import { TransactionsTableSwitch } from './TransactionsTableSwitch'
 import { useCctpFetching, useCctpState } from '../../../state/cctpState'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { MergedTransaction } from '../../../state/app/state'
 import { useAccountType } from '../../../hooks/useAccountType'
 import { getNetworkName } from '../../../util/networks'

@@ -1,6 +1,5 @@
-import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { useAccount, useChainId } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
@@ -10,13 +9,14 @@ import {
   fetchWithdrawals
 } from '../util/withdrawals/fetchWithdrawals'
 import { L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { useAccountType } from './useAccountType'
 import {
   shouldIncludeSentTxs,
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
 import { updateAdditionalWithdrawalData } from '../util/withdrawals/helpers'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -65,18 +65,12 @@ const fetchCompleteWithdrawalData = async (
 }
 
 export const useWithdrawals = (withdrawalPageParams: PageParams) => {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { isSmartContractWallet, isLoading: isAccountTypeLoading } =
     useAccountType()
-  const chainId = useChainId()
-
-  const isConnectedToParentChain = l1.network.id === chainId
-
-  // only change l1-l2 providers (and hence, reload withdrawals) when the connected chain id changes
-  // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
-  const l1Provider = useMemo(() => l1.provider, [l1.network.id])
-  const l2Provider = useMemo(() => l2.provider, [l2.network.id])
-
+  const isConnectedToParentChain = parentChain.id === networks.sourceChain.id
   const { address: walletAddress } = useAccount()
 
   // SCW address is tied to a specific network
@@ -106,8 +100,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       ? [
           'withdrawals',
           walletAddress,
-          l1Provider,
-          l2Provider,
+          parentChainProvider,
+          childChainProvider,
           withdrawalPageParams.pageNumber,
           withdrawalPageParams.pageSize,
           withdrawalPageParams.searchString,
@@ -117,8 +111,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
     ([
       ,
       _walletAddress,
-      _l1Provider,
-      _l2Provider,
+      _parentChainProvider,
+      _childChainProvider,
       _pageNumber,
       _pageSize,
       _searchString
@@ -126,8 +120,8 @@ export const useWithdrawals = (withdrawalPageParams: PageParams) => {
       fetchCompleteWithdrawalData({
         sender: includeSentTxs ? _walletAddress : undefined,
         receiver: includeReceivedTxs ? _walletAddress : undefined,
-        l1Provider: _l1Provider,
-        l2Provider: _l2Provider,
+        l1Provider: _parentChainProvider,
+        l2Provider: _childChainProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString

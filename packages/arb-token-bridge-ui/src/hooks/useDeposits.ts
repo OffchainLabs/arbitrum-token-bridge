@@ -1,6 +1,5 @@
-import { useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
-import { useAccount, useChainId } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
@@ -9,7 +8,6 @@ import {
   FetchDepositParams,
   fetchDeposits
 } from '../util/deposits/fetchDeposits'
-import { useNetworksAndSigners } from './useNetworksAndSigners'
 import { Transaction } from './useTransactions'
 import { useAccountType } from './useAccountType'
 import {
@@ -17,6 +15,8 @@ import {
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -58,17 +58,12 @@ export const fetchCompleteDepositData = async (
 }
 
 export const useDeposits = (depositPageParams: PageParams) => {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
+  const isConnectedToParentChain = parentChain.id === networks.sourceChain.id
   const { isSmartContractWallet, isLoading: isAccountTypeLoading } =
     useAccountType()
-  const chainId = useChainId()
-
-  const isConnectedToParentChain = l1.network.id === chainId
-
-  // only change l1-l2 providers (and hence, reload deposits) when the connected chain id changes
-  // otherwise tx-history unnecessarily reloads on l1<->l2 network switch as well (#847)
-  const l1Provider = useMemo(() => l1.provider, [l1.network.id])
-  const l2Provider = useMemo(() => l2.provider, [l2.network.id])
 
   const { address: walletAddress } = useAccount()
 
@@ -97,8 +92,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
       ? [
           'deposits',
           walletAddress,
-          l1Provider,
-          l2Provider,
+          parentChainProvider,
+          childChainProvider,
           depositPageParams.pageNumber,
           depositPageParams.pageSize,
           depositPageParams.searchString,
@@ -108,8 +103,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
     ([
       ,
       _walletAddress,
-      _l1Provider,
-      _l2Provider,
+      _parentChainProvider,
+      _childChainProvider,
       _pageNumber,
       _pageSize,
       _searchString
@@ -117,8 +112,8 @@ export const useDeposits = (depositPageParams: PageParams) => {
       fetchCompleteDepositData({
         sender: includeSentTxs ? _walletAddress : undefined,
         receiver: includeReceivedTxs ? _walletAddress : undefined,
-        l1Provider: _l1Provider,
-        l2Provider: _l2Provider,
+        l1Provider: _parentChainProvider,
+        l2Provider: _childChainProvider,
         pageNumber: _pageNumber,
         pageSize: _pageSize,
         searchString: _searchString

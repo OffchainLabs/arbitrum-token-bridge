@@ -1,13 +1,8 @@
-import { useNetwork } from 'wagmi'
-
 import { isNetwork } from '../util/networks'
+import { useNetworks } from './useNetworks'
 
+// TODO: do we need this hook?
 export function useIsConnectedToArbitrum() {
-  const { chain } = useNetwork()
-
-  if (typeof chain === 'undefined') {
-    return undefined
-  }
-
-  return isNetwork(chain.id).isArbitrum
+  const [{ sourceChain }] = useNetworks()
+  return isNetwork(sourceChain.id).isArbitrum
 }

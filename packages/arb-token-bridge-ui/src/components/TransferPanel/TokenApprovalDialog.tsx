@@ -6,14 +6,13 @@ import {
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 
-import { useChainId, useSigner } from 'wagmi'
+import { useSigner } from 'wagmi'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -30,6 +29,8 @@ import {
   fetchErc20L2GatewayAddress
 } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -49,14 +50,14 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
-  const { isEthereumMainnet, isTestnet } = isNetwork(l1.network.id)
-  const provider = isDepositMode ? l1.provider : l2.provider
-  const gasPrice = useGasPrice({ provider })
-  const chainId = useChainId()
+  const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
+  const gasPrice = useGasPrice({ provider: networks.sourceChainProvider })
   const { data: signer } = useSigner({
-    chainId
+    chainId: networks.sourceChain.id
   })
 
   const [checked, setChecked] = useState(false)
@@ -92,7 +93,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           gasEstimate = constants.Zero
         } else {
           gasEstimate = await approveCctpEstimateGas(
-            chainId,
+            networks.sourceChain.id,
             constants.MaxUint256,
             signer
           )
@@ -101,8 +102,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         gasEstimate = await approveTokenEstimateGas({
           erc20L1Address: token.address,
           address: walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+          l1Provider: parentChainProvider,
+          l2Provider: childChainProvider
         })
       }
 
@@ -117,18 +118,20 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isOpen,
     isDepositMode,
     isTestnet,
-    chainId,
     signer,
     walletAddress,
     token?.address,
-    l1.provider,
-    l2.provider
+    networks.sourceChain.id,
+    parentChainProvider,
+    childChainProvider
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
       if (isCctp) {
-        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
+        setContractAddress(
+          getContracts(networks.sourceChain.id)?.tokenMessengerContractAddress
+        )
         return
       }
       if (!token?.address) {
@@ -139,8 +142,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress(
           await fetchErc20L1GatewayAddress({
             erc20L1Address: token.address,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
+            l1Provider: networks.sourceChainProvider,
+            l2Provider: networks.destinationChainProvider
           })
         )
         return
@@ -148,12 +151,19 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       setContractAddress(
         await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
-          l2Provider: l2.provider
+          l2Provider: networks.sourceChainProvider
         })
       )
     }
     getContractAddress()
-  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
+  }, [
+    isCctp,
+    isDepositMode,
+    networks.destinationChainProvider,
+    networks.sourceChain.id,
+    networks.sourceChainProvider,
+    token?.address
+  ])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -201,9 +211,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(
-                isDepositMode ? l1.network.id : l2.network.id
-              )}/token/${token?.address}`}
+              href={`${getExplorerUrl(networks.sourceChain.id)}/token/${
+                token?.address
+              }`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
@@ -223,7 +233,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <ExternalLink
                 className="text-blue-link underline"
                 href={`${getExplorerUrl(
-                  isDepositMode ? l1.network.id : l2.network.id
+                  networks.sourceChain.id
                 )}/address/${contractAddress}`}
                 onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   event.stopPropagation()

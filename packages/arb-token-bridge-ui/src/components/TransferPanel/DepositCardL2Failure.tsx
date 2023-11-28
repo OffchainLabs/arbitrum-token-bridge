@@ -9,7 +9,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 
 import { MergedTransaction } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { DepositCardContainer, DepositL1TxStatus } from './DepositCard'
 import { Tooltip } from '../common/Tooltip'
@@ -17,6 +16,8 @@ import { Button } from '../common/Button'
 import { getRetryableTicketExpiration } from '../../util/RetryableUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
   const [retryableExpiryDays, setRetryableExpiryDays] = useState<{
@@ -24,10 +25,9 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
     days: number
   }>({ isValid: false, days: 0 })
 
-  const {
-    l1: { provider: l1Provider },
-    l2: { provider: l2Provider }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const { redeem, isRedeeming } = useRedeemRetryable()
@@ -46,8 +46,8 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
       const { daysUntilExpired, isLoading, isLoadingError, isExpired } =
         await getRetryableTicketExpiration({
           l1TxHash: tx.txId,
-          l1Provider,
-          l2Provider
+          l1Provider: parentChainProvider,
+          l2Provider: childChainProvider
         })
 
       // update the state to show/hide text and the card
@@ -55,7 +55,7 @@ export function DepositCardL2Failure({ tx }: { tx: MergedTransaction }) {
         days: daysUntilExpired,
         isValid: !(isLoading || isLoadingError || isExpired)
       })
-    }, [tx.txId, l1Provider, l2Provider])
+    }, [tx.txId, childChainProvider, parentChainProvider])
 
   useEffect(() => {
     updateRetryableTicketExpirationDate()

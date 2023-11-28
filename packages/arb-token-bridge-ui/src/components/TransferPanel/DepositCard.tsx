@@ -3,7 +3,6 @@ import Image from 'next/image'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
@@ -14,13 +13,14 @@ import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function DepositL1TxStatus({
   tx
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const { l1 } = useNetworksAndSigners()
+  const [{ sourceChain }] = useNetworks()
 
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
@@ -33,7 +33,7 @@ export function DepositL1TxStatus({
     case DepositStatus.EXPIRED:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(sourceChain.id)}/tx/${tx.txId}`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -51,7 +51,7 @@ export function DepositL2TxStatus({
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const { l2 } = useNetworksAndSigners()
+  const [{ destinationChain }] = useNetworks()
 
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
@@ -61,7 +61,7 @@ export function DepositL2TxStatus({
     case DepositStatus.L2_SUCCESS:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(l2.network.id)}/tx/${
+          href={`${getExplorerUrl(destinationChain.id)}/tx/${
             tx.l1ToL2MsgData?.l2TxID
           }`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
@@ -91,9 +91,7 @@ export function DepositCardContainer({
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [{ destinationChain }] = useNetworks()
 
   const bgClassName = useMemo(() => {
     switch (tx.depositStatus) {
@@ -113,7 +111,7 @@ export function DepositCardContainer({
   }, [tx])
 
   const borderColor =
-    l2Network.id === ChainId.ArbitrumNova
+    destinationChain.id === ChainId.ArbitrumNova
       ? 'border-arb-nova-primary'
       : 'border-arb-one-primary'
 
@@ -124,7 +122,7 @@ export function DepositCardContainer({
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <Image
-          src={getNetworkLogo(l2Network.id)}
+          src={getNetworkLogo(destinationChain.id)}
           className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
           alt="Deposit"
           height={90}

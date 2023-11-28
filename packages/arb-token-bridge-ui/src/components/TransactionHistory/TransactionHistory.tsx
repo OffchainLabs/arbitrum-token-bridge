@@ -6,7 +6,7 @@ import {
   useEffect,
   useMemo
 } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
 import { CompleteDepositData } from '../../hooks/useDeposits'
@@ -59,7 +59,6 @@ export const TransactionHistory = ({
   setDepositsPageParams: Dispatch<SetStateAction<PageParams>>
   setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
 }) => {
-  const { chain } = useNetwork()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isSmartContractWallet } = useAccountType()
@@ -144,11 +143,13 @@ export const TransactionHistory = ({
 
   const handleSmartContractWalletTxHistoryTab = useCallback(
     (index: number) => {
-      if (!isSmartContractWallet || !chain) {
+      if (!isSmartContractWallet) {
         return
       }
       const isCctpTab = index === TransactionHistoryTab.CCTP
-      const isConnectedToArbitrum = isNetwork(chain.id).isArbitrum
+      const isConnectedToArbitrum = isNetwork(
+        networks.sourceChain.id
+      ).isArbitrum
 
       if (isCctpTab) {
         if (isConnectedToArbitrum) {
@@ -159,7 +160,7 @@ export const TransactionHistory = ({
       }
     },
     [
-      chain,
+      networks.sourceChain.id,
       isSmartContractWallet,
       showCctpDepositsTransactions,
       showCctpWithdrawalsTransactions
@@ -177,7 +178,7 @@ export const TransactionHistory = ({
     if (transfersIds.length === 0) {
       setTransactionHistoryTab(0)
     }
-  }, [address, chain, setTransactionHistoryTab, transfersIds])
+  }, [address, networks.sourceChain.id, setTransactionHistoryTab, transfersIds])
 
   const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
 

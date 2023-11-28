@@ -1,13 +1,7 @@
-import { useNetwork } from 'wagmi'
-
 import { isNetwork } from '../util/networks'
+import { useNetworks } from './useNetworks'
 
 export function useIsConnectedToOrbitChain() {
-  const { chain } = useNetwork()
-
-  if (typeof chain === 'undefined') {
-    return undefined
-  }
-
-  return isNetwork(chain.id).isOrbitChain
+  const [{ sourceChain }] = useNetworks()
+  return isNetwork(sourceChain.id).isOrbitChain
 }

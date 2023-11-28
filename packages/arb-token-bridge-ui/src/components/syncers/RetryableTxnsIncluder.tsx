@@ -8,15 +8,15 @@ import {
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function RetryableTxnsIncluder(): JSX.Element {
   const actions = useActions()
-  const {
-    l1: { provider: l1Provider },
-    l2: { provider: l2Provider }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
 
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
@@ -29,8 +29,8 @@ export function RetryableTxnsIncluder(): JSX.Element {
       const { l1ToL2Msg, isClassic } = await getL1ToL2MessageDataFromL1TxHash({
         depositTxId,
         isEthDeposit,
-        l1Provider,
-        l2Provider
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
       })
 
       if (!l1ToL2Msg) return
@@ -64,7 +64,7 @@ export function RetryableTxnsIncluder(): JSX.Element {
         )
       }
     },
-    [l1Provider, l2Provider, arbTokenBridge?.transactions]
+    [childChainProvider, parentChainProvider, arbTokenBridge?.transactions]
   )
 
   const checkAndUpdateFailedRetryables = useCallback(async () => {

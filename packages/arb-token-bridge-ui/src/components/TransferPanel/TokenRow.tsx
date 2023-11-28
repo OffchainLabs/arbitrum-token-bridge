@@ -23,7 +23,6 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
@@ -32,6 +31,8 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -88,35 +89,33 @@ export function TokenRow({
     }
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
-  const {
-    l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
 
   const isSmallScreen = useMedia('(max-width: 419px)')
-  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenName = useMemo(() => {
     if (token) {
       return sanitizeTokenName(token.name, {
         erc20L1Address: token.address,
-        chain: isDepositMode ? l1Network : l2Network
+        chainId: networks.sourceChain.id
       })
     }
 
     return nativeCurrency.name
-  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+  }, [token, nativeCurrency.name, networks.sourceChain.id])
 
   const tokenSymbol = useMemo(() => {
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
-        chain: isDepositMode ? l1Network : l2Network
+        chainId: networks.sourceChain.id
       })
     }
 
     return nativeCurrency.symbol
-  }, [token, nativeCurrency, isDepositMode, l2Network, l1Network])
+  }, [token, nativeCurrency.symbol, networks.sourceChain.id])
 
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
@@ -131,11 +130,11 @@ export function TokenRow({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
   const {
-    eth: [ethL2Balance],
+    eth: [nativeL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -150,10 +149,10 @@ export function TokenRow({
       if (nativeCurrency.isCustom) {
         return isDepositMode
           ? erc20L1Balances?.[nativeCurrency.address]
-          : ethL2Balance
+          : nativeL2Balance
       }
 
-      return isDepositMode ? ethL1Balance : ethL2Balance
+      return ethL1Balance
     }
 
     if (isDepositMode) {
@@ -166,13 +165,13 @@ export function TokenRow({
 
     return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
   }, [
-    ethL1Balance,
-    ethL2Balance,
     token,
-    nativeCurrency,
     isDepositMode,
-    erc20L1Balances,
-    erc20L2Balances
+    erc20L2Balances,
+    nativeCurrency,
+    ethL1Balance,
+    nativeL2Balance,
+    erc20L1Balances
   ])
 
   const isArbitrumToken = useMemo(() => {
@@ -267,9 +266,7 @@ export function TokenRow({
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
   const arbitrumTokenTooltipContent = useMemo(() => {
-    const networkName = getNetworkName(
-      isDepositMode ? l1Network.id : l2Network.id
-    )
+    const networkName = getNetworkName(networks.sourceChain.id)
 
     return (
       <span>
@@ -277,7 +274,7 @@ export function TokenRow({
         fake tokens trying to impersonate it.
       </span>
     )
-  }, [isDepositMode, l1Network, l2Network])
+  }, [networks.sourceChain.id])
 
   const tokenBalanceContent = useMemo(() => {
     if (!tokenIsAddedToTheBridge) {
@@ -383,12 +380,12 @@ export function TokenRow({
                   <>
                     {isL2NativeToken ? (
                       <BlockExplorerTokenLink
-                        chain={l2Network}
+                        chain={networks.destinationChain}
                         address={token.address}
                       />
                     ) : (
                       <BlockExplorerTokenLink
-                        chain={l1Network}
+                        chain={networks.sourceChain}
                         address={token.address}
                       />
                     )}
@@ -397,7 +394,7 @@ export function TokenRow({
                   <>
                     {tokenHasL2Address ? (
                       <BlockExplorerTokenLink
-                        chain={l2Network}
+                        chain={networks.destinationChain}
                         address={token.l2Address}
                       />
                     ) : (
@@ -413,7 +410,7 @@ export function TokenRow({
               {isL2NativeToken ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
-                    l2Network.id
+                    networks.destinationChain.id
                   )} and can’t be bridged.`}
                 </span>
               ) : (
@@ -429,7 +426,7 @@ export function TokenRow({
               <div className="flex w-full justify-between">
                 {isDepositMode && (
                   <BlockExplorerTokenLink
-                    chain={l1Network}
+                    chain={networks.sourceChain}
                     address={nativeCurrency.address}
                   />
                 )}

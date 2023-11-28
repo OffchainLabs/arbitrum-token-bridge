@@ -5,15 +5,19 @@ import { useAccount } from 'wagmi'
 import { Transaction, txnTypeToLayer } from '../../hooks/useTransactions'
 import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useCctpState, useUpdateCctpTransactions } from '../../state/cctpState'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
-  const {
-    l1: { provider: l1Provider, network: l1Network },
-    l2: { provider: l2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [
+    {
+      sourceChain,
+      sourceChainProvider,
+      destinationChain,
+      destinationChainProvider
+    }
+  ] = useNetworks()
   const { updateCctpTransactions } = useUpdateCctpTransactions()
 
   const {
@@ -24,17 +28,19 @@ export function PendingTransactionsUpdater(): JSX.Element {
 
   useEffect(() => {
     resetTransfers()
-  }, [address, l1Network.id, l2Network.id, resetTransfers])
+  }, [address, sourceChain.id, destinationChain.id, resetTransfers])
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
-      const provider = txnTypeToLayer(tx.type) === 2 ? l2Provider : l1Provider
+      const provider =
+        txnTypeToLayer(tx.type) === 2
+          ? destinationChainProvider
+          : sourceChainProvider
       return provider.getTransactionReceipt(tx.txID)
     },
-    [l1Provider, l2Provider]
+    [destinationChainProvider, sourceChainProvider]
   )
 
-  // eslint-disable-next-line consistent-return
   const checkAndUpdatePendingTransactions = useCallback(() => {
     if (!arbTokenBridgeLoaded) return
     updateCctpTransactions()

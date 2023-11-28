@@ -3,7 +3,6 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
-import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { MergedTransaction } from '../../../state/app/state'
@@ -51,13 +50,13 @@ export function TransactionsTableRowAction({
   const networkName = getNetworkName(networks.sourceChain.id)
   const targetNetworkName = getNetworkName(networks.destinationChain.id)
 
-  // TODO: [1307] - chainId might be different than networks.source/destination
-  const chainId = useChainId()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
+  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(
+    networks.sourceChain.id
+  )
 
   const currentChainIsValid = useMemo(() => {
     const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain

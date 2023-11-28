@@ -26,7 +26,6 @@ import {
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -39,6 +38,8 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 enum Panel {
   TOKENS,
@@ -67,25 +68,20 @@ function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
-
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
       // Don't show the Arbitrum Token token list, because it's special and can't be disabled
       if (tokenList.isArbitrumTokenTokenList) {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      return tokenList.originChainID === childChain.id
     })
-  }, [l2Network])
+  }, [childChain.id])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
@@ -155,24 +151,22 @@ function TokensPanel({
       isDepositMode
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
 
-  const nativeCurrency = useNativeCurrency({ provider: L2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(childChain.id)
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -391,7 +385,6 @@ function TokensPanel({
             <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
 
             <input
-              id="newTokenAddress"
               value={newToken}
               onChange={e => {
                 setErrorMessage('')
@@ -483,11 +476,12 @@ export function TokenSearch({
   const {
     app: { setSelectedToken }
   } = useActions()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -542,7 +536,7 @@ export function TokenSearch({
 
       const data = await fetchErc20Data({
         address: _token.address,
-        provider: l1.provider
+        provider: parentChainProvider
       })
 
       if (data) {

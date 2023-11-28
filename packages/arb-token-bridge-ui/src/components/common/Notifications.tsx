@@ -3,8 +3,8 @@ import { twMerge } from 'tailwind-merge'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DOCS_DOMAIN } from '../../constants'
+import { useNetworks } from '../../hooks/useNetworks'
 
 function NotificationContainer({ children }: { children: React.ReactNode }) {
   return (
@@ -57,12 +57,12 @@ function NitroDevnetNotification() {
 }
 
 export function Notifications() {
-  const { l1 } = useNetworksAndSigners()
-  const { isGoerli } = isNetwork(l1.network.id)
+  const [{ sourceChain }] = useNetworks()
+  const { isTestnet } = isNetwork(sourceChain.id)
 
   return (
     <NotificationContainer>
-      {isGoerli && <NitroDevnetNotification />}
+      {isTestnet && <NitroDevnetNotification />}
     </NotificationContainer>
   )
 }

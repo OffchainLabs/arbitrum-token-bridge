@@ -29,6 +29,7 @@ import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -78,7 +79,7 @@ export function HeaderAccountPopover({
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
-  const { chain } = useNetwork()
+  const [{ sourceChain }] = useNetworks()
   const [, copyToClipboard] = useCopyToClipboard()
 
   const { openTransactionHistoryPanel, setTransactionHistoryTab } =
@@ -212,9 +213,9 @@ export function HeaderAccountPopover({
             )}
 
             {/* Explorer button */}
-            {isCorrectNetworkConnected && chain && (
+            {isCorrectNetworkConnected && (
               <ExternalLink
-                href={`${getExplorerUrl(chain.id)}/address/${address}`}
+                href={`${getExplorerUrl(sourceChain.id)}/address/${address}`}
                 className={headerItemsClassName}
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white" />
