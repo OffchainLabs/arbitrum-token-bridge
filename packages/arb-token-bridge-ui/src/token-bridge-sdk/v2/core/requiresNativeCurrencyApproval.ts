@@ -28,7 +28,7 @@ export async function requiresNativeCurrencyApproval({
   const { l2Network } = ethBridger
 
   if (typeof l2Network.nativeToken === 'undefined') {
-    throw new Error('l2 network does not use custom fee token')
+    return false
   }
 
   const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({

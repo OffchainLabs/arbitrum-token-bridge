@@ -496,12 +496,14 @@ export function TransferPanel() {
     return false
   }
 
-  // const transferCctpV3 = async () => {
-  //   try{
-
-  //   }
-
-  // }
+  const transferCctpV3 = async () => {
+    // show a popup - to confirm if it's CCTP or USDC.e transfer
+    //
+    // if CCTP, directly call CCTP-Transfer-Starter here()
+    // if USDC.e, call transferV3() function here
+    //
+    // handle UI callbacks like onTxSubmit for CCTP only here
+  }
 
   const transferV3 = async () => {
     try {
