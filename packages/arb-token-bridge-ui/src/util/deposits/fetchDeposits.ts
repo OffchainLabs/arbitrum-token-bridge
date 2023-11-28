@@ -77,7 +77,7 @@ export const fetchDeposits = async ({
     searchString
   })
 
-  const ethDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
+  const mappedDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
     (tx: FetchDepositsFromSubgraphResult) => {
       const isEthDeposit = tx.type === 'EthDeposit'
 
@@ -125,5 +125,5 @@ export const fetchDeposits = async ({
     }
   )
 
-  return ethDepositsFromSubgraph
+  return mappedDepositsFromSubgraph
 }
