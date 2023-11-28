@@ -19,9 +19,20 @@ export function shortenTxHash(txHash: string) {
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'
 
-export const removeLinkForwardSlash = (link: string) => {
-  if (link.endsWith('/')) {
-    return link.substring(0, link.length - 1)
+export const createBlockExplorerUrlForToken = ({
+  explorerLink,
+  tokenAddress
+}: {
+  explorerLink: string | undefined
+  tokenAddress: string | undefined
+}): string | undefined => {
+  if (!explorerLink) {
+    return undefined
   }
-  return link
+  if (!tokenAddress) {
+    return undefined
+  }
+  const url = new URL(explorerLink)
+  url.pathname += `token/${tokenAddress}`
+  return url.toString()
 }

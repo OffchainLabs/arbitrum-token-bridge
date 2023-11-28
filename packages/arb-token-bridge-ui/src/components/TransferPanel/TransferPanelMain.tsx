@@ -60,7 +60,10 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { removeLinkForwardSlash, shortenAddress } from '../../util/CommonUtils'
+import {
+  createBlockExplorerUrlForToken,
+  shortenAddress
+} from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
@@ -325,14 +328,16 @@ function TokenBalance({
           decimals: forToken.decimals
         })}
       </span>{' '}
-      {chain.blockExplorers &&
-      isERC20BridgeToken(forToken) &&
-      !isTokenUSDC(forToken.address) ? (
+      {/* we don't want to show explorer link for native currency (either ETH or custom token), or USDC because user can bridge USDC to USDC.e or native USDC, vice versa */}
+      {isERC20BridgeToken(forToken) && !isTokenUSDC(forToken.address) ? (
         <ExternalLink
           className="arb-hover underline"
-          href={`${removeLinkForwardSlash(
-            chain.blockExplorers.default.url
-          )}/token/${isParentChain ? forToken.address : forToken.l2Address}`}
+          href={createBlockExplorerUrlForToken({
+            explorerLink: chain.blockExplorers
+              ? chain.blockExplorers.default.url
+              : undefined,
+            tokenAddress: isParentChain ? forToken.address : forToken.l2Address
+          })}
         >
           <span>{symbol}</span>
         </ExternalLink>
