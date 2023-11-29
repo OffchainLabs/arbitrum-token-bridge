@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react'
+
 export function shortenAddress(address: string) {
   const addressLength = address.length
 
@@ -18,3 +20,26 @@ export function shortenTxHash(txHash: string) {
 
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'
+
+export const createBlockExplorerUrlForToken = ({
+  explorerLink,
+  tokenAddress
+}: {
+  explorerLink: string | undefined
+  tokenAddress: string | undefined
+}): string | undefined => {
+  if (!explorerLink) {
+    return undefined
+  }
+  if (!tokenAddress) {
+    return undefined
+  }
+  try {
+    const url = new URL(explorerLink)
+    url.pathname += `token/${tokenAddress}`
+    return url.toString()
+  } catch (error) {
+    Sentry.captureException(error)
+    return undefined
+  }
+}
