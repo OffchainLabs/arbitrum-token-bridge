@@ -11,7 +11,6 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { Deposit } from '../../hooks/useTransactionHistory'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -55,39 +54,7 @@ export const getDepositStatus = (tx: Transaction) => {
   }
 }
 
-export const transformDeposits = (
-  deposits: Transaction[]
-): MergedTransaction[] => {
-  return deposits.map(tx => {
-    return {
-      sender: tx.sender,
-      destination: tx.destination,
-      direction: tx.type,
-      status: tx.status,
-      createdAt: tx.timestampCreated
-        ? getStandardizedTimestamp(tx.timestampCreated)
-        : null,
-      resolvedAt: tx.timestampResolved
-        ? getStandardizedTimestamp(tx.timestampResolved)
-        : null,
-      txId: tx.txID,
-      asset: tx.assetName || '',
-      assetType: tx.assetType,
-      value: tx.value,
-      uniqueId: null, // not needed
-      isWithdrawal: false,
-      blockNum: tx.blockNumber || null,
-      tokenAddress: tx.tokenAddress || null,
-      l1ToL2MsgData: tx.l1ToL2MsgData,
-      l2ToL1MsgData: tx.l2ToL1MsgData,
-      depositStatus: getDepositStatus(tx),
-      childChainId: Number(tx.l2NetworkID),
-      parentChainId: Number(tx.l1NetworkID)
-    }
-  })
-}
-
-export const transformDeposit = (tx: Deposit): MergedTransaction => {
+export const transformDeposit = (tx: Transaction): MergedTransaction => {
   return {
     sender: tx.sender,
     destination: tx.destination,
@@ -110,8 +77,8 @@ export const transformDeposit = (tx: Deposit): MergedTransaction => {
     l1ToL2MsgData: tx.l1ToL2MsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
     depositStatus: getDepositStatus(tx),
-    childChainId: tx.childChainId,
-    parentChainId: tx.parentChainId
+    childChainId: Number(tx.l2NetworkID),
+    parentChainId: Number(tx.l1NetworkID)
   }
 }
 
@@ -145,40 +112,6 @@ export const transformWithdrawal = (
     childChainId: tx.childChainId,
     parentChainId: tx.parentChainId
   }
-}
-
-export const transformWithdrawals = (
-  withdrawals: L2ToL1EventResultPlus[]
-): MergedTransaction[] => {
-  return withdrawals.map(tx => {
-    const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
-
-    return {
-      sender: tx.sender,
-      destination: tx.destinationAddress,
-      direction: 'outbox',
-      status:
-        tx.nodeBlockDeadline ===
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-          ? 'Failure'
-          : outgoingStateToString[tx.outgoingMessageState],
-      createdAt: getStandardizedTimestamp(
-        String(BigNumber.from(tx.timestamp).toNumber() * 1000)
-      ),
-      resolvedAt: null,
-      txId: tx.l2TxHash || 'l2-tx-hash-not-found',
-      asset: tx.symbol || '',
-      assetType: tx.type,
-      value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
-      uniqueId: uniqueIdOrHash,
-      isWithdrawal: true,
-      blockNum: tx.ethBlockNum.toNumber(),
-      tokenAddress: tx.tokenAddress || null,
-      nodeBlockDeadline: tx.nodeBlockDeadline,
-      childChainId: tx.childChainId,
-      parentChainId: tx.parentChainId
-    }
-  })
 }
 
 // filter the transactions based on current wallet address and network ID's
@@ -299,9 +232,9 @@ export const findMatchingL1TxForWithdrawal = (
   const cachedTransactions: Transaction[] = JSON.parse(
     window.localStorage.getItem('arbTransactions') || '[]'
   )
-  const outboxTransactions = transformDeposits(
-    cachedTransactions.filter(tx => tx.type === 'outbox')
-  )
+  const outboxTransactions = cachedTransactions
+    .filter(tx => tx.type === 'outbox')
+    .map(transformDeposit)
 
   return outboxTransactions.find(_tx => {
     const l2ToL1MsgData = _tx.l2ToL1MsgData
