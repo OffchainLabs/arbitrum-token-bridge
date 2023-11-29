@@ -372,6 +372,7 @@ export const xaiTestnetV2: Chain = {
     rollup: '0xeedE9367Df91913ab149e828BDd6bE336df2c892',
     sequencerInbox: '0x529a2061A1973be80D315770bA9469F3Da40D938'
   },
+  nativeToken: '0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2',
   explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
   isArbitrum: true,
   isCustom: true,
