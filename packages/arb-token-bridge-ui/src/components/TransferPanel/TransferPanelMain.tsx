@@ -831,6 +831,7 @@ export function TransferPanelMain({
       switch (chainId) {
         case ChainId.Sepolia:
         case ChainId.StylusTestnet:
+        case ChainId.XaiTestnetV2:
           return ChainId.ArbitrumSepolia
         default:
           return ChainId.ArbitrumGoerli
