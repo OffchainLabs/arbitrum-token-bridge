@@ -11,6 +11,15 @@ export type WithdrawOnlyToken = {
 }
 
 const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
+  [ChainId.ArbitrumGoerli]: [
+    {
+      // this is purely for testing the UI
+      symbol: 'LINK',
+      l2CustomAddr: '',
+      l1Address: '0x326C977E6efc84E512bB9C30f76E30c160eD06FB',
+      l2Address: '0xd14838a68e8afbade5efb411d5871ea0011afd28'
+    }
+  ],
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -135,6 +144,11 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumNova]: []
 }
 
+/**
+ *
+ * @param erc20L1Address
+ * @param chainId - Arbitrum chain id
+ */
 export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
   return (withdrawOnlyTokens[chainId] ?? [])
     .map(token => token.l1Address.toLowerCase())

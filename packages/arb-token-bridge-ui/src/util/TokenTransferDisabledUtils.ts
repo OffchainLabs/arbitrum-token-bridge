@@ -16,6 +16,11 @@ const transferDisabledTokens: { [chainId: number]: TransferDisabledToken[] } = {
   ]
 }
 
+/**
+ *
+ * @param erc20L1Address
+ * @param chainId - Arbitrum chain id
+ */
 export function isTransferDisabledToken(
   erc20L1Address: string,
   chainId: number

@@ -39,6 +39,9 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useWithdrawOnlyDialogStore } from './TransferPanelMain'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 
 enum Panel {
   TOKENS,
@@ -486,6 +489,7 @@ export function TokenSearch({
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
+  const { openDialog: openWithdrawOnlyDialog } = useWithdrawOnlyDialogStore()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -551,6 +555,14 @@ export function TokenSearch({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
+      }
+
+      if (
+        isWithdrawOnlyToken(_token.address, l2.network.id) ||
+        isTransferDisabledToken(_token.address, l2.network.id)
+      ) {
+        openWithdrawOnlyDialog()
+        return
       }
     } catch (error: any) {
       console.warn(error)

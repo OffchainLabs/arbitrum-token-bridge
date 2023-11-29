@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import * as Sentry from '@sentry/react'
 import { Chain, useAccount } from 'wagmi'
+import { create } from 'zustand'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -22,7 +23,7 @@ import {
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
-import { Dialog, useDialog } from '../common/Dialog'
+import { useDialog } from '../common/Dialog'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -73,6 +74,7 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { WithdrawOnlyDialog } from './WithdrawOnlyDialog'
 
 enum NetworkType {
   l1 = 'l1',
@@ -368,6 +370,20 @@ function NetworkListboxPlusBalancesContainer({
   )
 }
 
+type WithdrawOnlyDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useWithdrawOnlyDialogStore = create<WithdrawOnlyDialogStore>(
+  set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  })
+)
+
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -546,7 +562,7 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
+  const [, openWithdrawOnlyDialog] = useDialog()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,
@@ -744,22 +760,8 @@ export function TransferPanelMain({
             and reach out in #support for assistance.
           </span>
         )
-
-      case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
-      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
-        return (
-          <>
-            <span>This token can&apos;t be bridged over.</span>{' '}
-            <button
-              className="arb-hover underline"
-              onClick={openWithdrawOnlyDialog}
-            >
-              Learn more.
-            </button>
-          </>
-        )
     }
-  }, [errorMessage, openWithdrawOnlyDialog])
+  }, [errorMessage])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
@@ -1306,19 +1308,7 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <AdvancedSettings />
-      <Dialog
-        closeable
-        title="Token not supported"
-        cancelButtonProps={{ className: 'hidden' }}
-        actionButtonTitle="Close"
-        {...withdrawOnlyDialogProps}
-        className="md:max-w-[628px]"
-      >
-        <p>
-          The Arbitrum bridge does not currently support {selectedToken?.symbol}
-          , please ask the {selectedToken?.symbol} team for more info.
-        </p>
-      </Dialog>
+      <WithdrawOnlyDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
         onClose={() => setOneNovaTransferDestinationNetworkId(null)}
