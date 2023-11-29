@@ -27,7 +27,12 @@ import {
   useAppContextActions,
   useAppContextState
 } from '../App/AppContext'
-import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
+import {
+  trackEvent,
+  shouldTrackAnalytics,
+  AnalyticsEvent,
+  AnalyticsEventMap
+} from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import {
@@ -440,21 +445,36 @@ export function TransferPanel() {
     return confirmed
   }
 
+  // a generic function to reduce verbose code in transfer panel
+  const trackTransferPanelEvent = (
+    eventName: AnalyticsEvent,
+    additionalProperties?: Partial<AnalyticsEventMap[AnalyticsEvent]>
+  ) => {
+    const currentNetwork = isDepositMode
+      ? latestNetworksAndSigners.current.l1.network
+      : latestNetworksAndSigners.current.l2.network
+    const currentNetworkName = getNetworkName(currentNetwork.id)
+
+    if (shouldTrackAnalytics(currentNetworkName)) {
+      trackEvent(eventName, {
+        type: isDepositMode ? 'Deposit' : 'Withdrawal',
+        tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
+        assetType: selectedToken ? 'ERC-20' : 'ETH',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: currentNetworkName,
+        amount: Number(amount),
+        ...additionalProperties
+      })
+    }
+  }
+
   const connectSignerToCorrectChain = async () => {
     let currentNetwork = isDepositMode
       ? latestNetworksAndSigners.current.l1.network
       : latestNetworksAndSigners.current.l2.network
-    const currentNetworkName = getNetworkName(currentNetwork.id)
-    if (shouldTrackAnalytics(currentNetworkName)) {
-      trackEvent('Switch Network and Transfer', {
-        type: isDepositMode ? 'Deposit' : 'Withdrawal',
-        tokenSymbol: 'USDC',
-        assetType: 'ERC-20',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: currentNetworkName,
-        amount: Number(amount)
-      })
-    }
+
+    trackTransferPanelEvent('Switch Network and Transfer')
+
     const switchTargetChainId = isDepositMode
       ? latestNetworksAndSigners.current.l1.network.id
       : latestNetworksAndSigners.current.l2.network.id
@@ -558,35 +578,61 @@ export function TransferPanel() {
         if (!userConfirmation) return false
 
         // logic: approve selected token
-        await cctpTransferStarter.approveToken({
-          signer,
-          destinationChainProvider,
-          selectedToken
-        })
+        if (isSmartContractWallet) {
+          showDelayInSmartContractTransaction()
+        }
+        try {
+          await cctpTransferStarter.approveToken({
+            signer,
+            destinationChainProvider,
+            selectedToken
+          })
+        } catch (error) {
+          if (isUserRejectedError(error)) {
+            return
+          }
+          Sentry.captureException(error)
+          errorToast(
+            `USDC approval transaction failed: ${
+              (error as Error)?.message ?? error
+            }`
+          )
+          return
+        }
       }
 
       // logic: finally, call the transfer function
-      const transfer = await cctpTransferStarter.transfer({
-        amount: amountBigNumber,
-        destinationChainProvider,
-        signer,
-        selectedToken
-      })
+      let depositForBurnTx
 
-      const depositForBurnTx = transfer.sourceChainTransaction
-
-      const currentNetworkName = getNetworkName(sourceChainId)
+      try {
+        if (isSmartContractWallet) {
+          showDelayInSmartContractTransaction()
+        }
+        const transfer = await cctpTransferStarter.transfer({
+          amount: amountBigNumber,
+          destinationChainProvider,
+          signer,
+          selectedToken
+        })
+        depositForBurnTx = transfer.sourceChainTransaction
+      } catch (error) {
+        if (isUserRejectedError(error)) {
+          return
+        }
+        Sentry.captureException(error)
+        errorToast(
+          `USDC ${
+            isDepositMode ? 'Deposit' : 'Withdrawal'
+          } transaction failed: ${(error as Error)?.message ?? error}`
+        )
+      }
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
-        if (shouldTrackAnalytics(currentNetworkName)) {
-          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-            accountType: 'Smart Contract',
-            network: currentNetworkName,
-            amount: Number(amount),
-            complete: false
-          })
-        }
+        trackTransferPanelEvent(
+          isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
+          { complete: false }
+        )
         return
       }
 
@@ -594,14 +640,10 @@ export function TransferPanel() {
         return
       }
 
-      if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'EOA',
-          network: currentNetworkName,
-          amount: Number(amount),
-          complete: false
-        })
-      }
+      trackTransferPanelEvent(
+        isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
+        { complete: false }
+      )
 
       const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
@@ -641,7 +683,9 @@ export function TransferPanel() {
         getAttestationHashAndMessageFromReceipt(depositTxReceipt)
 
       if (depositTxReceipt.status === 0) {
-        errorToast('USDC deposit transaction failed')
+        errorToast(
+          `USDC ${isDepositMode ? 'deposit' : 'withdrawal'} transaction failed`
+        )
         return
       }
 
@@ -659,7 +703,7 @@ export function TransferPanel() {
           isDepositMode ? 'deposit' : 'withdrawal'
         )
       }
-    } catch (e) {
+    } catch (error) {
     } finally {
       setTransferring(false)
       setIsCctp(false)
@@ -794,6 +838,9 @@ export function TransferPanel() {
           if (!userConfirmation) return false
 
           // logic: approve selected token
+          if (isSmartContractWallet) {
+            showDelayInSmartContractTransaction()
+          }
           await bridgeTransferStarterV2.approveToken({
             signer,
             destinationChainProvider,
@@ -808,6 +855,9 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return false
       }
 
+      if (isSmartContractWallet) {
+        showDelayInSmartContractTransaction()
+      }
       // logic: finally, call the transfer function
       const transfer = await bridgeTransferStarterV2.transfer({
         amount: amountBigNumber,
@@ -819,7 +869,7 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (error) {
-      console.error(error)
+      console.log(error)
     } finally {
       setTransferring(false)
       clearAmountInput()
@@ -828,6 +878,8 @@ export function TransferPanel() {
 
   const onTxSubmit = async (transfer: BridgeTransfer) => {
     // here, handle all transformations
+
+    trackTransferPanelEvent(isDepositMode ? 'Deposit' : 'Withdraw')
 
     const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
     const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
@@ -872,168 +924,6 @@ export function TransferPanel() {
     // open tx history
     openTransactionHistoryPanel()
   }
-
-  // // SDK should not care about UI confirmations or popups, so in SDK we expose callbacks
-  // // If provided, the SDK will call these functions before proceeding to next steps
-  // const externalCallbacks = {
-  //   customFeeTokenApproval,
-  //   canonicalBridgeDepositConfirmation,
-  //   tokenAllowanceApproval,
-  //   showDelayInSmartContractTransaction,
-  //   firstTimeTokenBridgingConfirmation,
-  //   confirmUsdcDepositFromNormalOrCctpBridge,
-  //   confirmUsdcWithdrawalForCctp,
-  //   tokenAllowanceApprovalCctp,
-  //   confirmWithdrawal
-  // }
-
-  // // After done with the transfer, here is a consolidate version of the tx lifecycle methods
-  // // A bit of cases here, but we can remove them as SDK matures and there is a better way of handling tx tracking in sdk
-  // const commonTxLifecycle: TransferProps['txLifecycle'] = {
-  //   onTxSubmit: ({ tx, oldBridgeCompatibleTxObjToBeRemovedLater }) => {
-  //     if (
-  //       !(oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransaction).isCctp
-  //     ) {
-  //       // for normal case
-  //       const transactionHistoryObject =
-  //         oldBridgeCompatibleTxObjToBeRemovedLater as NewTransaction
-
-  //       // add transaction to the transaction history
-  //       transactions.addTransaction(transactionHistoryObject)
-  //       openTransactionHistoryPanel()
-  //       setTransferring(false)
-  //       clearAmountInput()
-  //     } else {
-  //       // for cctp case
-  //       const transactionHistoryObject =
-  //         oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransaction
-
-  //       setPendingTransfer(
-  //         transactionHistoryObject,
-  //         transactionHistoryObject.isWithdrawal ? 'withdrawal' : 'deposit'
-  //       )
-
-  //       if (!transactionHistoryObject.isWithdrawal) {
-  //         showCctpDepositsTransactions()
-  //       } else {
-  //         showCctpWithdrawalsTransactions()
-  //       }
-  //       setTransactionHistoryTab(TransactionHistoryTab.CCTP)
-  //       openTransactionHistoryPanel()
-  //       setTransferring(false)
-  //       clearAmountInput()
-  //     }
-  //   },
-  //   onTxConfirm: ({ txReceipt, oldBridgeCompatibleTxObjToBeRemovedLater }) => {
-  //     // in case of CCTP
-  //     const transactionHistoryObject =
-  //       oldBridgeCompatibleTxObjToBeRemovedLater as MergedTransactionCctp
-  //     if (transactionHistoryObject.isCctp) {
-  //       const { attestationHash, messageBytes } = transactionHistoryObject
-  //       setPendingTransfer(
-  //         {
-  //           txId: txReceipt.transactionHash,
-  //           blockNum: txReceipt.blockNumber,
-  //           status: 'Unconfirmed',
-  //           cctpData: {
-  //             attestationHash,
-  //             messageBytes
-  //           }
-  //         },
-  //         transactionHistoryObject.isWithdrawal ? 'withdrawal' : 'deposit'
-  //       )
-  //     }
-  //   },
-  //   onTxError: error => {
-  //     onTxError(error)
-  //     setTransferring(false)
-  //   }
-  // }
-
-  // // Final transfer function, just call this on the press of the Move button :)
-  // const transferV2 = async () => {
-  //   try {
-  //     if (!bridgeTransferStarterV2) throw Error('Starter not initialized yet!')
-  //     setTransferring(true)
-
-  //     const {
-  //       amount,
-  //       isSmartContractWallet,
-  //       destinationAddress,
-  //       sourceChainProvider,
-  //       destinationChainProvider,
-  //       signer,
-  //       nativeCurrency,
-  //       nativeCurrencyBalance,
-  //       selectedToken,
-  //       selectedTokenBalance
-  //     } = BRIDGE_STATE
-
-  //     const sourceChainNetwork = await sourceChainProvider.getNetwork()
-  //     const sourceChainId = sourceChainNetwork.chainId
-
-  //     const destinationChainNetwork =
-  //       await destinationChainProvider.getNetwork()
-  //     const destinationChainId = destinationChainNetwork.chainId
-
-  //     /*
-
-  //     ----------------------------------------
-  //     INPUT VALIDATION PHASE
-  //     ----------------------------------------
-
-  //     */
-
-  //     const address = await signer?.getAddress()
-  //     if (!signer || !address) throw 'Signer is not connected'
-
-  //     const destinationAddressError = await getDestinationAddressError({
-  //       destinationAddress,
-  //       isSmartContractWallet
-  //     })
-  //     if (destinationAddressError) {
-  //       console.error(destinationAddressError)
-  //       return
-  //     }
-
-  //     /*
-
-  //     ----------------------------------------
-  //     NATIVE CURRENCY REQUIRES APPROVAL?
-  //     ----------------------------------------
-
-  //     */
-
-  //     const requiresNativeCurrencyApproval =
-  //       await bridgeTransferStarterV2.requiresNativeCurrencyApproval({
-  //         address,
-  //         amount,
-  //         sourceChainProvider,
-  //         destinationChainProvider,
-  //         nativeCurrency
-  //       })
-
-  //     if (requiresNativeCurrencyApproval) {
-  //       if (await customFeeTokenApproval()) {
-  //         // show custom fee token approval popup
-  //         await bridgeTransferStarterV2.approveNativeCurrency({
-  //           signer,
-  //           destinationChainProvider
-  //         })
-  //       }
-  //     }
-
-  //     const brigeTransferV2Result = await bridgeTransferStarterV2.transfer({
-  //       externalCallbacks,
-  //       txLifecycle: commonTxLifecycle
-  //     })
-  //     console.log('tx receipt received - ', brigeTransferV2Result)
-  //     transactions.updateTransaction(brigeTransferV2Result.sourceChain.tx)
-  //   } catch (error) {
-  //     // handle for different types of error logged by SDK here, to show error popup/ log in sentry / show other UIs etc
-  //     throw error
-  //   }
-  // }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
   const shouldRunGasEstimation = useMemo(() => {
