@@ -48,6 +48,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC,
+  isTokenUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import {
@@ -56,7 +57,10 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
+import {
+  createBlockExplorerUrlForToken,
+  shortenAddress
+} from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
@@ -284,6 +288,13 @@ function TokenBalance({
   tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const isParentChain = on === NetworkType.l1
+  const chain = isParentChain ? l1.network : l2.network
+
+  const isERC20BridgeToken = (
+    token: ERC20BridgeToken | NativeCurrencyErc20 | null
+  ): token is ERC20BridgeToken =>
+    token !== null && !token.hasOwnProperty('isCustom')
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -294,10 +305,10 @@ function TokenBalance({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(forToken.symbol, {
         erc20L1Address: forToken.address,
-        chain: on === NetworkType.l1 ? l1.network : l2.network
+        chain
       })
     )
-  }, [forToken, tokenSymbolOverride, on, l1, l2])
+  }, [forToken, tokenSymbolOverride, chain])
 
   if (!forToken) {
     return null
@@ -312,10 +323,25 @@ function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span className="tabular-nums">
         {formatAmount(balance, {
-          decimals: forToken.decimals,
-          symbol
+          decimals: forToken.decimals
         })}
-      </span>
+      </span>{' '}
+      {/* we don't want to show explorer link for native currency (either ETH or custom token), or USDC because user can bridge USDC to USDC.e or native USDC, vice versa */}
+      {isERC20BridgeToken(forToken) && !isTokenUSDC(forToken.address) ? (
+        <ExternalLink
+          className="arb-hover underline"
+          href={createBlockExplorerUrlForToken({
+            explorerLink: chain.blockExplorers
+              ? chain.blockExplorers.default.url
+              : undefined,
+            tokenAddress: isParentChain ? forToken.address : forToken.l2Address
+          })}
+        >
+          <span>{symbol}</span>
+        </ExternalLink>
+      ) : (
+        <span>{symbol}</span>
+      )}
     </p>
   )
 }

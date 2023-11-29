@@ -26,12 +26,7 @@ describe('Deposit ERC20 Token', () => {
         wethTokenAddressL1,
         getL1NetworkConfig().multiCall,
         Cypress.env('ETH_RPC_URL')
-      ).then(
-        val =>
-          (l1ERC20bal = formatAmount(val, {
-            symbol: 'WETH'
-          }))
-      )
+      ).then(val => (l1ERC20bal = formatAmount(val)))
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {

@@ -289,6 +289,15 @@ export const isTokenArbitrumGoerliNativeUSDC = (
   tokenAddress?.toLowerCase() ===
   CommonAddress.ArbitrumGoerli.USDC.toLowerCase()
 
+export const isTokenUSDC = (tokenAddress: string | undefined) => {
+  return (
+    isTokenMainnetUSDC(tokenAddress) ||
+    isTokenGoerliUSDC(tokenAddress) ||
+    isTokenArbitrumOneNativeUSDC(tokenAddress) ||
+    isTokenArbitrumGoerliNativeUSDC(tokenAddress)
+  )
+}
+
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
   tokenSymbol: string,

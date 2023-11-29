@@ -1,7 +1,5 @@
-import { useState } from 'react'
-import { useCopyToClipboard } from 'react-use'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Button } from '../common/Button'
@@ -18,7 +16,6 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { trackEvent } from '../../util/AnalyticsUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 
 export function DepositConfirmationDialog(
@@ -32,9 +29,6 @@ export function DepositConfirmationDialog(
   const networkName = getNetworkName(l2.network.id)
   const { isArbitrumOne } = isNetwork(l2.network.id)
 
-  const [, copyToClipboard] = useCopyToClipboard()
-  const [showCopied, setShowCopied] = useState(false)
-
   const from = isConnectedToArbitrum ? l2.network : l1.network
   const to = isConnectedToArbitrum ? l1.network : l2.network
 
@@ -45,9 +39,6 @@ export function DepositConfirmationDialog(
   if (!bridgeInfo) {
     return null
   }
-
-  const tokenSymbolOnArbitrum =
-    tokenAddress && bridgeInfo && bridgeInfo.tokenSymbolOnArbitrum
 
   const fastBridges = [
     ...getFastBridges({
@@ -64,12 +55,6 @@ export function DepositConfirmationDialog(
       )
     )
   })
-
-  function copy(value: string) {
-    setShowCopied(true)
-    copyToClipboard(value)
-    setTimeout(() => setShowCopied(false), 1000)
-  }
 
   return (
     <Dialog {...props} isCustom>
@@ -91,7 +76,6 @@ export function DepositConfirmationDialog(
 
           <Tab.List className="bg-ocl-blue">
             {isArbitrumOne && <TabButton>Use a third-party bridge</TabButton>}
-            <TabButton>Use Arbitrum’s bridge</TabButton>
           </Tab.List>
 
           {isArbitrumOne && tokenSymbol && (
@@ -121,64 +105,6 @@ export function DepositConfirmationDialog(
                   onClick={() => props.onClose(false)}
                 >
                   Cancel
-                </Button>
-              </div>
-            </Tab.Panel>
-          )}
-
-          {tokenSymbol && (
-            <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
-              <div className="flex flex-col space-y-3">
-                <p className="font-light">
-                  If you choose to use Arbitrum’s bridge instead, you’ll have to
-                  do two transfers.
-                </p>
-                <ol className="list-decimal px-4 font-light">
-                  <li>
-                    Transfer on Arbitrum’s bridge to get {tokenSymbolOnArbitrum}
-                  </li>
-                  <li>
-                    Transfer on {tokenSymbol}&apos;s bridge to swap{' '}
-                    {tokenSymbolOnArbitrum} for {tokenSymbol}
-                  </li>
-                </ol>
-                <div>
-                  <button
-                    className="arb-hover ml-4 rounded-xl border border-ocl-blue bg-gray-300 px-6 py-3"
-                    onClick={() => {
-                      copy(bridgeInfo.bridgeUrl)
-                      trackEvent('Copy Bridge Link Click', { tokenSymbol })
-                    }}
-                  >
-                    <div className="flex flex-row items-center space-x-3">
-                      <span className="font-light">
-                        {showCopied
-                          ? 'Copied to clipboard!'
-                          : `Copy link for ${tokenSymbol} bridge`}
-                      </span>
-                      {!showCopied && (
-                        <DocumentDuplicateIcon className="h-4 w-4" />
-                      )}
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-2 flex flex-row justify-end space-x-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    props.onClose(true)
-                    trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
-                  }}
-                >
-                  I want to do two swaps
                 </Button>
               </div>
             </Tab.Panel>

@@ -377,7 +377,7 @@ export function useTransferReadiness({
         if (total > ethBalanceFloat) {
           return notReady({
             errorMessage: getInsufficientFundsForGasFeesErrorMessage({
-              asset: ether.symbol,
+              asset: nativeCurrency.symbol,
               chain: sourceChain
             })
           })

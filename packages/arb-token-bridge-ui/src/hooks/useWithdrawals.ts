@@ -4,7 +4,7 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
-import { isPending, transformWithdrawals } from '../state/app/utils'
+import { isPending, transformWithdrawal } from '../state/app/utils'
 import {
   FetchWithdrawalsParams,
   fetchWithdrawals
@@ -16,6 +16,7 @@ import {
   shouldIncludeSentTxs,
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
+import { updateAdditionalWithdrawalData } from '../util/withdrawals/helpers'
 
 export type CompleteWithdrawalData = {
   withdrawals: L2ToL1EventResultPlus[]
@@ -27,13 +28,23 @@ const fetchCompleteWithdrawalData = async (
   params: FetchWithdrawalsParams
 ): Promise<CompleteWithdrawalData> => {
   // get the original deposits
-  const withdrawals = await fetchWithdrawals(params)
+  const withdrawalsWithoutStatuses = await fetchWithdrawals(params)
+
+  const withdrawals: L2ToL1EventResultPlus[] = await Promise.all(
+    withdrawalsWithoutStatuses.map(withdrawal =>
+      updateAdditionalWithdrawalData(
+        withdrawal,
+        params.l1Provider,
+        params.l2Provider
+      )
+    )
+  )
 
   // filter out pending withdrawals
   const pendingWithdrawalMap = new Map<string, boolean>()
-  const completeWithdrawalData = transformWithdrawals(
-    withdrawals.sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
-  )
+  const completeWithdrawalData = withdrawals
+    .sort((msgA, msgB) => +msgB.timestamp - +msgA.timestamp)
+    .map(transformWithdrawal)
 
   completeWithdrawalData.forEach(completeTxData => {
     if (isPending(completeTxData)) {
