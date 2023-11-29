@@ -4,7 +4,11 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
+import {
+  getCustomChainsFromLocalStorage,
+  xaiTestnet,
+  xaiTestnetV2
+} from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -47,6 +51,17 @@ export default function Index() {
       addCustomChain({ customChain: xaiTestnet })
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
+    }
+
+    try {
+      addCustomNetwork({ customL2Network: xaiTestnetV2 })
+    } catch (error: any) {
+      console.error(`Failed to register Xai Testnet v2: ${error.message}`)
+    }
+    try {
+      addCustomChain({ customChain: xaiTestnetV2 })
+    } catch (error: any) {
+      console.error(`Failed to register Xai Testnet v2: ${error.message}`)
     }
   }, [])
 

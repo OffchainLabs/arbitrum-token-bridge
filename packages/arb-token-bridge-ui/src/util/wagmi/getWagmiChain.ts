@@ -7,6 +7,7 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
+  xaiTestnetV2,
   stylusTestnet,
   localL1Network,
   localL2Network
@@ -46,6 +47,9 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.XaiTestnet:
       return xaiTestnet
+
+    case ChainId.XaiTestnetV2:
+      return xaiTestnetV2
 
     case ChainId.StylusTestnet:
       return stylusTestnet
