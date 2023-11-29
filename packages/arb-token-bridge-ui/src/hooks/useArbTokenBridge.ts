@@ -319,7 +319,7 @@ export const useArbTokenBridge = (
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash,
           parentChainId: Number(l1NetworkID),
-          chainId: Number(l2NetworkID)
+          childChainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -606,7 +606,7 @@ export const useArbTokenBridge = (
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
           l2TxHash: tx.hash,
           parentChainId: Number(l1NetworkID),
-          chainId: Number(l2NetworkID)
+          childChainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {

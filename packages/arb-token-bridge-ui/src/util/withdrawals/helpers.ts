@@ -23,8 +23,10 @@ import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs'
   parentChainId: number
-  chainId: number
+  childChainId: number
 }
 
 export const updateAdditionalWithdrawalData = async (
@@ -77,7 +79,7 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
     event,
     l1Provider,
     l2Provider,
-    event.chainId
+    event.childChainId
   )
 
   const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
@@ -92,7 +94,7 @@ export async function mapETHWithdrawalToL2ToL1EventResult({
     outgoingMessageState,
     l2TxHash: event.l2TxHash || event.transactionHash,
     parentChainId: event.parentChainId,
-    chainId: event.chainId,
+    childChainId: event.childChainId,
     decimals: nativeCurrency.decimals
   }
 }
@@ -207,7 +209,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
     event,
     l1Provider,
     l2Provider,
-    result.chainId
+    result.childChainId
   )
 
   // We cannot access sender and destination from the withdrawal object.
@@ -252,7 +254,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
     decimals,
     l2TxHash: l2TxReceipt.transactionHash,
     parentChainId: result.parentChainId,
-    chainId: result.chainId
+    childChainId: result.childChainId
   }
 }
 
@@ -280,7 +282,7 @@ export async function mapWithdrawalToL2ToL1EventResult({
     event,
     l1Provider,
     l2Provider,
-    withdrawal.chainId
+    withdrawal.childChainId
   )
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
@@ -302,7 +304,7 @@ export async function mapWithdrawalToL2ToL1EventResult({
       decimals,
       l2TxHash: l2TxReceipt.transactionHash,
       parentChainId: withdrawal.parentChainId,
-      chainId: withdrawal.chainId
+      childChainId: withdrawal.childChainId
     } as L2ToL1EventResultPlus
   }
 
@@ -320,6 +322,6 @@ export async function mapWithdrawalToL2ToL1EventResult({
     symbol: nativeCurrency.symbol,
     decimals: nativeCurrency.decimals,
     parentChainId: withdrawal.parentChainId,
-    chainId: withdrawal.chainId
+    childChainId: withdrawal.childChainId
   } as L2ToL1EventResultPlus
 }

@@ -9,7 +9,6 @@ import {
   L1ToL2MessageReader,
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
-import { AdditionalTransferProperties } from './useCompleteMultiChainTransactions'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -100,10 +99,12 @@ type TransactionBase = {
   isClassic?: boolean
 }
 
-export interface Transaction
-  extends TransactionBase,
-    AdditionalTransferProperties {
+export interface Transaction extends TransactionBase {
   txID: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs'
+  parentChainId: number
+  childChainId: number
 }
 
 export interface NewTransaction extends TransactionBase {

@@ -119,7 +119,7 @@ function parseTransferToMergedTransaction(
     isCctp: true,
     // TODO: Fix those when adding CCTP
     parentChainId: 0,
-    chainId: 0,
+    childChainId: 0,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,

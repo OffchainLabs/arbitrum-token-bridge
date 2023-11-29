@@ -3,7 +3,7 @@ import { Provider } from '@ethersproject/providers'
 import { fetchDepositsFromSubgraph } from './fetchDepositsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Deposit } from '../../hooks/useCompleteMultiChainTransactions'
+import { Deposit } from '../../hooks/useTransactionHistory'
 
 export type FetchDepositParams = {
   sender?: string
@@ -107,7 +107,7 @@ export async function fetchDepositList({
       timestampCreated: tx.timestamp,
       isClassic: tx.isClassic,
       parentChainId: l1ChainId,
-      chainId: l2ChainId
+      childChainId: l2ChainId
     }
   })
 }
