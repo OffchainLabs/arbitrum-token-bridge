@@ -33,7 +33,7 @@ export const TransactionHistory = () => {
     () =>
       transactions.reduce(
         (acc, tx) => {
-          if (isTxCompleted(tx)) {
+          if (isTxCompleted(tx) || isTxExpired(tx)) {
             acc.settled.push(tx)
             return acc
           }
@@ -49,27 +49,21 @@ export const TransactionHistory = () => {
             acc.failed.push(tx)
             return acc
           }
-          if (isTxExpired(tx)) {
-            acc.expired.push(tx)
-            return acc
-          }
           return acc
         },
         {
           settled: [] as MergedTransaction[],
           pending: [] as MergedTransaction[],
           claimable: [] as MergedTransaction[],
-          failed: [] as MergedTransaction[],
-          expired: [] as MergedTransaction[]
+          failed: [] as MergedTransaction[]
         }
       ),
     [transactions]
   )
 
   const pendingTransactions = [
-    ...groupedTransactions.pending,
-    ...groupedTransactions.expired,
     ...groupedTransactions.failed,
+    ...groupedTransactions.pending,
     ...groupedTransactions.claimable
   ]
 
