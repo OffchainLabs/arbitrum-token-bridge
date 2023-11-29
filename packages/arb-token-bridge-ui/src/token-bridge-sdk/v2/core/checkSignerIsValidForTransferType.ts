@@ -1,6 +1,5 @@
 import { Signer } from 'ethers'
 import { isNetwork } from '../../../util/networks'
-import { TransferType } from '../BridgeTransferStarterV2'
 import { getProviderFromSigner } from './getProviderFromSigner'
 import { getChainIdFromProvider } from './getChainIdFromProvider'
 import { Provider } from '@ethersproject/providers'
@@ -13,11 +12,11 @@ import { Provider } from '@ethersproject/providers'
 export const checkSignerIsValidForTransferType = async ({
   signer,
   destinationChainProvider,
-  transferType
+  isDeposit
 }: {
   signer: Signer
   destinationChainProvider: Provider
-  transferType: TransferType
+  isDeposit: boolean
 }) => {
   const sourceChainProvider = getProviderFromSigner(signer)
   if (sourceChainProvider) {
@@ -36,10 +35,9 @@ export const checkSignerIsValidForTransferType = async ({
 
     const isValidWithdrawalChain = !isValidDepositChain
 
-    if (transferType.includes('deposit') && !isValidDepositChain) return false
+    if (isDeposit && !isValidDepositChain) return false
 
-    if (transferType.includes('withdrawal') && !isValidWithdrawalChain)
-      return false
+    if (!isDeposit && !isValidWithdrawalChain) return false
 
     return true
   }

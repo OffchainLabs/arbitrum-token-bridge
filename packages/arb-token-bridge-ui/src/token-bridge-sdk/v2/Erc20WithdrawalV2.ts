@@ -15,7 +15,6 @@ import {
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { RequiresTokenApprovalProps } from './core/requiresTokenApproval'
 import { ApproveTokenProps } from './core/approveToken'
-import { getProviderFromSigner } from './core/getProviderFromSigner'
 import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
 import { approveNativeCurrency } from './core/approveNativeCurrency'
 

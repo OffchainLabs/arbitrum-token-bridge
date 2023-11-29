@@ -693,7 +693,7 @@ export function TransferPanel() {
         await checkSignerIsValidForTransferType({
           signer,
           destinationChainProvider,
-          transferType
+          isDeposit: isDepositMode
         })
 
       if (!isSignerConnectedToTheCorrectChain) {
@@ -723,7 +723,6 @@ export function TransferPanel() {
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarterV2.requiresNativeCurrencyApproval({
           signer,
-          nativeCurrency,
           amount: amountBigNumber,
           destinationChainProvider
         })
