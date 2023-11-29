@@ -111,6 +111,7 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
       return [
         ChainId.ArbitrumSepolia,
         ChainId.StylusTestnet,
+        ChainId.XaiTestnetV2,
         ...getCustomChainIds(ChainId.ArbitrumSepolia)
       ]
     case ChainId.Local:
@@ -363,18 +364,18 @@ export const xaiTestnet: Chain = {
 
 export const xaiTestnetV2: Chain = {
   chainID: 37714555429,
-  confirmPeriodBlocks: 20,
+  confirmPeriodBlocks: 150,
   ethBridge: {
     bridge: '0x6c7FAC4edC72E86B3388B48979eF37Ecca5027e6',
     inbox: '0x6396825803B720bc6A43c63caa1DcD7B31EB4dd0',
     outbox: '0xc7491a559b416540427f9f112C5c98b1412c5d51',
-    rollup: '0xc6FFbB82F9B6f14c44e3487e4a56873406d1A21D',
+    rollup: '0xeedE9367Df91913ab149e828BDd6bE336df2c892',
     sequencerInbox: '0x529a2061A1973be80D315770bA9469F3Da40D938'
   },
-  explorerUrl: '',
+  explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
   isArbitrum: true,
   isCustom: true,
-  name: 'Xai Orbit Testnet V2',
+  name: 'Xai Testnet V2',
   partnerChainID: 421614,
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
