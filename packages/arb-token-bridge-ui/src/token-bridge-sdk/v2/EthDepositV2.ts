@@ -7,7 +7,6 @@ import {
 } from './BridgeTransferStarterV2'
 import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
 import { approveNativeCurrency } from './core/approveNativeCurrency'
-import { getProviderFromSigner } from './core/getProviderFromSigner'
 
 export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
   public transferType: TransferType = 'eth_deposit'
@@ -26,45 +25,34 @@ export class EthDepositStarterV2 extends BridgeTransferStarterV2 {
     return
   }
 
-  public async transfer({
-    amount,
-    destinationChainProvider,
-    connectedSigner
-  }: TransferProps) {
-    try {
-      const sourceChainProvider = getProviderFromSigner(connectedSigner)
+  public async transfer({ amount, signer }: TransferProps) {
+    const ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
+    const tx = await ethBridger.deposit({
+      amount,
+      l1Signer: signer
+    })
 
-      const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
-      const tx = await ethBridger.deposit({
-        amount,
-        l1Signer: connectedSigner
-      })
-
-      return {
-        transferType: this.transferType,
-        status: 'pending',
-        sourceChainProvider,
-        sourceChainTransaction: tx,
-        destinationChainProvider
-      }
-
-      //   const txReceipt = await tx.wait()
-
-      //   if (txLifecycle?.onTxConfirm) {
-      //     txLifecycle.onTxConfirm({
-      //       txReceipt,
-      //       oldBridgeCompatibleTxObjToBeRemovedLater
-      //     })
-      //   }
-
-      //   return {
-      //     sourceChainTxReceipt: txReceipt
-      //   }
-    } catch (error: any) {
-      // if (txLifecycle?.onTxError) {
-      //   txLifecycle.onTxError(error)
-      // }
-      throw error
+    return {
+      transferType: this.transferType,
+      status: 'pending',
+      sourceChainProvider: this.sourceChainProvider,
+      sourceChainTransaction: tx,
+      destinationChainProvider: this.destinationChainProvider
     }
+
+    //   const txReceipt = await tx.wait()
+
+    //   if (txLifecycle?.onTxConfirm) {
+    //     txLifecycle.onTxConfirm({
+    //       txReceipt,
+    //       oldBridgeCompatibleTxObjToBeRemovedLater
+    //     })
+    //   }
+
+    //   return {
+    //     sourceChainTxReceipt: txReceipt
+    //   }
   }
 }

@@ -98,6 +98,7 @@ import { checkForWarningTokens } from '../../token-bridge-sdk/v2/core/checkForWa
 import { isNonCanonicalToken } from '../../token-bridge-sdk/v2/core/isNonCanonicalToken'
 import { Provider } from '@ethersproject/providers'
 import { getChainIdFromProvider } from '../../token-bridge-sdk/v2/core/getChainIdFromProvider'
+import { CctpTransferStarterV2 } from '../../token-bridge-sdk/v2/CctpTransferV2'
 
 function useTokenFromSearchParams(): string | undefined {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
@@ -497,12 +498,172 @@ export function TransferPanel() {
   }
 
   const transferCctpV3 = async () => {
-    // show a popup - to confirm if it's CCTP or USDC.e transfer
-    //
-    // if CCTP, directly call CCTP-Transfer-Starter here()
-    // if USDC.e, call transferV3() function here
-    //
-    // handle UI callbacks like onTxSubmit for CCTP only here
+    try {
+      const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
+      const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
+
+      const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
+
+      if (!selectedToken) throw Error('No token was selected')
+
+      if (!signer) throw Error('Signer not connected')
+
+      const address = await getAddressFromSigner(signer)
+
+      // user confirmation: show confirmation popup before cctp transfer
+      if (isDepositMode) {
+        const depositConfirmation =
+          await confirmUsdcDepositFromNormalOrCctpBridge()
+
+        if (!depositConfirmation) return false
+
+        // if user selects usdc.e, redirect to our canonical transfer function
+        if (depositConfirmation === 'bridge-normal-usdce') {
+          return transferV3()
+        }
+      } else {
+        const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
+        if (!withdrawalConfirmation) return
+      }
+
+      // validation: if destination address is added, validate it
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet
+      })
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
+      const cctpTransferStarter = new CctpTransferStarterV2({
+        sourceChainProvider,
+        destinationChainProvider,
+        selectedToken
+      })
+
+      // logic: check if selected token approval is required for selected transfer type
+      const isTokenApprovalRequired =
+        await cctpTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          address,
+          selectedToken,
+          sourceChainProvider,
+          destinationChainProvider
+        })
+
+      if (isTokenApprovalRequired) {
+        // user confirmation: show selected token approval dialog
+        const userConfirmation = await tokenAllowanceApproval()
+        if (!userConfirmation) return false
+
+        // logic: approve selected token
+        await cctpTransferStarter.approveToken({
+          signer,
+          destinationChainProvider,
+          selectedToken
+        })
+      }
+
+      // logic: finally, call the transfer function
+      const transfer = await cctpTransferStarter.transfer({
+        amount: amountBigNumber,
+        destinationChainProvider,
+        signer,
+        selectedToken
+      })
+
+      const depositForBurnTx = transfer.sourceChainTransaction
+
+      const currentNetworkName = getNetworkName(sourceChainId)
+
+      if (isSmartContractWallet) {
+        // For SCW, we assume that the transaction went through
+        if (shouldTrackAnalytics(currentNetworkName)) {
+          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+            accountType: 'Smart Contract',
+            network: currentNetworkName,
+            amount: Number(amount),
+            complete: false
+          })
+        }
+        return
+      }
+
+      if (!depositForBurnTx) {
+        return
+      }
+
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          accountType: 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount),
+          complete: false
+        })
+      }
+
+      const newTransfer: MergedTransaction = {
+        txId: depositForBurnTx.hash,
+        asset: 'USDC',
+        assetType: AssetType.ERC20,
+        blockNum: null,
+        createdAt: getStandardizedTimestamp(new Date().toString()),
+        direction: isDepositMode ? 'deposit' : 'withdraw',
+        isWithdrawal: !isDepositMode,
+        resolvedAt: null,
+        status: 'pending',
+        uniqueId: null,
+        value: amount,
+        depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
+        destination: destinationAddress ?? address,
+        sender: walletAddress,
+        isCctp: true,
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        cctpData: {
+          sourceChainId
+        }
+      }
+      setPendingTransfer(newTransfer, isDepositMode ? 'deposit' : 'withdrawal')
+
+      if (isDepositMode) {
+        showCctpDepositsTransactions()
+      } else {
+        showCctpWithdrawalsTransactions()
+      }
+      setTransactionHistoryTab(TransactionHistoryTab.CCTP)
+      openTransactionHistoryPanel()
+      setTransferring(false)
+      clearAmountInput()
+
+      const depositTxReceipt = await depositForBurnTx.wait()
+      const { messageBytes, attestationHash } =
+        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
+
+      if (depositTxReceipt.status === 0) {
+        errorToast('USDC deposit transaction failed')
+        return
+      }
+
+      if (messageBytes && attestationHash) {
+        setPendingTransfer(
+          {
+            txId: depositForBurnTx.hash,
+            blockNum: depositTxReceipt.blockNumber,
+            status: 'Unconfirmed',
+            cctpData: {
+              attestationHash,
+              messageBytes
+            }
+          },
+          isDepositMode ? 'deposit' : 'withdrawal'
+        )
+      }
+    } catch (e) {
+    } finally {
+      setTransferring(false)
+      setIsCctp(false)
+    }
   }
 
   const transferV3 = async () => {
@@ -522,17 +683,15 @@ export function TransferPanel() {
 
       const { transferType } = bridgeTransferStarterV2
 
-      const connectedSigner = signer
-
       // validation: signer should be connected
-      if (!connectedSigner) throw Error('Signer not connected!')
+      if (!signer) throw Error('Signer not connected!')
 
-      const address = await getAddressFromSigner(connectedSigner)
+      const address = await getAddressFromSigner(signer)
 
       // validation: signer should be compatible with the detected transfer type, else switch network
       const isSignerConnectedToTheCorrectChain =
         await checkSignerIsValidForTransferType({
-          connectedSigner,
+          signer,
           destinationChainProvider,
           transferType
         })
@@ -563,7 +722,7 @@ export function TransferPanel() {
       // logic: check if native currency approval is required for selected transfer type
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarterV2.requiresNativeCurrencyApproval({
-          connectedSigner,
+          signer,
           nativeCurrency,
           amount: amountBigNumber,
           destinationChainProvider
@@ -576,7 +735,7 @@ export function TransferPanel() {
 
         // logic: approve native currency
         await bridgeTransferStarterV2.approveNativeCurrency({
-          connectedSigner,
+          signer,
           destinationChainProvider
         })
       }
@@ -637,7 +796,7 @@ export function TransferPanel() {
 
           // logic: approve selected token
           await bridgeTransferStarterV2.approveToken({
-            connectedSigner,
+            signer,
             destinationChainProvider,
             selectedToken
           })
@@ -654,7 +813,7 @@ export function TransferPanel() {
       const transfer = await bridgeTransferStarterV2.transfer({
         amount: amountBigNumber,
         destinationChainProvider,
-        connectedSigner,
+        signer,
         selectedToken
       })
 
@@ -683,7 +842,7 @@ export function TransferPanel() {
       destinationChainProvider
     )
 
-    const transactionObject = {
+    const uiCompatibleTransactionObject = {
       type: isDeposit ? 'deposit-l1' : 'withdraw',
       status: 'pending',
       value: utils.formatUnits(
@@ -702,7 +861,7 @@ export function TransferPanel() {
     } as NewTransaction
 
     // add transaction to the transaction history
-    transactions.addTransaction(transactionObject)
+    transactions.addTransaction(uiCompatibleTransactionObject)
 
     // set the correct tab
     setTransactionHistoryTab(
@@ -804,7 +963,7 @@ export function TransferPanel() {
   //       destinationAddress,
   //       sourceChainProvider,
   //       destinationChainProvider,
-  //       connectedSigner,
+  //       signer,
   //       nativeCurrency,
   //       nativeCurrencyBalance,
   //       selectedToken,
@@ -826,8 +985,8 @@ export function TransferPanel() {
 
   //     */
 
-  //     const address = await connectedSigner?.getAddress()
-  //     if (!connectedSigner || !address) throw 'Signer is not connected'
+  //     const address = await signer?.getAddress()
+  //     if (!signer || !address) throw 'Signer is not connected'
 
   //     const destinationAddressError = await getDestinationAddressError({
   //       destinationAddress,
@@ -859,7 +1018,7 @@ export function TransferPanel() {
   //       if (await customFeeTokenApproval()) {
   //         // show custom fee token approval popup
   //         await bridgeTransferStarterV2.approveNativeCurrency({
-  //           connectedSigner,
+  //           signer,
   //           destinationChainProvider
   //         })
   //       }

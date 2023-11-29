@@ -11,15 +11,15 @@ import { Provider } from '@ethersproject/providers'
     Helpful in showing a prompt to switch to correct network.
 */
 export const checkSignerIsValidForTransferType = async ({
-  connectedSigner,
+  signer,
   destinationChainProvider,
   transferType
 }: {
-  connectedSigner: Signer
+  signer: Signer
   destinationChainProvider: Provider
   transferType: TransferType
 }) => {
-  const sourceChainProvider = getProviderFromSigner(connectedSigner)
+  const sourceChainProvider = getProviderFromSigner(signer)
   if (sourceChainProvider) {
     const signerChainId = await getChainIdFromProvider(sourceChainProvider)
     const destinationChainId = await getChainIdFromProvider(

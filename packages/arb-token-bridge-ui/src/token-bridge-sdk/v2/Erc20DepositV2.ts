@@ -32,20 +32,18 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
   public requiresTokenApproval = async ({
     amount,
     address,
-    selectedToken,
-    sourceChainProvider,
-    destinationChainProvider
-  }: RequiresTokenApprovalProps & { destinationChainProvider: Provider }) => {
+    selectedToken
+  }: RequiresTokenApprovalProps) => {
     const l1GatewayAddress = await fetchErc20L1GatewayAddress({
       erc20L1Address: selectedToken.address,
-      l1Provider: sourceChainProvider,
-      l2Provider: destinationChainProvider
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider
     })
     return requiresTokenApproval({
       amount,
       address,
       selectedToken,
-      sourceChainProvider,
+      sourceChainProvider: this.sourceChainProvider,
       spender: l1GatewayAddress
     })
   }
@@ -55,60 +53,50 @@ export class Erc20DepositStarterV2 extends BridgeTransferStarterV2 {
   public async transfer({
     amount,
     destinationAddress,
-    destinationChainProvider,
-    connectedSigner,
+    signer,
     selectedToken
   }: TransferProps & { selectedToken: SelectedToken }) {
-    try {
-      const sourceChainProvider = getProviderFromSigner(connectedSigner)
+    const address = await getAddressFromSigner(signer)
 
-      const address = await getAddressFromSigner(connectedSigner)
+    const tokenAddress = selectedToken.address
 
-      const tokenAddress = selectedToken.address
+    const erc20Bridger = await Erc20Bridger.fromProvider(
+      this.destinationChainProvider
+    )
 
-      const erc20Bridger = await Erc20Bridger.fromProvider(
-        destinationChainProvider
-      )
+    const depositRequest = await erc20Bridger.getDepositRequest({
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider,
+      from: address,
+      erc20L1Address: tokenAddress,
+      destinationAddress,
+      amount
+    })
 
-      const depositRequest = await erc20Bridger.getDepositRequest({
-        l1Provider: sourceChainProvider,
-        l2Provider: destinationChainProvider,
-        from: address,
-        erc20L1Address: tokenAddress,
-        destinationAddress,
-        amount
-      })
+    const tx = await erc20Bridger.deposit({
+      ...depositRequest,
+      l1Signer: signer
+    })
 
-      const tx = await erc20Bridger.deposit({
-        ...depositRequest,
-        l1Signer: connectedSigner
-      })
-
-      return {
-        transferType: this.transferType,
-        status: 'pending',
-        sourceChainProvider,
-        sourceChainTransaction: tx,
-        destinationChainProvider
-      }
-
-      // const txReceipt = await tx.wait()
-
-      // if (txLifecycle?.onTxConfirm) {
-      //   txLifecycle.onTxConfirm({
-      //     txReceipt,
-      //     oldBridgeCompatibleTxObjToBeRemovedLater
-      //   })
-      // }
-
-      // return {
-      //   sourceChainTxReceipt: txReceipt
-      // }
-    } catch (error) {
-      // if (txLifecycle?.onTxError) {
-      //   txLifecycle.onTxError(error)
-      // }
-      throw error
+    return {
+      transferType: this.transferType,
+      status: 'pending',
+      sourceChainProvider: this.sourceChainProvider,
+      sourceChainTransaction: tx,
+      destinationChainProvider: this.destinationChainProvider
     }
+
+    // const txReceipt = await tx.wait()
+
+    // if (txLifecycle?.onTxConfirm) {
+    //   txLifecycle.onTxConfirm({
+    //     txReceipt,
+    //     oldBridgeCompatibleTxObjToBeRemovedLater
+    //   })
+    // }
+
+    // return {
+    //   sourceChainTxReceipt: txReceipt
+    // }
   }
 }

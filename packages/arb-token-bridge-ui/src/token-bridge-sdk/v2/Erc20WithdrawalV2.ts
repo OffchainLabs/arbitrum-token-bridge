@@ -56,14 +56,12 @@ export class Erc20WithdrawalStarterV2 extends BridgeTransferStarterV2 {
   }
 
   public approveToken = async ({
-    connectedSigner,
+    signer,
     selectedToken
   }: ApproveTokenProps) => {
-    const sourceChainProvider = getProviderFromSigner(connectedSigner)
-
     const gatewayAddress = await fetchErc20L2GatewayAddress({
       erc20L1Address: selectedToken.address,
-      l2Provider: sourceChainProvider
+      l2Provider: this.sourceChainProvider
     })
 
     if (!selectedToken.l2Address)
@@ -71,7 +69,7 @@ export class Erc20WithdrawalStarterV2 extends BridgeTransferStarterV2 {
 
     const contract = await ERC20__factory.connect(
       selectedToken.l2Address,
-      connectedSigner
+      signer
     )
 
     // approval transaction
@@ -81,52 +79,43 @@ export class Erc20WithdrawalStarterV2 extends BridgeTransferStarterV2 {
   public async transfer({
     amount,
     destinationAddress,
-    destinationChainProvider,
-    connectedSigner,
+    signer,
     selectedToken
-  }: // isSmartContractWallet
-  TransferProps & { selectedToken: SelectedToken }) {
-    try {
-      const tokenAddress = selectedToken.address
+  }: TransferProps & { selectedToken: SelectedToken }) {
+    const tokenAddress = selectedToken.address
 
-      const address = await connectedSigner.getAddress()
+    const address = await signer.getAddress()
 
-      const sourceChainProvider = getProviderFromSigner(connectedSigner)
+    const erc20Bridger = await Erc20Bridger.fromProvider(
+      this.sourceChainProvider
+    )
 
-      const erc20Bridger = await Erc20Bridger.fromProvider(sourceChainProvider)
+    const tx = await erc20Bridger.withdraw({
+      l2Signer: signer,
+      erc20l1Address: tokenAddress,
+      destinationAddress: destinationAddress ?? address,
+      amount
+    })
 
-      const tx = await erc20Bridger.withdraw({
-        l2Signer: connectedSigner,
-        erc20l1Address: tokenAddress,
-        destinationAddress: destinationAddress ?? address,
-        amount
-      })
-
-      return {
-        transferType: this.transferType,
-        status: 'pending',
-        sourceChainProvider,
-        sourceChainTransaction: tx,
-        destinationChainProvider
-      }
-
-      // const txReceipt = await tx.wait()
-
-      // if (txLifecycle?.onTxConfirm) {
-      //   txLifecycle.onTxConfirm({
-      //     txReceipt,
-      //     oldBridgeCompatibleTxObjToBeRemovedLater
-      //   })
-      // }
-
-      // return {
-      //   sourceChainTxReceipt: txReceipt
-      // }
-    } catch (error) {
-      // if (txLifecycle?.onTxError) {
-      //   txLifecycle.onTxError(error)
-      // }
-      throw error
+    return {
+      transferType: this.transferType,
+      status: 'pending',
+      sourceChainProvider: this.sourceChainProvider,
+      sourceChainTransaction: tx,
+      destinationChainProvider: this.destinationChainProvider
     }
+
+    // const txReceipt = await tx.wait()
+
+    // if (txLifecycle?.onTxConfirm) {
+    //   txLifecycle.onTxConfirm({
+    //     txReceipt,
+    //     oldBridgeCompatibleTxObjToBeRemovedLater
+    //   })
+    // }
+
+    // return {
+    //   sourceChainTxReceipt: txReceipt
+    // }
   }
 }

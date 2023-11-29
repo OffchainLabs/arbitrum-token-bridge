@@ -28,7 +28,7 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
       destinationAddress,
       sourceChainProvider,
       destinationChainProvider,
-      connectedSigner,
+      signer,
       nativeCurrency,
       selectedToken,
       isSmartContractWallet
@@ -40,21 +40,21 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
     const destinationChainNetwork = await destinationChainProvider.getNetwork()
     const destinationChainId = destinationChainNetwork.chainId
 
-    if (!connectedSigner) throw Error('Signer not connected!')
+    if (!signer) throw Error('Signer not connected!')
 
     if (!selectedToken) throw Error('No token selected')
 
     const tokenAddress = selectedToken.sourceChainErc20ContractAddress
     if (!tokenAddress) throw Error('Token not deployed on source chain!')
 
-    const address = await connectedSigner.getAddress()
+    const address = await signer.getAddress()
     if (!address)
       throw Error('Please connect your wallet before making the transfer')
 
     // check if the signer connected is a valid signer
     const isValidWithdrawalChain =
       await checkSignerIsValidForDepositOrWithdrawal({
-        connectedSigner,
+        signer,
         destinationChainId,
         transferType: 'withdrawal'
       })
@@ -103,7 +103,7 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
         tokenAddress: usdcContractAddress,
         spender: tokenMessengerContractAddress,
         nativeCurrency,
-        l1Signer: connectedSigner,
+        l1Signer: signer,
         l1Provider: sourceChainProvider,
         l2Provider: destinationChainProvider,
         tokenAllowanceApproval: externalCallbacks['tokenAllowanceApprovalCctp']
@@ -123,7 +123,7 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
       // approve token for burn
       const tx = await cctpContracts(sourceChainId).approveForBurn(
         amount,
-        connectedSigner
+        signer
       )
       await tx.wait()
 
@@ -132,7 +132,7 @@ export class CctpWithdrawalStarterV2 extends BridgeTransferStarterV2 {
         sourceChainId
       ).depositForBurn({
         amount,
-        signer: connectedSigner,
+        signer: signer,
         recipient
       })
 

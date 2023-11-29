@@ -3,18 +3,18 @@ import { Provider } from '@ethersproject/providers'
 import { Signer } from 'ethers'
 
 export type ApproveNativeCurrencyProps = {
-  connectedSigner: Signer
+  signer: Signer
   destinationChainProvider: Provider
 }
 
 export async function approveNativeCurrency({
-  connectedSigner,
+  signer,
   destinationChainProvider
 }: ApproveNativeCurrencyProps): Promise<void> {
   const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
 
   const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
-    l1Signer: connectedSigner
+    l1Signer: signer
   })
   await approveCustomFeeTokenTx.wait()
 }

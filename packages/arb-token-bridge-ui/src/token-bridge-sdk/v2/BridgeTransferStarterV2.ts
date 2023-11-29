@@ -7,13 +7,13 @@ import { RequiresTokenApprovalProps } from './core/requiresTokenApproval'
 import { ApproveTokenProps } from './core/approveToken'
 import { BigNumber, Signer } from 'ethers'
 
-type Asset = 'erc20' | 'eth' | 'usdc'
+type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
-export type TransferType = `${Asset}_${TxType}`
+export type TransferType = `${Asset}_${TxType}` | 'cctp'
 
 export type SelectedToken = ERC20BridgeToken
 
@@ -25,7 +25,7 @@ export type MergedTransactionCctp = MergedTransaction & {
 export type TransferProps = {
   amount: BigNumber
   destinationChainProvider: Provider
-  connectedSigner: Signer
+  signer: Signer
   isSmartContractWallet?: boolean
   destinationAddress?: string
   selectedToken?: SelectedToken | null

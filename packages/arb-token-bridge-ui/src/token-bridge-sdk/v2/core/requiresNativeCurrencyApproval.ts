@@ -8,21 +8,21 @@ import { getAddressFromSigner } from './getAddressFromSigner'
 
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
-  connectedSigner: Signer
+  signer: Signer
   destinationChainProvider: Provider
   nativeCurrency: NativeCurrency
 }
 
 export async function requiresNativeCurrencyApproval({
   amount,
-  connectedSigner,
+  signer,
   destinationChainProvider,
   nativeCurrency
 }: RequiresNativeCurrencyApprovalProps) {
   if (!nativeCurrency.isCustom) return false
 
-  const sourceChainProvider = getProviderFromSigner(connectedSigner)
-  const address = await getAddressFromSigner(connectedSigner)
+  const sourceChainProvider = getProviderFromSigner(signer)
+  const address = await getAddressFromSigner(signer)
 
   const ethBridger = await EthBridger.fromProvider(destinationChainProvider)
   const { l2Network } = ethBridger
