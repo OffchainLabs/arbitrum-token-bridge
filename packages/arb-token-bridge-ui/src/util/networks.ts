@@ -271,7 +271,7 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   ],
   // Orbit Testnets
   [ChainId.XaiTestnet]: [ChainId.XaiTestnet],
-  [ChainId.XaiTestnetV2]: [ChainId.ArbitrumSepolia],
+  [ChainId.XaiTestnetV2]: [ChainId.XaiTestnetV2],
   [ChainId.StylusTestnet]: [ChainId.StylusTestnet]
 }
 
