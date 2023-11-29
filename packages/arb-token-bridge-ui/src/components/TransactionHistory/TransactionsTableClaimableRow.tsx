@@ -227,7 +227,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.chainId
+  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
@@ -269,7 +269,9 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum ? tx.chainId : tx.parentChainId
+  const fromNetworkId = isSourceChainArbitrum
+    ? tx.childChainId
+    : tx.parentChainId
 
   return (
     <div className="flex flex-col space-y-3">
@@ -311,7 +313,7 @@ export function TransactionsTableClaimableRow({
 
   const tokensFromLists = useTokensFromLists({
     parentChainId: tx.parentChainId,
-    chainId: tx.chainId
+    chainId: tx.childChainId
   })
 
   const bgClassName = useMemo(() => {
@@ -325,14 +327,14 @@ export function TransactionsTableClaimableRow({
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
         chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.chainId
+          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
         )
       }),
     [
       tx.asset,
       tx.tokenAddress,
       tx.parentChainId,
-      tx.chainId,
+      tx.childChainId,
       isSourceChainIdEthereum
     ]
   )

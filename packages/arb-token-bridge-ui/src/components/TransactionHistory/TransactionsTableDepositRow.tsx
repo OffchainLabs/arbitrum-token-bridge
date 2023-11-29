@@ -191,10 +191,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
           aria-label={`${layer} Transaction Link`}
         >
           <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-          <NetworkImage chainId={tx.chainId} />
-          <span className="pl-1">{getNetworkName(tx.chainId)}: </span>
+          <NetworkImage chainId={tx.childChainId} />
+          <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
           <ExternalLink
-            href={`${getExplorerUrl(tx.chainId)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}

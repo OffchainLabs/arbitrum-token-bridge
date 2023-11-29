@@ -39,7 +39,7 @@ export const TransactionDateTime = ({
 export const TokenIcon = ({ tx }: { tx: MergedTransaction }) => {
   const tokensFromLists = useTokensFromLists({
     parentChainId: tx.parentChainId,
-    chainId: tx.chainId
+    chainId: tx.childChainId
   })
 
   if (!tx.tokenAddress) {

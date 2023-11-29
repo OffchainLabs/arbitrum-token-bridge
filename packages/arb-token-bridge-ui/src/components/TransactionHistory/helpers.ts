@@ -64,11 +64,11 @@ export function isTxFailed(tx: MergedTransaction) {
 }
 
 export function getSourceChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.parentChainId : tx.chainId
+  return isDeposit(tx) ? tx.parentChainId : tx.childChainId
 }
 
 export function getDestChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.chainId : tx.parentChainId
+  return isDeposit(tx) ? tx.childChainId : tx.parentChainId
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {

@@ -3,7 +3,7 @@ import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 
-import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import {
   isTxClaimable,
@@ -27,7 +27,7 @@ export const TransactionHistory = () => {
     completed,
     paused,
     error
-  } = useCompleteMultiChainTransactions()
+  } = useTransactionHistory(address)
 
   const groupedTransactions = useMemo(
     () =>
