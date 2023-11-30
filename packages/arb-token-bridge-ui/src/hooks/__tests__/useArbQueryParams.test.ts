@@ -182,7 +182,7 @@ describe('ChainParam custom encoder and decoder', () => {
         customChainLocalStorageKey,
         JSON.stringify([{ chainID: '1111111111' }])
       )
-      expect(ChainParam.encode(1111111111)).toBe(1111111111)
+      expect(ChainParam.encode(1111111111)).toBe('1111111111')
       localStorage.clear()
     })
   })
