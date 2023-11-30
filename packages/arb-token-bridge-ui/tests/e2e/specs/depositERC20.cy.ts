@@ -69,30 +69,30 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        // BALANCE: is in a different element so we check for siblings
+        // Balance: is in a different element so we check for siblings
         cy.findByText(l1ERC20bal)
           .should('be.visible')
           .siblings()
-          .contains('BALANCE: ')
+          .contains('Balance: ')
       })
 
       context('should show gas estimations', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
-            cy.findByText("You'll now pay in gas fees")
+            cy.findByText('You will pay in gas fees:')
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findAllByText('Gas fee')
+            cy.findAllByText(/gas/)
               .first()
               .parent()
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findAllByText('Gas fee')
+            cy.findAllByText(/gas/)
               .last()
               .parent()
               .siblings()

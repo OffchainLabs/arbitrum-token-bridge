@@ -4,16 +4,18 @@ import { twMerge } from 'tailwind-merge'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
-
-export type TransferPanelSummaryToken = { symbol: string; address: string }
+import { useWithdrawalConfirmationPeriod } from '../../util/WithdrawalUtils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 
 export type TransferPanelSummaryProps = {
   amount: number
-  token: TransferPanelSummaryToken | null
+  token: ERC20BridgeToken | null
 }
 
 function TransferPanelSummaryContainer({
@@ -24,8 +26,8 @@ function TransferPanelSummaryContainer({
   className?: string
 }) {
   return (
-    <div className="flex flex-col px-6">
-      <span className="mb-4 text-xl text-gray-dark lg:text-2xl">Summary</span>
+    <div className="flex flex-col">
+      <span className="mb-4 text-xl text-gray-dark">Summary</span>
 
       <div className={twMerge('flex flex-col space-y-4', className)}>
         {children}
@@ -51,6 +53,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
   const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
 
+  const [{ amount }] = useArbQueryParams()
+
+  const { confirmationPeriod } = useWithdrawalConfirmationPeriod()
+
   const isBridgingEth = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
 
@@ -71,16 +77,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
         <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
+        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
         {!isDepositMode && (
-          <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
-            <div className="lg:border-b lg:border-gray-5" />
-            <div
-              className={twMerge('h-[24px] w-full opacity-10', bgClassName)}
-            />
-            <div
-              className={twMerge('h-[48px] w-full opacity-10', bgClassName)}
-            />
-          </div>
+          <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
         )}
       </TransferPanelSummaryContainer>
     )
@@ -100,47 +99,60 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     <TransferPanelSummaryContainer>
       <div
         className={twMerge(
-          'grid items-center justify-between text-right text-sm font-light tabular-nums text-gray-dark',
-          showPrice ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'
+          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
         )}
       >
-        <span className="text-left">You&apos;ll now pay in gas fees</span>
+        <span className="text-left">You will pay in gas fees:</span>
 
-        <span>
-          {!sameNativeCurrency && isDepositMode && (
-            <>
-              {formatAmount(estimatedL1GasFees, {
-                symbol: parentChainNativeCurrency.symbol
-              })}
-              {' + '}
-            </>
-          )}
-          {formatAmount(
-            sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
-            {
-              symbol: nativeCurrency.symbol
-            }
-          )}
-        </span>
-
-        {showPrice && (
-          <span className="font-medium text-dark">
-            {formatUSD(ethToUSD(estimatedTotalGasFees))}
+        <div className="font-medium">
+          <span>
+            {!sameNativeCurrency && isDepositMode && (
+              <>
+                {formatAmount(estimatedL1GasFees, {
+                  symbol: parentChainNativeCurrency.symbol
+                })}
+                {' + '}
+              </>
+            )}
+            {formatAmount(
+              sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
+              {
+                symbol: nativeCurrency.symbol
+              }
+            )}
           </span>
+          {showPrice && (
+            <span> ({formatUSD(ethToUSD(estimatedTotalGasFees))})</span>
+          )}
+        </div>
+      </div>
+
+      <div
+        className={twMerge(
+          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
         )}
+      >
+        <span>
+          You will receive on{' '}
+          {getNetworkName(isDepositMode ? l2.network.id : l1.network.id)}:
+        </span>
+        <div className="font-medium">
+          <span>
+            {formatAmount(Number(amount))}{' '}
+            <TokenSymbolWithExplorerLink
+              token={token}
+              isParentChain={!isDepositMode}
+            />
+          </span>
+          {showPrice && <span> ({formatUSD(ethToUSD(Number(amount)))})</span>}
+        </div>
       </div>
 
       {!isDepositMode && (
-        <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
-          <div className="border-b border-gray-5" />
-          <p>
-            This transaction will initiate the withdrawal on {l2.network.name}.
-          </p>
-          <p>
-            When the withdrawal is ready for claiming on {l1.network.name}, you
-            will have to pay gas fees for the claim transaction.
-          </p>
-        </div>
+        <p className="flex flex-col gap-3 text-sm font-light text-gray-dark">
+          You will have to claim the withdrawal on {l1.network.name} in ~
+          {confirmationPeriod}.
+        </p>
       )}
     </TransferPanelSummaryContainer>
   )

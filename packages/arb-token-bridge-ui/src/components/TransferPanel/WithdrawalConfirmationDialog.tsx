@@ -17,20 +17,13 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import {
-  getBlockTime,
-  getConfirmPeriodBlocks,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-
-const SECONDS_IN_DAY = 86400
-const SECONDS_IN_HOUR = 3600
+import { useWithdrawalConfirmationPeriod } from '../../util/WithdrawalUtils'
 
 function getCalendarUrl(
   confirmationHours: number,
@@ -61,6 +54,8 @@ export function WithdrawalConfirmationDialog(
     app: { selectedToken }
   } = useAppState()
 
+  const { confirmationHours, confirmationPeriod } =
+    useWithdrawalConfirmationPeriod()
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
@@ -77,23 +72,8 @@ export function WithdrawalConfirmationDialog(
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
-  const confirmationSeconds =
-    getBlockTime(l1.network.id) * getConfirmPeriodBlocks(l2.network.id)
-  const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
-  let confirmationPeriod = ''
-  const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
 
-  if (confirmationDays >= 2) {
-    confirmationPeriod = `${confirmationDays} day${
-      confirmationDays > 1 ? 's' : ''
-    }`
-  } else {
-    confirmationPeriod = `${confirmationHours} hour${
-      confirmationHours > 1 ? 's' : ''
-    }`
-  }
-
-  const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
+  const { isArbitrumOne } = isNetwork(l2.network.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

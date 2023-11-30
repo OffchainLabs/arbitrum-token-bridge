@@ -71,6 +71,7 @@ import {
 import { defaultErc20Decimals } from '../../defaults'
 import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 
 enum NetworkType {
   l1 = 'l1',
@@ -287,28 +288,7 @@ function TokenBalance({
   prefix?: string
   tokenSymbolOverride?: string
 }) {
-  const { l1, l2 } = useNetworksAndSigners()
   const isParentChain = on === NetworkType.l1
-  const chain = isParentChain ? l1.network : l2.network
-
-  const isERC20BridgeToken = (
-    token: ERC20BridgeToken | NativeCurrencyErc20 | null
-  ): token is ERC20BridgeToken =>
-    token !== null && !token.hasOwnProperty('isCustom')
-
-  const symbol = useMemo(() => {
-    if (!forToken) {
-      return undefined
-    }
-
-    return (
-      tokenSymbolOverride ??
-      sanitizeTokenSymbol(forToken.symbol, {
-        erc20L1Address: forToken.address,
-        chain
-      })
-    )
-  }, [forToken, tokenSymbolOverride, chain])
 
   if (!forToken) {
     return null
@@ -320,35 +300,24 @@ function TokenBalance({
 
   return (
     <p>
-      <span className="font-light">{prefix}</span>
+      <span>{prefix}</span>
       <span className="tabular-nums">
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}
       </span>{' '}
-      {/* we don't want to show explorer link for native currency (either ETH or custom token), or USDC because user can bridge USDC to USDC.e or native USDC, vice versa */}
-      {isERC20BridgeToken(forToken) && !isTokenUSDC(forToken.address) ? (
-        <ExternalLink
-          className="arb-hover underline"
-          href={createBlockExplorerUrlForToken({
-            explorerLink: chain.blockExplorers
-              ? chain.blockExplorers.default.url
-              : undefined,
-            tokenAddress: isParentChain ? forToken.address : forToken.l2Address
-          })}
-        >
-          <span>{symbol}</span>
-        </ExternalLink>
-      ) : (
-        <span>{symbol}</span>
-      )}
+      <TokenSymbolWithExplorerLink
+        token={forToken}
+        tokenSymbolOverride={tokenSymbolOverride}
+        isParentChain={isParentChain}
+      />
     </p>
   )
 }
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm font-extralight tracking-[.25px] text-white md:text-lg lg:font-medium">
+    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white md:text-lg">
       {children}
     </div>
   )
@@ -1154,7 +1123,7 @@ export function TransferPanelMain({
                       : selectedTokenBalances.l2
                   }
                   forToken={selectedToken}
-                  prefix={selectedToken ? 'BALANCE: ' : ''}
+                  prefix={selectedToken ? 'Balance: ' : ''}
                 />
                 {nativeCurrency.isCustom ? (
                   <>
@@ -1166,7 +1135,7 @@ export function TransferPanelMain({
                           : customFeeTokenBalances.l2
                       }
                       forToken={nativeCurrency}
-                      prefix={selectedToken ? '' : 'BALANCE: '}
+                      prefix={selectedToken ? '' : 'Balance: '}
                     />
                     {/* Only show ETH balance on L1 */}
                     {app.isDepositMode && <ETHBalance balance={ethL1Balance} />}
@@ -1174,7 +1143,7 @@ export function TransferPanelMain({
                 ) : (
                   <ETHBalance
                     balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
-                    prefix={selectedToken ? '' : 'BALANCE: '}
+                    prefix={selectedToken ? '' : 'Balance: '}
                   />
                 )}
               </>
@@ -1253,7 +1222,7 @@ export function TransferPanelMain({
                     }
                     on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
                     forToken={selectedToken}
-                    prefix={selectedToken ? 'BALANCE: ' : ''}
+                    prefix={selectedToken ? 'Balance: ' : ''}
                   />
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
@@ -1285,7 +1254,7 @@ export function TransferPanelMain({
                             : customFeeTokenBalances.l1
                         }
                         forToken={nativeCurrency}
-                        prefix={selectedToken ? '' : 'BALANCE: '}
+                        prefix={selectedToken ? '' : 'Balance: '}
                       />
                       {!app.isDepositMode && (
                         <ETHBalance balance={ethL1Balance} />
@@ -1294,7 +1263,7 @@ export function TransferPanelMain({
                   ) : (
                     <ETHBalance
                       balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
-                      prefix={selectedToken ? '' : 'BALANCE: '}
+                      prefix={selectedToken ? '' : 'Balance: '}
                     />
                   )}
                 </>

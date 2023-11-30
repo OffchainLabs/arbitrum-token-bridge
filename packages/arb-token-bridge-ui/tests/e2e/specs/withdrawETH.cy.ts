@@ -34,7 +34,7 @@ describe('Withdraw ETH', () => {
         typeAmountIntoInput()
           .should('have.value', String(ETHToWithdraw))
           .then(() => {
-            cy.findByText("You'll now pay in gas fees")
+            cy.findByText('You will pay in gas fees:')
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)

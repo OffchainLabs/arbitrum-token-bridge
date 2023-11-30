@@ -1135,6 +1135,7 @@ export function TransferPanel() {
           setAmount={setAmount}
           errorMessage={errorMessage}
         />
+        <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}
           token={selectedToken}
@@ -1205,8 +1206,6 @@ export function TransferPanel() {
             tokenAddress={tokenFromSearchParams}
           />
         )}
-
-        <AdvancedSettings />
 
         <TokenDepositCheckDialog
           {...tokenCheckDialogProps}

@@ -57,8 +57,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
   const layer = isParentChain ? parentLayer : childLayer
 
-  // only hide gas estimation for parent layer at withdrawal mode
-  const showBreakdown = isDepositMode || !isParentChain
+  const withdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
     if (!isDepositMode && !isParentChain) {
@@ -81,19 +80,29 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
     })[layer]
   }
 
-  if (!showBreakdown) {
-    return null
+  if (withdrawalParentChain) {
+    return (
+      <div
+        className={twMerge(
+          'grid items-center rounded-md bg-white/25 px-3 py-2 text-xs font-light text-white'
+        )}
+      >
+        You’ll have to pay {l1NetworkName} gas fee upon claiming.
+      </div>
+    )
   }
 
   return (
     <div
       className={twMerge(
-        'grid items-center rounded-md bg-white/25 px-3 py-2 text-right text-sm font-light text-white',
-        showPrice ? 'grid-cols-[2fr_1fr_1fr]' : 'grid-cols-[2fr_1fr]'
+        'grid items-center rounded-md bg-white/25 px-3 py-2 text-right text-xs font-light text-white',
+        showPrice ? 'grid-cols-3' : 'grid-cols-2'
       )}
     >
       <div className="flex flex-row items-center gap-1">
-        <span className="text-left">Gas fee</span>
+        <span className="text-left">
+          {isParentChain ? l1NetworkName : l2NetworkName} gas
+        </span>
         <Tooltip content={layerGasFeeTooltipContent(layer)}>
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>

@@ -63,7 +63,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20ToWithdraw))
           .then(() => {
-            cy.findByText(/You'll now pay in gas fees/i)
+            cy.findByText(/You will pay in gas fees:/i)
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
