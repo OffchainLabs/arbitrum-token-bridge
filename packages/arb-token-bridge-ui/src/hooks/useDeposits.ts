@@ -4,7 +4,7 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { PageParams } from '../components/TransactionHistory/TransactionsTable/TransactionsTable'
 import { MergedTransaction } from '../state/app/state'
-import { isPending, transformDeposits } from '../state/app/utils'
+import { isPending, transformDeposit } from '../state/app/utils'
 import {
   FetchDepositParams,
   fetchDeposits
@@ -16,6 +16,7 @@ import {
   shouldIncludeSentTxs,
   shouldIncludeReceivedTxs
 } from '../util/SubgraphUtils'
+import { updateAdditionalDepositData } from '../util/deposits/helpers'
 
 export type CompleteDepositData = {
   deposits: Transaction[]
@@ -27,11 +28,23 @@ export const fetchCompleteDepositData = async (
   depositParams: FetchDepositParams
 ): Promise<CompleteDepositData> => {
   // get the original deposits
-  const deposits = await fetchDeposits(depositParams)
+
+  const depositsWithoutStatuses = await fetchDeposits(depositParams)
+
+  const deposits = await Promise.all(
+    depositsWithoutStatuses.map(depositTx =>
+      updateAdditionalDepositData(
+        depositTx,
+        depositParams.l1Provider,
+        depositParams.l2Provider
+      )
+    )
+  )
+
   // filter out pending deposits
   const pendingDepositsMap = new Map<string, boolean>()
   // get their complete transformed data (so that we get their exact status)
-  const completeDepositData = transformDeposits(deposits)
+  const completeDepositData = deposits.map(transformDeposit)
   completeDepositData.forEach(completeTxData => {
     if (isPending(completeTxData)) {
       pendingDepositsMap.set(completeTxData.txId, true)
