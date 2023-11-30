@@ -32,7 +32,7 @@ export const shouldTrackAnalytics = (
 }
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
-type ProviderName =
+export type ProviderName =
   | 'MetaMask'
   | 'Coinbase Wallet'
   | 'Trust Wallet'
