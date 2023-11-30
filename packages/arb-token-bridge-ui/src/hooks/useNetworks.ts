@@ -70,8 +70,12 @@ function isSupportedChainId(chainId: ChainId | undefined): boolean {
 }
 
 function getPartnerChainsQueryParams(chainId: ChainId): ChainId[] {
-  const partnerChains = getPartnerChainsForChainId(chainId)
-  return partnerChains.map(chain => chain.id)
+  try {
+    const partnerChains = getPartnerChainsForChainId(chainId)
+    return partnerChains.map(chain => chain.id)
+  } catch (e) {
+    return []
+  }
 }
 
 const getProviderForChainCache: {
@@ -206,10 +210,15 @@ export type UseNetworksState = {
   destinationChainProvider: StaticJsonRpcProvider
 }
 
-export type UseNetworksSetStateParams = {
-  sourceChain: ChainId
-  destinationChain?: ChainId
-}
+export type UseNetworksSetStateParams =
+  | {
+      sourceChain: ChainId
+      destinationChain?: ChainId
+    }
+  | {
+      sourceChain?: ChainId
+      destinationChain: ChainId
+    }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
@@ -227,10 +236,30 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   const setState = useCallback(
     (params: UseNetworksSetStateParams) => {
+      if (!params.sourceChain) {
+        const [sourceChainId] = getPartnerChainsQueryParams(
+          params.destinationChain
+        )
+
+        const {
+          sourceChainId: sourceChain,
+          destinationChainId: destinationChain
+        } = sanitizeQueryParams({
+          sourceChainId: sourceChainId,
+          destinationChainId: params.destinationChain
+        })
+        setQueryParams({
+          sourceChain,
+          destinationChain
+        })
+        return
+      }
+
       if (!params.destinationChain) {
         const [destinationChainId] = getPartnerChainsQueryParams(
           params.sourceChain
         )
+
         const {
           sourceChainId: sourceChain,
           destinationChainId: destinationChain
