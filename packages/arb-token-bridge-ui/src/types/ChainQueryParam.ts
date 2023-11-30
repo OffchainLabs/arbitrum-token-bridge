@@ -1,7 +1,11 @@
 import { Chain } from 'wagmi'
 import * as chains from 'wagmi/chains'
 
-import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  getSupportedNetworks
+} from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
@@ -20,10 +24,13 @@ const chainQueryParams = [
 
 export type ChainQueryParam = (typeof chainQueryParams)[number]
 
-export function isValidChainQueryParam(
-  value: string
-): value is ChainQueryParam {
-  return (chainQueryParams as readonly string[]).includes(value)
+export function isValidChainQueryParam(value: ChainId | string) {
+  if (typeof value === 'string') {
+    return (chainQueryParams as readonly string[]).includes(value)
+  }
+
+  const supportedNetworkIds = getSupportedNetworks(value, true)
+  return supportedNetworkIds.includes(value)
 }
 
 export function getChainQueryParamForChain(

@@ -1,7 +1,8 @@
 /**
  * @jest-environment jsdom
  */
-import { AmountQueryParam } from '../useArbQueryParams'
+import { ChainId, customChainLocalStorageKey } from '../../util/networks'
+import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -160,6 +161,61 @@ describe('AmountQueryParam custom encoder and decoder', () => {
       expect(getDecodeResult('00002,123')).toBe('2.123')
       expect(getDecodeResult(',0234')).toBe('0.0234')
       expect(getDecodeResult('123,123000')).toBe('123.123000')
+    })
+  })
+})
+
+describe('ChainParam custom encoder and decoder', () => {
+  describe('encode chainId to chainId/ChainQueryParam', () => {
+    it('should return undefined if value is null or undefined', () => {
+      expect(ChainParam.encode(null)).toBeUndefined()
+      expect(ChainParam.encode(undefined)).toBeUndefined()
+    })
+
+    it('should return ChainQueryParam if value is a valid chainId', () => {
+      expect(ChainParam.encode(ChainId.Ethereum)).toBe('ethereum')
+      expect(ChainParam.encode(ChainId.ArbitrumOne)).toBe('arbitrum-one')
+      expect(ChainParam.encode(ChainId.Goerli)).toBe('goerli')
+      expect(ChainParam.encode(ChainId.ArbitrumGoerli)).toBe('arbitrum-goerli')
+      expect(ChainParam.encode(1234567890)).toBeUndefined()
+      localStorage.setItem(
+        customChainLocalStorageKey,
+        JSON.stringify([{ chainID: '1111111111' }])
+      )
+      expect(ChainParam.encode(1111111111)).toBe(1111111111)
+      localStorage.clear()
+    })
+  })
+
+  describe('decode chainId/ChainQueryParam to chainId', () => {
+    it('should return undefined if value is null or undefined', () => {
+      expect(ChainParam.decode(null)).toBeUndefined()
+      expect(ChainParam.decode(undefined)).toBeUndefined()
+    })
+
+    it('should decode to ChainId if value is a valid ChainQueryParam', () => {
+      expect(ChainParam.decode('ethereum')).toBe(ChainId.Ethereum)
+      expect(ChainParam.decode('arbitrum-one')).toBe(ChainId.ArbitrumOne)
+      expect(ChainParam.decode('goerli')).toBe(ChainId.Goerli)
+      expect(ChainParam.decode('arbitrum-goerli')).toBe(ChainId.ArbitrumGoerli)
+      expect(ChainParam.decode('aaa123')).toBeUndefined()
+    })
+
+    it('should decode to ChainId if value is a valid chainId', () => {
+      function decodeChainId(value: ChainId) {
+        return ChainParam.decode(value.toString())
+      }
+      expect(decodeChainId(ChainId.Ethereum)).toBe(ChainId.Ethereum)
+      expect(decodeChainId(ChainId.ArbitrumOne)).toBe(ChainId.ArbitrumOne)
+      expect(decodeChainId(ChainId.Goerli)).toBe(ChainId.Goerli)
+      expect(decodeChainId(ChainId.ArbitrumGoerli)).toBe(ChainId.ArbitrumGoerli)
+      expect(ChainParam.decode('1234567890')).toBeUndefined()
+      localStorage.setItem(
+        customChainLocalStorageKey,
+        JSON.stringify([{ chainID: '222222' }])
+      )
+      expect(ChainParam.decode('222222')).toBe(222222)
+      localStorage.clear()
     })
   })
 })

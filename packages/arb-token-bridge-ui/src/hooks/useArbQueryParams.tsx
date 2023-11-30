@@ -27,6 +27,7 @@ import {
 } from 'use-query-params'
 
 import {
+  ChainQueryParam,
   getChainForChainQueryParam,
   getChainQueryParamForChain,
   isValidChainQueryParam
@@ -107,42 +108,51 @@ export const AmountQueryParam = {
   }
 }
 
-export const ChainParam = {
-  // Parse chainId to ChainQueryParam or ChainId for orbit chain
-  //   encode: (value: string | (string | null)[] | null | undefined) => {
-  encode: (chainId: number | null | undefined) => {
-    if (!chainId) {
-      return undefined
-    }
-
-    try {
-      const chain = getChainQueryParamForChain(chainId)
-      return chain as string
-    } catch (e) {
-      return undefined
-    }
-  },
-  // Parse ChainQueryParam/ChainId to ChainId
-  decode: (
-    value: string | (string | null)[] | null | undefined
-  ): ChainId | undefined => {
-    const valueStr = decodeString(value)
-    if (!valueStr) {
-      return undefined
-    }
-
-    const valueNum = parseInt(valueStr, 10)
-    if (!Number.isNaN(valueNum)) {
-      // TODO: Verify that chainId is of a supported network or orbit chain?
-      return valueNum
-    }
-
-    if (isValidChainQueryParam(valueStr)) {
-      return getChainForChainQueryParam(valueStr).id
-    }
-
+// Parse chainId to ChainQueryParam or ChainId for orbit chain
+function encodeChainQueryParam(chainId: number | null | undefined) {
+  if (!chainId) {
     return undefined
   }
+
+  try {
+    const chain = getChainQueryParamForChain(chainId)
+    return chain
+  } catch (e) {
+    return undefined
+  }
+}
+
+// Parse ChainQueryParam/ChainId to ChainId
+// URL accept both chainId and chainQueryParam (string)
+function decodeChainQueryParam(
+  value: string | (string | null)[] | null | undefined
+): ChainId | undefined {
+  const valueStr = decodeString(value)
+  if (!valueStr) {
+    return undefined
+  }
+
+  const valueNum = parseInt(valueStr, 10)
+  if (!Number.isNaN(valueNum)) {
+    if (isValidChainQueryParam(valueNum)) {
+      return valueNum
+    }
+    return undefined
+  }
+
+  if (isValidChainQueryParam(valueStr)) {
+    return getChainForChainQueryParam(valueStr as ChainQueryParam).id
+  }
+
+  return undefined
+}
+
+export const ChainParam = {
+  encode: (chainId: number | null | undefined) =>
+    encodeChainQueryParam(chainId),
+
+  decode: (value: string | (string | null)[] | null | undefined) =>
+    decodeChainQueryParam(value)
 }
 
 export function ArbQueryParamProvider({
