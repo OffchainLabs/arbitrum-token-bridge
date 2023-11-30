@@ -90,7 +90,7 @@ export function TokenRow({
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
 
   const isSmallScreen = useMedia('(max-width: 419px)')
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -400,7 +400,7 @@ export function TokenRow({
                     ) : (
                       <span className="text-xs text-gray-900">
                         This token hasn&apos;t been bridged to{' '}
-                        {getNetworkName(l2Network.id)}.
+                        {getNetworkName(childChain.id)}.
                       </span>
                     )}
                   </>
