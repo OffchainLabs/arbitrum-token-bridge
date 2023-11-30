@@ -23,7 +23,6 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
-import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import {
   TransactionHistoryTab,
@@ -32,7 +31,6 @@ import {
 } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL2ERC20Address,
@@ -227,8 +225,6 @@ export function TransferPanel() {
     useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
     useDialog()
-  const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
-    useDialog()
   const [
     usdcWithdrawalConfirmationDialogProps,
     openUSDCWithdrawalConfirmationDialog
@@ -332,15 +328,6 @@ export function TransferPanel() {
 
     return isConnected && isDepositMode && isUnbridgedToken
   }, [l1Network, isDepositMode, selectedToken])
-
-  const isNonCanonicalToken = useMemo(() => {
-    if (selectedToken) {
-      return Object.keys(NonCanonicalTokensBridgeInfo)
-        .map(key => key.toLowerCase())
-        .includes(selectedToken.address.toLowerCase())
-    }
-    return false
-  }, [selectedToken])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -870,15 +857,6 @@ export function TransferPanel() {
             return
           }
 
-          if (isNonCanonicalToken) {
-            const waitForInput = openDepositConfirmationDialog()
-            const [confirmed] = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-          }
-
           if (nativeCurrency.isCustom) {
             const approved = await approveCustomFeeTokenForGateway()
 
@@ -1222,11 +1200,6 @@ export function TransferPanel() {
 
       <WithdrawalConfirmationDialog
         {...withdrawalConfirmationDialogProps}
-        amount={amount}
-      />
-
-      <DepositConfirmationDialog
-        {...depositConfirmationDialogProps}
         amount={amount}
       />
 
