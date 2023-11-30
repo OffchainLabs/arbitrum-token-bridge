@@ -109,7 +109,9 @@ export const AmountQueryParam = {
 }
 
 // Parse chainId to ChainQueryParam or ChainId for orbit chain
-function encodeChainQueryParam(chainId: number | null | undefined) {
+function encodeChainQueryParam(
+  chainId: number | null | undefined
+): ChainId | ChainQueryParam | undefined {
   if (!chainId) {
     return undefined
   }
