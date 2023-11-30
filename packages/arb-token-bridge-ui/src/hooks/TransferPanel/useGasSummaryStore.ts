@@ -3,7 +3,6 @@ import { create } from 'zustand'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { TransferPanelSummaryToken } from '../../components/TransferPanel/TransferPanelSummary'
 import { useNetworksAndSigners } from '../useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
@@ -16,6 +15,7 @@ import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
+import { ERC20BridgeToken } from '../arbTokenBridge.types'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated L1 gas, denominated in Wei, represented as a BigNumber
@@ -50,7 +50,7 @@ export type UseGasSummaryResult = {
 
 export function useGasSummary(
   amount: BigNumber,
-  token: TransferPanelSummaryToken | null
+  token: ERC20BridgeToken | null
 ): void {
   const {
     app: { arbTokenBridge, isDepositMode, arbTokenBridgeLoaded }
