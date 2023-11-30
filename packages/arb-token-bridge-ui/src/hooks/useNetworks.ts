@@ -45,30 +45,6 @@ function getChainByChainId(chainId: ChainId): Chain {
   return chain ?? mainnet
 }
 
-const customChainIds = getCustomChainsFromLocalStorage().map(
-  chain => chain.chainID
-)
-function isSupportedChainId(chainId: ChainId | undefined): boolean {
-  if (!chainId) {
-    return false
-  }
-
-  return [
-    mainnet.id,
-    goerli.id,
-    sepolia.id,
-    arbitrum.id,
-    arbitrumNova.id,
-    arbitrumGoerli.id,
-    arbitrumSepolia.id,
-    stylusTestnet.id,
-    xaiTestnet.id,
-    arbitrumLocal.id,
-    local.id,
-    ...customChainIds
-  ].includes(chainId)
-}
-
 function getPartnerChainsQueryParams(chainId: ChainId): ChainId[] {
   try {
     const partnerChains = getPartnerChainsForChainId(chainId)
@@ -112,16 +88,15 @@ export function sanitizeQueryParams({
   sourceChainId: ChainId
   destinationChainId: ChainId
 } {
-  const defaultState = {
-    sourceChainId: ChainId.Ethereum,
-    destinationChainId: ChainId.ArbitrumOne
-  }
   // when both `sourceChain` and `destinationChain` are undefined, default to Ethereum and Arbitrum One
   if (
     typeof sourceChainId === 'undefined' &&
     typeof destinationChainId === 'undefined'
   ) {
-    return defaultState
+    return {
+      sourceChainId: ChainId.Ethereum,
+      destinationChainId: ChainId.ArbitrumOne
+    }
   }
 
   // only `destinationChainId` is defined
@@ -129,10 +104,6 @@ export function sanitizeQueryParams({
     typeof sourceChainId === 'undefined' &&
     typeof destinationChainId !== 'undefined'
   ) {
-    if (!isSupportedChainId(destinationChainId)) {
-      return defaultState
-    }
-
     const [defaultSourceChainId] =
       getPartnerChainsQueryParams(destinationChainId)
     return { sourceChainId: defaultSourceChainId!, destinationChainId }
@@ -143,44 +114,10 @@ export function sanitizeQueryParams({
     typeof sourceChainId !== 'undefined' &&
     typeof destinationChainId === 'undefined'
   ) {
-    if (!isSupportedChainId(sourceChainId)) {
-      return defaultState
-    }
-
     const [defaultDestinationChainId] =
       getPartnerChainsQueryParams(sourceChainId)
     return {
       sourceChainId: sourceChainId,
-      destinationChainId: defaultDestinationChainId!
-    }
-  }
-
-  if (
-    !isSupportedChainId(sourceChainId) &&
-    !isSupportedChainId(destinationChainId)
-  ) {
-    return defaultState
-  }
-
-  // sourceChainId is invalid, destinationChainId is valid
-  if (!isSupportedChainId(sourceChainId)) {
-    // Set sourceChainId according to destinationChainId
-    const [defaultSourceChainId] = getPartnerChainsQueryParams(
-      destinationChainId!
-    )
-    return {
-      sourceChainId: defaultSourceChainId!,
-      destinationChainId: destinationChainId!
-    }
-  }
-
-  if (!isSupportedChainId(destinationChainId)) {
-    // Set destinationChainId according to sourceChainId
-    const [defaultDestinationChainId] = getPartnerChainsQueryParams(
-      sourceChainId!
-    )
-    return {
-      sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!
     }
   }

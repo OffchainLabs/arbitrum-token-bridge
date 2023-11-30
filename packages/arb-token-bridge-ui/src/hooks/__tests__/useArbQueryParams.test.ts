@@ -180,7 +180,9 @@ describe('ChainParam custom encoder and decoder', () => {
       expect(ChainParam.encode(1234567890)).toBeUndefined()
       localStorage.setItem(
         customChainLocalStorageKey,
-        JSON.stringify([{ chainID: '1111111111' }])
+        JSON.stringify([
+          { chainID: '1111111111', name: 'custom 1111111111 chain' }
+        ])
       )
       expect(ChainParam.encode(1111111111)).toBe('1111111111')
       localStorage.clear()
@@ -212,7 +214,7 @@ describe('ChainParam custom encoder and decoder', () => {
       expect(ChainParam.decode('1234567890')).toBeUndefined()
       localStorage.setItem(
         customChainLocalStorageKey,
-        JSON.stringify([{ chainID: '222222' }])
+        JSON.stringify([{ chainID: '222222', name: 'custom 222222 chain' }])
       )
       expect(ChainParam.decode('222222')).toBe(222222)
       localStorage.clear()
