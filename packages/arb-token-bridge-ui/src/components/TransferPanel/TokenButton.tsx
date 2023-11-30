@@ -13,6 +13,9 @@ import {
 import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useWithdrawOnlyDialogStore } from './TransferPanelMain'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -27,6 +30,7 @@ export function TokenButton(): JSX.Element {
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
+  const { openDialog: openWithdrawOnlyDialog } = useWithdrawOnlyDialogStore()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
@@ -73,9 +77,21 @@ export function TokenButton(): JSX.Element {
     tokenImportDialogProps.onClose(false)
   }
 
-  function importToken(address: string) {
+  async function importToken(address: string) {
     setTokenToImport(address)
-    openTokenImportDialog()
+
+    const waitForInput = openTokenImportDialog()
+    const [confirmed] = await waitForInput()
+
+    if (confirmed) {
+      if (
+        isWithdrawOnlyToken(address, l2.network.id) ||
+        isTransferDisabledToken(address, l2.network.id)
+      ) {
+        openWithdrawOnlyDialog()
+        return
+      }
+    }
   }
 
   return (
@@ -83,7 +99,10 @@ export function TokenButton(): JSX.Element {
       {typeof tokenToImport !== 'undefined' && (
         <TokenImportDialog
           {...tokenImportDialogProps}
-          onClose={closeWithReset}
+          onClose={(confirmed: boolean, onCloseData?: unknown) => {
+            tokenImportDialogProps.onClose(confirmed, onCloseData)
+            closeWithReset()
+          }}
           tokenAddress={tokenToImport}
         />
       )}
