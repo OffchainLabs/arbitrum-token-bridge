@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
-import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
+import { useAccount, WagmiConfig } from 'wagmi'
+import {
+  darkTheme,
+  RainbowKitProvider,
+  Theme,
+  useConnectModal
+} from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -39,6 +44,8 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
+import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 
 declare global {
   interface Window {
@@ -249,6 +256,36 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
+function NetworkReady({ children }: { children: React.ReactNode }) {
+  const { isConnected } = useAccount()
+  const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const { openConnectModal } = useConnectModal()
+
+  useEffect(() => {
+    if (tosAccepted !== undefined && !isConnected) {
+      openConnectModal?.()
+    }
+  }, [isConnected, tosAccepted, openConnectModal])
+
+  if (!isConnected) {
+    return (
+      <>
+        <HeaderContent>
+          <HeaderConnectWalletButton />
+        </HeaderContent>
+
+        <AppConnectionFallbackContainer>
+          <span className="text-white">
+            Please connect your wallet to use the bridge.
+          </span>
+        </AppConnectionFallbackContainer>
+      </>
+    )
+  }
+
+  return <>{children}</>
+}
+
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
@@ -269,7 +306,6 @@ Object.keys(localStorage).forEach(key => {
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-
   const [tosAccepted, setTosAccepted] =
     useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
   const [welcomeDialogProps, openWelcomeDialog] = useDialog()
@@ -299,9 +335,11 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-            <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
-            </AppContextProvider>
+            <NetworkReady>
+              <AppContextProvider>
+                <Injector>{isTosAccepted && <AppContent />}</Injector>
+              </AppContextProvider>
+            </NetworkReady>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>
