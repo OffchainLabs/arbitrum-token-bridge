@@ -68,7 +68,7 @@ export function Footer() {
               className="arb-hover h-8 w-8"
             >
               <Image
-                src="/icons/twitter.webp"
+                src="/icons/discord.webp"
                 alt="Discord"
                 width={32}
                 height={32}
@@ -79,7 +79,7 @@ export function Footer() {
               className="arb-hover h-8 w-8"
             >
               <Image
-                src="/icons/discord.webp"
+                src="/icons/twitter.webp"
                 alt="Twitter"
                 width={32}
                 height={32}
