@@ -1,6 +1,21 @@
+import { create } from 'zustand'
+
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
-import { useWithdrawOnlyDialogStore } from './TransferPanelMain'
+
+type WithdrawOnlyDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useWithdrawOnlyDialogStore = create<WithdrawOnlyDialogStore>(
+  set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  })
+)
 
 export function WithdrawOnlyDialog() {
   const { app } = useAppState()

@@ -39,7 +39,7 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useWithdrawOnlyDialogStore } from './TransferPanelMain'
+import { useWithdrawOnlyDialogStore } from './WithdrawOnlyDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 

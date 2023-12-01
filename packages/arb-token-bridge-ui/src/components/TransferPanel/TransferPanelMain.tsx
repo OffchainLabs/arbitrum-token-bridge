@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import * as Sentry from '@sentry/react'
 import { Chain, useAccount } from 'wagmi'
-import { create } from 'zustand'
 
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -370,20 +369,6 @@ function NetworkListboxPlusBalancesContainer({
   )
 }
 
-type WithdrawOnlyDialogStore = {
-  isOpen: boolean
-  openDialog: () => void
-  closeDialog: () => void
-}
-
-export const useWithdrawOnlyDialogStore = create<WithdrawOnlyDialogStore>(
-  set => ({
-    isOpen: false,
-    openDialog: () => set({ isOpen: true }),
-    closeDialog: () => set({ isOpen: false })
-  })
-)
-
 export function TransferPanelMain({
   amount,
   setAmount,
@@ -562,7 +547,6 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [, openWithdrawOnlyDialog] = useDialog()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,

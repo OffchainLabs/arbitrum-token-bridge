@@ -14,10 +14,10 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumGoerli]: [
     {
       // this is purely for testing the UI
-      symbol: 'LINK',
+      symbol: 'ZRX',
       l2CustomAddr: '',
-      l1Address: '0x326C977E6efc84E512bB9C30f76E30c160eD06FB',
-      l2Address: '0xd14838a68e8afbade5efb411d5871ea0011afd28'
+      l1Address: '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165',
+      l2Address: '0xce7d45e033d5727eee28cba5df1f2a7c24750ca6'
     }
   ],
   [ChainId.ArbitrumOne]: [

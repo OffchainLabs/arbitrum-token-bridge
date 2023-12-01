@@ -105,18 +105,33 @@ const isAllowedL2 = async ({
   )
 }
 
-function useTokenFromSearchParams(): string | undefined {
-  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
+export function useTokenFromSearchParams(): {
+  tokenFromSearchParams: string | undefined
+  setTokenQueryParam: (token: string | undefined) => void
+} {
+  const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
+
+  const setTokenQueryParam = (token: string | undefined) =>
+    setQueryParams({ token })
 
   if (!tokenFromSearchParams) {
-    return undefined
+    return {
+      tokenFromSearchParams: undefined,
+      setTokenQueryParam
+    }
   }
 
   if (!isAddress(tokenFromSearchParams)) {
-    return undefined
+    return {
+      tokenFromSearchParams,
+      setTokenQueryParam
+    }
   }
 
-  return tokenFromSearchParams
+  return {
+    tokenFromSearchParams,
+    setTokenQueryParam
+  }
 }
 
 const networkConnectionWarningToast = () =>
@@ -131,7 +146,7 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const tokenFromSearchParams = useTokenFromSearchParams()
+  const { tokenFromSearchParams } = useTokenFromSearchParams()
 
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
@@ -219,6 +234,7 @@ export function TransferPanel() {
       : latestNetworksAndSigners.current.l2.network.id
   })
 
+  const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
@@ -250,6 +266,14 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  const { setTokenQueryParam } = useTokenFromSearchParams()
+
+  function closeWithResetTokenImportDialog() {
+    setTokenQueryParam(undefined)
+    setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
+    tokenImportDialogProps.onClose(false)
+  }
+
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
@@ -257,8 +281,7 @@ export function TransferPanel() {
 
   useImportTokenModal({
     importTokenModalStatus,
-    connectionState,
-    setImportTokenModalStatus
+    connectionState
   })
 
   const ethL1BalanceFloat = useMemo(
@@ -1318,10 +1341,8 @@ export function TransferPanel() {
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportDialog
-            isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
-            onClose={() =>
-              setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
-            }
+            {...tokenImportDialogProps}
+            onClose={closeWithResetTokenImportDialog}
             tokenAddress={tokenFromSearchParams}
           />
         )}
