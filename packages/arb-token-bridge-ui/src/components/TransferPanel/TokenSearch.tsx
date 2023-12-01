@@ -480,7 +480,8 @@ export function TokenSearch({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens },
+      isDepositMode
     }
   } = useAppState()
   const {
@@ -557,9 +558,11 @@ export function TokenSearch({
         })
       }
 
+      // do not allow import of withdraw-only tokens at deposit mode
       if (
-        isWithdrawOnlyToken(_token.address, l2.network.id) ||
-        isTransferDisabledToken(_token.address, l2.network.id)
+        isDepositMode &&
+        (isWithdrawOnlyToken(_token.address, l2.network.id) ||
+          isTransferDisabledToken(_token.address, l2.network.id))
       ) {
         openWithdrawOnlyDialog()
         return

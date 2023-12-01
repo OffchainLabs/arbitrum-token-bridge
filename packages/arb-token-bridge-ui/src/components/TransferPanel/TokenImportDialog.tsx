@@ -71,6 +71,7 @@ export function TokenImportDialog({
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
+      isDepositMode,
       selectedToken
     }
   } = useAppState()
@@ -288,9 +289,11 @@ export function TokenImportDialog({
       })
     }
 
+    // do not allow import of withdraw-only tokens at deposit mode
     if (
-      isWithdrawOnlyToken(l1Address, l2.network.id) ||
-      isTransferDisabledToken(l1Address, l2.network.id)
+      isDepositMode &&
+      (isWithdrawOnlyToken(l1Address, l2.network.id) ||
+        isTransferDisabledToken(l1Address, l2.network.id))
     ) {
       openWithdrawOnlyDialog()
       return
