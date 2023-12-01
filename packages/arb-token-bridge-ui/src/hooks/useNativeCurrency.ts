@@ -1,10 +1,14 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
+import { EthBridger, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
 import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
+import {
+  getL2Network,
+  getNetwork
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 type NativeCurrencyBase = {
   name: string
@@ -60,7 +64,7 @@ export async function fetchNativeCurrency({
   let chain: L2Network
 
   try {
-    chain = await getChain(provider)
+    chain = await getL2Network(provider)
   } catch (error) {
     // This will only throw for L1s, so we can safely assume that the native currency is ETH
     return nativeCurrencyEther
@@ -69,10 +73,12 @@ export async function fetchNativeCurrency({
   const ethBridger = await EthBridger.fromProvider(provider)
 
   // Could be an L2 or an Orbit chain, but doesn't really matter
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   if (typeof ethBridger.nativeToken === 'undefined') {
     return nativeCurrencyEther
   }
 
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   const address = ethBridger.nativeToken.toLowerCase()
   const parentChainId = chain.partnerChainID
   const parentChainProvider = new StaticJsonRpcProvider(rpcURLs[parentChainId])

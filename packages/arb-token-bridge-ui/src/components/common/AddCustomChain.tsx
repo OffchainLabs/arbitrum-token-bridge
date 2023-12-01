@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import { addCustomChain } from '@arbitrum/sdk'
+import { addCustomNetwork } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
@@ -250,12 +250,12 @@ export const AddCustomChain = () => {
       // validate config
       ZodOrbitConfig.parse(data)
 
-      const customChain = mapOrbitConfigToOrbitChain(data)
+      const customNetwork = mapOrbitConfigToOrbitChain(data)
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomChain({ customChain })
-      saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
+      addCustomNetwork({ customNetwork })
+      saveCustomChainToLocalStorage({ ...customNetwork, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
       location.reload()

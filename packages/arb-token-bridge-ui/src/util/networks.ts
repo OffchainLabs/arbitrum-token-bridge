@@ -1,11 +1,7 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import {
-  Chain,
-  ParentChain,
   l2Networks,
-  chains,
-  parentChains,
-  addCustomChain
+  l1Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -23,9 +19,10 @@ const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
-export type ChainWithRpcUrl = Chain & {
+export type ChainWithRpcUrl = L2Network & {
   rpcUrl: string
   nativeTokenData?: Erc20Data
+  nativeToken?: string
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
@@ -211,7 +208,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getBlockTime = (chainId: ChainId) => {
-  const network = parentChains[chainId]
+  const network = l1Networks[chainId]
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
@@ -219,7 +216,7 @@ export const getBlockTime = (chainId: ChainId) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = l2Networks[chainId] || chains[chainId]
+  const network = l2Networks[chainId] || l2Networks[chainId]
   if (!network) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
@@ -275,7 +272,7 @@ const defaultL1Network: L1Network = {
   isArbitrum: false
 }
 
-const defaultL2Network: ParentChain = {
+const defaultL2Network: L2Network = {
   chainID: 412346,
   partnerChainIDs: [
     // Orbit chains will go here
@@ -315,7 +312,7 @@ const defaultL2Network: ParentChain = {
   }
 }
 
-export const xaiTestnet: Chain = {
+export const xaiTestnet: L2Network = {
   chainID: 47279324479,
   confirmPeriodBlocks: 20,
   ethBridge: {
@@ -388,7 +385,7 @@ export function registerLocalNetwork(
     console.error(`Failed to register local network: ${error.message}`)
   }
   try {
-    addCustomChain({ customParentChain: l1Network, customChain: l2Network })
+    addCustomNetwork({ customL1Network: l1Network, customNetwork: l2Network })
   } catch (error: any) {
     //
   }

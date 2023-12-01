@@ -1,4 +1,4 @@
-import { EthBridger, getChain } from '@arbitrum/sdk'
+import { EthBridger, getL2Network } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, constants } from 'ethers'
 
@@ -20,8 +20,9 @@ async function customFeeTokenAllowanceIsInsufficient(
   params: DepositEthEstimateGasParams
 ) {
   const { amount, address, l1Provider, l2Provider } = params
-  const l2Network = await getChain(l2Provider)
+  const l2Network = await getL2Network(l2Provider)
 
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   if (typeof l2Network.nativeToken === 'undefined') {
     throw new Error(
       '[customFeeTokenAllowanceIsInsufficient] expected nativeToken to be defined'
@@ -29,6 +30,7 @@ async function customFeeTokenAllowanceIsInsufficient(
   }
 
   const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+    //@ts-ignore - TODO: issue caused by missing custom gas token support
     address: l2Network.nativeToken,
     provider: l1Provider,
     owner: address,
@@ -51,6 +53,7 @@ export async function depositEthEstimateGas(
   const { amount, address, l1Provider, l2Provider } = params
 
   const ethBridger = await EthBridger.fromProvider(l2Provider)
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
 
   if (customFeeToken && (await customFeeTokenAllowanceIsInsufficient(params))) {

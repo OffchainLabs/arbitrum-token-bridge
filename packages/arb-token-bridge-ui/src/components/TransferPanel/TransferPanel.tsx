@@ -395,11 +395,13 @@ export function TransferPanel() {
     const ethBridger = await EthBridger.fromProvider(l2Provider)
     const { l2Network } = ethBridger
 
+    //@ts-ignore - TODO: issue caused by missing custom gas token support
     if (typeof l2Network.nativeToken === 'undefined') {
       throw new Error('l2 network does not use custom fee token')
     }
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+      //@ts-ignore - TODO: issue caused by missing custom gas token support
       address: l2Network.nativeToken,
       provider: l1Provider,
       owner: walletAddress,
@@ -417,6 +419,7 @@ export function TransferPanel() {
         return false
       }
 
+      //@ts-ignore - TODO: issue caused by missing custom gas token support
       const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
         l1Signer
       })
@@ -442,6 +445,7 @@ export function TransferPanel() {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
     const l2Network = erc20Bridger.l2Network
 
+    //@ts-ignore - TODO: issue caused by missing custom gas token support
     if (typeof l2Network.nativeToken === 'undefined') {
       throw new Error('l2 network does not use custom fee token')
     }
@@ -453,6 +457,7 @@ export function TransferPanel() {
     })
 
     const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
+      //@ts-ignore - TODO: issue caused by missing custom gas token support
       address: l2Network.nativeToken,
       provider: l1Provider,
       owner: walletAddress,
@@ -474,6 +479,7 @@ export function TransferPanel() {
         return false
       }
 
+      //@ts-ignore - TODO: issue caused by missing custom gas token support
       const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
         erc20L1Address: selectedToken.address,
         l1Signer

@@ -27,6 +27,7 @@ export async function approveCustomFeeTokenForInboxEstimateGas(params: {
   const { l1Signer, l2Provider } = params
   const ethBridger = await EthBridger.fromProvider(l2Provider)
 
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   const txRequest = ethBridger.getApproveFeeTokenRequest()
 
   return l1Signer.estimateGas(txRequest)
@@ -41,6 +42,7 @@ export async function approveCustomFeeTokenForGatewayEstimateGas(params: {
   const { erc20L1Address, l1Signer, l1Provider, l2Provider } = params
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
+  //@ts-ignore - TODO: issue caused by missing custom gas token support
   const txRequest = await erc20Bridger.getApproveFeeTokenRequest({
     erc20L1Address,
     l1Provider

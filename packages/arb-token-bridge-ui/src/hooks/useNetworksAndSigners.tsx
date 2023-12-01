@@ -22,7 +22,7 @@ import {
   StaticJsonRpcProvider,
   Web3Provider
 } from '@ethersproject/providers'
-import { getChain, getParentChain } from '@arbitrum/sdk'
+import { getL2Network, getL1Network } from '@arbitrum/sdk'
 import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
@@ -294,7 +294,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 4
-    getParentChain(provider as Web3Provider)
+    getL1Network(provider as Web3Provider)
       .then(async parentChain => {
         const isParentChainArbitrum = isNetwork(parentChain.chainID).isArbitrum
 
@@ -304,7 +304,7 @@ export function NetworksAndSignersProvider(
           // This is so we default users to their preferred case: Withdrawal from Arbitrum to Ethereum.
           // However, the current flow would set it to Arbitrum's partner Orbit chain.
 
-          // We jump to 'getChain'. This means Arbitrum will be considered an L2 and paired with Ethereum.
+          // We jump to 'getL2Network'. This means Arbitrum will be considered an L2 and paired with Ethereum.
           throw new Error()
         }
 
@@ -312,14 +312,14 @@ export function NetworksAndSignersProvider(
         const chainProvider = new StaticJsonRpcProvider(
           rpcURLs[_selectedL2ChainId!] // _selectedL2ChainId is defined here because of L185
         )
-        const chain = await getChain(chainProvider)
+        const chain = await getL2Network(chainProvider)
 
         if (isParentChainArbitrum && isSelectedL2ChainArbitrum) {
           // Special case if user selects an Ethereum-Orbit pair in the UI.
           // Before the switch happens, Arbitrum is the preferred L2 chain (in query params), but L1 is also Arbitrum, hence such if statement.
 
           // We know our 'chain' is Arbitrum, we need to set 'parentChain' to Ethereum (Arbitrum's 'partnerChainID').
-          parentChain = await getParentChain(chain.partnerChainID)
+          parentChain = await getL1Network(chain.partnerChainID)
         }
 
         // from the ParentChain, instantiate the provider for that too
@@ -369,13 +369,13 @@ export function NetworksAndSignersProvider(
           )
         }
 
-        getChain(provider as Web3Provider)
+        getL2Network(provider as Web3Provider)
           .then(async chain => {
             const parentChainId = chain.partnerChainID
             const parentProvider = new StaticJsonRpcProvider(
               rpcURLs[parentChainId]
             )
-            const parentChain = await getParentChain(parentProvider)
+            const parentChain = await getL1Network(parentProvider)
 
             const chainProvider = new StaticJsonRpcProvider(
               rpcURLs[chain.chainID]
