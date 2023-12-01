@@ -104,27 +104,23 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       >
         <span className="text-left">You will pay in gas fees:</span>
 
-        <div className="font-medium">
-          <span>
-            {!sameNativeCurrency && isDepositMode && (
-              <>
-                {formatAmount(estimatedL1GasFees, {
-                  symbol: parentChainNativeCurrency.symbol
-                })}
-                {' + '}
-              </>
-            )}
-            {formatAmount(
-              sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
-              {
-                symbol: nativeCurrency.symbol
-              }
-            )}
-          </span>
-          {showPrice && (
-            <span> ({formatUSD(ethToUSD(estimatedTotalGasFees))})</span>
+        <span className="font-medium">
+          {!sameNativeCurrency && isDepositMode && (
+            <>
+              {formatAmount(estimatedL1GasFees, {
+                symbol: parentChainNativeCurrency.symbol
+              })}
+              {' + '}
+            </>
           )}
-        </div>
+          {formatAmount(
+            sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
+            {
+              symbol: nativeCurrency.symbol
+            }
+          )}{' '}
+          {showPrice && <>({formatUSD(ethToUSD(estimatedTotalGasFees))})</>}
+        </span>
       </div>
 
       <div
@@ -136,16 +132,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           You will receive on{' '}
           {getNetworkName(isDepositMode ? l2.network.id : l1.network.id)}:
         </span>
-        <div className="font-medium">
-          <span>
-            {formatAmount(Number(amount))}{' '}
-            <TokenSymbolWithExplorerLink
-              token={token}
-              isParentChain={!isDepositMode}
-            />
-          </span>
-          {showPrice && <span> ({formatUSD(ethToUSD(Number(amount)))})</span>}
-        </div>
+        <span className="font-medium">
+          {formatAmount(Number(amount))}{' '}
+          <TokenSymbolWithExplorerLink
+            token={token}
+            isParentChain={!isDepositMode}
+          />{' '}
+          {showPrice && <>({formatUSD(ethToUSD(Number(amount)))})</>}
+        </span>
       </div>
 
       {!isDepositMode && (
