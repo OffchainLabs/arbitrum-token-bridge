@@ -39,7 +39,7 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useWithdrawOnlyDialogStore } from './WithdrawOnlyDialog'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 
@@ -490,7 +490,8 @@ export function TokenSearch({
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
-  const { openDialog: openWithdrawOnlyDialog } = useWithdrawOnlyDialogStore()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -559,12 +560,13 @@ export function TokenSearch({
       }
 
       // do not allow import of withdraw-only tokens at deposit mode
-      if (
-        isDepositMode &&
-        (isWithdrawOnlyToken(_token.address, l2.network.id) ||
-          isTransferDisabledToken(_token.address, l2.network.id))
-      ) {
-        openWithdrawOnlyDialog()
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
         return
       }
     } catch (error: any) {

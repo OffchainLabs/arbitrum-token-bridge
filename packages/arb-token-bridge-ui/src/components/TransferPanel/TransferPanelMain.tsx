@@ -73,7 +73,7 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
-import { WithdrawOnlyDialog } from './WithdrawOnlyDialog'
+import { TransferDisabledDialog } from './TransferDisabledDialog'
 
 enum NetworkType {
   l1 = 'l1',
@@ -1292,7 +1292,7 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <AdvancedSettings />
-      <WithdrawOnlyDialog />
+      <TransferDisabledDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
         onClose={() => setOneNovaTransferDestinationNetworkId(null)}

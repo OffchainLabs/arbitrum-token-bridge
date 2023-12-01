@@ -3,35 +3,34 @@ import { create } from 'zustand'
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
 
-type WithdrawOnlyDialogStore = {
+type TransferDisabledDialogStore = {
   isOpen: boolean
   openDialog: () => void
   closeDialog: () => void
 }
 
-export const useWithdrawOnlyDialogStore = create<WithdrawOnlyDialogStore>(
-  set => ({
+export const useTransferDisabledDialogStore =
+  create<TransferDisabledDialogStore>(set => ({
     isOpen: false,
     openDialog: () => set({ isOpen: true }),
     closeDialog: () => set({ isOpen: false })
-  })
-)
+  }))
 
-export function WithdrawOnlyDialog() {
+export function TransferDisabledDialog() {
   const { app } = useAppState()
   const { selectedToken } = app
   const {
     app: { setSelectedToken }
   } = useActions()
   const {
-    isOpen: isOpenWithdrawOnlyDialog,
-    closeDialog: closeWithdrawOnlyDialog
-  } = useWithdrawOnlyDialogStore()
+    isOpen: isOpenTransferDisabledDialog,
+    closeDialog: closeTransferDisabledDialog
+  } = useTransferDisabledDialogStore()
   const unsupportedToken = selectedToken?.symbol ?? 'this token'
 
   const onClose = () => {
     setSelectedToken(null)
-    closeWithdrawOnlyDialog()
+    closeTransferDisabledDialog()
   }
 
   return (
@@ -40,7 +39,7 @@ export function WithdrawOnlyDialog() {
       title="Token cannot be bridged here"
       cancelButtonProps={{ className: 'hidden' }}
       actionButtonTitle="Close"
-      isOpen={isOpenWithdrawOnlyDialog}
+      isOpen={isOpenTransferDisabledDialog}
       onClose={onClose}
       className="md:max-w-[628px]"
     >

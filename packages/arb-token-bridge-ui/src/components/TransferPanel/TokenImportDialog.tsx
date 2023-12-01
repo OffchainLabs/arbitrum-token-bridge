@@ -27,7 +27,7 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
-import { useWithdrawOnlyDialogStore } from './WithdrawOnlyDialog'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 
 enum ImportStatus {
   LOADING,
@@ -89,7 +89,8 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
-  const { openDialog: openWithdrawOnlyDialog } = useWithdrawOnlyDialogStore()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
@@ -290,12 +291,13 @@ export function TokenImportDialog({
     }
 
     // do not allow import of withdraw-only tokens at deposit mode
-    if (
-      isDepositMode &&
-      (isWithdrawOnlyToken(l1Address, l2.network.id) ||
-        isTransferDisabledToken(l1Address, l2.network.id))
-    ) {
-      openWithdrawOnlyDialog()
+    if (isDepositMode && isWithdrawOnlyToken(l1Address, l2.network.id)) {
+      openTransferDisabledDialog()
+      return
+    }
+
+    if (isTransferDisabledToken(l1Address, l2.network.id)) {
+      openTransferDisabledDialog()
       return
     }
   }
