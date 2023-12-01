@@ -67,6 +67,18 @@ describe('Withdraw ERC20 Token', () => {
               .siblings()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
+            cy.findAllByText(/gas$/)
+              .first()
+              .parent()
+              .siblings()
+              .contains(zeroToLessThanOneETH)
+              .should('be.visible')
+            cy.findAllByText(/gas$/)
+              .last()
+              .parent()
+              .siblings()
+              .contains(/You’ll have to pay \w+ gas fee upon claiming./i)
+              .should('be.visible')
             cy.findByText(/You will have to claim the withdrawal on/i).should(
               'be.visible'
             )
