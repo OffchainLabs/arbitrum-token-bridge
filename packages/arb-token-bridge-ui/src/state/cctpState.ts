@@ -5,7 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
 import { useInterval } from 'react-use'
 
-import { cctpContracts } from '@/token-bridge-sdk/core/cctpContracts'
+import { cctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   ChainId,
   getBlockTime,

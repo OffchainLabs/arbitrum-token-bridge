@@ -1,14 +1,14 @@
 import { readContract } from '@wagmi/core'
 import { BigNumber, Signer, utils } from 'ethers'
-import { TokenMinterAbi } from '../../util/cctp/TokenMinterAbi'
-import { ChainDomain } from '../../pages/api/cctp/[type]'
+import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
+import { ChainDomain } from '../pages/api/cctp/[type]'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
-import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
+import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
+import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { CCTPSupportedChainId } from '../../state/cctpState'
-import { ChainId } from '../../util/networks'
-import { CommonAddress } from '../../util/CommonAddressUtils'
+import { CCTPSupportedChainId } from '../state/cctpState'
+import { ChainId } from '../util/networks'
+import { CommonAddress } from '../util/CommonAddressUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {

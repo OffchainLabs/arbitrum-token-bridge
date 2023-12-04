@@ -1,10 +1,6 @@
 import { Provider } from '@ethersproject/providers'
 import { ERC20BridgeToken } from '../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
-import { RequiresNativeCurrencyApprovalProps } from './core/requiresNativeCurrencyApproval'
-import { ApproveNativeCurrencyProps } from './core/approveNativeCurrency'
-import { RequiresTokenApprovalProps } from './core/requiresTokenApproval'
-import { ApproveTokenProps } from './core/approveToken'
 import { BigNumber, Signer } from 'ethers'
 
 type Asset = 'erc20' | 'eth'
@@ -46,6 +42,32 @@ export type BridgeTransferStarterProps = {
   selectedToken: SelectedToken | null
 }
 
+export type RequiresNativeCurrencyApprovalProps = {
+  amount: BigNumber
+  signer: Signer
+  destinationChainProvider: Provider
+}
+
+export type ApproveNativeCurrencyProps = {
+  signer: Signer
+  destinationChainProvider: Provider
+}
+
+export type RequiresTokenApprovalProps = {
+  amount: BigNumber
+  address: string
+  selectedToken: SelectedToken
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+  destinationAddress?: string
+}
+
+export type ApproveTokenProps = {
+  signer: Signer
+  selectedToken: SelectedToken
+  destinationChainProvider: Provider
+}
+
 export abstract class BridgeTransferStarter {
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
@@ -74,6 +96,4 @@ export abstract class BridgeTransferStarter {
   public abstract approveToken(props: ApproveTokenProps): Promise<void>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
-
-  // public abstract transferConfirm(props: BridgeTransfer): Promise<void>
 }

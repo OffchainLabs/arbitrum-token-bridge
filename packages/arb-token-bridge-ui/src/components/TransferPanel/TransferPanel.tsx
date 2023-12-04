@@ -83,8 +83,10 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
-import { getChainIdFromProvider } from '@/token-bridge-sdk/core/getChainIdFromProvider'
-import { getAddressFromSigner } from '@/token-bridge-sdk/core/getAddressFromSigner'
+import {
+  getChainIdFromProvider,
+  getAddressFromSigner
+} from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransfer'
 
 const isAllowedL2 = async ({
@@ -628,7 +630,8 @@ export function TransferPanel() {
           await cctpTransferStarter.approveToken({
             signer,
             destinationChainProvider,
-            selectedToken
+            selectedToken,
+            amount: amountBigNumber
           })
         } catch (error) {
           if (isUserRejectedError(error)) {

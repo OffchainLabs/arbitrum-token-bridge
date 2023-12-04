@@ -1,23 +1,17 @@
 import {
+  ApproveTokenProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
+  RequiresTokenApprovalProps,
   SelectedToken,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import {
-  cctpContracts,
-  fetchPerMessageBurnLimit,
-  getContracts
-} from './core/cctpContracts'
-import {
-  RequiresTokenApprovalProps,
-  requiresTokenApproval
-} from './core/requiresTokenApproval'
-import { getChainIdFromProvider } from './core/getChainIdFromProvider'
-import { getAddressFromSigner } from './core/getAddressFromSigner'
-import { ApproveTokenProps, approveToken } from './core/approveToken'
+import { cctpContracts, fetchPerMessageBurnLimit, getContracts } from './cctp'
+import { getChainIdFromProvider, getAddressFromSigner } from './utils'
+import { fetchErc20Allowance } from '../util/TokenUtils'
+import { BigNumber } from 'ethers'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
@@ -41,27 +35,32 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const recipient = destinationAddress ?? address
-    const { usdcContractAddress, tokenMessengerContractAddress } =
-      getContracts(sourceChainId)
+    const { tokenMessengerContractAddress } = getContracts(sourceChainId)
 
-    return await requiresTokenApproval({
-      address: recipient,
-      amount,
-      selectedToken: { ...selectedToken, address: usdcContractAddress },
-      spender: tokenMessengerContractAddress,
-      sourceChainProvider: this.sourceChainProvider
+    const allowanceForL1Gateway = await fetchErc20Allowance({
+      address: selectedToken.address,
+      provider: this.sourceChainProvider,
+      owner: recipient,
+      spender: tokenMessengerContractAddress
     })
+
+    // need for approval - allowance exhausted
+    if (!allowanceForL1Gateway.gte(amount)) {
+      return true
+    }
+
+    return false
   }
 
-  public async approveToken({ signer, selectedToken }: ApproveTokenProps) {
+  public async approveToken({
+    signer,
+    amount
+  }: ApproveTokenProps & { amount: BigNumber }) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    const { usdcContractAddress } = getContracts(sourceChainId)
-    return await approveToken({
-      signer,
-      selectedToken: { ...selectedToken, address: usdcContractAddress },
-      destinationChainProvider: this.destinationChainProvider
-    })
+    // approve USDC token for burn
+    const tx = await cctpContracts(sourceChainId).approveForBurn(amount, signer)
+    await tx.wait()
   }
 
   public async transfer({
@@ -90,10 +89,6 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     }
 
     const recipient = destinationAddress || address
-
-    // approve token for burn
-    const tx = await cctpContracts(sourceChainId).approveForBurn(amount, signer)
-    await tx.wait()
 
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
     const depositForBurnTx = await cctpContracts(sourceChainId).depositForBurn({

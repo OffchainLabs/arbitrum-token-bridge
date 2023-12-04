@@ -1,6 +1,6 @@
 import useSWRImmutable from 'swr/immutable'
 import { ChainId } from '../../util/networks'
-import { cctpContracts } from '@/token-bridge-sdk/core/cctpContracts'
+import { cctpContracts } from '@/token-bridge-sdk/cctp'
 
 export function useCCTPIsBlocked() {
   const { fetchAttestation } = cctpContracts(ChainId.Ethereum)
