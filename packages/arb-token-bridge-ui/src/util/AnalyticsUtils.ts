@@ -32,7 +32,7 @@ export const shouldTrackAnalytics = (
   return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
 }
 
-type AnalyticsEventMap = {
+export type AnalyticsEventMap = {
   Deposit: {
     tokenSymbol?: string
     assetType: AssetType
@@ -89,7 +89,7 @@ type AnalyticsEventMap = {
   }
 }
 
-type AnalyticsEvent = keyof AnalyticsEventMap
+export type AnalyticsEvent = keyof AnalyticsEventMap
 
 export function trackEvent(
   event: AnalyticsEvent,

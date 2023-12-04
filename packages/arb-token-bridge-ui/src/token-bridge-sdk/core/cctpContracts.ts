@@ -1,14 +1,14 @@
-import { utils, BigNumber, Signer } from 'ethers'
-import { useCallback } from 'react'
-import { prepareWriteContract, writeContract } from '@wagmi/core'
-
-import { ChainId } from '../../util/networks'
-import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
-import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { CommonAddress } from '../../util/CommonAddressUtils'
+import { readContract } from '@wagmi/core'
+import { BigNumber, Signer, utils } from 'ethers'
+import { TokenMinterAbi } from '../../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../../pages/api/cctp/[type]'
+import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { TokenMessengerAbi } from '../../util/cctp/TokenMessengerAbi'
+import { MessageTransmitterAbi } from '../../util/cctp/MessageTransmitterAbi'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CCTPSupportedChainId } from '../../state/cctpState'
+import { ChainId } from '../../util/networks'
+import { CommonAddress } from '../../util/CommonAddressUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -83,10 +83,24 @@ export function getContracts(chainId: ChainId | undefined) {
   )
 }
 
-export type UseCCTPParams = {
-  sourceChainId: ChainId | undefined
+export function fetchPerMessageBurnLimit({
+  sourceChainId
+}: {
+  sourceChainId: CCTPSupportedChainId
+}) {
+  const { usdcContractAddress, tokenMinterContractAddress } =
+    getContracts(sourceChainId)
+
+  return readContract({
+    address: tokenMinterContractAddress,
+    chainId: sourceChainId,
+    abi: TokenMinterAbi,
+    functionName: 'burnLimitsPerMessage',
+    args: [usdcContractAddress]
+  })
 }
-export function useCCTP({ sourceChainId }: UseCCTPParams) {
+
+export const cctpContracts = (sourceChainId?: number) => {
   const {
     tokenMessengerContractAddress,
     targetChainDomain,
@@ -96,90 +110,74 @@ export function useCCTP({ sourceChainId }: UseCCTPParams) {
     messageTransmitterContractAddress
   } = getContracts(sourceChainId)
 
-  const depositForBurn = useCallback(
-    async ({
-      amount,
+  const depositForBurn = async ({
+    amount,
+    signer,
+    recipient
+  }: {
+    amount: BigNumber
+    signer: Signer
+    recipient: string
+  }) => {
+    // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
+    const mintRecipient = utils.hexlify(
+      utils.zeroPad(recipient, 32)
+    ) as `0x${string}`
+
+    const config = await prepareWriteContract({
+      address: tokenMessengerContractAddress,
+      abi: TokenMessengerAbi,
+      functionName: 'depositForBurn',
       signer,
-      recipient
-    }: {
-      amount: BigNumber
-      signer: Signer
-      recipient: string
-    }) => {
-      // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
-      const mintRecipient = utils.hexlify(
-        utils.zeroPad(recipient, 32)
-      ) as `0x${string}`
+      args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
+    })
+    return writeContract(config)
+  }
 
-      const config = await prepareWriteContract({
-        address: tokenMessengerContractAddress,
-        abi: TokenMessengerAbi,
-        functionName: 'depositForBurn',
-        signer,
-        args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
-      })
-      return writeContract(config)
-    },
-    [tokenMessengerContractAddress, targetChainDomain, usdcContractAddress]
-  )
+  const fetchAttestation = async (attestationHash: `0x${string}`) => {
+    const response = await fetch(
+      `${attestationApiUrl}/attestations/${attestationHash}`,
+      { method: 'GET', headers: { accept: 'application/json' } }
+    )
 
-  const fetchAttestation = useCallback(
-    async (attestationHash: `0x${string}`) => {
-      const response = await fetch(
-        `${attestationApiUrl}/attestations/${attestationHash}`,
-        { method: 'GET', headers: { accept: 'application/json' } }
-      )
+    const attestationResponse: AttestationResponse = await response.json()
+    return attestationResponse
+  }
 
-      const attestationResponse: AttestationResponse = await response.json()
-      return attestationResponse
-    },
-    [attestationApiUrl]
-  )
-
-  const waitForAttestation = useCallback(
-    async (attestationHash: `0x${string}`) => {
-      while (true) {
-        const attestation = await fetchAttestation(attestationHash)
-        if (attestation.status === 'complete') {
-          return attestation.attestation
-        }
-
-        await new Promise(r => setTimeout(r, 30_000))
+  const waitForAttestation = async (attestationHash: `0x${string}`) => {
+    while (true) {
+      const attestation = await fetchAttestation(attestationHash)
+      if (attestation.status === 'complete') {
+        return attestation.attestation
       }
-    },
-    [fetchAttestation]
-  )
 
-  const receiveMessage = useCallback(
-    async ({
-      messageBytes,
-      attestation,
-      signer
-    }: {
-      messageBytes: `0x${string}`
-      attestation: `0x${string}`
-      signer: Signer
-    }) => {
-      const config = await prepareWriteContract({
-        address: messageTransmitterContractAddress,
-        abi: MessageTransmitterAbi,
-        functionName: 'receiveMessage',
-        chainId: targetChainId,
-        signer,
-        args: [messageBytes, attestation]
-      })
-      return writeContract(config)
-    },
-    [messageTransmitterContractAddress, targetChainId]
-  )
+      await new Promise(r => setTimeout(r, 30_000))
+    }
+  }
 
-  const approveForBurn = useCallback(
-    async (amount: BigNumber, signer: Signer) => {
-      const contract = ERC20__factory.connect(usdcContractAddress, signer)
-      return contract.functions.approve(tokenMessengerContractAddress, amount)
-    },
-    [usdcContractAddress, tokenMessengerContractAddress]
-  )
+  const receiveMessage = async ({
+    messageBytes,
+    attestation,
+    signer
+  }: {
+    messageBytes: `0x${string}`
+    attestation: `0x${string}`
+    signer: Signer
+  }) => {
+    const config = await prepareWriteContract({
+      address: messageTransmitterContractAddress,
+      abi: MessageTransmitterAbi,
+      functionName: 'receiveMessage',
+      chainId: targetChainId,
+      signer,
+      args: [messageBytes, attestation]
+    })
+    return writeContract(config)
+  }
+  const approveForBurn = async (amount: BigNumber, signer: Signer) => {
+    const contract = ERC20__factory.connect(usdcContractAddress, signer)
+    return contract.functions.approve(tokenMessengerContractAddress, amount)
+  }
 
   return {
     approveForBurn,
