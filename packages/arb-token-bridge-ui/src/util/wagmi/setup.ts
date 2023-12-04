@@ -131,14 +131,7 @@ export function getProps(targetChainKey: string | null) {
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      publicProvider(),
-      jsonRpcProvider({
-        rpc: chain => ({
-          http: rpcURLs[chain.id]!
-        })
-      })
-    ]
+    [publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({
