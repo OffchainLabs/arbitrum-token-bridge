@@ -384,11 +384,6 @@ export function registerLocalNetwork(
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
-  try {
-    addCustomNetwork({ customL1Network: l1Network, customNetwork: l2Network })
-  } catch (error: any) {
-    //
-  }
 }
 
 export function isNetwork(chainId: ChainId) {

@@ -254,7 +254,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomNetwork({ customNetwork })
+      addCustomNetwork({ customL2Network: customNetwork })
       saveCustomChainToLocalStorage({ ...customNetwork, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes

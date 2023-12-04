@@ -24,7 +24,7 @@ export default function Index() {
     // we add locally stored custom chains
     getCustomChainsFromLocalStorage().forEach(chain => {
       try {
-        addCustomNetwork({ customNetwork: chain })
+        addCustomNetwork({ customL2Network: chain })
         mapCustomChainToNetworkData(chain)
       } catch (_) {
         // already added
@@ -40,11 +40,6 @@ export default function Index() {
 
     try {
       addCustomNetwork({ customL2Network: xaiTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Xai Testnet: ${error.message}`)
-    }
-    try {
-      addCustomNetwork({ customNetwork: xaiTestnet })
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
     }
