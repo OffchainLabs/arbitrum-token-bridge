@@ -142,7 +142,10 @@ async function transformTransaction(
     return transformWithdrawal(withdrawal)
   }
 
-  throw new Error('An error has occurred while trying to map a transaction.')
+  // Throw user friendly error in case we catch it and display in the UI.
+  throw new Error(
+    'An error has occurred while fetching a transaction. Please try again later or contact the support.'
+  )
 }
 
 function getProvider(chainId: ChainId) {
