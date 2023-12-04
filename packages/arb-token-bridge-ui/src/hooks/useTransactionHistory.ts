@@ -67,10 +67,10 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
   },
-  {
-    parentChain: ChainId.Ethereum,
-    chain: ChainId.ArbitrumNova
-  },
+  // {
+  //   parentChain: ChainId.Mainnet,
+  //   chain: ChainId.ArbitrumNova
+  // },
   // Testnet
   {
     parentChain: ChainId.Goerli,
@@ -79,16 +79,16 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Sepolia,
     chain: ChainId.ArbitrumSepolia
-  },
-  // Orbit
-  {
-    parentChain: ChainId.ArbitrumGoerli,
-    chain: ChainId.XaiTestnet
-  },
-  {
-    parentChain: ChainId.ArbitrumSepolia,
-    chain: ChainId.StylusTestnet
   }
+  // Orbit
+  // {
+  //   parentChain: ChainId.ArbitrumGoerli,
+  //   chain: ChainId.XaiTestnet
+  // }
+  // {
+  //   parentChain: ChainId.ArbitrumSepolia,
+  //   chain: ChainId.StylusTestnet
+  // }
 ]
 
 function isWithdrawalFromSubgraph(
@@ -382,7 +382,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
   if (loading || error) {
     return {
-      data: { transactions: [] as MergedTransaction[], total: undefined },
+      data: { transactions: [], total: undefined },
       loading,
       error
     }
