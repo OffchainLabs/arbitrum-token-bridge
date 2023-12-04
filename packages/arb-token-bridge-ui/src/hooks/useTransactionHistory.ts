@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { ChainId, rpcURLs } from '../util/networks'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { fetchWithdrawalList } from '../util/withdrawals/fetchWithdrawalsList'
-import { fetchDepositList } from '../util/deposits/fetchDepositList'
+import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
+import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
@@ -189,7 +189,7 @@ const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
             return []
           }
 
-          return fetchDepositList({
+          return fetchDeposits({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
@@ -211,7 +211,7 @@ const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
             return []
           }
 
-          return fetchWithdrawalList({
+          return fetchWithdrawals({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),

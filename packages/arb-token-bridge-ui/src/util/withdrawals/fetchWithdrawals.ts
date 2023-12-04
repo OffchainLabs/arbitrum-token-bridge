@@ -20,7 +20,7 @@ export type FetchWithdrawalsParams = {
   searchString?: string
 }
 
-export async function fetchWithdrawalList({
+export async function fetchWithdrawals({
   sender,
   receiver,
   l1Provider,
