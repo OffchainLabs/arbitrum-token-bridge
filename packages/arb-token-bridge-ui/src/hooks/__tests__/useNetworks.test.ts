@@ -6,25 +6,28 @@ import { sanitizeQueryParams } from '../useNetworks'
 
 describe('sanitizeQueryParams', () => {
   beforeAll(() => {
-    localStorage.setItem(
-      customChainLocalStorageKey,
-      JSON.stringify([
-        {
-          chainID: '1111',
-          partnerChainID: ChainId.ArbitrumGoerli,
-          name: 'custom 1111 chain'
-        },
-        {
-          chainID: '2222',
-          partnerChainID: ChainId.ArbitrumSepolia,
-          name: 'custom 2222 chain'
-        }
-      ])
-    )
+    global.Storage.prototype.getItem = jest.fn(key => {
+      if (key === customChainLocalStorageKey) {
+        return JSON.stringify([
+          {
+            chainID: '1111',
+            partnerChainID: ChainId.ArbitrumGoerli,
+            name: 'custom 1111 chain'
+          },
+          {
+            chainID: '2222',
+            partnerChainID: ChainId.ArbitrumSepolia,
+            name: 'custom 2222 chain'
+          }
+        ])
+      }
+      return null
+    })
   })
 
   afterAll(() => {
-    localStorage.clear()
+    ;(global.Storage.prototype.setItem as jest.Mock).mockReset()
+    ;(global.Storage.prototype.setItem as jest.Mock).mockReset()
   })
 
   it('sets the default values for `sourceChainId` and `destinationChainId` when both `sourceChainId` and `destinationChainId` are `undefined`', () => {
@@ -49,6 +52,7 @@ describe('sanitizeQueryParams', () => {
     })
 
     const resultWithArbitrumOrbitChain = sanitizeQueryParams({
+      // @ts-expect-error Testing wrong chainId
       sourceChainId: 1111,
       destinationChainId: undefined
     })
@@ -57,6 +61,7 @@ describe('sanitizeQueryParams', () => {
       destinationChainId: ChainId.ArbitrumGoerli
     })
     const resultWithSepoliaOrbitChain = sanitizeQueryParams({
+      // @ts-expect-error Testing wrong chainId
       sourceChainId: 2222,
       destinationChainId: undefined
     })
@@ -78,6 +83,7 @@ describe('sanitizeQueryParams', () => {
 
     const resultWithArbitrumOrbitChain = sanitizeQueryParams({
       sourceChainId: undefined,
+      // @ts-expect-error Testing wrong chainId
       destinationChainId: 1111
     })
     expect(resultWithArbitrumOrbitChain).toEqual({
@@ -86,6 +92,7 @@ describe('sanitizeQueryParams', () => {
     })
     const resultWithSepoliaOrbitChain = sanitizeQueryParams({
       sourceChainId: undefined,
+      // @ts-expect-error Testing wrong chainId
       destinationChainId: 2222
     })
     expect(resultWithSepoliaOrbitChain).toEqual({
