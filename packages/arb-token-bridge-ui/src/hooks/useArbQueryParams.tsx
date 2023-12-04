@@ -148,11 +148,8 @@ function decodeChainQueryParam(
 }
 
 export const ChainParam = {
-  encode: (chainId: number | null | undefined) =>
-    encodeChainQueryParam(chainId),
-
-  decode: (value: string | (string | null)[] | null | undefined) =>
-    decodeChainQueryParam(value)
+  encode: encodeChainQueryParam,
+  decode: decodeChainQueryParam
 }
 
 export function ArbQueryParamProvider({
