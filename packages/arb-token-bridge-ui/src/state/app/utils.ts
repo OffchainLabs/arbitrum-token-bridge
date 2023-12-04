@@ -77,7 +77,7 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     l1ToL2MsgData: tx.l1ToL2MsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
     depositStatus: getDepositStatus(tx),
-    chainId: Number(tx.l2NetworkID),
+    childChainId: Number(tx.l2NetworkID),
     parentChainId: Number(tx.l1NetworkID)
   }
 }
@@ -109,7 +109,7 @@ export const transformWithdrawal = (
     blockNum: tx.ethBlockNum.toNumber(),
     tokenAddress: tx.tokenAddress || null,
     nodeBlockDeadline: tx.nodeBlockDeadline,
-    chainId: tx.chainId,
+    childChainId: tx.childChainId,
     parentChainId: tx.parentChainId
   }
 }
@@ -205,11 +205,15 @@ export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (dateString: string) => {
+export const getStandardizedTimestamp = (date: string | BigNumber) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
+  if (typeof date === 'string') {
+    if (isNaN(Number(date))) return dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
+    return Number(date) // for timestamp type of date -> dayjs timestamp
+  }
 
-  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).format() // for ISOstring type of dates -> dayjs timestamp
-  return dayjs(Number(dateString)).format() // for timestamp type of date -> dayjs timestamp
+  // BigNumber
+  return date.toNumber()
 }
 
 export const getStandardizedTime = (standatdisedTimestamp: string) => {

@@ -317,7 +317,9 @@ export const useArbTokenBridge = (
           symbol: nativeCurrency.symbol,
           decimals: nativeCurrency.decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash
+          l2TxHash: tx.hash,
+          parentChainId: Number(l1NetworkID),
+          childChainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
@@ -602,7 +604,9 @@ export const useArbTokenBridge = (
           symbol: symbol,
           decimals: decimals,
           nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash
+          l2TxHash: tx.hash,
+          parentChainId: Number(l1NetworkID),
+          childChainId: Number(l2NetworkID)
         }
 
         setPendingWithdrawalMap(oldPendingWithdrawalsMap => {

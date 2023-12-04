@@ -54,9 +54,9 @@ export interface MergedTransaction {
   sender?: string
   destination?: string
   direction: TxnType
-  status: string // TODO: Use enums
-  createdAt: string | null
-  resolvedAt: string | null
+  status?: string // TODO: Use enums
+  createdAt: number | null
+  resolvedAt: number | null
   txId: string
   asset: string
   assetType: AssetType
@@ -70,14 +70,14 @@ export interface MergedTransaction {
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
-  chainId?: number
-  parentChainId?: number
+  childChainId: number
+  parentChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
     attestationHash?: `0x${string}` | null
     messageBytes?: string | null
     receiveMessageTransactionHash?: `0x${string}` | null
-    receiveMessageTimestamp?: string | null
+    receiveMessageTimestamp?: number | null
   }
 }
 
