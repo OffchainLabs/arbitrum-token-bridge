@@ -21,16 +21,9 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
   const customArbitrumGoerliChains = customWagmiChains
     .filter(chain => chain.partnerChainID === ChainId.ArbitrumGoerli)
     .map(chain => chainToWagmiChain(chain))
-
-  const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(
-    chain => chain.id
-  )
   const customArbitrumSepoliaChains = customWagmiChains
     .filter(chain => chain.partnerChainID === ChainId.ArbitrumSepolia)
     .map(chain => chainToWagmiChain(chain))
-  const customArbitrumSepoliaChainsIds = customArbitrumSepoliaChains.map(
-    chain => chain.id
-  )
 
   switch (chainId) {
     case ChainId.Ethereum:
@@ -61,6 +54,13 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumGoerli]
 
     default:
+      const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(
+        chain => chain.id
+      )
+      const customArbitrumSepoliaChainsIds = customArbitrumSepoliaChains.map(
+        chain => chain.id
+      )
+
       // Orbit chains
       if (customArbitrumGoerliChainsIds.includes(chainId)) {
         return [arbitrumGoerli]
