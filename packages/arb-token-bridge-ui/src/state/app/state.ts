@@ -62,7 +62,7 @@ export interface MergedTransaction {
   sender?: string
   destination?: string
   direction: TxnType
-  status?: string // TODO: Use enums
+  status: string | undefined // TODO: Use enums
   createdAt: number | null
   resolvedAt: number | null
   txId: string

@@ -108,10 +108,14 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(
-  tx: DepositOrWithdrawal
+  tx: DepositOrWithdrawal | MergedTransaction
 ): Promise<MergedTransaction | undefined> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
+
+  if (isCctpTransfer(tx)) {
+    return tx
+  }
 
   if (isDeposit(tx)) {
     return transformDeposit(
@@ -313,13 +317,13 @@ const useTransactionHistoryWithoutStatuses = (
   }, [withdrawalsData])
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [...deposits, ...withdrawals]
+  const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
     .flat()
     .sort(sortByTimestampDescending)
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading,
+    loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError
   }
 }
