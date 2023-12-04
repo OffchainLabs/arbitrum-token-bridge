@@ -22,9 +22,10 @@ const chainQueryParams = [
   'arbitrum-local'
 ] as const
 
-export type ChainQueryParam = (typeof chainQueryParams)[number]
+export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
+export type ChainQueryParam = ChainKeyQueryParam | ChainId
 
-export function isValidChainQueryParam(value: ChainId | string) {
+export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
     return (chainQueryParams as readonly string[]).includes(value)
   }
@@ -33,9 +34,7 @@ export function isValidChainQueryParam(value: ChainId | string) {
   return supportedNetworkIds.includes(value)
 }
 
-export function getChainQueryParamForChain(
-  chainId: ChainId
-): ChainQueryParam | ChainId {
+export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
   switch (chainId) {
     case ChainId.Ethereum:
       return 'ethereum'
@@ -87,9 +86,9 @@ export function getChainQueryParamForChain(
 }
 
 export function getChainForChainQueryParam(
-  chainQueryParam: ChainQueryParam
+  chainKeyQueryParam: ChainKeyQueryParam
 ): Chain {
-  switch (chainQueryParam) {
+  switch (chainKeyQueryParam) {
     case 'ethereum':
       return chains.mainnet
 
@@ -125,7 +124,7 @@ export function getChainForChainQueryParam(
 
     default:
       throw new Error(
-        `[getChainQueryParamForChain] Unexpected chainQueryParam: ${chainQueryParam}`
+        `[getChainQueryParamForChain] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
       )
   }
 }

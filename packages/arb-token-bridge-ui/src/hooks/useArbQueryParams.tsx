@@ -27,7 +27,7 @@ import {
 } from 'use-query-params'
 
 import {
-  ChainQueryParam,
+  ChainKeyQueryParam,
   getChainForChainQueryParam,
   getChainQueryParamForChain,
   isValidChainQueryParam
@@ -122,26 +122,30 @@ function encodeChainQueryParam(chainId: number | null | undefined) {
   }
 }
 
+function isValidNumber(value: number) {
+  return !Number.isNaN(value)
+}
+
 // Parse ChainQueryParam/ChainId to ChainId
 // URL accept both chainId and chainQueryParam (string)
 function decodeChainQueryParam(
   value: string | (string | null)[] | null | undefined
 ): ChainId | undefined {
-  const valueStr = decodeString(value)
-  if (!valueStr) {
+  const valueString = decodeString(value)
+  if (!valueString) {
     return undefined
   }
 
-  const valueNum = parseInt(valueStr, 10)
-  if (!Number.isNaN(valueNum)) {
-    if (isValidChainQueryParam(valueNum)) {
-      return valueNum
-    }
-    return undefined
+  const valueNumber = parseInt(valueString, 10)
+  if (
+    isValidNumber(valueNumber) &&
+    isValidChainQueryParam(valueNumber as ChainId)
+  ) {
+    return valueNumber
   }
 
-  if (isValidChainQueryParam(valueStr)) {
-    return getChainForChainQueryParam(valueStr as ChainQueryParam).id
+  if (isValidChainQueryParam(valueString)) {
+    return getChainForChainQueryParam(valueString as ChainKeyQueryParam).id
   }
 
   return undefined

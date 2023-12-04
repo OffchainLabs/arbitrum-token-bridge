@@ -4,11 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
+import { ChainId, rpcURLs } from '../util/networks'
 import {
   sepolia,
   arbitrumNova,
@@ -24,25 +20,25 @@ import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForCha
 function getChainByChainId(chainId: ChainId): Chain {
   const chain = {
     // L1
-    [mainnet.id]: mainnet,
+    [ChainId.Ethereum]: mainnet,
     // L1 Testnet
-    [goerli.id]: goerli,
-    [sepolia.id]: sepolia,
+    [ChainId.Goerli]: goerli,
+    [ChainId.Sepolia]: sepolia,
     // L2
-    [arbitrum.id]: arbitrum,
-    [arbitrumNova.id]: arbitrumNova,
+    [ChainId.ArbitrumOne]: arbitrum,
+    [ChainId.ArbitrumNova]: arbitrumNova,
     // L2 Testnet
-    [arbitrumGoerli.id]: arbitrumGoerli,
-    [arbitrumSepolia.id]: arbitrumSepolia,
+    [ChainId.ArbitrumGoerli]: arbitrumGoerli,
+    [ChainId.ArbitrumSepolia]: arbitrumSepolia,
     // L3
-    [xaiTestnet.id]: xaiTestnet,
-    [stylusTestnet.id]: stylusTestnet,
+    [ChainId.XaiTestnet]: xaiTestnet,
+    [ChainId.StylusTestnet]: stylusTestnet,
     // E2E
-    [local.id]: local,
-    [arbitrumLocal.id]: arbitrumLocal
+    [ChainId.Local]: local,
+    [ChainId.ArbitrumLocal]: arbitrumLocal
   }[chainId]
 
-  return chain ?? mainnet
+  return chain
 }
 
 function getPartnerChainsQueryParams(chainId: ChainId): ChainId[] {
@@ -61,10 +57,9 @@ const getProviderForChainCache: {
 }
 
 function createProviderWithCache(chainId: ChainId) {
-  const chain = getChainByChainId(chainId)
   const rpcUrl = rpcURLs[chainId]
   const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chain.id] = provider
+  getProviderForChainCache[chainId] = provider
   return provider
 }
 
