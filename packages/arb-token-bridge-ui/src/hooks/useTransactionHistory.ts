@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { ChainId, rpcURLs } from '../util/networks'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { fetchWithdrawalList } from '../util/withdrawals/fetchWithdrawalsList'
-import { fetchDepositList } from '../util/deposits/fetchDepositList'
+import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
+import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
   L2ToL1EventResultPlus,
   WithdrawalInitiated
@@ -109,7 +109,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 
 async function transformTransaction(
   tx: DepositOrWithdrawal | MergedTransaction
-): Promise<MergedTransaction | undefined> {
+): Promise<MergedTransaction> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
@@ -154,6 +154,11 @@ async function transformTransaction(
   if (withdrawal) {
     return transformWithdrawal(withdrawal)
   }
+
+  // Throw user friendly error in case we catch it and display in the UI.
+  throw new Error(
+    'An error has occurred while fetching a transaction. Please try again later or contact the support.'
+  )
 }
 
 function getProvider(chainId: ChainId) {
@@ -235,7 +240,7 @@ const useTransactionHistoryWithoutStatuses = (
             return []
           }
 
-          return fetchDepositList({
+          return fetchDeposits({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
@@ -257,7 +262,7 @@ const useTransactionHistoryWithoutStatuses = (
             return []
           }
 
-          return fetchWithdrawalList({
+          return fetchWithdrawals({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
