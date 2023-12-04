@@ -645,7 +645,7 @@ export function TransferPanelMain({
       // for a withdrawal init tx, this is the batch posting fee needed for the tx
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        // node interface returns l1 gas based on l2 gas price or withdrawals
+        // node interface returns l1 gas based on l2 gas price for withdrawals
         isDepositMode ? l1GasPrice : l2GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
