@@ -5,29 +5,32 @@ import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
 
 describe('sanitizeQueryParams', () => {
+  let localStorageGetItemMock: jest.Mock
+
   beforeAll(() => {
-    global.Storage.prototype.getItem = jest.fn(key => {
-      if (key === customChainLocalStorageKey) {
-        return JSON.stringify([
-          {
-            chainID: '1111',
-            partnerChainID: ChainId.ArbitrumGoerli,
-            name: 'custom 1111 chain'
-          },
-          {
-            chainID: '2222',
-            partnerChainID: ChainId.ArbitrumSepolia,
-            name: 'custom 2222 chain'
-          }
-        ])
+    localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
+      key => {
+        if (key === customChainLocalStorageKey) {
+          return JSON.stringify([
+            {
+              chainID: '1111',
+              partnerChainID: ChainId.ArbitrumGoerli,
+              name: 'custom 1111 chain'
+            },
+            {
+              chainID: '2222',
+              partnerChainID: ChainId.ArbitrumSepolia,
+              name: 'custom 2222 chain'
+            }
+          ])
+        }
+        return null
       }
-      return null
-    })
+    )
   })
 
   afterAll(() => {
-    ;(global.Storage.prototype.setItem as jest.Mock).mockReset()
-    ;(global.Storage.prototype.setItem as jest.Mock).mockReset()
+    localStorageGetItemMock.mockReset()
   })
 
   it('sets the default values for `sourceChainId` and `destinationChainId` when both `sourceChainId` and `destinationChainId` are `undefined`', () => {
