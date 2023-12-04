@@ -11,26 +11,24 @@ type UseNetworksRelationshipState = {
   parentChainProvider: StaticJsonRpcProvider
 }
 export function useNetworksRelationship({
-  destinationChain,
-  destinationChainProvider,
   sourceChain,
-  sourceChainProvider
+  sourceChainProvider,
+  destinationChain,
+  destinationChainProvider
 }: UseNetworksState): UseNetworksRelationshipState {
-  const sourceNetwork = sourceChainProvider.network
-  const destinationNetwork = destinationChainProvider.network
-  const {
-    isEthereumMainnet: isSourceNetworkEthereum,
-    isArbitrum: isSourceNetworkArbitrum
-  } = isNetwork(sourceNetwork.chainId)
-  const { isOrbitChain: isDestinationNetworkOrbitChain } = isNetwork(
-    destinationNetwork.chainId
-  )
-  const isSourceNetworkParent =
-    isSourceNetworkEthereum ||
-    (isSourceNetworkArbitrum && isDestinationNetworkOrbitChain)
-
   return useMemo(() => {
-    if (isSourceNetworkParent) {
+    const {
+      isEthereumMainnetOrTestnet: isSourceChainEthereum,
+      isArbitrum: isSourceChainArbitrum
+    } = isNetwork(sourceChain.id)
+    const { isOrbitChain: isDestinationChainOrbit } = isNetwork(
+      destinationChain.id
+    )
+    const isSourceChainParent =
+      isSourceChainEthereum ||
+      (isSourceChainArbitrum && isDestinationChainOrbit)
+
+    if (isSourceChainParent) {
       return {
         childChain: destinationChain,
         childChainProvider: destinationChainProvider,
@@ -46,7 +44,6 @@ export function useNetworksRelationship({
       parentChainProvider: destinationChainProvider
     }
   }, [
-    isSourceNetworkParent,
     sourceChain,
     destinationChain,
     destinationChainProvider,
