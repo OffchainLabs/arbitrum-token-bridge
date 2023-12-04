@@ -16,7 +16,7 @@
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
-    "lint": "yarn workspace arb-token-bridge-ui lint -p packages/arb-token-bridge-ui/tsconfig.json",
+    "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix"
   },
   "keywords": [],
