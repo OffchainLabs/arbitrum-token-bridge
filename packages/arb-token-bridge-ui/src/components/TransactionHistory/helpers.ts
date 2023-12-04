@@ -64,11 +64,11 @@ export function isTxFailed(tx: MergedTransaction) {
 }
 
 export function getSourceChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.parentChainId : tx.chainId
+  return isDeposit(tx) ? tx.parentChainId : tx.childChainId
 }
 
 export function getDestChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.chainId : tx.parentChainId
+  return isDeposit(tx) ? tx.childChainId : tx.parentChainId
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
@@ -102,10 +102,11 @@ export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
 
 function getTxDurationInMinutes(tx: MergedTransaction) {
   const { parentChainId } = tx
-  const { isEthereum, isMainnet, isTestnet } = isNetwork(parentChainId)
+  const { isEthereumMainnet, isEthereumMainnetOrTestnet, isTestnet } =
+    isNetwork(parentChainId)
 
   if (isDeposit(tx)) {
-    if (!isEthereum) {
+    if (!isEthereumMainnetOrTestnet) {
       return 1
     }
 
@@ -115,7 +116,7 @@ function getTxDurationInMinutes(tx: MergedTransaction) {
   // Withdrawals
   const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
-  if (isMainnet) {
+  if (isEthereumMainnet) {
     return SEVEN_DAYS_IN_MINUTES
   }
 

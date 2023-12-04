@@ -6,7 +6,7 @@ import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
-import { NewTransactionHistory } from '../NewTransactionHistory/NewTransactionHistory'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 
 export const motionDivProps = {
   layout: true,
@@ -49,11 +49,12 @@ export function MainContent() {
         </AnimatePresence>
       </div>
       <SidePanel
-        heading="Transaction history"
         isOpen={isTransactionHistoryPanelVisible}
+        heading="Transaction History"
         onClose={closeTransactionHistoryPanel}
+        scrollable={false}
       >
-        <NewTransactionHistory />
+        <TransactionHistory />
       </SidePanel>
 
       {/* Settings panel */}

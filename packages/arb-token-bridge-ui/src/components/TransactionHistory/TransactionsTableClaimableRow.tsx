@@ -232,7 +232,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.chainId
+  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
@@ -274,7 +274,9 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum ? tx.chainId : tx.parentChainId
+  const fromNetworkId = isSourceChainArbitrum
+    ? tx.childChainId
+    : tx.parentChainId
 
   return (
     <div className="flex flex-col space-y-3">
@@ -309,14 +311,14 @@ export function TransactionsTableClaimableRow({
   const isError = tx.status === 'Failure'
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
-    isEthereum: isSourceChainIdEthereum,
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
   const tokensFromLists = useTokensFromLists({
     parentChainId: tx.parentChainId,
-    chainId: tx.chainId
+    chainId: tx.childChainId
   })
 
   const bgClassName = useMemo(() => {
@@ -330,14 +332,14 @@ export function TransactionsTableClaimableRow({
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
         chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.chainId
+          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
         )
       }),
     [
       tx.asset,
       tx.tokenAddress,
       tx.parentChainId,
-      tx.chainId,
+      tx.childChainId,
       isSourceChainIdEthereum
     ]
   )
@@ -363,68 +365,84 @@ export function TransactionsTableClaimableRow({
   }
 
   return (
-    <tr
+    <div
       className={twMerge(
-        'relative border-b border-dark text-sm text-dark',
-        bgClassName || 'bg-cyan even:bg-white',
-        className
+        'relative h-full border-b border-dark text-sm text-dark',
+        className,
+        bgClassName
       )}
-      data-testid={`withdrawal-row-${tx.txId}`}
     >
-      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
-        <ClaimableRowStatus
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
-      </td>
-
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <ClaimableRowTime
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
-      </td>
-
-      <td
-        className={twMerge(
-          'w-1/5 whitespace-nowrap px-3 py-3',
-          customAddressTxPadding
-        )}
-      >
-        <div className="flex space-x-1">
-          <TokenIcon tx={tx} />
-          <span>
-            {formatAmount(Number(tx.value), {
-              symbol: tokenSymbol
-            })}
-          </span>
-        </div>
-      </td>
-
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <ClaimableRowTxID
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
-      </td>
-
-      <td
-        className={twMerge(
-          'relative w-1/5 py-3 pl-3 pr-6 text-right',
-          customAddressTxPadding
-        )}
-      >
-        <TransactionsTableRowAction
-          tx={tx}
-          isError={isError}
-          type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-        />
-      </td>
-      {isCustomDestinationAddressTx(tx) && (
-        <td>
-          <TransactionsTableCustomAddressLabel tx={tx} />
+      <tr data-testid={`withdrawal-row-${tx.txId}`}>
+        <td
+          className={twMerge(
+            'w-1/5 py-3 pl-6 pr-3 align-middle',
+            customAddressTxPadding
+          )}
+        >
+          <ClaimableRowStatus
+            tx={tx}
+            isSourceChainArbitrum={isSourceChainIdArbitrum}
+          />
         </td>
-      )}
-    </tr>
+
+        <td
+          className={twMerge(
+            'w-1/5 px-3 py-3 align-middle',
+            customAddressTxPadding
+          )}
+        >
+          <ClaimableRowTime
+            tx={tx}
+            isSourceChainArbitrum={isSourceChainIdArbitrum}
+          />
+        </td>
+
+        <td
+          className={twMerge(
+            'w-1/5 whitespace-nowrap px-3 py-3 align-middle',
+            customAddressTxPadding
+          )}
+        >
+          <div className="flex space-x-1">
+            <TokenIcon tx={tx} />
+            <span>
+              {formatAmount(Number(tx.value), {
+                symbol: tokenSymbol
+              })}
+            </span>
+          </div>
+        </td>
+
+        <td
+          className={twMerge(
+            'w-1/5 px-3 py-3 align-middle',
+            customAddressTxPadding
+          )}
+        >
+          <ClaimableRowTxID
+            tx={tx}
+            isSourceChainArbitrum={isSourceChainIdArbitrum}
+          />
+        </td>
+
+        <td
+          className={twMerge(
+            'relative w-1/5 py-3 pl-3 pr-6 text-right align-middle',
+            customAddressTxPadding
+          )}
+        >
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+          />
+        </td>
+        {isCustomDestinationAddressTx(tx) && (
+          <td>
+            <TransactionsTableCustomAddressLabel tx={tx} />
+          </td>
+        )}
+      </tr>
+    </div>
   )
 }

@@ -11,12 +11,13 @@ import dayjs from 'dayjs'
 
 import {
   filterTransactions,
-  transformDeposits,
-  transformWithdrawals
+  transformDeposit,
+  transformWithdrawal
 } from './utils'
 
 import {
   ArbTokenBridge,
+  AssetType,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatus
@@ -66,6 +67,7 @@ export interface MergedTransaction {
   resolvedAt: number | null
   txId: string
   asset: string
+  assetType: AssetType
   value: string | null
   uniqueId: BigNumber | null
   isWithdrawal: boolean
@@ -76,14 +78,14 @@ export interface MergedTransaction {
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
-  chainId: number
+  childChainId: number
   parentChainId: number
   cctpData?: {
-    sourceChainId: CCTPSupportedChainId
-    attestationHash: `0x${string}` | null
-    messageBytes: string | null
-    receiveMessageTransactionHash: `0x${string}` | null
-    receiveMessageTimestamp: number | null
+    sourceChainId?: CCTPSupportedChainId
+    attestationHash?: `0x${string}` | null
+    messageBytes?: string | null
+    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTimestamp?: number | null
   }
 }
 
@@ -156,19 +158,19 @@ export const defaultState: AppState = {
     )
   }),
   depositsTransformed: derived((s: AppState) => {
-    return transformDeposits(
-      s.sortedTransactions.filter(
+    return s.sortedTransactions
+      .filter(
         // only take the deposit transactions, rest `outbox`, `approve` etc should not come
         tx => tx.type === 'deposit' || tx.type === 'deposit-l1'
       )
-    )
+      .map(transformDeposit)
   }),
   withdrawalsTransformed: derived((s: AppState) => {
     const withdrawals = Object.values(
       s.arbTokenBridge?.pendingWithdrawalsMap || []
     ) as L2ToL1EventResultPlus[]
 
-    return transformWithdrawals(withdrawals)
+    return withdrawals.map(transformWithdrawal)
   }),
   mergedTransactions: derived((s: AppState) => {
     return _reverse(

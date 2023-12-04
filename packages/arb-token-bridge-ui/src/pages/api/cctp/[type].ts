@@ -28,7 +28,7 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
 }
 
 export enum ChainDomain {
-  Mainnet = 0,
+  Ethereum = 0,
   ArbitrumOne = 3
 }
 
@@ -139,10 +139,10 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-mainnet' : 'cctp-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-goerli'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-goerli'
     )
 
     const messagesSentQuery = gql(`{

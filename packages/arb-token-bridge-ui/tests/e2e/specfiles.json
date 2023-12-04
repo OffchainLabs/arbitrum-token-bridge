@@ -42,6 +42,5 @@
   {
     "name": "Switch network",
     "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}"
-  },
-  { "name": "Vercel", "file": "tests/e2e/specs/**/vercel.cy.{js,jsx,ts,tsx}" }
+  }
 ]

@@ -58,10 +58,10 @@ export function TransactionsTableRowAction({
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereum, isArbitrum } = isNetwork(chainId)
+  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(tx.chainId).isOrbitChain
+    const isWithdrawalSourceOrbitChain = isNetwork(tx.childChainId).isOrbitChain
 
     if (isWithdrawalSourceOrbitChain) {
       // Enable claim if withdrawn from an Orbit chain and is connected to L2
@@ -70,9 +70,9 @@ export function TransactionsTableRowAction({
 
     return (
       (type === 'deposits' && isArbitrum) ||
-      (type === 'withdrawals' && isEthereum)
+      (type === 'withdrawals' && isEthereumMainnetOrTestnet)
     )
-  }, [isArbitrum, isEthereum, type, tx.chainId])
+  }, [isArbitrum, isEthereumMainnetOrTestnet, type, tx.childChainId])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed
@@ -112,7 +112,7 @@ export function TransactionsTableRowAction({
         content={
           <span>
             {`Please switch to ${getNetworkName(
-              tx.isWithdrawal ? tx.parentChainId : tx.chainId
+              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
             )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
           </span>
         }
@@ -126,7 +126,7 @@ export function TransactionsTableRowAction({
             try {
               if (!currentChainIsValid) {
                 return switchNetwork?.(
-                  tx.isWithdrawal ? tx.parentChainId : tx.chainId
+                  tx.isWithdrawal ? tx.parentChainId : tx.childChainId
                 )
               }
               if (tx.isCctp) {

@@ -3,7 +3,7 @@ import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 
-import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import {
   isTxClaimable,
@@ -18,7 +18,7 @@ import { TabButton } from '../common/Tab'
 const roundedTabClasses =
   'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
-export const NewTransactionHistory = () => {
+export const TransactionHistory = () => {
   const { address } = useAccount()
 
   const {
@@ -27,13 +27,13 @@ export const NewTransactionHistory = () => {
     completed,
     paused,
     error
-  } = useCompleteMultiChainTransactions()
+  } = useTransactionHistory(address)
 
   const groupedTransactions = useMemo(
     () =>
       transactions.reduce(
         (acc, tx) => {
-          if (isTxCompleted(tx)) {
+          if (isTxCompleted(tx) || isTxExpired(tx)) {
             acc.settled.push(tx)
             return acc
           }
@@ -49,34 +49,28 @@ export const NewTransactionHistory = () => {
             acc.failed.push(tx)
             return acc
           }
-          if (isTxExpired(tx)) {
-            acc.expired.push(tx)
-            return acc
-          }
           return acc
         },
         {
           settled: [] as MergedTransaction[],
           pending: [] as MergedTransaction[],
           claimable: [] as MergedTransaction[],
-          failed: [] as MergedTransaction[],
-          expired: [] as MergedTransaction[]
+          failed: [] as MergedTransaction[]
         }
       ),
     [transactions]
   )
 
   const pendingTransactions = [
-    ...groupedTransactions.pending,
-    ...groupedTransactions.expired,
     ...groupedTransactions.failed,
+    ...groupedTransactions.pending,
     ...groupedTransactions.claimable
   ]
 
   const settledTransactions = groupedTransactions.settled
 
   return (
-    <Tab.Group key={address} as="div" className="h-full overflow-hidden pb-24">
+    <Tab.Group key={address} as="div" className="h-full overflow-hidden">
       <Tab.List className="flex">
         <TabButton
           aria-label="show pending transactions"
@@ -104,6 +98,8 @@ export const NewTransactionHistory = () => {
             className="rounded-tl-none"
             loading={loading}
             error={error}
+            rowHeight={94}
+            rowHeightCustomDestinationAddress={126}
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
@@ -111,6 +107,8 @@ export const NewTransactionHistory = () => {
             transactions={settledTransactions}
             loading={loading}
             error={error}
+            rowHeight={85}
+            rowHeightCustomDestinationAddress={117}
           />
         </Tab.Panel>
       </Tab.Panels>

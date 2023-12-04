@@ -11,11 +11,13 @@ export type FetchWithdrawalsFromSubgraphResult = {
   }
   tokenAmount: string
   isClassic: boolean
-  timestamp: string
+  l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs'
   parentChainId: number
-  chainId: number
+  childChainId: number
 }
 
 /**

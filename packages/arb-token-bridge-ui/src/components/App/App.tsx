@@ -53,6 +53,7 @@ import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
 declare global {
   interface Window {
@@ -132,10 +133,14 @@ const AppContent = (): JSX.Element => {
 
 const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
+  const { app } = useAppState()
+  const { selectedToken } = app
   const { chain } = useNetwork()
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const networksAndSigners = useNetworksAndSigners()
+  const { l2 } = networksAndSigners
+  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
@@ -165,6 +170,26 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     [address]
   )
 
+  useEffect(() => {
+    if (!nativeCurrency.isCustom) {
+      return
+    }
+
+    const selectedTokenAddress = selectedToken?.address.toLowerCase()
+    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
+    // This handles a super weird edge case where, for example:
+    //
+    // Your setup is: from Arbitrum Goerli to Goerli, and you have $ARB selected as the token you want to bridge over.
+    // You then switch your destination network to a network that has $ARB as its native currency.
+    // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
+    if (
+      selectedTokenAddress === nativeCurrency.address ||
+      selectedTokenL2Address === nativeCurrency.address
+    ) {
+      actions.app.setSelectedToken(null)
+    }
+  }, [selectedToken, nativeCurrency])
+
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
@@ -182,7 +207,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const l1NetworkChainId = l1.network.id
     const l2NetworkChainId = l2.network.id
 
-    const isParentChainEthereum = isNetwork(l1NetworkChainId).isEthereum
+    const isParentChainEthereum =
+      isNetwork(l1NetworkChainId).isEthereumMainnetOrTestnet
 
     actions.app.reset(chain.id)
     actions.app.setChainIds({ l1NetworkChainId, l2NetworkChainId })
