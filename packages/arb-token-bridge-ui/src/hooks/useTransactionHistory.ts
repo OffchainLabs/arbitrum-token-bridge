@@ -100,7 +100,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 
 async function transformTransaction(
   tx: DepositOrWithdrawal
-): Promise<MergedTransaction | undefined> {
+): Promise<MergedTransaction> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
@@ -141,6 +141,11 @@ async function transformTransaction(
   if (withdrawal) {
     return transformWithdrawal(withdrawal)
   }
+
+  // Throw user friendly error in case we catch it and display in the UI.
+  throw new Error(
+    'An error has occurred while fetching a transaction. Please try again later or contact the support.'
+  )
 }
 
 function getProvider(chainId: ChainId) {
