@@ -3,3 +3,6 @@ declare module '*.svg' {
   const content: Image['src']
   export default content
 }
+
+declare module '*.png'
+declare module '*.webp'
