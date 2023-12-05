@@ -646,6 +646,7 @@ export function TransferPanelMain({
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
         // node interface returns l1 gas based on l2 gas price for withdrawals
+        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
         isDepositMode ? l1GasPrice : l2GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
