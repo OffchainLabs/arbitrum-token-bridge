@@ -114,10 +114,17 @@ export const TransactionHistoryTable = ({
   }
 
   function handleScroll(e: ScrollParams | ScrollEventData) {
+    console.log(
+      `Result for ${transactions[0]?.status}: ${
+        e.scrollHeight > e.clientHeight
+      }`
+    )
     if (paused && isScrolledToBottom(e)) {
       resume()
     }
-    setScrollable(e.scrollHeight > e.clientHeight)
+    console.log('scrollH: ', e.scrollHeight)
+    console.log('clientH: ', e.clientHeight)
+    setScrollable(e.clientHeight > 0 && e.scrollHeight > e.clientHeight)
   }
 
   const getRowHeight = useCallback(
@@ -134,6 +141,8 @@ export const TransactionHistoryTable = ({
     },
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
+
+  console.log({ scrollable })
 
   if (isTxHistoryEmpty) {
     if (error) {
@@ -162,6 +171,25 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
+    if (paused) {
+      return (
+        <div>
+          <div className="bg-white p-4">
+            <span className="text-sm">
+              We could not find any recent transactions!
+            </span>
+          </div>
+          <div className="flex h-4 w-full justify-center ">
+            <button onClick={resume} className="arb-hover text-sm text-white">
+              <div className="mt-4 flex space-x-1 rounded border border-white/40 px-2 py-1 text-white/90">
+                <span>Load more</span>
+                <ArrowDownOnSquareIcon width={16} />
+              </div>
+            </button>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="bg-white p-4 text-sm">
         Looks like no transactions here yet!
@@ -170,91 +198,89 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <>
-      <div className={twMerge('flex h-full flex-col rounded-lg', className)}>
-        <AutoSizer>
-          {({ width, height }) => (
-            <Table
-              width={width}
-              height={height - 52}
-              onScroll={handleScroll}
-              rowHeight={({ index }) => getRowHeight(index)}
-              rowCount={transactions.length}
-              headerHeight={52}
-              headerRowRenderer={props => (
-                <div className="flex bg-white" style={{ width: width }}>
-                  {props.columns}
+    <div className={twMerge('relative h-full flex-col rounded-lg', className)}>
+      <AutoSizer>
+        {({ width, height }) => (
+          <Table
+            width={width}
+            height={height - 52}
+            onScroll={handleScroll}
+            rowHeight={({ index }) => getRowHeight(index)}
+            rowCount={transactions.length}
+            headerHeight={52}
+            headerRowRenderer={props => (
+              <div className="flex bg-white" style={{ width: width }}>
+                {props.columns}
+              </div>
+            )}
+            className="table-auto"
+            rowGetter={({ index }) => transactions[index]}
+            rowRenderer={({ index, key, style }) => {
+              const tx = transactions[index]
+              const isEvenRow = index % 2 === 0
+
+              if (!tx) {
+                return null
+              }
+
+              return (
+                <div
+                  key={key}
+                  style={{ ...style, height: `${getRowHeight(index)}px` }}
+                >
+                  {tx.isWithdrawal ? (
+                    <TransactionsTableClaimableRow
+                      tx={tx}
+                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                    />
+                  ) : (
+                    <TransactionsTableDepositRow
+                      tx={tx}
+                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                    />
+                  )}
                 </div>
+              )
+            }}
+          >
+            {/* TODO: FIX LAYOUT FOR HEADERS AND COLUMNS: WIDTH AND PADDING */}
+            <Column
+              label="Status"
+              dataKey="status"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-8">Status</TableHeader>
               )}
-              className="table-auto"
-              rowGetter={({ index }) => transactions[index]}
-              rowRenderer={({ index, key, style }) => {
-                const tx = transactions[index]
-                const isEvenRow = index % 2 === 0
-
-                if (!tx) {
-                  return null
-                }
-
-                return (
-                  <div
-                    key={key}
-                    style={{ ...style, height: `${getRowHeight(index)}px` }}
-                  >
-                    {tx.isWithdrawal ? (
-                      <TransactionsTableClaimableRow
-                        tx={tx}
-                        className={isEvenRow ? 'bg-cyan' : 'bg-white'}
-                      />
-                    ) : (
-                      <TransactionsTableDepositRow
-                        tx={tx}
-                        className={isEvenRow ? 'bg-cyan' : 'bg-white'}
-                      />
-                    )}
-                  </div>
-                )
-              }}
-            >
-              {/* TODO: FIX LAYOUT FOR HEADERS AND COLUMNS: WIDTH AND PADDING */}
-              <Column
-                label="Status"
-                dataKey="status"
-                width={width / 6}
-                headerRenderer={() => (
-                  <TableHeader className="pl-8">Status</TableHeader>
-                )}
-              />
-              <Column
-                label="Date"
-                dataKey="date"
-                width={width / 5}
-                headerRenderer={() => (
-                  <TableHeader className="pl-6">Date</TableHeader>
-                )}
-              />
-              <Column
-                label="Token"
-                dataKey="token"
-                width={width / 6}
-                headerRenderer={() => (
-                  <TableHeader className="pl-12">Token</TableHeader>
-                )}
-              />
-              <Column
-                label="Networks"
-                dataKey="networks"
-                width={width / 6}
-                headerRenderer={() => (
-                  <TableHeader className="pl-6">Networks</TableHeader>
-                )}
-              />
-            </Table>
-          )}
-        </AutoSizer>
-      </div>
+            />
+            <Column
+              label="Date"
+              dataKey="date"
+              width={width / 5}
+              headerRenderer={() => (
+                <TableHeader className="pl-6">Date</TableHeader>
+              )}
+            />
+            <Column
+              label="Token"
+              dataKey="token"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-12">Token</TableHeader>
+              )}
+            />
+            <Column
+              label="Networks"
+              dataKey="networks"
+              width={width / 6}
+              headerRenderer={() => (
+                <TableHeader className="pl-6">Networks</TableHeader>
+              )}
+            />
+          </Table>
+        )}
+      </AutoSizer>
       {paused && !scrollable && (
-        <div className="mt-3 flex w-full justify-center">
+        <div className="absolute bottom-[60px] mt-3 flex h-4 w-full justify-center">
           <button onClick={resume} className="arb-hover text-sm text-white">
             <div className="flex space-x-1 rounded border border-white/40 px-2 py-1 text-white/90">
               <span>Load more</span>
@@ -263,6 +289,6 @@ export const TransactionHistoryTable = ({
           </button>
         </div>
       )}
-    </>
+    </div>
   )
 }
