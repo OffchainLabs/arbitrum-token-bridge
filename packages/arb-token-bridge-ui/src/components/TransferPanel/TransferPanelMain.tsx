@@ -642,9 +642,12 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(nativeCurrencyBalance)
 
+      // for a withdrawal init tx, this is the batch posting fee needed for the tx
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        l1GasPrice
+        // node interface returns l1 gas based on l2 gas price for withdrawals
+        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
+        isDepositMode ? l1GasPrice : l2GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
         result.estimatedL2Gas,
@@ -656,9 +659,10 @@ export function TransferPanelMain({
         utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
       )
       const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(
-        String(nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4)
-      )
+      const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
+      // make sure it's always a positive number
+      // if it's negative, set it to user's balance to show insufficient for gas error
+      setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
     } catch (error) {
       console.error(error)
     } finally {
