@@ -4,5 +4,7 @@ declare module '*.svg' {
   export default content
 }
 
+// the following list is for ci yarn lint to pass
 declare module '*.png'
 declare module '*.webp'
+declare module '*.json'
