@@ -95,6 +95,10 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
+    if (!l1Address || !walletAddress) {
+      return
+    }
+
     const erc20Params = { address: l1Address, provider: l1.provider }
 
     if (!(await isValidErc20(erc20Params))) {
