@@ -642,12 +642,18 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(nativeCurrencyBalance)
 
-      // for a withdrawal init tx, this is the batch posting fee needed for the tx
+      /** for a withdrawal init tx, we hardcode it to 0 as all fees will be paid on L2
+       * but if we use the node interface to get the L1 batch posting fee component
+       * node interface returns L1 gas based on L2 gas price
+       * so then we would have to use l2GasPrice instead of l1GasPrice
+       *
+       * **it's not currently in use now but this comment is here for knowledge sharing purpose**
+       *
+       * https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
+       */
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        // node interface returns l1 gas based on l2 gas price for withdrawals
-        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
-        isDepositMode ? l1GasPrice : l2GasPrice
+        l1GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
         result.estimatedL2Gas,

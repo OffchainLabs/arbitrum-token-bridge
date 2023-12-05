@@ -85,11 +85,21 @@ export function useGasSummary(
     estimatedL2SubmissionCost: constants.Zero
   })
 
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+  /**
+   * Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+   *
+   * for a withdrawal init tx, we hardcode it to 0 as all fees will be paid on L2
+   * but if we use the node interface to get the L1 batch posting fee component
+   * node interface returns L1 gas based on L2 gas price
+   * so then we would have to use l2GasPrice instead of l1GasPrice
+   *
+   * **it's not currently in use now but this comment is here for knowledge sharing purpose**
+   *
+   * https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
+   */
   const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice)))
+  }, [result.estimatedL1Gas, l1GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
