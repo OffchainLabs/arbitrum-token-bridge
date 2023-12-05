@@ -307,12 +307,12 @@ export function TransferPanelSummary({
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
-        chainId: networks.sourceChain.id
+        chainId: parentChain.id
       })
     }
 
     return nativeCurrency.symbol
-  }, [token, nativeCurrency.symbol, networks.sourceChain.id])
+  }, [token, nativeCurrency.symbol, parentChain.id])
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token

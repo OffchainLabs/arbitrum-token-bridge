@@ -104,7 +104,8 @@ export function useTransferReadiness({
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
 
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
@@ -112,11 +113,11 @@ export function useTransferReadiness({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(
@@ -198,9 +199,15 @@ export function useTransferReadiness({
       })
     }
 
-    const ethBalanceFloat = ethL1BalanceFloat
-    const selectedTokenBalanceFloat = selectedTokenL1BalanceFloat
-    const customFeeTokenBalanceFloat = customFeeTokenL1BalanceFloat
+    const ethBalanceFloat = isDepositMode
+      ? ethL1BalanceFloat
+      : ethL2BalanceFloat
+    const selectedTokenBalanceFloat = isDepositMode
+      ? selectedTokenL1BalanceFloat
+      : selectedTokenL2BalanceFloat
+    const customFeeTokenBalanceFloat = isDepositMode
+      ? customFeeTokenL1BalanceFloat
+      : ethL2BalanceFloat
 
     // No error while loading balance
     if (ethBalanceFloat === null) {
@@ -380,7 +387,9 @@ export function useTransferReadiness({
     selectedToken,
     isDepositMode,
     ethL1BalanceFloat,
+    ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
+    selectedTokenL2BalanceFloat,
     customFeeTokenL1BalanceFloat,
     nativeCurrency.isCustom,
     nativeCurrency.symbol,

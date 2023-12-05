@@ -142,8 +142,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress(
           await fetchErc20L1GatewayAddress({
             erc20L1Address: token.address,
-            l1Provider: networks.sourceChainProvider,
-            l2Provider: networks.destinationChainProvider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
         )
         return
@@ -151,17 +151,19 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       setContractAddress(
         await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
-          l2Provider: networks.sourceChainProvider
+          l2Provider: childChainProvider
         })
       )
     }
     getContractAddress()
   }, [
+    childChainProvider,
     isCctp,
     isDepositMode,
     networks.destinationChainProvider,
     networks.sourceChain.id,
     networks.sourceChainProvider,
+    parentChainProvider,
     token?.address
   ])
 

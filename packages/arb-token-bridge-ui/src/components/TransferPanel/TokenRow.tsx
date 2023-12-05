@@ -90,7 +90,8 @@ export function TokenRow({
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
 
   const isSmallScreen = useMedia('(max-width: 419px)')
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -128,13 +129,19 @@ export function TokenRow({
   )
 
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+    eth: [ethSourceChainBalance],
+    erc20: [erc20SourceChainBalances]
+  } = useBalance({
+    provider: networks.sourceChainProvider,
+    walletAddress
+  })
   const {
-    eth: [nativeL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
+    eth: [nativeDestinationChainBalance],
+    erc20: []
+  } = useBalance({
+    provider: networks.destinationChainProvider,
+    walletAddress
+  })
 
   const tokenLogoURI = useMemo(() => {
     if (!token) {
@@ -148,30 +155,32 @@ export function TokenRow({
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode
-          ? erc20L1Balances?.[nativeCurrency.address]
-          : nativeL2Balance
+          ? erc20SourceChainBalances?.[nativeCurrency.address]
+          : nativeDestinationChainBalance
       }
 
-      return ethL1Balance
+      return ethSourceChainBalance
     }
 
     if (isDepositMode) {
-      return erc20L1Balances?.[token.address.toLowerCase()]
+      return erc20SourceChainBalances?.[token.address.toLowerCase()]
     }
 
     if (!token.l2Address) {
       return constants.Zero
     }
 
-    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
+    return (
+      erc20SourceChainBalances?.[token.l2Address.toLowerCase()] ??
+      constants.Zero
+    )
   }, [
     token,
     isDepositMode,
-    erc20L2Balances,
     nativeCurrency,
-    ethL1Balance,
-    nativeL2Balance,
-    erc20L1Balances
+    ethSourceChainBalance,
+    erc20SourceChainBalances,
+    nativeDestinationChainBalance
   ])
 
   const isArbitrumToken = useMemo(() => {
