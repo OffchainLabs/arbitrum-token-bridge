@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'

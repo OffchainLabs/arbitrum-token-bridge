@@ -8,7 +8,6 @@ import {
   Table
 } from 'react-virtualized'
 import { ArrowDownOnSquareIcon } from '@heroicons/react/24/outline'
-import {} from 'react'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
