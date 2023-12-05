@@ -67,40 +67,42 @@ export const TransactionStatusInfo = ({
         }
       }}
     >
-      <div className="inline">
+      <div className="flex items-start gap-2">
         {numRetryablesToRedeem ? (
-          <InformationCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
+          <InformationCircleIcon className="mt-1 h-4 w-4" />
         ) : (
-          <CheckCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
+          <CheckCircleIcon className="mt-1 h-4 w-4" />
         )}
-        You have{` `}
-        {/* deposits ready to retry */}
-        {numRetryablesToRedeem ? (
-          <span className="font-bold">
-            {`${numRetryablesToRedeem} ${
-              numRetryablesToRedeem > 1 ? 'deposits' : 'deposit'
-            } to retry`}
-          </span>
-        ) : null}
-        {/* and */}
-        {numRetryablesToRedeem && numWithdrawalsReadyToClaim ? (
-          <span>
-            {` `}and{` `}
-          </span>
-        ) : null}
-        {/* withdrawals ready to claim text */}
-        {numWithdrawalsReadyToClaim ? (
-          <span className="font-bold">
-            {`${numWithdrawalsReadyToClaim} ${
-              numWithdrawalsReadyToClaim > 1 ? 'withdrawals' : 'withdrawal'
-            } ready to claim`}
-          </span>
-        ) : null}
-        <span>.{` `}</span>
-        {/* open tx history panel cta */}
-        <ExternalLink className="arb-hover text-sm underline lg:text-base">
-          Open Transaction History panel.
-        </ExternalLink>
+        <p>
+          You have{` `}
+          {/* deposits ready to retry */}
+          {numRetryablesToRedeem ? (
+            <span className="font-bold">
+              {`${numRetryablesToRedeem} ${
+                numRetryablesToRedeem > 1 ? 'deposits' : 'deposit'
+              } to retry`}
+            </span>
+          ) : null}
+          {/* and */}
+          {numRetryablesToRedeem && numWithdrawalsReadyToClaim ? (
+            <span>
+              {` `}and{` `}
+            </span>
+          ) : null}
+          {/* withdrawals ready to claim text */}
+          {numWithdrawalsReadyToClaim ? (
+            <span className="font-bold">
+              {`${numWithdrawalsReadyToClaim} ${
+                numWithdrawalsReadyToClaim > 1 ? 'withdrawals' : 'withdrawal'
+              } ready to claim`}
+            </span>
+          ) : null}
+          <span>.{` `}</span>
+          {/* open tx history panel cta */}
+          <ExternalLink className="arb-hover text-sm underline lg:text-base">
+            Open Transaction History panel.
+          </ExternalLink>
+        </p>
       </div>
     </div>
   )
