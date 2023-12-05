@@ -3,6 +3,7 @@ import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useWindowSize } from 'react-use'
+import { useSwitchNetwork } from 'wagmi'
 
 import {
   ChainId,
@@ -20,7 +21,7 @@ export const NetworkSelectionContainer = ({
 }: {
   children: React.ReactNode
 }) => {
-  const [{ sourceChain }, setNetworks] = useNetworks()
+  const [{ sourceChain }] = useNetworks()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
 
   const windowSize = useWindowSize()
@@ -32,6 +33,7 @@ export const NetworkSelectionContainer = ({
   ).filter(chainId => chainId !== sourceChain.id)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
+  const { switchNetwork } = useSwitchNetwork()
 
   const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereumMainnetOrTestnet
@@ -65,10 +67,10 @@ export const NetworkSelectionContainer = ({
           | undefined
       ) => void
     ) => {
-      setNetworks({ sourceChain: chainId })
+      switchNetwork?.(chainId)
       close?.() //close the popover after option-click
     },
-    [setNetworks]
+    [switchNetwork]
   )
 
   return (
