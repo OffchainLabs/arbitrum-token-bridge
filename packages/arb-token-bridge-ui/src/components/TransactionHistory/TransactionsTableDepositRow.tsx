@@ -191,10 +191,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
           aria-label={`${layer} Transaction Link`}
         >
           <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-          <NetworkImage chainId={tx.chainId} />
-          <span className="pl-1">{getNetworkName(tx.chainId)}: </span>
+          <NetworkImage chainId={tx.childChainId} />
+          <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
           <ExternalLink
-            href={`${getExplorerUrl(tx.chainId)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
@@ -278,24 +278,34 @@ export function TransactionsTableDepositRow({
 
   return (
     <tr
+      data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative text-sm text-dark',
-        bgClassName || 'bg-cyan even:bg-white',
+        'relative  border-b border-dark text-sm text-dark',
+        bgClassName,
         className
       )}
-      data-testid={`deposit-row-${tx.txId}`}
     >
-      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
+      <td
+        className={twMerge(
+          'w-1/5 py-3 pl-6 pr-3 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <DepositRowStatus tx={tx} />
       </td>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <td
+        className={twMerge(
+          'w-1/5 px-3 py-3 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <DepositRowTime tx={tx} />
       </td>
 
       <td
         className={twMerge(
-          'w-1/5 whitespace-nowrap px-3 py-3',
+          'w-1/5 whitespace-nowrap px-3 py-3 align-middle',
           customAddressTxPadding
         )}
       >
@@ -309,13 +319,18 @@ export function TransactionsTableDepositRow({
         </div>
       </td>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <td
+        className={twMerge(
+          'w-1/5 px-3 py-3 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <DepositRowTxID tx={tx} />
       </td>
 
       <td
         className={twMerge(
-          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          'relative w-1/5 py-3 pl-3 pr-6 text-right align-middle',
           customAddressTxPadding
         )}
       >

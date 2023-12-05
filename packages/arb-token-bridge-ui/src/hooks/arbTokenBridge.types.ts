@@ -89,15 +89,17 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  chainId: number
   parentChainId: number
+  childChainId: number
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
   timestamp?: BigNumber
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs'
   parentChainId: number
-  chainId: number
+  childChainId: number
 }
 
 export interface PendingWithdrawalsMap {
@@ -117,13 +119,6 @@ export interface BridgeToken {
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
   decimals: number
-}
-
-export interface L1TokenData {
-  name: string
-  symbol: string
-  decimals: number
-  address: string
 }
 
 export interface L2TokenData {

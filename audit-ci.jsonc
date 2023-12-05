@@ -1,24 +1,5 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": [
-    // https://github.com/advisories/GHSA-c2qf-rxjj-qqgw
-    // Versions of the package semver before 7.5.2 are vulnerable to Regular Expression Denial of Service (ReDoS)
-    // via the function new Range, when untrusted user data is provided as a range.
-    // Used by at least
-    // wagmi > @wagmi/core > @wagmi/connectors > @coinbase/wallet-sdk > eth-block-tracker > @metamask/utils>semver
-    // It's not used in user facing code
-    "GHSA-c2qf-rxjj-qqgw",
-    // https://github.com/advisories/GHSA-m95q-7qp3-xv42
-    // Zod version 3.22.2 allows an attacker to perform a denial of service while validating emails.
-    // Used by at least next>zod, zod
-    // Not used anywhere in our code base
-    "GHSA-m95q-7qp3-xv42",
-    // https://github.com/advisories/GHSA-7fh5-64p2-3v2j
-    // An issue was discovered in PostCSS before 8.4.31.
-    // It affects linters using PostCSS to parse external Cascading Style Sheets (CSS).
-    // There may be \r discrepancies, as demonstrated by @font-face{ font:(\r/*);} in a rule.
-    // Used by next>postcss
-    "GHSA-7fh5-64p2-3v2j"
-  ]
+  "allowlist": []
 }

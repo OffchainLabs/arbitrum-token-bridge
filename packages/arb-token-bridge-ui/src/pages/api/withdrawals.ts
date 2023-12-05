@@ -132,7 +132,7 @@ export default async function handler(
           l1Token,
           tokenAmount,
           isClassic,
-          timestamp: l2BlockTimestamp,
+          l2BlockTimestamp,
           l2TxHash,
           l2BlockNum
         }

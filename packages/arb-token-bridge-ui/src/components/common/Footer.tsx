@@ -17,12 +17,12 @@ const footerLinks: FooterLink[] = [
   {
     title: 'Careers',
     href: 'https://offchainlabs.com/careers',
-    className: 'lg:order-6'
+    className: 'lg:order-2'
   },
   {
     title: 'Blog',
     href: 'https://medium.com/offchainlabs',
-    className: 'lg:order-2'
+    className: 'lg:order-4'
   },
   {
     title: 'Recent Press',
@@ -30,19 +30,14 @@ const footerLinks: FooterLink[] = [
     className: 'lg:order-5'
   },
   {
-    title: 'Bridge ToS',
-    href: '/tos',
-    className: 'lg:order-3'
-  },
-  {
     title: 'ToS',
     href: 'https://arbitrum.io/tos',
-    className: 'lg:order-7'
+    className: 'lg:order-3'
   },
   {
     title: 'Privacy Policy',
     href: 'https://www.iubenda.com/privacy-policy/76750372',
-    className: 'lg:order-4'
+    className: 'lg:order-6'
   }
 ]
 
@@ -58,7 +53,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col space-y-8">
-          <ul className="grid text-center font-light lg:max-w-[500px] lg:grid-cols-4 lg:grid-rows-2 lg:text-left lg:font-normal">
+          <ul className="grid text-center font-light lg:max-w-[500px] lg:grid-cols-3 lg:grid-rows-2 lg:text-left lg:font-normal">
             {footerLinks.map(link => (
               <li key={link.href} className={link.className}>
                 <ExternalLink href={link.href} className="arb-hover">

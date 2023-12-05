@@ -22,7 +22,7 @@ export function getWagmiChain(chainId: number): Chain {
   }
 
   switch (chainId) {
-    case ChainId.Mainnet:
+    case ChainId.Ethereum:
       return mainnet
 
     case ChainId.ArbitrumOne:

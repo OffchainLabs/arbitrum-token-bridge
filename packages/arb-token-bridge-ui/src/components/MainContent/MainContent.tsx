@@ -6,8 +6,7 @@ import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
-import { NewTransactionHistory } from '../NewTransactionHistory/NewTransactionHistory'
-import { useCompleteMultiChainTransactions } from '../../hooks/useCompleteMultiChainTransactions'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 
 export const motionDivProps = {
   layout: true,
@@ -34,14 +33,6 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const {
-    data: { transactions },
-    loading,
-    completed,
-    error,
-    resume
-  } = useCompleteMultiChainTransactions()
-
   return (
     <div className="flex w-full justify-center">
       <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
@@ -58,17 +49,12 @@ export function MainContent() {
         </AnimatePresence>
       </div>
       <SidePanel
-        heading="Transaction history"
         isOpen={isTransactionHistoryPanelVisible}
+        heading="Transaction History"
         onClose={closeTransactionHistoryPanel}
+        scrollable={false}
       >
-        <NewTransactionHistory
-          transactions={transactions}
-          loading={loading}
-          completed={completed}
-          error={error}
-          resume={resume}
-        />
+        <TransactionHistory />
       </SidePanel>
 
       {/* Settings panel */}

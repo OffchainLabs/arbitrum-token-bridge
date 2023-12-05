@@ -6,7 +6,7 @@ import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
-import { Withdrawal } from '../../hooks/useCompleteMultiChainTransactions'
+import { Withdrawal } from '../../hooks/useTransactionHistory'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -20,7 +20,7 @@ export type FetchWithdrawalsParams = {
   searchString?: string
 }
 
-export async function fetchWithdrawalList({
+export async function fetchWithdrawals({
   sender,
   receiver,
   l1Provider,
@@ -93,7 +93,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'subgraph',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
   }
@@ -105,7 +105,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
 
@@ -116,7 +116,7 @@ export async function fetchWithdrawalList({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        chainId: l2ChainID
+        childChainId: l2ChainID
       }
     })
 

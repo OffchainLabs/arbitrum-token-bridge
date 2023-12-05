@@ -22,10 +22,13 @@ import {
   approveCctpEstimateGas,
   approveTokenEstimateGas
 } from '../../util/TokenApprovalUtils'
-import { TOKEN_APPROVAL_ARTICLE_LINK } from '../../constants'
+import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '../../hooks/CCTP/useCCTP'
-import { getL1GatewayAddress, getL2GatewayAddress } from '../../util/TokenUtils'
+import {
+  fetchErc20L1GatewayAddress,
+  fetchErc20L2GatewayAddress
+} from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
@@ -48,7 +51,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
-  const { isMainnet, isTestnet } = isNetwork(l1.network.id)
+  const { isEthereumMainnet, isTestnet } = isNetwork(l1.network.id)
   const provider = isDepositMode ? l1.provider : l2.provider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
@@ -67,10 +70,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   )
 
   const approvalFeeText = useMemo(() => {
-    const eth = formatAmount(estimatedGasFees, { symbol: 'ETH' })
+    const eth = formatAmount(estimatedGasFees, { symbol: ether.symbol })
     const usd = formatUSD(ethToUSD(estimatedGasFees))
-    return `${eth}${isMainnet ? ` (${usd})` : ''}`
-  }, [estimatedGasFees, ethToUSD, isMainnet])
+    return `${eth}${isEthereumMainnet ? ` (${usd})` : ''}`
+  }, [estimatedGasFees, ethToUSD, isEthereumMainnet])
 
   useEffect(() => {
     if (!isOpen) {
@@ -134,7 +137,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       }
       if (isDepositMode) {
         setContractAddress(
-          await getL1GatewayAddress({
+          await fetchErc20L1GatewayAddress({
             erc20L1Address: token.address,
             l1Provider: l1.provider,
             l2Provider: l2.provider
@@ -143,7 +146,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
       setContractAddress(
-        await getL2GatewayAddress({
+        await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
           l2Provider: l2.provider
         })
