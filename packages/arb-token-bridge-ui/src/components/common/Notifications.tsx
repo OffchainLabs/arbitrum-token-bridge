@@ -58,11 +58,11 @@ function NitroDevnetNotification() {
 
 export function Notifications() {
   const [{ sourceChain }] = useNetworks()
-  const { isTestnet } = isNetwork(sourceChain.id)
+  const { isGoerli } = isNetwork(sourceChain.id)
 
   return (
     <NotificationContainer>
-      {isTestnet && <NitroDevnetNotification />}
+      {isGoerli && <NitroDevnetNotification />}
     </NotificationContainer>
   )
 }
