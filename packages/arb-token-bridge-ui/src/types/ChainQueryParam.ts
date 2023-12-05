@@ -23,7 +23,7 @@ const chainQueryParams = [
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
-export type ChainQueryParam = ChainKeyQueryParam | ChainId
+export type ChainQueryParam = ChainKeyQueryParam | ChainId | number
 
 export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
@@ -85,7 +85,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
   }
 }
 
-export function getChainForChainQueryParam(
+export function getChainForChainKeyQueryParam(
   chainKeyQueryParam: ChainKeyQueryParam
 ): Chain {
   switch (chainKeyQueryParam) {
@@ -124,7 +124,7 @@ export function getChainForChainQueryParam(
 
     default:
       throw new Error(
-        `[getChainQueryParamForChain] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
+        `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
       )
   }
 }

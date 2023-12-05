@@ -3,7 +3,6 @@ import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
-import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc'
 import {
   sepolia,
   arbitrumNova,
@@ -15,7 +14,7 @@ import {
   chainToWagmiChain
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId, rpcURLs } from '../networks'
+import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>

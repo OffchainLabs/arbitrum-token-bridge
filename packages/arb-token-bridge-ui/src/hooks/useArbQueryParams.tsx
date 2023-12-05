@@ -28,7 +28,7 @@ import {
 
 import {
   ChainKeyQueryParam,
-  getChainForChainQueryParam,
+  getChainForChainKeyQueryParam,
   getChainQueryParamForChain,
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
@@ -145,7 +145,7 @@ function decodeChainQueryParam(
   }
 
   if (isValidChainQueryParam(valueString)) {
-    return getChainForChainQueryParam(valueString as ChainKeyQueryParam).id
+    return getChainForChainKeyQueryParam(valueString as ChainKeyQueryParam).id
   }
 
   return undefined

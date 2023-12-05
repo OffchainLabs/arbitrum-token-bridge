@@ -167,55 +167,17 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   })
 
   const setState = useCallback(
-    (params: UseNetworksSetStateParams) => {
-      if (!params.sourceChain) {
-        const [sourceChainId] = getPartnerChainsQueryParams(
-          params.destinationChain
-        )
-
-        const {
-          sourceChainId: sourceChain,
-          destinationChainId: destinationChain
-        } = sanitizeQueryParams({
-          sourceChainId: sourceChainId,
-          destinationChainId: params.destinationChain
-        })
-        setQueryParams({
-          sourceChain,
-          destinationChain
-        })
-        return
-      }
-
-      if (!params.destinationChain) {
-        const [destinationChainId] = getPartnerChainsQueryParams(
-          params.sourceChain
-        )
-
-        const {
-          sourceChainId: sourceChain,
-          destinationChainId: destinationChain
-        } = sanitizeQueryParams({
-          sourceChainId: params.sourceChain,
-          destinationChainId: destinationChainId
-        })
-        setQueryParams({
-          sourceChain,
-          destinationChain
-        })
-        return
-      }
-
+    ({ sourceChain, destinationChain }: UseNetworksSetStateParams) => {
       const {
+        sourceChainId: validSourceChainId,
+        destinationChainId: validDestinationChainId
+      } = sanitizeQueryParams({
         sourceChainId: sourceChain,
         destinationChainId: destinationChain
-      } = sanitizeQueryParams({
-        sourceChainId: params.sourceChain,
-        destinationChainId: params.destinationChain
       })
       setQueryParams({
-        sourceChain,
-        destinationChain
+        sourceChain: validSourceChainId,
+        destinationChain: validDestinationChainId
       })
     },
     [setQueryParams]
