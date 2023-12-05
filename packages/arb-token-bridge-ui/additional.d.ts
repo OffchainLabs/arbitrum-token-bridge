@@ -5,6 +5,6 @@ declare module '*.svg' {
 }
 
 // the following list is for ci yarn lint to pass
-declare module '*.png'
-declare module '*.webp'
-declare module '*.json'
+// declare module '*.png'
+// declare module '*.webp'
+// declare module '*.json'
