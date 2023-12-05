@@ -13,8 +13,7 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import {
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -173,7 +172,7 @@ export function useGasSummary(
               setStatus('unavailable')
               return
             } else {
-              estimateGasResult = await withdrawTokenEstimateGas({
+              estimateGasResult = await withdrawInitTxEstimateGas({
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
@@ -186,7 +185,7 @@ export function useGasSummary(
               estimatedL2SubmissionCost: constants.Zero
             })
           } else {
-            const estimateGasResult = await withdrawEthEstimateGas({
+            const estimateGasResult = await withdrawInitTxEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
               l2Provider: l2.provider

@@ -43,7 +43,7 @@ import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -591,7 +591,7 @@ export function TransferPanelMain({
         return result
       }
 
-      const result = await withdrawEthEstimateGas({
+      const result = await withdrawInitTxEstimateGas({
         amount: weiValue,
         address: walletAddress,
         l2Provider: l2.provider
