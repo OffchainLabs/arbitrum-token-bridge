@@ -28,8 +28,10 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useChainId } from 'wagmi'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
+  const chainId = useChainId()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
@@ -41,9 +43,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(
-    networks.sourceChain.id
-  )
+  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(chainId)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
@@ -167,9 +167,9 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
             content={
               <span>
                 {`Please switch to ${
-                  isSourceChainIdEthereum ? parentNetworkName : childNetworkName
+                  isSourceChainIdEthereum ? childNetworkName : parentNetworkName
                 } to claim your ${
-                  isSourceChainIdEthereum ? 'deposit' : 'withdrawal'
+                  isSourceChainIdEthereum ? 'withdrawal' : 'deposit'
                 }.`}
               </span>
             }
@@ -182,7 +182,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
                 try {
                   if (!currentChainIsValid) {
                     return switchNetwork?.(
-                      isSourceChainIdEthereum ? parentChain.id : childChain.id
+                      isSourceChainIdEthereum ? childChain.id : parentChain.id
                     )
                   }
                   if (tx.isCctp) {

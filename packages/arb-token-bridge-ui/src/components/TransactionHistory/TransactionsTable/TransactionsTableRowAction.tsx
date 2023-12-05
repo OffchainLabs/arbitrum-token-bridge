@@ -3,6 +3,7 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
+import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { MergedTransaction } from '../../../state/app/state'
@@ -44,19 +45,19 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
+  const chainId = useChainId()
   const [networks] = useNetworks()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const { childChain } = useNetworksRelationship(networks)
-  const networkName = getNetworkName(networks.sourceChain.id)
-  const targetNetworkName = getNetworkName(networks.destinationChain.id)
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const destinationChain = type === 'deposits' ? childChain : parentChain
+  const networkName = getNetworkName(chainId)
+  const targetNetworkName = getNetworkName(destinationChain.id)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(
-    networks.sourceChain.id
-  )
+  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
 
   const currentChainIsValid = useMemo(() => {
     const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
@@ -122,9 +123,11 @@ export function TransactionsTableRowAction({
           className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
-              if (!currentChainIsValid) {
-                return switchNetwork?.(networks.destinationChain.id)
+              if (chainId !== destinationChain.id) {
+                switchNetwork?.(destinationChain.id)
+                return
               }
+
               if (tx.isCctp) {
                 return await claimCctp()
               } else {
