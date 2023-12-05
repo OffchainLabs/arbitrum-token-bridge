@@ -14,10 +14,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "@/images/*": ["./packages/arb-token-bridge-ui/public/images/*"],
-      "@/icons/*": ["./packages/arb-token-bridge-ui/public/icons/*"]
-    }
+    "jsx": "react-jsx"
   }
 }
