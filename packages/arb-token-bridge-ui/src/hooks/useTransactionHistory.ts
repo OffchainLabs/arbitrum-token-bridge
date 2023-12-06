@@ -375,13 +375,29 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
     setFetching(false)
   }
 
-  console.log({ page })
-  console.log({ fetching })
-
   function resume() {
     setFetching(true)
-    setPage(prevPage => prevPage + 1)
   }
+
+  useEffect(() => {
+    const latestTransaction = transactions[transactions.length - 1]
+    setPauseCount(prevPauseCount => {
+      const maxTimestamp = dayjs()
+        .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
+        .valueOf()
+
+      if (
+        latestTransaction &&
+        latestTransaction.createdAt &&
+        latestTransaction.createdAt <= maxTimestamp
+      ) {
+        pause()
+        return prevPauseCount + 1
+      }
+
+      return prevPauseCount
+    })
+  }, [transactions])
 
   useEffect(() => {
     if (mapData) {
@@ -390,40 +406,9 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
         return [...prevTransactions, ...newTransactions]
       })
 
-      let didPause = false
-
-      setPauseCount(prevPauseCount => {
-        const maxTimestamp = dayjs()
-          .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
-          .valueOf()
-
-        const latestTransaction = mapData[mapData.length - 1]
-
-        console.log({ prevPauseCount })
-
-        if (
-          latestTransaction &&
-          latestTransaction.createdAt &&
-          latestTransaction.createdAt <= maxTimestamp
-        ) {
-          // we fetched enough transactions to pause
-          pause()
-          didPause = true
-          return prevPauseCount + 1
-        }
-        return prevPauseCount
-      })
-
-      console.log({ didPause })
-
       // mapped data is a full page, so we need to fetch more pages
       if (mapData.length === MAX_BATCH_SIZE) {
-        setPage(prevPage => {
-          if (didPause) {
-            return prevPage
-          }
-          return prevPage + 1
-        })
+        setPage(prevPage => prevPage + 1)
       } else {
         setFetching(false)
       }
