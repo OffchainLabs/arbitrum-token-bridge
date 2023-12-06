@@ -375,6 +375,9 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
     setFetching(false)
   }
 
+  console.log({ page })
+  console.log({ fetching })
+
   function resume() {
     setFetching(true)
     setPage(prevPage => prevPage + 1)
@@ -396,6 +399,8 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
         const latestTransaction = mapData[mapData.length - 1]
 
+        console.log({ prevPauseCount })
+
         if (
           latestTransaction &&
           latestTransaction.createdAt &&
@@ -408,6 +413,8 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
         }
         return prevPauseCount
       })
+
+      console.log({ didPause })
 
       // mapped data is a full page, so we need to fetch more pages
       if (mapData.length === MAX_BATCH_SIZE) {
