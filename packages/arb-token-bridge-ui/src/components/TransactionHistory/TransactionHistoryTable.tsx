@@ -117,7 +117,9 @@ export const TransactionHistoryTable = ({
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
 
-  const numberOfDaysString = `${numberOfDays}${numberOfDays === 1 ? 's' : ''}`
+  const numberOfDaysString = `${numberOfDays}${
+    numberOfDays === 1 ? 'day' : 'days'
+  }`
 
   if (isTxHistoryEmpty) {
     if (error) {
@@ -182,7 +184,7 @@ export const TransactionHistoryTable = ({
         ) : (
           <div className="flex justify-between">
             <span className="text-sm">
-              Showing transactions for the last ${numberOfDaysString}.
+              Showing transactions for the last {numberOfDaysString}.
             </span>
 
             <button onClick={resume} className="arb-hover text-sm">
