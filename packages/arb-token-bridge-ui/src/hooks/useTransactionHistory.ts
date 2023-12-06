@@ -1,5 +1,6 @@
 import useSWRImmutable from 'swr/immutable'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 
 import { ChainId, rpcURLs } from '../util/networks'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -67,10 +68,10 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
   },
-  // {
-  //   parentChain: ChainId.Mainnet,
-  //   chain: ChainId.ArbitrumNova
-  // },
+  {
+    parentChain: ChainId.Ethereum,
+    chain: ChainId.ArbitrumNova
+  },
   // Testnet
   {
     parentChain: ChainId.Goerli,
@@ -79,16 +80,16 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Sepolia,
     chain: ChainId.ArbitrumSepolia
-  }
+  },
   // Orbit
-  // {
-  //   parentChain: ChainId.ArbitrumGoerli,
-  //   chain: ChainId.XaiTestnet
-  // }
-  // {
-  //   parentChain: ChainId.ArbitrumSepolia,
-  //   chain: ChainId.StylusTestnet
-  // }
+  {
+    parentChain: ChainId.ArbitrumGoerli,
+    chain: ChainId.XaiTestnet
+  },
+  {
+    parentChain: ChainId.ArbitrumSepolia,
+    chain: ChainId.StylusTestnet
+  }
 ]
 
 function isWithdrawalFromSubgraph(
@@ -338,14 +339,14 @@ const useTransactionHistoryWithoutStatuses = (
  * This is done in small batches to safely meet RPC limits.
  */
 export const useTransactionHistory = (address: `0x${string}` | undefined) => {
-  // max number of transactions mapped in parallel, for the same chain pair
-  // we can batch more than MAX_BATCH_SIZE at a time if they use a different RPC
-  // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
-  const MAX_BATCH_SIZE = 5
-  const PAUSE_SIZE = 20
+  // max number of transactions mapped in parallel
+  const MAX_BATCH_SIZE = 10
+  // Pause fetching after specified amount of days. User can resume fetching to get another batch.
+  const PAUSE_SIZE_DAYS = 30
 
   const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
+  const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
@@ -353,8 +354,6 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   const { data: mapData, error: mapError } = useSWRImmutable(
     address && !loading ? ['complete_tx_list', address, page, data] : null,
     ([, , _page, _data]) => {
-      // TODO: Need to allow more than MAX_BATCH_SIZE if they are for diff chain pairs
-      // MAX_BATCH_SIZE refers to the same chain pair only
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
@@ -363,6 +362,13 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
       )
     }
   )
+
+  const latestTransactionDaysFromNow = useMemo(() => {
+    return dayjs().diff(
+      dayjs(transactions[transactions.length - 1]?.createdAt),
+      'days'
+    )
+  }, [transactions])
 
   function pause() {
     setFetching(false)
@@ -380,12 +386,32 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
         return [...prevTransactions, ...newTransactions]
       })
 
+      let didPause = false
+
+      setPauseCount(prevPauseCount => {
+        const maxTimestamp = dayjs()
+          .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
+          .valueOf()
+
+        const latestTransaction = mapData[mapData.length - 1]
+
+        if (
+          latestTransaction &&
+          latestTransaction.createdAt &&
+          latestTransaction.createdAt <= maxTimestamp
+        ) {
+          // we fetched enough transactions to pause
+          pause()
+          didPause = true
+          return prevPauseCount + 1
+        }
+        return prevPauseCount
+      })
+
       // mapped data is a full page, so we need to fetch more pages
       if (mapData.length === MAX_BATCH_SIZE) {
         setPage(prevPage => {
-          // we fetched enough transactions to pause
-          if (MAX_BATCH_SIZE * (prevPage + 1) >= PAUSE_SIZE) {
-            pause()
+          if (didPause) {
             return prevPage
           }
           return prevPage + 1
@@ -398,7 +424,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
   if (loading || error) {
     return {
-      data: { transactions: [], total: undefined },
+      data: { transactions: [], total: undefined, numberOfDays: 0 },
       loading,
       error,
       completed: true,
@@ -408,7 +434,11 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   }
 
   return {
-    data: { transactions, total: data.length },
+    data: {
+      transactions,
+      total: data.length,
+      numberOfDays: latestTransactionDaysFromNow
+    },
     loading: fetching,
     completed: transactions.length === data.length,
     error: mapError ?? error,

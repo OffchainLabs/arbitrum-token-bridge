@@ -1,12 +1,6 @@
-import { PropsWithChildren, useCallback, useState } from 'react'
+import { PropsWithChildren, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
-import {
-  AutoSizer,
-  Column,
-  ScrollEventData,
-  ScrollParams,
-  Table
-} from 'react-virtualized'
+import { AutoSizer, Column, Table } from 'react-virtualized'
 import { ArrowDownOnSquareIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
@@ -89,6 +83,7 @@ export const TransactionHistoryTable = ({
   loading,
   completed,
   error,
+  numberOfDays,
   resume,
   rowHeight,
   rowHeightCustomDestinationAddress
@@ -98,27 +93,14 @@ export const TransactionHistoryTable = ({
   loading: boolean
   completed: boolean
   error: unknown
+  numberOfDays: number
   resume: () => void
   rowHeight: number
   rowHeightCustomDestinationAddress: number
 }) => {
-  const [scrollable, setScrollable] = useState(false)
-
   const isTxHistoryEmpty = transactions.length === 0
 
   const paused = !loading && !completed
-
-  function isScrolledToBottom(e: ScrollParams | ScrollEventData) {
-    const scrollPosition = e.scrollTop + e.clientHeight
-    return scrollPosition >= e.scrollHeight
-  }
-
-  function handleScroll(e: ScrollParams | ScrollEventData) {
-    if (paused && isScrolledToBottom(e)) {
-      resume()
-    }
-    setScrollable(e.clientHeight > 0 && e.scrollHeight > e.clientHeight)
-  }
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -165,19 +147,17 @@ export const TransactionHistoryTable = ({
     if (paused) {
       return (
         <div>
-          <div className="bg-white p-4">
+          <div className="flex justify-between bg-white p-4">
             <span className="text-sm">
               We could not find any recent transactions!
             </span>
           </div>
-          <div className="flex h-4 w-full justify-center ">
-            <button onClick={resume} className="arb-hover text-sm text-white">
-              <div className="mt-4 flex space-x-1 rounded border border-white/40 px-2 py-1 text-white/90">
-                <span>Load more</span>
-                <ArrowDownOnSquareIcon width={16} />
-              </div>
-            </button>
-          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
         </div>
       )
     }
@@ -190,12 +170,33 @@ export const TransactionHistoryTable = ({
 
   return (
     <div className={twMerge('relative h-full flex-col rounded-lg', className)}>
+      <div className="bg-white px-8 pt-4">
+        {loading ? (
+          <div className="flex animate-pulse space-x-2">
+            <Loader size="small" />
+            <span className="text-sm">Loading transactions...</span>
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <span className="text-sm">
+              Showing transactions for the last {numberOfDays} day
+              {numberOfDays === 1 ? '' : 's'}.
+            </span>
+
+            <button onClick={resume} className="arb-hover text-sm">
+              <div className="flex space-x-1 rounded border border-black px-2 py-1">
+                <span>Load more</span>
+                <ArrowDownOnSquareIcon width={16} />
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
       <AutoSizer>
         {({ width, height }) => (
           <Table
             width={width}
-            height={height - 52}
-            onScroll={handleScroll}
+            height={height - 82}
             rowHeight={({ index }) => getRowHeight(index)}
             rowCount={transactions.length}
             headerHeight={52}
@@ -270,16 +271,6 @@ export const TransactionHistoryTable = ({
           </Table>
         )}
       </AutoSizer>
-      {paused && !scrollable && (
-        <div className="absolute bottom-[60px] mt-3 flex h-4 w-full justify-center">
-          <button onClick={resume} className="arb-hover text-sm text-white">
-            <div className="flex space-x-1 rounded border border-white/40 px-2 py-1 text-white/90">
-              <span>Load more</span>
-              <ArrowDownOnSquareIcon width={16} />
-            </div>
-          </button>
-        </div>
-      )}
     </div>
   )
 }

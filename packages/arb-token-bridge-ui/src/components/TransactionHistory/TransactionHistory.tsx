@@ -22,7 +22,7 @@ export const TransactionHistory = () => {
   const { address } = useAccount()
 
   const {
-    data: { transactions },
+    data: { transactions, numberOfDays },
     loading,
     completed,
     resume,
@@ -75,7 +75,6 @@ export const TransactionHistory = () => {
         <TabButton
           aria-label="show pending transactions"
           className={twMerge(roundedTabClasses, 'roundedTabRight')}
-          showloader={loading && pendingTransactions.length > 0}
         >
           <span className="text-xs md:text-base">Pending transactions</span>
         </TabButton>
@@ -85,7 +84,6 @@ export const TransactionHistory = () => {
             roundedTabClasses,
             'roundedTabLeft roundedTabRight'
           )}
-          showloader={loading && settledTransactions.length > 0}
         >
           <span className="text-xs md:text-base">Settled transactions</span>
         </TabButton>
@@ -99,6 +97,7 @@ export const TransactionHistory = () => {
             loading={loading}
             completed={completed}
             error={error}
+            numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={94}
             rowHeightCustomDestinationAddress={126}
@@ -110,6 +109,7 @@ export const TransactionHistory = () => {
             loading={loading}
             completed={completed}
             error={error}
+            numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={85}
             rowHeightCustomDestinationAddress={117}
