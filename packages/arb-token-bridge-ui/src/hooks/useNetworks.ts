@@ -4,7 +4,11 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import { ChainId, rpcURLs } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  rpcURLs
+} from '../util/networks'
 import {
   sepolia,
   arbitrumNova,
@@ -41,7 +45,7 @@ function getChainByChainId(chainId: ChainId): Chain {
   return chain
 }
 
-function getPartnerChainsQueryParams(chainId: ChainId): ChainId[] {
+function getPartnerChainsIds(chainId: ChainId): ChainId[] {
   try {
     const partnerChains = getPartnerChainsForChainId(chainId)
     return partnerChains.map(chain => chain.id)
@@ -73,20 +77,46 @@ function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   return createProviderWithCache(chainId)
 }
 
+function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
+  if (!chainId) {
+    return false
+  }
+
+  const customChainIds = getCustomChainsFromLocalStorage().map(
+    chain => chain.chainID
+  )
+
+  return [
+    mainnet.id,
+    goerli.id,
+    sepolia.id,
+    arbitrum.id,
+    arbitrumNova.id,
+    arbitrumGoerli.id,
+    arbitrumSepolia.id,
+    stylusTestnet.id,
+    xaiTestnet.id,
+    arbitrumLocal.id,
+    local.id,
+    ...customChainIds
+  ].includes(chainId)
+}
+
 export function sanitizeQueryParams({
   sourceChainId,
   destinationChainId
 }: {
-  sourceChainId: ChainId | undefined
-  destinationChainId: ChainId | undefined
+  sourceChainId: ChainId | number | undefined
+  destinationChainId: ChainId | number | undefined
 }): {
-  sourceChainId: ChainId
-  destinationChainId: ChainId
+  sourceChainId: ChainId | number
+  destinationChainId: ChainId | number
 } {
-  // when both `sourceChain` and `destinationChain` are undefined, default to Ethereum and Arbitrum One
+  // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
   if (
-    typeof sourceChainId === 'undefined' &&
-    typeof destinationChainId === 'undefined'
+    (!sourceChainId && !destinationChainId) ||
+    (!isSupportedChainId(sourceChainId) &&
+      !isSupportedChainId(destinationChainId))
   ) {
     return {
       sourceChainId: ChainId.Ethereum,
@@ -94,35 +124,30 @@ export function sanitizeQueryParams({
     }
   }
 
-  // only `destinationChainId` is defined
+  // destinationChainId is valid and sourceChainId is undefined
   if (
-    typeof sourceChainId === 'undefined' &&
-    typeof destinationChainId !== 'undefined'
+    !isSupportedChainId(sourceChainId) &&
+    isSupportedChainId(destinationChainId)
   ) {
-    const [defaultSourceChainId] =
-      getPartnerChainsQueryParams(destinationChainId)
+    const [defaultSourceChainId] = getPartnerChainsIds(destinationChainId)
     return { sourceChainId: defaultSourceChainId!, destinationChainId }
   }
 
-  // only `sourceChainId` is defined
+  // sourceChainId is valid and destinationChainId is undefined
   if (
-    typeof sourceChainId !== 'undefined' &&
-    typeof destinationChainId === 'undefined'
+    isSupportedChainId(sourceChainId) &&
+    !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] =
-      getPartnerChainsQueryParams(sourceChainId)
+    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId)
     return {
       sourceChainId: sourceChainId,
       destinationChainId: defaultDestinationChainId!
     }
   }
 
-  if (
-    !getPartnerChainsQueryParams(sourceChainId!).includes(destinationChainId!)
-  ) {
-    const [defaultDestinationChainId] = getPartnerChainsQueryParams(
-      sourceChainId!
-    )
+  // destinationChainId is not a partner of sourceChainId
+  if (!getPartnerChainsIds(sourceChainId!).includes(destinationChainId!)) {
+    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId!)
     return {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!

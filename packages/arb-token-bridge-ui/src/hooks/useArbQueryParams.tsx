@@ -21,6 +21,7 @@ import {
   NumberParam,
   QueryParamProvider,
   StringParam,
+  decodeNumber,
   decodeString,
   useQueryParams,
   withDefault
@@ -122,8 +123,8 @@ function encodeChainQueryParam(chainId: number | null | undefined) {
   }
 }
 
-function isValidNumber(value: number) {
-  return !Number.isNaN(value)
+function isValidNumber(value: number | null | undefined): value is number {
+  return value === 0 || !!value
 }
 
 // Parse ChainQueryParam/ChainId to ChainId
@@ -137,7 +138,7 @@ function decodeChainQueryParam(
     return undefined
   }
 
-  const valueNumber = parseInt(valueString, 10)
+  const valueNumber = decodeNumber(value)
   if (
     isValidNumber(valueNumber) &&
     isValidChainQueryParam(valueNumber as ChainId)
