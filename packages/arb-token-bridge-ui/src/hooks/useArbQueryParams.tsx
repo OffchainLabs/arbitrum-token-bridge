@@ -130,7 +130,8 @@ function isValidNumber(value: number) {
 // URL accept both chainId and chainQueryParam (string)
 function decodeChainQueryParam(
   value: string | (string | null)[] | null | undefined
-): ChainId | undefined {
+  // ChainId type doesn't include custom orbit chain, we need to add number type
+): ChainId | number | undefined {
   const valueString = decodeString(value)
   if (!valueString) {
     return undefined
