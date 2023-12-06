@@ -187,12 +187,14 @@ export const TransactionHistoryTable = ({
               Showing transactions for the last {numberOfDaysString}.
             </span>
 
-            <button onClick={resume} className="arb-hover text-sm">
-              <div className="flex space-x-1 rounded border border-black px-2 py-1">
-                <span>Load more</span>
-                <ArrowDownOnSquareIcon width={16} />
-              </div>
-            </button>
+            {!completed && (
+              <button onClick={resume} className="arb-hover text-sm">
+                <div className="flex space-x-1 rounded border border-black px-2 py-1">
+                  <span>Load more</span>
+                  <ArrowDownOnSquareIcon width={16} />
+                </div>
+              </button>
+            )}
           </div>
         )}
       </div>
