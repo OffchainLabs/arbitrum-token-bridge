@@ -97,19 +97,15 @@ function isWithdrawalFromSubgraph(
   return tx.source === 'subgraph'
 }
 
-function isCctpTransfer(
-  tx: DepositOrWithdrawal | MergedTransaction
-): tx is MergedTransaction {
-  return !!(tx as MergedTransaction).isCctp
-}
-
 function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(
-  tx: DepositOrWithdrawal | MergedTransaction
-): Promise<MergedTransaction> {
+export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
+  return !!(tx as MergedTransaction).isCctp
+}
+
+async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
@@ -200,11 +196,16 @@ const useTransactionHistoryWithoutStatuses = (
     type: 'all'
   })
 
+  // TODO: Clean up this logic when introducing testnet/mainnet split
   const combinedCctpTransfers = [
     ...(cctpTransfersMainnet.deposits?.completed || []),
     ...(cctpTransfersMainnet.withdrawals?.completed || []),
     ...(cctpTransfersTestnet.deposits?.completed || []),
-    ...(cctpTransfersTestnet.withdrawals?.completed || [])
+    ...(cctpTransfersTestnet.withdrawals?.completed || []),
+    ...(cctpTransfersMainnet.deposits?.pending || []),
+    ...(cctpTransfersMainnet.withdrawals?.pending || []),
+    ...(cctpTransfersTestnet.deposits?.pending || []),
+    ...(cctpTransfersTestnet.withdrawals?.pending || [])
   ]
 
   const cctpLoading =

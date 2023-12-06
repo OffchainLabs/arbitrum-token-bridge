@@ -687,7 +687,7 @@ function getConfirmedDate(tx: MergedTransaction) {
   )
 }
 
-function isTransferConfirmed(tx: MergedTransaction) {
+export function isTransferConfirmed(tx: MergedTransaction) {
   return dayjs().isAfter(getConfirmedDate(tx))
 }
 
