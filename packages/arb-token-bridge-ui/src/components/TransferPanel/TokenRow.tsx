@@ -415,7 +415,8 @@ export function TokenRow({
                       />
                     ) : (
                       <span className="text-xs text-gray-900">
-                        This token hasn&apos;t been bridged to L2.
+                        This token hasn&apos;t been bridged to{' '}
+                        {getNetworkName(l2Network.id)}.
                       </span>
                     )}
                   </>

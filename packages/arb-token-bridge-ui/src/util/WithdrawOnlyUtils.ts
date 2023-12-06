@@ -1,3 +1,6 @@
+// tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
+// the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
+
 import { ChainId } from '../util/networks'
 
 export type WithdrawOnlyToken = {
@@ -51,6 +54,11 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
       l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
     },
+    // We comment this out because when user tries to deposit FRAX,
+    // we show a dialog to use a fast bridge (Celer) instead
+    // and the user can never make a deposit on our UI
+    // eventually we should do that to all other withdraw-only
+    // tokens as well
     // {
     //   symbol: 'FRAX',
     //   l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
@@ -116,6 +124,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x6c84a8f1c29108F47a79964b5Fe888D4f4D0dE40',
       l1Address: '0x18084fba666a33d37592fa2633fd49a74dd93a88',
       l2Address: '0x7E2a1eDeE171C5B19E6c54D73752396C0A572594'
+    },
+    {
+      symbol: 'RDNT',
+      l2CustomAddr: '0x3082CC23568eA640225c2467653dB90e9250AaA0',
+      l1Address: '0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893',
+      l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
     }
   ],
   [ChainId.ArbitrumNova]: []
