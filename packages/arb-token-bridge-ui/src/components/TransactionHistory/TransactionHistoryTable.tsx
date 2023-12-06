@@ -114,16 +114,9 @@ export const TransactionHistoryTable = ({
   }
 
   function handleScroll(e: ScrollParams | ScrollEventData) {
-    console.log(
-      `Result for ${transactions[0]?.status}: ${
-        e.scrollHeight > e.clientHeight
-      }`
-    )
     if (paused && isScrolledToBottom(e)) {
       resume()
     }
-    console.log('scrollH: ', e.scrollHeight)
-    console.log('clientH: ', e.clientHeight)
     setScrollable(e.clientHeight > 0 && e.scrollHeight > e.clientHeight)
   }
 
@@ -141,8 +134,6 @@ export const TransactionHistoryTable = ({
     },
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
-
-  console.log({ scrollable })
 
   if (isTxHistoryEmpty) {
     if (error) {
