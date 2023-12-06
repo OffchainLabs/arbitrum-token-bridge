@@ -768,7 +768,7 @@ export function TransferPanelMain({
           </>
         )
     }
-  }, [errorMessage])
+  }, [errorMessage, openTransferDisabledDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     const newFrom = to
