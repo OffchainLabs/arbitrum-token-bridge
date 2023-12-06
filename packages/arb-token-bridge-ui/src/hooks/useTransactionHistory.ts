@@ -353,7 +353,9 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading ? ['complete_tx_list', address, page, data] : null,
+    address && !loading && fetching
+      ? ['complete_tx_list', address, page, data]
+      : null,
     ([, , _page, _data]) => {
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
@@ -380,30 +382,28 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   }
 
   useEffect(() => {
-    const latestTransaction = transactions[transactions.length - 1]
-    setPauseCount(prevPauseCount => {
-      const maxTimestamp = dayjs()
-        .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
-        .valueOf()
-
-      if (
-        latestTransaction &&
-        latestTransaction.createdAt &&
-        latestTransaction.createdAt <= maxTimestamp
-      ) {
-        pause()
-        return prevPauseCount + 1
-      }
-
-      return prevPauseCount
-    })
-  }, [transactions])
-
-  useEffect(() => {
     if (mapData) {
       setTransactions(prevTransactions => {
         const newTransactions = mapData.filter(Boolean) as MergedTransaction[]
         return [...prevTransactions, ...newTransactions]
+      })
+
+      setPauseCount(prevPauseCount => {
+        const latestTransaction = mapData[mapData.length - 1]
+        const maxTimestamp = dayjs()
+          .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
+          .valueOf()
+
+        if (
+          latestTransaction &&
+          latestTransaction.createdAt &&
+          latestTransaction.createdAt <= maxTimestamp
+        ) {
+          pause()
+          return prevPauseCount + 1
+        }
+
+        return prevPauseCount
       })
 
       // mapped data is a full page, so we need to fetch more pages
