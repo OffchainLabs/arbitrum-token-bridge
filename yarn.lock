@@ -8945,10 +8945,10 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-next-query-params@^4.2.3:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/next-query-params/-/next-query-params-4.2.3.tgz#f90f1a56de8ac6e6a6adb492a11f8854cced314d"
-  integrity sha512-hGNCYRH8YyA5ItiBGSKrtMl21b2MAqfPkdI1mvwloNVqSU142IaGzqHN+OTovyeLIpQfonY01y7BAHb/UH4POg==
+next-query-params@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/next-query-params/-/next-query-params-5.0.0.tgz#326b2e20481d5833d6e7272bd1d6bf3c114a3a5d"
+  integrity sha512-Zm9nc0QgrTMaQwGdbICcTDaYS4oRcXo628Ye6JQGdp/9JzlhzDpzcGRqciK0S62yAyE3b5ozFpgzY0gDUEbLtw==
   dependencies:
     tslib "^2.0.3"
 
