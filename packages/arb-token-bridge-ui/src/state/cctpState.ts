@@ -136,8 +136,8 @@ function parseTransferToMergedTransaction(
     tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
     depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
     isCctp: true,
-    parentChainId: isDeposit ? sourceChainId : chainId,
-    childChainId: isDeposit ? destinationChainId : chainId,
+    parentChainId: isDeposit ? sourceChainId : destinationChainId,
+    childChainId: isDeposit ? destinationChainId : sourceChainId,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,
