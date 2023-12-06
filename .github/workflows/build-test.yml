@@ -247,6 +247,18 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
+      
+      - name: Create test results directory
+        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+
+      - name: Copy test results from docker container volumes
+        run: docker cp synpress:/app/packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
   test-e2e-success:
     name: "Test E2E Success"
