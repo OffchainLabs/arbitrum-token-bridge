@@ -117,6 +117,8 @@ export const TransactionHistoryTable = ({
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
 
+  const numberOfDaysString = `${numberOfDays}${numberOfDays === 1 ? 's' : ''}`
+
   if (isTxHistoryEmpty) {
     if (error) {
       return (
@@ -149,7 +151,8 @@ export const TransactionHistoryTable = ({
         <div>
           <div className="flex justify-between bg-white p-4">
             <span className="text-sm">
-              We could not find any recent transactions!
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
             </span>
           </div>
           <button onClick={resume} className="arb-hover text-sm">
@@ -179,8 +182,7 @@ export const TransactionHistoryTable = ({
         ) : (
           <div className="flex justify-between">
             <span className="text-sm">
-              Showing transactions for the last {numberOfDays} day
-              {numberOfDays === 1 ? '' : 's'}.
+              Showing transactions for the last ${numberOfDaysString}.
             </span>
 
             <button onClick={resume} className="arb-hover text-sm">
