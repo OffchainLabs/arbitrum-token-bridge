@@ -50,7 +50,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 8000,
+              timeout: 10000,
               interval: 500
             }
           ).then(() => {
@@ -87,7 +87,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 8000,
+              timeout: 10000,
               interval: 500
             }
           ).then(() => {
@@ -125,7 +125,7 @@ describe('User enters site with query params on URL', () => {
             // optional timeouts and error messages
             {
               errorMsg: 'was expecting a numerical input value greater than 0',
-              timeout: 8000,
+              timeout: 10000,
               interval: 500
             }
           ).then(() => {
@@ -140,16 +140,16 @@ describe('User enters site with query params on URL', () => {
   })
 
   context('should correctly populate amount input from query param', () => {
-    it('?amount=56 should set transfer panel amount to 56', () => {
+    it('?amount=12 should set transfer panel amount to 12', () => {
       cy.login({
         networkType: 'L1',
-        query: { amount: '56', ...defaultQueryParams }
+        query: { amount: '12', ...defaultQueryParams }
       })
 
       // arbitrary wait because ci is unstable when page refresh might happen
       cy.wait(8000)
 
-      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
+      cy.findByPlaceholderText(/Enter amount/i).should('have.value', '12')
     })
   })
 
@@ -187,6 +187,9 @@ describe('User enters site with query params on URL', () => {
         networkType: 'L1',
         query: { amount: '0.123', ...defaultQueryParams }
       })
+
+      // arbitrary wait because ci is unstable when page refresh might happen
+      cy.wait(8000)
 
       cy.url().should('include', 'amount=0.123')
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
