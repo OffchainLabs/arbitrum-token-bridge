@@ -73,7 +73,10 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
-import { TransferDisabledDialog } from './TransferDisabledDialog'
+import {
+  TransferDisabledDialog,
+  useTransferDisabledDialogStore
+} from './TransferDisabledDialog'
 
 enum NetworkType {
   l1 = 'l1',
@@ -547,6 +550,8 @@ export function TransferPanelMain({
   const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,
@@ -747,6 +752,20 @@ export function TransferPanelMain({
             </ExternalLink>{' '}
             and reach out in #support for assistance.
           </span>
+        )
+
+      case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
+        return (
+          <>
+            <span>This token can&apos;t be bridged over.</span>{' '}
+            <button
+              className="arb-hover underline"
+              onClick={openTransferDisabledDialog}
+            >
+              Learn more.
+            </button>
+          </>
         )
     }
   }, [errorMessage])
