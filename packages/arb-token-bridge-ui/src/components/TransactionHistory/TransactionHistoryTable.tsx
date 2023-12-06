@@ -118,7 +118,7 @@ export const TransactionHistoryTable = ({
   )
 
   const numberOfDaysString = `${numberOfDays}${
-    numberOfDays === 1 ? 'day' : 'days'
+    numberOfDays === 1 ? ' day' : ' days'
   }`
 
   if (isTxHistoryEmpty) {
