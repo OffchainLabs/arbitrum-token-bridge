@@ -59,6 +59,21 @@ function getSourceChainIdFromSourceDomain(
   return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
 }
 
+function getDestinationChainIdFromSourceDomain(
+  sourceDomain: ChainDomain,
+  chainId: ChainId
+): CCTPSupportedChainId {
+  const { isTestnet } = isNetwork(chainId)
+
+  // Deposits
+  if (sourceDomain === ChainDomain.Ethereum) {
+    return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+  }
+
+  // Withdrawals
+  return isTestnet ? ChainId.Goerli : ChainId.Ethereum
+}
+
 export function getUSDCAddresses(chainId: CCTPSupportedChainId) {
   return {
     [ChainId.Ethereum]: CommonAddress.Ethereum,
@@ -95,6 +110,10 @@ function parseTransferToMergedTransaction(
     parseInt(messageSent.sourceDomain, 10),
     chainId
   )
+  const destinationChainId = getDestinationChainIdFromSourceDomain(
+    parseInt(messageSent.sourceDomain, 10),
+    chainId
+  )
   const isDeposit =
     parseInt(messageSent.sourceDomain, 10) === ChainDomain.Ethereum
 
@@ -118,7 +137,7 @@ function parseTransferToMergedTransaction(
     depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
     isCctp: true,
     parentChainId: isDeposit ? sourceChainId : chainId,
-    childChainId: isDeposit ? chainId : sourceChainId,
+    childChainId: isDeposit ? destinationChainId : chainId,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,
