@@ -169,12 +169,12 @@ export type UseNetworksState = {
 
 export type UseNetworksSetStateParams =
   | {
-      sourceChain: ChainId
-      destinationChain?: ChainId
+      sourceChainId: ChainId
+      destinationChainId?: ChainId
     }
   | {
-      sourceChain?: ChainId
-      destinationChain: ChainId
+      sourceChainId?: ChainId
+      destinationChainId: ChainId
     }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
@@ -192,13 +192,13 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   })
 
   const setState = useCallback(
-    ({ sourceChain, destinationChain }: UseNetworksSetStateParams) => {
+    ({ sourceChainId, destinationChainId }: UseNetworksSetStateParams) => {
       const {
         sourceChainId: validSourceChainId,
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
-        sourceChainId: sourceChain,
-        destinationChainId: destinationChain
+        sourceChainId,
+        destinationChainId
       })
       setQueryParams({
         sourceChain: validSourceChainId,
