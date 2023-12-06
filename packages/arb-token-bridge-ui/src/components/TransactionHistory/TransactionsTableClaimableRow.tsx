@@ -38,14 +38,9 @@ type CommonProps = {
 
 function ClaimableRowStatus({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
-  const { isConfirmed } = useRemainingTime(tx)
   const matchingL1Tx = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
     : findMatchingL1TxForWithdrawal(tx)
-
-  if (tx.isCctp && isConfirmed) {
-    tx.status = 'Confirmed'
-  }
 
   switch (tx.status) {
     case 'pending':
