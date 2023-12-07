@@ -362,7 +362,6 @@ export const useTransactionHistory = (
   // Pause fetching after specified amount of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
-  // const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
   const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
