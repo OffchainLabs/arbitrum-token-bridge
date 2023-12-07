@@ -1,5 +1,6 @@
 import { createClient, configureChains, goerli } from 'wagmi'
 import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
+import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 import { infuraProvider } from 'wagmi/providers/infura'
@@ -132,7 +133,10 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! })]
+    [
+      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
+      publicProvider()
+    ]
   )
 
   const { wallets } = getDefaultWallets({
