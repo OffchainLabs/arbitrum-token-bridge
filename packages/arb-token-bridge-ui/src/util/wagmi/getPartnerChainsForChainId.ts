@@ -24,6 +24,9 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
   const customArbitrumSepoliaChains = customWagmiChains
     .filter(chain => chain.partnerChainID === ChainId.ArbitrumSepolia)
     .map(chain => chainToWagmiChain(chain))
+  const customArbitrumOneChains = customWagmiChains
+    .filter(chain => chain.partnerChainID === ChainId.ArbitrumOne)
+    .map(chain => chainToWagmiChain(chain))
   const customArbitrumNovaChains = customWagmiChains
     .filter(chain => chain.partnerChainID === ChainId.ArbitrumNova)
     .map(chain => chainToWagmiChain(chain))
@@ -39,7 +42,7 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumSepolia]
 
     case ChainId.ArbitrumOne:
-      return [mainnet]
+      return [mainnet, ...customArbitrumOneChains]
 
     case ChainId.ArbitrumNova:
       return [mainnet, ...customArbitrumNovaChains]
@@ -66,18 +69,22 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       const customArbitrumNovaChainsIds = customArbitrumNovaChains.map(
         chain => chain.id
       )
+      const customArbitrumOneChainsIds = customArbitrumOneChains.map(
+        chain => chain.id
+      )
 
       // Orbit chains
       if (customArbitrumGoerliChainsIds.includes(chainId)) {
         return [arbitrumGoerli]
       }
-
       if (customArbitrumSepoliaChainsIds.includes(chainId)) {
         return [arbitrumSepolia]
       }
-
       if (customArbitrumNovaChainsIds.includes(chainId)) {
         return [arbitrumNova]
+      }
+      if (customArbitrumOneChainsIds.includes(chainId)) {
+        return [arbitrumOne]
       }
 
       throw new Error(
