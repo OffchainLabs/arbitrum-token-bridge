@@ -24,6 +24,9 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
   const customArbitrumSepoliaChains = customWagmiChains
     .filter(chain => chain.partnerChainID === ChainId.ArbitrumSepolia)
     .map(chain => chainToWagmiChain(chain))
+  const customArbitrumNovaChains = customWagmiChains
+    .filter(chain => chain.partnerChainID === ChainId.ArbitrumNova)
+    .map(chain => chainToWagmiChain(chain))
 
   switch (chainId) {
     case ChainId.Ethereum:
@@ -39,7 +42,7 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [mainnet]
 
     case ChainId.ArbitrumNova:
-      return [mainnet]
+      return [mainnet, ...customArbitrumNovaChains]
 
     case ChainId.ArbitrumGoerli:
       return [goerli, xaiTestnet, ...customArbitrumGoerliChains]
@@ -60,6 +63,9 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       const customArbitrumSepoliaChainsIds = customArbitrumSepoliaChains.map(
         chain => chain.id
       )
+      const customArbitrumNovaChainsIds = customArbitrumNovaChains.map(
+        chain => chain.id
+      )
 
       // Orbit chains
       if (customArbitrumGoerliChainsIds.includes(chainId)) {
@@ -69,6 +75,11 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       if (customArbitrumSepoliaChainsIds.includes(chainId)) {
         return [arbitrumSepolia]
       }
+
+      if (customArbitrumNovaChainsIds.includes(chainId)) {
+        return [arbitrumNova]
+      }
+
       throw new Error(
         `[getPartnerChainsForChain] Unexpected chain id: ${chainId}`
       )
