@@ -190,7 +190,6 @@ export function useTransferReadiness({
       return notReady()
     }
 
-    // Native currency transfers check for SCW
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return notReady({
