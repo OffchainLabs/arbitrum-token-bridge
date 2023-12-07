@@ -454,18 +454,21 @@ export const useTransactionHistory = (
           isSameTransaction(oldTx, newTx)
         )
 
-        // if yes, then we replace it with the new transaction
-        if (foundInCache) {
-          const newTxs = oldTxsForPage.map(oldTx => {
-            if (isSameTransaction(oldTx, newTx)) {
-              return newTx
-            }
-            return oldTx
-          })
-
-          mutate(getCacheKey(i), newTxs, false)
-          break
+        if (!foundInCache) {
+          // tx does not exist
+          return
         }
+
+        // if exists, then we replace it with the new transaction
+        const newTxs = oldTxsForPage.map(oldTx => {
+          if (isSameTransaction(oldTx, newTx)) {
+            return newTx
+          }
+          return oldTx
+        })
+
+        mutate(getCacheKey(i), newTxs, false)
+        break
       }
     },
     [getCacheKey, getTransactionsForPage, page]
