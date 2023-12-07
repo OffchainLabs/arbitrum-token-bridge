@@ -21,8 +21,25 @@ export const outgoingStateToString = {
   [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
-export const getDepositStatus = (tx: Transaction) => {
-  if (tx.type !== 'deposit' && tx.type !== 'deposit-l1') return undefined
+export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
+  const transaction = tx as Transaction
+  const mergedTransaction = tx as MergedTransaction
+
+  if (
+    typeof transaction.type !== 'undefined' &&
+    transaction.type !== 'deposit' &&
+    transaction.type !== 'deposit-l1'
+  ) {
+    return undefined
+  }
+
+  if (
+    typeof mergedTransaction.isWithdrawal !== undefined &&
+    mergedTransaction.isWithdrawal
+  ) {
+    return undefined
+  }
+
   if (tx.status === 'failure') {
     return DepositStatus.L1_FAILURE
   }

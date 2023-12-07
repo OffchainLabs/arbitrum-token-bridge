@@ -1,11 +1,22 @@
 import dayjs from 'dayjs'
 import {
+  StaticJsonRpcProvider,
+  TransactionReceipt
+} from '@ethersproject/providers'
+import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+
+import {
   DepositStatus,
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { isNetwork } from '../../util/networks'
+import { ChainId, isNetwork, rpcURLs } from '../../util/networks'
 import { isCctpTransfer } from '../../hooks/useTransactionHistory'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { getDepositStatus } from '../../state/app/utils'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -76,6 +87,111 @@ export function getSourceChainId(tx: MergedTransaction) {
 
 export function getDestChainId(tx: MergedTransaction) {
   return isDeposit(tx) ? tx.childChainId : tx.parentChainId
+}
+
+export function getProvider(chainId: ChainId) {
+  const rpcUrl =
+    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
+  return new StaticJsonRpcProvider(rpcUrl)
+}
+
+export function isSameTransaction(
+  tx_1: MergedTransaction,
+  tx_2: MergedTransaction
+) {
+  return (
+    tx_1.txId === tx_2.txId &&
+    tx_1.parentChainId === tx_2.parentChainId &&
+    tx_1.childChainId === tx_2.childChainId
+  )
+}
+
+export function getTxReceipt(tx: MergedTransaction) {
+  const parentChainProvider = getProvider(tx.parentChainId)
+  const childChainProvider = getProvider(tx.childChainId)
+
+  const provider = tx.isWithdrawal ? childChainProvider : parentChainProvider
+
+  return provider.getTransactionReceipt(tx.txId)
+}
+
+function getWithdrawalStatusFromReceipt(
+  receipt: TransactionReceipt
+): WithdrawalStatus | undefined {
+  switch (receipt.status) {
+    case 0:
+      return WithdrawalStatus.FAILURE
+    case 1:
+      return WithdrawalStatus.UNCONFIRMED
+    default:
+      return undefined
+  }
+}
+
+export async function getUpdatedEthDeposit(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || tx.assetType !== AssetType.ETH || tx.isWithdrawal) {
+    return tx
+  }
+
+  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+    depositTxId: tx.txId,
+    isEthDeposit: true,
+    l1Provider: getProvider(tx.parentChainId),
+    l2Provider: getProvider(tx.childChainId)
+  })
+
+  if (!l1ToL2Msg) {
+    return tx
+  }
+
+  const status = await l1ToL2Msg?.status()
+  const isDeposited = status === EthDepositStatus.DEPOSITED
+
+  const newDeposit: MergedTransaction = {
+    ...tx,
+    status: status === 1 ? 'success' : tx.status,
+    l1ToL2MsgData: {
+      fetchingUpdate: false,
+      status: isDeposited
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : L1ToL2MessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).l2DepositTxHash,
+      // Only show `l2TxID` after the deposit is confirmed
+      l2TxID: isDeposited
+        ? (l1ToL2Msg as EthDepositMessage).l2DepositTxHash
+        : undefined
+    }
+  }
+
+  return {
+    ...newDeposit,
+    depositStatus: getDepositStatus(newDeposit)
+  }
+}
+
+export async function getUpdatedEthWithdrawal(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || tx.assetType !== AssetType.ETH || !tx.isWithdrawal) {
+    return tx
+  }
+
+  const receipt = await getTxReceipt(tx)
+
+  if (receipt) {
+    const newStatus = getWithdrawalStatusFromReceipt(receipt)
+
+    if (typeof newStatus !== 'undefined') {
+      return {
+        ...tx,
+        status: newStatus
+      }
+    }
+  }
+
+  return tx
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {

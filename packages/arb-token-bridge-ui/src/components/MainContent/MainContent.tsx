@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 import { useAccount } from 'wagmi'
@@ -9,6 +10,7 @@ import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { isTxPending } from '../TransactionHistory/helpers'
 
 export const motionDivProps = {
   layout: true,
@@ -37,6 +39,22 @@ export function MainContent() {
     useLocalStorage<boolean>(statsLocalStorageKey)
 
   const transactionHistoryProps = useTransactionHistory(address)
+  const {
+    data: { transactions },
+    updatePendingTransaction
+  } = transactionHistoryProps
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      transactions.forEach(tx => {
+        if (isTxPending(tx)) {
+          updatePendingTransaction(tx)
+        }
+      })
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [JSON.stringify(transactions), JSON.stringify(updatePendingTransaction)])
 
   return (
     <div className="flex w-full justify-center">

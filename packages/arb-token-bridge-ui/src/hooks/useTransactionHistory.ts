@@ -3,9 +3,7 @@ import useSWRImmutable from 'swr/immutable'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId, rpcURLs } from '../util/networks'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { getWagmiChain } from '../util/wagmi/getWagmiChain'
+import { ChainId } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -29,7 +27,13 @@ import {
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
-import { isTxPending } from '../components/TransactionHistory/helpers'
+import {
+  getProvider,
+  getUpdatedEthDeposit,
+  getUpdatedEthWithdrawal,
+  isSameTransaction,
+  isTxPending
+} from '../components/TransactionHistory/helpers'
 
 const PAGE_SIZE = 100
 
@@ -54,6 +58,7 @@ export type TransactionHistoryParams = {
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => void
 }
 
 function getStandardizedTimestampByTx(tx: Transfer) {
@@ -171,12 +176,6 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   throw new Error(
     'An error has occurred while fetching a transaction. Please try again later or contact the support.'
   )
-}
-
-function getProvider(chainId: ChainId) {
-  const rpcUrl =
-    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
-  return new StaticJsonRpcProvider(rpcUrl)
 }
 
 /**
@@ -418,6 +417,17 @@ export const useTransactionHistory = (
     setFetching(true)
   }
 
+  const getTransactionsForPage = useCallback(
+    (pageNumber: number) => {
+      const cacheKey = getCacheKey(pageNumber)
+      return (
+        (cache.get(unstable_serialize(cacheKey))
+          ?.data as MergedTransaction[]) || []
+      )
+    },
+    [cache, getCacheKey]
+  )
+
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
       if (!isTxPending(tx)) {
@@ -433,6 +443,56 @@ export const useTransactionHistory = (
       mutate(cacheKey, [tx, ...prevTransactions], false)
     },
     [cache, getCacheKey]
+  )
+
+  const updateCachedTransaction = useCallback(
+    (newTx: MergedTransaction) => {
+      for (let i = 0; i < page; i++) {
+        const oldTxsForPage = getTransactionsForPage(i)
+        // see if tx exist in cache for this page
+        const foundInCache = !!oldTxsForPage.find(oldTx =>
+          isSameTransaction(oldTx, newTx)
+        )
+
+        // if yes, then we replace it with the new transaction
+        if (foundInCache) {
+          const newTxs = oldTxsForPage.map(oldTx => {
+            if (isSameTransaction(oldTx, newTx)) {
+              return newTx
+            }
+            return oldTx
+          })
+
+          mutate(getCacheKey(i), newTxs, false)
+          break
+        }
+      }
+    },
+    [getCacheKey, getTransactionsForPage, page]
+  )
+
+  const updatePendingTransaction = useCallback(
+    async (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
+      const foundInCache = !!transactions.find(t => isSameTransaction(t, tx))
+
+      if (!foundInCache) {
+        // tx does not exist
+        return
+      }
+
+      if (tx.isWithdrawal) {
+        const updatedEthWithdrawal = await getUpdatedEthWithdrawal(tx)
+        updateCachedTransaction(updatedEthWithdrawal)
+      } else {
+        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
+        updateCachedTransaction(updatedEthDeposit)
+      }
+    },
+    [transactions, updateCachedTransaction]
   )
 
   useEffect(() => {
@@ -472,7 +532,8 @@ export const useTransactionHistory = (
       completed: true,
       pause,
       resume,
-      addPendingTransaction
+      addPendingTransaction,
+      updatePendingTransaction
     }
   }
 
@@ -486,6 +547,7 @@ export const useTransactionHistory = (
     error: mapError ?? error,
     pause,
     resume,
-    addPendingTransaction
+    addPendingTransaction,
+    updatePendingTransaction
   }
 }
