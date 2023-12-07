@@ -241,7 +241,7 @@ jobs:
 
       - name: Run e2e tests
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --abort-on-container-exit synpress
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -259,6 +259,9 @@ jobs:
         with:
           name: test-results
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+      
+      - name: Stop docker
+        run: docker-compose down
 
   test-e2e-success:
     name: "Test E2E Success"
