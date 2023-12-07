@@ -33,12 +33,20 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
       return (
-        <StatusBadge
-          variant="yellow"
-          aria-label={`${parentLayer} Transaction Status`}
-        >
-          Pending
-        </StatusBadge>
+        <div className="flex flex-col space-y-1">
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${parentLayer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${layer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+        </div>
       )
 
     case DepositStatus.L1_FAILURE:
@@ -185,22 +193,24 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         </ExternalLink>
       </span>
 
-      {l2TxHash && (
-        <span
-          className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-          aria-label={`${layer} Transaction Link`}
-        >
-          <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-          <NetworkImage chainId={tx.childChainId} />
-          <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+      <span
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+        aria-label={`${layer} Transaction Link`}
+      >
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+        <NetworkImage chainId={tx.childChainId} />
+        <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+        {l2TxHash ? (
           <ExternalLink
             href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
           </ExternalLink>
-        </span>
-      )}
+        ) : (
+          <>Pending</>
+        )}
+      </span>
     </div>
   )
 }
