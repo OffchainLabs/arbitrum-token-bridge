@@ -174,6 +174,8 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
+    outputs:
+      result: ${{ steps.test-e2e.outputs.result }}
 
     steps:
       - name: Checkout
@@ -255,11 +257,11 @@ jobs:
     if: needs.check-is-hotfix.outputs.is_hotfix == 'false'
     steps:
       - name: E2E Succeeded
-        if: needs.test-e2e.result == 'success'
+        if: needs.test-e2e.outputs.result == 'success'
         run: echo "nice"
         
       - name: E2E Failed
-        if: needs.test-e2e.result != 'success'
+        if: needs.test-e2e.outputs.result != 'success'
         run: exit 1
 
   clean-up:
