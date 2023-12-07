@@ -174,8 +174,8 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-      outputs:
-        result: ${{ steps.test-e2e.outcome }}
+    outputs:
+      result: ${{ steps.test-e2e.outcome }}
 
     steps:
       - name: Checkout
