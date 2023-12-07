@@ -18,8 +18,8 @@ const chainQueryParams = [
   'arbitrum-sepolia',
   'stylus-testnet',
   'xai-testnet',
-  'local',
-  'arbitrum-local'
+  'localhost',
+  'arbitrum-localhost'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -64,10 +64,10 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'arbitrum-sepolia'
 
     case ChainId.Local:
-      return 'local'
+      return 'localhost'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-local'
+      return 'arbitrum-localhost'
 
     default:
       const customChains = getCustomChainsFromLocalStorage()
@@ -116,10 +116,10 @@ export function getChainForChainKeyQueryParam(
     case 'xai-testnet':
       return customChains.xaiTestnet
 
-    case 'local':
+    case 'localhost':
       return customChains.localL1Network
 
-    case 'arbitrum-local':
+    case 'arbitrum-localhost':
       return customChains.localL2Network
 
     default:

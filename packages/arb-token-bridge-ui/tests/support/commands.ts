@@ -28,6 +28,16 @@ function shouldChangeNetwork(networkName: NetworkName) {
     })
 }
 
+function getSourceChainFromNetworkName(networkName: NetworkName) {
+  return (
+    {
+      'custom-localhost': 'localhost',
+      mainnet: 'ethereum',
+      'Sepolia test network': 'sepolia'
+    }[networkName] || networkName
+  )
+}
+
 export function login({
   networkType,
   networkName,
@@ -39,19 +49,19 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
+  // if networkName is not specified we connect to default network from config
+  const network =
+    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+  const networkNameWithDefault = networkName ?? network.networkName
+
   function _startWebApp() {
-    startWebApp(url, query)
+    const sourceChain = getSourceChainFromNetworkName(networkNameWithDefault)
+    startWebApp(url, { ...query, sourceChain })
   }
 
-  // if networkName is not specified we connect to default network from config
-  networkName =
-    networkName ||
-    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
-      .networkName
-
-  shouldChangeNetwork(networkName).then(changeNetwork => {
+  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkName).then(() => {
+      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
     } else {
