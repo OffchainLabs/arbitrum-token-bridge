@@ -739,8 +739,8 @@ export function TransferPanelMain({
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     setNetworks({
-      sourceChain: networks.destinationChain.id,
-      destinationChain: networks.sourceChain.id
+      sourceChainId: networks.destinationChain.id,
+      destinationChainId: networks.sourceChain.id
     })
 
     actions.app.setIsDepositMode(!app.isDepositMode)
@@ -916,7 +916,7 @@ export function TransferPanelMain({
               return
             }
 
-            setNetworks({ sourceChain: network.id })
+            setNetworks({ sourceChainId: network.id })
           }
         },
         to: {
@@ -937,7 +937,7 @@ export function TransferPanelMain({
               return
             }
 
-            setNetworks({ destinationChain: network.id })
+            setNetworks({ destinationChainId: network.id })
           }
         }
       }
@@ -960,7 +960,7 @@ export function TransferPanelMain({
             return
           }
 
-          setNetworks({ sourceChain: network.id })
+          setNetworks({ sourceChainId: network.id })
         }
       },
       to: {
@@ -979,7 +979,7 @@ export function TransferPanelMain({
             return
           }
 
-          setNetworks({ destinationChain: network.id })
+          setNetworks({ destinationChainId: network.id })
         }
       }
     }
