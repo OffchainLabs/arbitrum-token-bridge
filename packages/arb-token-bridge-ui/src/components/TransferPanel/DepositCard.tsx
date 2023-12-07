@@ -14,13 +14,15 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositL1TxStatus({
   tx
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const [{ sourceChain }] = useNetworks()
+  const [networks] = useNetworks()
+  const { parentChain } = useNetworksRelationship(networks)
 
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
@@ -33,7 +35,7 @@ export function DepositL1TxStatus({
     case DepositStatus.EXPIRED:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(sourceChain.id)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(parentChain.id)}/tx/${tx.txId}`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -51,7 +53,8 @@ export function DepositL2TxStatus({
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const [{ destinationChain }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
@@ -61,7 +64,7 @@ export function DepositL2TxStatus({
     case DepositStatus.L2_SUCCESS:
       return (
         <ExternalLink
-          href={`${getExplorerUrl(destinationChain.id)}/tx/${
+          href={`${getExplorerUrl(childChain.id)}/tx/${
             tx.l1ToL2MsgData?.l2TxID
           }`}
           className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
@@ -91,7 +94,8 @@ export function DepositCardContainer({
   const {
     layout: { isTransferPanelVisible }
   } = useAppContextState()
-  const [{ destinationChain }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   const bgClassName = useMemo(() => {
     switch (tx.depositStatus) {
@@ -111,7 +115,7 @@ export function DepositCardContainer({
   }, [tx])
 
   const borderColor =
-    destinationChain.id === ChainId.ArbitrumNova
+    childChain.id === ChainId.ArbitrumNova
       ? 'border-arb-nova-primary'
       : 'border-arb-one-primary'
 
@@ -122,7 +126,7 @@ export function DepositCardContainer({
       <div className="relative flex flex-col items-center gap-6 lg:flex-row">
         {/* Logo watermark */}
         <Image
-          src={getNetworkLogo(destinationChain.id)}
+          src={getNetworkLogo(childChain.id)}
           className="absolute left-0 top-[1px] z-10 mr-4 h-8 max-h-[90px] w-auto p-[2px] lg:relative lg:left-[-30px] lg:top-0 lg:h-[4.5rem] lg:w-[initial] lg:max-w-[90px] lg:translate-x-[0.5rem] lg:scale-[1.5] lg:opacity-[60%]"
           alt="Deposit"
           height={90}

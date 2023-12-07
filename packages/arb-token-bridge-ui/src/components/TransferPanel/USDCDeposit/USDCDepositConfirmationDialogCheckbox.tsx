@@ -2,7 +2,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
-import { useNetworks } from '../../../hooks/useNetworks'
+import { useChainId } from 'wagmi'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -19,8 +19,8 @@ export function USDCDepositConfirmationDialogCheckbox({
     false
   ])
   const externalLinkClassnames = 'arb-hover text-blue-link underline'
-  const [{ sourceChain }] = useNetworks()
-  const { isTestnet } = isNetwork(sourceChain.id)
+  const chainId = useChainId()
+  const { isTestnet } = isNetwork(chainId)
 
   function linksOnClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
     event.stopPropagation()

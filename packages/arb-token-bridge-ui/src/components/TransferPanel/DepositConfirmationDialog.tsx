@@ -16,6 +16,7 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function DepositConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -23,9 +24,10 @@ export function DepositConfirmationDialog(
   const {
     app: { selectedToken }
   } = useAppState()
-  const [{ sourceChain, destinationChain }] = useNetworks()
-  const destinationNetworkName = getNetworkName(destinationChain.id)
-  const { isArbitrumOne } = isNetwork(destinationChain.id)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const destinationNetworkName = getNetworkName(childChain.id)
+  const { isArbitrumOne } = isNetwork(parentChain.id)
 
   const tokenSymbol = selectedToken?.symbol as NonCanonicalTokenNames
   const tokenAddress = selectedToken?.address as NonCanonicalTokenAddresses
@@ -37,8 +39,8 @@ export function DepositConfirmationDialog(
 
   const fastBridges = [
     ...getFastBridges({
-      from: sourceChain.id,
-      to: destinationChain.id,
+      from: parentChain.id,
+      to: childChain.id,
       tokenSymbol,
       amount: props.amount
     })

@@ -21,6 +21,7 @@ import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 type Props = UseDialogProps & {
   amount: string
@@ -29,10 +30,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const [{ sourceChain, destinationChain }] = useNetworks()
-  const { isTestnet } = isNetwork(sourceChain.id)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { isTestnet } = isNetwork(parentChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const destinationNetworkName = getNetworkName(destinationChain.id)
+  const destinationNetworkName = getNetworkName(childChain.id)
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -55,8 +57,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: sourceChain.id,
-      to: destinationChain.id,
+      from: parentChain.id,
+      to: childChain.id,
       fromTokenAddress: isTestnet
         ? CommonAddress.Goerli.USDC
         : CommonAddress.Ethereum.USDC,

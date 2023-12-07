@@ -7,17 +7,13 @@ import { useActions, useAppState } from '../../state'
 import { useInterval } from '../common/Hooks'
 import { useCctpState, useUpdateCctpTransactions } from '../../state/cctpState'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function PendingTransactionsUpdater(): JSX.Element {
   const actions = useActions()
-  const [
-    {
-      sourceChain,
-      sourceChainProvider,
-      destinationChain,
-      destinationChainProvider
-    }
-  ] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { updateCctpTransactions } = useUpdateCctpTransactions()
 
   const {
@@ -28,17 +24,15 @@ export function PendingTransactionsUpdater(): JSX.Element {
 
   useEffect(() => {
     resetTransfers()
-  }, [address, sourceChain.id, destinationChain.id, resetTransfers])
+  }, [address, childChain.id, parentChain.id, resetTransfers])
 
   const getTransactionReceipt = useCallback(
     (tx: Transaction) => {
       const provider =
-        txnTypeToLayer(tx.type) === 2
-          ? destinationChainProvider
-          : sourceChainProvider
+        txnTypeToLayer(tx.type) === 2 ? childChainProvider : parentChainProvider
       return provider.getTransactionReceipt(tx.txID)
     },
-    [destinationChainProvider, sourceChainProvider]
+    [childChainProvider, parentChainProvider]
   )
 
   const checkAndUpdatePendingTransactions = useCallback(() => {

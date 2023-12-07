@@ -152,17 +152,18 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 

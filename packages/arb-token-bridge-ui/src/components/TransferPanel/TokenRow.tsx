@@ -93,6 +93,7 @@ export function TokenRow({
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
 
+  const chainId = isDepositMode ? parentChain.id : childChain.id
   const isSmallScreen = useMedia('(max-width: 419px)')
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -100,23 +101,23 @@ export function TokenRow({
     if (token) {
       return sanitizeTokenName(token.name, {
         erc20L1Address: token.address,
-        chainId: networks.sourceChain.id
+        chainId
       })
     }
 
     return nativeCurrency.name
-  }, [token, nativeCurrency.name, networks.sourceChain.id])
+  }, [token, nativeCurrency.name, chainId])
 
   const tokenSymbol = useMemo(() => {
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
-        chainId: networks.sourceChain.id
+        chainId
       })
     }
 
     return nativeCurrency.symbol
-  }, [token, nativeCurrency.symbol, networks.sourceChain.id])
+  }, [token, nativeCurrency.symbol, chainId])
 
   const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
   const tokenIsArbOneNativeUSDC = useMemo(
@@ -129,17 +130,17 @@ export function TokenRow({
   )
 
   const {
-    eth: [ethSourceChainBalance],
-    erc20: [erc20SourceChainBalances]
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
   } = useBalance({
-    provider: networks.sourceChainProvider,
+    provider: isDepositMode ? parentChainProvider : childChainProvider,
     walletAddress
   })
   const {
-    eth: [nativeDestinationChainBalance],
-    erc20: []
+    eth: [nativeL2Balance],
+    erc20: [erc20L2Balances]
   } = useBalance({
-    provider: networks.destinationChainProvider,
+    provider: isDepositMode ? childChainProvider : parentChainProvider,
     walletAddress
   })
 
@@ -155,32 +156,30 @@ export function TokenRow({
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode
-          ? erc20SourceChainBalances?.[nativeCurrency.address]
-          : nativeDestinationChainBalance
+          ? erc20L1Balances?.[nativeCurrency.address]
+          : nativeL2Balance
       }
 
-      return ethSourceChainBalance
+      return ethL1Balance
     }
 
     if (isDepositMode) {
-      return erc20SourceChainBalances?.[token.address.toLowerCase()]
+      return erc20L1Balances?.[token.address.toLowerCase()]
     }
 
     if (!token.l2Address) {
       return constants.Zero
     }
 
-    return (
-      erc20SourceChainBalances?.[token.l2Address.toLowerCase()] ??
-      constants.Zero
-    )
+    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
   }, [
     token,
     isDepositMode,
+    erc20L2Balances,
     nativeCurrency,
-    ethSourceChainBalance,
-    erc20SourceChainBalances,
-    nativeDestinationChainBalance
+    ethL1Balance,
+    erc20L1Balances,
+    nativeL2Balance
   ])
 
   const isArbitrumToken = useMemo(() => {
@@ -275,7 +274,9 @@ export function TokenRow({
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
   const arbitrumTokenTooltipContent = useMemo(() => {
-    const networkName = getNetworkName(networks.sourceChain.id)
+    const networkName = getNetworkName(
+      isDepositMode ? parentChain.id : childChain.id
+    )
 
     return (
       <span>
@@ -283,7 +284,7 @@ export function TokenRow({
         fake tokens trying to impersonate it.
       </span>
     )
-  }, [networks.sourceChain.id])
+  }, [childChain.id, isDepositMode, parentChain.id])
 
   const tokenBalanceContent = useMemo(() => {
     if (!tokenIsAddedToTheBridge) {
@@ -389,12 +390,12 @@ export function TokenRow({
                   <>
                     {isL2NativeToken ? (
                       <BlockExplorerTokenLink
-                        chain={networks.destinationChain}
+                        chain={childChain}
                         address={token.address}
                       />
                     ) : (
                       <BlockExplorerTokenLink
-                        chain={networks.sourceChain}
+                        chain={parentChain}
                         address={token.address}
                       />
                     )}
@@ -403,7 +404,7 @@ export function TokenRow({
                   <>
                     {tokenHasL2Address ? (
                       <BlockExplorerTokenLink
-                        chain={networks.destinationChain}
+                        chain={childChain}
                         address={token.l2Address}
                       />
                     ) : (
@@ -419,7 +420,7 @@ export function TokenRow({
               {isL2NativeToken ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
-                    networks.destinationChain.id
+                    childChain.id
                   )} and can’t be bridged.`}
                 </span>
               ) : (
@@ -435,7 +436,7 @@ export function TokenRow({
               <div className="flex w-full justify-between">
                 {isDepositMode && (
                   <BlockExplorerTokenLink
-                    chain={networks.sourceChain}
+                    chain={parentChain}
                     address={nativeCurrency.address}
                   />
                 )}

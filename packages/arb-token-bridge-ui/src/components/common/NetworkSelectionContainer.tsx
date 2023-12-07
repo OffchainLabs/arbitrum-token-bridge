@@ -3,7 +3,7 @@ import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useWindowSize } from 'react-use'
-import { useSwitchNetwork } from 'wagmi'
+import { useChainId, useSwitchNetwork } from 'wagmi'
 
 import {
   ChainId,
@@ -14,23 +14,22 @@ import {
 } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
-import { useNetworks } from '../../hooks/useNetworks'
 
 export const NetworkSelectionContainer = ({
   children
 }: {
   children: React.ReactNode
 }) => {
-  const [{ sourceChain }] = useNetworks()
+  const chainId = useChainId()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
 
   const supportedNetworks = getSupportedNetworks(
-    sourceChain.id,
+    chainId,
     !!isTestnetMode
-  ).filter(chainId => chainId !== sourceChain.id)
+  ).filter(networkChainId => networkChainId !== chainId)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { switchNetwork } = useSwitchNetwork()

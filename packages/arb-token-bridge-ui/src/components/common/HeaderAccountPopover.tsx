@@ -14,10 +14,10 @@ import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
 import {
   useAccount,
+  useChainId,
   useDisconnect,
   useEnsAvatar,
   useEnsName,
-  useNetwork,
   useProvider
 } from 'wagmi'
 
@@ -29,7 +29,6 @@ import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useNetworks } from '../../hooks/useNetworks'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -79,7 +78,7 @@ export function HeaderAccountPopover({
   const l1Provider = useProvider({ chainId: 1 })
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
-  const [{ sourceChain }] = useNetworks()
+  const chainId = useChainId()
   const [, copyToClipboard] = useCopyToClipboard()
 
   const { openTransactionHistoryPanel, setTransactionHistoryTab } =
@@ -215,7 +214,7 @@ export function HeaderAccountPopover({
             {/* Explorer button */}
             {isCorrectNetworkConnected && (
               <ExternalLink
-                href={`${getExplorerUrl(sourceChain.id)}/address/${address}`}
+                href={`${getExplorerUrl(chainId)}/address/${address}`}
                 className={headerItemsClassName}
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white" />

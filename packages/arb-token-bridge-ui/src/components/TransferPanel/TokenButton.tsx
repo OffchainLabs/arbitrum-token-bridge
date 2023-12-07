@@ -17,11 +17,13 @@ export function TokenButton(): JSX.Element {
     app: {
       selectedToken,
       arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
+      arbTokenBridgeLoaded,
+      isDepositMode
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
 
   const [tokenToImport, setTokenToImport] = useState<string>()
   const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
@@ -50,6 +52,7 @@ export function TokenButton(): JSX.Element {
     selectedToken?.address,
     arbTokenBridgeLoaded
   ])
+  const chainId = isDepositMode ? parentChain.id : childChain.id
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -58,9 +61,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chainId: networks.sourceChain.id
+      chainId
     })
-  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
+  }, [selectedToken, chainId, nativeCurrency.symbol])
 
   function closeWithReset() {
     setTokenToImport(undefined)

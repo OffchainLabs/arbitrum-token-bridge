@@ -19,14 +19,17 @@ import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfir
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const [{ sourceChain, destinationChain }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { isTestnet } = isNetwork(sourceChain.id)
-  const destinationNetworkName = getNetworkName(destinationChain.id)
+  const { isTestnet } = isNetwork(childChain.id)
+  const destinationNetworkName = getNetworkName(parentChain.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
   useEffect(() => {
@@ -37,8 +40,8 @@ export function USDCWithdrawalConfirmationDialog(
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: sourceChain.id,
-      to: destinationChain.id,
+      from: childChain.id,
+      to: parentChain.id,
       fromTokenAddress: isTestnet
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,

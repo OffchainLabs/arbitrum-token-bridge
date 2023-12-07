@@ -29,6 +29,7 @@ const SectionTitle = ({
 
 export const SettingsDialog = () => {
   const [{ sourceChain }] = useNetworks()
+
   const isConnectedToTestnet = isNetwork(sourceChain.id).isTestnet
 
   const [{ settingsOpen }, setQueryParams] = useArbQueryParams()

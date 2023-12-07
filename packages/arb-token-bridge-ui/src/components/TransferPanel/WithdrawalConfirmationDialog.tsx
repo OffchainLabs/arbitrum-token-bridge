@@ -54,22 +54,23 @@ export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
   const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
 
   const { parentLayer } = useChainLayers()
-  const networkName = getNetworkName(networks.destinationChain.id)
+  const networkName = getNetworkName(parentChain.id)
 
   const {
     app: { selectedToken }
   } = useAppState()
 
   const nativeCurrency = useNativeCurrency({
-    provider: networks.sourceChainProvider
+    provider: childChainProvider
   })
 
   const fastBridges = getFastBridges({
-    from: networks.sourceChain.id,
-    to: networks.destinationChain.id,
+    from: childChain.id,
+    to: parentChain.id,
     tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
     amount: props.amount
   })
@@ -94,7 +95,7 @@ export function WithdrawalConfirmationDialog(
     }`
   }
 
-  const { isArbitrumOne } = isNetwork(networks.sourceChain.id)
+  const { isArbitrumOne } = isNetwork(childChain.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -203,7 +204,7 @@ export function WithdrawalConfirmationDialog(
                         confirmationHours,
                         props.amount,
                         selectedToken?.symbol || nativeCurrency.symbol,
-                        getNetworkName(networks.sourceChain.id)
+                        getNetworkName(childChain.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-ocl-blue px-4 py-2 text-ocl-blue"

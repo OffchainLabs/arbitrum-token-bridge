@@ -4,7 +4,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { useSigner } from 'wagmi'
 import { useAppState } from '../../state'
@@ -54,10 +54,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
+
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
-  const gasPrice = useGasPrice({ provider: networks.sourceChainProvider })
+  const provider = isDepositMode ? parentChainProvider : childChainProvider
+  const gasPrice = useGasPrice({ provider })
+  const chainId = useChainId()
   const { data: signer } = useSigner({
-    chainId: networks.sourceChain.id
+    chainId
   })
 
   const [checked, setChecked] = useState(false)
@@ -93,7 +96,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           gasEstimate = constants.Zero
         } else {
           gasEstimate = await approveCctpEstimateGas(
-            networks.sourceChain.id,
+            chainId,
             constants.MaxUint256,
             signer
           )
@@ -121,17 +124,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     signer,
     walletAddress,
     token?.address,
-    networks.sourceChain.id,
     parentChainProvider,
-    childChainProvider
+    childChainProvider,
+    chainId
   ])
 
   useEffect(() => {
     const getContractAddress = async function () {
       if (isCctp) {
-        setContractAddress(
-          getContracts(networks.sourceChain.id)?.tokenMessengerContractAddress
-        )
+        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
         return
       }
       if (!token?.address) {
@@ -157,12 +158,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     }
     getContractAddress()
   }, [
+    chainId,
     childChainProvider,
     isCctp,
     isDepositMode,
-    networks.destinationChainProvider,
-    networks.sourceChain.id,
-    networks.sourceChainProvider,
     parentChainProvider,
     token?.address
   ])
@@ -213,9 +212,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(networks.sourceChain.id)}/token/${
-                token?.address
-              }`}
+              href={`${getExplorerUrl(chainId)}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}
@@ -234,9 +231,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               permission to the{' '}
               <ExternalLink
                 className="text-blue-link underline"
-                href={`${getExplorerUrl(
-                  networks.sourceChain.id
-                )}/address/${contractAddress}`}
+                href={`${getExplorerUrl(chainId)}/address/${contractAddress}`}
                 onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   event.stopPropagation()
                 }}
