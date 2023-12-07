@@ -261,7 +261,7 @@ jobs:
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
       
       - name: Stop docker
-        run: docker-compose down
+        run: docker-compose down -f docker-compose.yml
 
   test-e2e-success:
     name: "Test E2E Success"
