@@ -174,8 +174,7 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-    outputs:
-      result: ${{ steps.test-e2e.outputs.result }}
+      result: ${{ steps.test-e2e.outcome }}
 
     steps:
       - name: Checkout
@@ -242,6 +241,7 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Run e2e tests
+        id: test-e2e
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
         env:
