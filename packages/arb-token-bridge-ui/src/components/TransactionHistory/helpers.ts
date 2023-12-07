@@ -5,6 +5,7 @@ import {
   WithdrawalStatus
 } from '../../state/app/state'
 import { isNetwork } from '../../util/networks'
+import { isCctpTransfer } from '../../hooks/useTransactionHistory'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -36,6 +37,9 @@ export function isTxPending(tx: MergedTransaction) {
 }
 
 export function isTxClaimable(tx: MergedTransaction) {
+  if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
+    return true
+  }
   if (isDeposit(tx)) {
     return false
   }

@@ -26,6 +26,7 @@ import {
 } from '../util/withdrawals/helpers'
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
+import { useCctpFetching } from '../state/cctpState'
 
 const PAGE_SIZE = 100
 
@@ -37,8 +38,13 @@ export type Withdrawal =
   | EthWithdrawal
 
 type DepositOrWithdrawal = Deposit | Withdrawal
+type Transfer = DepositOrWithdrawal | MergedTransaction
 
-function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
+function getStandardizedTimestampByTx(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return (tx.createdAt ?? 0) / 1_000
+  }
+
   if (isDeposit(tx)) {
     return tx.timestampCreated ?? 0
   }
@@ -50,10 +56,7 @@ function getStandardizedTimestampByTx(tx: DepositOrWithdrawal) {
   return getStandardizedTimestamp(tx.timestamp ?? '0')
 }
 
-function sortByTimestampDescending(
-  a: DepositOrWithdrawal,
-  b: DepositOrWithdrawal
-) {
+function sortByTimestampDescending(a: Transfer, b: Transfer) {
   return getStandardizedTimestampByTx(a) > getStandardizedTimestampByTx(b)
     ? -1
     : 1
@@ -98,11 +101,17 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
 }
 
-async function transformTransaction(
-  tx: DepositOrWithdrawal
-): Promise<MergedTransaction> {
+export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
+  return !!(tx as MergedTransaction).isCctp
+}
+
+async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
+
+  if (isCctpTransfer(tx)) {
+    return tx
+  }
 
   if (isDeposit(tx)) {
     return transformDeposit(
@@ -157,7 +166,9 @@ function getProvider(chainId: ChainId) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
+const useTransactionHistoryWithoutStatuses = (
+  address: `0x${string}` | undefined
+) => {
   const [deposits, setDeposits] = useState<Deposit[][]>([])
   const [withdrawals, setWithdrawals] = useState<Withdrawal[][]>([])
 
@@ -166,6 +177,42 @@ const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
 
   const [depositsLoading, setDepositsLoading] = useState(true)
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
+
+  const cctpTransfersMainnet = useCctpFetching({
+    walletAddress: address,
+    l1ChainId: ChainId.Ethereum,
+    l2ChainId: ChainId.ArbitrumOne,
+    pageNumber: 0,
+    pageSize: 1000,
+    type: 'all'
+  })
+
+  const cctpTransfersTestnet = useCctpFetching({
+    walletAddress: address,
+    l1ChainId: ChainId.Goerli,
+    l2ChainId: ChainId.ArbitrumGoerli,
+    pageNumber: 0,
+    pageSize: 1000,
+    type: 'all'
+  })
+
+  // TODO: Clean up this logic when introducing testnet/mainnet split
+  const combinedCctpTransfers = [
+    ...(cctpTransfersMainnet.deposits?.completed || []),
+    ...(cctpTransfersMainnet.withdrawals?.completed || []),
+    ...(cctpTransfersTestnet.deposits?.completed || []),
+    ...(cctpTransfersTestnet.withdrawals?.completed || []),
+    ...(cctpTransfersMainnet.deposits?.pending || []),
+    ...(cctpTransfersMainnet.withdrawals?.pending || []),
+    ...(cctpTransfersTestnet.deposits?.pending || []),
+    ...(cctpTransfersTestnet.withdrawals?.pending || [])
+  ]
+
+  const cctpLoading =
+    cctpTransfersMainnet.isLoadingDeposits ||
+    cctpTransfersMainnet.isLoadingWithdrawals ||
+    cctpTransfersTestnet.isLoadingDeposits ||
+    cctpTransfersTestnet.isLoadingWithdrawals
 
   const shouldFetchNextPageForChainPair = useCallback(
     (chainPairIndex: number, direction: 'deposits' | 'withdrawals') => {
@@ -276,13 +323,13 @@ const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
   }, [withdrawalsData])
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [...deposits, ...withdrawals]
+  const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
     .flat()
     .sort(sortByTimestampDescending)
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading,
+    loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError
   }
 }
@@ -291,7 +338,7 @@ const useTransactionHistoryWithoutStatuses = (address: string | undefined) => {
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useTransactionHistory = (address: string | undefined) => {
+export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   // max number of transactions mapped in parallel, for the same chain pair
   // we can batch more than MAX_BATCH_SIZE at a time if they use a different RPC
   // MAX_BATCH_SIZE means max number of transactions in a batch for a chain pair
