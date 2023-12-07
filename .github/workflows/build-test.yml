@@ -252,7 +252,7 @@ jobs:
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Copy test results from docker container volumes
-        run: docker cp synpress-test:/app/tests/e2e/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/
+        run: docker cp synpress-test:/app/tests/e2e/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Upload test results
         uses: actions/upload-artifact@v3
