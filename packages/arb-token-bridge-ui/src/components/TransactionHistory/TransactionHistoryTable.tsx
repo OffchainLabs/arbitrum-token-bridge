@@ -174,7 +174,7 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className={twMerge('relative h-full flex-col rounded-lg', className)}>
+    <div className={twMerge('h-full flex-col rounded-lg', className)}>
       <div className="bg-white px-8 pt-4">
         {loading ? (
           <div className="flex animate-pulse space-x-2">
