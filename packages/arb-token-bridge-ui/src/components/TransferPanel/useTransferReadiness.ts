@@ -186,10 +186,11 @@ export function useTransferReadiness({
       return notReady()
     }
 
-    if (isTransferring || isSwitchingL2Chain || destinationAddressError) {
+    if (isTransferring || isSwitchingL2Chain) {
       return notReady()
     }
 
+    // Native currency transfers check for SCW
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return notReady({
@@ -198,6 +199,11 @@ export function useTransferReadiness({
             { asset: nativeCurrency.symbol }
           )
       })
+    }
+
+    // Check if destination address is valid for ERC20 transfers
+    if (destinationAddressError) {
+      return notReady()
     }
 
     const sourceChain = isDepositMode ? l1Network.name : l2Network.name
