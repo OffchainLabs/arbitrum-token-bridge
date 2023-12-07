@@ -406,7 +406,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
           latestTransaction.createdAt <= maxTimestamp
         ) {
           // if yes, we pause
-          // we also increase pause count for so the next iteration can calculate max timestamp
+          // we also increment pause count so the next iteration can calculate max timestamp
           pause()
           return prevPauseCount + 1
         }
