@@ -93,6 +93,11 @@ class TokenDisabledError extends Error {
   }
 }
 
+// https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L76
+function percentIncrease(num: BigNumber, increase: BigNumber): BigNumber {
+  return num.add(num.mul(increase).div(100))
+}
+
 export interface TokenBridgeParams {
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
@@ -190,12 +195,20 @@ export const useArbTokenBridge = (
 
     const ethBridger = await EthBridger.fromProvider(l2.provider)
 
+    const depositRequest = await ethBridger.getDepositRequest({
+      amount,
+      from: walletAddress
+    })
+
     let tx: L1EthDepositTransaction
 
     try {
+      const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
+
       tx = await ethBridger.deposit({
         amount,
-        l1Signer
+        l1Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -453,9 +466,12 @@ export const useArbTokenBridge = (
         amount
       })
 
+      const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
+
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
-        l1Signer
+        l1Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
