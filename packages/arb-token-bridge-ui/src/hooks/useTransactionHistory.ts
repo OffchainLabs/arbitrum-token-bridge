@@ -1,3 +1,4 @@
+import { mutate, useSWRConfig, unstable_serialize } from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
@@ -28,6 +29,7 @@ import {
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
+import { isTxPending } from '../components/TransactionHistory/helpers'
 
 const PAGE_SIZE = 100
 
@@ -40,6 +42,19 @@ export type Withdrawal =
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 type Transfer = DepositOrWithdrawal | MergedTransaction
+
+export type TransactionHistoryParams = {
+  data: {
+    transactions: MergedTransaction[]
+    numberOfDays: number
+  }
+  loading: boolean
+  completed: boolean
+  error: unknown
+  pause: () => void
+  resume: () => void
+  addPendingTransaction: (tx: MergedTransaction) => void
+}
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -339,23 +354,33 @@ const useTransactionHistoryWithoutStatuses = (
  * Maps additional info to previously fetches transaction history, starting with the earliest data.
  * This is done in small batches to safely meet RPC limits.
  */
-export const useTransactionHistory = (address: `0x${string}` | undefined) => {
+export const useTransactionHistory = (
+  address: `0x${string}` | undefined
+): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
   // Pause fetching after specified amount of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
-  const [transactions, setTransactions] = useState<MergedTransaction[]>([])
+  // const [transactions, setTransactions] = useState<MergedTransaction[]>([])
   const [page, setPage] = useState(0)
   const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
+  const { cache } = useSWRConfig()
+
+  const getCacheKey = useCallback(
+    (pageNumber: number) => {
+      return address
+        ? (['complete_tx_list', address, pageNumber, data] as const)
+        : null
+    },
+    [address, data]
+  )
 
   const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading && fetching
-      ? ['complete_tx_list', address, page, data]
-      : null,
+    !loading && fetching ? getCacheKey(page) : null,
     ([, , _page, _data]) => {
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
@@ -365,6 +390,19 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
       )
     }
   )
+
+  const transactions: MergedTransaction[] = useMemo(() => {
+    const allTransactions: MergedTransaction[] = []
+
+    for (let i = 0; i < page; i++) {
+      const txsForPage = cache.get(unstable_serialize(getCacheKey(i)))
+        ?.data as MergedTransaction[]
+
+      allTransactions.push(...txsForPage)
+    }
+
+    return allTransactions
+  }, [page, cache, getCacheKey])
 
   const latestTransactionDaysFromNow = useMemo(() => {
     return dayjs().diff(
@@ -381,13 +419,25 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
     setFetching(true)
   }
 
+  const addPendingTransaction = useCallback(
+    (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
+      const cacheKey = getCacheKey(0)
+
+      const prevTransactions =
+        (cache.get(unstable_serialize(cacheKey))
+          ?.data as MergedTransaction[]) || []
+
+      mutate(cacheKey, [tx, ...prevTransactions], false)
+    },
+    [cache, getCacheKey]
+  )
+
   useEffect(() => {
     if (mapData) {
-      setTransactions(prevTransactions => {
-        const newTransactions = mapData.filter(Boolean) as MergedTransaction[]
-        return [...prevTransactions, ...newTransactions]
-      })
-
       setPauseCount(prevPauseCount => {
         const latestTransaction = mapData[mapData.length - 1]
         const maxTimestamp = dayjs()
@@ -417,25 +467,26 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
   if (loading || error) {
     return {
-      data: { transactions: [], total: undefined, numberOfDays: 0 },
+      data: { transactions: [], numberOfDays: 0 },
       loading,
       error,
       completed: true,
       pause,
-      resume
+      resume,
+      addPendingTransaction
     }
   }
 
   return {
     data: {
       transactions,
-      total: data.length,
       numberOfDays: latestTransactionDaysFromNow
     },
     loading: fetching,
     completed: transactions.length === data.length,
     error: mapError ?? error,
     pause,
-    resume
+    resume,
+    addPendingTransaction
   }
 }

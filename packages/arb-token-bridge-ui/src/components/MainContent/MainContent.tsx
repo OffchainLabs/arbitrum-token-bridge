@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
+import { useAccount } from 'wagmi'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
@@ -7,6 +8,7 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 export const motionDivProps = {
   layout: true,
@@ -25,6 +27,7 @@ export const motionDivProps = {
 }
 
 export function MainContent() {
+  const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransactionHistoryPanelVisible }
@@ -32,6 +35,8 @@ export function MainContent() {
 
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
+
+  const transactionHistoryProps = useTransactionHistory(address)
 
   return (
     <div className="flex w-full justify-center">
@@ -54,7 +59,7 @@ export function MainContent() {
         onClose={closeTransactionHistoryPanel}
         scrollable={false}
       >
-        <TransactionHistory />
+        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
       </SidePanel>
 
       {/* Settings panel */}

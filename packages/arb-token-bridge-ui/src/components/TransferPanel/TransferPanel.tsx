@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
@@ -25,11 +26,7 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import {
-  TransactionHistoryTab,
-  useAppContextActions,
-  useAppContextState
-} from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
@@ -62,13 +59,9 @@ import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getUsdcTokenAddressFromSourceChainId,
-  useCctpFetching
-} from '../../state/cctpState'
+import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -81,6 +74,7 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -176,17 +170,9 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { setPendingTransfer } = useCctpFetching({
-    l1ChainId: l1Network.id,
-    l2ChainId: l2Network.id,
-    walletAddress,
-    pageSize: 10,
-    pageNumber: 0,
-    type: 'all'
-  })
-
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
+  const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const { isArbitrumNova } = isNetwork(l2Network.id)
 
@@ -678,7 +664,7 @@ export function TransferPanel() {
         asset: 'USDC',
         assetType: AssetType.ERC20,
         blockNum: null,
-        createdAt: getStandardizedTimestamp(new Date().toString()),
+        createdAt: dayjs().valueOf(),
         direction: isDeposit ? 'deposit' : 'withdraw',
         isWithdrawal: !isDeposit,
         resolvedAt: null,
@@ -715,18 +701,7 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        setPendingTransfer(
-          {
-            txId: depositForBurnTx.hash,
-            blockNum: depositTxReceipt.blockNumber,
-            status: 'Unconfirmed',
-            cctpData: {
-              attestationHash,
-              messageBytes
-            }
-          },
-          isDeposit ? 'deposit' : 'withdrawal'
-        )
+        addPendingTransaction(newTransfer)
       }
     } catch (e) {
     } finally {

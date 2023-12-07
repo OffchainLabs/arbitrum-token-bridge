@@ -280,9 +280,10 @@ export function TransactionsTableDepositRow({
     <tr
       data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative  border-b border-dark text-sm text-dark',
+        'relative border-b border-dark text-sm text-dark',
         bgClassName,
-        className
+        className,
+        isCustomDestinationAddressTx(tx) ? 'h-[114px]' : 'h-[93px]'
       )}
     >
       <td
