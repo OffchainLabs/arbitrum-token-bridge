@@ -241,7 +241,7 @@ jobs:
 
       - name: Run e2e tests
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --abort-on-container-exit synpress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
