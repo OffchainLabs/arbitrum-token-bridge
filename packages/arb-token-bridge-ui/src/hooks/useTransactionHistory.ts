@@ -388,21 +388,30 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
         return [...prevTransactions, ...newTransactions]
       })
 
+      // we use setter to access the previous value to get accurate reading
+      // we will also increment it if fetching gets paused
       setPauseCount(prevPauseCount => {
+        // get the latest transaction, we will use its timestamp to see if we went past maximum number of fetched days
         const latestTransaction = mapData[mapData.length - 1]
+        // max timestamp is our threshold where we stop fetching transactions for this iteration
+        // it gets incremented by PAUSE_SIZE_DAYS with each iteration
         const maxTimestamp = dayjs()
           .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
           .valueOf()
 
+        // check if our latest transaction is past our lookup threshold
         if (
           latestTransaction &&
           latestTransaction.createdAt &&
           latestTransaction.createdAt <= maxTimestamp
         ) {
+          // if yes, we pause
+          // we also increase pause count for so the next iteration can calculate max timestamp
           pause()
           return prevPauseCount + 1
         }
 
+        // otherwise do not pause, we also keep the pause count as-is
         return prevPauseCount
       })
 
