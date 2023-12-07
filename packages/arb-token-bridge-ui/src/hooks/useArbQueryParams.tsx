@@ -124,7 +124,11 @@ function encodeChainQueryParam(chainId: number | null | undefined) {
 }
 
 function isValidNumber(value: number | null | undefined): value is number {
-  return value === 0 || !!value
+  if (typeof value === 'undefined' || value === null) {
+    return false
+  }
+
+  return !Number.isNaN(value)
 }
 
 // Parse ChainQueryParam/ChainId to ChainId
