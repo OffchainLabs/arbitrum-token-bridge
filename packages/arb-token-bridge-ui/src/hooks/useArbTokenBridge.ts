@@ -6,12 +6,7 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
-import {
-  EthBridger,
-  Erc20Bridger,
-  L1ToL2MessageStatus,
-  L2ToL1Message
-} from '@arbitrum/sdk'
+import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
@@ -19,7 +14,7 @@ import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Mes
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 import dayjs from 'dayjs'
 
-import useTransactions, { L1ToL2MessageData } from './useTransactions'
+import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
   AssetType,
@@ -32,7 +27,6 @@ import {
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  NodeBlockDeadlineStatusTypes,
   ArbTokenBridgeEth,
   ArbTokenBridgeToken
 } from './arbTokenBridge.types'
@@ -239,20 +233,6 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
-
-    if (!ethDepositMessage) {
-      return
-    }
-
-    const l1ToL2MsgData: L1ToL2MessageData = {
-      fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      l2TxID: undefined
-    }
-
-    updateTransaction(receipt, tx, l1ToL2MsgData)
     updateEthBalances()
 
     if (nativeCurrency.isCustom) {
@@ -307,43 +287,7 @@ export const useArbTokenBridge = (
         txLifecycle.onTxConfirm(receipt)
       }
 
-      updateTransaction(receipt, tx)
       updateEthBalances()
-
-      const l2ToL1Events = receipt.getL2ToL1Events()
-
-      if (l2ToL1Events.length === 1) {
-        const l2ToL1EventResult = l2ToL1Events[0]
-
-        if (!l2ToL1EventResult) {
-          return
-        }
-
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
-
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
-        const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
-          ...l2ToL1EventResult,
-          sender: tx.from,
-          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
-          type: AssetType.ETH,
-          value: amount,
-          outgoingMessageState,
-          symbol: nativeCurrency.symbol,
-          decimals: nativeCurrency.decimals,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash,
-          parentChainId: Number(l1NetworkID),
-          childChainId: Number(l2NetworkID)
-        }
-
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          return {
-            ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventResultPlus
-          }
-        })
-      }
 
       return receipt
     } catch (error) {
@@ -505,19 +449,6 @@ export const useArbTokenBridge = (
         txLifecycle.onTxConfirm(receipt)
       }
 
-      const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
-      if (!l1ToL2Msg) {
-        return
-      }
-
-      const l1ToL2MsgData: L1ToL2MessageData = {
-        fetchingUpdate: false,
-        status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
-        retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        l2TxID: undefined
-      }
-
-      updateTransaction(receipt, tx, l1ToL2MsgData)
       updateTokenData(erc20L1Address)
       updateEthBalances()
 
@@ -608,42 +539,6 @@ export const useArbTokenBridge = (
         txLifecycle.onTxConfirm(receipt)
       }
 
-      updateTransaction(receipt, tx)
-
-      const l2ToL1Events = receipt.getL2ToL1Events()
-
-      if (l2ToL1Events.length === 1) {
-        const l2ToL1EventDataResult = l2ToL1Events[0]
-
-        if (!l2ToL1EventDataResult) {
-          return
-        }
-
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
-        const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
-          ...l2ToL1EventDataResult,
-          sender: walletAddress,
-          destinationAddress: destinationAddress ?? walletAddress,
-          type: AssetType.ERC20,
-          tokenAddress: erc20L1Address,
-          value: amount,
-          outgoingMessageState,
-          symbol: symbol,
-          decimals: decimals,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash,
-          parentChainId: Number(l1NetworkID),
-          childChainId: Number(l2NetworkID)
-        }
-
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          return {
-            ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventDataResultPlus
-          }
-        })
-      }
       updateTokenData(erc20L1Address)
       return receipt
     } catch (error) {

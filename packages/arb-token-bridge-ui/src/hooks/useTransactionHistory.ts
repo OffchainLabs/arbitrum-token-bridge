@@ -7,6 +7,7 @@ import { ChainId } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
+  AssetType,
   L2ToL1EventResultPlus,
   WithdrawalInitiated
 } from './arbTokenBridge.types'
@@ -30,7 +31,8 @@ import { useCctpFetching } from '../state/cctpState'
 import {
   getProvider,
   getUpdatedEthDeposit,
-  getUpdatedEthWithdrawal,
+  getUpdatedTokenDeposit,
+  getUpdatedWithdrawal,
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
@@ -487,12 +489,19 @@ export const useTransactionHistory = (
         return
       }
 
+      if (tx.isCctp) {
+        // todo
+        return
+      }
+
       if (tx.isWithdrawal) {
-        const updatedEthWithdrawal = await getUpdatedEthWithdrawal(tx)
-        updateCachedTransaction(updatedEthWithdrawal)
+        const updatedWithdrawal = await getUpdatedWithdrawal(tx)
+        updateCachedTransaction(updatedWithdrawal)
       } else {
-        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
-        updateCachedTransaction(updatedEthDeposit)
+        const updatedDeposit = await (tx.assetType === AssetType.ETH
+          ? getUpdatedEthDeposit(tx)
+          : getUpdatedTokenDeposit(tx))
+        updateCachedTransaction(updatedDeposit)
       }
     },
     [transactions, updateCachedTransaction]

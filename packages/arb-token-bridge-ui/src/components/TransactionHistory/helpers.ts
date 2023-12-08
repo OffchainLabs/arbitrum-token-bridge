@@ -4,7 +4,10 @@ import {
   TransactionReceipt
 } from '@ethersproject/providers'
 import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import {
+  EthDepositMessage,
+  L1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 import {
   DepositStatus,
@@ -131,7 +134,12 @@ function getWithdrawalStatusFromReceipt(
 export async function getUpdatedEthDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  if (!isTxPending(tx) || tx.assetType !== AssetType.ETH || tx.isWithdrawal) {
+  if (
+    !isTxPending(tx) ||
+    tx.assetType !== AssetType.ETH ||
+    tx.isWithdrawal ||
+    tx.isCctp
+  ) {
     return tx
   }
 
@@ -143,7 +151,16 @@ export async function getUpdatedEthDeposit(
   })
 
   if (!l1ToL2Msg) {
-    return tx
+    const receipt = await getTxReceipt(tx)
+
+    if (!receipt || receipt.status !== 0) {
+      // not failure
+      return tx
+    }
+
+    // failure
+    const newDeposit = { ...tx, status: 'failure' }
+    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
   }
 
   const status = await l1ToL2Msg?.status()
@@ -151,7 +168,7 @@ export async function getUpdatedEthDeposit(
 
   const newDeposit: MergedTransaction = {
     ...tx,
-    status: status === 1 ? 'success' : tx.status,
+    status: 'success',
     l1ToL2MsgData: {
       fetchingUpdate: false,
       status: isDeposited
@@ -171,10 +188,70 @@ export async function getUpdatedEthDeposit(
   }
 }
 
-export async function getUpdatedEthWithdrawal(
+export async function getUpdatedTokenDeposit(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  if (!isTxPending(tx) || tx.assetType !== AssetType.ETH || !tx.isWithdrawal) {
+  if (
+    !isTxPending(tx) ||
+    tx.assetType !== AssetType.ERC20 ||
+    tx.isWithdrawal ||
+    tx.isCctp
+  ) {
+    return tx
+  }
+
+  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+    depositTxId: tx.txId,
+    isEthDeposit: false,
+    l1Provider: getProvider(tx.parentChainId),
+    l2Provider: getProvider(tx.childChainId)
+  })
+  const _l1ToL2Msg = l1ToL2Msg as L1ToL2MessageReader
+
+  if (!l1ToL2Msg) {
+    const receipt = await getTxReceipt(tx)
+
+    if (!receipt || receipt.status !== 0) {
+      // not failure
+      return tx
+    }
+
+    // failure
+    const newDeposit = { ...tx, status: 'failure' }
+    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
+  }
+
+  const res = await _l1ToL2Msg.getSuccessfulRedeem()
+
+  const l2TxID = (() => {
+    if (res.status === L1ToL2MessageStatus.REDEEMED) {
+      return res.l2TxReceipt.transactionHash
+    } else {
+      return undefined
+    }
+  })()
+
+  const newDeposit: MergedTransaction = {
+    ...tx,
+    status: [3, 4].includes(res.status) ? 'success' : tx.status,
+    l1ToL2MsgData: {
+      status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: _l1ToL2Msg.retryableCreationId
+    }
+  }
+
+  return {
+    ...newDeposit,
+    depositStatus: getDepositStatus(newDeposit)
+  }
+}
+
+export async function getUpdatedWithdrawal(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || !tx.isWithdrawal || tx.isCctp) {
     return tx
   }
 
