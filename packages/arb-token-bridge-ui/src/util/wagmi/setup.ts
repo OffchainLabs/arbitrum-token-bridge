@@ -75,7 +75,9 @@ enum TargetChainKey {
   Goerli = 'goerli',
   ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia'
+  ArbitrumSepolia = 'arbitrum-sepolia',
+  Local = 'custom-localhost',
+  ArbitrumLocal = 'arbitrum-localhost'
 }
 
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
@@ -114,6 +116,12 @@ function getChainId(targetChainKey: TargetChainKey): number {
 
     case TargetChainKey.ArbitrumSepolia:
       return ChainId.ArbitrumSepolia
+
+    case TargetChainKey.Local:
+      return ChainId.Local
+
+    case TargetChainKey.ArbitrumLocal:
+      return ChainId.ArbitrumLocal
   }
 }
 
@@ -127,21 +135,33 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others]
 }
 
+function wagmiProviders() {
+  if (process.env.NEXT_PUBLIC_INFURA_KEY) {
+    return [
+      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY }),
+      publicProvider()
+    ]
+  }
+  return [publicProvider()]
+}
+
 export function getProps(targetChainKey: string | null) {
   const { chains, provider } = configureChains(
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
-      publicProvider()
-    ]
+    wagmiProviders()
+  )
+
+  const { chains: localChains, provider: localProvider } = configureChains(
+    getChains(sanitizeTargetChainKey(targetChainKey)),
+    [publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({
     ...appInfo,
-    chains
+    chains: [...chains, ...localChains]
   })
 
   const connectors = connectorsForWallets([
@@ -158,13 +178,21 @@ export function getProps(targetChainKey: string | null) {
   const client = createClient({
     autoConnect: true,
     connectors,
-    provider
+    provider: ({ chainId }: { chainId?: number | undefined }) => {
+      if (chainId === ChainId.Local) {
+        return localProvider({ chainId })
+      }
+      if (chainId === ChainId.ArbitrumLocal) {
+        return localProvider({ chainId })
+      }
+      return provider({ chainId })
+    }
   })
 
   return {
     rainbowKitProviderProps: {
       appInfo,
-      chains
+      chains: [...chains, ...localChains]
     },
     wagmiConfigProps: {
       client
