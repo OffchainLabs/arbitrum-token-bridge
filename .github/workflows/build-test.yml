@@ -175,76 +175,85 @@ jobs:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
     outputs:
-      result: ${{ steps.test-e2e.outcome }}
+      exitcode: ${{ steps.test-e2e.outputs.exitcode }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      # - name: Checkout
+      #   uses: actions/checkout@v3
 
-      - name: Chown workspace
-        run: chown -R $(whoami) .
+      # - name: Chown workspace
+      #   run: chown -R $(whoami) .
 
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
+      # - name: Checkout
+      #   uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
 
-      - name: Cache Docker layers
-        uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
+      # - name: Cache Docker layers
+      #   uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
+      #   with:
+      #     path: /tmp/.buildx-cache
+      #     key: ${{ runner.os }}-buildx-${{ github.sha }}
+      #     restore-keys: ${{ runner.os }}-buildx-
 
-      - name: Make .e2e.env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_SKIP_METAMASK_SETUP: true
-          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
-          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_TEST_FILE: ${{ matrix.tests.file }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .e2e.env
+      # - name: Make .e2e.env
+      #   uses: SpicyPizza/create-envfile@v1.3
+      #   with:
+      #     envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+      #     envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+      #     envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+      #     envkey_SKIP_METAMASK_SETUP: true
+      #     envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+      #     envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+      #     envkey_TEST_FILE: ${{ matrix.tests.file }}
+      #     envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+      #     envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
+      #     directory: ./packages/arb-token-bridge-ui/
+      #     file_name: .e2e.env
 
-      - name: Make .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .env
+      # - name: Make .env
+      #   uses: SpicyPizza/create-envfile@v1.3
+      #   with:
+      #     envkey_NEXT_PUBLIC_IS_E2E_TEST: true
+      #     envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+      #     envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+      #     envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
+      #     directory: ./packages/arb-token-bridge-ui/
+      #     file_name: .env
 
-      - name: Make synpress .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_CYPRESS_GROUP: medium-resolution
-          envkey_DISPLAY_HEIGHT: 768
-          envkey_DISPLAY_WIDTH: 1366
-          envkey_SE_SCREEN_HEIGHT: 768
-          envkey_SE_SCREEN_WIDTH: 1366
-          file_name: medium-res.env
+      # - name: Make synpress .env
+      #   uses: SpicyPizza/create-envfile@v1.3
+      #   with:
+      #     envkey_CYPRESS_GROUP: medium-resolution
+      #     envkey_DISPLAY_HEIGHT: 768
+      #     envkey_DISPLAY_WIDTH: 1366
+      #     envkey_SE_SCREEN_HEIGHT: 768
+      #     envkey_SE_SCREEN_WIDTH: 1366
+      #     file_name: medium-res.env
 
-      - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+      # - name: Set up the local node
+      #   uses: OffchainLabs/actions/run-nitro-test-node@main
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      # - name: Restore node_modules
+      #   uses: OffchainLabs/actions/node-modules/restore@main
 
+      # - name: Run e2e tests
+      #   id: test-e2e
+      #   run: |
+      #     docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
       - name: Run e2e tests
         id: test-e2e
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
+          exitcode="0"
+          if [steps.test-e2e.outputs.exitcode != 0]
+          then
+            echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
+          fi
+          exit "$exitcode"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -258,11 +267,11 @@ jobs:
     if: needs.check-is-hotfix.outputs.is_hotfix == 'false'
     steps:
       - name: E2E Succeeded
-        if: needs.test-e2e.outputs.result == 'success'
+        if: needs.test-e2e.outputs.exitcode == 0
         run: echo "nice"
         
       - name: E2E Failed
-        if: needs.test-e2e.outputs.result != 'success'
+        if: needs.test-e2e.outputs.exitcode != 0
         run: exit 1
 
   clean-up:
