@@ -4,12 +4,12 @@ import {
   goerli,
   sepolia,
   arbitrum as arbitrumOne,
+  arbitrumNova,
   arbitrumGoerli
-} from 'wagmi/chains'
+} from '@wagmi/chains'
 
 import { ChainId, getCustomChainsFromLocalStorage } from '../networks'
 import {
-  arbitrumNova,
   arbitrumSepolia,
   chainToWagmiChain,
   stylusTestnet,

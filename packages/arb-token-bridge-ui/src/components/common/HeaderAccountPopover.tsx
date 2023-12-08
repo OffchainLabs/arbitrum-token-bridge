@@ -24,7 +24,6 @@ import {
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
-import { getExplorerUrl } from '../../util/networks'
 import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
@@ -212,9 +211,9 @@ export function HeaderAccountPopover({
             )}
 
             {/* Explorer button */}
-            {isCorrectNetworkConnected && chain && (
+            {isCorrectNetworkConnected && chain && chain.blockExplorers && (
               <ExternalLink
-                href={`${getExplorerUrl(chain.id)}/address/${address}`}
+                href={`${chain.blockExplorers.default.url}/address/${address}`}
                 className={headerItemsClassName}
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white" />

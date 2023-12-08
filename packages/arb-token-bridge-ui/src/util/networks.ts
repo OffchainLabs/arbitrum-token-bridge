@@ -270,7 +270,7 @@ const defaultL1Network: L1Network = {
   chainID: 1337,
   explorerUrl: '',
   isCustom: true,
-  name: 'EthLocal',
+  name: 'Ethereum',
   partnerChainIDs: [412346],
   isArbitrum: false
 }

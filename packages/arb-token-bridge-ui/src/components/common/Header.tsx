@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import Image, { ImageProps } from 'next/image'
+import { arbitrum, arbitrumNova, arbitrumGoerli } from '@wagmi/chains'
 
 import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
 import Discord from '@/icons/discord.webp'
@@ -15,7 +16,7 @@ import {
   HeaderMenuProps
 } from './HeaderMenu'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { ChainId, getExplorerUrl } from '../../util/networks'
+import { arbitrumSepolia } from '../../util/wagmi/wagmiAdditionalNetworks'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
 
@@ -48,19 +49,19 @@ const learnMenuProps = toHeaderMenuProps([
 const explorersMenuProps = toHeaderMenuProps([
   {
     title: 'Arbitrum One',
-    link: getExplorerUrl(ChainId.ArbitrumOne)
+    link: arbitrum.blockExplorers.default.url
   },
   {
     title: 'Arbitrum Nova',
-    link: getExplorerUrl(ChainId.ArbitrumNova)
+    link: arbitrumNova.blockExplorers.default.url
   },
   {
     title: 'Arbitrum Goerli',
-    link: getExplorerUrl(ChainId.ArbitrumGoerli)
+    link: arbitrumGoerli.blockExplorers.default.url
   },
   {
     title: 'Arbitrum Sepolia',
-    link: getExplorerUrl(ChainId.ArbitrumSepolia)
+    link: arbitrumSepolia.blockExplorers!.default.url
   }
 ])
 

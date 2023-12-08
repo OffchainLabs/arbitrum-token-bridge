@@ -4,15 +4,15 @@ import { useCallback, useMemo } from 'react'
 import {
   mainnet,
   arbitrum,
+  arbitrumNova,
   goerli,
   arbitrumGoerli,
   sepolia
-} from '@wagmi/core/chains'
+} from '@wagmi/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
-  arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
   stylusTestnet,

@@ -1,10 +1,15 @@
 import { Chain } from 'wagmi'
-import { mainnet, goerli, arbitrum, arbitrumGoerli } from 'wagmi/chains'
+import {
+  mainnet,
+  goerli,
+  arbitrum,
+  arbitrumNova,
+  arbitrumGoerli,
+  sepolia
+} from '@wagmi/chains'
 
 import {
   chainToWagmiChain,
-  sepolia,
-  arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
   stylusTestnet,

@@ -1,12 +1,17 @@
 import { createClient, configureChains, goerli } from 'wagmi'
-import { mainnet, arbitrum, arbitrumGoerli, sepolia } from '@wagmi/core/chains'
+import {
+  mainnet,
+  arbitrum,
+  arbitrumNova,
+  arbitrumGoerli,
+  sepolia
+} from '@wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
 import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc'
 
 import {
-  arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
   stylusTestnet,

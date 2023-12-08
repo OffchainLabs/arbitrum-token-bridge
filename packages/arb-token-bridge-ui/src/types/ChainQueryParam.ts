@@ -1,5 +1,5 @@
 import { Chain } from 'wagmi'
-import * as chains from 'wagmi/chains'
+import * as chains from '@wagmi/chains'
 
 import {
   ChainId,
@@ -102,7 +102,7 @@ export function getChainForChainKeyQueryParam(
       return chains.arbitrum
 
     case 'arbitrum-nova':
-      return customChains.arbitrumNova
+      return chains.arbitrumNova
 
     case 'arbitrum-goerli':
       return chains.arbitrumGoerli

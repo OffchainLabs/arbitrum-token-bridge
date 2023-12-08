@@ -42,25 +42,6 @@ export const arbitrumSepolia: Chain = {
   }
 }
 
-export const arbitrumNova: Chain = {
-  id: ChainId.ArbitrumNova,
-  name: 'Arbitrum Nova',
-  network: 'arbitrum-nova',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.ArbitrumNova]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.ArbitrumNova]!]
-    }
-  },
-  blockExplorers: {
-    etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
-    default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
-  }
-}
-
 export const xaiTestnet: Chain = {
   id: ChainId.XaiTestnet,
   name: 'Xai Orbit Testnet',
@@ -108,7 +89,7 @@ export const stylusTestnet: Chain = {
  */
 export const localL1Network: Chain = {
   id: ChainId.Local,
-  name: 'EthLocal',
+  name: 'Ethereum',
   network: 'local',
   nativeCurrency: ether,
   rpcUrls: {

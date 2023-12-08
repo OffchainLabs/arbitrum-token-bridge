@@ -27,23 +27,25 @@ export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {
         Just paste the following information into a help request:
       </p>
 
-      <button
-        className="arb-hover flex max-w-md flex-row items-center justify-between rounded-xl border border-brick-dark px-6 py-4"
-        style={{ background: 'rgba(118, 39, 22, 0.2)' }}
-        onClick={() => {
-          copyToClipboard(
-            `${parentLayer} transaction: ${getExplorerUrl(l1.network.id)}/tx/${
-              tx.txId
-            }`
-          )
-        }}
-      >
-        <span className="text-base text-brick-dark">
-          {parentLayer} transaction:{' '}
-          <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
-        </span>
-        <DocumentDuplicateIcon className="h-6 w-6 text-brick-dark" />
-      </button>
+      {l1.network.blockExplorers && (
+        <button
+          className="arb-hover flex max-w-md flex-row items-center justify-between rounded-xl border border-brick-dark px-6 py-4"
+          style={{ background: 'rgba(118, 39, 22, 0.2)' }}
+          onClick={() => {
+            copyToClipboard(
+              `${parentLayer} transaction: ${
+                l1.network.blockExplorers!.default.url
+              }/tx/${tx.txId}`
+            )
+          }}
+        >
+          <span className="text-base text-brick-dark">
+            {parentLayer} transaction:{' '}
+            <span className="text-blue-link">{shortenTxHash(tx.txId)}</span>
+          </span>
+          <DocumentDuplicateIcon className="h-6 w-6 text-brick-dark" />
+        </button>
+      )}
 
       <div className="h-2" />
       <ExternalLink
