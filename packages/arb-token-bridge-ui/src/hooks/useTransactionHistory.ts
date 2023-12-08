@@ -352,8 +352,8 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
-    (pageNumber: number, prevPagesTxs: MergedTransaction[]) => {
-      if (prevPagesTxs && prevPagesTxs.length === 0) {
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
+      if (prevPageTxs && prevPageTxs.length === 0) {
         // no more pages
         return null
       }
