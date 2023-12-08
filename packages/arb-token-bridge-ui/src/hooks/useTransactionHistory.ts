@@ -1,4 +1,5 @@
 import useSWRImmutable from 'swr/immutable'
+import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
@@ -345,26 +346,39 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   // Pause fetching after specified amount of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
-  const [transactions, setTransactions] = useState<MergedTransaction[]>([])
-  const [page, setPage] = useState(0)
   const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
-  const { data: mapData, error: mapError } = useSWRImmutable(
-    address && !loading && fetching
-      ? ['complete_tx_list', address, page, data]
-      : null,
-    ([, , _page, _data]) => {
-      const startIndex = _page * MAX_BATCH_SIZE
-      const endIndex = startIndex + MAX_BATCH_SIZE
+  const getCacheKey = useCallback(
+    (pageNumber: number, prevPagesTxs: MergedTransaction[]) => {
+      if (prevPagesTxs && prevPagesTxs.length === 0) {
+        console.log('here')
+        return null
+      }
 
-      return Promise.all(
-        _data.slice(startIndex, endIndex).map(transformTransaction)
-      )
-    }
+      return address && !loading
+        ? (['complete_tx_list', address, pageNumber, data] as const)
+        : null
+    },
+    [address, loading, data]
   )
+
+  const {
+    data: txPages,
+    error: mapError,
+    setSize: setPage
+  } = useSWRInfinite(getCacheKey, ([, , _page, _data]) => {
+    const startIndex = _page * MAX_BATCH_SIZE
+    const endIndex = startIndex + MAX_BATCH_SIZE
+
+    return Promise.all(
+      _data.slice(startIndex, endIndex).map(transformTransaction)
+    )
+  })
+
+  const transactions: MergedTransaction[] = (txPages || []).flat()
 
   const latestTransactionDaysFromNow = useMemo(() => {
     return dayjs().diff(
@@ -382,47 +396,47 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   }
 
   useEffect(() => {
-    if (mapData) {
-      setTransactions(prevTransactions => {
-        const newTransactions = mapData.filter(Boolean) as MergedTransaction[]
-        return [...prevTransactions, ...newTransactions]
-      })
-
-      // we use setter to access the previous value to get accurate reading
-      // we will also increment it if fetching gets paused
-      setPauseCount(prevPauseCount => {
-        // get the latest transaction, we will use its timestamp to see if we went past maximum number of fetched days
-        const latestTransaction = mapData[mapData.length - 1]
-        // max timestamp is our threshold where we stop fetching transactions for this iteration
-        // it gets incremented by PAUSE_SIZE_DAYS with each iteration
-        const maxTimestamp = dayjs()
-          .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
-          .valueOf()
-
-        // check if our latest transaction is past our lookup threshold
-        if (
-          latestTransaction &&
-          latestTransaction.createdAt &&
-          latestTransaction.createdAt <= maxTimestamp
-        ) {
-          // if yes, we pause
-          // we also increment pause count so the next iteration can calculate max timestamp
-          pause()
-          return prevPauseCount + 1
-        }
-
-        // otherwise do not pause, we also keep the pause count as-is
-        return prevPauseCount
-      })
-
-      // mapped data is a full page, so we need to fetch more pages
-      if (mapData.length === MAX_BATCH_SIZE) {
-        setPage(prevPage => prevPage + 1)
-      } else {
-        setFetching(false)
-      }
+    if (!txPages) {
+      return
     }
-  }, [mapData])
+
+    const lastTxPage = txPages[txPages.length - 1]
+
+    if (!lastTxPage) {
+      return
+    }
+
+    // we use setter to access the previous value to get accurate reading
+    // we will also increment it if fetching gets paused
+    setPauseCount(prevPauseCount => {
+      // max timestamp is our threshold where we stop fetching transactions for this iteration
+      // it gets incremented by PAUSE_SIZE_DAYS with each iteration
+      const maxTimestamp = dayjs()
+        .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
+        .valueOf()
+
+      // get the latest transaction, we will use its timestamp to see if we went past maximum number of fetched days
+      const lastTx = lastTxPage[lastTxPage.length - 1]
+
+      // check if our latest transaction is past our lookup threshold
+      if (lastTx && lastTx.createdAt && lastTx.createdAt <= maxTimestamp) {
+        // if yes, we pause
+        // we also increment pause count so the next iteration can calculate max timestamp
+        pause()
+        return prevPauseCount + 1
+      }
+
+      // otherwise do not pause, we also keep the pause count as-is
+      return prevPauseCount
+    })
+
+    // mapped data is a full page, so we need to fetch more pages
+    if (lastTxPage.length === MAX_BATCH_SIZE) {
+      setPage(prevPage => prevPage + 1)
+    } else {
+      setFetching(false)
+    }
+  }, [txPages])
 
   if (loading || error) {
     return {
