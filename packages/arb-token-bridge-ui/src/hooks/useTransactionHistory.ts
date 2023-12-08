@@ -354,7 +354,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
   const getCacheKey = useCallback(
     (pageNumber: number, prevPagesTxs: MergedTransaction[]) => {
       if (prevPagesTxs && prevPagesTxs.length === 0) {
-        console.log('here')
+        // no more pages
         return null
       }
 
@@ -367,7 +367,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
   const {
     data: txPages,
-    error: mapError,
+    error: txPagesError,
     setSize: setPage
   } = useSWRInfinite(getCacheKey, ([, , _page, _data]) => {
     const startIndex = _page * MAX_BATCH_SIZE
@@ -457,7 +457,7 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
     },
     loading: fetching,
     completed: transactions.length === data.length,
-    error: mapError ?? error,
+    error: txPagesError ?? error,
     pause,
     resume
   }
