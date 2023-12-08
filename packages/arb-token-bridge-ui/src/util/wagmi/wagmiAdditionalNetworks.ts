@@ -1,4 +1,4 @@
-import { Chain, sepolia as sepoliaDefault } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
@@ -16,18 +16,6 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
       public: {
         http: [chain.rpcUrl]
       }
-    }
-  }
-}
-
-export const sepolia: Chain = {
-  ...sepoliaDefault,
-  rpcUrls: {
-    ...sepoliaDefault.rpcUrls,
-    // override the default public RPC with the Infura RPC
-    // public RPCs are getting rate limited
-    default: {
-      http: [rpcURLs[ChainId.Sepolia]!]
     }
   }
 }

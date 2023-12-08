@@ -1,12 +1,11 @@
 import { createClient, configureChains, goerli } from 'wagmi'
-import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
+import { mainnet, arbitrum, arbitrumGoerli, sepolia } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
-import { infuraProvider } from 'wagmi/providers/infura'
+import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc'
 
 import {
-  sepolia,
   arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
@@ -16,7 +15,7 @@ import {
   chainToWagmiChain
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
+import { ChainId, rpcURLs } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
@@ -134,7 +133,12 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
-      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
+      jsonRpcProvider({
+        rpc: chain => ({
+          http: rpcURLs[chain.id]!
+        }),
+        priority: 1
+      }),
       publicProvider()
     ]
   )

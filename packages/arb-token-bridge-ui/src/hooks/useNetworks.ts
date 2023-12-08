@@ -1,16 +1,17 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
-import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
+import {
+  mainnet,
+  arbitrum,
+  goerli,
+  arbitrumGoerli,
+  sepolia
+} from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
-import {
-  sepolia,
   arbitrumNova,
   arbitrumSepolia,
   xaiTestnet,
@@ -60,21 +61,21 @@ const getProviderForChainCache: {
   // start with empty cache
 }
 
-function createProviderWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
+function createProviderWithCache(chain: Chain) {
+  const rpcUrl = chain.rpcUrls.default.http[0]
+  const provider = new StaticJsonRpcProvider(rpcUrl, chain.id)
+  getProviderForChainCache[chain.id] = provider
   return provider
 }
 
-function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
+function getProviderForChain(chain: Chain): StaticJsonRpcProvider {
+  const cachedProvider = getProviderForChainCache[chain.id]
 
   if (typeof cachedProvider !== 'undefined') {
     return cachedProvider
   }
 
-  return createProviderWithCache(chainId)
+  return createProviderWithCache(chain)
 }
 
 function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
@@ -227,9 +228,9 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     return [
       {
         sourceChain,
-        sourceChainProvider: getProviderForChainId(validSourceChainId),
+        sourceChainProvider: getProviderForChain(sourceChain),
         destinationChain,
-        destinationChainProvider: getProviderForChainId(validDestinationChainId)
+        destinationChainProvider: getProviderForChain(destinationChain)
       },
       setState
     ]
