@@ -246,14 +246,9 @@ jobs:
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
           exitcode="$?"
-          echo "steps.test-e2e exitcode ${steps.test-e2e.outputs.exitcode}"
-          # if exitcode is not set, set it
-          if [-z ${steps.test-e2e.outputs.exitcode+x}]
-          then
-            echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-          # once it's set, only change exitcode if the test failed
+          # only change exitcode if the test failed
           # if one test failed, the e2e teststeps.test-e2e is considered failed
-          elif [steps.test-e2e.outputs.exitcode != 0]
+          if [ $exitcode != 0 ]
           then
             echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
           fi
