@@ -185,7 +185,7 @@ export function useTransferReadiness({
       return notReady()
     }
 
-    if (isTransferring || destinationAddressError) {
+    if (isTransferring) {
       return notReady()
     }
 
@@ -197,6 +197,11 @@ export function useTransferReadiness({
             { asset: nativeCurrency.symbol }
           )
       })
+    }
+
+    // Check if destination address is valid for ERC20 transfers
+    if (destinationAddressError) {
+      return notReady()
     }
 
     const ethBalanceFloat = isDepositMode
