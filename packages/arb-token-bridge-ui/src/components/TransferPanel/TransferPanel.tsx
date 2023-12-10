@@ -743,7 +743,10 @@ export function TransferPanel() {
 
     try {
       setTransferring(true)
-      await switchNetworkAsync?.(networks.sourceChain.id)
+      console.log(chainId, networks.sourceChain.id)
+      if (chainId !== networks.sourceChain.id) {
+        await switchNetworkAsync?.(networks.sourceChain.id)
+      }
     } catch (e) {
       if (isUserRejectedError(e)) {
         return

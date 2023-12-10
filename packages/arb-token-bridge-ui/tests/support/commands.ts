@@ -68,7 +68,7 @@ export function login({
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkName)
+    cy.task('setCurrentNetworkName', networkNameWithDefault)
   })
 }
 
