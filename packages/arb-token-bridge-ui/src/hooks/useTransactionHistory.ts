@@ -362,6 +362,8 @@ export const useTransactionHistory = (
   const MAX_BATCH_SIZE = 10
   // Pause fetching after specified amount of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
+  // Also pause fetching after specified number of transactions. Just in case user made a lot in the recent days and it's good for local env.
+  const PAUSE_SIZE_TX_COUNT = 30
 
   const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
@@ -377,22 +379,22 @@ export const useTransactionHistory = (
       }
 
       return address && !loading
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+        ? (['complete_tx_list', address, pageNumber] as const)
         : null
     },
-    [address, loading, data]
+    [address, loading]
   )
 
   const {
     data: txPages,
     error: txPagesError,
     setSize: setPage
-  } = useSWRInfinite(getCacheKey, ([, , _page, _data]) => {
+  } = useSWRInfinite(getCacheKey, ([, , _page]) => {
     const startIndex = _page * MAX_BATCH_SIZE
     const endIndex = startIndex + MAX_BATCH_SIZE
 
     return Promise.all(
-      _data.slice(startIndex, endIndex).map(transformTransaction)
+      data.slice(startIndex, endIndex).map(transformTransaction)
     )
   })
 
@@ -431,7 +433,7 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!txPages) {
+    if (!txPages || !fetching) {
       return
     }
 
@@ -452,9 +454,15 @@ export const useTransactionHistory = (
 
       // get the latest transaction, we will use its timestamp to see if we went past maximum number of fetched days
       const lastTx = lastTxPage[lastTxPage.length - 1]
+      const isPastDaysThreshold =
+        lastTx && lastTx.createdAt && lastTx.createdAt <= maxTimestamp
+
+      // also check if we fetched enough txs to stop
+      const maxTxCount = PAUSE_SIZE_TX_COUNT * (prevPauseCount + 1)
+      const isPastTxCountThreshold = txPages.flat().length >= maxTxCount
 
       // check if our latest transaction is past our lookup threshold
-      if (lastTx && lastTx.createdAt && lastTx.createdAt <= maxTimestamp) {
+      if (isPastDaysThreshold || isPastTxCountThreshold) {
         // if yes, we pause
         // we also increment pause count so the next iteration can calculate max timestamp
         pause()
@@ -471,7 +479,7 @@ export const useTransactionHistory = (
     } else {
       setFetching(false)
     }
-  }, [txPages])
+  }, [txPages, fetching])
 
   if (loading || error) {
     return {
