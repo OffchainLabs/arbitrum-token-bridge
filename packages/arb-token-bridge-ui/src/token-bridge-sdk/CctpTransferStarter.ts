@@ -8,7 +8,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import { cctpContracts, fetchPerMessageBurnLimit, getContracts } from './cctp'
+import { getCctpUtils, fetchPerMessageBurnLimit, getContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { BigNumber, Signer } from 'ethers'
@@ -61,7 +61,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     // approve USDC token for burn
-    const tx = await cctpContracts(sourceChainId).approveForBurn(amount, signer)
+    const tx = await getCctpUtils(sourceChainId).approveForBurn(amount, signer)
     await tx.wait()
   }
 
@@ -112,7 +112,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const recipient = destinationAddress || address
 
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
-    const depositForBurnTx = await cctpContracts(sourceChainId).depositForBurn({
+    const depositForBurnTx = await getCctpUtils(sourceChainId).depositForBurn({
       amount,
       signer: signer,
       recipient
