@@ -205,11 +205,6 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
 }
 
-export const getExplorerUrl = (chainId: ChainId) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return explorerUrls[chainId] ?? explorerUrls[ChainId.Ethereum]! //defaults to etherscan, can never be null
-}
-
 export const getBlockTime = (chainId: ChainId) => {
   const network = parentChains[chainId]
   if (!network) {

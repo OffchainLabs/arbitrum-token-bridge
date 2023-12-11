@@ -12,7 +12,6 @@ import {
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
 import { useAppState } from '../../state'
@@ -274,21 +273,23 @@ export const AdvancedSettings = () => {
           {!error && warning && (
             <p className="text-xs text-yellow-500">{warning}</p>
           )}
-          {destinationAddress && !error && (
-            <ExternalLink
-              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
-              href={`${getExplorerUrl(
-                (isDepositMode ? l2 : l1).network.id
-              )}/address/${destinationAddress}`}
-            >
-              <ArrowDownTrayIcon
-                height={12}
-                strokeWidth={3}
-                className="mr-1 -rotate-90"
-              />
-              View account in explorer
-            </ExternalLink>
-          )}
+          {destinationAddress &&
+            !error &&
+            (isDepositMode ? l2 : l1).network.blockExplorers && (
+              <ExternalLink
+                className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
+                href={`${
+                  (isDepositMode ? l2 : l1).network.blockExplorers!.default.url
+                }/address/${destinationAddress}`}
+              >
+                <ArrowDownTrayIcon
+                  height={12}
+                  strokeWidth={3}
+                  className="mr-1 -rotate-90"
+                />
+                View account in explorer
+              </ExternalLink>
+            )}
         </>
       )}
     </div>

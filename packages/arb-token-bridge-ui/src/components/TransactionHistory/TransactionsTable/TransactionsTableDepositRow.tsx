@@ -1,18 +1,15 @@
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { DepositStatus, MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { useRedeemRetryable } from '../../../hooks/useRedeemRetryable'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../../util/CommonUtils'
 import { DepositCountdown } from '../../common/DepositCountdown'
-import { ExternalLink } from '../../common/ExternalLink'
 import { Button } from '../../common/Button'
 import { Tooltip } from '../../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../../util/networks'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
   isDepositReadyToRedeem,
@@ -26,6 +23,8 @@ import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAd
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../../hooks/useChainLayers'
 import { AssetType } from '../../../hooks/arbTokenBridge.types'
+import { ExplorerTxLink } from '../../common/atoms/ExplorerLink'
+import { getNetworkName } from '../../../util/networks'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -177,12 +176,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
         {getNetworkName(l1.network.id)}:{' '}
-        <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
-          className="arb-hover text-blue-link"
-        >
-          {shortenTxHash(tx.txId)}
-        </ExternalLink>
+        <ExplorerTxLink
+          explorerUrl={l1.network.blockExplorers?.default.url}
+          txId={tx.txId}
+        />
       </span>
 
       {l2TxHash && (
@@ -192,12 +189,10 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         >
           <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
           {getNetworkName(l2.network.id)}:{' '}
-          <ExternalLink
-            href={`${getExplorerUrl(l2.network.id)}/tx/${l2TxHash}`}
-            className="arb-hover text-blue-link"
-          >
-            {shortenTxHash(l2TxHash)}
-          </ExternalLink>
+          <ExplorerTxLink
+            explorerUrl={l2.network.blockExplorers?.default.url}
+            txId={l2TxHash}
+          />
         </span>
       )}
     </div>

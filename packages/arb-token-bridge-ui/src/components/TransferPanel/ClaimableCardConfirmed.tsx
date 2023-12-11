@@ -149,10 +149,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
 
             {isCustomDestinationAddressTx(tx) && (
               <span className="mt-2 flex flex-nowrap gap-1 text-sm text-gray-dark lg:text-base">
-                <CustomAddressTxExplorer
-                  tx={tx}
-                  explorerClassName="arb-hover text-blue-link"
-                />
+                <CustomAddressTxExplorer tx={tx} />
               </span>
             )}
           </div>

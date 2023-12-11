@@ -9,11 +9,15 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
+import {
+  ExplorerAddressLink,
+  ExplorerTokenLink
+} from '../common/atoms/ExplorerLink'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -109,14 +113,11 @@ export function CustomFeeTokenApprovalDialog(
                 {customFeeToken.name}
               </span>
             </div>
-            <ExternalLink
-              href={`${getExplorerUrl(l1.network.id)}/token/${
-                customFeeToken.address
-              }`}
-              className="text-xs text-blue-link underline"
-            >
-              {customFeeToken.address}
-            </ExternalLink>
+            <ExplorerTokenLink
+              explorerUrl={l1.network.blockExplorers?.default.url}
+              tokenAddress={customFeeToken.address}
+              className="text-xs"
+            />
           </div>
         </div>
 

@@ -2,21 +2,13 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../../../state/app/state'
 import { StatusBadge } from '../../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
-import { ExternalLink } from '../../common/ExternalLink'
-import { shortenTxHash } from '../../../util/CommonUtils'
 import { Tooltip } from '../../common/Tooltip'
-import {
-  ChainId,
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
@@ -29,6 +21,7 @@ import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../../state/cctpState'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { ExplorerTxLink } from '../../common/atoms/ExplorerLink'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -231,6 +224,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer } = useChainLayers()
+  const toNetwork = isSourceChainArbitrum ? l1.network : l2.network
   const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
 
   const isExecuted = tx.status === 'Executed'
@@ -261,12 +255,10 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
     >
       <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
       {getNetworkName(toNetworkId)}:{' '}
-      <ExternalLink
-        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
-        className="arb-hover text-blue-link"
-      >
-        {shortenTxHash(claimedTx.txId)}
-      </ExternalLink>
+      <ExplorerTxLink
+        explorerUrl={toNetwork.blockExplorers?.default.url}
+        txId={claimedTx.txId}
+      />
     </span>
   )
 }
@@ -274,6 +266,7 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
   const { l1, l2 } = useNetworksAndSigners()
   const { layer } = useChainLayers()
+  const fromNetwork = isSourceChainArbitrum ? l2.network : l1.network
   const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
 
   return (
@@ -284,12 +277,10 @@ function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
       >
         <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
         {getNetworkName(fromNetworkId)}:{' '}
-        <ExternalLink
-          href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
-          className="arb-hover text-blue-link"
-        >
-          {shortenTxHash(tx.txId)}
-        </ExternalLink>
+        <ExplorerTxLink
+          explorerUrl={fromNetwork.blockExplorers?.default.url}
+          txId={tx.txId}
+        />
       </span>
 
       <ClaimedTxInfo tx={tx} isSourceChainArbitrum={isSourceChainArbitrum} />

@@ -18,9 +18,7 @@ import { TableBodyError } from './TableBodyError'
 import { TableActionHeader } from './TableActionHeader'
 import { useAppState } from '../../../state'
 import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { ExternalLink } from '../../common/ExternalLink'
-import { getExplorerUrl } from '../../../util/networks'
-import { shortenAddress } from '../../../util/CommonUtils'
+import { ExplorerAddressLink } from '../../common/atoms/ExplorerLink'
 
 export type PageParams = {
   searchString: string
@@ -85,11 +83,9 @@ export const TransactionsTableHeader = () => {
 }
 
 export const CustomAddressTxExplorer = ({
-  tx,
-  explorerClassName = 'arb-hover underline'
+  tx
 }: {
   tx: Pick<MergedTransaction, 'sender' | 'destination' | 'isWithdrawal'>
-  explorerClassName?: string
 }) => {
   const { address } = useAccount()
   const { l1, l2 } = useNetworksAndSigners()
@@ -108,7 +104,7 @@ export const CustomAddressTxExplorer = ({
     return tx.destination.toLowerCase() !== address.toLowerCase()
   }, [tx.destination, address])
 
-  const explorerChainId = useMemo(() => {
+  const explorerChain = useMemo(() => {
     if (!isDifferentSenderTx && !isCustomDestinationTx) {
       return null
     }
@@ -117,16 +113,22 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isDifferentSenderTx ? l2.network.id : l1.network.id
+      return isDifferentSenderTx ? l2.network : l1.network
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isDifferentSenderTx ? l1.network.id : l2.network.id
-  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2])
+    return isDifferentSenderTx ? l1.network : l2.network
+  }, [
+    isDifferentSenderTx,
+    isCustomDestinationTx,
+    tx.isWithdrawal,
+    l1.network,
+    l2.network
+  ])
 
-  if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
+  if (!explorerChain || !isCustomDestinationAddressTx(tx)) {
     return null
   }
 
@@ -141,14 +143,10 @@ export const CustomAddressTxExplorer = ({
       ) : (
         <span>Funds sent to: </span>
       )}
-      <ExternalLink
-        className={explorerClassName}
-        href={`${getExplorerUrl(explorerChainId)}/address/${
-          isDifferentSenderTx ? tx.sender : tx.destination
-        }`}
-      >
-        {shortenAddress(isDifferentSenderTx ? tx.sender : tx.destination)}
-      </ExternalLink>
+      <ExplorerAddressLink
+        explorerUrl={explorerChain.blockExplorers?.default.url}
+        address={isDifferentSenderTx ? tx.sender : tx.destination}
+      />
     </>
   )
 }
