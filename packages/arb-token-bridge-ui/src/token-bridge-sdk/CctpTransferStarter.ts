@@ -8,7 +8,11 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import { getCctpUtils, fetchPerMessageBurnLimit, getContracts } from './cctp'
+import {
+  getCctpUtils,
+  fetchPerMessageBurnLimit,
+  getCctpContracts
+} from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { BigNumber, Signer } from 'ethers'
@@ -37,7 +41,9 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const recipient = destinationAddress ?? address
-    const { tokenMessengerContractAddress } = getContracts(sourceChainId)
+    const { tokenMessengerContractAddress } = getCctpContracts({
+      sourceChainId
+    })
 
     const allowanceForL1Gateway = await fetchErc20Allowance({
       address: selectedToken.address,
@@ -79,7 +85,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }) {
     const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
     const { usdcContractAddress, tokenMessengerContractAddress } =
-      getContracts(sourceChainId)
+      getCctpContracts({ sourceChainId })
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
     return await contract.estimateGas.approve(
       tokenMessengerContractAddress,
