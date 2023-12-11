@@ -26,7 +26,7 @@ describe('User enters site with query params on URL', () => {
         cy.visit('/', {
           qs: {
             amount: 'max',
-            sourceChain: 'localhost',
+            sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
           }
         })
@@ -67,7 +67,7 @@ describe('User enters site with query params on URL', () => {
         cy.visit('/', {
           qs: {
             amount: 'MAX',
-            sourceChain: 'localhost',
+            sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
           }
         })
@@ -108,7 +108,7 @@ describe('User enters site with query params on URL', () => {
         cy.visit('/', {
           qs: {
             amount: 'MaX',
-            sourceChain: 'localhost',
+            sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
           }
         })
@@ -148,7 +148,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '56',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -159,7 +159,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '1.6678',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -170,7 +170,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '6',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -181,7 +181,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '0.123',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -193,7 +193,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '-0.123',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -204,7 +204,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: 'asdfs',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -215,7 +215,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '0',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -226,7 +226,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '0.0001',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -237,7 +237,7 @@ describe('User enters site with query params on URL', () => {
       cy.visit('/', {
         qs: {
           amount: '123,3,43',
-          sourceChain: 'localhost',
+          sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
@@ -250,7 +250,7 @@ describe('User enters site with query params on URL', () => {
         cy.visit('/', {
           qs: {
             amount: '0, 123.222, 0.3',
-            sourceChain: 'localhost',
+            sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
           }
         })

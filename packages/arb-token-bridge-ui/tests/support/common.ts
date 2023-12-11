@@ -8,14 +8,11 @@ import { MultiCaller } from '@arbitrum/sdk'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
-  | 'localhost'
   | 'custom-localhost'
   | 'arbitrum-localhost'
   | 'mainnet'
   | 'goerli'
-  | 'Sepolia test network'
-
-export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
+  | 'sepolia'
 
 type NetworkConfig = {
   networkName: NetworkName
@@ -26,14 +23,16 @@ type NetworkConfig = {
   multiCall: string
 }
 
+export const getNetworkNameForE2E = (networkType: NetworkType) => {
+  if (networkType === 'L1') {
+    return getL1NetworkConfig().networkName
+  }
+  return getL2NetworkConfig().networkName
+}
+
 export const getL1NetworkConfig = (): NetworkConfig => {
   return {
-    // reuse built-in Metamask network if possible
-    // we add a new network in CI because of a different rpc url
-    networkName:
-      Cypress.env('ETH_RPC_URL') === metamaskLocalL1RpcUrl
-        ? 'localhost'
-        : 'custom-localhost',
+    networkName: 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: '1337',
     symbol: 'ETH',
