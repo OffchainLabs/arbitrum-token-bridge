@@ -236,11 +236,11 @@ export function TransferPanel() {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: networks.destinationChainProvider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -743,7 +743,6 @@ export function TransferPanel() {
 
     try {
       setTransferring(true)
-      console.log(chainId, networks.sourceChain.id)
       if (chainId !== networks.sourceChain.id) {
         await switchNetworkAsync?.(networks.sourceChain.id)
       }
