@@ -29,7 +29,7 @@ env:
 jobs:
   check-is-hotfix:
     name: Check if PR is hotfix
-    runs-on: ubuntu-latest         
+    runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
     
@@ -266,11 +266,11 @@ jobs:
     if: always() && needs.check-is-hotfix.result == 'success' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     steps:
       - name: E2E Succeeded
-        if: needs.test-e2e.outputs.exitcode == 0
+        if: ${{ success() }}
         run: echo "nice"
         
       - name: E2E Failed
-        if: needs.test-e2e.outputs.exitcode != 0
+        if: ${{ failure() }}
         run: exit 1
 
   clean-up:
