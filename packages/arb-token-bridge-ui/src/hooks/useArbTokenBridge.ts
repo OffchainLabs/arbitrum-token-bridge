@@ -528,7 +528,7 @@ export const useArbTokenBridge = (
         uniqueId: null,
         isWithdrawal: true,
         blockNum: null,
-        tokenAddress: null,
+        tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
         childChainId: Number(l2NetworkID)
       })
