@@ -7,8 +7,6 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 
 import { useChainId, useSigner } from 'wagmi'
-import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -22,6 +20,8 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
