@@ -174,8 +174,6 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
-    outputs:
-      exitcode: ${{ steps.test-e2e.outputs.exitcode }}
 
     steps:
       - name: Checkout
@@ -242,17 +240,8 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Run e2e tests
-        id: test-e2e
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
-          exitcode="$?"
-          # only change exitcode if the test failed
-          # if one test failed, the e2e teststeps.test-e2e is considered failed
-          if [ $exitcode != 0 ]
-          then
-            echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-          fi
-          exit "$exitcode"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
