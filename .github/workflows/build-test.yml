@@ -252,6 +252,8 @@ jobs:
     name: "Test E2E Success"
     runs-on: ubuntu-latest
     needs: [check-is-hotfix, test-e2e]
+    # because there are two jobs needed, we need to explicitly state all the conditions
+    # https://github.com/actions/runner/issues/2205#issuecomment-1381988186
     if: always() && needs.check-is-hotfix.result == 'success' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     steps:
       - name: E2E Succeeded
