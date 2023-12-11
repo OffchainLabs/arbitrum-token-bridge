@@ -53,22 +53,22 @@ export function login({
   const network =
     networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
   const networkNameWithDefault = networkName ?? network.networkName
+  const sourceChain = getSourceChainFromNetworkName(networkNameWithDefault)
 
   function _startWebApp() {
-    const sourceChain = getSourceChainFromNetworkName(networkNameWithDefault)
     startWebApp(url, { ...query, sourceChain })
   }
 
-  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
+  shouldChangeNetwork(sourceChain).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+      cy.changeMetamaskNetwork(sourceChain).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkNameWithDefault)
+    cy.task('setCurrentNetworkName', sourceChain)
   })
 }
 
