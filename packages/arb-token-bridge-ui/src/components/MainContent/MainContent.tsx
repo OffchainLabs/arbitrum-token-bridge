@@ -7,6 +7,8 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { useAccount } from 'wagmi'
 
 export const motionDivProps = {
   layout: true,
@@ -26,6 +28,8 @@ export const motionDivProps = {
 
 export function MainContent() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
+  const { address } = useAccount()
+  const transactionHistoryProps = useTransactionHistory(address)
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
@@ -54,7 +58,7 @@ export function MainContent() {
         onClose={closeTransactionHistoryPanel}
         scrollable={false}
       >
-        <TransactionHistory />
+        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
       </SidePanel>
 
       {/* Settings panel */}
