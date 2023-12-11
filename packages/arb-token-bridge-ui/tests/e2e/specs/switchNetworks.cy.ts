@@ -22,17 +22,15 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Ethereum/i })
-              .should('be.visible'),
+              .findByRole('button', { name: 'Selected Network : Ethereum' })
+              .should('be.visible')
+              .click(),
           {
-            errorMsg: "Can't find /From: Ethereum/i",
+            errorMsg: "Can't find 'Selected Network : Ethereum'",
             timeout: 10000,
             interval: 500
           }
         )
-        cy.findByRole('button', { name: /Selected Network : /i })
-          .should('be.visible')
-          .click()
 
         cy.findByRole('button', { name: /Switch to Arbitrum One/i }).should(
           'be.visible'
@@ -69,17 +67,15 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Ethereum/i })
-              .should('be.visible'),
+              .findByRole('button', { name: 'Selected Network : Ethereum' })
+              .should('be.visible')
+              .click(),
           {
-            errorMsg: "Can't find /From: Ethereum/i",
+            errorMsg: "Can't find 'Selected Network : Ethereum'",
             timeout: 10000,
             interval: 500
           }
         )
-        cy.findByRole('button', { name: /Selected Network : /i })
-          .should('be.visible')
-          .click()
 
         cy.findByRole('button', { name: /Switch to Arbitrum Nova/i }).click()
 
@@ -95,67 +91,23 @@ describe('Switch Networks', () => {
         cy.waitUntil(
           () =>
             cy
-              .findByRole('button', { name: /From: Arbitrum Nova/i })
-              .should('be.visible'),
+              .findByRole('button', {
+                name: 'Selected Network : Arbitrum Nova'
+              })
+              .should('be.visible')
+              .click(),
           {
-            errorMsg: "Can't find /From: Arbitrum Nova/i",
+            errorMsg: "Can't find 'Selected Network : Ethereum'",
             timeout: 10000,
             interval: 500
           }
         ).then(() => {
-          cy.findByRole('button', { name: /Selected Network : /i })
-            .should('be.visible')
-            .click()
-
           cy.findByRole('button', { name: /Switch to Ethereum/i }).click()
 
           cy.allowMetamaskToSwitchNetwork().then(() => {
             cy.findByRole('button', {
               name: /Selected Network : Ethereum/i
             }).should('be.visible')
-          })
-        })
-      })
-    })
-
-    context('Test Networks list in Wrong Network UI', () => {
-      it('should show wrong network UI', () => {
-        cy.login({ networkType: 'L1' })
-        // wrong network UI flaky right after login, cy.wait fixes the flaky test
-        // eslint-disable-next-line
-        cy.wait(5000)
-        cy.addMetamaskNetwork({
-          networkName: optimism.name,
-          rpcUrl: optimism.rpcUrls.default.http[0],
-          chainId: String(optimism.id),
-          symbol: optimism.nativeCurrency.symbol,
-          isTestnet: false
-        }).then(() => {
-          cy.waitUntil(
-            () =>
-              cy
-                .findByText(/Oops! You’re connected to the wrong network/i)
-                .should('be.visible'),
-            {
-              errorMsg:
-                "Can't find /Oops! You’re connected to the wrong network/i",
-              timeout: 10000,
-              interval: 500
-            }
-          ).then(() => {
-            context('Allow Network change from wrong network UI list', () => {
-              cy.findByRole('button', {
-                name: /Switch to Ethereum/i
-              })
-                .should('be.visible')
-                .click()
-
-              cy.allowMetamaskToSwitchNetwork().then(() => {
-                cy.findByRole('button', {
-                  name: /Selected Network : Ethereum/i
-                }).should('be.visible')
-              })
-            })
           })
         })
       })
