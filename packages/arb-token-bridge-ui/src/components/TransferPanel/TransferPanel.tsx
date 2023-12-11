@@ -87,7 +87,7 @@ import {
   getChainIdFromProvider,
   getAddressFromSigner
 } from '@/token-bridge-sdk/utils'
-import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransfer'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
