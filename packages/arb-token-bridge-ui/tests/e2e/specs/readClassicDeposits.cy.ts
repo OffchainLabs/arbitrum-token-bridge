@@ -102,8 +102,7 @@ describe('Read classic deposit messages', () => {
         '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'
 
       cy.findByLabelText(/l1 transaction status/i).should('contain', 'Success')
-      // deliberate failure
-      cy.findByLabelText(/l3 transaction status/i).should('contain', 'Success')
+      cy.findByLabelText(/l2 transaction status/i).should('contain', 'Success')
 
       cy.findByLabelText(/l1 transaction link/i).should(
         'contain',
