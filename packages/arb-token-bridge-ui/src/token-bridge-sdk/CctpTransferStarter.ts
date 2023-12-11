@@ -11,7 +11,9 @@ import { formatAmount } from '../util/NumberUtils'
 import { cctpContracts, fetchPerMessageBurnLimit, getContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { BigNumber } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Provider } from '@ethersproject/providers'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
@@ -61,6 +63,25 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     // approve USDC token for burn
     const tx = await cctpContracts(sourceChainId).approveForBurn(amount, signer)
     await tx.wait()
+  }
+
+  public static async approveCctpGasEstimation({
+    sourceChainProvider,
+    amount,
+    signer
+  }: {
+    sourceChainProvider: Provider
+    amount: BigNumber
+    signer: Signer
+  }) {
+    const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
+    const { usdcContractAddress, tokenMessengerContractAddress } =
+      getContracts(sourceChainId)
+    const contract = ERC20__factory.connect(usdcContractAddress, signer)
+    return await contract.estimateGas.approve(
+      tokenMessengerContractAddress,
+      amount
+    )
   }
 
   public async transfer({

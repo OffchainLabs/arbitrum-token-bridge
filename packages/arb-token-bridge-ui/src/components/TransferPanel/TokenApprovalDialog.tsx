@@ -7,6 +7,8 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 
 import { useChainId, useSigner } from 'wagmi'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -18,10 +20,6 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import {
-  approveCctpEstimateGas,
-  approveTokenEstimateGas
-} from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getContracts } from '@/token-bridge-sdk/cctp'
@@ -91,14 +89,14 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         if (!signer) {
           gasEstimate = constants.Zero
         } else {
-          gasEstimate = await approveCctpEstimateGas(
-            chainId,
-            constants.MaxUint256,
+          gasEstimate = await CctpTransferStarter.approveCctpGasEstimation({
+            sourceChainProvider: provider,
+            amount: constants.MaxUint256,
             signer
-          )
+          })
         }
       } else if (walletAddress) {
-        gasEstimate = await approveTokenEstimateGas({
+        gasEstimate = await BridgeTransferStarter.approveTokenGasEstimation({
           erc20L1Address: token.address,
           address: walletAddress,
           l1Provider: l1.provider,
@@ -118,6 +116,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode,
     isTestnet,
     chainId,
+    provider,
     signer,
     walletAddress,
     token?.address,

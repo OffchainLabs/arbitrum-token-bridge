@@ -1,4 +1,7 @@
 import { Provider } from '@ethersproject/providers'
+import { MaxUint256 } from '@ethersproject/constants'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Erc20Bridger } from '@arbitrum/sdk'
 import { ERC20BridgeToken } from '../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
 import { BigNumber, Signer } from 'ethers'
@@ -68,6 +71,13 @@ export type ApproveTokenProps = {
   destinationChainProvider: Provider
 }
 
+export type ApproveTokenGasEstimationProps = {
+  erc20L1Address: string
+  address: string
+  l1Provider: Provider
+  l2Provider: Provider
+}
+
 export abstract class BridgeTransferStarter {
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
@@ -92,6 +102,25 @@ export abstract class BridgeTransferStarter {
   public abstract requiresTokenApproval(
     props: RequiresTokenApprovalProps
   ): Promise<boolean>
+
+  public static async approveTokenGasEstimation({
+    erc20L1Address,
+    address,
+    l1Provider,
+    l2Provider
+  }: ApproveTokenGasEstimationProps) {
+    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
+      erc20L1Address,
+      l1Provider
+    )
+
+    const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
+
+    return contract.estimateGas.approve(l1GatewayAddress, MaxUint256, {
+      from: address
+    })
+  }
 
   public abstract approveToken(props: ApproveTokenProps): Promise<void>
 
