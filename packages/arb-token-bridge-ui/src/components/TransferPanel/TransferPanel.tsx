@@ -69,7 +69,7 @@ import {
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
-import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
+import { getCctpUtils, getContracts } from '@/token-bridge-sdk/cctp'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { useStyles } from '../../hooks/TransferPanel/useStyles'
@@ -215,7 +215,7 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
-  const { approveForBurn, depositForBurn } = useCCTP({
+  const { approveForBurn, depositForBurn } = getCctpUtils({
     sourceChainId: isDepositMode
       ? latestNetworksAndSigners.current.l1.network.id
       : latestNetworksAndSigners.current.l2.network.id

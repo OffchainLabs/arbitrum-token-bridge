@@ -1,9 +1,9 @@
 import useSWRImmutable from 'swr/immutable'
 import { ChainId } from '../../util/networks'
-import { useCCTP } from './useCCTP'
+import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 
 export function useCCTPIsBlocked() {
-  const { fetchAttestation } = useCCTP({ sourceChainId: ChainId.Ethereum })
+  const { fetchAttestation } = getCctpUtils({ sourceChainId: ChainId.Ethereum })
 
   return useSWRImmutable(['cctp-check'], async () => {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful
