@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { StatusBadge } from '../common/StatusBadge'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { ExternalLink } from '../common/ExternalLink'
@@ -26,6 +25,7 @@ import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAd
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -222,7 +222,6 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { l1 } = useNetworksAndSigners()
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -272,9 +271,9 @@ export function TransactionsTableDepositRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l1.network
+        chain: getWagmiChain(tx.parentChainId)
       }),
-    [l1.network, tx.asset, tx.tokenAddress]
+    [tx.parentChainId, tx.asset, tx.tokenAddress]
   )
 
   const customAddressTxPadding = useMemo(

@@ -1,4 +1,3 @@
-import { mutate, useSWRConfig, unstable_serialize } from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -369,7 +368,6 @@ export const useTransactionHistory = (
   const [fetching, setFetching] = useState(true)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
-  const { cache } = useSWRConfig()
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[] | undefined) => {
@@ -388,15 +386,24 @@ export const useTransactionHistory = (
   const {
     data: txPages,
     error: txPagesError,
-    setSize: setPage
-  } = useSWRInfinite(getCacheKey, ([, , _page]) => {
-    const startIndex = _page * MAX_BATCH_SIZE
-    const endIndex = startIndex + MAX_BATCH_SIZE
+    setSize: setPage,
+    mutate
+  } = useSWRInfinite(
+    getCacheKey,
+    ([, , _page]) => {
+      const startIndex = _page * MAX_BATCH_SIZE
+      const endIndex = startIndex + MAX_BATCH_SIZE
 
-    return Promise.all(
-      data.slice(startIndex, endIndex).map(transformTransaction)
-    )
-  })
+      return Promise.all(
+        data.slice(startIndex, endIndex).map(transformTransaction)
+      )
+    },
+    {
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false
+    }
+  )
 
   const transactions: MergedTransaction[] = (txPages || []).flat()
 
@@ -417,19 +424,17 @@ export const useTransactionHistory = (
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
-      const cacheKey = getCacheKey(0, undefined)
+      mutate(pages => {
+        if (!pages) {
+          // e.g. when tx history is still fetching
+          return [[tx]]
+        }
 
-      if (!cacheKey || !isTxPending(tx)) {
-        return
-      }
-
-      const prevTransactions =
-        (cache.get(unstable_serialize(cacheKey))
-          ?.data as MergedTransaction[]) || []
-
-      mutate(cacheKey, [tx, ...prevTransactions], true)
+        // add the new tx at the start of the first page
+        return [[tx, ...(pages[0] ?? [])], ...pages.slice(1)]
+      }, false)
     },
-    [cache, getCacheKey]
+    [mutate]
   )
 
   useEffect(() => {

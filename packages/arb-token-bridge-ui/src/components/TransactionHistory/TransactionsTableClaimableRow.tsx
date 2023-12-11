@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
@@ -305,16 +305,8 @@ export function TransactionsTableClaimableRow({
 }) {
   const isError = tx.status === 'Failure'
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
-  const {
-    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
-    isArbitrum: isSourceChainIdArbitrum
-  } = isNetwork(sourceChainId)
+  const { isArbitrum: isSourceChainIdArbitrum } = isNetwork(sourceChainId)
   const { address } = useAccount()
-
-  const tokensFromLists = useTokensFromLists({
-    parentChainId: tx.parentChainId,
-    chainId: tx.childChainId
-  })
 
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
@@ -326,33 +318,14 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
-        )
+        chain: getWagmiChain(tx.parentChainId)
       }),
-    [
-      tx.asset,
-      tx.tokenAddress,
-      tx.parentChainId,
-      tx.childChainId,
-      isSourceChainIdEthereum
-    ]
+    [tx.asset, tx.tokenAddress, tx.parentChainId]
   )
 
   const customAddressTxPadding = useMemo(
     () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
     [tx]
-  )
-
-  const getTokenLogoURI = useCallback(
-    (tx: MergedTransaction) => {
-      if (!tx.tokenAddress) {
-        return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-      }
-
-      return tokensFromLists[tx.tokenAddress]?.logoURI
-    },
-    [tokensFromLists]
   )
 
   if (!tx.sender || !address) {
