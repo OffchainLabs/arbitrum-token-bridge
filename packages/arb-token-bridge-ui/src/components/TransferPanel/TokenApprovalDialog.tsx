@@ -24,7 +24,7 @@ import {
 } from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { getContracts } from '@/token-bridge-sdk/cctp'
+import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress
@@ -128,7 +128,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   useEffect(() => {
     const getContractAddress = async function () {
       if (isCctp) {
-        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
+        setContractAddress(
+          getCctpContracts(chainId)?.tokenMessengerContractAddress
+        )
         return
       }
       if (!token?.address) {

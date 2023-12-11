@@ -74,7 +74,7 @@ export type AttestationResponse =
       status: 'pending_confirmations'
     }
 
-export function getContracts(chainId: ChainId | undefined) {
+export function getCctpContracts(chainId: ChainId | undefined) {
   if (!chainId) {
     return contracts[ChainId.Ethereum]
   }
@@ -89,7 +89,7 @@ export function fetchPerMessageBurnLimit({
   sourceChainId: CCTPSupportedChainId
 }) {
   const { usdcContractAddress, tokenMinterContractAddress } =
-    getContracts(sourceChainId)
+    getCctpContracts(sourceChainId)
 
   return readContract({
     address: tokenMinterContractAddress,
@@ -108,7 +108,7 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     attestationApiUrl,
     usdcContractAddress,
     messageTransmitterContractAddress
-  } = getContracts(sourceChainId)
+  } = getCctpContracts(sourceChainId)
 
   const depositForBurn = async ({
     amount,

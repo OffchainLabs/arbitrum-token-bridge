@@ -69,7 +69,7 @@ import {
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getStandardizedTimestamp } from '../../state/app/utils'
-import { getCctpUtils, getContracts } from '@/token-bridge-sdk/cctp'
+import { getCctpUtils, getCctpContracts } from '@/token-bridge-sdk/cctp'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { useStyles } from '../../hooks/TransferPanel/useStyles'
@@ -591,7 +591,7 @@ export function TransferPanel() {
 
       const recipient = destinationAddress || walletAddress
       const { usdcContractAddress, tokenMessengerContractAddress } =
-        getContracts(sourceChainId)
+        getCctpContracts(sourceChainId)
 
       const allowance = await fetchErc20Allowance({
         address: usdcContractAddress,
