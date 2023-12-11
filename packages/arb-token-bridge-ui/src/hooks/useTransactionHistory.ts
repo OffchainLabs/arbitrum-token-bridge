@@ -30,8 +30,6 @@ import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWit
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 
-const PAGE_SIZE = 100
-
 export type Deposit = Transaction
 
 export type Withdrawal =
@@ -171,15 +169,6 @@ function getProvider(chainId: ChainId) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
-  const [deposits, setDeposits] = useState<Deposit[][]>([])
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[][]>([])
-
-  const [depositsPage, setDepositsPage] = useState(0)
-  const [withdrawalsPage, setWithdrawalsPage] = useState(0)
-
-  const [depositsLoading, setDepositsLoading] = useState(true)
-  const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
-
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -216,113 +205,52 @@ const useTransactionHistoryWithoutStatuses = (
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
-  const shouldFetchNextPageForChainPair = useCallback(
-    (chainPairIndex: number, direction: 'deposits' | 'withdrawals') => {
-      const isDeposits = direction === 'deposits'
-      const page = isDeposits ? depositsPage : withdrawalsPage
-      const transactions = isDeposits ? deposits : withdrawals
-
-      if (page === 0) {
-        return true
-      }
-
-      const txCountForChainPair = transactions[chainPairIndex]?.length ?? 0
-      // fetch next page for a chain pair if all fetched pages are full
-      // we check for >= in case some txs were included by initiating a transfer
-      return txCountForChainPair / page >= PAGE_SIZE
-    },
-    [depositsPage, withdrawalsPage, deposits, withdrawals]
-  )
-
-  const { data: depositsData, error: depositsError } = useSWRImmutable(
-    address ? ['tx_list', 'deposits', address, depositsPage] : null,
-    ([, , _address, _page]) => {
+  const {
+    data: depositsData,
+    error: depositsError,
+    isLoading: depositsLoading
+  } = useSWRImmutable(
+    address ? ['tx_list', 'deposits', address] : null,
+    ([, , _address]) => {
       return Promise.all(
-        multiChainFetchList.map((chainPair, chainPairIndex) => {
-          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'deposits')) {
-            return []
-          }
-
+        multiChainFetchList.map(chainPair => {
           return fetchDeposits({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
             l2Provider: getProvider(chainPair.chain),
-            pageNumber: _page,
-            pageSize: PAGE_SIZE
+            pageNumber: 0,
+            pageSize: 1000
           })
         })
       )
     }
   )
 
-  const { data: withdrawalsData, error: withdrawalsError } = useSWRImmutable(
-    address ? ['tx_list', 'withdrawals', address, withdrawalsPage] : null,
-    ([, , _address, _page]) => {
+  const {
+    data: withdrawalsData,
+    error: withdrawalsError,
+    isLoading: withdrawalsLoading
+  } = useSWRImmutable(
+    address ? ['tx_list', 'withdrawals', address] : null,
+    ([, , _address]) => {
       return Promise.all(
-        multiChainFetchList.map((chainPair, chainPairIndex) => {
-          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'withdrawals')) {
-            return []
-          }
-
+        multiChainFetchList.map(chainPair => {
           return fetchWithdrawals({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
             l2Provider: getProvider(chainPair.chain),
-            pageNumber: _page,
-            pageSize: PAGE_SIZE
+            pageNumber: 0,
+            pageSize: 1000
           })
         })
       )
     }
   )
 
-  function addDeposits(transactions: Deposit[][]) {
-    const fetchedSomeData = transactions.some(item => item.length > 0)
-
-    if (fetchedSomeData) {
-      setDeposits(prevDeposits => {
-        return transactions.map((transactionsForChainPair, chainPairIndex) => [
-          ...(prevDeposits[chainPairIndex] ?? []),
-          ...(transactionsForChainPair ?? [])
-        ])
-      })
-      setDepositsPage(prevPage => prevPage + 1)
-    } else {
-      setDepositsLoading(false)
-    }
-  }
-
-  function addWithdrawals(transactions: Withdrawal[][]) {
-    const fetchedSomeData = transactions.some(item => item.length > 0)
-
-    if (fetchedSomeData) {
-      setWithdrawals(prevWithdrawal => {
-        return transactions.map((transactionsForChainPair, chainPairIndex) => [
-          ...(prevWithdrawal[chainPairIndex] ?? []),
-          ...(transactionsForChainPair ?? [])
-        ])
-      })
-      setWithdrawalsPage(prevPage => prevPage + 1)
-    } else {
-      setWithdrawalsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (!depositsData) {
-      return
-    }
-    addDeposits(depositsData)
-  }, [depositsData])
-
-  useEffect(() => {
-    if (!withdrawalsData) {
-      return
-    }
-    addWithdrawals(withdrawalsData)
-  }, [withdrawalsData])
+  const deposits = (depositsData || []).flat()
+  const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
@@ -395,10 +323,11 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
 
   function resume() {
     setFetching(true)
+    setPage(prevPage => prevPage + 1)
   }
 
   useEffect(() => {
-    if (!txPages || !fetching) {
+    if (!txPages) {
       return
     }
 
@@ -432,19 +361,19 @@ export const useTransactionHistory = (address: `0x${string}` | undefined) => {
         // we also increment pause count so the next iteration can calculate max timestamp
         pause()
         return prevPauseCount + 1
+      } else {
+        // mapped data is a full page, so we need to fetch more pages
+        if (lastTxPage.length === MAX_BATCH_SIZE) {
+          setPage(prevPage => prevPage + 1)
+        } else {
+          setFetching(false)
+        }
       }
 
       // otherwise do not pause, we also keep the pause count as-is
       return prevPauseCount
     })
-
-    // mapped data is a full page, so we need to fetch more pages
-    if (lastTxPage.length === MAX_BATCH_SIZE) {
-      setPage(prevPage => prevPage + 1)
-    } else {
-      setFetching(false)
-    }
-  }, [txPages, fetching])
+  }, [txPages])
 
   if (loading || error) {
     return {
