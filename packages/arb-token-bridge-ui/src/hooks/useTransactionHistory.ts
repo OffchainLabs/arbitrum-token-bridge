@@ -423,17 +423,6 @@ export const useTransactionHistory = (
     setFetching(true)
   }
 
-  const getTransactionsForPage = useCallback(
-    (pageNumber: number) => {
-      const cacheKey = getCacheKey(pageNumber)
-      return (
-        (cache.get(unstable_serialize(cacheKey))
-          ?.data as MergedTransaction[]) || []
-      )
-    },
-    [cache, getCacheKey]
-  )
-
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
       mutate(pages => {
@@ -451,31 +440,47 @@ export const useTransactionHistory = (
 
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
-      for (let i = 0; i < page; i++) {
-        const oldTxsForPage = getTransactionsForPage(i)
-        // see if tx exist in cache for this page
-        const foundInCache = !!oldTxsForPage.find(oldTx =>
+      if (!txPages) {
+        return
+      }
+
+      let pageNumberToUpdate = 0
+
+      // search cache for the tx to update
+      while (
+        !txPages[pageNumberToUpdate]?.find(oldTx =>
           isSameTransaction(oldTx, newTx)
         )
+      ) {
+        pageNumberToUpdate++
 
-        if (!foundInCache) {
-          // tx does not exist
+        if (pageNumberToUpdate > txPages.length) {
+          // tx not found
           return
         }
-
-        // if exists, then we replace it with the new transaction
-        const newTxs = oldTxsForPage.map(oldTx => {
-          if (isSameTransaction(oldTx, newTx)) {
-            return newTx
-          }
-          return oldTx
-        })
-
-        mutate(getCacheKey(i), newTxs, false)
-        break
       }
+
+      const oldPageToUpdate = txPages[pageNumberToUpdate]
+
+      if (!oldPageToUpdate) {
+        return
+      }
+
+      // replace the old tx with the new tx
+      const updatedPage = oldPageToUpdate.map(oldTx => {
+        return isSameTransaction(oldTx, newTx) ? newTx : oldTx
+      })
+
+      // all old pages including the new updated page
+      const newTxPages = [
+        ...[...txPages].slice(0, pageNumberToUpdate),
+        updatedPage,
+        ...[...txPages].slice(pageNumberToUpdate + 1)
+      ]
+
+      mutate(newTxPages)
     },
-    [getCacheKey, getTransactionsForPage, page]
+    [mutate, txPages]
   )
 
   const updatePendingTransaction = useCallback(
