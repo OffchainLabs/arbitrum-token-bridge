@@ -15,7 +15,7 @@ import {
   getL2ChainIds,
   isNetwork
 } from '../../util/networks'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { getChainByChainId } from '../../util/wagmi/getChainByChainId'
 import {
   AdvancedSettings,
   useDestinationAddressStore
@@ -110,7 +110,7 @@ export function SwitchNetworksButton(
 }
 
 function getListboxOptionsFromL1Network(network: Chain) {
-  return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
+  return getL2ChainIds(network.id).map(chainId => getChainByChainId(chainId))
 }
 
 function CustomAddressBanner({

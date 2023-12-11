@@ -27,7 +27,7 @@ const customChains = getCustomChainsFromLocalStorage().map(chain =>
   chainToWagmiChain(chain)
 )
 
-const chainList = isTestingEnvironment
+export const chainList = isTestingEnvironment
   ? [
       // mainnet, arb1, & arb nova are for network switch tests
       mainnet,
@@ -60,10 +60,6 @@ const chainList = isTestingEnvironment
       stylusTestnet,
       ...customChains
     ]
-
-export function getChainByChainId(chainId: ChainId) {
-  return chainList.find(chain => chain.id === chainId)
-}
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 

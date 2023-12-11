@@ -36,7 +36,7 @@ import {
   isNetwork,
   rpcURLs
 } from '../util/networks'
-import { getWagmiChain } from '../util/wagmi/getWagmiChain'
+import { getChainByChainId } from '../util/wagmi/getChainByChainId'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -335,11 +335,11 @@ export function NetworksAndSignersProvider(
         setResult({
           status: UseNetworksAndSignersStatus.CONNECTED,
           l1: {
-            network: getWagmiChain(parentChain.chainID),
+            network: getChainByChainId(parentChain.chainID),
             provider: parentProvider
           },
           l2: {
-            network: getWagmiChain(chain.chainID),
+            network: getChainByChainId(chain.chainID),
             provider: chainProvider
           }
         })
@@ -388,11 +388,11 @@ export function NetworksAndSignersProvider(
             setResult({
               status: UseNetworksAndSignersStatus.CONNECTED,
               l1: {
-                network: getWagmiChain(parentChain.chainID),
+                network: getChainByChainId(parentChain.chainID),
                 provider: parentProvider
               },
               l2: {
-                network: getWagmiChain(chain.chainID),
+                network: getChainByChainId(chain.chainID),
                 provider: chainProvider
               }
             })
