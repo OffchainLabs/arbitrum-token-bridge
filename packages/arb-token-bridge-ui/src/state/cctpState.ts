@@ -543,9 +543,9 @@ export function useCctpFetching({
 
 export function useClaimCctp(tx: MergedTransaction) {
   const [isClaiming, setIsClaiming] = useState(false)
-  const { waitForAttestation, receiveMessage } = getCctpUtils(
-    tx.cctpData?.sourceChainId
-  )
+  const { waitForAttestation, receiveMessage } = getCctpUtils({
+    sourceChainId: tx.cctpData?.sourceChainId
+  })
   const { isSmartContractWallet } = useAccountType()
 
   const { updateTransfer } = useCctpState()

@@ -3,7 +3,7 @@ import { ChainId } from '../../util/networks'
 import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 
 export function useCCTPIsBlocked() {
-  const { fetchAttestation } = getCctpUtils(ChainId.Ethereum)
+  const { fetchAttestation } = getCctpUtils({ sourceChainId: ChainId.Ethereum })
   return useSWRImmutable(['cctp-check'], async () => {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful
     // Circle API returns 403 with Cors error for unauthorized users which throws instantly.

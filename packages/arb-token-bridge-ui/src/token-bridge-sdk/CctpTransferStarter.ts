@@ -61,7 +61,10 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     // approve USDC token for burn
-    const tx = await getCctpUtils(sourceChainId).approveForBurn(amount, signer)
+    const tx = await getCctpUtils({ sourceChainId }).approveForBurn(
+      amount,
+      signer
+    )
     await tx.wait()
   }
 
@@ -112,7 +115,9 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const recipient = destinationAddress || address
 
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
-    const depositForBurnTx = await getCctpUtils(sourceChainId).depositForBurn({
+    const depositForBurnTx = await getCctpUtils({
+      sourceChainId
+    }).depositForBurn({
       amount,
       signer: signer,
       recipient
