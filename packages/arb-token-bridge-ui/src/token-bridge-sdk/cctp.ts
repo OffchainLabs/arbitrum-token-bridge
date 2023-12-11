@@ -1,11 +1,9 @@
 import { readContract } from '@wagmi/core'
-import { BigNumber, Signer, utils } from 'ethers'
+import { Signer } from 'ethers'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -109,36 +107,11 @@ export function fetchPerMessageBurnLimit({
 export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
   const {
     tokenMessengerContractAddress,
-    targetChainDomain,
     targetChainId,
     attestationApiUrl,
     usdcContractAddress,
     messageTransmitterContractAddress
   } = getCctpContracts({ sourceChainId })
-
-  const depositForBurn = async ({
-    amount,
-    signer,
-    recipient
-  }: {
-    amount: BigNumber
-    signer: Signer
-    recipient: string
-  }) => {
-    // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
-    const mintRecipient = utils.hexlify(
-      utils.zeroPad(recipient, 32)
-    ) as `0x${string}`
-
-    const config = await prepareWriteContract({
-      address: tokenMessengerContractAddress,
-      abi: TokenMessengerAbi,
-      functionName: 'depositForBurn',
-      signer,
-      args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
-    })
-    return writeContract(config)
-  }
 
   const fetchAttestation = async (attestationHash: `0x${string}`) => {
     const response = await fetch(
@@ -180,14 +153,8 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     })
     return writeContract(config)
   }
-  const approveForBurn = async (amount: BigNumber, signer: Signer) => {
-    const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    return contract.functions.approve(tokenMessengerContractAddress, amount)
-  }
 
   return {
-    approveForBurn,
-    depositForBurn,
     receiveMessage,
     fetchAttestation,
     waitForAttestation

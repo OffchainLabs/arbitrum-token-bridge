@@ -1,3 +1,8 @@
+import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { BigNumber, Signer, utils } from 'ethers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { Provider } from '@ethersproject/providers'
+
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -8,16 +13,10 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import {
-  getCctpUtils,
-  fetchPerMessageBurnLimit,
-  getCctpContracts
-} from './cctp'
+import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { BigNumber, Signer } from 'ethers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { Provider } from '@ethersproject/providers'
+import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
@@ -66,11 +65,16 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }: ApproveTokenProps & { amount: BigNumber }) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
+    const { usdcContractAddress, tokenMessengerContractAddress } =
+      getCctpContracts({ sourceChainId })
+
     // approve USDC token for burn
-    const tx = await getCctpUtils({ sourceChainId }).approveForBurn(
-      amount,
-      signer
+    const contract = ERC20__factory.connect(usdcContractAddress, signer)
+    const tx = await contract.functions.approve(
+      tokenMessengerContractAddress,
+      amount
     )
+
     await tx.wait()
   }
 
@@ -121,14 +125,29 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const recipient = destinationAddress || address
 
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
-    const depositForBurnTx = await getCctpUtils({
+
+    // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
+    const mintRecipient = utils.hexlify(
+      utils.zeroPad(recipient, 32)
+    ) as `0x${string}`
+
+    const {
+      usdcContractAddress,
+      tokenMessengerContractAddress,
+      targetChainDomain
+    } = getCctpContracts({
       sourceChainId
-    }).depositForBurn({
-      amount,
-      signer: signer,
-      recipient
     })
 
+    const config = await prepareWriteContract({
+      address: tokenMessengerContractAddress,
+      abi: TokenMessengerAbi,
+      functionName: 'depositForBurn',
+      signer,
+      args: [amount, targetChainDomain, mintRecipient, usdcContractAddress]
+    })
+
+    const depositForBurnTx = await writeContract(config)
     if (!depositForBurnTx) {
       throw Error('USDC deposit transaction failed')
     }
