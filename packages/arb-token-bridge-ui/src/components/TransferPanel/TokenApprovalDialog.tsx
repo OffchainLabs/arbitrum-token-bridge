@@ -15,7 +15,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import {
@@ -30,6 +30,7 @@ import {
   fetchErc20L2GatewayAddress
 } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { ExplorerTokenLink } from '../common/atoms/ExplorerLink'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -200,14 +201,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               </span>
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
-            <ExternalLink
-              href={`${getExplorerUrl(
-                isDepositMode ? l1.network.id : l2.network.id
-              )}/token/${token?.address}`}
-              className="text-xs text-blue-link underline"
-            >
-              {token?.address.toLowerCase()}
-            </ExternalLink>
+            {token?.address && (
+              <ExplorerTokenLink
+                explorerUrl={
+                  (isDepositMode ? l1 : l2).network.blockExplorers?.default.url
+                }
+                className="text-xs"
+                tokenAddress={token.address}
+              />
+            )}
           </div>
         </div>
 
@@ -222,9 +224,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               permission to the{' '}
               <ExternalLink
                 className="text-blue-link underline"
-                href={`${getExplorerUrl(
-                  isDepositMode ? l1.network.id : l2.network.id
-                )}/address/${contractAddress}`}
+                href={`${
+                  (isDepositMode ? l1 : l2).network.blockExplorers?.default.url
+                }/address/${contractAddress}`}
                 onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
                   event.stopPropagation()
                 }}

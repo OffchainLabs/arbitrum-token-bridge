@@ -7,7 +7,6 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCardContainer } from './DepositCard'
 import { GET_HELP_LINK } from '../../constants'
-import { getExplorerUrl } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
 
 export function DepositCardL1Failure({ tx }: { tx: MergedTransaction }) {

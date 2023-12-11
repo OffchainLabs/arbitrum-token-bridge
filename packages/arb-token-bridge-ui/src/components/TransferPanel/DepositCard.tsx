@@ -1,10 +1,9 @@
 import React, { useMemo } from 'react'
 import Image from 'next/image'
+import { CheckCircleIcon } from '@heroicons/react/24/outline'
 
-import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction, DepositStatus } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { DepositCardPending } from './DepositCardPending'
@@ -12,8 +11,8 @@ import { DepositCardL1Failure } from './DepositCardL1Failure'
 import { DepositCardCreationFailure } from './DepositCardCreationFailure'
 import { DepositCardL2Failure } from './DepositCardL2Failure'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { ChainId, getExplorerUrl, getNetworkLogo } from '../../util/networks'
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { ChainId, getNetworkLogo } from '../../util/networks'
+import { ExplorerTxLink } from '../common/atoms/ExplorerLink'
 
 export function DepositL1TxStatus({
   tx
@@ -32,13 +31,13 @@ export function DepositL1TxStatus({
     case DepositStatus.CREATION_FAILED:
     case DepositStatus.EXPIRED:
       return (
-        <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
-          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
+        <ExplorerTxLink
+          explorerUrl={l1.network.blockExplorers?.default.url}
+          txId={tx.txId}
+          className="flex flex-nowrap items-center gap-1"
         >
-          {shortenTxHash(tx.txId)}
           <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
-        </ExternalLink>
+        </ExplorerTxLink>
       )
 
     default:
@@ -59,18 +58,17 @@ export function DepositL2TxStatus({
       return <span>Pending...</span>
 
     case DepositStatus.L2_SUCCESS:
+      if (!tx.l1ToL2MsgData || !tx.l1ToL2MsgData.l2TxID) {
+        return null
+      }
       return (
-        <ExternalLink
-          href={`${getExplorerUrl(l2.network.id)}/tx/${
-            tx.l1ToL2MsgData?.l2TxID
-          }`}
-          className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
+        <ExplorerTxLink
+          explorerUrl={l2.network.blockExplorers?.default.url}
+          txId={tx.l1ToL2MsgData.l2TxID}
+          className="flex flex-nowrap items-center gap-1"
         >
-          {shortenTxHash(tx.l1ToL2MsgData?.l2TxID || '')}
-          {tx.l1ToL2MsgData?.l2TxID && (
-            <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
-          )}
-        </ExternalLink>
+          <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
+        </ExplorerTxLink>
       )
 
     default:

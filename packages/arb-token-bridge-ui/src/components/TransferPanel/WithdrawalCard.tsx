@@ -1,24 +1,18 @@
 import React, { useMemo } from 'react'
 
-import { ExternalLink } from '../common/ExternalLink'
 import { MergedTransaction } from '../../state/app/state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../util/CommonUtils'
 import { trackEvent } from '../../util/AnalyticsUtils'
 
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import {
-  ChainId,
-  getExplorerUrl,
-  getNetworkLogo,
-  isNetwork
-} from '../../util/networks'
+import { ChainId, getNetworkLogo, isNetwork } from '../../util/networks'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { findMatchingL1TxForWithdrawal } from '../../state/app/utils'
 import Image from 'next/image'
 import { ClaimableCardConfirmed } from './ClaimableCardConfirmed'
 import { ClaimableCardUnconfirmed } from './ClaimableCardUnconfirmed'
 import { twMerge } from 'tailwind-merge'
+import { ExplorerTxLink } from '../common/atoms/ExplorerLink'
 
 export function WithdrawalL2TxStatus({
   tx
@@ -41,13 +35,13 @@ export function WithdrawalL2TxStatus({
   }
 
   return (
-    <ExternalLink
-      href={`${getExplorerUrl(l2Network.id)}/tx/${tx.txId}`}
-      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
+    <ExplorerTxLink
+      explorerUrl={l2Network.blockExplorers?.default.url}
+      txId={tx.txId}
+      className="flex flex-nowrap items-center gap-1"
     >
-      {shortenTxHash(tx.txId)}
       <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
-    </ExternalLink>
+    </ExplorerTxLink>
   )
 }
 
@@ -71,13 +65,13 @@ export function WithdrawalL1TxStatus({
   }
 
   return (
-    <ExternalLink
-      href={`${getExplorerUrl(l1Network.id)}/tx/${l1Tx.txId}`}
-      className="arb-hover flex flex-nowrap items-center gap-1 text-blue-link"
+    <ExplorerTxLink
+      explorerUrl={l1Network.blockExplorers?.default.url}
+      txId={l1Tx.txId}
+      className="flex flex-nowrap items-center gap-1"
     >
-      {shortenTxHash(l1Tx.txId)}
       <CheckCircleIcon className="h-4 w-4 text-lime-dark" />
-    </ExternalLink>
+    </ExplorerTxLink>
   )
 }
 

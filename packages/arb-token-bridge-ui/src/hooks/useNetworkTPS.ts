@@ -4,8 +4,9 @@ import axios from 'axios'
 import { load } from 'cheerio'
 import useSWR from 'swr'
 
-import { getExplorerUrl, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
+import { getChainByChainId } from '../util/wagmi/setup'
 
 const emptyData = { tps: null }
 
@@ -13,12 +14,13 @@ const fetchNetworkTPS = async (l2ChainId: number) => {
   // currently we only support TPS information for Arb-one and nova
   // return null for rest of the networks
   const canFetchTPS =
-    isNetwork(Number(l2ChainId)).isArbitrumNova ||
-    isNetwork(Number(l2ChainId)).isArbitrumOne
+    isNetwork(l2ChainId).isArbitrumNova || isNetwork(l2ChainId).isArbitrumOne
   if (!canFetchTPS) return emptyData
 
+  const chain = getChainByChainId(l2ChainId)
+
   // url from where we'll fetch stats
-  const explorerUrl = getExplorerUrl(Number(l2ChainId))
+  const explorerUrl = chain?.blockExplorers?.default.url ?? ''
 
   // for 403 or CORS blocked errors while scraping external endpoints, we use cors-proxy
   const finalUrl = `https://corsproxy.io/?${encodeURIComponent(explorerUrl)}`

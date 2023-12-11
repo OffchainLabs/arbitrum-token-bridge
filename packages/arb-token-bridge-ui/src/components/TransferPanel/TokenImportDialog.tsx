@@ -11,7 +11,6 @@ import { useLatest } from 'react-use'
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
-import { getExplorerUrl } from '../../util/networks'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -24,6 +23,7 @@ import GrumpyCat from '@/images/grumpy-cat.webp'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
+import { ExplorerTokenLink } from '../common/atoms/ExplorerLink'
 
 enum ImportStatus {
   LOADING,
@@ -358,17 +358,13 @@ export function TokenImportDialog({
             {tokenToImport?.symbol}
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
-          <a
-            href={`${getExplorerUrl(l1.network.id)}/token/${
-              tokenToImport?.address
-            }`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#1366C1' }}
-            className="break-all underline"
-          >
-            {tokenToImport?.address}
-          </a>
+          {tokenToImport?.address && (
+            <ExplorerTokenLink
+              explorerUrl={l1.network.blockExplorers?.default.url}
+              tokenAddress={tokenToImport.address}
+              className="break-all"
+            />
+          )}
 
           {status === ImportStatus.UNKNOWN && (
             <div className="flex w-full justify-center pt-4">

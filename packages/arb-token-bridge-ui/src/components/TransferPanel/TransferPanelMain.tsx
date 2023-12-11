@@ -12,7 +12,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getCustomChainFromLocalStorageById,
-  getExplorerUrl,
   getL2ChainIds,
   isNetwork
 } from '../../util/networks'
@@ -73,6 +72,7 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { ExplorerAddressLink } from '../common/atoms/ExplorerLink'
 
 enum NetworkType {
   l1 = 'l1',
@@ -145,12 +145,10 @@ function CustomAddressBanner({
     >
       <span>
         Showing balance for Custom Destination Address:{' '}
-        <ExternalLink
-          className="arb-hover underline"
-          href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
-        >
-          {shortenAddress(customAddress)}
-        </ExternalLink>
+        <ExplorerAddressLink
+          explorerUrl={network.blockExplorers?.default.url}
+          address={customAddress}
+        />
       </span>
     </div>
   )

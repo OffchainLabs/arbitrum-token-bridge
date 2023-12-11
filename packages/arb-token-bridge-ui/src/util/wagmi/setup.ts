@@ -61,6 +61,10 @@ const chainList = isTestingEnvironment
       ...customChains
     ]
 
+export function getChainByChainId(chainId: ChainId) {
+  return chainList.find(chain => chain.id === chainId)
+}
+
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!
 
 if (!projectId) {

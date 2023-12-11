@@ -24,7 +24,7 @@ import {
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { useBalance } from '../../hooks/useBalance'
@@ -58,13 +58,20 @@ function BlockExplorerTokenLink({
     return null
   }
 
+  const shortenedAddress = shortenAddress(address).toLowerCase()
+  const explorerUrl = chain.blockExplorers?.default.url
+
+  if (!explorerUrl) {
+    return shortenedAddress
+  }
+
   return (
     <ExternalLink
-      href={`${getExplorerUrl(chain.id)}/token/${address}`}
+      href={`${explorerUrl}/token/${address}`}
       className="text-xs text-blue-link underline"
       onClick={e => e.stopPropagation()}
     >
-      {shortenAddress(address).toLowerCase()}
+      {shortenedAddress}
     </ExternalLink>
   )
 }
