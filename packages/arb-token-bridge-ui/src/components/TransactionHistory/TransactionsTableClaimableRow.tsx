@@ -305,8 +305,8 @@ export function TransactionsTableClaimableRow({
   const isError = tx.status === 'Failure'
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
-    isArbitrum: isSourceChainIdArbitrum,
-    isEthereumMainnetOrTestnet: isSourceChainIdEthereum
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
+    isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
