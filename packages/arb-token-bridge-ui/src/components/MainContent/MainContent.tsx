@@ -31,6 +31,7 @@ export const motionDivProps = {
 export function MainContent() {
   const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
+  const transactionHistoryProps = useTransactionHistory(address)
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
@@ -38,7 +39,6 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const transactionHistoryProps = useTransactionHistory(address)
   const {
     data: { transactions },
     updatePendingTransaction
