@@ -28,10 +28,10 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useChainId } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
@@ -43,7 +43,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const { isArbitrum, isEthereumMainnetOrTestnet } = isNetwork(chain?.id ?? 0)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
