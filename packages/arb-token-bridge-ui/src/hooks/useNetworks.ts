@@ -190,7 +190,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const { chain } = useNetwork()
   let walletChainId = chain?.id ?? ChainId.Ethereum
   if (!isSupportedChainId(walletChainId)) {
-    walletChainId = ChainId.Ethereum
+    // If the wallet chain is not supported, use sourceChainId if valid
+    walletChainId = sourceChainId ?? ChainId.Ethereum
   }
 
   const {

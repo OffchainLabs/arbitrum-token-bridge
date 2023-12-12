@@ -5,13 +5,18 @@ import { useNetwork } from 'wagmi'
 
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
+import { HeaderNetworkNotSupported } from './HeaderNetworkNotSupported'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
   const { isSmartContractWallet } = useAccountType()
 
-  if (!chain || chain.unsupported) {
+  if (!chain) {
     return null
+  }
+
+  if (chain.unsupported) {
+    return <HeaderNetworkNotSupported />
   }
 
   const networkName = getNetworkName(chain.id)
