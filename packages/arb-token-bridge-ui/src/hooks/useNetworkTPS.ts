@@ -6,7 +6,7 @@ import useSWR from 'swr'
 
 import { isNetwork } from '../util/networks'
 import { useNetworksAndSigners } from './useNetworksAndSigners'
-import { getChainByChainId } from '../util/wagmi/setup'
+import { getChainByChainId } from '../util/wagmi/getChainByChainId'
 
 const emptyData = { tps: null }
 
