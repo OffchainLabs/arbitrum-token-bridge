@@ -1,4 +1,4 @@
-import { Chain, useNetwork } from 'wagmi'
+import { Chain, ConnectorData, useAccount, useNetwork } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useEffect, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
@@ -20,30 +20,7 @@ import {
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
-
-function getChainByChainId(chainId: ChainId): Chain {
-  const chain = {
-    // L1
-    [ChainId.Ethereum]: mainnet,
-    // L1 Testnet
-    [ChainId.Goerli]: goerli,
-    [ChainId.Sepolia]: sepolia,
-    // L2
-    [ChainId.ArbitrumOne]: arbitrum,
-    [ChainId.ArbitrumNova]: arbitrumNova,
-    // L2 Testnet
-    [ChainId.ArbitrumGoerli]: arbitrumGoerli,
-    [ChainId.ArbitrumSepolia]: arbitrumSepolia,
-    // L3
-    [ChainId.XaiTestnet]: xaiTestnet,
-    [ChainId.StylusTestnet]: stylusTestnet,
-    // E2E
-    [ChainId.Local]: local,
-    [ChainId.ArbitrumLocal]: arbitrumLocal
-  }[chainId]
-
-  return chain
-}
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 
 function getPartnerChainsIds(chainId: ChainId): ChainId[] {
   try {
@@ -190,6 +167,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
   const { chain } = useNetwork()
+  const { connector } = useAccount({})
+
   let walletChainId = chain?.id ?? ChainId.Ethereum
   if (!isSupportedChainId(walletChainId)) {
     // If the wallet chain is not supported, use sourceChainId if valid
@@ -235,16 +214,24 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   }
 
   useEffect(() => {
-    // On wallet change, update query params with the sanitized values
-    setState({
-      sourceChainId: walletChainId
-    })
-  }, [walletChainId, setState])
+    function handleChainChange(newChain: ConnectorData<any>) {
+      if (newChain.chain && isSupportedChainId(newChain.chain?.id)) {
+        setState({
+          sourceChainId: newChain.chain.id,
+          destinationChainId: destinationChainId
+        })
+      }
+    }
+    connector?.addListener('change', handleChainChange)
+    return () => {
+      connector?.removeListener('change', handleChainChange)
+    }
+  }, [connector, destinationChainId, setState])
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
-    const sourceChain = getChainByChainId(validSourceChainId)
-    const destinationChain = getChainByChainId(validDestinationChainId)
+    const sourceChain = getWagmiChain(validSourceChainId)
+    const destinationChain = getWagmiChain(validDestinationChainId)
 
     return [
       {
