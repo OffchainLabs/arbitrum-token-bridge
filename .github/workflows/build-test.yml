@@ -259,7 +259,7 @@ jobs:
         run: echo "nice"
 
       - name: E2E Failed
-        if: needs.test-e2e.result != 'success'
+        if: needs.test-e2e.result != 'success' && needs.test-e2e.result != 'skipped'
         run: exit 1
 
   clean-up:
