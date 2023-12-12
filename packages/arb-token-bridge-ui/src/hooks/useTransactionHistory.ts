@@ -288,6 +288,7 @@ export const useTransactionHistory = (
   const MAX_BATCH_SIZE = 10
   // Pause fetching after specified number of pages. User can resume fetching to get another batch.
   const PAUSE_SIZE_PAGE_COUNT = 2
+  const PAUSE_SIZE_DAYS = 30
 
   const [fetching, setFetching] = useState(true)
 
@@ -338,12 +339,14 @@ export const useTransactionHistory = (
       return
     }
 
+    const firstPage = txPages[0]
     const lastPage = txPages[txPages.length - 1]
 
-    if (!lastPage) {
+    if (!firstPage || !lastPage) {
       return
     }
 
+    // if a full page is fetched, we need to fetch more
     const shouldFetchNextPage = lastPage.length === MAX_BATCH_SIZE
 
     if (!shouldFetchNextPage) {
@@ -351,10 +354,36 @@ export const useTransactionHistory = (
       return
     }
 
-    const shouldPause =
+    const newestTx = firstPage[0]
+    const oldestTx = lastPage[lastPage.length - 1]
+
+    if (!newestTx || !oldestTx) {
+      return
+    }
+
+    const oldestTxDaysAgo = dayjs().diff(dayjs(oldestTx.createdAt ?? 0), 'days')
+
+    const newestAndOldestTxDayDiff = dayjs(newestTx.createdAt ?? 0).diff(
+      dayjs(oldestTx.createdAt ?? 0),
+      'days'
+    )
+
+    // Derive pause count
+    const estimatedPauseCountBasedOnDays = Math.floor(
+      newestAndOldestTxDayDiff / PAUSE_SIZE_DAYS
+    )
+
+    // Calculate the next pause threshold based on the day difference between transactions
+    const nextPauseThresholdBasedOnDays =
+      (estimatedPauseCountBasedOnDays + 1) * PAUSE_SIZE_DAYS
+
+    const shouldPauseBasedOnDays =
+      oldestTxDaysAgo >= nextPauseThresholdBasedOnDays
+
+    const shouldPauseBasedOnPageCount =
       txPages.length > 0 && txPages.length % PAUSE_SIZE_PAGE_COUNT === 0
 
-    if (shouldPause) {
+    if (shouldPauseBasedOnDays || shouldPauseBasedOnPageCount) {
       pause()
       return
     }
@@ -364,11 +393,13 @@ export const useTransactionHistory = (
 
   const transactions: MergedTransaction[] = (txPages || []).flat()
 
-  const latestTransactionDaysFromNow = useMemo(() => {
-    return dayjs().diff(
+  const oldestTransactionDaysAgo = useMemo(() => {
+    const daysAgo = dayjs().diff(
       dayjs(transactions[transactions.length - 1]?.createdAt),
       'days'
     )
+    // don't show 0
+    return Math.min(daysAgo, 1)
   }, [transactions])
 
   function pause() {
@@ -382,7 +413,7 @@ export const useTransactionHistory = (
 
   if (loading || error) {
     return {
-      data: { transactions: [], numberOfDays: 0 },
+      data: { transactions: [], numberOfDays: 1 },
       loading,
       error,
       completed: true,
@@ -394,7 +425,7 @@ export const useTransactionHistory = (
   return {
     data: {
       transactions,
-      numberOfDays: latestTransactionDaysFromNow
+      numberOfDays: oldestTransactionDaysAgo
     },
     loading: fetching,
     completed: transactions.length === data.length,
