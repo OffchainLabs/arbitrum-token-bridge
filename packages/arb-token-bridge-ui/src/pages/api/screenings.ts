@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { utils } from 'ethers'
 import withRetry from 'fetch-retry'
+import { has } from '@vercel/edge-config'
 
 function loadEnvironmentVariable(key: string): string {
   const value = process.env[key]
@@ -81,6 +82,13 @@ export default async function handler(
 
   if (typeof address !== 'string' || !utils.isAddress(address)) {
     res.status(400).send({ message: 'invalid_address' })
+    return
+  }
+
+  const isOnBlockList = await has(address)
+
+  if (isOnBlockList) {
+    res.status(200).send({ blocked: true })
     return
   }
 
