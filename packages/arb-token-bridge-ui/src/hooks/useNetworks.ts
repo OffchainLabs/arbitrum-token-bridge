@@ -1,6 +1,6 @@
-import { Chain } from 'wagmi'
+import { Chain, useNetwork } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
@@ -104,23 +104,27 @@ function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
 
 export function sanitizeQueryParams({
   sourceChainId,
-  destinationChainId
+  destinationChainId,
+  walletChainId
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
+  walletChainId: ChainId | number
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
+  // when both `sourceChain` and `destinationChain` are undefined or invalid,
+  // default to connected chainId or Ethereum and Arbitrum One
   if (
     (!sourceChainId && !destinationChainId) ||
     (!isSupportedChainId(sourceChainId) &&
       !isSupportedChainId(destinationChainId))
   ) {
+    const [defaultDestinationChainId] = getPartnerChainsIds(walletChainId)
     return {
-      sourceChainId: ChainId.Ethereum,
-      destinationChainId: ChainId.ArbitrumOne
+      sourceChainId: walletChainId,
+      destinationChainId: defaultDestinationChainId!
     }
   }
 
@@ -183,12 +187,19 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
     setQueryParams
   ] = useArbQueryParams()
+  const { chain } = useNetwork()
+  let walletChainId = chain?.id ?? ChainId.Ethereum
+  if (!isSupportedChainId(walletChainId)) {
+    walletChainId = ChainId.Ethereum
+  }
+
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
   } = sanitizeQueryParams({
     sourceChainId,
-    destinationChainId
+    destinationChainId,
+    walletChainId
   })
 
   const setState = useCallback(
@@ -198,14 +209,15 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
         sourceChainId,
-        destinationChainId
+        destinationChainId,
+        walletChainId
       })
       setQueryParams({
         sourceChain: validSourceChainId,
         destinationChain: validDestinationChainId
       })
     },
-    [setQueryParams]
+    [setQueryParams, walletChainId]
   )
 
   if (
@@ -218,6 +230,13 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       destinationChain: validDestinationChainId
     })
   }
+
+  useEffect(() => {
+    // On wallet change, update query params with the sanitized values
+    setState({
+      sourceChainId: walletChainId
+    })
+  }, [walletChainId, setState])
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
