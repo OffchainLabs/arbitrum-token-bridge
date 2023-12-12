@@ -283,8 +283,7 @@ const useTransactionHistoryWithoutStatuses = (
  * This is done in small batches to safely meet RPC limits.
  */
 export const useTransactionHistory = (
-  address: `0x${string}` | undefined,
-  runFetcher = false
+  address: `0x${string}` | undefined
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -361,7 +360,7 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!txPages || !fetching || !runFetcher) {
+    if (!txPages || !fetching) {
       return
     }
 
@@ -402,7 +401,7 @@ export const useTransactionHistory = (
     if (page === txPages.length) {
       setPage(prevPage => prevPage + 1)
     }
-  }, [txPages, setPage, page, pauseCount, fetching, runFetcher])
+  }, [txPages, setPage, page, pauseCount, fetching])
 
   const transactions: MergedTransaction[] = [
     ...(newTransactionsData || []),
