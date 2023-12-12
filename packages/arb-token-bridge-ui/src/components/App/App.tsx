@@ -43,11 +43,12 @@ import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useNetworks } from '../../hooks/useNetworks'
+import { isSupportedChainId, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { errorToast } from '../common/atoms/Toast'
 
 declare global {
   interface Window {
@@ -295,6 +296,12 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   const { isConnected, connector } = useAccount()
   const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
   const { openConnectModal } = useConnectModal()
+  const { chain } = useNetwork()
+  useEffect(() => {
+    if (!isSupportedChainId(chain?.id)) {
+      errorToast('Unsupported network')
+    }
+  }, [chain?.id])
 
   useEffect(() => {
     if (tosAccepted !== undefined && !isConnected) {

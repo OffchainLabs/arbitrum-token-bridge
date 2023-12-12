@@ -77,7 +77,9 @@ function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   return createProviderWithCache(chainId)
 }
 
-function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
+export function isSupportedChainId(
+  chainId: ChainId | undefined
+): chainId is ChainId {
   if (!chainId) {
     return false
   }
