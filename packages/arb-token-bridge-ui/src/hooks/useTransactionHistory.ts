@@ -286,11 +286,11 @@ export const useTransactionHistory = (
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
-  // Pause fetching after specified number of pages. User can resume fetching to get another batch.
-  const PAUSE_SIZE_PAGE_COUNT = 2
+  // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
   const [fetching, setFetching] = useState(true)
+  const [pauseCount, setPauseCount] = useState(0)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
@@ -311,6 +311,7 @@ export const useTransactionHistory = (
   const {
     data: txPages,
     error: txPagesError,
+    size: page,
     setSize: setPage
   } = useSWRInfinite(
     getCacheKey,
@@ -335,7 +336,11 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!txPages) {
+    if (!txPages || !fetching) {
+      return
+    }
+
+    if (page > txPages.length) {
       return
     }
 
@@ -363,33 +368,17 @@ export const useTransactionHistory = (
 
     const oldestTxDaysAgo = dayjs().diff(dayjs(oldestTx.createdAt ?? 0), 'days')
 
-    const newestAndOldestTxDayDiff = dayjs(newestTx.createdAt ?? 0).diff(
-      dayjs(oldestTx.createdAt ?? 0),
-      'days'
-    )
+    const nextPauseThresholdDays = (pauseCount + 1) * PAUSE_SIZE_DAYS
+    const shouldPause = oldestTxDaysAgo >= nextPauseThresholdDays
 
-    // Derive pause count
-    const estimatedPauseCountBasedOnDays = Math.floor(
-      newestAndOldestTxDayDiff / PAUSE_SIZE_DAYS
-    )
-
-    // Calculate the next pause threshold based on the day difference between transactions
-    const nextPauseThresholdBasedOnDays =
-      (estimatedPauseCountBasedOnDays + 1) * PAUSE_SIZE_DAYS
-
-    const shouldPauseBasedOnDays =
-      oldestTxDaysAgo >= nextPauseThresholdBasedOnDays
-
-    const shouldPauseBasedOnPageCount =
-      txPages.length > 0 && txPages.length % PAUSE_SIZE_PAGE_COUNT === 0
-
-    if (shouldPauseBasedOnDays || shouldPauseBasedOnPageCount) {
+    if (shouldPause) {
       pause()
+      setPauseCount(prevPauseCount => prevPauseCount + 1)
       return
     }
 
-    setPage(p => p + 1)
-  }, [txPages])
+    setPage(prevPage => prevPage + 1)
+  }, [txPages, setPage, page, pauseCount, fetching])
 
   const transactions: MergedTransaction[] = (txPages || []).flat()
 
@@ -399,7 +388,7 @@ export const useTransactionHistory = (
       'days'
     )
     // don't show 0
-    return Math.min(daysAgo, 1)
+    return Math.max(daysAgo, 1)
   }, [transactions])
 
   function pause() {
