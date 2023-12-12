@@ -298,10 +298,10 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   const { openConnectModal } = useConnectModal()
   const { chain } = useNetwork()
   useEffect(() => {
-    if (!isSupportedChainId(chain?.id)) {
+    if (isConnected && !isSupportedChainId(chain?.id)) {
       errorToast('Unsupported network')
     }
-  }, [chain?.id])
+  }, [isConnected, chain?.id])
 
   useEffect(() => {
     if (tosAccepted !== undefined && !isConnected) {
