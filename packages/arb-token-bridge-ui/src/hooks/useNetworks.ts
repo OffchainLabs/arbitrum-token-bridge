@@ -167,13 +167,19 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
   const { chain } = useNetwork()
-  const { connector } = useAccount({})
-
   let walletChainId = chain?.id ?? ChainId.Ethereum
   if (!isSupportedChainId(walletChainId)) {
     // If the wallet chain is not supported, use sourceChainId if valid
     walletChainId = sourceChainId ?? ChainId.Ethereum
   }
+  const { connector } = useAccount({
+    onConnect: () => {
+      setState({
+        sourceChainId: walletChainId,
+        destinationChainId: destinationChainId
+      })
+    }
+  })
 
   const {
     sourceChainId: validSourceChainId,
@@ -223,6 +229,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       }
     }
     connector?.addListener('change', handleChainChange)
+
     return () => {
       connector?.removeListener('change', handleChainChange)
     }
