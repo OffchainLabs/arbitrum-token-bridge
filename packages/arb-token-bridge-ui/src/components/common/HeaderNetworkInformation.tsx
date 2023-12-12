@@ -1,16 +1,20 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
-import { useChainId } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 
 export function HeaderNetworkInformation() {
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const { isSmartContractWallet } = useAccountType()
 
-  const networkName = getNetworkName(chainId)
+  if (!chain || chain.unsupported) {
+    return null
+  }
+
+  const networkName = getNetworkName(chain.id)
 
   return (
     <div
@@ -20,13 +24,13 @@ export function HeaderNetworkInformation() {
       <div
         className={twMerge(
           'flex h-10 w-10 items-center justify-center rounded-full lg:bg-transparent lg:p-0',
-          isNetwork(chainId).isEthereumMainnetOrTestnet
+          isNetwork(chain.id).isEthereumMainnetOrTestnet
             ? 'bg-[rgba(162,170,240,0.5)] p-1'
             : ''
         )}
       >
         <Image
-          src={getNetworkLogo(chainId, 'light')}
+          src={getNetworkLogo(chain.id, 'light')}
           alt={`${networkName} logo`}
           className="h-full w-auto"
           width={40}

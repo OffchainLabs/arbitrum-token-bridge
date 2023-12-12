@@ -3,7 +3,7 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
-import { useChainId } from 'wagmi'
+import { useNetwork } from 'wagmi'
 import { GET_HELP_LINK } from '../../../constants'
 import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
 import { MergedTransaction } from '../../../state/app/state'
@@ -45,19 +45,19 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const [networks] = useNetworks()
   const { switchNetwork } = useSwitchNetworkWithConfig()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const destinationChain = type === 'deposits' ? childChain : parentChain
-  const networkName = getNetworkName(chainId)
+  const networkName = getNetworkName(chain?.id ?? 0)
   const targetNetworkName = getNetworkName(destinationChain.id)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
+  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chain?.id ?? 0)
 
   const currentChainIsValid = useMemo(() => {
     const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
@@ -123,7 +123,7 @@ export function TransactionsTableRowAction({
           className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
-              if (chainId !== destinationChain.id) {
+              if (chain?.id !== destinationChain.id) {
                 switchNetwork?.(destinationChain.id)
                 return
               }

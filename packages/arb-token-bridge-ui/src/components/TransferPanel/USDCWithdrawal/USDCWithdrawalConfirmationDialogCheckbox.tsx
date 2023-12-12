@@ -2,7 +2,7 @@ import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
 import { useChainLayers } from '../../../hooks/useChainLayers'
-import { useChainId } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange,
@@ -12,9 +12,9 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   onAllCheckboxesCheched?: () => void
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const { parentLayer } = useChainLayers()
-  const { isTestnet } = isNetwork(chainId)
+  const { isTestnet } = isNetwork(chain?.id ?? 0)
 
   useEffect(() => {
     if (checkboxesChecked.every(checked => checked)) {

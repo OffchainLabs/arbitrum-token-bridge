@@ -2,8 +2,8 @@ import { Popover, Transition } from '@headlessui/react'
 import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
+import { useNetwork, useSwitchNetwork } from 'wagmi'
 import { useWindowSize } from 'react-use'
-import { useChainId, useSwitchNetwork } from 'wagmi'
 
 import {
   ChainId,
@@ -20,16 +20,16 @@ export const NetworkSelectionContainer = ({
 }: {
   children: React.ReactNode
 }) => {
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
 
   const supportedNetworks = getSupportedNetworks(
-    chainId,
+    chain?.id,
     !!isTestnetMode
-  ).filter(networkChainId => networkChainId !== chainId)
+  ).filter(chainId => chainId !== chain?.id)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { switchNetwork } = useSwitchNetwork()
@@ -66,7 +66,7 @@ export const NetworkSelectionContainer = ({
           | undefined
       ) => void
     ) => {
-      switchNetwork?.(chainId)
+      switchNetwork?.(Number(chainId))
       close?.() //close the popover after option-click
     },
     [switchNetwork]

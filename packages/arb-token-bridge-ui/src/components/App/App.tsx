@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useChainId, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -65,13 +65,13 @@ const rainbowkitTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const {
     app: { connectionState }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isTestnet, isGoerli } = isNetwork(chainId)
+    const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
     const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
 
     if (isGoerli) {
@@ -79,7 +79,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [chainId])
+  }, [chain])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (
