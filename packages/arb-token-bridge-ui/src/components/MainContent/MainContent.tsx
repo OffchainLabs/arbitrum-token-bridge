@@ -29,14 +29,13 @@ export const motionDivProps = {
 export function MainContent() {
   const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
+  const transactionHistoryProps = useTransactionHistory(address)
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
 
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-
-  const transactionHistoryProps = useTransactionHistory(address)
 
   return (
     <div className="flex w-full justify-center">

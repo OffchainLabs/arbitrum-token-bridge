@@ -31,8 +31,6 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import { isTxPending } from '../components/TransactionHistory/helpers'
 
-const PAGE_SIZE = 100
-
 export type Deposit = Transaction
 
 export type Withdrawal =
@@ -185,15 +183,6 @@ function getProvider(chainId: ChainId) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
-  const [deposits, setDeposits] = useState<Deposit[][]>([])
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[][]>([])
-
-  const [depositsPage, setDepositsPage] = useState(0)
-  const [withdrawalsPage, setWithdrawalsPage] = useState(0)
-
-  const [depositsLoading, setDepositsLoading] = useState(true)
-  const [withdrawalsLoading, setWithdrawalsLoading] = useState(true)
-
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -230,113 +219,52 @@ const useTransactionHistoryWithoutStatuses = (
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
-  const shouldFetchNextPageForChainPair = useCallback(
-    (chainPairIndex: number, direction: 'deposits' | 'withdrawals') => {
-      const isDeposits = direction === 'deposits'
-      const page = isDeposits ? depositsPage : withdrawalsPage
-      const transactions = isDeposits ? deposits : withdrawals
-
-      if (page === 0) {
-        return true
-      }
-
-      const txCountForChainPair = transactions[chainPairIndex]?.length ?? 0
-      // fetch next page for a chain pair if all fetched pages are full
-      // we check for >= in case some txs were included by initiating a transfer
-      return txCountForChainPair / page >= PAGE_SIZE
-    },
-    [depositsPage, withdrawalsPage, deposits, withdrawals]
-  )
-
-  const { data: depositsData, error: depositsError } = useSWRImmutable(
-    address ? ['tx_list', 'deposits', address, depositsPage] : null,
-    ([, , _address, _page]) => {
+  const {
+    data: depositsData,
+    error: depositsError,
+    isLoading: depositsLoading
+  } = useSWRImmutable(
+    address ? ['tx_list', 'deposits', address] : null,
+    ([, , _address]) => {
       return Promise.all(
-        multiChainFetchList.map((chainPair, chainPairIndex) => {
-          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'deposits')) {
-            return []
-          }
-
+        multiChainFetchList.map(chainPair => {
           return fetchDeposits({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
             l2Provider: getProvider(chainPair.chain),
-            pageNumber: _page,
-            pageSize: PAGE_SIZE
+            pageNumber: 0,
+            pageSize: 1000
           })
         })
       )
     }
   )
 
-  const { data: withdrawalsData, error: withdrawalsError } = useSWRImmutable(
-    address ? ['tx_list', 'withdrawals', address, withdrawalsPage] : null,
-    ([, , _address, _page]) => {
+  const {
+    data: withdrawalsData,
+    error: withdrawalsError,
+    isLoading: withdrawalsLoading
+  } = useSWRImmutable(
+    address ? ['tx_list', 'withdrawals', address] : null,
+    ([, , _address]) => {
       return Promise.all(
-        multiChainFetchList.map((chainPair, chainPairIndex) => {
-          if (!shouldFetchNextPageForChainPair(chainPairIndex, 'withdrawals')) {
-            return []
-          }
-
+        multiChainFetchList.map(chainPair => {
           return fetchWithdrawals({
             sender: _address,
             receiver: _address,
             l1Provider: getProvider(chainPair.parentChain),
             l2Provider: getProvider(chainPair.chain),
-            pageNumber: _page,
-            pageSize: PAGE_SIZE
+            pageNumber: 0,
+            pageSize: 1000
           })
         })
       )
     }
   )
 
-  function addDeposits(transactions: Deposit[][]) {
-    const fetchedSomeData = transactions.some(item => item.length > 0)
-
-    if (fetchedSomeData) {
-      setDeposits(prevDeposits => {
-        return transactions.map((transactionsForChainPair, chainPairIndex) => [
-          ...(prevDeposits[chainPairIndex] ?? []),
-          ...(transactionsForChainPair ?? [])
-        ])
-      })
-      setDepositsPage(prevPage => prevPage + 1)
-    } else {
-      setDepositsLoading(false)
-    }
-  }
-
-  function addWithdrawals(transactions: Withdrawal[][]) {
-    const fetchedSomeData = transactions.some(item => item.length > 0)
-
-    if (fetchedSomeData) {
-      setWithdrawals(prevWithdrawal => {
-        return transactions.map((transactionsForChainPair, chainPairIndex) => [
-          ...(prevWithdrawal[chainPairIndex] ?? []),
-          ...(transactionsForChainPair ?? [])
-        ])
-      })
-      setWithdrawalsPage(prevPage => prevPage + 1)
-    } else {
-      setWithdrawalsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (!depositsData) {
-      return
-    }
-    addDeposits(depositsData)
-  }, [depositsData])
-
-  useEffect(() => {
-    if (!withdrawalsData) {
-      return
-    }
-    addWithdrawals(withdrawalsData)
-  }, [withdrawalsData])
+  const deposits = (depositsData || []).flat()
+  const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
@@ -359,13 +287,11 @@ export const useTransactionHistory = (
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
-  // Pause fetching after specified amount of days. User can resume fetching to get another batch.
+  // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
-  // Also pause fetching after specified number of transactions. Just in case user made a lot in the recent days and it's good for local env.
-  const PAUSE_SIZE_TX_COUNT = 30
 
-  const [, setPauseCount] = useState(0)
   const [fetching, setFetching] = useState(true)
+  const [pauseCount, setPauseCount] = useState(0)
 
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
@@ -386,6 +312,7 @@ export const useTransactionHistory = (
   const {
     data: txPages,
     error: txPagesError,
+    size: page,
     setSize: setPage,
     mutate
   } = useSWRInfinite(
@@ -399,31 +326,23 @@ export const useTransactionHistory = (
       )
     },
     {
-      revalidateIfStale: false,
       revalidateOnFocus: false,
-      revalidateOnReconnect: false
+      revalidateOnReconnect: false,
+      revalidateIfStale: false,
+      shouldRetryOnError: false,
+      refreshWhenOffline: false,
+      refreshWhenHidden: false,
+      revalidateFirstPage: false,
+      refreshInterval: 0
     }
   )
 
-  const transactions: MergedTransaction[] = (txPages || []).flat()
-
-  const latestTransactionDaysFromNow = useMemo(() => {
-    return dayjs().diff(
-      dayjs(transactions[transactions.length - 1]?.createdAt),
-      'days'
-    )
-  }, [transactions])
-
-  function pause() {
-    setFetching(false)
-  }
-
-  function resume() {
-    setFetching(true)
-  }
-
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
       mutate(pages => {
         if (!pages) {
           // e.g. when tx history is still fetching
@@ -442,53 +361,69 @@ export const useTransactionHistory = (
       return
     }
 
-    const lastTxPage = txPages[txPages.length - 1]
-
-    if (!lastTxPage) {
+    if (page > txPages.length) {
       return
     }
 
-    // we use setter to access the previous value to get accurate reading
-    // we will also increment it if fetching gets paused
-    setPauseCount(prevPauseCount => {
-      // max timestamp is our threshold where we stop fetching transactions for this iteration
-      // it gets incremented by PAUSE_SIZE_DAYS with each iteration
-      const maxTimestamp = dayjs()
-        .subtract(PAUSE_SIZE_DAYS * (prevPauseCount + 1), 'days')
-        .valueOf()
+    const firstPage = txPages[0]
+    const lastPage = txPages[txPages.length - 1]
 
-      // get the latest transaction, we will use its timestamp to see if we went past maximum number of fetched days
-      const lastTx = lastTxPage[lastTxPage.length - 1]
-      const isPastDaysThreshold =
-        lastTx && lastTx.createdAt && lastTx.createdAt <= maxTimestamp
-
-      // also check if we fetched enough txs to stop
-      const maxTxCount = PAUSE_SIZE_TX_COUNT * (prevPauseCount + 1)
-      const isPastTxCountThreshold = txPages.flat().length >= maxTxCount
-
-      // check if our latest transaction is past our lookup threshold
-      if (isPastDaysThreshold || isPastTxCountThreshold) {
-        // if yes, we pause
-        // we also increment pause count so the next iteration can calculate max timestamp
-        pause()
-        return prevPauseCount + 1
-      }
-
-      // otherwise do not pause, we also keep the pause count as-is
-      return prevPauseCount
-    })
-
-    // mapped data is a full page, so we need to fetch more pages
-    if (lastTxPage.length === MAX_BATCH_SIZE) {
-      setPage(prevPage => prevPage + 1)
-    } else {
-      setFetching(false)
+    if (!firstPage || !lastPage) {
+      return
     }
-  }, [txPages, fetching])
+
+    // if a full page is fetched, we need to fetch more
+    const shouldFetchNextPage = lastPage.length === MAX_BATCH_SIZE
+
+    if (!shouldFetchNextPage) {
+      setFetching(false)
+      return
+    }
+
+    const newestTx = firstPage[0]
+    const oldestTx = lastPage[lastPage.length - 1]
+
+    if (!newestTx || !oldestTx) {
+      return
+    }
+
+    const oldestTxDaysAgo = dayjs().diff(dayjs(oldestTx.createdAt ?? 0), 'days')
+
+    const nextPauseThresholdDays = (pauseCount + 1) * PAUSE_SIZE_DAYS
+    const shouldPause = oldestTxDaysAgo >= nextPauseThresholdDays
+
+    if (shouldPause) {
+      pause()
+      setPauseCount(prevPauseCount => prevPauseCount + 1)
+      return
+    }
+
+    setPage(prevPage => prevPage + 1)
+  }, [txPages, setPage, page, pauseCount, fetching])
+
+  const transactions: MergedTransaction[] = (txPages || []).flat()
+
+  const oldestTransactionDaysAgo = useMemo(() => {
+    const daysAgo = dayjs().diff(
+      dayjs(transactions[transactions.length - 1]?.createdAt),
+      'days'
+    )
+    // don't show 0
+    return Math.max(daysAgo, 1)
+  }, [transactions])
+
+  function pause() {
+    setFetching(false)
+  }
+
+  function resume() {
+    setFetching(true)
+    setPage(prevPage => prevPage + 1)
+  }
 
   if (loading || error) {
     return {
-      data: { transactions: [], numberOfDays: 0 },
+      data: { transactions: [], numberOfDays: 1 },
       loading,
       error,
       completed: true,
@@ -501,7 +436,7 @@ export const useTransactionHistory = (
   return {
     data: {
       transactions,
-      numberOfDays: latestTransactionDaysFromNow
+      numberOfDays: oldestTransactionDaysAgo
     },
     loading: fetching,
     completed: transactions.length === data.length,
