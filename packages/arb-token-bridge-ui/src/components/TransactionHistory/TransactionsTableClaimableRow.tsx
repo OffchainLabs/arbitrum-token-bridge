@@ -29,7 +29,6 @@ import { useRemainingTime } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
-import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
 
 type CommonProps = {
   tx: MergedTransaction
