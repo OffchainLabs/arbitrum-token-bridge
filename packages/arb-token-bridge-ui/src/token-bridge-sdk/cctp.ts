@@ -106,10 +106,8 @@ export function fetchPerMessageBurnLimit({
 
 export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
   const {
-    tokenMessengerContractAddress,
     targetChainId,
     attestationApiUrl,
-    usdcContractAddress,
     messageTransmitterContractAddress
   } = getCctpContracts({ sourceChainId })
 
