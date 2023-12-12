@@ -283,7 +283,8 @@ const useTransactionHistoryWithoutStatuses = (
  * This is done in small batches to safely meet RPC limits.
  */
 export const useTransactionHistory = (
-  address: `0x${string}` | undefined
+  address: `0x${string}` | undefined,
+  runFetcher = false
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -313,8 +314,7 @@ export const useTransactionHistory = (
     data: txPages,
     error: txPagesError,
     size: page,
-    setSize: setPage,
-    mutate
+    setSize: setPage
   } = useSWRInfinite(
     getCacheKey,
     ([, , _page]) => {
@@ -337,31 +337,31 @@ export const useTransactionHistory = (
     }
   )
 
+  // transfers initiated by the user during the current session
+  // we store it separately as there are a lot of side effects when mutating SWRInfinite
+  const { data: newTransactionsData, mutate } = useSWRImmutable<
+    MergedTransaction[]
+  >(address ? ['new_tx_list', address] : null)
+
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
       if (!isTxPending(tx)) {
         return
       }
 
-      mutate(pages => {
-        if (!pages) {
-          // e.g. when tx history is still fetching
-          return [[tx]]
+      mutate(currentNewTransactions => {
+        if (!currentNewTransactions) {
+          return [tx]
         }
 
-        // add the new tx at the start of the first page
-        return [[tx, ...(pages[0] ?? [])], ...pages.slice(1)]
-      }, false)
+        return [tx, ...currentNewTransactions]
+      })
     },
     [mutate]
   )
 
   useEffect(() => {
-    if (!txPages || !fetching) {
-      return
-    }
-
-    if (page > txPages.length) {
+    if (!txPages || !fetching || !runFetcher) {
       return
     }
 
@@ -398,10 +398,16 @@ export const useTransactionHistory = (
       return
     }
 
-    setPage(prevPage => prevPage + 1)
-  }, [txPages, setPage, page, pauseCount, fetching])
+    // make sure we don't over-fetch
+    if (page === txPages.length) {
+      setPage(prevPage => prevPage + 1)
+    }
+  }, [txPages, setPage, page, pauseCount, fetching, runFetcher])
 
-  const transactions: MergedTransaction[] = (txPages || []).flat()
+  const transactions: MergedTransaction[] = [
+    ...(newTransactionsData || []),
+    ...(txPages || [])
+  ].flat()
 
   const oldestTransactionDaysAgo = useMemo(() => {
     const daysAgo = dayjs().diff(
