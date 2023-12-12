@@ -338,6 +338,8 @@ export const useTransactionHistory = (
     }
   )
 
+  const transactions: MergedTransaction[] = (txPages || []).flat()
+
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
       if (!isTxPending(tx)) {
@@ -477,8 +479,6 @@ export const useTransactionHistory = (
 
     setPage(prevPage => prevPage + 1)
   }, [txPages, setPage, page, pauseCount, fetching])
-
-  const transactions: MergedTransaction[] = (txPages || []).flat()
 
   const oldestTransactionDaysAgo = useMemo(() => {
     const daysAgo = dayjs().diff(
