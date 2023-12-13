@@ -6,20 +6,16 @@ import { TestWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestWET
 import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC20__factory'
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
-import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
 import specFiles from './tests/e2e/specfiles.json'
 
 import {
   NetworkName,
   l1WethGateway,
   wethTokenAddressL1,
-  wethTokenAddressL2,
-  getInitialERC20Balance
+  wethTokenAddressL2
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
-import { CommonAddress } from './src/util/CommonAddressUtils'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -62,10 +58,6 @@ export default defineConfig({
 
       const userWalletAddress = await userWallet.getAddress()
 
-      // Fund the userWallet with USDC.
-
-      await Promise.all([fundUserUsdc('L1'), fundUserUsdc('L2')])
-
       // Deploy ERC-20 token to L1
       const l1ERC20Token = await deployERC20ToL1()
 
@@ -101,6 +93,7 @@ export default defineConfig({
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
 
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
@@ -118,15 +111,23 @@ export default defineConfig({
   }
 })
 
-const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
+
+const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
+const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+
+const ethRpcUrl =
+  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const goerliRpcUrl = process.env.NEXT_PUBLIC_GOERLI_RPC_URL
+const goerliRpcUrl =
+  process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL
 const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
-const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
-const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
 
 if (!process.env.PRIVATE_KEY_CUSTOM) {
   throw new Error('PRIVATE_KEY_CUSTOM variable missing.')
@@ -176,33 +177,6 @@ async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   }
 }
 
-async function fundUserUsdc(networkType: 'L1' | 'L2') {
-  console.log(`Funding USDC to user wallet: ${networkType}...`)
-  const address = await userWallet.getAddress()
-  const usdcContractAddress =
-    networkType === 'L1'
-      ? CommonAddress.Goerli.USDC
-      : CommonAddress.ArbitrumGoerli.USDC
-
-  const usdcBalance = await getInitialERC20Balance({
-    address,
-    rpcURL: networkType === 'L1' ? goerliRpcUrl! : arbGoerliRpcUrl!,
-    tokenAddress: usdcContractAddress,
-    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
-  })
-
-  // Fund only if the balance is less than 0.5 USDC
-  if (usdcBalance.lt(utils.parseUnits('0.5', 6))) {
-    console.log('Adding USDC to user wallet...')
-    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
-    const contract = new ERC20__factory().connect(localWallet.connect(provider))
-    const token = contract.attach(usdcContractAddress)
-    await token.deployed()
-    const tx = await token.transfer(address, utils.parseUnits('1', 6))
-    await tx.wait()
-  }
-}
-
 function getWethContract(
   provider: StaticJsonRpcProvider,
   tokenAddress: string
@@ -218,11 +192,14 @@ async function wrapEth(networkType: 'L1' | 'L2') {
   const tx = await getWethContract(provider, address).deposit({
     value: utils.parseEther(amount)
   })
+  console.log('TX DONE FOR', networkType)
   await tx.wait()
 }
 
 async function approveWeth() {
   console.log('Approving WETH...')
+  const balance = await ethProvider.getBalance(userWallet.address)
+  console.log('BAL', balance.toString())
   const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
     // L1 WETH gateway
     l1WethGateway,

@@ -123,7 +123,7 @@ export async function getInitialERC20Balance({
   multiCallerAddress: string
   rpcURL: string
   address: string
-}): Promise<BigNumber> {
+}): Promise<BigNumber | undefined> {
   const provider = new StaticJsonRpcProvider(rpcURL)
   const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {

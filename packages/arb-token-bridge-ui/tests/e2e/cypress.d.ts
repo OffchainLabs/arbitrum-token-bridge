@@ -4,7 +4,8 @@ import {
   connectToApp,
   login,
   logout,
-  openTransactionsPanel
+  openTransactionsPanel,
+  generateNewTestnetAccount
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -25,6 +26,7 @@ declare global {
       }): typeof login
       logout(): typeof logout
       openTransactionsPanel(): typeof openTransactionsPanel
+      generateNewTestnetAccount: typeof generateNewTestnetAccount
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }
   }

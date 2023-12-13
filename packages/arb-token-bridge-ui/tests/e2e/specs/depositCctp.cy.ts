@@ -12,9 +12,6 @@ import {
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 
 describe('Deposit USDC through CCTP', () => {
-  // when all of our tests need to run in a logged-in state
-  // we have to make sure we preserve a healthy LocalStorage state
-  // because it is cleared between each `it` cypress test
   const USDCAmountToSend = 0.0001
 
   // Happy Path
@@ -24,12 +21,15 @@ describe('Deposit USDC through CCTP', () => {
     let l2USDCeBal: string
 
     // log in to metamask before deposit
-    before(() => {
+    before(async () => {
+      const wallet = await cy.generateNewTestnetAccount('L1')
+      cy.importMetamaskAccount(wallet.privateKey)
+      cy.switchMetamaskAccount(3) // TODO: fix
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Goerli.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
-        address: Cypress.env('ADDRESS')
+        address: wallet.address
       }).then(
         val =>
           (l1USDCBal = formatAmount(val, {
@@ -41,7 +41,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: Cypress.env('ADDRESS')
+        address: wallet.address
       }).then(
         val =>
           (l2USDCBal = formatAmount(val, {
@@ -53,7 +53,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: Cypress.env('ADDRESS')
+        address: wallet.address
       }).then(
         val =>
           (l2USDCeBal = formatAmount(val, {
@@ -104,13 +104,15 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('should show USDC balance correctly', () => {
-        // BALANCE: is in a different element so we check for siblings
-        cy.findByText(l1USDCBal)
+        cy.findByLabelText('USDC balance on l1')
           .should('be.visible')
-          .siblings()
-          .contains('BALANCE: ')
-        cy.findByText(l2USDCBal).should('be.visible')
-        cy.findByText(l2USDCeBal).should('be.visible')
+          .contains(l1USDCBal)
+        cy.findByLabelText('USDC balance on l2')
+          .should('be.visible')
+          .contains(l2USDCBal)
+        cy.findByLabelText('USDC.e balance on l2')
+          .should('be.visible')
+          .contains(l2USDCeBal)
       })
 
       context('should show summary', () => {
@@ -122,7 +124,7 @@ describe('Deposit USDC through CCTP', () => {
               .last()
               .contains(formatAmount(USDCAmountToSend))
               .should('be.visible')
-            cy.findByText("You'll pay in gas fees")
+            cy.findByText("You'll now pay in gas fees")
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
@@ -156,15 +158,17 @@ describe('Deposit USDC through CCTP', () => {
         cy.findByRole('tab', {
           name: "Arbitrum's bridge (USDC.e)",
           selected: true
-        })
+        }).should('exist')
         cy.findByRole('tab', {
           name: 'Third party (USDC)',
           selected: false
-        })
+        }).should('exist')
         cy.findByRole('tab', {
           name: 'Circle (USDC)',
           selected: false
-        }).click()
+        })
+          .should('exist')
+          .click()
 
         // By default, confirm button is disabled
         cy.findByRole('button', {
@@ -202,10 +206,10 @@ describe('Deposit USDC through CCTP', () => {
         cy.findByRole('button', {
           name: /Pay approval fee of/
         }).click()
-        cy.confirmMetamaskPermissionToSpend('1')
         cy.log('Approving USDC...')
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
         // eslint-disable-next-line
-        cy.wait(15000)
+        cy.wait(20_000)
         cy.confirmMetamaskTransaction().then(() => {
           cy.findByText(
             `Moving ${formatAmount(0.0001, {
