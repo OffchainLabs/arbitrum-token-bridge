@@ -1,7 +1,7 @@
 import { Provider } from '@ethersproject/providers'
+import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { ERC20BridgeToken } from '../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
-import { BigNumber, Signer } from 'ethers'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
@@ -93,7 +93,9 @@ export abstract class BridgeTransferStarter {
     props: ApproveTokenEstimateGasProps
   ): Promise<BigNumber>
 
-  public abstract approveToken(props: ApproveTokenProps): Promise<void>
+  public abstract approveToken(
+    props: ApproveTokenProps
+  ): Promise<ContractTransaction>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }

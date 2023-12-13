@@ -624,10 +624,12 @@ export function TransferPanel() {
           showDelayedSCTxRequest()
         }
         try {
-          await cctpTransferStarter.approveToken({
+          const tx = await cctpTransferStarter.approveToken({
             signer,
             amount: amountBigNumber
           })
+
+          await tx.wait()
         } catch (error) {
           if (isUserRejectedError(error)) {
             return

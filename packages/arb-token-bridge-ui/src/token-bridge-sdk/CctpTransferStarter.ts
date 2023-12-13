@@ -78,8 +78,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       tokenMessengerContractAddress,
       amount
     )
-
-    await tx.wait()
+    return tx
   }
 
   public async approveTokenEstimateGas({
