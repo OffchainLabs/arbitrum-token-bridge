@@ -48,19 +48,14 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const allowanceForL1Gateway = await fetchErc20Allowance({
+    const allowance = await fetchErc20Allowance({
       address: this.selectedToken.address,
       provider: this.sourceChainProvider,
       owner: recipient,
       spender: tokenMessengerContractAddress
     })
 
-    // need for approval - allowance exhausted
-    if (!allowanceForL1Gateway.gte(amount)) {
-      return true
-    }
-
-    return false
+    return allowance.lt(amount)
   }
 
   public async approveToken({
