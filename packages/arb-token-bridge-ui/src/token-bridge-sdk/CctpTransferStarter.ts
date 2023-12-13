@@ -18,12 +18,17 @@ import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 
+export type CctpTransferStarterProps = BridgeTransferStarterProps & {
+  selectedToken: SelectedToken
+}
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
+  public selectedToken: SelectedToken // selectedToken is required in this class
 
-  constructor(props: BridgeTransferStarterProps) {
+  constructor(props: CctpTransferStarterProps) {
     super(props)
     this.transferType = 'cctp'
+    this.selectedToken = props.selectedToken
   }
 
   public requiresNativeCurrencyApproval = async () => false
@@ -35,7 +40,6 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   public async requiresTokenApproval({
     amount,
     address,
-    selectedToken,
     destinationAddress
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
@@ -45,7 +49,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     })
 
     const allowanceForL1Gateway = await fetchErc20Allowance({
-      address: selectedToken.address,
+      address: this.selectedToken.address,
       provider: this.sourceChainProvider,
       owner: recipient,
       spender: tokenMessengerContractAddress
@@ -79,8 +83,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async approveTokenEstimateGas({
-    amount,
-    signer
+    signer,
+    amount
   }: ApproveTokenEstimateGasProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const { usdcContractAddress, tokenMessengerContractAddress } =
@@ -92,12 +96,9 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transfer({
-    amount,
-    destinationAddress,
-    signer,
-    selectedToken
-  }: TransferProps & { selectedToken: SelectedToken }) {
+  public async transfer({ amount, destinationAddress, signer }: TransferProps) {
+    if (!this.selectedToken) throw Error('No token selected') // remove this later by type-checking
+
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     const address = await getAddressFromSigner(signer)
@@ -109,7 +110,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     if (burnLimit.lte(amount)) {
       const formatedLimit = formatAmount(burnLimit, {
-        decimals: selectedToken.decimals,
+        decimals: this.selectedToken.decimals,
         symbol: 'USDC'
       })
       throw Error(
@@ -143,9 +144,6 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     })
 
     const depositForBurnTx = await writeContract(config)
-    if (!depositForBurnTx) {
-      throw Error('USDC deposit transaction failed')
-    }
 
     return {
       transferType: this.transferType,

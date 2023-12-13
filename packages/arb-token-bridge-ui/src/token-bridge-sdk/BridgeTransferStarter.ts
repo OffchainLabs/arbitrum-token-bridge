@@ -18,15 +18,6 @@ export type MergedTransactionCctp = MergedTransaction & {
   attestationHash: `0x${string}` | null
 }
 
-export type TransferProps = {
-  amount: BigNumber
-  destinationChainProvider: Provider
-  signer: Signer
-  isSmartContractWallet?: boolean
-  destinationAddress?: string
-  selectedToken?: SelectedToken | null
-}
-
 export type BridgeTransfer = {
   transferType: TransferType
   status: string
@@ -42,30 +33,30 @@ export type BridgeTransferStarterProps = {
   selectedToken?: SelectedToken | null
 }
 
+export type TransferProps = {
+  amount: BigNumber
+  signer: Signer
+  isSmartContractWallet?: boolean
+  destinationAddress?: string
+}
+
 export type RequiresNativeCurrencyApprovalProps = {
   amount: BigNumber
   signer: Signer
-  destinationChainProvider: Provider
 }
 
 export type ApproveNativeCurrencyProps = {
   signer: Signer
-  destinationChainProvider: Provider
 }
 
 export type RequiresTokenApprovalProps = {
   amount: BigNumber
   address: string
-  selectedToken: SelectedToken
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
   destinationAddress?: string
 }
 
 export type ApproveTokenProps = {
   signer: Signer
-  selectedToken: SelectedToken
-  destinationChainProvider: Provider
 }
 
 export type ApproveTokenEstimateGasProps = {
@@ -76,14 +67,14 @@ export type ApproveTokenEstimateGasProps = {
 export abstract class BridgeTransferStarter {
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
-  public selectedToken: SelectedToken | null
+  public selectedToken?: SelectedToken
 
   abstract transferType: TransferType
 
   constructor(props: BridgeTransferStarterProps) {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
-    this.selectedToken = props.selectedToken ?? null
+    this.selectedToken = props.selectedToken ?? undefined
   }
 
   public abstract requiresNativeCurrencyApproval(

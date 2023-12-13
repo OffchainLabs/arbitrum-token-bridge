@@ -611,10 +611,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          address,
-          selectedToken,
-          sourceChainProvider,
-          destinationChainProvider
+          address
         })
 
       if (isTokenApprovalRequired) {
@@ -629,8 +626,6 @@ export function TransferPanel() {
         try {
           await cctpTransferStarter.approveToken({
             signer,
-            destinationChainProvider,
-            selectedToken,
             amount: amountBigNumber
           })
         } catch (error) {
@@ -656,9 +651,7 @@ export function TransferPanel() {
         }
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
-          destinationChainProvider,
-          signer,
-          selectedToken
+          signer
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
