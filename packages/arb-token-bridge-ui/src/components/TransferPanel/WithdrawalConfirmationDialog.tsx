@@ -7,6 +7,10 @@ import {
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
+import {
+  L2Network,
+  parentChains
+} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -17,20 +21,13 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import {
-  getBlockTime,
-  getConfirmPeriodBlocks,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-
-const SECONDS_IN_DAY = 86400
-const SECONDS_IN_HOUR = 3600
+import { getTxConfirmationTime } from '../common/WithdrawalCountdown'
 
 function getCalendarUrl(
   confirmationHours: number,
@@ -76,24 +73,33 @@ export function WithdrawalConfirmationDialog(
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
+  const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
+  const baseChainId = isOrbitChain
+    ? (parentChains[l1.network.id] as L2Network)?.partnerChainID ?? 0
+    : l1.network.id
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
-  const confirmationSeconds =
-    getBlockTime(l1.network.id) * getConfirmPeriodBlocks(l2.network.id)
-  const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)
+
+  const { confirmationMins, confirmationHours, confirmationDays } =
+    getTxConfirmationTime({
+      baseChainId,
+      withdrawalFromChainId: l2.network.id
+    })
+
   let confirmationPeriod = ''
-  const confirmationHours = Math.ceil(confirmationSeconds / SECONDS_IN_HOUR)
 
   if (confirmationDays >= 2) {
     confirmationPeriod = `${confirmationDays} day${
       confirmationDays > 1 ? 's' : ''
     }`
-  } else {
-    confirmationPeriod = `${confirmationHours} hour${
+  } else if (confirmationHours >= 1) {
+    confirmationPeriod = `${Math.ceil(confirmationHours)} hour${
       confirmationHours > 1 ? 's' : ''
     }`
+  } else {
+    confirmationPeriod = `${confirmationMins} minute${
+      confirmationMins > 1 ? 's' : ''
+    }`
   }
-
-  const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

@@ -67,7 +67,7 @@ function createProviderWithCache(chainId: ChainId) {
   return provider
 }
 
-function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
+export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   const cachedProvider = getProviderForChainCache[chainId]
 
   if (typeof cachedProvider !== 'undefined') {
