@@ -31,7 +31,7 @@ export const motionDivProps = {
 export function MainContent() {
   const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
-  const transactionHistoryProps = useTransactionHistory(address)
+  const transactionHistoryProps = useTransactionHistory(address, true)
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()

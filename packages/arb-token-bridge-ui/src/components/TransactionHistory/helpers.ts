@@ -14,12 +14,17 @@ import {
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, isNetwork, rpcURLs } from '../../util/networks'
+import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
 import { isCctpTransfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
+import {
+  getBlockBeforeConfirmation,
+  getL1ChainIdFromSourceChain
+} from '../../state/cctpState'
+import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -169,6 +174,7 @@ export async function getUpdatedEthDeposit(
   const newDeposit: MergedTransaction = {
     ...tx,
     status: 'success',
+    resolvedAt: isDeposited ? dayjs().valueOf() : null,
     l1ToL2MsgData: {
       fetchingUpdate: false,
       status: isDeposited
@@ -265,6 +271,66 @@ export async function getUpdatedWithdrawal(
         ...tx,
         status: newStatus
       }
+    }
+  }
+
+  return tx
+}
+
+export async function getUpdatedCctpTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || !tx.isCctp) {
+    return tx
+  }
+
+  const receipt = await getTxReceipt(tx)
+  const l1SourceChain = getL1ChainIdFromSourceChain(tx)
+  console.log({ l1SourceChain })
+  const requiredL1BlocksBeforeConfirmation =
+    getBlockBeforeConfirmation(l1SourceChain)
+  const blockTime = getBlockTime(l1SourceChain)
+
+  const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
+
+  if (receipt.status === 0) {
+    return {
+      ...txWithTxId,
+      status: 'Failure'
+    }
+  }
+  if (tx.cctpData?.receiveMessageTransactionHash) {
+    return {
+      ...txWithTxId,
+      status: 'Executed'
+    }
+  }
+  if (receipt.blockNumber && !tx.blockNum) {
+    // If blockNumber was never set (for example, network switch just after the deposit)
+    const { messageBytes, attestationHash } =
+      getAttestationHashAndMessageFromReceipt(receipt)
+    return {
+      ...txWithTxId,
+      blockNum: receipt.blockNumber,
+      cctpData: {
+        messageBytes,
+        attestationHash
+      }
+    }
+  }
+  const isConfirmed =
+    tx.createdAt &&
+    dayjs().diff(tx.createdAt, 'second') >
+      requiredL1BlocksBeforeConfirmation * blockTime
+  if (
+    // If transaction claim was set to failure, don't reset to Confirmed
+    tx.status !== 'Failure' &&
+    isConfirmed
+  ) {
+    console.log('Confirmed')
+    return {
+      ...txWithTxId,
+      status: 'Confirmed'
     }
   }
 
