@@ -13,9 +13,10 @@ import {
 } from '../../util/networks'
 
 /**
- * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should usually/always be less in practice.
+ * Buffer for after a node is confirmable but isn't yet confirmed.
+ * A rollup block (RBlock) typically gets asserted every 30-60 minutes.
  */
-const CONFIRMATION_BUFFER_MINUTES = 30
+const CONFIRMATION_BUFFER_MINUTES = 60
 
 function getTxConfirmationDate({
   createdAt,
@@ -49,17 +50,10 @@ export function getTxConfirmationTime({
   const SECONDS_IN_HOUR = 3600
   const SECONDS_IN_MIN = 60
 
-  const { isOrbitChain } = isNetwork(withdrawalFromChainId)
-
-  // add arbitrary 80% buffer for Orbit chain
-  const arbitraryBufferMultiple = isOrbitChain ? 1.8 : 1
-
   // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
   // and similarly, the confirm period blocks is always the number of blocks on the base chain
   const confirmationSeconds =
-    getBlockTime(baseChainId) *
-      getConfirmPeriodBlocks(withdrawalFromChainId) *
-      arbitraryBufferMultiple +
+    getBlockTime(baseChainId) * getConfirmPeriodBlocks(withdrawalFromChainId) +
     CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
 
   const confirmationDays = Math.ceil(confirmationSeconds / SECONDS_IN_DAY)

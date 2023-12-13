@@ -92,9 +92,8 @@ export function WithdrawalConfirmationDialog(
       confirmationDays > 1 ? 's' : ''
     }`
   } else if (confirmationHours >= 1) {
-    confirmationPeriod = `${Math.ceil(confirmationHours)} hour${
-      confirmationHours > 1 ? 's' : ''
-    }`
+    const roundedHours = Math.round(confirmationHours)
+    confirmationPeriod = `${roundedHours} hour${roundedHours > 1 ? 's' : ''}`
   } else {
     confirmationPeriod = `${confirmationMins} minute${
       confirmationMins > 1 ? 's' : ''
