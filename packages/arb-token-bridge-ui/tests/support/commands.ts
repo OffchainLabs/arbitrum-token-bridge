@@ -163,26 +163,8 @@ export async function fundUserUsdcTestnet(
   }
 }
 
-export async function fundUserWalletEth(
-  networkType: 'L1' | 'L2',
-  address: string
-) {
-  console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
-  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
-  const balance = await provider.getBalance(address)
-  const necessaryBalance = '0.001'
-  // Fund only if the balance is less than 2 (0.001 on testnet) eth
-  if (balance.lt(utils.parseEther(necessaryBalance))) {
-    const tx = await localWallet.connect(provider).sendTransaction({
-      to: address,
-      value: utils.parseEther(necessaryBalance)
-    })
-    await tx.wait()
-  }
-}
-
 export async function resetAllowance(networkType: 'L1' | 'L2') {
-  const wallet = Wallet.createRandom()
+  const wallet = new Wallet(Cypress.env('PRIVATE_KEY'))
   const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
   const contract = ERC20__factory.connect(
     '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
