@@ -91,7 +91,7 @@ describe('Deposit ERC20 Token', () => {
               .last()
               .contains(formatAmount(ERC20AmountToSend))
               .should('be.visible')
-            cy.findByText("You'll pay in gas fees")
+            cy.findByText("You'll now pay in gas fees")
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)

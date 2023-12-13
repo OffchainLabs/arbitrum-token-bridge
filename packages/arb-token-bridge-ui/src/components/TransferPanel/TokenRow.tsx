@@ -41,7 +41,7 @@ function tokenListIdsToNames(ids: number[]): string {
 
 function TokenLogoFallback() {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+    <div className="flex h-8 w-8 min-w-[2rem] items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
       ?
     </div>
   )
@@ -142,15 +142,17 @@ export function TokenRow({
       return nativeCurrency.logoUrl
     }
 
-    if (!token.logoURI) {
-      return undefined
-    }
-
     return token.logoURI
   }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
     if (!token) {
+      if (nativeCurrency.isCustom) {
+        return isDepositMode
+          ? erc20L1Balances?.[nativeCurrency.address]
+          : ethL2Balance
+      }
+
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
@@ -167,6 +169,7 @@ export function TokenRow({
     ethL1Balance,
     ethL2Balance,
     token,
+    nativeCurrency,
     isDepositMode,
     erc20L1Balances,
     erc20L2Balances
@@ -260,6 +263,8 @@ export function TokenRow({
 
     return tokenHasL2Address
   }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
+
+  const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
   const arbitrumTokenTooltipContent = useMemo(() => {
     const networkName = getNetworkName(
@@ -369,6 +374,7 @@ export function TokenRow({
               </Tooltip>
             )}
           </div>
+
           {token && (
             <div className="flex w-full flex-col items-start space-y-1">
               {/* TODO: anchor shouldn't be nested within a button */}
@@ -396,7 +402,8 @@ export function TokenRow({
                       />
                     ) : (
                       <span className="text-xs text-gray-900">
-                        This token hasn&apos;t been bridged to L2.
+                        This token hasn&apos;t been bridged to{' '}
+                        {getNetworkName(l2Network.id)}.
                       </span>
                     )}
                   </>
@@ -414,6 +421,19 @@ export function TokenRow({
                   {tokenListInfo}
                 </span>
               )}
+            </div>
+          )}
+
+          {isCustomFeeTokenRow && (
+            <div className="flex w-full flex-col items-start space-y-1">
+              <div className="flex w-full justify-between">
+                {isDepositMode && (
+                  <BlockExplorerTokenLink
+                    chain={l1Network}
+                    address={nativeCurrency.address}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>

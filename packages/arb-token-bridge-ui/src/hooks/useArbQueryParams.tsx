@@ -21,9 +21,19 @@ import {
   NumberParam,
   QueryParamProvider,
   StringParam,
+  decodeNumber,
+  decodeString,
   useQueryParams,
   withDefault
 } from 'use-query-params'
+
+import {
+  ChainKeyQueryParam,
+  getChainForChainKeyQueryParam,
+  getChainQueryParamForChain,
+  isValidChainQueryParam
+} from '../types/ChainQueryParam'
+import { ChainId } from '../util/networks'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
@@ -37,6 +47,8 @@ export const useArbQueryParams = () => {
     ]
   */
   return useQueryParams({
+    sourceChain: ChainParam,
+    destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
@@ -95,6 +107,61 @@ export const AmountQueryParam = {
     const amountStr = amount?.toString() ?? ''
     return sanitizeAmountQueryParam(amountStr)
   }
+}
+
+// Parse chainId to ChainQueryParam or ChainId for orbit chain
+function encodeChainQueryParam(
+  chainId: number | null | undefined
+): string | undefined {
+  if (!chainId) {
+    return undefined
+  }
+
+  try {
+    const chain = getChainQueryParamForChain(chainId)
+    return chain.toString()
+  } catch (e) {
+    return undefined
+  }
+}
+
+function isValidNumber(value: number | null | undefined): value is number {
+  if (typeof value === 'undefined' || value === null) {
+    return false
+  }
+
+  return !Number.isNaN(value)
+}
+
+// Parse ChainQueryParam/ChainId to ChainId
+// URL accept both chainId and chainQueryParam (string)
+function decodeChainQueryParam(
+  value: string | (string | null)[] | null | undefined
+  // ChainId type doesn't include custom orbit chain, we need to add number type
+): ChainId | number | undefined {
+  const valueString = decodeString(value)
+  if (!valueString) {
+    return undefined
+  }
+
+  const valueNumber = decodeNumber(value)
+  if (
+    isValidNumber(valueNumber) &&
+    isValidChainQueryParam(valueNumber as ChainId)
+  ) {
+    return valueNumber
+  }
+
+  if (isValidChainQueryParam(valueString)) {
+    return getChainForChainKeyQueryParam(valueString as ChainKeyQueryParam).id
+  }
+
+  return undefined
+}
+
+export const ChainParam = {
+  encode: encodeChainQueryParam,
+  decode: decodeChainQueryParam
 }
 
 export function ArbQueryParamProvider({

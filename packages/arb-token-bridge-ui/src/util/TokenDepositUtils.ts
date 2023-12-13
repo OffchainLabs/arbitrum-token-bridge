@@ -1,21 +1,20 @@
-import { getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 
-export async function depositTokenEstimateGas({
-  l1Provider,
-  l2Provider
+import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { fetchErc20Allowance, fetchErc20L1GatewayAddress } from './TokenUtils'
+
+async function fetchFallbackGasEstimates({
+  inboxAddress,
+  l1Provider
 }: {
+  inboxAddress: string
   l1Provider: Provider
-  l2Provider: Provider
 }): Promise<DepositGasEstimates> {
-  const [l1BaseFee, l2Network] = await Promise.all([
-    l1Provider.getGasPrice(),
-    getL2Network(l2Provider)
-  ])
-  const inbox = Inbox__factory.connect(l2Network.ethBridge.inbox, l1Provider)
+  const l1BaseFee = await l1Provider.getGasPrice()
+  const inbox = Inbox__factory.connect(inboxAddress, l1Provider)
 
   const estimatedL2SubmissionCost = await inbox.calculateRetryableSubmissionFee(
     // Values set by looking at a couple of L1 gateways
@@ -50,5 +49,69 @@ export async function depositTokenEstimateGas({
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
     estimatedL2Gas: BigNumber.from(100_000),
     estimatedL2SubmissionCost
+  }
+}
+
+async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
+  const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
+
+  const l1Gateway = await fetchErc20L1GatewayAddress({
+    erc20L1Address,
+    l1Provider,
+    l2Provider
+  })
+
+  const allowanceForL1Gateway = await fetchErc20Allowance({
+    address: erc20L1Address,
+    provider: l1Provider,
+    owner: address,
+    spender: l1Gateway
+  })
+
+  return allowanceForL1Gateway.lt(amount)
+}
+
+export type DepositTokenEstimateGasParams = {
+  amount: BigNumber
+  address: string
+  erc20L1Address: string
+  l1Provider: Provider
+  l2Provider: Provider
+}
+
+export async function depositTokenEstimateGas(
+  params: DepositTokenEstimateGasParams
+): Promise<DepositGasEstimates> {
+  const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+
+  if (await allowanceIsInsufficient(params)) {
+    console.warn(
+      `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
+    )
+
+    return fetchFallbackGasEstimates({
+      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      l1Provider
+    })
+  }
+
+  const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
+    amount,
+    erc20L1Address,
+    l1Provider,
+    l2Provider,
+    from: address,
+    retryableGasOverrides: {
+      // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+      // the 30% gas limit increase should cover the difference
+      gasLimit: { percentIncrease: BigNumber.from(30) }
+    }
+  })
+
+  return {
+    estimatedL1Gas: await l1Provider.estimateGas(txRequest),
+    estimatedL2Gas: retryableData.gasLimit,
+    estimatedL2SubmissionCost: retryableData.maxSubmissionCost
   }
 }

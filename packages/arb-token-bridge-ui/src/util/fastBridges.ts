@@ -60,7 +60,7 @@ export function getFastBridges({
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
-      case ChainId.Mainnet:
+      case ChainId.Ethereum:
         return 'ethereum'
       case ChainId.ArbitrumOne:
         return 'arbitrum'
@@ -161,7 +161,6 @@ export function getFastBridges({
 export const NonCanonicalTokensBridgeInfo = {
   [NonCanonicalTokenAddresses.FRAX]: {
     tokenSymbol: 'FRAX',
-    tokenSymbolOnArbitrum: 'arbiFRAX',
     supportedBridges: [FastBridgeNames.Celer],
     learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
     bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
