@@ -14,6 +14,10 @@ import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 describe('Deposit USDC through CCTP', () => {
   const USDCAmountToSend = 0.0001
 
+  before(() => {
+    cy.resetAllowance('L1')
+  })
+
   // Happy Path
   context('User has some USDC and is on L1', () => {
     let l1USDCBal: string
@@ -22,14 +26,12 @@ describe('Deposit USDC through CCTP', () => {
 
     // log in to metamask before deposit
     before(async () => {
-      const wallet = await cy.generateNewTestnetAccount('L1')
-      cy.importMetamaskAccount(wallet.privateKey)
-      cy.switchMetamaskAccount(3) // TODO: fix
+      const wallet = Cypress.env('ADDRESS')
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Goerli.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
-        address: wallet.address
+        address: wallet
       }).then(
         val =>
           (l1USDCBal = formatAmount(val, {
@@ -41,7 +43,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: wallet.address
+        address: wallet
       }).then(
         val =>
           (l2USDCBal = formatAmount(val, {
@@ -53,7 +55,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: wallet.address
+        address: wallet
       }).then(
         val =>
           (l2USDCeBal = formatAmount(val, {

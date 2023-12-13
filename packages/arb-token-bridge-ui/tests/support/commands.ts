@@ -18,8 +18,8 @@ import {
   getInitialERC20Balance
 } from './common'
 import { Wallet, utils } from 'ethers'
-import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
-import { MULTICALL_TESTNET_ADDRESS } from 'packages/arb-token-bridge-ui/src/constants'
+import { CommonAddress } from '../../src/util/CommonAddressUtils'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -181,13 +181,21 @@ export async function fundUserWalletEth(
   }
 }
 
-export async function generateNewTestnetAccount(networkType: 'L1' | 'L2') {
+export async function resetAllowance(networkType: 'L1' | 'L2') {
   const wallet = Wallet.createRandom()
-
-  await fundUserUsdcTestnet(networkType, wallet.address)
-  await fundUserWalletEth(networkType, wallet.address)
-
-  return wallet
+  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+  const contract = ERC20__factory.connect(
+    '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+    wallet.connect(provider)
+  )
+  const allowance = await contract.allowance(
+    wallet.address,
+    '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8'
+  )
+  await contract.decreaseAllowance(
+    '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
+    allowance
+  )
 }
 
 Cypress.Commands.addAll({
@@ -195,5 +203,5 @@ Cypress.Commands.addAll({
   login,
   logout,
   openTransactionsPanel,
-  generateNewTestnetAccount
+  resetAllowance
 })
