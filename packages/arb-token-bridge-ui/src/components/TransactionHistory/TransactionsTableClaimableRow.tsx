@@ -304,7 +304,10 @@ export function TransactionsTableClaimableRow({
 }) {
   const isError = tx.status === 'Failure'
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
-  const { isArbitrum: isSourceChainIdArbitrum } = isNetwork(sourceChainId)
+  const {
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
+    isArbitrum: isSourceChainIdArbitrum
+  } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
@@ -317,9 +320,17 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(tx.parentChainId)
+        chain: getWagmiChain(
+          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
+        )
       }),
-    [tx.asset, tx.tokenAddress, tx.parentChainId]
+    [
+      tx.asset,
+      tx.tokenAddress,
+      tx.parentChainId,
+      tx.childChainId,
+      isSourceChainIdEthereum
+    ]
   )
 
   const customAddressTxPadding = useMemo(
