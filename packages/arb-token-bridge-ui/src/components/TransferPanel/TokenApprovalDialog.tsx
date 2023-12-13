@@ -21,7 +21,7 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { BridgeTransferStarter } from '@/token-bridge-sdk/BridgeTransferStarter'
+import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
@@ -89,14 +89,17 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         if (!signer) {
           gasEstimate = constants.Zero
         } else {
-          gasEstimate = await CctpTransferStarter.approveCctpGasEstimation({
+          const cctpTransferStarter = new CctpTransferStarter({
             sourceChainProvider: provider,
+            destinationChainProvider: isDepositMode ? l2.provider : l1.provider
+          })
+          gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
             amount: constants.MaxUint256,
             signer
           })
         }
       } else if (walletAddress) {
-        gasEstimate = await BridgeTransferStarter.approveTokenGasEstimation({
+        gasEstimate = await approveTokenEstimateGas({
           erc20L1Address: token.address,
           address: walletAddress,
           l1Provider: l1.provider,
