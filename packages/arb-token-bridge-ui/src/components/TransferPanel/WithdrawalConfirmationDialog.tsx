@@ -11,6 +11,7 @@ import {
   L2Network,
   parentChains
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { mainnet } from '@wagmi/chains'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -75,7 +76,7 @@ export function WithdrawalConfirmationDialog(
 
   const { isArbitrumOne, isOrbitChain } = isNetwork(l2.network.id)
   const baseChainId = isOrbitChain
-    ? (parentChains[l1.network.id] as L2Network)?.partnerChainID ?? 0
+    ? (parentChains[l1.network.id] as L2Network)?.partnerChainID ?? mainnet.id
     : l1.network.id
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
