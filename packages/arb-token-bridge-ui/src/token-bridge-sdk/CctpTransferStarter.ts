@@ -8,27 +8,25 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
-  SelectedToken,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
+import {
+  fetchPerMessageBurnLimit,
+  getCctpContracts,
+  getUsdcToken
+} from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 
-export type CctpTransferStarterProps = BridgeTransferStarterProps & {
-  selectedToken: SelectedToken
-}
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
-  public selectedToken: SelectedToken // selectedToken is required in this class
 
-  constructor(props: CctpTransferStarterProps) {
+  constructor(props: BridgeTransferStarterProps) {
     super(props)
     this.transferType = 'cctp'
-    this.selectedToken = props.selectedToken
   }
 
   public requiresNativeCurrencyApproval = async () => false
@@ -43,13 +41,19 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     destinationAddress
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
+    // hardcode cctp token within this class, no need to pass externally
+    const selectedToken = getUsdcToken({
+      sourceChainId
+    })
+
     const recipient = destinationAddress ?? address
     const { tokenMessengerContractAddress } = getCctpContracts({
       sourceChainId
     })
 
     const allowance = await fetchErc20Allowance({
-      address: this.selectedToken.address,
+      address: selectedToken.address,
       provider: this.sourceChainProvider,
       owner: recipient,
       spender: tokenMessengerContractAddress
@@ -91,9 +95,12 @@ export class CctpTransferStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, destinationAddress, signer }: TransferProps) {
-    if (!this.selectedToken) throw Error('No token selected') // remove this later by type-checking
-
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
+    // hardcode cctp token within this class, no need to pass externally
+    const selectedToken = getUsdcToken({
+      sourceChainId
+    })
 
     const address = await getAddressFromSigner(signer)
 
@@ -104,7 +111,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     if (burnLimit.lte(amount)) {
       const formatedLimit = formatAmount(burnLimit, {
-        decimals: this.selectedToken.decimals,
+        decimals: selectedToken.decimals,
         symbol: 'USDC'
       })
       throw Error(

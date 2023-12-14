@@ -5,8 +5,9 @@ import { ChainDomain } from '../pages/api/cctp/[type]'
 import { prepareWriteContract, writeContract } from '@wagmi/core'
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
-import { ChainId } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { TokenType } from '../hooks/arbTokenBridge.types'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
@@ -156,5 +157,27 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     receiveMessage,
     fetchAttestation,
     waitForAttestation
+  }
+}
+
+export function getUsdcToken({ sourceChainId }: { sourceChainId: ChainId }) {
+  const commonUSDC = {
+    name: 'USD Coin',
+    type: TokenType.ERC20,
+    symbol: 'USDC',
+    decimals: 6,
+    listIds: new Set<number>()
+  }
+
+  if (isNetwork(sourceChainId).isTestnet) {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.ArbitrumGoerli.USDC
+    }
+  } else {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.ArbitrumOne.USDC
+    }
   }
 }

@@ -30,7 +30,7 @@ export type BridgeTransfer = {
 export type BridgeTransferStarterProps = {
   sourceChainProvider: Provider
   destinationChainProvider: Provider
-  selectedToken?: SelectedToken | null
+  selectedToken?: SelectedToken
 }
 
 export type TransferProps = {
