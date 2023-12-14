@@ -28,15 +28,35 @@ export type ChainWithRpcUrl = Chain & {
   nativeTokenData?: Erc20Data
 }
 
-export function getBaseChainIdByChainId(chainId: number): number {
-  const { isOrbitChain, isTestnet } = isNetwork(chainId)
-  const parentChain = parentChains[chainId]
+export function getBaseChainIdByChainId({
+  chainId,
+  parentChainId
+}: {
+  chainId: number
+  parentChainId: number
+}): number {
+  const {
+    isOrbitChain: isChildChainOrbitChain,
+    isEthereumMainnetOrTestnet: isChildChainEthereumMainnetOrTestnet
+  } = isNetwork(chainId)
+  const { isEthereumMainnetOrTestnet: isParentChainEthereumMainnetOrTestnet } =
+    isNetwork(parentChainId)
+  const parentChain = parentChains[parentChainId]
 
-  if (!parentChain) {
-    return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
+  if (isChildChainEthereumMainnetOrTestnet) {
+    return chainId
   }
 
-  if (isOrbitChain) {
+  if (isParentChainEthereumMainnetOrTestnet) {
+    return parentChainId
+  }
+
+  // the parent chain passed in is probably the base chain
+  if (!parentChain) {
+    return parentChainId
+  }
+
+  if (isChildChainOrbitChain) {
     return (parentChains[parentChain.chainID] as L2Network)?.partnerChainID
   }
   return parentChain.chainID

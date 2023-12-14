@@ -74,7 +74,10 @@ export function WithdrawalConfirmationDialog(
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const { isArbitrumOne } = isNetwork(l2.network.id)
-  const baseChainId = getBaseChainIdByChainId(l2.network.id)
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: l2.network.id,
+    parentChainId: l1.network.id
+  })
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
   const { confirmationMins, confirmationHours, confirmationDays } =

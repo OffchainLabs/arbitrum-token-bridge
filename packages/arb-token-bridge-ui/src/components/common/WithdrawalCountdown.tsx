@@ -77,10 +77,14 @@ export function WithdrawalCountdown({
   createdAt: string | null
 }): JSX.Element {
   const {
+    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const isLargeScreen = useMedia('(min-width: 1024px)')
-  const baseChainId = getBaseChainIdByChainId(l2Network.id)
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: l2Network.id,
+    parentChainId: l1Network.id
+  })
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
