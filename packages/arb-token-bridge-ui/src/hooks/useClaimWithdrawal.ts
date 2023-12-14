@@ -52,10 +52,13 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       return
     }
 
-    const { symbol, decimals } = await fetchErc20Data({
-      address: tx.tokenAddress as string,
-      provider: getProvider(tx.parentChainId)
-    })
+    const { symbol, decimals } =
+      tx.assetType === AssetType.ERC20
+        ? await fetchErc20Data({
+            address: tx.tokenAddress as string,
+            provider: getProvider(tx.parentChainId)
+          })
+        : { symbol: tx.asset, decimals: 18 }
 
     const extendedEvent: L2ToL1EventResultPlus = {
       ...event,
@@ -66,8 +69,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       value: utils.parseEther(tx.value ?? '0'),
       tokenAddress: tx.tokenAddress || undefined,
       outgoingMessageState: 1,
-      symbol: symbol,
-      decimals: decimals ?? 18,
+      symbol,
+      decimals,
       nodeBlockDeadline: tx.nodeBlockDeadline,
       parentChainId: tx.parentChainId,
       childChainId: tx.childChainId

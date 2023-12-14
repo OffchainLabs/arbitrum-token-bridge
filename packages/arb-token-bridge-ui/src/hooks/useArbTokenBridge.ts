@@ -865,40 +865,14 @@ export const useArbTokenBridge = (
       return
     }
 
-    const { value } = event
-
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
 
-    addTransaction({
-      status: 'pending',
-      type: 'outbox',
-      value: utils.formatUnits(value, nativeCurrency.decimals),
-      assetName: nativeCurrency.symbol,
-      assetType: AssetType.ETH,
-      sender: walletAddress,
-      txID: res.hash,
-      l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
-
     const rec = await res.wait()
 
     if (rec.status === 1) {
-      setTransactionSuccess(rec.transactionHash)
       addToExecutedMessagesCache([event])
-      setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-        const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-        const pendingWithdrawal = newPendingWithdrawalsMap[id]
-        if (pendingWithdrawal) {
-          pendingWithdrawal.outgoingMessageState = OutgoingMessageState.EXECUTED
-        }
-
-        return newPendingWithdrawalsMap
-      })
-    } else {
-      setTransactionFailure(rec.transactionHash)
     }
 
     return rec
