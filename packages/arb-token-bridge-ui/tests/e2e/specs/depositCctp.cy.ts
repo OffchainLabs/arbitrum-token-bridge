@@ -26,12 +26,12 @@ describe('Deposit USDC through CCTP', () => {
 
     // log in to metamask before deposit
     before(async () => {
-      const wallet = Cypress.env('ADDRESS')
+      const address = Cypress.env('ADDRESS')
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Goerli.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
-        address: wallet
+        address
       }).then(
         val =>
           (l1USDCBal = formatAmount(val, {
@@ -43,7 +43,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: wallet
+        address
       }).then(
         val =>
           (l2USDCBal = formatAmount(val, {
@@ -55,7 +55,7 @@ describe('Deposit USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: wallet
+        address
       }).then(
         val =>
           (l2USDCeBal = formatAmount(val, {
@@ -214,7 +214,7 @@ describe('Deposit USDC through CCTP', () => {
         cy.wait(20_000)
         cy.confirmMetamaskTransaction().then(() => {
           cy.findByText(
-            `Moving ${formatAmount(0.0001, {
+            `Moving ${formatAmount(USDCAmountToSend, {
               symbol: 'USDC'
             })} to Arbitrum Goerli`
           ).should('be.visible')

@@ -7,8 +7,7 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import {
   getInitialERC20Balance,
   getL1TestnetNetworkConfig,
-  getL2TestnetNetworkConfig,
-  zeroToLessThanOneETH
+  getL2TestnetNetworkConfig
 } from '../../support/common'
 
 describe('Withdraw USDC through CCTP', () => {
@@ -17,6 +16,10 @@ describe('Withdraw USDC through CCTP', () => {
   // because it is cleared between each `it` cypress test
   const USDCAmountToSend = 0.0001
 
+  before(() => {
+    cy.resetAllowance('L2')
+  })
+
   // Happy Path
   context('User is on L2 and imports USDC', () => {
     let l1USDCBal: string
@@ -24,11 +27,12 @@ describe('Withdraw USDC through CCTP', () => {
 
     // log in to metamask before deposit
     before(() => {
+      const address = Cypress.env('ADDRESS')
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Goerli.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
-        address: Cypress.env('ADDRESS')
+        address
       }).then(
         val =>
           (l1USDCBal = formatAmount(val, {
@@ -40,7 +44,7 @@ describe('Withdraw USDC through CCTP', () => {
         tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
-        address: Cypress.env('ADDRESS')
+        address
       }).then(
         val =>
           (l2USDCBal = formatAmount(val, {
@@ -91,15 +95,12 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('should show USDC balance correctly', () => {
-        // BALANCE: is in a different element so we check for siblings
-        cy.findByText(l2USDCBal)
+        cy.findByLabelText('USDC balance on l1')
           .should('be.visible')
-          .siblings()
-          .contains('BALANCE: ')
-        cy.findByText(l1USDCBal)
+          .contains(l1USDCBal)
+        cy.findByLabelText('USDC balance on l2')
           .should('be.visible')
-          .siblings()
-          .contains('BALANCE: ')
+          .contains(l2USDCBal)
       })
 
       context('should show clickable withdraw button', () => {
@@ -151,17 +152,18 @@ describe('Withdraw USDC through CCTP', () => {
           .should('be.enabled')
           .click()
 
-        cy.findByText(/I understand that I have to pay a one-time/).click()
+        cy.findByText(/I understand that I now have to pay a one-time/).click()
         cy.findByRole('button', {
           name: /Pay approval fee of/
         }).click()
-        cy.confirmMetamaskPermissionToSpend('1')
         cy.log('Approving USDC...')
+
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
         // eslint-disable-next-line
-        cy.wait(15000)
+        cy.wait(20_000)
         cy.confirmMetamaskTransaction().then(() => {
           cy.findByText(
-            `Moving ${formatAmount(0.0001, {
+            `Moving ${formatAmount(USDCAmountToSend, {
               symbol: 'USDC'
             })} to Goerli`
           ).should('be.visible')

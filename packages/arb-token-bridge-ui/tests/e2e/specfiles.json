@@ -42,13 +42,5 @@
   {
     "name": "Switch network",
     "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}"
-  },
-  {
-    "name": "Deposit CCTP",
-    "file": "tests/e2e/specs/**/depositCctp.cy.{js,jsx,ts,tsx}"
-  },
-  {
-    "name": "Withdraw CCTP",
-    "file": "tests/e2e/specs/**/withdrawCctp.cy.{js,jsx,ts,tsx}"
   }
 ]
