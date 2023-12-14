@@ -496,13 +496,6 @@ export function TransferPanel() {
     }
   }, [amount, selectedToken, nativeCurrency])
 
-  // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
-  const showDelayedSCTxRequest = () =>
-    setTimeout(() => {
-      setTransferring(false)
-      setShowSCWalletTooltip(true)
-    }, 3000)
-
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
     const [confirmed, primaryButtonClicked] = await waitForInput()
@@ -533,6 +526,13 @@ export function TransferPanel() {
     const [confirmed] = await waitForInput()
     return confirmed
   }
+
+  // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
+  const showDelayedSCTxRequest = () =>
+    setTimeout(() => {
+      setTransferring(false)
+      setShowSCWalletTooltip(true)
+    }, 3000)
 
   const transferCctp = async () => {
     let currentNetwork = isDepositMode
@@ -594,7 +594,8 @@ export function TransferPanel() {
 
         // if user selects usdc.e, redirect to our canonical transfer function
         if (depositConfirmation === 'bridge-normal-usdce') {
-          return transfer()
+          depositToken()
+          return
         }
       } else {
         const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
