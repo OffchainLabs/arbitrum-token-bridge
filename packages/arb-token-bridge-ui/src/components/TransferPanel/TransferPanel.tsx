@@ -78,10 +78,7 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
-import {
-  getChainIdFromProvider,
-  getAddressFromSigner
-} from '@/token-bridge-sdk/utils'
+import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 
 const isAllowedL2 = async ({
@@ -535,6 +532,12 @@ export function TransferPanel() {
     }, 3000)
 
   const transferCctp = async () => {
+    if (!selectedToken) {
+      return
+    }
+    if (!walletAddress) {
+      return
+    }
     let currentNetwork = isDepositMode
       ? latestNetworksAndSigners.current.l1.network
       : latestNetworksAndSigners.current.l2.network
@@ -579,11 +582,7 @@ export function TransferPanel() {
 
       const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
 
-      if (!selectedToken) throw Error('No token was selected')
-
       if (!signer) throw Error('Signer not connected')
-
-      const address = await getAddressFromSigner(signer)
 
       // user confirmation: show confirmation popup before cctp transfer
       if (isDepositMode) {
@@ -622,7 +621,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          address
+          address: walletAddress
         })
 
       if (isTokenApprovalRequired) {
@@ -718,7 +717,7 @@ export function TransferPanel() {
         uniqueId: null,
         value: amount,
         depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
-        destination: destinationAddress ?? address,
+        destination: destinationAddress ?? walletAddress,
         sender: walletAddress,
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
