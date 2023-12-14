@@ -52,6 +52,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "yarn generateDenylist",
+    "postinstall": "patch-package",
     "build": "next build",
     "start": "next start",
     "test": "jest --watch",
