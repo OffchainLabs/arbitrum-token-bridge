@@ -6,6 +6,7 @@ import { useLocalStorage } from 'react-use'
 
 import {
   ChainId,
+  getCustomChainFromLocalStorageById,
   getCustomChainsFromLocalStorage,
   isNetwork
 } from '../util/networks'
@@ -243,35 +244,55 @@ const useTransactionHistoryWithoutStatuses = (
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
+  const fetcher = useCallback(
+    (type: 'deposits' | 'withdrawals') => {
+      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
+
+      return Promise.all(
+        multiChainFetchList
+          .filter(chainPair => {
+            if (isTestnetMode) {
+              // in testnet mode we fetch all chain pairs
+              return chainPair
+            }
+            // otherwise don't fetch testnet chain pairs
+            return !isTestnetChainPair(chainPair)
+          })
+          .map(async chainPair => {
+            try {
+              return await fetcherFn({
+                sender: address,
+                receiver: address,
+                l1Provider: getProvider(chainPair.parentChain),
+                l2Provider: getProvider(chainPair.chain),
+                pageNumber: 0,
+                pageSize: 1000
+              })
+            } catch (err) {
+              const isCustomOrbitChain = !!getCustomChainFromLocalStorageById(
+                chainPair.chain
+              )
+
+              if (isCustomOrbitChain) {
+                // don't throw for custom orbit chains, local node may be offline
+                return []
+              }
+
+              throw err
+            }
+          })
+      )
+    },
+    [address, isTestnetMode]
+  )
+
   const {
     data: depositsData,
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
     address ? ['tx_list', 'deposits', address, isTestnetMode] : null,
-    ([, , _address, _isTestnetMode]) => {
-      return Promise.all(
-        multiChainFetchList
-          .filter(chainPair => {
-            if (_isTestnetMode) {
-              // in testnet mode we fetch all chain pairs
-              return true
-            }
-            // otherwise don't fetch testnet chain pairs
-            return !isTestnetChainPair(chainPair)
-          })
-          .map(chainPair => {
-            return fetchDeposits({
-              sender: _address,
-              receiver: _address,
-              l1Provider: getProvider(chainPair.parentChain),
-              l2Provider: getProvider(chainPair.chain),
-              pageNumber: 0,
-              pageSize: 1000
-            })
-          })
-      )
-    }
+    () => fetcher('deposits')
   )
 
   const {
@@ -280,29 +301,7 @@ const useTransactionHistoryWithoutStatuses = (
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
     address ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
-    ([, , _address, _isTestnetMode]) => {
-      return Promise.all(
-        multiChainFetchList
-          .filter(chainPair => {
-            if (_isTestnetMode) {
-              // in testnet mode we fetch all chain pairs
-              return chainPair
-            }
-            // otherwise don't fetch testnet chain pairs
-            return !isTestnetChainPair(chainPair)
-          })
-          .map(chainPair => {
-            return fetchWithdrawals({
-              sender: _address,
-              receiver: _address,
-              l1Provider: getProvider(chainPair.parentChain),
-              l2Provider: getProvider(chainPair.chain),
-              pageNumber: 0,
-              pageSize: 1000
-            })
-          })
-      )
-    }
+    () => fetcher('withdrawals')
   )
 
   const deposits = (depositsData || []).flat()
