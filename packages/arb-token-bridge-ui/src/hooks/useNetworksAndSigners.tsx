@@ -133,7 +133,6 @@ export type ProviderName =
   | 'WalletConnect'
   | 'Safe' // not used yet
   | 'Injected'
-  | 'Ledger'
   | 'Other'
 
 // connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
@@ -144,8 +143,6 @@ function getWalletName(connectorName: string): ProviderName {
     case 'Trust Wallet':
     case 'Safe':
     case 'Injected':
-    case 'Ledger':
-      return connectorName
 
     case 'WalletConnectLegacy':
     case 'WalletConnect':
