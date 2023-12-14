@@ -21,7 +21,7 @@ export function WalletConnectWarning() {
           href="https://twitter.com/Ledger/status/1735291427100455293"
           className="arb-hover underline"
         >
-          recent upgrade{' '}
+          recent upgrade
         </ExternalLink>{' '}
         that may compromise security. Please use other wallets in the meantime.
       </div>
