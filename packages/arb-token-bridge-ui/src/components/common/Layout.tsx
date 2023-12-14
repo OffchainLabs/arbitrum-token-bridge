@@ -38,12 +38,12 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        The bridge is currently{' '}
+        The bridge is currently not supporting the{' '}
         <ExternalLink
           href="https://twitter.com/Ledger/status/1735291427100455293"
           className="arb-hover underline"
         >
-          not supporting the Ledger wallet.
+          Ledger wallet.
         </ExternalLink>{' '}
         Please use other wallets in the meantime.
       </SiteBanner>
