@@ -235,7 +235,6 @@ async function wrapEth(networkType: 'L1' | 'L2') {
 
 async function approveWeth() {
   console.log('Approving WETH...')
-  const balance = await ethProvider.getBalance(userWallet.address)
   const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
     // L1 WETH gateway
     l1WethGateway,
