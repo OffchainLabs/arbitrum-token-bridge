@@ -1,16 +1,8 @@
 import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
-import { AutoSizer, List } from 'react-virtualized'
-import {
-  XMarkIcon,
-  ArrowSmallLeftIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline'
-import { useMedia } from 'react-use'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
 
-import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
@@ -31,7 +23,6 @@ import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
-import { TokenRow } from './TokenRow'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
@@ -39,6 +30,9 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
+import { SearchPanel } from '../common/SearchPanel/SearchPanel'
+import { TokenRow } from './TokenRow'
 
 enum Panel {
   TOKENS,
@@ -160,7 +154,6 @@ function TokensPanel({
     l2: { provider: L2Provider, network: l2Network }
   } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
-  const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -180,8 +173,6 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-
-  const numberOfRows = isLarge ? 5 : 3.5
 
   const getBalance = useCallback(
     (address: string) => {
@@ -384,86 +375,62 @@ function TokensPanel({
   }
 
   return (
-    <div className="flex flex-col space-y-3">
-      <form onSubmit={addNewToken} className="flex flex-col">
-        <div className="flex items-stretch gap-2">
-          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
-            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
+    <SearchPanelTable
+      searchInputPlaceholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
+      searchInputValue={newToken}
+      onSearchInputChange={e => {
+        setErrorMessage('')
+        setNewToken(e.target.value)
+      }}
+      errorMessage={errorMessage}
+      onSubmit={addNewToken}
+      SearchFieldCTA={
+        <Button
+          type="submit"
+          variant="secondary"
+          loading={isAddingToken}
+          loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
+          disabled={newToken === '' || !isAddress(newToken)}
+          className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
+          aria-label="Add New Token"
+        >
+          Add
+        </Button>
+      }
+      rowCount={tokensToShow.length}
+      rowHeight={84}
+      rowRenderer={virtualizedProps => {
+        const address = tokensToShow[virtualizedProps.index]
 
-            <input
-              id="newTokenAddress"
-              value={newToken}
-              onChange={e => {
-                setErrorMessage('')
-                setNewToken(e.target.value)
-              }}
-              placeholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
+        if (address === NATIVE_CURRENCY_IDENTIFIER) {
+          return (
+            <TokenRow
+              key="TokenRowNativeCurrency"
+              onClick={() => onTokenSelected(null)}
+              token={null}
             />
-          </div>
+          )
+        }
 
-          <Button
-            type="submit"
-            variant="secondary"
-            loading={isAddingToken}
-            loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
-            disabled={newToken === '' || !isAddress(newToken)}
-            className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
-            aria-label="Add New Token"
-          >
-            Add
-          </Button>
-        </div>
-        {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
-      </form>
-      <div
-        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
-        data-cy="tokenSearchList"
-      >
-        <AutoSizer disableHeight>
-          {({ width }) => (
-            <List
-              width={width - 2}
-              height={numberOfRows * 84}
-              rowCount={tokensToShow.length}
-              rowHeight={84}
-              rowRenderer={virtualizedProps => {
-                const address = tokensToShow[virtualizedProps.index]
+        let token: ERC20BridgeToken | null = null
+        if (isTokenArbitrumOneNativeUSDC(address)) {
+          token = ARB_ONE_NATIVE_USDC_TOKEN
+        } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
+          token = ARB_GOERLI_NATIVE_USDC_TOKEN
+        } else if (address) {
+          token = tokensFromLists[address] || tokensFromUser[address] || null
+        }
 
-                if (address === NATIVE_CURRENCY_IDENTIFIER) {
-                  return (
-                    <TokenRow
-                      key="TokenRowNativeCurrency"
-                      onClick={() => onTokenSelected(null)}
-                      token={null}
-                    />
-                  )
-                }
-
-                let token: ERC20BridgeToken | null = null
-                if (isTokenArbitrumOneNativeUSDC(address)) {
-                  token = ARB_ONE_NATIVE_USDC_TOKEN
-                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
-                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
-                } else if (address) {
-                  token =
-                    tokensFromLists[address] || tokensFromUser[address] || null
-                }
-
-                return (
-                  <TokenRow
-                    key={address}
-                    style={virtualizedProps.style}
-                    onClick={() => onTokenSelected(token)}
-                    token={token}
-                  />
-                )
-              }}
-            />
-          )}
-        </AutoSizer>
-      </div>
-    </div>
+        return (
+          <TokenRow
+            key={address}
+            style={virtualizedProps.style}
+            onClick={() => onTokenSelected(token)}
+            token={token}
+          />
+        )
+      }}
+    />
   )
 }
 
@@ -488,8 +455,6 @@ export function TokenSearch({
   const { isLoading: isLoadingAccountType } = useAccountType()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
-
-  const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -561,53 +526,18 @@ export function TokenSearch({
     }
   }
 
-  if (currentPanel === Panel.TOKENS) {
-    return (
-      <>
-        <div className="flex flex-row items-center justify-between pb-4">
-          <span className="text-xl font-medium">Select Token</span>
-          <button className="arb-hover" onClick={close}>
-            <XMarkIcon className="h-6 w-6 text-gray-5" />
-          </button>
-        </div>
-        <TokensPanel onTokenSelected={selectToken} />
-        <div className="flex justify-end pt-6">
-          {isFetchingTokenLists ? (
-            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
-              <Loader color="#28A0F0" size="small" />
-              Fetching Tokens...
-            </span>
-          ) : (
-            <button
-              className="arb-hover text-gray text-sm font-medium text-blue-link"
-              onClick={() => setCurrentPanel(Panel.LISTS)}
-            >
-              Manage token lists
-            </button>
-          )}
-        </div>
-      </>
-    )
-  }
-
   return (
-    <>
-      <div className="flex flex-row items-center justify-between pb-4">
-        <span className="text-xl font-medium">Token Lists</span>
-        <button className="arb-hover" onClick={close}>
-          <XMarkIcon className="h-6 w-6 text-gray-5" />
-        </button>
-      </div>
-      <div className="flex justify-start pb-6">
-        <button
-          className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
-          onClick={() => setCurrentPanel(Panel.TOKENS)}
-        >
-          <ArrowSmallLeftIcon className="h-6 w-6" />
-          <span>Back to Select Token</span>
-        </button>
-      </div>
-      <TokenListsPanel />
-    </>
+    <SearchPanel
+      close={close}
+      onImportToken={onImportToken}
+      SearchPanelSecondaryPage={<TokenListsPanel />}
+      mainPageTitle="Select Token"
+      secondPageTitle="Token Lists"
+      isLoading={isFetchingTokenLists}
+      loadingMessage="Fetching Tokens..."
+      bottomRightCTAtext="Manage token lists"
+    >
+      <TokensPanel onTokenSelected={selectToken} />
+    </SearchPanel>
   )
 }
