@@ -2,8 +2,9 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import { useLocalStorage } from 'react-use'
 
-import { ChainId } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -37,6 +38,7 @@ import {
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
+import { testnetModeLocalStorageKey } from '../components/common/SettingsDialog'
 
 export type Deposit = Transaction
 
@@ -47,6 +49,8 @@ export type Withdrawal =
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 type Transfer = DepositOrWithdrawal | MergedTransaction
+
+type ChainPair = { parentChain: ChainId; chain: ChainId }
 
 export type TransactionHistoryParams = {
   data: {
@@ -84,7 +88,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
+const multiChainFetchList: ChainPair[] = [
   {
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
@@ -179,12 +183,20 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
+function isTestnetChainPair(chainPair: ChainPair) {
+  return isNetwork(chainPair.parentChain).isTestnet
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
+  const [isTestnetMode = false] = useLocalStorage<boolean>(
+    testnetModeLocalStorageKey
+  )
+
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -199,7 +211,7 @@ const useTransactionHistoryWithoutStatuses = (
     l1ChainId: ChainId.Goerli,
     l2ChainId: ChainId.ArbitrumGoerli,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: isTestnetMode ? 1000 : 0,
     type: 'all'
   })
 
@@ -226,19 +238,28 @@ const useTransactionHistoryWithoutStatuses = (
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'deposits', address] : null,
-    ([, , _address]) => {
+    address ? ['tx_list', 'deposits', address, isTestnetMode] : null,
+    ([, , _address, _isTestnetMode]) => {
       return Promise.all(
-        multiChainFetchList.map(chainPair => {
-          return fetchDeposits({
-            sender: _address,
-            receiver: _address,
-            l1Provider: getProvider(chainPair.parentChain),
-            l2Provider: getProvider(chainPair.chain),
-            pageNumber: 0,
-            pageSize: 1000
+        multiChainFetchList
+          .filter(chainPair => {
+            if (_isTestnetMode) {
+              // in testnet mode we fetch all chain pairs
+              return true
+            }
+            // otherwise don't fetch testnet chain pairs
+            return !isTestnetChainPair(chainPair)
           })
-        })
+          .map(chainPair => {
+            return fetchDeposits({
+              sender: _address,
+              receiver: _address,
+              l1Provider: getProvider(chainPair.parentChain),
+              l2Provider: getProvider(chainPair.chain),
+              pageNumber: 0,
+              pageSize: 1000
+            })
+          })
       )
     }
   )
@@ -248,19 +269,28 @@ const useTransactionHistoryWithoutStatuses = (
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'withdrawals', address] : null,
-    ([, , _address]) => {
+    address ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
+    ([, , _address, _isTestnetMode]) => {
       return Promise.all(
-        multiChainFetchList.map(chainPair => {
-          return fetchWithdrawals({
-            sender: _address,
-            receiver: _address,
-            l1Provider: getProvider(chainPair.parentChain),
-            l2Provider: getProvider(chainPair.chain),
-            pageNumber: 0,
-            pageSize: 1000
+        multiChainFetchList
+          .filter(chainPair => {
+            if (_isTestnetMode) {
+              // in testnet mode we fetch all chain pairs
+              return chainPair
+            }
+            // otherwise don't fetch testnet chain pairs
+            return !isTestnetChainPair(chainPair)
           })
-        })
+          .map(chainPair => {
+            return fetchWithdrawals({
+              sender: _address,
+              receiver: _address,
+              l1Provider: getProvider(chainPair.parentChain),
+              l2Provider: getProvider(chainPair.chain),
+              pageNumber: 0,
+              pageSize: 1000
+            })
+          })
       )
     }
   )
@@ -306,10 +336,10 @@ export const useTransactionHistory = (
       }
 
       return address && !loading
-        ? (['complete_tx_list', address, pageNumber] as const)
+        ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, loading]
+    [address, loading, data]
   )
 
   const {
@@ -321,12 +351,12 @@ export const useTransactionHistory = (
     isValidating
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page]) => {
+    ([, , _page, _data]) => {
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(transformTransaction)
+        _data.slice(startIndex, endIndex).map(transformTransaction)
       )
     },
     {
@@ -341,6 +371,14 @@ export const useTransactionHistory = (
       dedupingInterval: 1_000_000
     }
   )
+
+  useEffect(() => {
+    if (runFetcher && !loading) {
+      // when data changes (e.g. on address change)
+      setPage(1)
+      setFetching(true)
+    }
+  }, [JSON.stringify(data), runFetcher, loading])
 
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
