@@ -74,7 +74,7 @@ export abstract class BridgeTransferStarter {
   constructor(props: BridgeTransferStarterProps) {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
-    this.selectedToken = props.selectedToken ?? undefined
+    this.selectedToken = props.selectedToken ?? undefined // if token not provided, fallback to eth, or let the child class define it's token (eg. CCTP)
   }
 
   public abstract requiresNativeCurrencyApproval(

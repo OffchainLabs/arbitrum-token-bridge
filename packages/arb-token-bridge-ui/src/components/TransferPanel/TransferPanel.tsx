@@ -30,12 +30,7 @@ import {
   useAppContextActions,
   useAppContextState
 } from '../App/AppContext'
-import {
-  trackEvent,
-  shouldTrackAnalytics,
-  AnalyticsEvent,
-  AnalyticsEventMap
-} from '../../util/AnalyticsUtils'
+import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
@@ -539,31 +534,46 @@ export function TransferPanel() {
     return confirmed
   }
 
-  // a generic function to reduce verbose code in transfer panel
-  const trackTransferPanelEvent = (
-    eventName: AnalyticsEvent,
-    additionalProperties?: Partial<AnalyticsEventMap[AnalyticsEvent]>
-  ) => {
-    const currentNetwork = isDepositMode
+  const transferCctp = async () => {
+    let currentNetwork = isDepositMode
       ? latestNetworksAndSigners.current.l1.network
       : latestNetworksAndSigners.current.l2.network
+
     const currentNetworkName = getNetworkName(currentNetwork.id)
+    const isConnectedToTheWrongChain =
+      (isDepositMode && isConnectedToArbitrum.current) ||
+      (!isDepositMode && !isConnectedToArbitrum.current)
 
-    if (shouldTrackAnalytics(currentNetworkName)) {
-      trackEvent(eventName, {
-        type: isDepositMode ? 'Deposit' : 'Withdrawal',
-        tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
-        assetType: selectedToken ? 'ERC-20' : 'ETH',
-        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: currentNetworkName,
-        amount: Number(amount),
-        ...additionalProperties
-      })
+    if (isConnectedToTheWrongChain) {
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent('Switch Network and Transfer', {
+          type: isDepositMode ? 'Deposit' : 'Withdrawal',
+          tokenSymbol: 'USDC',
+          assetType: 'ERC-20',
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount)
+        })
+      }
+      const switchTargetChainId = isDepositMode
+        ? latestNetworksAndSigners.current.l1.network.id
+        : latestNetworksAndSigners.current.l2.network.id
+      try {
+        await switchNetworkAsync?.(switchTargetChainId)
+        currentNetwork = isDepositMode
+          ? latestNetworksAndSigners.current.l1.network
+          : latestNetworksAndSigners.current.l2.network
+      } catch (e) {
+        if (isUserRejectedError(e)) {
+          return
+        }
+      }
     }
-  }
 
-  const transferCctp = async () => {
     try {
+      const l1Provider = latestNetworksAndSigners.current.l1.provider
+      const l2Provider = latestNetworksAndSigners.current.l2.provider
+
       const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
       const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
 
@@ -670,10 +680,14 @@ export function TransferPanel() {
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
-        trackTransferPanelEvent(
-          isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
-          { complete: false }
-        )
+        if (shouldTrackAnalytics(currentNetworkName)) {
+          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+            accountType: 'Smart Contract',
+            network: currentNetworkName,
+            amount: Number(amount),
+            complete: false
+          })
+        }
         return
       }
 
@@ -681,10 +695,14 @@ export function TransferPanel() {
         return
       }
 
-      trackTransferPanelEvent(
-        isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal',
-        { complete: false }
-      )
+      if (shouldTrackAnalytics(currentNetworkName)) {
+        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          accountType: 'EOA',
+          network: currentNetworkName,
+          amount: Number(amount),
+          complete: false
+        })
+      }
 
       const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
