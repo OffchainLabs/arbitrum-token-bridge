@@ -42,7 +42,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     const [event] = l2TxReceipt.getL2ToL1Events()
 
     if (!event) {
-      return
+      setIsClaiming(false)
+      throw new Error('Event not found.')
     }
 
     const extendedEvent: L2ToL1EventResultPlus = {
