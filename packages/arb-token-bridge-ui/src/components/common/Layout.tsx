@@ -38,14 +38,15 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        The bridge is currently not supporting the{' '}
+        Arbitrum Orbit is mainnet-ready! Learn more about launching a customized
+        chain{' '}
         <ExternalLink
-          href="https://twitter.com/Ledger/status/1735291427100455293"
+          href="https://arbitrum.io/orbit"
           className="arb-hover underline"
         >
-          Ledger wallet.
-        </ExternalLink>{' '}
-        Please use other wallets in the meantime.
+          here
+        </ExternalLink>
+        .
       </SiteBanner>
       <Header />
 
