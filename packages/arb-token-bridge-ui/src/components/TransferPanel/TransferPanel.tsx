@@ -618,8 +618,7 @@ export function TransferPanel() {
 
       const cctpTransferStarter = new CctpTransferStarter({
         sourceChainProvider,
-        destinationChainProvider,
-        selectedToken
+        destinationChainProvider
       })
 
       // logic: check if selected token approval is required for selected transfer type
