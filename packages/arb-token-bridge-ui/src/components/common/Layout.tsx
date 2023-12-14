@@ -38,15 +38,14 @@ export function Layout(props: LayoutProps) {
       className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
     >
       <SiteBanner>
-        Arbitrum Orbit is mainnet-ready! Learn more about launching a customized
-        chain{' '}
+        The bridge is currently{' '}
         <ExternalLink
-          href="https://arbitrum.io/orbit"
+          href="https://twitter.com/Ledger/status/1735291427100455293"
           className="arb-hover underline"
         >
-          here
-        </ExternalLink>
-        .
+          not supporting the Ledger wallet.
+        </ExternalLink>{' '}
+        Please use other wallets in the meantime.
       </SiteBanner>
       <Header />
 
