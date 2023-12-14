@@ -43,7 +43,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
 
     if (!event) {
       setIsClaiming(false)
-      throw new Error('Event not found.')
+      errorToast("Can't claim withdrawal: event not found.")
+      return
     }
 
     const extendedEvent: L2ToL1EventResultPlus = {
