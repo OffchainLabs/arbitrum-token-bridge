@@ -21,7 +21,7 @@ type Contracts = {
   tokenMinterContractAddress: `0x${string}`
 }
 
-export const contracts: Record<CCTPSupportedChainId, Contracts> = {
+const contracts: Record<CCTPSupportedChainId, Contracts> = {
   [ChainId.Ethereum]: {
     tokenMessengerContractAddress: '0xbd3fa81b58ba92a82136038b25adec7066af3155',
     targetChainDomain: ChainDomain.ArbitrumOne,
