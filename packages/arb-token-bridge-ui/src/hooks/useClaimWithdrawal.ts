@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import * as Sentry from '@sentry/react'
-import { useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 
 import { useAppState } from '../state'
-import { MergedTransaction } from '../state/app/state'
+import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import { getProvider } from '../components/TransactionHistory/helpers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
-import { utils } from 'ethers'
+import { ContractReceipt, utils } from 'ethers'
+import { useTransactionHistory } from './useTransactionHistory'
+import dayjs from 'dayjs'
+import { fetchErc20Data } from '../util/TokenUtils'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => Promise<void>
@@ -20,7 +23,9 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+  const { address } = useAccount()
   const { data: signer } = useSigner()
+  const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
 
   async function claim(tx: MergedTransaction) {
@@ -47,6 +52,11 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       return
     }
 
+    const { symbol, decimals } = await fetchErc20Data({
+      address: tx.tokenAddress as string,
+      provider: getProvider(tx.parentChainId)
+    })
+
     const extendedEvent: L2ToL1EventResultPlus = {
       ...event,
       sender: tx.sender,
@@ -56,8 +66,8 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
       value: utils.parseEther(tx.value ?? '0'),
       tokenAddress: tx.tokenAddress || undefined,
       outgoingMessageState: 1,
-      symbol: tx.asset,
-      decimals: 18,
+      symbol: symbol,
+      decimals: decimals ?? 18,
       nodeBlockDeadline: tx.nodeBlockDeadline,
       parentChainId: tx.parentChainId,
       childChainId: tx.childChainId
@@ -93,6 +103,14 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     if (!res) {
       errorToast(`Can't claim withdrawal: ${err?.message ?? err}`)
     }
+
+    const isSuccess = (res as ContractReceipt).status === 1
+
+    updatePendingTransaction({
+      ...tx,
+      status: isSuccess ? WithdrawalStatus.EXECUTED : WithdrawalStatus.FAILURE,
+      resolvedAt: isSuccess ? dayjs().valueOf() : null
+    })
   }
 
   return { claim, isClaiming }
