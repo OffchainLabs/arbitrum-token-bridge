@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useLocalStorage } from 'react-use'
 
-import { ChainId, isNetwork } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  isNetwork
+} from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -114,7 +118,13 @@ const multiChainFetchList: ChainPair[] = [
   {
     parentChain: ChainId.ArbitrumSepolia,
     chain: ChainId.StylusTestnet
-  }
+  },
+  ...getCustomChainsFromLocalStorage().map(chain => {
+    return {
+      parentChain: chain.partnerChainID,
+      chain: chain.chainID
+    }
+  })
 ]
 
 function isWithdrawalFromSubgraph(
