@@ -1,6 +1,7 @@
 import { PropsWithChildren, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, Column, Table } from 'react-virtualized'
+import { ArrowDownOnSquareIcon } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -80,18 +81,26 @@ export const TransactionHistoryTable = ({
   transactions,
   className,
   loading,
+  completed,
   error,
+  numberOfDays,
+  resume,
   rowHeight,
   rowHeightCustomDestinationAddress
 }: {
   transactions: MergedTransaction[]
   className?: string
   loading: boolean
+  completed: boolean
   error: unknown
+  numberOfDays: number
+  resume: () => void
   rowHeight: number
   rowHeightCustomDestinationAddress: number
 }) => {
   const isTxHistoryEmpty = transactions.length === 0
+
+  const paused = !loading && !completed
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -107,6 +116,10 @@ export const TransactionHistoryTable = ({
     },
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
+
+  const numberOfDaysString = `${numberOfDays}${
+    numberOfDays === 1 ? ' day' : ' days'
+  }`
 
   if (isTxHistoryEmpty) {
     if (error) {
@@ -135,6 +148,24 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
+    if (paused) {
+      return (
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
+        </div>
+      )
+    }
     return (
       <div className="bg-white p-4 text-sm">
         Looks like no transactions here yet!
@@ -143,12 +174,35 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className={twMerge('flex h-full flex-col rounded-lg', className)}>
+    <div className={twMerge('h-full flex-col rounded-lg', className)}>
+      <div className="bg-white px-8 pt-4">
+        {loading ? (
+          <div className="flex animate-pulse space-x-2">
+            <Loader size="small" />
+            <span className="text-sm">Loading transactions...</span>
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <span className="text-sm">
+              Showing transactions for the last {numberOfDaysString}.
+            </span>
+
+            {!completed && (
+              <button onClick={resume} className="arb-hover text-sm">
+                <div className="flex space-x-1 rounded border border-black px-2 py-1">
+                  <span>Load more</span>
+                  <ArrowDownOnSquareIcon width={16} />
+                </div>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
       <AutoSizer>
         {({ width, height }) => (
           <Table
             width={width}
-            height={height - 52}
+            height={height - 82}
             rowHeight={({ index }) => getRowHeight(index)}
             rowCount={transactions.length}
             headerHeight={52}

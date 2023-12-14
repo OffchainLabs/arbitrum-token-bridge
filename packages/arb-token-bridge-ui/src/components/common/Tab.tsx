@@ -1,11 +1,8 @@
 import { Tab } from '@headlessui/react'
 import { forwardRef, PropsWithChildren } from 'react'
-import { Loader } from './atoms/Loader'
 
 export type TabButtonProps = PropsWithChildren<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    showloader?: boolean
-  }
+  React.ButtonHTMLAttributes<HTMLButtonElement>
 >
 
 export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
@@ -19,10 +16,7 @@ export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
         className={`${tabButtonClassName} ${props.className ?? ''}`}
         {...props}
       >
-        <>
-          {props.showloader && <Loader size="small" />}
-          {props.children}
-        </>
+        {props.children}
       </Tab>
     )
   }
