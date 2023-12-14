@@ -803,14 +803,12 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxToken({
-    id,
+    event,
     l1Signer
   }: {
-    id: string
+    event: L2ToL1EventResultPlus | undefined
     l1Signer: Signer
   }) {
-    const event = pendingWithdrawalsMap[id]
-
     if (!event) {
       throw new Error('Outbox message not found')
     }
@@ -822,7 +820,6 @@ export const useArbTokenBridge = (
     const { tokenAddress, value } = event
 
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
-
     const res = await messageWriter.execute(l2.provider)
 
     const { symbol, decimals } = await fetchErc20Data({
@@ -885,14 +882,12 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxEth({
-    id,
+    event,
     l1Signer
   }: {
-    id: string
+    event: L2ToL1EventResultPlus | undefined
     l1Signer: Signer
   }) {
-    const event = pendingWithdrawalsMap[id]
-
     if (!event) {
       throw new Error('Outbox message not found')
     }
