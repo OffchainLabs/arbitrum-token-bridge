@@ -8,7 +8,7 @@ export function WalletConnectWarning() {
         Users connecting to the site using WalletConnect may experience errors
         due to their new upgrade. Please{' '}
         <ExternalLink
-          className=" underline hover:no-underline"
+          className="underline hover:no-underline"
           href={GET_HELP_LINK}
         >
           contact support
