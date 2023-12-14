@@ -7,6 +7,8 @@ import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
+import { attachTimestampToTokenWithdrawal } from './helpers'
+import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -109,7 +111,7 @@ export async function fetchWithdrawals({
       }
     })
 
-  const mappedTokenWithdrawalsFromEventLogs: Withdrawal[] =
+  const mappedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] =
     tokenWithdrawalsFromEventLogs.map(tx => {
       return {
         ...tx,
@@ -120,8 +122,16 @@ export async function fetchWithdrawals({
       }
     })
 
+  // we need timestamps to sort token withdrawals along ETH withdrawals
+  const tokenWithdrawalsFromEventLogsWithTimestamp: Withdrawal[] =
+    await Promise.all(
+      mappedTokenWithdrawalsFromEventLogs.map(withdrawal =>
+        attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
+      )
+    )
+
   return [
     ...mappedEthWithdrawalsFromEventLogs,
-    ...mappedTokenWithdrawalsFromEventLogs
+    ...tokenWithdrawalsFromEventLogsWithTimestamp
   ]
 }
