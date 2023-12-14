@@ -538,6 +538,13 @@ export function TransferPanel() {
     if (!walletAddress) {
       return
     }
+    const signer = isDepositMode ? l1Signer : l2Signer
+    if (!signer) {
+      throw 'Signer is undefined'
+    }
+
+    setTransferring(true)
+
     let currentNetwork = isDepositMode
       ? latestNetworksAndSigners.current.l1.network
       : latestNetworksAndSigners.current.l2.network
@@ -581,8 +588,6 @@ export function TransferPanel() {
       const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
 
       const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
-
-      if (!signer) throw Error('Signer not connected')
 
       // user confirmation: show confirmation popup before cctp transfer
       if (isDepositMode) {
