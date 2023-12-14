@@ -91,8 +91,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         } else {
           const cctpTransferStarter = new CctpTransferStarter({
             sourceChainProvider: provider,
-            destinationChainProvider: isDepositMode ? l2.provider : l1.provider,
-            selectedToken: token // for now keep it here, but later CctpClass should initialize USDC token without passing in it, within it's constructor
+            destinationChainProvider: isDepositMode ? l2.provider : l1.provider
           })
           gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
             amount: constants.MaxUint256,
