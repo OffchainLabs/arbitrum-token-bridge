@@ -28,6 +28,20 @@ export type ChainWithRpcUrl = Chain & {
   nativeTokenData?: Erc20Data
 }
 
+export function getBaseChainIdByChainId(chainId: number): number {
+  const { isOrbitChain, isTestnet } = isNetwork(chainId)
+  const parentChain = parentChains[chainId]
+
+  if (!parentChain) {
+    return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
+  }
+
+  if (isOrbitChain) {
+    return (parentChains[parentChain.chainID] as L2Network)?.partnerChainID
+  }
+  return parentChain.chainID
+}
+
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey

@@ -1,15 +1,11 @@
 import { useMedia } from 'react-use'
 import dayjs, { Dayjs } from 'dayjs'
-import {
-  L2Network,
-  parentChains
-} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import {
+  getBaseChainIdByChainId,
   getBlockTime,
-  getConfirmPeriodBlocks,
-  isNetwork
+  getConfirmPeriodBlocks
 } from '../../util/networks'
 
 /**
@@ -39,6 +35,13 @@ function getTxConfirmationRemainingMinutes(txConfirmationDate: dayjs.Dayjs) {
   return Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 }
 
+/**
+ * Returns the estimated time it takes for a tx to be confirmed in seconds, minutes, hours, and days
+ *
+ * `confirmationDays` and `confirmationMins` are rounded up
+ *
+ * `confirmationSeconds` and `confirmationHours` are not rounded up or down
+ */
 export function getTxConfirmationTime({
   baseChainId,
   withdrawalFromChainId
@@ -74,14 +77,10 @@ export function WithdrawalCountdown({
   createdAt: string | null
 }): JSX.Element {
   const {
-    l1: { network: l1Network },
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const isLargeScreen = useMedia('(min-width: 1024px)')
-  const { isOrbitChain } = isNetwork(l2Network.id)
-  const baseChainId = isOrbitChain
-    ? (parentChains[l1Network.id] as L2Network)?.partnerChainID ?? 0
-    : l1Network.id
+  const baseChainId = getBaseChainIdByChainId(l2Network.id)
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
