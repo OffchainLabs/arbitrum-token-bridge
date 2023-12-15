@@ -36,7 +36,7 @@ export default defineConfig({
   env: {
     coverage: false
   },
-  defaultCommandTimeout: 40000,
+  defaultCommandTimeout: 30000,
   pageLoadTimeout: 30000,
   requestTimeout: 30000,
   e2e: {
