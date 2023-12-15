@@ -63,7 +63,7 @@
     "getUnusedComponents": "ts-prune | grep ' default$'",
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
+    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts --spec ./tests/e2e/specs/**[!cctp].cy.ts",
     "e2e:run:cctp": "yarn e2e:run --spec 'tests/e2e/**/*Cctp.cy.ts'",
     "e2e:install": "cypress install"
   },
