@@ -10,15 +10,12 @@ import specFiles from './tests/e2e/specfiles.json'
 
 import {
   NetworkName,
-  getInitialERC20Balance,
   l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { CommonAddress } from './src/util/CommonAddressUtils'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
