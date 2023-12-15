@@ -21,6 +21,7 @@ import { Wallet, utils } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -160,10 +161,10 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
     address: userWallet.address,
     rpcURL: networkType === 'L1' ? goerliRpcUrl : arbGoerliRpcUrl,
     tokenAddress: usdcContractAddress,
-    multiCallerAddress: '0xca11bde05977b3631167028862be2a173976ca11'
+    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
   })
 
-  // Fund only if the balance is less than 0.5 USDC
+  // Fund only if the balance is less than 0.0001 USDC
   if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.0001', 6))) {
     console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
     const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
