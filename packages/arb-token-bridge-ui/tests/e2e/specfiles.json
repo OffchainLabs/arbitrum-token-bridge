@@ -61,7 +61,7 @@
   },
   {
     "name": "Withdraw Cctp",
-    "file": "tests/e2e/specs/**/withdrawpCctp.cy.{js,jsx,ts,tsx}",
+    "file": "tests/e2e/specs/**/withdrawCctp.cy.{js,jsx,ts,tsx}",
     "ci": false
   }
 ]
