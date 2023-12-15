@@ -20,7 +20,6 @@ import { Wallet } from 'ethers'
 import { CommonAddress } from '../../src/util/CommonAddressUtils'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { ChainId } from '../../src/util/networks'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -135,17 +134,15 @@ const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
 export async function resetAllowance(networkType: 'L1' | 'L2') {
   const wallet = new Wallet(Cypress.env('PRIVATE_KEY'))
   const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
-  const { USDC, tokenMinterContractAddress } =
-    networkType === 'L1'
-      ? CommonAddress[ChainId.Goerli]
-      : CommonAddress[ChainId.ArbitrumGoerli]
+  const { USDC, tokenMessengerContractAddress } =
+    networkType === 'L1' ? CommonAddress.Goerli : CommonAddress.ArbitrumGoerli
 
   const contract = ERC20__factory.connect(USDC, wallet.connect(provider))
   const allowance = await contract.allowance(
     wallet.address,
-    tokenMinterContractAddress
+    tokenMessengerContractAddress
   )
-  await contract.decreaseAllowance(tokenMinterContractAddress, allowance)
+  await contract.decreaseAllowance(tokenMessengerContractAddress, allowance)
 }
 
 Cypress.Commands.addAll({

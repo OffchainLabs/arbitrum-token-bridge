@@ -158,16 +158,19 @@ describe('Withdraw USDC through CCTP', () => {
         }).click()
         cy.log('Approving USDC...')
 
-        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString())
-        // eslint-disable-next-line
-        cy.wait(20_000)
-        cy.confirmMetamaskTransaction().then(() => {
-          cy.findByText(
-            `Moving ${formatAmount(USDCAmountToSend, {
-              symbol: 'USDC'
-            })} to Goerli`
-          ).should('be.visible')
-        })
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
+          () => {
+            // eslint-disable-next-line
+            cy.wait(20_000)
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findByText(
+                `Moving ${formatAmount(USDCAmountToSend, {
+                  symbol: 'USDC'
+                })} to Goerli`
+              ).should('be.visible')
+            })
+          }
+        )
       })
     })
   })
