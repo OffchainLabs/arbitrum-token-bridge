@@ -64,7 +64,7 @@ export function WithdrawalCountdown({
     isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
 
   const timeLeftText =
-    minutesLeft === 0 ? 'Almost there...' : txConfirmationDate.fromNow()
+    minutesLeft === 0 ? 'Almost there...' : txConfirmationDate.fromNow(true)
 
   return <span>{timeLeftText + remainingTextOrEmpty}</span>
 }
