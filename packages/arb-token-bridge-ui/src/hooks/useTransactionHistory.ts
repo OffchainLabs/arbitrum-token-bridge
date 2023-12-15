@@ -38,16 +38,6 @@ import {
   isTxPending
 } from '../components/TransactionHistory/helpers'
 
-export type Deposit = Transaction
-
-export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
-  | WithdrawalInitiated
-  | EthWithdrawal
-
-type DepositOrWithdrawal = Deposit | Withdrawal
-type Transfer = DepositOrWithdrawal | MergedTransaction
-
 export type TransactionHistoryParams = {
   data: {
     transactions: MergedTransaction[]
@@ -61,6 +51,16 @@ export type TransactionHistoryParams = {
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
+
+export type Deposit = Transaction
+
+export type Withdrawal =
+  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalInitiated
+  | EthWithdrawal
+
+type DepositOrWithdrawal = Deposit | Withdrawal
+type Transfer = DepositOrWithdrawal | MergedTransaction
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -299,7 +299,7 @@ export const useTransactionHistory = (
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
-    (pageNumber: number, prevPageTxs: MergedTransaction[] | undefined) => {
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs && prevPageTxs.length === 0) {
         // no more pages
         return null
