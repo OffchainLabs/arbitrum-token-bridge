@@ -124,6 +124,19 @@ export const TransactionHistoryTable = ({
   }`
 
   if (isTxHistoryEmpty) {
+    if (loading) {
+      return (
+        <div
+          className={twMerge(
+            'flex space-x-2 rounded-tr-lg bg-white p-4',
+            selectedTabIndex > 0 ? 'rounded-tl-lg' : ''
+          )}
+        >
+          <Loader wrapperClass="animate-pulse" color="black" size="small" />
+          <span className="animate-pulse text-sm">Loading transactions...</span>
+        </div>
+      )
+    }
     if (error) {
       return (
         <div className="flex space-x-2 bg-white p-4 text-sm text-error">
@@ -139,14 +152,6 @@ export const TransactionHistoryTable = ({
             </ExternalLink>
             .
           </span>
-        </div>
-      )
-    }
-    if (loading) {
-      return (
-        <div className="flex space-x-2 bg-white p-4">
-          <Loader wrapperClass="animate-pulse" color="black" size="small" />
-          <span className="animate-pulse text-sm">Loading transactions...</span>
         </div>
       )
     }
