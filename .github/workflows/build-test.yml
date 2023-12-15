@@ -161,7 +161,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output . | jq 'map(select(.ci))'`
+          content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output . | jq 'map(select(.ci) | del(.ci))'`
           echo "e2eFiles=$content" >> $GITHUB_OUTPUT
 
   test-e2e:
