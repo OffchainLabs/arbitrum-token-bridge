@@ -29,6 +29,7 @@ import {
 import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWithdrawalsFromSubgraph'
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
+import { isTxPending } from '../components/TransactionHistory/helpers'
 
 export type TransactionHistoryParams = {
   data: {
@@ -40,7 +41,7 @@ export type TransactionHistoryParams = {
   error: unknown
   pause: () => void
   resume: () => void
-  addPendingTransaction?: (tx: MergedTransaction) => void
+  addPendingTransaction: (tx: MergedTransaction) => void
 }
 
 export type Deposit = Transaction
@@ -335,12 +336,31 @@ export const useTransactionHistory = (
     }
   )
 
+  // transfers initiated by the user during the current session
+  // we store it separately as there are a lot of side effects when mutating SWRInfinite
+  const { data: newTransactionsData, mutate } = useSWRImmutable<
+    MergedTransaction[]
+  >(address ? ['new_tx_list', address] : null)
+
+  const addPendingTransaction = useCallback(
+    (tx: MergedTransaction) => {
+      if (!isTxPending(tx)) {
+        return
+      }
+
+      mutate(currentNewTransactions => {
+        if (!currentNewTransactions) {
+          return [tx]
+        }
+
+        return [tx, ...currentNewTransactions]
+      })
+    },
+    [mutate]
+  )
+
   useEffect(() => {
     if (!txPages || !fetching) {
-      return
-    }
-
-    if (page > txPages.length) {
       return
     }
 
@@ -377,10 +397,16 @@ export const useTransactionHistory = (
       return
     }
 
-    setPage(prevPage => prevPage + 1)
+    // make sure we don't over-fetch
+    if (page === txPages.length) {
+      setPage(prevPage => prevPage + 1)
+    }
   }, [txPages, setPage, page, pauseCount, fetching])
 
-  const transactions: MergedTransaction[] = (txPages || []).flat()
+  const transactions: MergedTransaction[] = [
+    ...(newTransactionsData || []),
+    ...(txPages || [])
+  ].flat()
 
   const oldestTransactionDaysAgo = useMemo(() => {
     const daysAgo = dayjs().diff(
@@ -407,7 +433,8 @@ export const useTransactionHistory = (
       error,
       completed: true,
       pause,
-      resume
+      resume,
+      addPendingTransaction
     }
   }
 
@@ -420,6 +447,7 @@ export const useTransactionHistory = (
     completed: transactions.length === data.length,
     error: txPagesError ?? error,
     pause,
-    resume
+    resume,
+    addPendingTransaction
   }
 }

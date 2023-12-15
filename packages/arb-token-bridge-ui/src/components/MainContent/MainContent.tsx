@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
+import { useAccount } from 'wagmi'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
@@ -8,7 +9,6 @@ import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { useAccount } from 'wagmi'
 
 export const motionDivProps = {
   layout: true,

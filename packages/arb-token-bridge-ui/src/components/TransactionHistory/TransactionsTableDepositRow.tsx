@@ -5,7 +5,6 @@ import { twMerge } from 'tailwind-merge'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { StatusBadge } from '../common/StatusBadge'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { ExternalLink } from '../common/ExternalLink'
@@ -26,6 +25,7 @@ import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAd
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -33,12 +33,20 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
       return (
-        <StatusBadge
-          variant="yellow"
-          aria-label={`${parentLayer} Transaction Status`}
-        >
-          Pending
-        </StatusBadge>
+        <div className="flex flex-col space-y-1">
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${parentLayer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${layer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+        </div>
       )
 
     case DepositStatus.L1_FAILURE:
@@ -185,22 +193,24 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         </ExternalLink>
       </span>
 
-      {l2TxHash && (
-        <span
-          className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-          aria-label={`${layer} Transaction Link`}
-        >
-          <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-          <NetworkImage chainId={tx.childChainId} />
-          <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+      <span
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+        aria-label={`${layer} Transaction Link`}
+      >
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+        <NetworkImage chainId={tx.childChainId} />
+        <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+        {l2TxHash ? (
           <ExternalLink
             href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
           </ExternalLink>
-        </span>
-      )}
+        ) : (
+          <>Pending</>
+        )}
+      </span>
     </div>
   )
 }
@@ -212,7 +222,6 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { l1 } = useNetworksAndSigners()
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -262,9 +271,9 @@ export function TransactionsTableDepositRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l1.network
+        chain: getWagmiChain(tx.parentChainId)
       }),
-    [l1.network, tx.asset, tx.tokenAddress]
+    [tx.parentChainId, tx.asset, tx.tokenAddress]
   )
 
   const customAddressTxPadding = useMemo(
@@ -280,9 +289,10 @@ export function TransactionsTableDepositRow({
     <tr
       data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative  border-b border-dark text-sm text-dark',
+        'relative border-b border-dark text-sm text-dark',
         bgClassName,
-        className
+        className,
+        isCustomDestinationAddressTx(tx) ? 'h-[114px]' : 'h-[93px]'
       )}
     >
       <td

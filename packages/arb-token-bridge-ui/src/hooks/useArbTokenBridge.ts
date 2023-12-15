@@ -17,6 +17,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import dayjs from 'dayjs'
 
 import useTransactions, { L1ToL2MessageData } from './useTransactions'
 import {
@@ -49,6 +50,8 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
+import { useTransactionHistory } from './useTransactionHistory'
+import { DepositStatus, WithdrawalStatus } from '../state/app/state'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -106,6 +109,8 @@ export const useArbTokenBridge = (
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
+
+  const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const {
     eth: [, updateEthL1Balance],
@@ -208,18 +213,24 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    addTransaction({
-      type: 'deposit-l1',
-      status: 'pending',
-      value: utils.formatUnits(amount, nativeCurrency.decimals),
-      txID: tx.hash,
-      assetName: nativeCurrency.symbol,
-      assetType: AssetType.ETH,
+    addPendingTransaction({
       sender: walletAddress,
-      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
       destination: walletAddress,
-      l1NetworkID,
-      l2NetworkID
+      direction: 'deposit-l1',
+      status: 'pending',
+      createdAt: dayjs().valueOf(),
+      resolvedAt: null,
+      txId: tx.hash,
+      asset: nativeCurrency.symbol,
+      assetType: AssetType.ETH,
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
+      uniqueId: null,
+      isWithdrawal: false,
+      blockNum: null,
+      tokenAddress: null,
+      depositStatus: DepositStatus.L1_PENDING,
+      parentChainId: Number(l1NetworkID),
+      childChainId: Number(l2NetworkID)
     })
 
     const receipt = await tx.wait()
@@ -271,19 +282,23 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: utils.formatUnits(amount, nativeCurrency.decimals),
-        txID: tx.hash,
-        assetName: nativeCurrency.symbol,
-        assetType: AssetType.ETH,
+      addPendingTransaction({
         sender: walletAddress,
-        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
         destination: walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID,
-        l2NetworkID
+        direction: 'withdraw',
+        status: WithdrawalStatus.UNCONFIRMED,
+        createdAt: dayjs().valueOf(),
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: nativeCurrency.symbol,
+        assetType: AssetType.ETH,
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
+        uniqueId: null,
+        isWithdrawal: true,
+        blockNum: null,
+        tokenAddress: null,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -463,18 +478,25 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
-      addTransaction({
-        type: 'deposit-l1',
-        status: 'pending',
-        value: utils.formatUnits(amount, decimals),
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
-        tokenAddress: erc20L1Address,
+
+      addPendingTransaction({
         sender: walletAddress,
         destination: destinationAddress ?? walletAddress,
-        l1NetworkID,
-        l2NetworkID
+        direction: 'deposit-l1',
+        status: 'pending',
+        createdAt: dayjs().valueOf(),
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: symbol,
+        assetType: AssetType.ERC20,
+        value: utils.formatUnits(amount, decimals),
+        depositStatus: DepositStatus.L1_PENDING,
+        uniqueId: null,
+        isWithdrawal: false,
+        blockNum: null,
+        tokenAddress: erc20L1Address,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -561,19 +583,25 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: utils.formatUnits(amount, decimals),
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
+      addPendingTransaction({
         sender: walletAddress,
         destination: destinationAddress ?? walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID,
-        l2NetworkID
+        direction: 'withdraw',
+        status: WithdrawalStatus.UNCONFIRMED,
+        createdAt: dayjs().valueOf(),
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: symbol,
+        assetType: AssetType.ERC20,
+        value: utils.formatUnits(amount, decimals),
+        uniqueId: null,
+        isWithdrawal: true,
+        blockNum: null,
+        tokenAddress: erc20L1Address,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
       })
+
       const receipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {

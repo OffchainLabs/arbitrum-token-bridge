@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
@@ -29,7 +29,6 @@ import { useRemainingTime } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
-import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -311,11 +310,6 @@ export function TransactionsTableClaimableRow({
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
-  const tokensFromLists = useTokensFromLists({
-    parentChainId: tx.parentChainId,
-    chainId: tx.childChainId
-  })
-
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
@@ -342,17 +336,6 @@ export function TransactionsTableClaimableRow({
   const customAddressTxPadding = useMemo(
     () => (isCustomDestinationAddressTx(tx) ? 'pb-11' : ''),
     [tx]
-  )
-
-  const getTokenLogoURI = useCallback(
-    (tx: MergedTransaction) => {
-      if (!tx.tokenAddress) {
-        return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-      }
-
-      return tokensFromLists[tx.tokenAddress]?.logoURI
-    },
-    [tokensFromLists]
   )
 
   if (!tx.sender || !address) {

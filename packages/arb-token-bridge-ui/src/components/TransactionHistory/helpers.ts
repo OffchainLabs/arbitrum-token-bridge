@@ -27,6 +27,9 @@ export function isTxCompleted(tx: MergedTransaction) {
 }
 
 export function isTxPending(tx: MergedTransaction) {
+  if (tx.isCctp && tx.status === 'pending') {
+    return true
+  }
   if (isDeposit(tx)) {
     return (
       tx.depositStatus === DepositStatus.L1_PENDING ||
