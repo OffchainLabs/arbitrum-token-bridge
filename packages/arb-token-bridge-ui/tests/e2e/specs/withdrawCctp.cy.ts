@@ -18,8 +18,8 @@ describe('Withdraw USDC through CCTP', () => {
     let l1USDCBal: string
     let l2USDCBal: string
 
-    // log in to metamask before deposit
-    before(() => {
+    // log in to metamask before withdrawal
+    beforeEach(() => {
       cy.fundUserWalletEth('L2')
       cy.fundUserUsdcTestnet('L2')
       cy.resetCctpAllowance('L2')

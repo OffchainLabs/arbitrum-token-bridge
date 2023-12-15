@@ -21,7 +21,7 @@ describe('Deposit USDC through CCTP', () => {
     let l2USDCeBal: string
 
     // log in to metamask before deposit
-    before(() => {
+    beforeEach(() => {
       cy.fundUserWalletEth('L1')
       cy.fundUserUsdcTestnet('L1')
       cy.resetCctpAllowance('L1')
@@ -220,7 +220,7 @@ describe('Deposit USDC through CCTP', () => {
           cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
             () => {
               // eslint-disable-next-line
-              cy.wait(30_000)
+              cy.wait(40_000)
               cy.confirmMetamaskTransaction().then(() => {
                 cy.findByText(
                   `Moving ${formatAmount(USDCAmountToSend, {
