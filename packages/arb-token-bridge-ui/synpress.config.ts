@@ -19,7 +19,6 @@ import {
 import { registerLocalNetwork } from './src/util/networks'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { CommonAddress } from './src/util/CommonAddressUtils'
-import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
 
 const tests = process.env.TEST_FILE
   ? [process.env.TEST_FILE]
@@ -81,9 +80,6 @@ export default defineConfig({
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
       await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
-
-      // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundUserUsdcTestnet('L1'), fundUserUsdcTestnet('L2')])
 
       // Wrap ETH to test ERC-20 transactions
       await Promise.all([wrapEth('L1'), wrapEth('L2')])
@@ -167,37 +163,6 @@ async function deployERC20ToL2(erc20L1Address: string) {
     l2Provider: arbProvider
   })
   await deploy.wait()
-}
-
-export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
-  console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
-  const usdcContractAddress =
-    networkType === 'L1'
-      ? CommonAddress.Goerli.USDC
-      : CommonAddress.ArbitrumGoerli.USDC
-
-  const usdcBalance = await getInitialERC20Balance({
-    address: userWallet.address,
-    rpcURL: networkType === 'L1' ? goerliRpcUrl : arbGoerliRpcUrl,
-    tokenAddress: usdcContractAddress,
-    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
-  })
-
-  // Fund only if the balance is less than 0.5 USDC
-  if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.5', 6))) {
-    console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
-    const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
-    const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
-    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
-    const contract = new ERC20__factory().connect(localWallet.connect(provider))
-    const token = contract.attach(usdcContractAddress)
-    await token.deployed()
-    const tx = await token.transfer(
-      userWallet.address,
-      utils.parseUnits('1', 6)
-    )
-    await tx.wait()
-  }
 }
 
 async function fundUserWalletEth(networkType: 'L1' | 'L2') {
