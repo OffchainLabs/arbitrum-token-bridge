@@ -43,6 +43,14 @@ export function getBaseChainIdByChainId({
     isNetwork(parentChainId)
   const parentChain = parentChains[parentChainId]
 
+  // Arbitrum Goerli is not a parent of any Orbit chains in the sdk
+  // aka Arbitrum Goerli does not have partnerChainIDs
+  // but we need to support it before we remove support from Goerli
+  // hardcode for now
+  if (parentChainId === ChainId.ArbitrumGoerli) {
+    return ChainId.Goerli
+  }
+
   if (isChildChainEthereumMainnetOrTestnet) {
     return chainId
   }
@@ -57,7 +65,7 @@ export function getBaseChainIdByChainId({
   }
 
   if (isChildChainOrbitChain) {
-    return (parentChains[parentChain.chainID] as L2Network)?.partnerChainID
+    return (parentChains[parentChainId] as L2Network)?.partnerChainID
   }
   return parentChain.chainID
 }
