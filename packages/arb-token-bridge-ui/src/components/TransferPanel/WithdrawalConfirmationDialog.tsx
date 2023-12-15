@@ -6,7 +6,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
 import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
 import Image from 'next/image'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
@@ -29,8 +28,6 @@ import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
-
-dayjs.extend(duration)
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
