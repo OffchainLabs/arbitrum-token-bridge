@@ -393,7 +393,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-[200px] px-3 py-3 align-middle',
+            'w-[270px] px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
