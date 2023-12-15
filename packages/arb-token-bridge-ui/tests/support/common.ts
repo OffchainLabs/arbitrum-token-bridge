@@ -5,6 +5,7 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
@@ -61,7 +62,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
     chainId: '5',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xcA11bde05977b3631167028862bE2a173976CA11'
+    multiCall: MULTICALL_TESTNET_ADDRESS
   }
 }
 
@@ -72,7 +73,7 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
     chainId: '421613',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xcA11bde05977b3631167028862bE2a173976CA11'
+    multiCall: MULTICALL_TESTNET_ADDRESS
   }
 }
 

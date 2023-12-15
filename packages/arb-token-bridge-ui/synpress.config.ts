@@ -7,6 +7,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
+import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
@@ -17,9 +18,14 @@ import {
 
 import { registerLocalNetwork } from './src/util/networks'
 
-const tests = process.env.TEST_FILE
-  ? [process.env.TEST_FILE]
-  : specFiles.map(file => file.file)
+let tests: string[]
+if (process.env.TEST_FILE) {
+  tests = [process.env.TEST_FILE]
+} else if (process.env.E2E_CCTP) {
+  tests = cctpFiles.map(file => file.file)
+} else {
+  tests = specFiles.map(file => file.file)
+}
 
 export default defineConfig({
   userAgent: 'synpress',
