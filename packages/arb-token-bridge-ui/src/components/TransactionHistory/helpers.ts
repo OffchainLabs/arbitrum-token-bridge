@@ -286,7 +286,6 @@ export async function getUpdatedCctpTransfer(
 
   const receipt = await getTxReceipt(tx)
   const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  console.log({ l1SourceChain })
   const requiredL1BlocksBeforeConfirmation =
     getBlockBeforeConfirmation(l1SourceChain)
   const blockTime = getBlockTime(l1SourceChain)
@@ -327,7 +326,6 @@ export async function getUpdatedCctpTransfer(
     tx.status !== 'Failure' &&
     isConfirmed
   ) {
-    console.log('Confirmed')
     return {
       ...txWithTxId,
       status: 'Confirmed'
