@@ -373,7 +373,6 @@ export const useTransactionHistory = (
 
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
-      mutateTxPages([])
       // check if tx is a new transaction initiated by the user, and update it
       const foundInNewTransactionsCache = !!newTransactionsData?.find(oldTx =>
         isSameTransaction(oldTx, newTx)
