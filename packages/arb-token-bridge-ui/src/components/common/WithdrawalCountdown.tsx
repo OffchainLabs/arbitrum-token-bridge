@@ -36,10 +36,6 @@ export function getTxConfirmationDate({
   return createdAtDate.add(confirmationSeconds, 'second')
 }
 
-function getTxConfirmationRemainingMinutes(txConfirmationDate: dayjs.Dayjs) {
-  return Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
-}
-
 export function WithdrawalCountdown({
   createdAt
 }: {
@@ -62,13 +58,13 @@ export function WithdrawalCountdown({
     baseChainId
   })
 
-  const minutesLeft = getTxConfirmationRemainingMinutes(txConfirmationDate)
+  const minutesLeft = Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 
   const remainingTextOrEmpty =
     isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
 
   const timeLeftText =
-    minutesLeft === 0 ? 'Almost there...' : dayjs().to(txConfirmationDate, true)
+    minutesLeft === 0 ? 'Almost there...' : txConfirmationDate.fromNow()
 
   return <span>{timeLeftText + remainingTextOrEmpty}</span>
 }
