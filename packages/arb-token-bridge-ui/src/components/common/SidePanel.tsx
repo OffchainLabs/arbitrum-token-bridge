@@ -80,7 +80,7 @@ export const SidePanel = ({
           >
             <Dialog.Panel
               className={twMerge(
-                'side-panel flex h-full w-full flex-col bg-black lg:w-1/2 lg:min-w-[1000px]',
+                'side-panel flex h-full w-screen max-w-[1000px] flex-col bg-black',
                 panelClassNameOverrides
               )}
             >

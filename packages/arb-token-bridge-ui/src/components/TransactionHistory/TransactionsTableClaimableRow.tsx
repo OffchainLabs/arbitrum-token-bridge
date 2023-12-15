@@ -353,7 +353,7 @@ export function TransactionsTableClaimableRow({
       <tr data-testid={`withdrawal-row-${tx.txId}`}>
         <td
           className={twMerge(
-            'w-1/5 py-3 pl-6 pr-3 align-middle',
+            'w-[160px] py-3 pl-6 pr-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -365,7 +365,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 px-3 py-3 align-middle',
+            'w-[250px] px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -377,7 +377,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 whitespace-nowrap px-3 py-3 align-middle',
+            'w-[120px] whitespace-nowrap px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -393,7 +393,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 px-3 py-3 align-middle',
+            'w-[200px] px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -405,7 +405,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'relative w-1/5 py-3 pl-3 pr-6 text-right align-middle',
+            'relative w-[160px] py-3 pl-3 pr-6 text-right align-middle',
             customAddressTxPadding
           )}
         >

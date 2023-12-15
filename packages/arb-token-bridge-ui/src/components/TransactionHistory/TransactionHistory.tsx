@@ -95,7 +95,6 @@ export const TransactionHistory = ({
         <Tab.Panel className="h-full">
           <TransactionHistoryTable
             transactions={pendingTransactions}
-            className="rounded-tl-none"
             loading={loading}
             completed={completed}
             error={error}
@@ -103,6 +102,7 @@ export const TransactionHistory = ({
             resume={resume}
             rowHeight={94}
             rowHeightCustomDestinationAddress={126}
+            selectedTabIndex={0}
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
@@ -115,6 +115,7 @@ export const TransactionHistory = ({
             resume={resume}
             rowHeight={85}
             rowHeightCustomDestinationAddress={117}
+            selectedTabIndex={1}
           />
         </Tab.Panel>
       </Tab.Panels>
