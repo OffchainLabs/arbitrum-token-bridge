@@ -14,6 +14,7 @@ import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -28,12 +29,13 @@ export function CustomFeeTokenApprovalDialog(
   const { app } = useAppState()
   const { selectedToken } = app
 
-  const [{ sourceChain, sourceChainProvider, destinationChainProvider }] =
-    useNetworks()
-  const { isEthereumMainnet } = isNetwork(sourceChain.id)
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
+  const { isEthereumMainnet } = isNetwork(parentChain.id)
 
-  const { data: l1Signer } = useSigner({ chainId: sourceChain.id })
-  const l1GasPrice = useGasPrice({ provider: sourceChainProvider })
+  const { data: l1Signer } = useSigner({ chainId: parentChain.id })
+  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
@@ -61,21 +63,15 @@ export function CustomFeeTokenApprovalDialog(
           await approveCustomFeeTokenEstimateGas({
             erc20L1Address: selectedToken?.address,
             l1Signer,
-            l1Provider: sourceChainProvider,
-            l2Provider: destinationChainProvider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
         )
       }
     }
 
     getEstimatedGas()
-  }, [
-    isOpen,
-    selectedToken,
-    l1Signer,
-    sourceChainProvider,
-    destinationChainProvider
-  ])
+  }, [isOpen, selectedToken, l1Signer, childChainProvider, parentChainProvider])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -117,7 +113,7 @@ export function CustomFeeTokenApprovalDialog(
               </span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(sourceChain.id)}/token/${
+              href={`${getExplorerUrl(parentChain.id)}/token/${
                 customFeeToken.address
               }`}
               className="text-xs text-blue-link underline"
