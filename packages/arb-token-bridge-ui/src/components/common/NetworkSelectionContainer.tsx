@@ -2,7 +2,7 @@ import { Popover, Transition } from '@headlessui/react'
 import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
-import { useNetwork, useSwitchNetwork } from 'wagmi'
+import { useNetwork } from 'wagmi'
 import { useWindowSize } from 'react-use'
 
 import {
@@ -14,6 +14,7 @@ import {
 } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 
 export const NetworkSelectionContainer = ({
   children
@@ -32,7 +33,7 @@ export const NetworkSelectionContainer = ({
   ).filter(chainId => chainId !== chain?.id)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const { switchNetwork } = useSwitchNetwork()
+  const { switchNetwork } = useSwitchNetworkWithConfig()
 
   const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereumMainnetOrTestnet
