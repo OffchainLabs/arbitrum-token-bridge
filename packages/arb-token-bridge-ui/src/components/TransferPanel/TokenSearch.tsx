@@ -34,11 +34,6 @@ import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
 
-enum Panel {
-  TOKENS,
-  LISTS
-}
-
 const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),

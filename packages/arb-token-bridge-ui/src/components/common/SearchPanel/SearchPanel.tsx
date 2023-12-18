@@ -1,5 +1,4 @@
 import { PropsWithChildren, useState } from 'react'
-import * as Popover from '@radix-ui/react-popover'
 import { ArrowSmallLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../atoms/Loader'
 
