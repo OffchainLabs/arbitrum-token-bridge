@@ -32,7 +32,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   } = useAppState()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { isTestnet } = isNetwork(parentChain.id)
+  const { isArbitrumGoerli } = isNetwork(childChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const destinationNetworkName = getNetworkName(childChain.id)
 
@@ -59,10 +59,10 @@ export function USDCDepositConfirmationDialog(props: Props) {
     href: USDCFastBridge.getHref({
       from: parentChain.id,
       to: childChain.id,
-      fromTokenAddress: isTestnet
+      fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.Goerli.USDC
         : CommonAddress.Ethereum.USDC,
-      toTokenAddress: isTestnet
+      toTokenAddress: isArbitrumGoerli
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,
       amount: props.amount,
