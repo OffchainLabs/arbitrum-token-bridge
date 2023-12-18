@@ -8,6 +8,8 @@ enum Panel {
 }
 
 function SearchPanelMainPage({
+  close,
+  showCloseButton,
   mainPageTitle,
   isLoading,
   loadingMessage,
@@ -15,6 +17,8 @@ function SearchPanelMainPage({
   bottomRightCTAtext,
   children
 }: PropsWithChildren<{
+  close?: () => void
+  showCloseButton: boolean
   mainPageTitle: string
   isLoading?: boolean
   loadingMessage?: string
@@ -25,9 +29,11 @@ function SearchPanelMainPage({
     <>
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">{mainPageTitle}</span>
-        <button className="arb-hover" onClick={close}>
-          <XMarkIcon className="h-6 w-6 text-gray-5" />
-        </button>
+        {showCloseButton && (
+          <button className="arb-hover" onClick={close}>
+            <XMarkIcon className="h-6 w-6 text-gray-5" />
+          </button>
+        )}
       </div>
       {children}
       <div className="flex justify-end pt-6">
@@ -51,6 +57,7 @@ function SearchPanelMainPage({
 
 export function SearchPanel({
   close,
+  showCloseButton = true,
   SearchPanelSecondaryPage,
   mainPageTitle,
   secondPageTitle,
@@ -59,8 +66,8 @@ export function SearchPanel({
   bottomRightCTAtext,
   children
 }: PropsWithChildren<{
-  close: () => void
-  onImportToken: (address: string) => void
+  close?: () => void
+  showCloseButton?: boolean
   SearchPanelSecondaryPage: React.ReactNode
   mainPageTitle: string
   secondPageTitle: string
@@ -68,11 +75,14 @@ export function SearchPanel({
   loadingMessage?: string
   bottomRightCTAtext?: string
 }>) {
+  console.log('showCloseButton? ', showCloseButton)
   const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
 
   if (currentPanel === Panel.MAIN) {
     return (
       <SearchPanelMainPage
+        close={close}
+        showCloseButton={showCloseButton}
         mainPageTitle={mainPageTitle}
         isLoading={isLoading}
         loadingMessage={loadingMessage}
@@ -88,9 +98,11 @@ export function SearchPanel({
     <>
       <div className="flex flex-row items-center justify-between pb-4">
         <span className="text-xl font-medium">{secondPageTitle}</span>
-        <button className="arb-hover" onClick={close}>
-          <XMarkIcon className="h-6 w-6 text-gray-5" />
-        </button>
+        {showCloseButton && (
+          <button className="arb-hover" onClick={close}>
+            <XMarkIcon className="h-6 w-6 text-gray-5" />
+          </button>
+        )}
       </div>
       <div className="flex justify-start pb-6">
         <button

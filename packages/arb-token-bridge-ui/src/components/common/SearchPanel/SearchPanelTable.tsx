@@ -8,7 +8,10 @@ export const SearchPanelTable = ({
   searchInputValue,
   SearchFieldCTA,
   onSearchInputChange,
-  onSubmit,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onSubmit = event => {
+    event.preventDefault()
+  },
   errorMessage,
   rowCount,
   rowHeight,
@@ -16,9 +19,9 @@ export const SearchPanelTable = ({
 }: {
   searchInputPlaceholder: string
   searchInputValue: string
-  SearchFieldCTA: React.ReactNode
+  SearchFieldCTA?: React.ReactNode
   onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
-  onSubmit: React.FormEventHandler<HTMLFormElement>
+  onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   rowCount: number
   rowHeight: number

@@ -524,7 +524,6 @@ export function TokenSearch({
   return (
     <SearchPanel
       close={close}
-      onImportToken={onImportToken}
       SearchPanelSecondaryPage={<TokenListsPanel />}
       mainPageTitle="Select Token"
       secondPageTitle="Token Lists"
