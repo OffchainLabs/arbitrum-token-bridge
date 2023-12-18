@@ -349,10 +349,9 @@ export const useTransactionHistory = (
       address ? ['new_tx_list', address] : null
     )
 
-  const transactions: MergedTransaction[] = [
-    ...(newTransactionsData || []),
-    ...(txPages || [])
-  ].flat()
+  const transactions: MergedTransaction[] = useMemo(() => {
+    return [...(newTransactionsData || []), ...(txPages || [])].flat()
+  }, [newTransactionsData, txPages])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -454,15 +453,23 @@ export const useTransactionHistory = (
         return
       }
 
+      // ETH or token withdrawal
       if (tx.isWithdrawal) {
         const updatedWithdrawal = await getUpdatedWithdrawal(tx)
         updateCachedTransaction(updatedWithdrawal)
-      } else {
-        const updatedDeposit = await (tx.assetType === AssetType.ETH
-          ? getUpdatedEthDeposit(tx)
-          : getUpdatedTokenDeposit(tx))
-        updateCachedTransaction(updatedDeposit)
+        return
       }
+
+      // ETH deposit
+      if (tx.asset === AssetType.ETH) {
+        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
+        updateCachedTransaction(updatedEthDeposit)
+        return
+      }
+
+      // Token deposit
+      const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
+      updateCachedTransaction(updatedTokenDeposit)
     },
     [transactions, updateCachedTransaction]
   )

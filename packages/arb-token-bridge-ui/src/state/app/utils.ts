@@ -21,22 +21,29 @@ export const outgoingStateToString = {
   [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
+function isTransaction(tx: Transaction | MergedTransaction): tx is Transaction {
+  return typeof (tx as Transaction).type !== 'undefined'
+}
+
+function isMergedTransaction(
+  tx: Transaction | MergedTransaction
+): tx is MergedTransaction {
+  return typeof (tx as MergedTransaction).direction !== 'undefined'
+}
+
 export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
   const transaction = tx as Transaction
   const mergedTransaction = tx as MergedTransaction
 
   if (
-    typeof transaction.type !== 'undefined' &&
+    isTransaction(tx) &&
     transaction.type !== 'deposit' &&
     transaction.type !== 'deposit-l1'
   ) {
     return undefined
   }
 
-  if (
-    typeof mergedTransaction.isWithdrawal !== undefined &&
-    mergedTransaction.isWithdrawal
-  ) {
+  if (isMergedTransaction(tx) && mergedTransaction.isWithdrawal) {
     return undefined
   }
 

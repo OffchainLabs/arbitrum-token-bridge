@@ -54,7 +54,7 @@ export function MainContent() {
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [JSON.stringify(transactions), JSON.stringify(updatePendingTransaction)])
+  }, [transactions, updatePendingTransaction])
 
   return (
     <div className="flex w-full justify-center">

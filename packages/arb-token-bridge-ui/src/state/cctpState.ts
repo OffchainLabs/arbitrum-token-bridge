@@ -416,10 +416,10 @@ export function useUpdateCctpTransactions() {
         return
       }
 
-      const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-      const requiredL1BlocksBeforeConfirmation =
-        getBlockBeforeConfirmation(l1SourceChain)
-      const blockTime = getBlockTime(l1SourceChain)
+      const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+        tx.parentChainId
+      )
+      const blockTime = getBlockTime(tx.parentChainId)
 
       if (receipt.status === 0) {
         updateTransfer({
@@ -663,26 +663,12 @@ export function useClaimCctp(tx: MergedTransaction) {
     signer,
     tx,
     updatePendingTransaction,
-    ,
     waitForAttestation
   ])
 
   return {
     isClaiming,
     claim
-  }
-}
-
-export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
-  switch (tx.parentChainId) {
-    case ChainId.Ethereum:
-    case ChainId.ArbitrumOne:
-      return ChainId.Ethereum
-    case ChainId.Goerli:
-    case ChainId.ArbitrumGoerli:
-      return ChainId.Goerli
-    default:
-      return ChainId.Ethereum
   }
 }
 
@@ -700,10 +686,10 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
 }
 
 function getConfirmedDate(tx: MergedTransaction) {
-  const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  const requiredL1BlocksBeforeConfirmation =
-    getBlockBeforeConfirmation(l1SourceChain)
-  const blockTime = getBlockTime(l1SourceChain)
+  const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+    tx.parentChainId
+  )
+  const blockTime = getBlockTime(tx.parentChainId)
 
   return dayjs(tx.createdAt).add(
     requiredL1BlocksBeforeConfirmation * blockTime,
