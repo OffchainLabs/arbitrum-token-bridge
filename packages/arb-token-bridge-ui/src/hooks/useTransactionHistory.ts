@@ -179,6 +179,10 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
+function getTransactionsMapKey(tx: MergedTransaction) {
+  return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -353,6 +357,17 @@ export const useTransactionHistory = (
     return [...(newTransactionsData || []), ...(txPages || [])].flat()
   }, [newTransactionsData, txPages])
 
+  const transactionsMap = useMemo(() => {
+    return transactions.reduce<{ [key: string]: MergedTransaction }>(
+      (acc, tx) => {
+        const key = getTransactionsMapKey(tx)
+        acc[key] = tx
+        return acc
+      },
+      {}
+    )
+  }, [transactions])
+
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
       if (!isTxPending(tx)) {
@@ -434,7 +449,7 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      const foundInCache = !!transactions.find(t => isSameTransaction(t, tx))
+      const foundInCache = !!transactionsMap[getTransactionsMapKey(tx)]
 
       if (!foundInCache) {
         // tx does not exist
@@ -471,7 +486,7 @@ export const useTransactionHistory = (
       const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
       updateCachedTransaction(updatedTokenDeposit)
     },
-    [transactions, updateCachedTransaction]
+    [transactionsMap, updateCachedTransaction]
   )
 
   useEffect(() => {
