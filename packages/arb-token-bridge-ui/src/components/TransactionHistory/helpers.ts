@@ -15,7 +15,11 @@ import {
   WithdrawalStatus
 } from '../../state/app/state'
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
-import { isCctpTransfer } from '../../hooks/useTransactionHistory'
+import {
+  ChainPair,
+  Deposit,
+  isCctpTransfer
+} from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -25,6 +29,10 @@ import {
   getL1ChainIdFromSourceChain
 } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+
+const CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY =
+  'arbitrum:bridge:claim:parent:tx:details'
+const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -114,6 +122,22 @@ export function isSameTransaction(
   )
 }
 
+export function subgraphExistsForChainPair(chainPair: ChainPair) {
+  if (
+    chainPair.parentChain === ChainId.Ethereum &&
+    chainPair.chain === ChainId.ArbitrumOne
+  ) {
+    return true
+  }
+  if (
+    chainPair.parentChain === ChainId.Goerli &&
+    chainPair.chain === ChainId.ArbitrumGoerli
+  ) {
+    return true
+  }
+  return false
+}
+
 export function getTxReceipt(tx: MergedTransaction) {
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
@@ -134,6 +158,89 @@ function getWithdrawalStatusFromReceipt(
     default:
       return undefined
   }
+}
+
+export function getDepositsWithoutStatusesFromCache(): Deposit[] {
+  return JSON.parse(
+    localStorage.getItem(DEPOSITS_LOCAL_STORAGE_KEY) ?? '[]'
+  ) as Deposit[]
+}
+
+export function addDepositToCache(tx: Deposit) {
+  if (tx.direction !== 'deposit' || tx.source !== 'event_logs') {
+    return
+  }
+
+  const cachedDeposits = getDepositsWithoutStatusesFromCache()
+
+  const foundInCache = cachedDeposits.find(cachedTx => {
+    return (
+      cachedTx.txID === tx.txID &&
+      cachedTx.parentChainId === tx.parentChainId &&
+      cachedTx.childChainId === tx.childChainId
+    )
+  })
+
+  if (foundInCache) {
+    return
+  }
+
+  const newCachedDeposits = [tx, ...cachedDeposits]
+
+  localStorage.setItem(
+    DEPOSITS_LOCAL_STORAGE_KEY,
+    JSON.stringify(newCachedDeposits)
+  )
+}
+
+export function setWithdrawalClaimParentChainTxId(
+  tx: MergedTransaction,
+  parentChainTxId: string
+) {
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxId = JSON.parse(
+    localStorage.getItem(CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY) ?? '{}'
+  )
+
+  if (key in cachedClaimParentChainTxId) {
+    // already set
+    return
+  }
+
+  localStorage.setItem(
+    CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY,
+    JSON.stringify({
+      ...cachedClaimParentChainTxId,
+      [key]: {
+        txId: parentChainTxId,
+        timestamp: dayjs().valueOf()
+      }
+    })
+  )
+}
+
+export function getWithdrawalClaimParentChainTxDetails(
+  tx: MergedTransaction
+): { txId: string; timestamp: number } | undefined {
+  if (!tx.isWithdrawal || tx.isCctp) {
+    return undefined
+  }
+
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxDetails = (
+    JSON.parse(
+      localStorage.getItem(CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY) ?? '{}'
+    ) as {
+      [key in string]: {
+        txId: string
+        timestamp: number
+      }
+    }
+  )[key]
+
+  return cachedClaimParentChainTxDetails
 }
 
 export async function getUpdatedEthDeposit(
@@ -286,7 +393,6 @@ export async function getUpdatedCctpTransfer(
 
   const receipt = await getTxReceipt(tx)
   const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  console.log({ l1SourceChain })
   const requiredL1BlocksBeforeConfirmation =
     getBlockBeforeConfirmation(l1SourceChain)
   const blockTime = getBlockTime(l1SourceChain)

@@ -46,6 +46,10 @@ import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
 import { DepositStatus, WithdrawalStatus } from '../state/app/state'
+import {
+  addDepositToCache,
+  subgraphExistsForChainPair
+} from '../components/TransactionHistory/helpers'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -225,6 +229,29 @@ export const useArbTokenBridge = (
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
       childChainId: Number(l2NetworkID)
+    })
+
+    addDepositToCache({
+      sender: walletAddress,
+      destination: walletAddress,
+      status: 'pending',
+      txID: tx.hash,
+      assetName: nativeCurrency.symbol,
+      assetType: AssetType.ETH,
+      l1NetworkID,
+      l2NetworkID,
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
+      parentChainId: Number(l1NetworkID),
+      childChainId: Number(l2NetworkID),
+      direction: 'deposit',
+      type: 'deposit-l1',
+      source: subgraphExistsForChainPair({
+        parentChain: Number(l1NetworkID),
+        chain: Number(l2NetworkID)
+      })
+        ? 'subgraph'
+        : 'event_logs',
+      timestampCreated: String(dayjs().valueOf() / 1_000)
     })
 
     const receipt = await tx.wait()
@@ -441,6 +468,29 @@ export const useArbTokenBridge = (
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
         childChainId: Number(l2NetworkID)
+      })
+
+      addDepositToCache({
+        sender: walletAddress,
+        destination: walletAddress,
+        status: 'pending',
+        txID: tx.hash,
+        assetName: symbol,
+        assetType: AssetType.ERC20,
+        l1NetworkID,
+        l2NetworkID,
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID),
+        direction: 'deposit',
+        type: 'deposit-l1',
+        source: subgraphExistsForChainPair({
+          parentChain: Number(l1NetworkID),
+          chain: Number(l2NetworkID)
+        })
+          ? 'subgraph'
+          : 'event_logs',
+        timestampCreated: String(dayjs().valueOf() / 1_000)
       })
 
       const receipt = await tx.wait()

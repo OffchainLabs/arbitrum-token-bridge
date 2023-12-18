@@ -35,6 +35,7 @@ import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWit
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
+  getDepositsWithoutStatusesFromCache,
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
@@ -55,7 +56,7 @@ export type Withdrawal =
 type DepositOrWithdrawal = Deposit | Withdrawal
 type Transfer = DepositOrWithdrawal | MergedTransaction
 
-type ChainPair = { parentChain: ChainId; chain: ChainId }
+export type ChainPair = { parentChain: ChainId; chain: ChainId }
 
 export type TransactionHistoryParams = {
   data: {
@@ -304,7 +305,11 @@ const useTransactionHistoryWithoutStatuses = (
     () => fetcher('withdrawals')
   )
 
-  const deposits = (depositsData || []).flat()
+  const deposits = [
+    (depositsData || []).flat(),
+    ...getDepositsWithoutStatusesFromCache()
+  ]
+
   const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
@@ -568,6 +573,20 @@ export const useTransactionHistory = (
     return Math.max(daysAgo, 1)
   }, [transactions])
 
+  // duplicates may occur when txs are taken from the local storage
+  const dedupedTransactions = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          transactions.map(tx => [
+            `${tx.parentChainId}-${tx.childChainId}-${tx.txId}}`,
+            tx
+          ])
+        ).values()
+      ),
+    [transactions]
+  )
+
   function pause() {
     setFetching(false)
   }
@@ -592,11 +611,11 @@ export const useTransactionHistory = (
 
   return {
     data: {
-      transactions,
+      transactions: dedupedTransactions,
       numberOfDays: oldestTransactionDaysAgo
     },
     loading: fetching,
-    completed: transactions.length === data.length,
+    completed: dedupedTransactions.length >= data.length,
     error: txPagesError ?? error,
     pause,
     resume,

@@ -7,7 +7,10 @@ import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
-import { getProvider } from '../components/TransactionHistory/helpers'
+import {
+  getProvider,
+  setWithdrawalClaimParentChainTxId
+} from '../components/TransactionHistory/helpers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
 import { useTransactionHistory } from './useTransactionHistory'
@@ -108,12 +111,17 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     }
 
     const isSuccess = (res as ContractReceipt).status === 1
+    const txHash = (res as ContractReceipt).transactionHash
 
     updatePendingTransaction({
       ...tx,
       status: isSuccess ? WithdrawalStatus.EXECUTED : WithdrawalStatus.FAILURE,
       resolvedAt: isSuccess ? dayjs().valueOf() : null
     })
+
+    if (isSuccess) {
+      setWithdrawalClaimParentChainTxId(tx, txHash)
+    }
   }
 
   return { claim, isClaiming }
