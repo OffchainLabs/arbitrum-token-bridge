@@ -309,6 +309,7 @@ export async function getUpdatedCctpTransfer(
       ...txWithTxId,
       blockNum: receipt.blockNumber,
       cctpData: {
+        ...tx.cctpData,
         messageBytes,
         attestationHash
       }
