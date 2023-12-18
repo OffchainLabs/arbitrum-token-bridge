@@ -173,13 +173,13 @@ export function TokenRow({
 
     return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
   }, [
-    token,
-    isDepositMode,
-    erc20L2Balances,
-    nativeCurrency,
-    ethL1Balance,
     erc20L1Balances,
-    nativeL2Balance
+    erc20L2Balances,
+    ethL1Balance,
+    isDepositMode,
+    nativeCurrency,
+    nativeL2Balance,
+    token
   ])
 
   const isArbitrumToken = useMemo(() => {
