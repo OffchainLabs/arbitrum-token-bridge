@@ -54,6 +54,15 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: ChainId.Sepolia,
         destinationChainId: ChainId.ArbitrumSepolia
       })
+      const resultWithArbitrumSepolia = sanitizeQueryParams({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia,
+        walletChainId: ChainId.ArbitrumSepolia
+      })
+      expect(resultWithArbitrumSepolia).toEqual({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
 
       // Orbit chains
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
