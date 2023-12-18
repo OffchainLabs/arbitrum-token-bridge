@@ -1,7 +1,11 @@
 import './commands'
 import '@synthetixio/synpress/support'
 
-import { getL1NetworkConfig, getL2NetworkConfig } from './common'
+import {
+  getL1NetworkConfig,
+  getL2NetworkConfig,
+  getL2TestnetNetworkConfig
+} from './common'
 
 Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
@@ -22,5 +26,11 @@ before(() => {
 
         cy.task('setNetworkSetupComplete')
       }
+
+      // L2
+      cy.addMetamaskNetwork(getL2NetworkConfig())
+      cy.addMetamaskNetwork(getL2TestnetNetworkConfig())
+
+      cy.task('setNetworkSetupComplete')
     })
 })

@@ -52,6 +52,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "yarn generateDenylist",
+    "postinstall": "patch-package",
     "build": "next build",
     "start": "next start",
     "test": "jest --watch",
@@ -63,6 +64,7 @@
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
     "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
+    "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run",
     "e2e:install": "cypress install"
   },
   "browserslist": {
@@ -107,7 +109,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest": "^29.4.0",
     "jest-environment-jsdom": "^29.4.0",
+    "patch-package": "^8.0.0",
     "postcss": "^8.4.31",
+    "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.11",
     "start-server-and-test": "^2.0.0",

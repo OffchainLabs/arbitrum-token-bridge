@@ -2,7 +2,7 @@ import { createClient, configureChains, goerli } from 'wagmi'
 import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
 import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
@@ -148,10 +148,7 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        ledgerWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 

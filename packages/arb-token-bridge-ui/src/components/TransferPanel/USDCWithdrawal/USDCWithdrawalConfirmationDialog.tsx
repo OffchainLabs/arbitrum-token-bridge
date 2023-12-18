@@ -72,8 +72,10 @@ export function USDCWithdrawalConfirmationDialog(
           </div>
 
           <Tab.List className="flex bg-ocl-blue">
-            <TabButton>Third party (USDC)</TabButton>
-            <TabButton>Circle (USDC)</TabButton>
+            <TabButton aria-label="Third party (USDC)">
+              Third party (USDC)
+            </TabButton>
+            <TabButton aria-label="Circle (USDC)">Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
