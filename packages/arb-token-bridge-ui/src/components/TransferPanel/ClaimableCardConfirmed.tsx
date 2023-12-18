@@ -169,7 +169,7 @@ export function ClaimableCardConfirmed({ tx }: { tx: MergedTransaction }) {
                 {`Please switch to ${
                   isSourceChainIdEthereum ? childNetworkName : parentNetworkName
                 } to claim your ${
-                  isSourceChainIdEthereum ? 'withdrawal' : 'deposit'
+                  isSourceChainIdEthereum ? 'deposit' : 'withdrawal'
                 }.`}
               </span>
             }
