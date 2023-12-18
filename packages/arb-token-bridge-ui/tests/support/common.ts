@@ -5,12 +5,14 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
   | 'localhost'
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'arbitrum-goerli'
   | 'mainnet'
   | 'goerli'
   | 'Sepolia test network'
@@ -53,6 +55,28 @@ export const getL2NetworkConfig = (): NetworkConfig => {
   }
 }
 
+export const getL1TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'goerli',
+    rpcUrl: Cypress.env('ETH_GOERLI_RPC_URL'),
+    chainId: '5',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: MULTICALL_TESTNET_ADDRESS
+  }
+}
+
+export const getL2TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'arbitrum-goerli',
+    rpcUrl: Cypress.env('ARB_GOERLI_RPC_URL'),
+    chainId: '421613',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: MULTICALL_TESTNET_ADDRESS
+  }
+}
+
 export const l1WethGateway = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const wethTokenAddressL1 = '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
@@ -90,15 +114,21 @@ export async function getInitialETHBalance(
   return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
 
-export async function getInitialERC20Balance(
-  tokenAddress: string,
-  multiCallerAddress: string,
+export async function getInitialERC20Balance({
+  tokenAddress,
+  multiCallerAddress,
+  rpcURL,
+  address
+}: {
+  tokenAddress: string
+  multiCallerAddress: string
   rpcURL: string
-): Promise<BigNumber> {
+  address: string
+}): Promise<BigNumber | undefined> {
   const provider = new StaticJsonRpcProvider(rpcURL)
   const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
-    balanceOf: { account: Cypress.env('ADDRESS') }
+    balanceOf: { account: address }
   })
   return tokenData.balance
 }
