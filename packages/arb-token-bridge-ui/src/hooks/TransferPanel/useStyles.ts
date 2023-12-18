@@ -2,13 +2,15 @@ import { useMemo } from 'react'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
 
 export function useStyles() {
-  const [{ sourceChain, destinationChain }] = useNetworks()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const depositButtonColorClassName = useMemo(() => {
     const { isArbitrumNova, isXaiTestnet, isStylusTestnet, isOrbitChain } =
-      isNetwork(destinationChain.id)
+      isNetwork(childChain.id)
 
     if (isXaiTestnet) {
       return 'bg-xai-dark'
@@ -28,13 +30,13 @@ export function useStyles() {
 
     // isArbitrum
     return 'bg-arb-one-dark'
-  }, [destinationChain.id])
+  }, [childChain.id])
 
   const withdrawalButtonColorClassName = useMemo(() => {
     const { isArbitrumNova: isParentChainArbitrumNova } = isNetwork(
-      sourceChain.id
+      parentChain.id
     )
-    const { isArbitrum } = isNetwork(destinationChain.id)
+    const { isArbitrum } = isNetwork(childChain.id)
 
     if (isArbitrum) {
       return 'bg-eth-dark'
@@ -46,7 +48,7 @@ export function useStyles() {
     }
 
     return 'bg-arb-one-dark'
-  }, [sourceChain.id, destinationChain.id])
+  }, [childChain.id, parentChain.id])
 
   return {
     depositButtonColorClassName,
