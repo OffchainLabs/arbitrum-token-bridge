@@ -742,15 +742,7 @@ export function TransferPanelMain({
       sourceChainId: networks.destinationChain.id,
       destinationChainId: networks.sourceChain.id
     })
-
-    actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [
-    actions.app,
-    app.isDepositMode,
-    networks.destinationChain.id,
-    networks.sourceChain.id,
-    setNetworks
-  ])
+  }, [networks.destinationChain.id, networks.sourceChain.id, setNetworks])
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
