@@ -796,18 +796,15 @@ export function TransferPanelMain({
         networks.destinationChain.id
       ).isOrbitChain
       const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
-      const [fromNetwork, toNetwork] =
-        direction === 'from'
-          ? [networks.sourceChain, networks.destinationChain]
-          : [networks.destinationChain, networks.sourceChain]
       const options = getListboxOptionsFromL1Network(parentChain.id)
 
       // Add parent network to the list
       return [parentChain, ...options].filter(option => {
         const isSourceChainList = direction === 'from'
         const isDestinationChainList = direction === 'to'
-        const isSameAsSourceChain = option.id === fromNetwork.id
-        const isSameAsDestinationChain = option.id === toNetwork.id
+        const isSameAsSourceChain = option.id === networks.sourceChain.id
+        const isSameAsDestinationChain =
+          option.id === networks.destinationChain.id
         const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
           option.id
         )
