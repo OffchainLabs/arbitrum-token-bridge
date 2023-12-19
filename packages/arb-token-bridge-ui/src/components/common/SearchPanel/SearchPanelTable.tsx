@@ -1,6 +1,5 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { AutoSizer, List, ListRowRenderer } from 'react-virtualized'
-import { useMedia } from 'react-use'
 import React from 'react'
 
 export const SearchPanelTable = ({
@@ -27,11 +26,8 @@ export const SearchPanelTable = ({
   rowHeight: number
   rowRenderer: ListRowRenderer
 }) => {
-  const isLarge = useMedia('(min-width: 1024px)')
-  const numberOfRows = isLarge ? 5 : 3.5
-
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col gap-3">
       <form onSubmit={onSubmit} className="flex flex-col">
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
@@ -52,14 +48,14 @@ export const SearchPanelTable = ({
         )}
       </form>
       <div
-        className="flex flex-grow flex-col overflow-auto rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        className="h-[400px] rounded-md border border-gray-2 lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
-        <AutoSizer disableHeight>
-          {({ width }) => (
+        <AutoSizer>
+          {({ height, width }) => (
             <List
               width={width - 2}
-              height={numberOfRows * rowHeight}
+              height={height}
               rowCount={rowCount}
               rowHeight={rowHeight}
               rowRenderer={rowRenderer}

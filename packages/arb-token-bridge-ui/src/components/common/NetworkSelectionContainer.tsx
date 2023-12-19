@@ -1,11 +1,12 @@
 import { Popover, Transition } from '@headlessui/react'
 import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
-import { useMemo, useState } from 'react'
+import { CSSProperties, useMemo, useState } from 'react'
 import { useNetwork } from 'wagmi'
 import { useDebounce, useWindowSize } from 'react-use'
 
 import {
+  chainInfo,
   getNetworkLogo,
   getNetworkName,
   getSupportedNetworks,
@@ -23,11 +24,24 @@ type NetworkInfo = {
   type: 'core' | 'orbit'
 }
 
+const chainGroupInfo = {
+  core: {
+    name: 'CORE CHAINS',
+    description: undefined
+  },
+  orbit: {
+    name: 'ORBIT CHAINS',
+    description: 'Independent chains supported by Arbitrum technology'
+  }
+}
+
 function NetworkRow({
   network,
+  style,
   close
 }: {
   network: NetworkInfo
+  style: CSSProperties
   close: (focusableElement?: HTMLElement) => void
 }) {
   const windowSize = useWindowSize()
@@ -44,16 +58,19 @@ function NetworkRow({
     <button
       onClick={handleClick}
       onKeyDown={e => {
-        if (e.key === 'Enter' || e.keyCode === 13) {
+        if (e.key === 'Enter') {
           handleClick()
         }
       }}
       key={chainId}
+      style={style}
       type="button"
       aria-label={`Switch to ${getNetworkName(chainId)}`}
-      className={twMerge('flex items-center justify-start gap-4 p-2 text-lg')}
+      className={twMerge(
+        'flex h-[72px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10'
+      )}
     >
-      <span className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
         <Image
           src={getNetworkLogo(chainId, isLgScreen ? 'dark' : 'light')}
           alt={`${getNetworkName(chainId)} logo`}
@@ -62,7 +79,22 @@ function NetworkRow({
           height={24}
         />
       </span>
-      <span className="max-w-[140px] truncate">{getNetworkName(chainId)}</span>
+      <p className={twMerge('flex flex-col items-start gap-1')}>
+        <span className="max-w-[140px] truncate leading-none">
+          {getNetworkName(chainId)}
+        </span>
+        {chainInfo[chainId] && (
+          <>
+            <p className="text-left text-xs leading-[1.15]">
+              {chainInfo[chainId]!.description}
+            </p>
+            <p className="text-[8px] leading-none">
+              {chainInfo[chainId]!.chainType} Chain,{' '}
+              {chainInfo[chainId]!.nativeCurrency} is the native gas token
+            </p>
+          </>
+        )}
+      </p>
     </button>
   )
 }
@@ -86,7 +118,7 @@ function NetworksPanel({
     [networkSearched]
   )
 
-  const networksToShow = useMemo(() => {
+  const networksToShowWithChainTypeInfo = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
 
     if (_networkSearched) {
@@ -96,7 +128,15 @@ function NetworksPanel({
       })
     }
 
-    return networks
+    const coreNetworks = networks.filter(network => network.type === 'core')
+    const orbitNetworks = networks.filter(network => network.type === 'orbit')
+
+    return [
+      chainGroupInfo.core,
+      ...coreNetworks,
+      chainGroupInfo.orbit,
+      ...orbitNetworks
+    ]
   }, [debouncedNetworkSearched, networks])
 
   return (
@@ -109,26 +149,47 @@ function NetworksPanel({
       }}
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       errorMessage={errorMessage}
-      rowCount={networksToShow.length}
-      rowHeight={84}
+      rowCount={networksToShowWithChainTypeInfo.length}
+      rowHeight={72}
       rowRenderer={virtualizedProps => {
-        const network = networksToShow[virtualizedProps.index]
-        if (!network) {
+        const networkOrChainTypeInfo =
+          networksToShowWithChainTypeInfo[virtualizedProps.index]
+        if (!networkOrChainTypeInfo) {
           return null
         }
-        // return finalNetworks.map(networkType => (
-        //     <div key={networkType.id} className="shrink-0">
-        //       {finalNetworks.length > 1 && (
-        //         // don't show the network type header if it's the only column
-        //         <div className="p-2 px-12 text-xl text-white lg:px-4 lg:text-dark">
-        //           {networkType.title}
-        //         </div>
-        //       )}
-        //     </div>
-        //   ))
+
+        // Chain Type Info row
+        if (!('chainId' in networkOrChainTypeInfo)) {
+          const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
+          return (
+            <div
+              key={networkOrChainTypeInfo.name}
+              style={virtualizedProps.style}
+              className={twMerge(
+                'px-6 py-4',
+                !isCoreGroup &&
+                  'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+              )}
+            >
+              <p className="text-sm text-white lg:text-dark">
+                {networkOrChainTypeInfo.name}
+              </p>
+              {networkOrChainTypeInfo.description && (
+                <p className="mt-2 text-xs">
+                  {networkOrChainTypeInfo.description}
+                </p>
+              )}
+            </div>
+          )
+        }
 
         return (
-          <NetworkRow key={network.chainId} network={network} close={close} />
+          <NetworkRow
+            key={networkOrChainTypeInfo.chainId}
+            style={virtualizedProps.style}
+            network={networkOrChainTypeInfo}
+            close={close}
+          />
         )
       }}
     />
