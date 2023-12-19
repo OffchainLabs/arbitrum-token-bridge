@@ -124,7 +124,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
-  return !!(tx as MergedTransaction).isCctp
+  return (tx as MergedTransaction).isCctp === true
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
@@ -290,7 +290,8 @@ const useTransactionHistoryWithoutStatuses = (
  */
 export const useTransactionHistory = (
   address: `0x${string}` | undefined,
-  runFetcher = false
+  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
+  { runFetcher = false } = {}
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -388,11 +389,12 @@ export const useTransactionHistory = (
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
       // check if tx is a new transaction initiated by the user, and update it
-      const foundInNewTransactionsCache = !!newTransactionsData?.find(oldTx =>
-        isSameTransaction(oldTx, newTx)
-      )
+      const foundInNewTransactions =
+        typeof newTransactionsData?.find(oldTx =>
+          isSameTransaction(oldTx, newTx)
+        ) !== 'undefined'
 
-      if (foundInNewTransactionsCache) {
+      if (foundInNewTransactions) {
         // replace the existing tx with the new tx
         mutateNewTransactionsData(txs =>
           txs?.map(oldTx => {
@@ -449,9 +451,11 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      const foundInCache = !!transactionsMap[getTransactionsMapKey(tx)]
+      // sanity check, this should never happen
+      const found =
+        typeof transactionsMap[getTransactionsMapKey(tx)] !== 'undefined'
 
-      if (!foundInCache) {
+      if (!found) {
         // tx does not exist
         return
       }

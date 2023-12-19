@@ -620,8 +620,8 @@ export function useClaimCctp(tx: MergedTransaction) {
       updatePendingTransaction({
         ...tx,
         resolvedAt,
-        depositStatus: DepositStatus.L2_SUCCESS,
-        status: WithdrawalStatus.EXECUTED,
+        depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,
+        status: tx.isWithdrawal ? WithdrawalStatus.EXECUTED : undefined,
         cctpData: {
           ...tx.cctpData,
           receiveMessageTimestamp: resolvedAt,

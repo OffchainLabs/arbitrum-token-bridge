@@ -32,18 +32,11 @@ function isMergedTransaction(
 }
 
 export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
-  const transaction = tx as Transaction
-  const mergedTransaction = tx as MergedTransaction
-
-  if (
-    isTransaction(tx) &&
-    transaction.type !== 'deposit' &&
-    transaction.type !== 'deposit-l1'
-  ) {
+  if (isTransaction(tx) && tx.type !== 'deposit' && tx.type !== 'deposit-l1') {
     return undefined
   }
 
-  if (isMergedTransaction(tx) && mergedTransaction.isWithdrawal) {
+  if (isMergedTransaction(tx) && tx.isWithdrawal) {
     return undefined
   }
 
