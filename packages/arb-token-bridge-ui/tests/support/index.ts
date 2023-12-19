@@ -4,8 +4,7 @@ import '@synthetixio/synpress/support'
 import {
   getL1NetworkConfig,
   getL2NetworkConfig,
-  getL2TestnetNetworkConfig,
-  metamaskLocalL1RpcUrl
+  getL2TestnetNetworkConfig
 } from './common'
 
 Cypress.Keyboard.defaults({
@@ -21,7 +20,7 @@ before(() => {
       if (!complete) {
         // L1
         // only CI setup is required, Metamask already has localhost
-        if (Cypress.env('ETH_RPC_URL') !== metamaskLocalL1RpcUrl) {
+        if (Cypress.env('ETH_RPC_URL') !== 'http://localhost:8545') {
           cy.addMetamaskNetwork(getL1NetworkConfig())
         }
 
