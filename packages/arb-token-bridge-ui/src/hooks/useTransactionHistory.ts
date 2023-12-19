@@ -38,16 +38,6 @@ import {
   isTxPending
 } from '../components/TransactionHistory/helpers'
 
-export type Deposit = Transaction
-
-export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
-  | WithdrawalInitiated
-  | EthWithdrawal
-
-type DepositOrWithdrawal = Deposit | Withdrawal
-type Transfer = DepositOrWithdrawal | MergedTransaction
-
 export type TransactionHistoryParams = {
   data: {
     transactions: MergedTransaction[]
@@ -61,6 +51,16 @@ export type TransactionHistoryParams = {
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
+
+export type Deposit = Transaction
+
+export type Withdrawal =
+  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalInitiated
+  | EthWithdrawal
+
+type DepositOrWithdrawal = Deposit | Withdrawal
+type Transfer = DepositOrWithdrawal | MergedTransaction
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -124,7 +124,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
-  return !!(tx as MergedTransaction).isCctp
+  return (tx as MergedTransaction).isCctp === true
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
@@ -177,6 +177,10 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   throw new Error(
     'An error has occurred while fetching a transaction. Please try again later or contact the support.'
   )
+}
+
+function getTransactionsMapKey(tx: MergedTransaction) {
+  return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 }
 
 /**
@@ -286,7 +290,8 @@ const useTransactionHistoryWithoutStatuses = (
  */
 export const useTransactionHistory = (
   address: `0x${string}` | undefined,
-  runFetcher = false
+  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
+  { runFetcher = false } = {}
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -299,7 +304,7 @@ export const useTransactionHistory = (
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
-    (pageNumber: number, prevPageTxs: MergedTransaction[] | undefined) => {
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs && prevPageTxs.length === 0) {
         // no more pages
         return null
@@ -349,10 +354,20 @@ export const useTransactionHistory = (
       address ? ['new_tx_list', address] : null
     )
 
-  const transactions: MergedTransaction[] = [
-    ...(newTransactionsData || []),
-    ...(txPages || [])
-  ].flat()
+  const transactions: MergedTransaction[] = useMemo(() => {
+    return [...(newTransactionsData || []), ...(txPages || [])].flat()
+  }, [newTransactionsData, txPages])
+
+  const transactionsMap = useMemo(() => {
+    return transactions.reduce<{ [key: string]: MergedTransaction }>(
+      (acc, tx) => {
+        const key = getTransactionsMapKey(tx)
+        acc[key] = tx
+        return acc
+      },
+      {}
+    )
+  }, [transactions])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -373,13 +388,13 @@ export const useTransactionHistory = (
 
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
-      mutateTxPages([])
       // check if tx is a new transaction initiated by the user, and update it
-      const foundInNewTransactionsCache = !!newTransactionsData?.find(oldTx =>
-        isSameTransaction(oldTx, newTx)
-      )
+      const foundInNewTransactions =
+        typeof newTransactionsData?.find(oldTx =>
+          isSameTransaction(oldTx, newTx)
+        ) !== 'undefined'
 
-      if (foundInNewTransactionsCache) {
+      if (foundInNewTransactions) {
         // replace the existing tx with the new tx
         mutateNewTransactionsData(txs =>
           txs?.map(oldTx => {
@@ -436,9 +451,11 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      const foundInCache = !!transactions.find(t => isSameTransaction(t, tx))
+      // sanity check, this should never happen
+      const found =
+        typeof transactionsMap[getTransactionsMapKey(tx)] !== 'undefined'
 
-      if (!foundInCache) {
+      if (!found) {
         // tx does not exist
         return
       }
@@ -455,17 +472,25 @@ export const useTransactionHistory = (
         return
       }
 
+      // ETH or token withdrawal
       if (tx.isWithdrawal) {
         const updatedWithdrawal = await getUpdatedWithdrawal(tx)
         updateCachedTransaction(updatedWithdrawal)
-      } else {
-        const updatedDeposit = await (tx.assetType === AssetType.ETH
-          ? getUpdatedEthDeposit(tx)
-          : getUpdatedTokenDeposit(tx))
-        updateCachedTransaction(updatedDeposit)
+        return
       }
+
+      // ETH deposit
+      if (tx.asset === AssetType.ETH) {
+        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
+        updateCachedTransaction(updatedEthDeposit)
+        return
+      }
+
+      // Token deposit
+      const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
+      updateCachedTransaction(updatedTokenDeposit)
     },
-    [transactions, updateCachedTransaction]
+    [transactionsMap, updateCachedTransaction]
   )
 
   useEffect(() => {
