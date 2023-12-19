@@ -1,6 +1,6 @@
-import { Chain, ConnectorData, useAccount, useNetwork } from 'wagmi'
+import { Chain, useNetwork } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'

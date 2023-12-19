@@ -35,7 +35,7 @@ import {
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { Notifications } from '../common/Notifications'
-import { ChainId, isNetwork, rpcURLs } from '../../util/networks'
+import { isNetwork, rpcURLs } from '../../util/networks'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
