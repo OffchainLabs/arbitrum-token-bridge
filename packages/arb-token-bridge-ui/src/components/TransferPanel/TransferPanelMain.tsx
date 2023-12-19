@@ -325,7 +325,7 @@ function TokenBalance({
   }
 
   return (
-    <p>
+    <p aria-label={`${symbol} balance on ${on}`}>
       <span className="font-light">{prefix}</span>
       <span className="tabular-nums">
         {formatAmount(balance, {
