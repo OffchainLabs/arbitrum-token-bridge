@@ -13,9 +13,9 @@ import {
   isNetwork
 } from '../util/networks'
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
-import { DepositStatus, MergedTransaction } from './app/state'
+import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
-import { useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import {
   ChainDomain,
@@ -29,6 +29,7 @@ import { useAccountType } from '../hooks/useAccountType'
 import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
 import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { AssetType } from '../hooks/arbTokenBridge.types'
+import { useTransactionHistory } from '../hooks/useTransactionHistory'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -415,10 +416,10 @@ export function useUpdateCctpTransactions() {
         return
       }
 
-      const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-      const requiredL1BlocksBeforeConfirmation =
-        getBlockBeforeConfirmation(l1SourceChain)
-      const blockTime = getBlockTime(l1SourceChain)
+      const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+        tx.parentChainId
+      )
+      const blockTime = getBlockTime(tx.parentChainId)
 
       if (receipt.status === 0) {
         updateTransfer({
@@ -587,13 +588,14 @@ export function useCctpFetching({
 }
 
 export function useClaimCctp(tx: MergedTransaction) {
+  const { address } = useAccount()
+  const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
   const { waitForAttestation, receiveMessage } = useCCTP({
     sourceChainId: tx.cctpData?.sourceChainId
   })
   const { isSmartContractWallet } = useAccountType()
 
-  const { updateTransfer } = useCctpState()
   const { data: signer } = useSigner()
 
   const claim = useCallback(async () => {
@@ -615,9 +617,11 @@ export function useClaimCctp(tx: MergedTransaction) {
         receiveReceiptTx.status === 1
           ? getStandardizedTimestamp(BigNumber.from(Date.now()).toString())
           : null
-      updateTransfer({
+      updatePendingTransaction({
         ...tx,
         resolvedAt,
+        depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,
+        status: tx.isWithdrawal ? WithdrawalStatus.EXECUTED : undefined,
         cctpData: {
           ...tx.cctpData,
           receiveMessageTimestamp: resolvedAt,
@@ -658,7 +662,7 @@ export function useClaimCctp(tx: MergedTransaction) {
     receiveMessage,
     signer,
     tx,
-    updateTransfer,
+    updatePendingTransaction,
     waitForAttestation
   ])
 
@@ -666,19 +670,6 @@ export function useClaimCctp(tx: MergedTransaction) {
     isClaiming,
     claim
   }
-}
-
-export function getL1ChainIdFromSourceChain(tx: MergedTransaction) {
-  if (!tx.cctpData?.sourceChainId) {
-    return ChainId.Ethereum
-  }
-
-  return {
-    [ChainId.Ethereum]: ChainId.Ethereum,
-    [ChainId.Goerli]: ChainId.Goerli,
-    [ChainId.ArbitrumOne]: ChainId.Ethereum,
-    [ChainId.ArbitrumGoerli]: ChainId.Goerli
-  }[tx.cctpData.sourceChainId]
 }
 
 export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
@@ -695,10 +686,10 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
 }
 
 function getConfirmedDate(tx: MergedTransaction) {
-  const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  const requiredL1BlocksBeforeConfirmation =
-    getBlockBeforeConfirmation(l1SourceChain)
-  const blockTime = getBlockTime(l1SourceChain)
+  const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+    tx.parentChainId
+  )
+  const blockTime = getBlockTime(tx.parentChainId)
 
   return dayjs(tx.createdAt).add(
     requiredL1BlocksBeforeConfirmation * blockTime,
