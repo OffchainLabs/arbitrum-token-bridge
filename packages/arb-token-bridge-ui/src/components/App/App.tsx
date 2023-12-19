@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { ConnectorData, useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -35,7 +35,7 @@ import {
 import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { ChainId, isNetwork, rpcURLs } from '../../util/networks'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
@@ -132,10 +132,26 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { selectedToken } = app
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const [networks] = useNetworks()
+  const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const { connector } = useAccount()
+
+  useEffect(() => {
+    function handleChainChange(newChain: ConnectorData<any>) {
+      if (newChain.chain && isSupportedChainId(newChain.chain?.id)) {
+        setNetworks({
+          sourceChainId: newChain.chain.id
+        })
+      }
+    }
+    connector?.addListener('change', handleChainChange)
+
+    return () => {
+      connector?.removeListener('change', handleChainChange)
+    }
+  }, [connector, setNetworks])
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()

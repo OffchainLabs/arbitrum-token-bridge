@@ -172,14 +172,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     // If the wallet chain is not supported, use sourceChainId if valid
     walletChainId = sourceChainId ?? ChainId.Ethereum
   }
-  const { connector } = useAccount({
-    onConnect: () => {
-      setState({
-        sourceChainId: walletChainId,
-        destinationChainId: destinationChainId
-      })
-    }
-  })
 
   const {
     sourceChainId: validSourceChainId,
@@ -191,13 +183,26 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   })
 
   const setState = useCallback(
-    ({ sourceChainId, destinationChainId }: UseNetworksSetStateParams) => {
+    ({
+      sourceChainId: newSourceChainId,
+      destinationChainId: newDestinationChainId
+    }: UseNetworksSetStateParams) => {
+      if (
+        newSourceChainId === destinationChainId ||
+        newDestinationChainId === sourceChainId
+      ) {
+        setQueryParams({
+          sourceChain: destinationChainId,
+          destinationChain: sourceChainId
+        })
+        return
+      }
       const {
         sourceChainId: validSourceChainId,
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
-        sourceChainId,
-        destinationChainId,
+        sourceChainId: newSourceChainId,
+        destinationChainId: newDestinationChainId,
         walletChainId
       })
       setQueryParams({
@@ -205,7 +210,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
         destinationChain: validDestinationChainId
       })
     },
-    [setQueryParams, walletChainId]
+    [destinationChainId, setQueryParams, sourceChainId, walletChainId]
   )
 
   if (
@@ -218,22 +223,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       destinationChain: validDestinationChainId
     })
   }
-
-  useEffect(() => {
-    function handleChainChange(newChain: ConnectorData<any>) {
-      if (newChain.chain && isSupportedChainId(newChain.chain?.id)) {
-        setState({
-          sourceChainId: newChain.chain.id,
-          destinationChainId: destinationChainId
-        })
-      }
-    }
-    connector?.addListener('change', handleChainChange)
-
-    return () => {
-      connector?.removeListener('change', handleChainChange)
-    }
-  }, [connector, destinationChainId, setState])
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {

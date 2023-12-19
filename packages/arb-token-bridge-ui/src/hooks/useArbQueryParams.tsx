@@ -13,7 +13,7 @@
     `setQueryParams(newAmount)`
 
 */
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { NextAdapter } from 'next-query-params'
 import queryString from 'query-string'
 import {
@@ -45,13 +45,35 @@ export const useArbQueryParams = () => {
       setQueryParams (setter for all query state variables)
     ]
   */
-  return useQueryParams({
+  const [
+    { sourceChain, destinationChain, amount, token, settingsOpen },
+    setQueryParams
+  ] = useQueryParams({
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
+  const setter = useCallback(
+    (...args: Parameters<typeof setQueryParams>) => {
+      return setQueryParams(...args)
+    },
+    [setQueryParams]
+  )
+
+  return useMemo(() => {
+    return [
+      {
+        sourceChain,
+        destinationChain,
+        amount,
+        token,
+        settingsOpen
+      },
+      setter
+    ] as const
+  }, [amount, destinationChain, setter, settingsOpen, sourceChain, token])
 }
 
 const isMax = (amount: string | undefined) =>
