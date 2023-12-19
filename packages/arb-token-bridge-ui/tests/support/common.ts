@@ -25,13 +25,6 @@ type NetworkConfig = {
   multiCall: string
 }
 
-export const getNetworkNameForE2E = (networkType: NetworkType) => {
-  if (networkType === 'L1') {
-    return getL1NetworkConfig().networkName
-  }
-  return getL2NetworkConfig().networkName
-}
-
 export const getL1NetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'custom-localhost',
