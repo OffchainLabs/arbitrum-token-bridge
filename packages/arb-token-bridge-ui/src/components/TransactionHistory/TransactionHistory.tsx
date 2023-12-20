@@ -28,6 +28,7 @@ export const TransactionHistory = ({
     loading,
     completed,
     error,
+    failedChainPairs,
     resume
   } = props
 
@@ -98,6 +99,7 @@ export const TransactionHistory = ({
             loading={loading}
             completed={completed}
             error={error}
+            failedChainPairs={failedChainPairs}
             numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={94}
@@ -111,6 +113,7 @@ export const TransactionHistory = ({
             loading={loading}
             completed={completed}
             error={error}
+            failedChainPairs={failedChainPairs}
             numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={85}

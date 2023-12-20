@@ -52,6 +52,7 @@ export type TransactionHistoryParams = {
   loading: boolean
   completed: boolean
   error: unknown
+  failedChainPairs: ChainPair[]
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
@@ -106,19 +107,19 @@ const multiChainFetchList: ChainPair[] = [
     parentChain: ChainId.Goerli,
     chain: ChainId.ArbitrumGoerli
   },
-  // {
-  //   parentChain: ChainId.Sepolia,
-  //   chain: ChainId.ArbitrumSepolia
-  // },
+  {
+    parentChain: ChainId.Sepolia,
+    chain: ChainId.ArbitrumSepolia
+  },
   // Orbit
   {
     parentChain: ChainId.ArbitrumGoerli,
     chain: ChainId.XaiTestnet
   },
-  // {
-  //   parentChain: ChainId.ArbitrumSepolia,
-  //   chain: ChainId.StylusTestnet
-  // },
+  {
+    parentChain: ChainId.ArbitrumSepolia,
+    chain: ChainId.StylusTestnet
+  },
   ...getCustomChainsFromLocalStorage().map(chain => {
     return {
       parentChain: chain.partnerChainID,
@@ -241,6 +242,11 @@ const useTransactionHistoryWithoutStatuses = (
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
+  const { data: failedChainPairs, mutate: addFailedChainPair } =
+    useSWRImmutable<ChainPair[]>(
+      address ? ['failed_chain_pairs', address] : null
+    )
+
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
@@ -256,18 +262,29 @@ const useTransactionHistoryWithoutStatuses = (
             return !isNetwork(chainPair.parentChain).isTestnet
           })
           .map(async chainPair => {
-            return await fetcherFn({
-              sender: address,
-              receiver: address,
-              l1Provider: getProvider(chainPair.parentChain),
-              l2Provider: getProvider(chainPair.chain),
-              pageNumber: 0,
-              pageSize: 1000
-            })
+            try {
+              return await fetcherFn({
+                sender: address,
+                receiver: address,
+                l1Provider: getProvider(chainPair.parentChain),
+                l2Provider: getProvider(chainPair.chain),
+                pageNumber: 0,
+                pageSize: 1000
+              })
+            } catch {
+              addFailedChainPair(prevFailedChainPairs => {
+                if (!prevFailedChainPairs) {
+                  return [chainPair]
+                }
+                return [...prevFailedChainPairs, chainPair]
+              })
+
+              return []
+            }
           })
       )
     },
-    [address, isTestnetMode]
+    [address, isTestnetMode, addFailedChainPair]
   )
 
   const {
@@ -303,7 +320,8 @@ const useTransactionHistoryWithoutStatuses = (
   return {
     data: transactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading,
-    error: depositsError ?? withdrawalsError
+    error: depositsError ?? withdrawalsError,
+    failedChainPairs: failedChainPairs || []
   }
 }
 
@@ -324,7 +342,8 @@ export const useTransactionHistory = (
   const [fetching, setFetching] = useState(true)
   const [pauseCount, setPauseCount] = useState(0)
 
-  const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
+  const { data, loading, error, failedChainPairs } =
+    useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -597,6 +616,7 @@ export const useTransactionHistory = (
       data: { transactions: [], numberOfDays: 1 },
       loading,
       error,
+      failedChainPairs: [],
       completed: true,
       pause,
       resume,
@@ -613,6 +633,7 @@ export const useTransactionHistory = (
     loading: fetching,
     completed: dedupedTransactions.length >= data.length,
     error: txPagesError ?? error,
+    failedChainPairs,
     pause,
     resume,
     addPendingTransaction,
