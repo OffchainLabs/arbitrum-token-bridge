@@ -67,22 +67,6 @@ export type Withdrawal =
 type DepositOrWithdrawal = Deposit | Withdrawal
 type Transfer = DepositOrWithdrawal | MergedTransaction
 
-type ChainPair = { parentChain: ChainId; chain: ChainId }
-
-export type TransactionHistoryParams = {
-  data: {
-    transactions: MergedTransaction[]
-    numberOfDays: number
-  }
-  loading: boolean
-  completed: boolean
-  error: unknown
-  pause: () => void
-  resume: () => void
-  addPendingTransaction: (tx: MergedTransaction) => void
-  updatePendingTransaction: (tx: MergedTransaction) => void
-}
-
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
     return (tx.createdAt ?? 0) / 1_000
@@ -105,7 +89,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: ChainPair[] = [
+const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
