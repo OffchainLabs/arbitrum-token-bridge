@@ -36,7 +36,7 @@ const footerLinks: FooterLink[] = [
   },
   {
     title: 'Privacy Policy',
-    href: 'https://www.iubenda.com/privacy-policy/76750372',
+    href: 'https://arbitrum.io/privacy',
     className: 'lg:order-6'
   }
 ]
