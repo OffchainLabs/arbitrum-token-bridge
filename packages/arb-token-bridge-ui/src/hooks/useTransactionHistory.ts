@@ -273,9 +273,9 @@ const useTransactionHistoryWithoutStatuses = (
                 pageSize: 1000
               })
             } catch (err) {
-              const isCustomOrbitChain = !!getCustomChainFromLocalStorageById(
-                chainPair.chain
-              )
+              const isCustomOrbitChain =
+                typeof getCustomChainFromLocalStorageById(chainPair.chain) !==
+                'undefined'
 
               if (isCustomOrbitChain) {
                 // don't throw for custom orbit chains, local node may be offline
