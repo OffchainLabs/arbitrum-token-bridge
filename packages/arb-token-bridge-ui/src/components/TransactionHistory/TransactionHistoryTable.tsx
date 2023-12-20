@@ -132,8 +132,8 @@ export const TransactionHistoryTable = ({
             isPendingTab ? '' : 'rounded-tl-lg'
           )}
         >
-          <Loader wrapperClass="animate-pulse" color="black" size="small" />
-          <span className="animate-pulse text-sm">Loading transactions...</span>
+          <Loader color="black" size="small" />
+          <span className="text-sm">Loading transactions...</span>
         </div>
       )
     }
@@ -207,8 +207,8 @@ export const TransactionHistoryTable = ({
         )}
       >
         {loading ? (
-          <div className="flex animate-pulse space-x-2">
-            <Loader size="small" />
+          <div className="flex space-x-2">
+            <Loader color="black" size="small" />
             <span className="text-sm">Loading transactions...</span>
           </div>
         ) : (
