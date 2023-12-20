@@ -806,9 +806,10 @@ export const useArbTokenBridge = (
     event,
     l1Signer
   }: {
-    event: L2ToL1EventResultPlus | undefined
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) {
+    // sanity check
     if (!event) {
       throw new Error('Outbox message not found')
     }
@@ -854,9 +855,10 @@ export const useArbTokenBridge = (
     event,
     l1Signer
   }: {
-    event: L2ToL1EventResultPlus | undefined
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) {
+    // sanity check
     if (!event) {
       throw new Error('Outbox message not found')
     }
