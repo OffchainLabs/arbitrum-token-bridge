@@ -97,7 +97,7 @@ export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
   timestamp?: BigNumber
   direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
 }

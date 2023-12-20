@@ -102,7 +102,7 @@ type TransactionBase = {
 export interface Transaction extends TransactionBase {
   txID: string
   direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
   nonce?: number

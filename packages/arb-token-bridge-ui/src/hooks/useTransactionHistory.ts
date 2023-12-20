@@ -289,8 +289,8 @@ const useTransactionHistoryWithoutStatuses = (
   )
 
   const deposits = [
-    (depositsData || []).flat(),
-    ...getDepositsWithoutStatusesFromCache()
+    ...getDepositsWithoutStatusesFromCache(),
+    (depositsData || []).flat()
   ]
 
   const withdrawals = (withdrawalsData || []).flat()
@@ -605,13 +605,19 @@ export const useTransactionHistory = (
     }
   }
 
+  if (dedupedTransactions.length > data.length) {
+    throw new Error(
+      `Unexpected number of deduped transactions, expected lte ${data.length}, got ${dedupedTransactions.length}.`
+    )
+  }
+
   return {
     data: {
       transactions: dedupedTransactions,
       numberOfDays: oldestTransactionDaysAgo
     },
     loading: fetching,
-    completed: dedupedTransactions.length >= data.length,
+    completed: dedupedTransactions.length === data.length,
     error: txPagesError ?? error,
     pause,
     resume,
