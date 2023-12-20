@@ -4,7 +4,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Debug Bridge",
+      "name": "Launch Bridge Debug",
       "url": "http://localhost:3000",
       "webRoot": "${workspaceFolder}",
       "skipFiles": [
