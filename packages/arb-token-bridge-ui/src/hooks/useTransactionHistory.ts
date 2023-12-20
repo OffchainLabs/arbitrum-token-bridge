@@ -58,6 +58,8 @@ export type TransactionHistoryParams = {
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
 
+export type ChainPair = { parentChain: ChainId; chain: ChainId }
+
 export type Deposit = Transaction
 
 export type Withdrawal =
@@ -90,7 +92,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
+const multiChainFetchList: ChainPair[] = [
   {
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne

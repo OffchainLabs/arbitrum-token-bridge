@@ -163,6 +163,11 @@ export function getDepositsWithoutStatusesFromCache(): Deposit[] {
   ) as Deposit[]
 }
 
+/**
+ * Cache deposits from event logs. We don't fetch these so we need to store them locally.
+ *
+ * @param {MergedTransaction} tx - Deposit from event logs to be cached.
+ */
 export function addDepositToCache(tx: Deposit) {
   if (tx.direction !== 'deposit' || tx.source !== 'event_logs') {
     return
@@ -190,7 +195,13 @@ export function addDepositToCache(tx: Deposit) {
   )
 }
 
-export function setWithdrawalClaimParentChainTxId(
+/**
+ * Cache parent chain tx details when claiming. This is the chain the funds were claimed on. We store locally because we don't have access to this tx from the child chain tx data.
+ *
+ * @param {MergedTransaction} tx - Transaction that initiated the withdrawal (child chain transaction).
+ * @param {string} parentChainTxId - Transaction ID of the claim transaction (parent chain transaction ID).
+ */
+export function setWithdrawalClaimParentChainTxDetails(
   tx: MergedTransaction,
   parentChainTxId: string
 ) {
