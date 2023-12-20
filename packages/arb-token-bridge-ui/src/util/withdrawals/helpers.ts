@@ -24,7 +24,7 @@ export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
   direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
 }

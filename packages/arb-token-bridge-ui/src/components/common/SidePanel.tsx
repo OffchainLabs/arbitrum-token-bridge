@@ -21,8 +21,6 @@ export const SidePanel = ({
   panelClassNameOverrides = '',
   scrollable = true
 }: SidePanelProps) => {
-  const ANIMATION_DURATION = 300
-
   return (
     <Transition show={isOpen}>
       <Dialog
@@ -32,10 +30,10 @@ export const SidePanel = ({
       >
         {/* The backdrop, rendered as a fixed sibling to the panel container */}
         <Transition.Child
-          enter={`transition-opacity duration-${ANIMATION_DURATION}`}
+          enter={`transition-opacity duration-300`}
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave={`transition-opacity duration-${ANIMATION_DURATION}`}
+          leave={`transition-opacity duration-300`}
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
           className="h-full"
