@@ -9,13 +9,14 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import {
   getProvider,
-  setWithdrawalClaimParentChainTxId
+  setWithdrawalClaimParentChainTxDetails
 } from '../components/TransactionHistory/helpers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
 import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
+import { fetchNativeCurrency } from './useNativeCurrency'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => Promise<void>
@@ -61,7 +62,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
             address: tx.tokenAddress as string,
             provider: getProvider(tx.parentChainId)
           })
-        : { symbol: tx.asset, decimals: 18 }
+        : await fetchNativeCurrency({ provider: childChainProvider })
 
     const extendedEvent: L2ToL1EventResultPlus = {
       ...event,
@@ -120,7 +121,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     })
 
     if (isSuccess) {
-      setWithdrawalClaimParentChainTxId(tx, txHash)
+      setWithdrawalClaimParentChainTxDetails(tx, txHash)
     }
   }
 

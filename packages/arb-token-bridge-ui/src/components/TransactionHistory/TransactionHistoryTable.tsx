@@ -129,7 +129,7 @@ export const TransactionHistoryTable = ({
         <div
           className={twMerge(
             'flex space-x-2 rounded-tr-lg bg-white p-4',
-            selectedTabIndex > 0 ? 'rounded-tl-lg' : ''
+            isPendingTab ? '' : 'rounded-tl-lg'
           )}
         >
           <Loader wrapperClass="animate-pulse" color="black" size="small" />
@@ -173,6 +173,24 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
+    if (paused) {
+      return (
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
+        </div>
+      )
+    }
     return (
       <div className="bg-white p-4 text-sm">
         Looks like no transactions here yet!
@@ -185,7 +203,7 @@ export const TransactionHistoryTable = ({
       <div
         className={twMerge(
           'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
-          selectedTabIndex > 0 ? 'rounded-tl-lg' : ''
+          isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >
         {loading ? (
