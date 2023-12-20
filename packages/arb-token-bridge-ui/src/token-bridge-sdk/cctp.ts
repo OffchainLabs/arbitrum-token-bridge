@@ -173,15 +173,20 @@ export function getUsdcToken({ sourceChainId }: { sourceChainId: ChainId }) {
     listIds: new Set<number>()
   }
 
-  if (isNetwork(sourceChainId).isTestnet) {
-    return {
-      ...commonUSDC,
-      address: CommonAddress.ArbitrumGoerli.USDC
-    }
+  let tokenAddress = null
+
+  if (isNetwork(sourceChainId).isArbitrumGoerli) {
+    tokenAddress = CommonAddress.ArbitrumGoerli.USDC
+  } else if (isNetwork(sourceChainId).isGoerli) {
+    tokenAddress = CommonAddress.Goerli.USDC
+  } else if (isNetwork(sourceChainId).isArbitrumOne) {
+    tokenAddress = CommonAddress.ArbitrumOne.USDC
   } else {
-    return {
-      ...commonUSDC,
-      address: CommonAddress.ArbitrumOne.USDC
-    }
+    tokenAddress = CommonAddress.Ethereum.USDC
+  }
+
+  return {
+    ...commonUSDC,
+    address: tokenAddress
   }
 }
