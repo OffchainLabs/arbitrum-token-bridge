@@ -2,11 +2,9 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
-import { useLocalStorage } from 'react-use'
 
 import {
   ChainId,
-  getCustomChainFromLocalStorageById,
   getCustomChainsFromLocalStorage,
   isNetwork
 } from '../util/networks'
@@ -44,19 +42,7 @@ import {
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
-import { testnetModeLocalStorageKey } from '../components/common/SettingsDialog'
-
-export type Deposit = Transaction
-
-export type Withdrawal =
-  | FetchWithdrawalsFromSubgraphResult
-  | WithdrawalInitiated
-  | EthWithdrawal
-
-type DepositOrWithdrawal = Deposit | Withdrawal
-type Transfer = DepositOrWithdrawal | MergedTransaction
-
-export type ChainPair = { parentChain: ChainId; chain: ChainId }
+import { useIsTestnetMode } from './useIsTestnetMode'
 
 export type TransactionHistoryParams = {
   data: {
@@ -71,6 +57,16 @@ export type TransactionHistoryParams = {
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
+
+export type Deposit = Transaction
+
+export type Withdrawal =
+  | FetchWithdrawalsFromSubgraphResult
+  | WithdrawalInitiated
+  | EthWithdrawal
+
+type DepositOrWithdrawal = Deposit | Withdrawal
+type Transfer = DepositOrWithdrawal | MergedTransaction
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -94,7 +90,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: ChainPair[] = [
+const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
@@ -108,19 +104,19 @@ const multiChainFetchList: ChainPair[] = [
     parentChain: ChainId.Goerli,
     chain: ChainId.ArbitrumGoerli
   },
-  {
-    parentChain: ChainId.Sepolia,
-    chain: ChainId.ArbitrumSepolia
-  },
+  // {
+  //   parentChain: ChainId.Sepolia,
+  //   chain: ChainId.ArbitrumSepolia
+  // },
   // Orbit
   {
     parentChain: ChainId.ArbitrumGoerli,
     chain: ChainId.XaiTestnet
   },
-  {
-    parentChain: ChainId.ArbitrumSepolia,
-    chain: ChainId.StylusTestnet
-  },
+  // {
+  //   parentChain: ChainId.ArbitrumSepolia,
+  //   chain: ChainId.StylusTestnet
+  // },
   ...getCustomChainsFromLocalStorage().map(chain => {
     return {
       parentChain: chain.partnerChainID,
@@ -140,7 +136,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
-  return !!(tx as MergedTransaction).isCctp
+  return (tx as MergedTransaction).isCctp === true
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
@@ -195,8 +191,8 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
-function isTestnetChainPair(chainPair: ChainPair) {
-  return isNetwork(chainPair.parentChain).isTestnet
+function getTransactionsMapKey(tx: MergedTransaction) {
+  return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 }
 
 /**
@@ -205,9 +201,7 @@ function isTestnetChainPair(chainPair: ChainPair) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
-  const [isTestnetMode = false] = useLocalStorage<boolean>(
-    testnetModeLocalStorageKey
-  )
+  const [isTestnetMode] = useIsTestnetMode()
 
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
@@ -254,33 +248,20 @@ const useTransactionHistoryWithoutStatuses = (
           .filter(chainPair => {
             if (isTestnetMode) {
               // in testnet mode we fetch all chain pairs
-              return chainPair
+              return true
             }
             // otherwise don't fetch testnet chain pairs
-            return !isTestnetChainPair(chainPair)
+            return !isNetwork(chainPair.parentChain).isTestnet
           })
           .map(async chainPair => {
-            try {
-              return await fetcherFn({
-                sender: address,
-                receiver: address,
-                l1Provider: getProvider(chainPair.parentChain),
-                l2Provider: getProvider(chainPair.chain),
-                pageNumber: 0,
-                pageSize: 1000
-              })
-            } catch (err) {
-              const isCustomOrbitChain = !!getCustomChainFromLocalStorageById(
-                chainPair.chain
-              )
-
-              if (isCustomOrbitChain) {
-                // don't throw for custom orbit chains, local node may be offline
-                return []
-              }
-
-              throw err
-            }
+            return await fetcherFn({
+              sender: address,
+              receiver: address,
+              l1Provider: getProvider(chainPair.parentChain),
+              l2Provider: getProvider(chainPair.chain),
+              pageNumber: 0,
+              pageSize: 1000
+            })
           })
       )
     },
@@ -330,7 +311,8 @@ const useTransactionHistoryWithoutStatuses = (
  */
 export const useTransactionHistory = (
   address: `0x${string}` | undefined,
-  runFetcher = false
+  // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
+  { runFetcher = false } = {}
 ): TransactionHistoryParams => {
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -343,17 +325,17 @@ export const useTransactionHistory = (
   const { data, loading, error } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
-    (pageNumber: number, prevPageTxs: MergedTransaction[] | undefined) => {
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs && prevPageTxs.length === 0) {
         // no more pages
         return null
       }
 
       return address && !loading
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+        ? (['complete_tx_list', address, pageNumber] as const)
         : null
     },
-    [address, loading, data]
+    [address, loading]
   )
 
   const {
@@ -365,12 +347,12 @@ export const useTransactionHistory = (
     isValidating
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page, _data]) => {
+    ([, , _page]) => {
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        _data.slice(startIndex, endIndex).map(transformTransaction)
+        data.slice(startIndex, endIndex).map(transformTransaction)
       )
     },
     {
@@ -386,14 +368,6 @@ export const useTransactionHistory = (
     }
   )
 
-  useEffect(() => {
-    if (runFetcher && !loading) {
-      // when data changes (e.g. on address change)
-      setPage(1)
-      setFetching(true)
-    }
-  }, [JSON.stringify(data), runFetcher, loading])
-
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
   const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
@@ -401,10 +375,20 @@ export const useTransactionHistory = (
       address ? ['new_tx_list', address] : null
     )
 
-  const transactions: MergedTransaction[] = [
-    ...(newTransactionsData || []),
-    ...(txPages || [])
-  ].flat()
+  const transactions: MergedTransaction[] = useMemo(() => {
+    return [...(newTransactionsData || []), ...(txPages || [])].flat()
+  }, [newTransactionsData, txPages])
+
+  const transactionsMap = useMemo(() => {
+    return transactions.reduce<{ [key: string]: MergedTransaction }>(
+      (acc, tx) => {
+        const key = getTransactionsMapKey(tx)
+        acc[key] = tx
+        return acc
+      },
+      {}
+    )
+  }, [transactions])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -425,13 +409,13 @@ export const useTransactionHistory = (
 
   const updateCachedTransaction = useCallback(
     (newTx: MergedTransaction) => {
-      mutateTxPages([])
       // check if tx is a new transaction initiated by the user, and update it
-      const foundInNewTransactionsCache = !!newTransactionsData?.find(oldTx =>
-        isSameTransaction(oldTx, newTx)
-      )
+      const foundInNewTransactions =
+        typeof newTransactionsData?.find(oldTx =>
+          isSameTransaction(oldTx, newTx)
+        ) !== 'undefined'
 
-      if (foundInNewTransactionsCache) {
+      if (foundInNewTransactions) {
         // replace the existing tx with the new tx
         mutateNewTransactionsData(txs =>
           txs?.map(oldTx => {
@@ -488,9 +472,11 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      const foundInCache = !!transactions.find(t => isSameTransaction(t, tx))
+      // sanity check, this should never happen
+      const found =
+        typeof transactionsMap[getTransactionsMapKey(tx)] !== 'undefined'
 
-      if (!foundInCache) {
+      if (!found) {
         // tx does not exist
         return
       }
@@ -507,17 +493,25 @@ export const useTransactionHistory = (
         return
       }
 
+      // ETH or token withdrawal
       if (tx.isWithdrawal) {
         const updatedWithdrawal = await getUpdatedWithdrawal(tx)
         updateCachedTransaction(updatedWithdrawal)
-      } else {
-        const updatedDeposit = await (tx.assetType === AssetType.ETH
-          ? getUpdatedEthDeposit(tx)
-          : getUpdatedTokenDeposit(tx))
-        updateCachedTransaction(updatedDeposit)
+        return
       }
+
+      // ETH deposit
+      if (tx.asset === AssetType.ETH) {
+        const updatedEthDeposit = await getUpdatedEthDeposit(tx)
+        updateCachedTransaction(updatedEthDeposit)
+        return
+      }
+
+      // Token deposit
+      const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
+      updateCachedTransaction(updatedTokenDeposit)
     },
-    [transactions, updateCachedTransaction]
+    [transactionsMap, updateCachedTransaction]
   )
 
   useEffect(() => {

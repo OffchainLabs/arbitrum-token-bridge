@@ -24,10 +24,7 @@ import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
-import {
-  getBlockBeforeConfirmation,
-  getL1ChainIdFromSourceChain
-} from '../../state/cctpState'
+import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 
 const CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY =
@@ -392,10 +389,10 @@ export async function getUpdatedCctpTransfer(
   }
 
   const receipt = await getTxReceipt(tx)
-  const l1SourceChain = getL1ChainIdFromSourceChain(tx)
-  const requiredL1BlocksBeforeConfirmation =
-    getBlockBeforeConfirmation(l1SourceChain)
-  const blockTime = getBlockTime(l1SourceChain)
+  const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+    tx.parentChainId
+  )
+  const blockTime = getBlockTime(tx.parentChainId)
 
   const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
 
@@ -419,6 +416,7 @@ export async function getUpdatedCctpTransfer(
       ...txWithTxId,
       blockNum: receipt.blockNumber,
       cctpData: {
+        ...tx.cctpData,
         messageBytes,
         attestationHash
       }
@@ -433,7 +431,6 @@ export async function getUpdatedCctpTransfer(
     tx.status !== 'Failure' &&
     isConfirmed
   ) {
-    console.log('Confirmed')
     return {
       ...txWithTxId,
       status: 'Confirmed'
