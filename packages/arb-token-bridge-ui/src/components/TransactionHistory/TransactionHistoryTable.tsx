@@ -129,7 +129,7 @@ export const TransactionHistoryTable = ({
         <div
           className={twMerge(
             'flex space-x-2 rounded-tr-lg bg-white p-4',
-            selectedTabIndex > 0 ? 'rounded-tl-lg' : ''
+            isPendingTab ? '' : 'rounded-tl-lg'
           )}
         >
           <Loader wrapperClass="animate-pulse" color="black" size="small" />
@@ -203,7 +203,7 @@ export const TransactionHistoryTable = ({
       <div
         className={twMerge(
           'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
-          selectedTabIndex > 0 ? 'rounded-tl-lg' : ''
+          isPendingTab ? '' : 'rounded-tl-lg'
         )}
       >
         {loading ? (
