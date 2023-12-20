@@ -161,7 +161,7 @@ export function getDepositsWithoutStatusesFromCache(): Deposit[] {
  * @param {MergedTransaction} tx - Deposit from event logs to be cached.
  */
 export function addDepositToCache(tx: Deposit) {
-  if (tx.direction !== 'deposit' || tx.source !== 'event_logs') {
+  if (tx.direction !== 'deposit') {
     return
   }
 
