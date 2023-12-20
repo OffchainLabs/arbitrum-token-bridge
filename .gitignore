@@ -5,3 +5,5 @@ yarn-error.log
 tsconfig.tsbuildinfo
 __auto-generated-denylist.json
 
+.vscode
+!.vscode/launch.json
