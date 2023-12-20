@@ -1,4 +1,11 @@
-import { PropsWithChildren, useCallback } from 'react'
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, Column, Table } from 'react-virtualized'
 import {
@@ -11,7 +18,8 @@ import {
   getStandardizedDate,
   getStandardizedTime,
   isCustomDestinationAddressTx,
-  isPending
+  isPending,
+  isTokenDeposit
 } from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
@@ -23,6 +31,8 @@ import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
+import { PendingDepositWarning } from './PendingDepositWarning'
+import { isTxPending } from './helpers'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -107,10 +117,57 @@ export const TransactionHistoryTable = ({
   rowHeightCustomDestinationAddress: number
   selectedTabIndex: number
 }) => {
+  const contentAboveTable = useRef<HTMLDivElement>(null)
+
   const isTxHistoryEmpty = transactions.length === 0
   const isPendingTab = selectedTabIndex === 0
 
   const paused = !loading && !completed
+
+  const [tableHeight, setTableHeight] = useState(0)
+
+  const { pendingTokenDepositsCount } = useMemo(() => {
+    return transactions.reduce(
+      (acc, tx) => {
+        if (isTokenDeposit(tx) && isTxPending(tx)) {
+          acc.pendingTokenDepositsCount++
+        }
+        return acc
+      },
+      {
+        pendingTokenDepositsCount: 0
+      }
+    )
+  }, [transactions])
+
+  useEffect(() => {
+    // Calculate table height to be passed to the React Virtualized Table
+    const currentRef = contentAboveTable.current
+    const SIDE_PANEL_HEADER_HEIGHT = 120
+
+    // Adjust the table size whenever the content above it is resized
+    const observer = new ResizeObserver(entries => {
+      if (entries[0]) {
+        const aboveHeight = entries[0].contentRect.height
+        const viewportHeight = window.innerHeight
+        const newTableHeight = Math.max(
+          viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT,
+          0
+        )
+        setTableHeight(newTableHeight)
+      }
+    })
+
+    if (currentRef) {
+      observer.observe(currentRef)
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+    }
+  }, [])
 
   const FailedChainPairsTooltip = useCallback(() => {
     if (failedChainPairs.length === 0) {
@@ -238,6 +295,7 @@ export const TransactionHistoryTable = ({
           'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
+        ref={contentAboveTable}
       >
         {loading ? (
           <div className="flex animate-pulse space-x-2">
@@ -266,12 +324,13 @@ export const TransactionHistoryTable = ({
             )}
           </div>
         )}
+        <div>{pendingTokenDepositsCount > -1 && <PendingDepositWarning />}</div>
       </div>
-      <AutoSizer>
-        {({ height }) => (
+      <AutoSizer disableHeight>
+        {() => (
           <Table
             width={960}
-            height={height - 82}
+            height={tableHeight}
             rowHeight={({ index }) => getRowHeight(index)}
             rowCount={transactions.length}
             headerHeight={52}
