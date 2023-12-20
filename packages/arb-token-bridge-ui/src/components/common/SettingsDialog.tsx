@@ -14,8 +14,7 @@ import { isNetwork } from '../../util/networks'
 import { warningToast } from './atoms/Toast'
 import { ExternalLink } from './ExternalLink'
 import { ORBIT_QUICKSTART_LINK } from '../../constants'
-
-export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 const SectionTitle = ({
   className,
@@ -35,9 +34,7 @@ export const SettingsDialog = () => {
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const [isTestnetMode, setIsTestnetMode] = useLocalStorage<boolean>(
-    testnetModeLocalStorageKey
-  )
+  const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =

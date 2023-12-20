@@ -15,6 +15,7 @@ import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useNetwork } from 'wagmi'
 
 const GetHelpButton = ({
   variant,
@@ -52,16 +53,20 @@ export function TransactionsTableRowAction({
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
 
+  const { chain } = useNetwork()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
   const currentChainIsValid = useMemo(() => {
-    if (type === 'deposits') {
-      return l2Network.id === tx.childChainId
+    if (!chain) {
+      return false
     }
-    return l1Network.id === tx.parentChainId
-  }, [type, l1Network.id, tx.parentChainId, tx.childChainId, l2Network.id])
+    if (type === 'deposits') {
+      return chain.id === tx.childChainId
+    }
+    return chain.id === tx.parentChainId
+  }, [type, chain, tx.parentChainId, tx.childChainId])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed

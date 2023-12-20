@@ -1,5 +1,4 @@
 import { Popover, Transition } from '@headlessui/react'
-import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { useCallback } from 'react'
 import { useNetwork } from 'wagmi'
@@ -14,7 +13,7 @@ import {
 } from '../../util/networks'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
-import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 export const NetworkSelectionContainer = ({
   children
@@ -23,7 +22,7 @@ export const NetworkSelectionContainer = ({
 }) => {
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
+  const [isTestnetMode] = useIsTestnetMode()
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024

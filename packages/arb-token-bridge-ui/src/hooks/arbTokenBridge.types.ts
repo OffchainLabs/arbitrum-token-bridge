@@ -164,7 +164,7 @@ export interface ArbTokenBridgeEth {
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus | undefined
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
@@ -198,7 +198,7 @@ export interface ArbTokenBridgeToken {
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus | undefined
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
