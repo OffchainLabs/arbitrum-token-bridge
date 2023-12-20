@@ -3,7 +3,11 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  isNetwork
+} from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -37,6 +41,7 @@ import {
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
+import { useIsTestnetMode } from './useIsTestnetMode'
 
 export type TransactionHistoryParams = {
   data: {
@@ -110,7 +115,13 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
   {
     parentChain: ChainId.ArbitrumSepolia,
     chain: ChainId.StylusTestnet
-  }
+  },
+  ...getCustomChainsFromLocalStorage().map(chain => {
+    return {
+      parentChain: chain.partnerChainID,
+      chain: chain.chainID
+    }
+  })
 ]
 
 function isWithdrawalFromSubgraph(
@@ -189,6 +200,8 @@ function getTransactionsMapKey(tx: MergedTransaction) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
+  const [isTestnetMode] = useIsTestnetMode()
+
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -203,7 +216,7 @@ const useTransactionHistoryWithoutStatuses = (
     l1ChainId: ChainId.Goerli,
     l2ChainId: ChainId.ArbitrumGoerli,
     pageNumber: 0,
-    pageSize: 1000,
+    pageSize: isTestnetMode ? 1000 : 0,
     type: 'all'
   })
 
@@ -225,26 +238,42 @@ const useTransactionHistoryWithoutStatuses = (
     cctpTransfersTestnet.isLoadingDeposits ||
     cctpTransfersTestnet.isLoadingWithdrawals
 
+  const fetcher = useCallback(
+    (type: 'deposits' | 'withdrawals') => {
+      const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
+
+      return Promise.all(
+        multiChainFetchList
+          .filter(chainPair => {
+            if (isTestnetMode) {
+              // in testnet mode we fetch all chain pairs
+              return true
+            }
+            // otherwise don't fetch testnet chain pairs
+            return !isNetwork(chainPair.parentChain).isTestnet
+          })
+          .map(async chainPair => {
+            return await fetcherFn({
+              sender: address,
+              receiver: address,
+              l1Provider: getProvider(chainPair.parentChain),
+              l2Provider: getProvider(chainPair.chain),
+              pageNumber: 0,
+              pageSize: 1000
+            })
+          })
+      )
+    },
+    [address, isTestnetMode]
+  )
+
   const {
     data: depositsData,
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'deposits', address] : null,
-    ([, , _address]) => {
-      return Promise.all(
-        multiChainFetchList.map(chainPair => {
-          return fetchDeposits({
-            sender: _address,
-            receiver: _address,
-            l1Provider: getProvider(chainPair.parentChain),
-            l2Provider: getProvider(chainPair.chain),
-            pageNumber: 0,
-            pageSize: 1000
-          })
-        })
-      )
-    }
+    address ? ['tx_list', 'deposits', address, isTestnetMode] : null,
+    () => fetcher('deposits')
   )
 
   const {
@@ -252,21 +281,8 @@ const useTransactionHistoryWithoutStatuses = (
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'withdrawals', address] : null,
-    ([, , _address]) => {
-      return Promise.all(
-        multiChainFetchList.map(chainPair => {
-          return fetchWithdrawals({
-            sender: _address,
-            receiver: _address,
-            l1Provider: getProvider(chainPair.parentChain),
-            l2Provider: getProvider(chainPair.chain),
-            pageNumber: 0,
-            pageSize: 1000
-          })
-        })
-      )
-    }
+    address ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
+    () => fetcher('withdrawals')
   )
 
   const deposits = (depositsData || []).flat()
