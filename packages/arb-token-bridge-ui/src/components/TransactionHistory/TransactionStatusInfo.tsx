@@ -12,13 +12,15 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
-import { isDepositReadyToRedeem } from '../../state/app/utils'
+import {
+  isDepositReadyToRedeem,
+  isWithdrawalReadyToClaim
+} from '../../state/app/utils'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { isTxClaimable } from './helpers'
 
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
@@ -31,12 +33,12 @@ export const TransactionStatusInfo = () => {
     data: { transactions }
   } = useTransactionHistory(address)
 
-  const { numTransactionsReadyToClaim, numRetryablesToRedeem } = useMemo(() => {
+  const { numWithdrawalsReadyToClaim, numRetryablesToRedeem } = useMemo(() => {
     return transactions.reduce(
       (acc, tx) => {
-        // standard bridge withdrawal or cctp deposit/withdrawal
-        if (isTxClaimable(tx)) {
-          acc.numTransactionsReadyToClaim += 1
+        // standard bridge withdrawal
+        if (isWithdrawalReadyToClaim(tx)) {
+          acc.numWithdrawalsReadyToClaim += 1
         }
         // failed retryable
         if (isDepositReadyToRedeem(tx)) {
@@ -44,12 +46,12 @@ export const TransactionStatusInfo = () => {
         }
         return acc
       },
-      { numTransactionsReadyToClaim: 0, numRetryablesToRedeem: 0 }
+      { numWithdrawalsReadyToClaim: 0, numRetryablesToRedeem: 0 }
     )
   }, [transactions])
 
   // don't show this banner if user doesn't have anything to claim or redeem
-  if (numTransactionsReadyToClaim === 0 && numRetryablesToRedeem === 0)
+  if (numWithdrawalsReadyToClaim === 0 && numRetryablesToRedeem === 0)
     return null
 
   return (
@@ -85,16 +87,16 @@ export const TransactionStatusInfo = () => {
           </span>
         ) : null}
         {/* and */}
-        {numRetryablesToRedeem && numTransactionsReadyToClaim ? (
+        {numRetryablesToRedeem && numWithdrawalsReadyToClaim ? (
           <span>
             {` `}and{` `}
           </span>
         ) : null}
         {/* withdrawals ready to claim text */}
-        {numTransactionsReadyToClaim ? (
+        {numWithdrawalsReadyToClaim ? (
           <span className="font-bold">
-            {`${numTransactionsReadyToClaim} ${
-              numTransactionsReadyToClaim > 1 ? 'transactions' : 'transaction'
+            {`${numWithdrawalsReadyToClaim} ${
+              numWithdrawalsReadyToClaim > 1 ? 'transactions' : 'transaction'
             } ready to claim`}
           </span>
         ) : null}
