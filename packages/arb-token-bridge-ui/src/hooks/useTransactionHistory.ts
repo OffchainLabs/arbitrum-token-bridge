@@ -247,7 +247,7 @@ const useTransactionHistoryWithoutStatuses = (
           .filter(chainPair => {
             if (isTestnetMode) {
               // in testnet mode we fetch all chain pairs
-              return chainPair
+              return true
             }
             // otherwise don't fetch testnet chain pairs
             return !isNetwork(chainPair.parentChain).isTestnet
