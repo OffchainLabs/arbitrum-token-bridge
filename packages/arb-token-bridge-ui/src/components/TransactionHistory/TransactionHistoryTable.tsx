@@ -7,7 +7,8 @@ import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
-  isCustomDestinationAddressTx
+  isCustomDestinationAddressTx,
+  isPending
 } from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
@@ -79,17 +80,16 @@ const TableHeader = ({
 
 export const TransactionHistoryTable = ({
   transactions,
-  className,
   loading,
   completed,
   error,
   numberOfDays,
   resume,
   rowHeight,
-  rowHeightCustomDestinationAddress
+  rowHeightCustomDestinationAddress,
+  selectedTabIndex
 }: {
   transactions: MergedTransaction[]
-  className?: string
   loading: boolean
   completed: boolean
   error: unknown
@@ -97,8 +97,10 @@ export const TransactionHistoryTable = ({
   resume: () => void
   rowHeight: number
   rowHeightCustomDestinationAddress: number
+  selectedTabIndex: number
 }) => {
   const isTxHistoryEmpty = transactions.length === 0
+  const isPendingTab = selectedTabIndex === 0
 
   const paused = !loading && !completed
 
@@ -122,6 +124,19 @@ export const TransactionHistoryTable = ({
   }`
 
   if (isTxHistoryEmpty) {
+    if (loading) {
+      return (
+        <div
+          className={twMerge(
+            'flex space-x-2 rounded-tr-lg bg-white p-4',
+            isPendingTab ? '' : 'rounded-tl-lg'
+          )}
+        >
+          <Loader color="black" size="small" />
+          <span className="text-sm">Loading transactions...</span>
+        </div>
+      )
+    }
     if (error) {
       return (
         <div className="flex space-x-2 bg-white p-4 text-sm text-error">
@@ -140,11 +155,21 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
-    if (loading) {
+    if (paused) {
       return (
-        <div className="flex space-x-2 bg-white p-4">
-          <Loader wrapperClass="animate-pulse" color="black" size="small" />
-          <span className="animate-pulse text-sm">Loading transactions...</span>
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
         </div>
       )
     }
@@ -174,17 +199,24 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className={twMerge('h-full flex-col rounded-lg', className)}>
-      <div className="bg-white px-8 pt-4">
+    <div className="h-full flex-col overflow-x-auto">
+      <div
+        className={twMerge(
+          'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
+          isPendingTab ? '' : 'rounded-tl-lg'
+        )}
+      >
         {loading ? (
-          <div className="flex animate-pulse space-x-2">
-            <Loader size="small" />
+          <div className="flex space-x-2">
+            <Loader color="black" size="small" />
             <span className="text-sm">Loading transactions...</span>
           </div>
         ) : (
           <div className="flex justify-between">
             <span className="text-sm">
-              Showing transactions for the last {numberOfDaysString}.
+              Showing {transactions.length}{' '}
+              {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
+              {numberOfDaysString}.
             </span>
 
             {!completed && (
@@ -199,17 +231,15 @@ export const TransactionHistoryTable = ({
         )}
       </div>
       <AutoSizer>
-        {({ width, height }) => (
+        {({ height }) => (
           <Table
-            width={width}
+            width={960}
             height={height - 82}
             rowHeight={({ index }) => getRowHeight(index)}
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
-              <div className="flex bg-white" style={{ width: width }}>
-                {props.columns}
-              </div>
+              <div className="flex w-[960px] bg-white">{props.columns}</div>
             )}
             className="table-auto"
             rowGetter={({ index }) => transactions[index]}
@@ -221,6 +251,9 @@ export const TransactionHistoryTable = ({
                 return null
               }
 
+              const bgColorSettled = isEvenRow ? 'bg-cyan' : 'bg-white'
+              const bgColorPending = 'bg-orange'
+
               return (
                 <div
                   key={key}
@@ -229,23 +262,26 @@ export const TransactionHistoryTable = ({
                   {tx.isWithdrawal || tx.isCctp ? (
                     <TransactionsTableClaimableRow
                       tx={tx}
-                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                      className={
+                        isPending(tx) ? bgColorPending : bgColorSettled
+                      }
                     />
                   ) : (
                     <TransactionsTableDepositRow
                       tx={tx}
-                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                      className={
+                        isPending(tx) ? bgColorPending : bgColorSettled
+                      }
                     />
                   )}
                 </div>
               )
             }}
           >
-            {/* TODO: FIX LAYOUT FOR HEADERS AND COLUMNS: WIDTH AND PADDING */}
             <Column
               label="Status"
               dataKey="status"
-              width={width / 6}
+              width={144}
               headerRenderer={() => (
                 <TableHeader className="pl-8">Status</TableHeader>
               )}
@@ -253,7 +289,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Date"
               dataKey="date"
-              width={width / 5}
+              width={228}
               headerRenderer={() => (
                 <TableHeader className="pl-6">Date</TableHeader>
               )}
@@ -261,7 +297,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Token"
               dataKey="token"
-              width={width / 6}
+              width={144}
               headerRenderer={() => (
                 <TableHeader className="pl-12">Token</TableHeader>
               )}
@@ -269,7 +305,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Networks"
               dataKey="networks"
-              width={width / 6}
+              width={100}
               headerRenderer={() => (
                 <TableHeader className="pl-6">Networks</TableHeader>
               )}

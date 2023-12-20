@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -22,32 +21,19 @@ export const SidePanel = ({
   panelClassNameOverrides = '',
   scrollable = true
 }: SidePanelProps) => {
-  const ANIMATION_DURATION = 300
-
-  const [isClosing, setIsClosing] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(true)
-
-  const handleOnClose = () => {
-    setIsClosing(true)
-    onClose?.()
-    setTimeout(() => {
-      setIsClosing(false)
-    }, ANIMATION_DURATION) // Matches the transition duration
-  }
-
   return (
-    <Transition show={isOpen && !isClosing}>
+    <Transition show={isOpen}>
       <Dialog
-        open={isOpen || isClosing}
-        onClose={handleOnClose}
+        open={isOpen}
+        onClose={() => onClose?.()}
         className="fixed z-50 h-screen max-h-screen"
       >
         {/* The backdrop, rendered as a fixed sibling to the panel container */}
         <Transition.Child
-          enter={`transition-opacity duration-${ANIMATION_DURATION}`}
+          enter={`transition-opacity duration-300`}
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave={`transition-opacity duration-${ANIMATION_DURATION}`}
+          leave={`transition-opacity duration-300`}
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
           className="h-full"
@@ -59,44 +45,25 @@ export const SidePanel = ({
         </Transition.Child>
 
         {/* Full-screen container to center the panel */}
-        <div
-          className={twMerge(
-            'fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end',
-            // we don't apply scroll behavior when animating as it has side effects
-            isAnimating || !scrollable ? '' : 'overflow-y-auto'
-          )}
-        >
+        <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
           {/* The heading of dialog  */}
-          <Transition.Child
-            onAnimationStart={() => setIsAnimating(true)}
-            onAnimationEnd={() => setIsAnimating(false)}
-            enter={`transition-transform duration-${ANIMATION_DURATION}`}
-            enterFrom="transform translate-x-full"
-            enterTo="transform translate-x-0"
-            leave={`transition-transform duration-${ANIMATION_DURATION}`}
-            leaveFrom="transform translate-x-0"
-            leaveTo="transform translate-x-full"
-            className="h-full"
+          <Dialog.Panel
+            className={twMerge(
+              'side-panel flex h-full w-screen max-w-[1000px] flex-col bg-black',
+              panelClassNameOverrides,
+              !scrollable ? '' : 'overflow-y-auto'
+            )}
           >
-            <Dialog.Panel
-              className={twMerge(
-                'side-panel flex h-full w-full flex-col bg-black lg:w-1/2 lg:min-w-[1000px]',
-                panelClassNameOverrides
-              )}
-            >
-              <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-black py-4 text-white">
-                {heading && <span className="text-xl">{heading}</span>}
-                <button className="arb-hover" onClick={onClose}>
-                  <XMarkIcon className="h-6 w-6 text-white" />
-                </button>
-              </Dialog.Title>
+            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-black py-4 text-white">
+              {heading && <span className="text-xl">{heading}</span>}
+              <button className="arb-hover" onClick={onClose}>
+                <XMarkIcon className="h-6 w-6 text-white" />
+              </button>
+            </Dialog.Title>
 
-              {/* Contents of the panel */}
-              <div className="side-panel-content z-40 h-full p-4">
-                {children}
-              </div>
-            </Dialog.Panel>
-          </Transition.Child>
+            {/* Contents of the panel */}
+            <div className="side-panel-content z-40 h-full p-4">{children}</div>
+          </Dialog.Panel>
         </div>
       </Dialog>
     </Transition>
