@@ -197,6 +197,22 @@ function getTransactionsMapKey(tx: MergedTransaction) {
   return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 }
 
+function getTxIdFromTransaction(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return tx.txId
+  }
+  if (isDeposit(tx)) {
+    return tx.txID
+  }
+  if (isWithdrawalFromSubgraph(tx)) {
+    return tx.l2TxHash
+  }
+  if (isTokenWithdrawal(tx)) {
+    return tx.txHash
+  }
+  return tx.l2TxHash
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -289,19 +305,37 @@ const useTransactionHistoryWithoutStatuses = (
   )
 
   const deposits = [
-    (depositsData || []).flat(),
-    ...getDepositsWithoutStatusesFromCache()
+    ...getDepositsWithoutStatusesFromCache(),
+    (depositsData || []).flat()
   ]
 
   const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
-    .flat()
-    .sort(sortByTimestampDescending)
+  const transactions = [
+    ...deposits,
+    ...withdrawals,
+    ...combinedCctpTransfers
+  ].flat()
+
+  // duplicates may occur when txs are taken from the local storage
+  const dedupedTransactions = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          transactions.map(tx => [
+            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
+              tx
+            )}}`,
+            tx
+          ])
+        ).values()
+      ).sort(sortByTimestampDescending),
+    [transactions]
+  )
 
   return {
-    data: transactions,
+    data: dedupedTransactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError
   }
@@ -569,20 +603,6 @@ export const useTransactionHistory = (
     return Math.max(daysAgo, 1)
   }, [transactions])
 
-  // duplicates may occur when txs are taken from the local storage
-  const dedupedTransactions = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          transactions.map(tx => [
-            `${tx.parentChainId}-${tx.childChainId}-${tx.txId}}`,
-            tx
-          ])
-        ).values()
-      ),
-    [transactions]
-  )
-
   function pause() {
     setFetching(false)
   }
@@ -607,11 +627,11 @@ export const useTransactionHistory = (
 
   return {
     data: {
-      transactions: dedupedTransactions,
+      transactions,
       numberOfDays: oldestTransactionDaysAgo
     },
     loading: fetching,
-    completed: dedupedTransactions.length >= data.length,
+    completed: transactions.length === data.length,
     error: txPagesError ?? error,
     pause,
     resume,
