@@ -251,7 +251,8 @@ export const useArbTokenBridge = (
       })
         ? 'subgraph'
         : 'event_logs',
-      timestampCreated: String(dayjs().valueOf() / 1_000)
+      timestampCreated: String(dayjs().valueOf() / 1_000),
+      nonce: tx.nonce
     })
 
     const receipt = await tx.wait()
@@ -490,7 +491,8 @@ export const useArbTokenBridge = (
         })
           ? 'subgraph'
           : 'event_logs',
-        timestampCreated: String(dayjs().valueOf() / 1_000)
+        timestampCreated: String(dayjs().valueOf() / 1_000),
+        nonce: tx.nonce
       })
 
       const receipt = await tx.wait()

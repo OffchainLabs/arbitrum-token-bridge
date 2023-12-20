@@ -105,6 +105,7 @@ export interface Transaction extends TransactionBase {
   source: 'subgraph' | 'event_logs'
   parentChainId: number
   childChainId: number
+  nonce?: number
 }
 
 export interface NewTransaction extends TransactionBase {
