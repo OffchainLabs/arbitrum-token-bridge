@@ -34,7 +34,7 @@ export const SettingsDialog = () => {
 
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-  const { isTestnetMode, setIsTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
 
   const [_selectedTheme, setTheme] = useTheme()
   const selectedTheme =

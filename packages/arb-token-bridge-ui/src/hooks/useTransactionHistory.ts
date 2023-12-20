@@ -200,7 +200,7 @@ function getTransactionsMapKey(tx: MergedTransaction) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,

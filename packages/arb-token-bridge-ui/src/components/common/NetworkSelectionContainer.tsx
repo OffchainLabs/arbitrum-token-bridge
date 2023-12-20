@@ -22,7 +22,7 @@ export const NetworkSelectionContainer = ({
 }) => {
   const { chain } = useNetwork()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
