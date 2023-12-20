@@ -324,7 +324,7 @@ export const TransactionHistoryTable = ({
             )}
           </div>
         )}
-        <div>{pendingTokenDepositsCount > -1 && <PendingDepositWarning />}</div>
+        <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
       </div>
       <AutoSizer disableHeight>
         {() => (
