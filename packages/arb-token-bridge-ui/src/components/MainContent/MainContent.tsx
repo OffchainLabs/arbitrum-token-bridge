@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 import { useAccount } from 'wagmi'
@@ -31,7 +31,9 @@ export const motionDivProps = {
 export function MainContent() {
   const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
-  const transactionHistoryProps = useTransactionHistory(address, true)
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
@@ -44,17 +46,17 @@ export function MainContent() {
     updatePendingTransaction
   } = transactionHistoryProps
 
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
   useEffect(() => {
     const interval = setInterval(() => {
-      transactions.forEach(tx => {
-        if (isTxPending(tx)) {
-          updatePendingTransaction(tx)
-        }
-      })
+      pendingTransactions.forEach(updatePendingTransaction)
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [JSON.stringify(transactions), JSON.stringify(updatePendingTransaction)])
+  }, [pendingTransactions, updatePendingTransaction])
 
   return (
     <div className="flex w-full justify-center">

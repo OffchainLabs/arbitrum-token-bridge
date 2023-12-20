@@ -173,6 +173,24 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
+    if (paused) {
+      return (
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
+        </div>
+      )
+    }
     return (
       <div className="bg-white p-4 text-sm">
         Looks like no transactions here yet!
