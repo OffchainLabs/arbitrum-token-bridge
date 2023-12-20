@@ -103,19 +103,19 @@ const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
     parentChain: ChainId.Goerli,
     chain: ChainId.ArbitrumGoerli
   },
-  {
-    parentChain: ChainId.Sepolia,
-    chain: ChainId.ArbitrumSepolia
-  },
+  // {
+  //   parentChain: ChainId.Sepolia,
+  //   chain: ChainId.ArbitrumSepolia
+  // },
   // Orbit
   {
     parentChain: ChainId.ArbitrumGoerli,
     chain: ChainId.XaiTestnet
   },
-  {
-    parentChain: ChainId.ArbitrumSepolia,
-    chain: ChainId.StylusTestnet
-  },
+  // {
+  //   parentChain: ChainId.ArbitrumSepolia,
+  //   chain: ChainId.StylusTestnet
+  // },
   ...getCustomChainsFromLocalStorage().map(chain => {
     return {
       parentChain: chain.partnerChainID,
