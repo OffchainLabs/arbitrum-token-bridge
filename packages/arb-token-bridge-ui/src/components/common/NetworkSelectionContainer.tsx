@@ -171,9 +171,7 @@ function NetworksPanel({
                   'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
               )}
             >
-              <p className="text-sm text-white lg:text-dark">
-                {networkOrChainTypeInfo.name}
-              </p>
+              <p className="text-sm text-dark">{networkOrChainTypeInfo.name}</p>
               {networkOrChainTypeInfo.description && (
                 <p className="mt-2 text-xs">
                   {networkOrChainTypeInfo.description}
@@ -233,13 +231,13 @@ export const NetworkSelectionContainer = ({
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button
         disabled={isSmartContractWallet || isLoadingAccountType}
-        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+        className="arb-hover w-full px-6 py-3 lg:px-2 lg:py-0"
       >
         {children}
       </Popover.Button>
 
       <Transition>
-        <Popover.Panel className="relative rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:min-w-[448px] lg:-translate-x-12 lg:gap-3 lg:bg-white lg:p-5 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative bg-white p-5 lg:absolute lg:ml-1 lg:mt-1 lg:min-w-[448px] lg:-translate-x-12 lg:gap-3 lg:rounded-md lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {({ close }) => (
             <SearchPanel
               showCloseButton={false}
