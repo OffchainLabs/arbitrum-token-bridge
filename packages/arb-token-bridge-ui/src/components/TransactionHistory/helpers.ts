@@ -109,30 +109,22 @@ export function getProvider(chainId: ChainId) {
 }
 
 export function isSameTransaction(
-  tx_1: MergedTransaction,
-  tx_2: MergedTransaction
+  txDetails_1: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  },
+  txDetails_2: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  }
 ) {
   return (
-    tx_1.txId === tx_2.txId &&
-    tx_1.parentChainId === tx_2.parentChainId &&
-    tx_1.childChainId === tx_2.childChainId
+    txDetails_1.txId === txDetails_2.txId &&
+    txDetails_1.parentChainId === txDetails_2.parentChainId &&
+    txDetails_1.childChainId === txDetails_2.childChainId
   )
-}
-
-export function subgraphExistsForChainPair(chainPair: ChainPair) {
-  if (
-    chainPair.parentChain === ChainId.Ethereum &&
-    chainPair.chain === ChainId.ArbitrumOne
-  ) {
-    return true
-  }
-  if (
-    chainPair.parentChain === ChainId.Goerli &&
-    chainPair.chain === ChainId.ArbitrumGoerli
-  ) {
-    return true
-  }
-  return false
 }
 
 export function getTxReceipt(tx: MergedTransaction) {
@@ -169,19 +161,18 @@ export function getDepositsWithoutStatusesFromCache(): Deposit[] {
  * @param {MergedTransaction} tx - Deposit from event logs to be cached.
  */
 export function addDepositToCache(tx: Deposit) {
-  if (tx.direction !== 'deposit' || tx.source !== 'event_logs') {
+  if (tx.direction !== 'deposit') {
     return
   }
 
   const cachedDeposits = getDepositsWithoutStatusesFromCache()
 
-  const foundInCache = cachedDeposits.find(cachedTx => {
-    return (
-      cachedTx.txID === tx.txID &&
-      cachedTx.parentChainId === tx.parentChainId &&
-      cachedTx.childChainId === tx.childChainId
+  const foundInCache = cachedDeposits.find(cachedTx =>
+    isSameTransaction(
+      { ...cachedTx, txId: cachedTx.txID },
+      { ...tx, txId: tx.txID }
     )
-  })
+  )
 
   if (foundInCache) {
     return
