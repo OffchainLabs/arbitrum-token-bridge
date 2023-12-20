@@ -14,7 +14,8 @@
     "paths": {
       "@/images/*": ["./public/images/*"],
       "@/icons/*": ["./public/icons/*"]
-    }
+    },
+    "sourceMap": true
   },
   "exclude": ["node_modules"]
 }
