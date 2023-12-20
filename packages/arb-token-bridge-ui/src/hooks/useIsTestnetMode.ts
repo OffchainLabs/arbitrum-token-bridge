@@ -3,9 +3,10 @@ import { useLocalStorage } from 'react-use'
 const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
 export const useIsTestnetMode = () => {
-  const [isTestnetMode = false, setIsTestnetMode] = useLocalStorage<boolean>(
-    testnetModeLocalStorageKey
+  const [isTestnetMode, setIsTestnetMode] = useLocalStorage<boolean>(
+    testnetModeLocalStorageKey,
+    false
   )
 
-  return [isTestnetMode, setIsTestnetMode]
+  return [isTestnetMode, setIsTestnetMode] as const
 }
