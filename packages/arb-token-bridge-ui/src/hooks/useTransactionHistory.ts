@@ -2,11 +2,9 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
-import { useLocalStorage } from 'react-use'
 
 import {
   ChainId,
-  getCustomChainFromLocalStorageById,
   getCustomChainsFromLocalStorage,
   isNetwork
 } from '../util/networks'
@@ -43,7 +41,7 @@ import {
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
-import { testnetModeLocalStorageKey } from '../components/common/SettingsDialog'
+import { useIsTestnetMode } from './useIsTestnetMode'
 
 export type TransactionHistoryParams = {
   data: {
@@ -194,10 +192,6 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
-function isTestnetChainPair(chainPair: ChainPair) {
-  return isNetwork(chainPair.parentChain).isTestnet
-}
-
 function getTransactionsMapKey(tx: MergedTransaction) {
   return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 }
@@ -208,9 +202,7 @@ function getTransactionsMapKey(tx: MergedTransaction) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
-  const [isTestnetMode = false] = useLocalStorage<boolean>(
-    testnetModeLocalStorageKey
-  )
+  const { isTestnetMode } = useIsTestnetMode()
 
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
@@ -260,30 +252,17 @@ const useTransactionHistoryWithoutStatuses = (
               return chainPair
             }
             // otherwise don't fetch testnet chain pairs
-            return !isTestnetChainPair(chainPair)
+            return !isNetwork(chainPair.parentChain).isTestnet
           })
           .map(async chainPair => {
-            try {
-              return await fetcherFn({
-                sender: address,
-                receiver: address,
-                l1Provider: getProvider(chainPair.parentChain),
-                l2Provider: getProvider(chainPair.chain),
-                pageNumber: 0,
-                pageSize: 1000
-              })
-            } catch (err) {
-              const isCustomOrbitChain =
-                typeof getCustomChainFromLocalStorageById(chainPair.chain) !==
-                'undefined'
-
-              if (isCustomOrbitChain) {
-                // don't throw for custom orbit chains, local node may be offline
-                return []
-              }
-
-              throw err
-            }
+            return await fetcherFn({
+              sender: address,
+              receiver: address,
+              l1Provider: getProvider(chainPair.parentChain),
+              l2Provider: getProvider(chainPair.chain),
+              pageNumber: 0,
+              pageSize: 1000
+            })
           })
       )
     },
