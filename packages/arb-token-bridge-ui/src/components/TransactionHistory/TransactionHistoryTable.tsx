@@ -31,8 +31,8 @@ import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
-import { PendingDepositWarning } from './PendingDepositWarning'
 import { isTxPending } from './helpers'
+import { PendingDepositWarning } from './PendingDepositWarning'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -140,6 +140,7 @@ export const TransactionHistoryTable = ({
     )
   }, [transactions])
 
+  // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
   useEffect(() => {
     // Calculate table height to be passed to the React Virtualized Table
     const currentRef = contentAboveTable.current
@@ -177,11 +178,14 @@ export const TransactionHistoryTable = ({
       <Tooltip
         content={
           <div className="flex flex-col space-y-1 text-xs">
-            <span>We were unable to fetch data for the following chains:</span>
+            <span>
+              We were unable to fetch data for the following chain pairs:
+            </span>
             <ul className="flex list-disc flex-col pl-4">
               {failedChainPairs.map(pair => (
                 <li key={`${pair.parentChain}-${pair.chain}`}>
-                  between <b>{getNetworkName(pair.parentChain)}</b> and{' '}
+                  <b>{getNetworkName(pair.parentChain)}</b>
+                  {' <> '}
                   <b>{getNetworkName(pair.chain)}</b>
                 </li>
               ))}

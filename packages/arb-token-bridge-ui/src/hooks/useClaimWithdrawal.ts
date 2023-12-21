@@ -9,7 +9,7 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType, L2ToL1EventResultPlus } from './arbTokenBridge.types'
 import {
   getProvider,
-  setWithdrawalClaimParentChainTxDetails
+  setParentChainTxDetailsOfWithdrawalClaimTx
 } from '../components/TransactionHistory/helpers'
 import { L2TransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
@@ -121,7 +121,7 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     })
 
     if (isSuccess) {
-      setWithdrawalClaimParentChainTxDetails(tx, txHash)
+      setParentChainTxDetailsOfWithdrawalClaimTx(tx, txHash)
     }
   }
 

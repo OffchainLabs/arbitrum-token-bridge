@@ -19,7 +19,10 @@ const transformNodeModules = [
   // The following are dependencies for query-string (https://github.com/sindresorhus/query-string/blob/main/package.json)
   'decode-uri-component',
   'split-on-first',
-  'filter-obj'
+  'filter-obj',
+  // wagmi
+  '@wagmi',
+  'wagmi'
 ]
 
 module.exports = async function () {
