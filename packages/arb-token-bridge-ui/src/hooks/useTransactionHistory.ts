@@ -221,6 +221,8 @@ const useTransactionHistoryWithoutStatuses = (
 ) => {
   const [isTestnetMode] = useIsTestnetMode()
 
+  console.log({ isTestnetMode })
+
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
@@ -333,6 +335,8 @@ const useTransactionHistoryWithoutStatuses = (
       ).sort(sortByTimestampDescending),
     [transactions]
   )
+
+  console.log({ dedupedTransactions })
 
   return {
     data: dedupedTransactions,
@@ -624,6 +628,8 @@ export const useTransactionHistory = (
       updatePendingTransaction
     }
   }
+
+  console.log({ transactions })
 
   return {
     data: {
