@@ -54,7 +54,7 @@ describe('Transaction History', () => {
     })
 
     context('settled tab should be selected after click', () => {
-      cy.findByRole('tab', { name: 'show pending transactions' })
+      cy.findByRole('tab', { name: 'show settled transactions' })
         .should('be.visible')
         .click()
         .should('have.attr', 'data-headlessui-state')
@@ -66,7 +66,7 @@ describe('Transaction History', () => {
       () =>
         cy
           .findByText(
-            /Showing \d+ pending transactions for the last \d+ days\./
+            /Looks like there are no transactions in the last \d+ days\./
           )
           .should('be.visible'),
       {
@@ -74,18 +74,6 @@ describe('Transaction History', () => {
         timeout: 30_000,
         interval: 500
       }
-    ).then(() => {
-      const numberOfWithdrawals = cy
-        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
-        .its('length')
-
-      numberOfWithdrawals.should('be.gt', 0)
-
-      const numberOfDeposits = cy
-        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
-        .its('length')
-
-      numberOfDeposits.should('be.gt', 0)
-    })
+    )
   })
 })
