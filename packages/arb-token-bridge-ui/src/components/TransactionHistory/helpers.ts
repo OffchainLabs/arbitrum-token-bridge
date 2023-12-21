@@ -15,11 +15,7 @@ import {
   WithdrawalStatus
 } from '../../state/app/state'
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
-import {
-  ChainPair,
-  Deposit,
-  isCctpTransfer
-} from '../../hooks/useTransactionHistory'
+import { Deposit, isCctpTransfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -27,7 +23,7 @@ import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 
-const CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY =
+const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
 const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
 
@@ -192,14 +188,14 @@ export function addDepositToCache(tx: Deposit) {
  * @param {MergedTransaction} tx - Transaction that initiated the withdrawal (child chain transaction).
  * @param {string} parentChainTxId - Transaction ID of the claim transaction (parent chain transaction ID).
  */
-export function setWithdrawalClaimParentChainTxDetails(
+export function setParentChainTxDetailsOfWithdrawalClaimTx(
   tx: MergedTransaction,
   parentChainTxId: string
 ) {
   const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 
   const cachedClaimParentChainTxId = JSON.parse(
-    localStorage.getItem(CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY) ?? '{}'
+    localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
   )
 
   if (key in cachedClaimParentChainTxId) {
@@ -208,7 +204,7 @@ export function setWithdrawalClaimParentChainTxDetails(
   }
 
   localStorage.setItem(
-    CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY,
+    PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX,
     JSON.stringify({
       ...cachedClaimParentChainTxId,
       [key]: {
@@ -230,7 +226,7 @@ export function getWithdrawalClaimParentChainTxDetails(
 
   const cachedClaimParentChainTxDetails = (
     JSON.parse(
-      localStorage.getItem(CLAIM_PARENT_CHAIN_DETAILS_LOCAL_STORAGE_KEY) ?? '{}'
+      localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
     ) as {
       [key in string]: {
         txId: string

@@ -54,6 +54,11 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
       l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
     },
+    // We comment this out because when user tries to deposit FRAX,
+    // we show a dialog to use a fast bridge (Celer) instead
+    // and the user can never make a deposit on our UI
+    // eventually we should do that to all other withdraw-only
+    // tokens as well
     // {
     //   symbol: 'FRAX',
     //   l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',

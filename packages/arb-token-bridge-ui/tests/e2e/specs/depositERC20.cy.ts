@@ -22,11 +22,12 @@ describe('Deposit ERC20 Token', () => {
 
     // log in to metamask before deposit
     before(() => {
-      getInitialERC20Balance(
-        wethTokenAddressL1,
-        getL1NetworkConfig().multiCall,
-        Cypress.env('ETH_RPC_URL')
-      ).then(
+      getInitialERC20Balance({
+        tokenAddress: wethTokenAddressL1,
+        multiCallerAddress: getL1NetworkConfig().multiCall,
+        address: Cypress.env('ADDRESS'),
+        rpcURL: Cypress.env('ETH_RPC_URL')
+      }).then(
         val =>
           (l1ERC20bal = formatAmount(val, {
             symbol: 'WETH'
@@ -74,11 +75,9 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        // BALANCE: is in a different element so we check for siblings
-        cy.findByText(l1ERC20bal)
+        cy.findByLabelText('WETH balance on l1')
           .should('be.visible')
-          .siblings()
-          .contains('BALANCE: ')
+          .contains(l1ERC20bal)
       })
 
       context('should show summary', () => {
@@ -119,7 +118,7 @@ describe('Deposit ERC20 Token', () => {
             cy.confirmMetamaskTransaction().then(() => {
               cy.findByText('~10 mins remaining').should('be.visible')
               cy.findByText(
-                `${formatAmount(0.0001, {
+                `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'
                 })}`
               ).should('be.visible')
