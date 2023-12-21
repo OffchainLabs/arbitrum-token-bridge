@@ -326,7 +326,7 @@ const useTransactionHistoryWithoutStatuses = (
           transactions.map(tx => [
             `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
               tx
-            )}}`,
+            )?.toLowerCase()}}`,
             tx
           ])
         ).values()
