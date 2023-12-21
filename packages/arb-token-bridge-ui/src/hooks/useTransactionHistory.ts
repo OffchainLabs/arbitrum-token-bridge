@@ -333,7 +333,7 @@ const useTransactionHistoryWithoutStatuses = (
   )
 
   const deposits = [
-    ...getDepositsWithoutStatusesFromCache().filter(tx =>
+    ...getDepositsWithoutStatusesFromCache(address).filter(tx =>
       isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
     ),
     (depositsData || []).flat()

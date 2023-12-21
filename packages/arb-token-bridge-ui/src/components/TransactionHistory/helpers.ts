@@ -145,9 +145,16 @@ function getWithdrawalStatusFromReceipt(
   }
 }
 
-export function getDepositsWithoutStatusesFromCache(): Deposit[] {
+export function getDepositsWithoutStatusesFromCache(
+  address: string | undefined
+): Deposit[] {
+  if (!address) {
+    return []
+  }
   return JSON.parse(
-    localStorage.getItem(DEPOSITS_LOCAL_STORAGE_KEY) ?? '[]'
+    localStorage.getItem(
+      `${DEPOSITS_LOCAL_STORAGE_KEY}-${address.toLowerCase()}`
+    ) ?? '[]'
   ) as Deposit[]
 }
 
@@ -161,7 +168,9 @@ export function addDepositToCache(tx: Deposit) {
     return
   }
 
-  const cachedDeposits = getDepositsWithoutStatusesFromCache()
+  const cachedDeposits = getDepositsWithoutStatusesFromCache(
+    tx.sender.toLowerCase()
+  )
 
   const foundInCache = cachedDeposits.find(cachedTx =>
     isSameTransaction(
@@ -177,7 +186,7 @@ export function addDepositToCache(tx: Deposit) {
   const newCachedDeposits = [tx, ...cachedDeposits]
 
   localStorage.setItem(
-    DEPOSITS_LOCAL_STORAGE_KEY,
+    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
     JSON.stringify(newCachedDeposits)
   )
 }
