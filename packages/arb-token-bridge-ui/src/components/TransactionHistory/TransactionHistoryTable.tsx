@@ -120,11 +120,14 @@ export const TransactionHistoryTable = ({
       <Tooltip
         content={
           <div className="flex flex-col space-y-1 text-xs">
-            <span>We were unable to fetch data for the following chains:</span>
+            <span>
+              We were unable to fetch data for the following chain pairs:
+            </span>
             <ul className="flex list-disc flex-col pl-4">
               {failedChainPairs.map(pair => (
                 <li key={`${pair.parentChain}-${pair.chain}`}>
-                  between <b>{getNetworkName(pair.parentChain)}</b> and{' '}
+                  <b>{getNetworkName(pair.parentChain)}</b>
+                  {' <> '}
                   <b>{getNetworkName(pair.chain)}</b>
                 </li>
               ))}

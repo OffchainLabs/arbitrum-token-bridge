@@ -292,6 +292,17 @@ const useTransactionHistoryWithoutStatuses = (
                 if (!prevFailedChainPairs) {
                   return [chainPair]
                 }
+                if (
+                  typeof prevFailedChainPairs.find(
+                    prevPair =>
+                      prevPair.parentChain === chainPair.parentChain &&
+                      prevPair.chain === chainPair.chain
+                  ) !== 'undefined'
+                ) {
+                  // already added
+                  return prevFailedChainPairs
+                }
+
                 return [...prevFailedChainPairs, chainPair]
               })
 
