@@ -33,6 +33,7 @@ import { FetchWithdrawalsFromSubgraphResult } from '../util/withdrawals/fetchWit
 import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
+  getDepositsWithoutStatusesFromCache,
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
@@ -56,6 +57,8 @@ export type TransactionHistoryParams = {
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
+
+export type ChainPair = { parentChain: ChainId; chain: ChainId }
 
 export type Deposit = Transaction
 
@@ -89,7 +92,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: { parentChain: ChainId; chain: ChainId }[] = [
+const multiChainFetchList: ChainPair[] = [
   {
     parentChain: ChainId.Ethereum,
     chain: ChainId.ArbitrumOne
@@ -194,6 +197,22 @@ function getTransactionsMapKey(tx: MergedTransaction) {
   return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 }
 
+function getTxIdFromTransaction(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return tx.txId
+  }
+  if (isDeposit(tx)) {
+    return tx.txID
+  }
+  if (isWithdrawalFromSubgraph(tx)) {
+    return tx.l2TxHash
+  }
+  if (isTokenWithdrawal(tx)) {
+    return tx.txHash
+  }
+  return tx.l2TxHash
+}
+
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
@@ -285,16 +304,41 @@ const useTransactionHistoryWithoutStatuses = (
     () => fetcher('withdrawals')
   )
 
-  const deposits = (depositsData || []).flat()
+  const deposits = [
+    ...getDepositsWithoutStatusesFromCache().filter(tx =>
+      isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
+    ),
+    (depositsData || []).flat()
+  ]
+
   const withdrawals = (withdrawalsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
-  const transactions = [...deposits, ...withdrawals, ...combinedCctpTransfers]
-    .flat()
-    .sort(sortByTimestampDescending)
+  const transactions = [
+    ...deposits,
+    ...withdrawals,
+    ...combinedCctpTransfers
+  ].flat()
+
+  // duplicates may occur when txs are taken from the local storage
+  // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
+  const dedupedTransactions = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          transactions.map(tx => [
+            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
+              tx
+            )?.toLowerCase()}}`,
+            tx
+          ])
+        ).values()
+      ).sort(sortByTimestampDescending),
+    [transactions]
+  )
 
   return {
-    data: transactions,
+    data: dedupedTransactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError
   }

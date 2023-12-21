@@ -46,6 +46,7 @@ import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
 import { DepositStatus, WithdrawalStatus } from '../state/app/state'
+import { addDepositToCache } from '../components/TransactionHistory/helpers'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -188,6 +189,8 @@ export const useArbTokenBridge = (
     }
 
     const ethBridger = await EthBridger.fromProvider(l2.provider)
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     let tx: L1EthDepositTransaction
 
@@ -212,7 +215,7 @@ export const useArbTokenBridge = (
       destination: walletAddress,
       direction: 'deposit-l1',
       status: 'pending',
-      createdAt: dayjs().valueOf(),
+      createdAt: parentChainBlockTimestamp * 1_000,
       resolvedAt: null,
       txId: tx.hash,
       asset: nativeCurrency.symbol,
@@ -225,6 +228,25 @@ export const useArbTokenBridge = (
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
       childChainId: Number(l2NetworkID)
+    })
+
+    addDepositToCache({
+      sender: walletAddress,
+      destination: walletAddress,
+      status: 'pending',
+      txID: tx.hash,
+      assetName: nativeCurrency.symbol,
+      assetType: AssetType.ETH,
+      l1NetworkID,
+      l2NetworkID,
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
+      parentChainId: Number(l1NetworkID),
+      childChainId: Number(l2NetworkID),
+      direction: 'deposit',
+      type: 'deposit-l1',
+      source: 'local_storage_cache',
+      timestampCreated: String(parentChainBlockTimestamp),
+      nonce: tx.nonce
     })
 
     const receipt = await tx.wait()
@@ -398,6 +420,8 @@ export const useArbTokenBridge = (
       return
     }
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     try {
       const { symbol, decimals } = await fetchErc20Data({
@@ -428,7 +452,7 @@ export const useArbTokenBridge = (
         destination: destinationAddress ?? walletAddress,
         direction: 'deposit-l1',
         status: 'pending',
-        createdAt: dayjs().valueOf(),
+        createdAt: parentChainBlockTimestamp * 1_000,
         resolvedAt: null,
         txId: tx.hash,
         asset: symbol,
@@ -441,6 +465,25 @@ export const useArbTokenBridge = (
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
         childChainId: Number(l2NetworkID)
+      })
+
+      addDepositToCache({
+        sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
+        status: 'pending',
+        txID: tx.hash,
+        assetName: symbol,
+        assetType: AssetType.ERC20,
+        l1NetworkID,
+        l2NetworkID,
+        value: utils.formatUnits(amount, decimals),
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID),
+        direction: 'deposit',
+        type: 'deposit-l1',
+        source: 'local_storage_cache',
+        timestampCreated: String(parentChainBlockTimestamp),
+        nonce: tx.nonce
       })
 
       const receipt = await tx.wait()

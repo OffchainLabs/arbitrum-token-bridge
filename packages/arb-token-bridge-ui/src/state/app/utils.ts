@@ -240,30 +240,3 @@ export const getStandardizedTime = (standardizedTimestamp: number) => {
 export const getStandardizedDate = (standardizedTimestamp: number) => {
   return dayjs(standardizedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
 }
-
-export const findMatchingL1TxForWithdrawal = (
-  withdrawalTxn: MergedTransaction
-) => {
-  // finds the corresponding L1 transaction for withdrawal
-
-  const cachedTransactions: Transaction[] = JSON.parse(
-    window.localStorage.getItem('arbTransactions') || '[]'
-  )
-  const outboxTransactions = cachedTransactions
-    .filter(tx => tx.type === 'outbox')
-    .map(transformDeposit)
-
-  return outboxTransactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (!(l2ToL1MsgData?.uniqueId && withdrawalTxn?.uniqueId)) {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(withdrawalTxn.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.eq(_txUniqueId)
-  })
-}

@@ -15,13 +15,17 @@ import {
   WithdrawalStatus
 } from '../../state/app/state'
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
-import { isCctpTransfer } from '../../hooks/useTransactionHistory'
+import { Deposit, isCctpTransfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+
+const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
+  'arbitrum:bridge:claim:parent:tx:details'
+const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -101,13 +105,21 @@ export function getProvider(chainId: ChainId) {
 }
 
 export function isSameTransaction(
-  tx_1: MergedTransaction,
-  tx_2: MergedTransaction
+  txDetails_1: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  },
+  txDetails_2: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  }
 ) {
   return (
-    tx_1.txId === tx_2.txId &&
-    tx_1.parentChainId === tx_2.parentChainId &&
-    tx_1.childChainId === tx_2.childChainId
+    txDetails_1.txId === txDetails_2.txId &&
+    txDetails_1.parentChainId === txDetails_2.parentChainId &&
+    txDetails_1.childChainId === txDetails_2.childChainId
   )
 }
 
@@ -131,6 +143,99 @@ function getWithdrawalStatusFromReceipt(
     default:
       return undefined
   }
+}
+
+export function getDepositsWithoutStatusesFromCache(): Deposit[] {
+  return JSON.parse(
+    localStorage.getItem(DEPOSITS_LOCAL_STORAGE_KEY) ?? '[]'
+  ) as Deposit[]
+}
+
+/**
+ * Cache deposits from event logs. We don't fetch these so we need to store them locally.
+ *
+ * @param {MergedTransaction} tx - Deposit from event logs to be cached.
+ */
+export function addDepositToCache(tx: Deposit) {
+  if (tx.direction !== 'deposit') {
+    return
+  }
+
+  const cachedDeposits = getDepositsWithoutStatusesFromCache()
+
+  const foundInCache = cachedDeposits.find(cachedTx =>
+    isSameTransaction(
+      { ...cachedTx, txId: cachedTx.txID },
+      { ...tx, txId: tx.txID }
+    )
+  )
+
+  if (foundInCache) {
+    return
+  }
+
+  const newCachedDeposits = [tx, ...cachedDeposits]
+
+  localStorage.setItem(
+    DEPOSITS_LOCAL_STORAGE_KEY,
+    JSON.stringify(newCachedDeposits)
+  )
+}
+
+/**
+ * Cache parent chain tx details when claiming. This is the chain the funds were claimed on. We store locally because we don't have access to this tx from the child chain tx data.
+ *
+ * @param {MergedTransaction} tx - Transaction that initiated the withdrawal (child chain transaction).
+ * @param {string} parentChainTxId - Transaction ID of the claim transaction (parent chain transaction ID).
+ */
+export function setParentChainTxDetailsOfWithdrawalClaimTx(
+  tx: MergedTransaction,
+  parentChainTxId: string
+) {
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxId = JSON.parse(
+    localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
+  )
+
+  if (key in cachedClaimParentChainTxId) {
+    // already set
+    return
+  }
+
+  localStorage.setItem(
+    PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX,
+    JSON.stringify({
+      ...cachedClaimParentChainTxId,
+      [key]: {
+        txId: parentChainTxId,
+        timestamp: dayjs().valueOf()
+      }
+    })
+  )
+}
+
+export function getWithdrawalClaimParentChainTxDetails(
+  tx: MergedTransaction
+): { txId: string; timestamp: number } | undefined {
+  if (!tx.isWithdrawal || tx.isCctp) {
+    return undefined
+  }
+
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxDetails = (
+    JSON.parse(
+      localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
+    ) as {
+      [key in string]: {
+        txId: string
+        timestamp: number
+      }
+    }
+  )[key]
+
+  return cachedClaimParentChainTxDetails
 }
 
 export async function getUpdatedEthDeposit(
