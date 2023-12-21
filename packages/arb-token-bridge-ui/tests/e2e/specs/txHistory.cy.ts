@@ -61,7 +61,8 @@ describe('Transaction History', () => {
         .and('equal', 'selected')
     })
 
-    // wait for transactions to fetch
+    // there are no goerli transactions because they are old
+    // TODO: find a way to test old txs
     cy.waitUntil(
       () =>
         cy
