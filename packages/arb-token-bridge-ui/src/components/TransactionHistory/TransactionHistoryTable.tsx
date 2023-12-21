@@ -140,6 +140,7 @@ export const TransactionHistoryTable = ({
     )
   }, [transactions])
 
+  // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
   useEffect(() => {
     // Calculate table height to be passed to the React Virtualized Table
     const currentRef = contentAboveTable.current
