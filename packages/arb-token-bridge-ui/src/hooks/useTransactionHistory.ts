@@ -322,7 +322,7 @@ const useTransactionHistoryWithoutStatuses = (
   )
 
   const deposits = [
-    ...getDepositsWithoutStatusesFromCache(),
+    ...getDepositsWithoutStatusesFromCache(address),
     (depositsData || []).flat()
   ]
 
