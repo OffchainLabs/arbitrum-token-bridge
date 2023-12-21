@@ -97,7 +97,7 @@ export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
   timestamp?: BigNumber
   direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
 }
@@ -164,7 +164,7 @@ export interface ArbTokenBridgeEth {
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
@@ -198,7 +198,7 @@ export interface ArbTokenBridgeToken {
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }

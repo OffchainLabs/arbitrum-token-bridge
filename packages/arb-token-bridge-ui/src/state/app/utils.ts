@@ -21,8 +21,25 @@ export const outgoingStateToString = {
   [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
-export const getDepositStatus = (tx: Transaction) => {
-  if (tx.type !== 'deposit' && tx.type !== 'deposit-l1') return undefined
+function isTransaction(tx: Transaction | MergedTransaction): tx is Transaction {
+  return typeof (tx as Transaction).type !== 'undefined'
+}
+
+function isMergedTransaction(
+  tx: Transaction | MergedTransaction
+): tx is MergedTransaction {
+  return typeof (tx as MergedTransaction).direction !== 'undefined'
+}
+
+export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
+  if (isTransaction(tx) && tx.type !== 'deposit' && tx.type !== 'deposit-l1') {
+    return undefined
+  }
+
+  if (isMergedTransaction(tx) && tx.isWithdrawal) {
+    return undefined
+  }
+
   if (tx.status === 'failure') {
     return DepositStatus.L1_FAILURE
   }
@@ -222,31 +239,4 @@ export const getStandardizedTime = (standardizedTimestamp: number) => {
 
 export const getStandardizedDate = (standardizedTimestamp: number) => {
   return dayjs(standardizedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
-}
-
-export const findMatchingL1TxForWithdrawal = (
-  withdrawalTxn: MergedTransaction
-) => {
-  // finds the corresponding L1 transaction for withdrawal
-
-  const cachedTransactions: Transaction[] = JSON.parse(
-    window.localStorage.getItem('arbTransactions') || '[]'
-  )
-  const outboxTransactions = cachedTransactions
-    .filter(tx => tx.type === 'outbox')
-    .map(transformDeposit)
-
-  return outboxTransactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (!(l2ToL1MsgData?.uniqueId && withdrawalTxn?.uniqueId)) {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(withdrawalTxn.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.eq(_txUniqueId)
-  })
 }

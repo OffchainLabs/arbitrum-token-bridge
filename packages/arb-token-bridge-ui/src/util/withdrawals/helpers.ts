@@ -24,7 +24,7 @@ export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
   direction: 'deposit' | 'withdrawal'
-  source: 'subgraph' | 'event_logs'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number
 }
@@ -50,11 +50,6 @@ export async function attachTimestampToTokenWithdrawal({
   withdrawal: WithdrawalInitiated
   l2Provider: Provider
 }) {
-  return {
-    ...withdrawal,
-    // TODO: arbitrary number, need changes to the SDK to get token withdrawal timestamp
-    timestamp: BigNumber.from(1665914495)
-  }
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
   const l2TxReceipt = new L2TransactionReceipt(txReceipt)
   const [event] = l2TxReceipt.getL2ToL1Events()

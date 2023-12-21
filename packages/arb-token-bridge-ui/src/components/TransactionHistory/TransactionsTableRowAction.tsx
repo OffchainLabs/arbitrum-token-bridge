@@ -3,7 +3,6 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
-import { useChainId } from 'wagmi'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -11,11 +10,12 @@ import { MergedTransaction } from '../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { useNetwork } from 'wagmi'
 
 const GetHelpButton = ({
   variant,
@@ -53,26 +53,20 @@ export function TransactionsTableRowAction({
   const l2NetworkName = getNetworkName(l2Network.id)
   const networkName = type === 'deposits' ? l1NetworkName : l2NetworkName
 
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chainId)
-
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(tx.childChainId).isOrbitChain
-
-    if (isWithdrawalSourceOrbitChain) {
-      // Enable claim if withdrawn from an Orbit chain and is connected to L2
-      return isArbitrum
+    if (!chain) {
+      return false
     }
-
-    return (
-      (type === 'deposits' && isArbitrum) ||
-      (type === 'withdrawals' && isEthereumMainnetOrTestnet)
-    )
-  }, [isArbitrum, isEthereumMainnetOrTestnet, type, tx.childChainId])
+    if (type === 'deposits') {
+      return chain.id === tx.childChainId
+    }
+    return chain.id === tx.parentChainId
+  }, [type, chain, tx.parentChainId, tx.childChainId])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed

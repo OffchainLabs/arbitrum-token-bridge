@@ -6,19 +6,15 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
-import {
-  EthBridger,
-  Erc20Bridger,
-  L1ToL2MessageStatus,
-  L2ToL1Message
-} from '@arbitrum/sdk'
+import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
+import dayjs from 'dayjs'
 
-import useTransactions, { L1ToL2MessageData } from './useTransactions'
+import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
   AssetType,
@@ -31,7 +27,6 @@ import {
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
-  NodeBlockDeadlineStatusTypes,
   ArbTokenBridgeEth,
   ArbTokenBridgeToken
 } from './arbTokenBridge.types'
@@ -49,6 +44,9 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
+import { useTransactionHistory } from './useTransactionHistory'
+import { DepositStatus, WithdrawalStatus } from '../state/app/state'
+import { addDepositToCache } from '../components/TransactionHistory/helpers'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -111,6 +109,8 @@ export const useArbTokenBridge = (
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
+
+  const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const {
     eth: [, updateEthL1Balance],
@@ -194,6 +194,8 @@ export const useArbTokenBridge = (
     }
 
     const ethBridger = await EthBridger.fromProvider(l2.provider)
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
@@ -221,18 +223,43 @@ export const useArbTokenBridge = (
       return error.message
     }
 
-    addTransaction({
-      type: 'deposit-l1',
+    addPendingTransaction({
+      sender: walletAddress,
+      destination: walletAddress,
+      direction: 'deposit-l1',
       status: 'pending',
+      createdAt: parentChainBlockTimestamp * 1_000,
+      resolvedAt: null,
+      txId: tx.hash,
+      asset: nativeCurrency.symbol,
+      assetType: AssetType.ETH,
       value: utils.formatUnits(amount, nativeCurrency.decimals),
+      uniqueId: null,
+      isWithdrawal: false,
+      blockNum: null,
+      tokenAddress: null,
+      depositStatus: DepositStatus.L1_PENDING,
+      parentChainId: Number(l1NetworkID),
+      childChainId: Number(l2NetworkID)
+    })
+
+    addDepositToCache({
+      sender: walletAddress,
+      destination: walletAddress,
+      status: 'pending',
       txID: tx.hash,
       assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
-      sender: walletAddress,
-      // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
-      destination: walletAddress,
       l1NetworkID,
-      l2NetworkID
+      l2NetworkID,
+      value: utils.formatUnits(amount, nativeCurrency.decimals),
+      parentChainId: Number(l1NetworkID),
+      childChainId: Number(l2NetworkID),
+      direction: 'deposit',
+      type: 'deposit-l1',
+      source: 'local_storage_cache',
+      timestampCreated: String(parentChainBlockTimestamp),
+      nonce: tx.nonce
     })
 
     const receipt = await tx.wait()
@@ -241,20 +268,6 @@ export const useArbTokenBridge = (
       txLifecycle.onTxConfirm(receipt)
     }
 
-    const [ethDepositMessage] = await receipt.getEthDeposits(l2.provider)
-
-    if (!ethDepositMessage) {
-      return
-    }
-
-    const l1ToL2MsgData: L1ToL2MessageData = {
-      fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      l2TxID: undefined
-    }
-
-    updateTransaction(receipt, tx, l1ToL2MsgData)
     updateEthBalances()
 
     if (nativeCurrency.isCustom) {
@@ -284,19 +297,23 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: utils.formatUnits(amount, nativeCurrency.decimals),
-        txID: tx.hash,
-        assetName: nativeCurrency.symbol,
-        assetType: AssetType.ETH,
+      addPendingTransaction({
         sender: walletAddress,
-        // TODO: change to destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
         destination: walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID,
-        l2NetworkID
+        direction: 'withdraw',
+        status: WithdrawalStatus.UNCONFIRMED,
+        createdAt: dayjs().valueOf(),
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: nativeCurrency.symbol,
+        assetType: AssetType.ETH,
+        value: utils.formatUnits(amount, nativeCurrency.decimals),
+        uniqueId: null,
+        isWithdrawal: true,
+        blockNum: null,
+        tokenAddress: null,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -305,43 +322,7 @@ export const useArbTokenBridge = (
         txLifecycle.onTxConfirm(receipt)
       }
 
-      updateTransaction(receipt, tx)
       updateEthBalances()
-
-      const l2ToL1Events = receipt.getL2ToL1Events()
-
-      if (l2ToL1Events.length === 1) {
-        const l2ToL1EventResult = l2ToL1Events[0]
-
-        if (!l2ToL1EventResult) {
-          return
-        }
-
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventResult).toString()
-
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
-        const l2ToL1EventResultPlus: L2ToL1EventResultPlus = {
-          ...l2ToL1EventResult,
-          sender: tx.from,
-          // TODO: add destinationAddress: destinationAddress ?? walletAddress when enabling ETH transfers to a custom address
-          type: AssetType.ETH,
-          value: amount,
-          outgoingMessageState,
-          symbol: nativeCurrency.symbol,
-          decimals: nativeCurrency.decimals,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash,
-          parentChainId: Number(l1NetworkID),
-          childChainId: Number(l2NetworkID)
-        }
-
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          return {
-            ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventResultPlus
-          }
-        })
-      }
 
       return receipt
     } catch (error) {
@@ -452,6 +433,8 @@ export const useArbTokenBridge = (
       return
     }
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     try {
       const { symbol, decimals } = await fetchErc20Data({
@@ -479,18 +462,44 @@ export const useArbTokenBridge = (
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
       }
-      addTransaction({
-        type: 'deposit-l1',
+
+      addPendingTransaction({
+        sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
+        direction: 'deposit-l1',
         status: 'pending',
+        createdAt: parentChainBlockTimestamp * 1_000,
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: symbol,
+        assetType: AssetType.ERC20,
         value: utils.formatUnits(amount, decimals),
+        depositStatus: DepositStatus.L1_PENDING,
+        uniqueId: null,
+        isWithdrawal: false,
+        blockNum: null,
+        tokenAddress: erc20L1Address,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
+      })
+
+      addDepositToCache({
+        sender: walletAddress,
+        destination: destinationAddress ?? walletAddress,
+        status: 'pending',
         txID: tx.hash,
         assetName: symbol,
         assetType: AssetType.ERC20,
-        tokenAddress: erc20L1Address,
-        sender: walletAddress,
-        destination: destinationAddress ?? walletAddress,
         l1NetworkID,
-        l2NetworkID
+        l2NetworkID,
+        value: utils.formatUnits(amount, decimals),
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID),
+        direction: 'deposit',
+        type: 'deposit-l1',
+        source: 'local_storage_cache',
+        timestampCreated: String(parentChainBlockTimestamp),
+        nonce: tx.nonce
       })
 
       const receipt = await tx.wait()
@@ -499,19 +508,6 @@ export const useArbTokenBridge = (
         txLifecycle.onTxConfirm(receipt)
       }
 
-      const [l1ToL2Msg] = await receipt.getL1ToL2Messages(l2.provider)
-      if (!l1ToL2Msg) {
-        return
-      }
-
-      const l1ToL2MsgData: L1ToL2MessageData = {
-        fetchingUpdate: false,
-        status: L1ToL2MessageStatus.NOT_YET_CREATED, // we know its not yet created, we just initiated it
-        retryableCreationTxID: l1ToL2Msg.retryableCreationId,
-        l2TxID: undefined
-      }
-
-      updateTransaction(receipt, tx, l1ToL2MsgData)
       updateTokenData(erc20L1Address)
       updateEthBalances()
 
@@ -577,61 +573,31 @@ export const useArbTokenBridge = (
         txLifecycle.onTxSubmit(tx)
       }
 
-      addTransaction({
-        type: 'withdraw',
-        status: 'pending',
-        value: utils.formatUnits(amount, decimals),
-        txID: tx.hash,
-        assetName: symbol,
-        assetType: AssetType.ERC20,
+      addPendingTransaction({
         sender: walletAddress,
         destination: destinationAddress ?? walletAddress,
-        blockNumber: tx.blockNumber,
-        l1NetworkID,
-        l2NetworkID
+        direction: 'withdraw',
+        status: WithdrawalStatus.UNCONFIRMED,
+        createdAt: dayjs().valueOf(),
+        resolvedAt: null,
+        txId: tx.hash,
+        asset: symbol,
+        assetType: AssetType.ERC20,
+        value: utils.formatUnits(amount, decimals),
+        uniqueId: null,
+        isWithdrawal: true,
+        blockNum: null,
+        tokenAddress: erc20L1Address,
+        parentChainId: Number(l1NetworkID),
+        childChainId: Number(l2NetworkID)
       })
+
       const receipt = await tx.wait()
 
       if (txLifecycle?.onTxConfirm) {
         txLifecycle.onTxConfirm(receipt)
       }
 
-      updateTransaction(receipt, tx)
-
-      const l2ToL1Events = receipt.getL2ToL1Events()
-
-      if (l2ToL1Events.length === 1) {
-        const l2ToL1EventDataResult = l2ToL1Events[0]
-
-        if (!l2ToL1EventDataResult) {
-          return
-        }
-
-        const id = getUniqueIdOrHashFromEvent(l2ToL1EventDataResult).toString()
-        const outgoingMessageState = OutgoingMessageState.UNCONFIRMED
-        const l2ToL1EventDataResultPlus: L2ToL1EventResultPlus = {
-          ...l2ToL1EventDataResult,
-          sender: walletAddress,
-          destinationAddress: destinationAddress ?? walletAddress,
-          type: AssetType.ERC20,
-          tokenAddress: erc20L1Address,
-          value: amount,
-          outgoingMessageState,
-          symbol: symbol,
-          decimals: decimals,
-          nodeBlockDeadline: NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED,
-          l2TxHash: tx.hash,
-          parentChainId: Number(l1NetworkID),
-          childChainId: Number(l2NetworkID)
-        }
-
-        setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-          return {
-            ...oldPendingWithdrawalsMap,
-            [id]: l2ToL1EventDataResultPlus
-          }
-        })
-      }
       updateTokenData(erc20L1Address)
       return receipt
     } catch (error) {
@@ -896,14 +862,13 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxToken({
-    id,
+    event,
     l1Signer
   }: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) {
-    const event = pendingWithdrawalsMap[id]
-
+    // sanity check
     if (!event) {
       throw new Error('Outbox message not found')
     }
@@ -912,45 +877,13 @@ export const useArbTokenBridge = (
       return
     }
 
-    const { tokenAddress, value } = event
-
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
-
     const res = await messageWriter.execute(l2.provider)
-
-    const { symbol, decimals } = await fetchErc20Data({
-      address: tokenAddress as string,
-      provider: l1.provider
-    })
-
-    addTransaction({
-      status: 'pending',
-      type: 'outbox',
-      value: utils.formatUnits(value, decimals),
-      assetName: symbol,
-      assetType: AssetType.ERC20,
-      sender: walletAddress,
-      txID: res.hash,
-      l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
 
     const rec = await res.wait()
 
     if (rec.status === 1) {
-      setTransactionSuccess(rec.transactionHash)
       addToExecutedMessagesCache([event])
-      setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-        const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-        const pendingWithdrawal = newPendingWithdrawalsMap[id]
-        if (pendingWithdrawal) {
-          pendingWithdrawal.outgoingMessageState = OutgoingMessageState.EXECUTED
-        }
-
-        return newPendingWithdrawalsMap
-      })
-    } else {
-      setTransactionFailure(rec.transactionHash)
     }
 
     return rec
@@ -978,14 +911,13 @@ export const useArbTokenBridge = (
   }
 
   async function triggerOutboxEth({
-    id,
+    event,
     l1Signer
   }: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) {
-    const event = pendingWithdrawalsMap[id]
-
+    // sanity check
     if (!event) {
       throw new Error('Outbox message not found')
     }
@@ -994,40 +926,14 @@ export const useArbTokenBridge = (
       return
     }
 
-    const { value } = event
-
     const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
 
     const res = await messageWriter.execute(l2.provider)
 
-    addTransaction({
-      status: 'pending',
-      type: 'outbox',
-      value: utils.formatUnits(value, nativeCurrency.decimals),
-      assetName: nativeCurrency.symbol,
-      assetType: AssetType.ETH,
-      sender: walletAddress,
-      txID: res.hash,
-      l1NetworkID,
-      l2ToL1MsgData: { uniqueId: getUniqueIdOrHashFromEvent(event) }
-    })
-
     const rec = await res.wait()
 
     if (rec.status === 1) {
-      setTransactionSuccess(rec.transactionHash)
       addToExecutedMessagesCache([event])
-      setPendingWithdrawalMap(oldPendingWithdrawalsMap => {
-        const newPendingWithdrawalsMap = { ...oldPendingWithdrawalsMap }
-        const pendingWithdrawal = newPendingWithdrawalsMap[id]
-        if (pendingWithdrawal) {
-          pendingWithdrawal.outgoingMessageState = OutgoingMessageState.EXECUTED
-        }
-
-        return newPendingWithdrawalsMap
-      })
-    } else {
-      setTransactionFailure(rec.transactionHash)
     }
 
     return rec

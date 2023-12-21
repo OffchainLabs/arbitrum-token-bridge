@@ -1,12 +1,25 @@
-import { PropsWithChildren, useCallback } from 'react'
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, Column, Table } from 'react-virtualized'
+import {
+  ArrowDownOnSquareIcon,
+  ExclamationCircleIcon
+} from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
-  isCustomDestinationAddressTx
+  isCustomDestinationAddressTx,
+  isPending,
+  isTokenDeposit
 } from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
@@ -15,6 +28,11 @@ import { SafeImage } from '../common/SafeImage'
 import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
+import { ChainPair } from '../../hooks/useTransactionHistory'
+import { Tooltip } from '../common/Tooltip'
+import { getNetworkName } from '../../util/networks'
+import { isTxPending } from './helpers'
+import { PendingDepositWarning } from './PendingDepositWarning'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -78,20 +96,107 @@ const TableHeader = ({
 
 export const TransactionHistoryTable = ({
   transactions,
-  className,
   loading,
+  completed,
   error,
+  failedChainPairs,
+  numberOfDays,
+  resume,
   rowHeight,
-  rowHeightCustomDestinationAddress
+  rowHeightCustomDestinationAddress,
+  selectedTabIndex
 }: {
   transactions: MergedTransaction[]
-  className?: string
   loading: boolean
+  completed: boolean
   error: unknown
+  failedChainPairs: ChainPair[]
+  numberOfDays: number
+  resume: () => void
   rowHeight: number
   rowHeightCustomDestinationAddress: number
+  selectedTabIndex: number
 }) => {
+  const contentAboveTable = useRef<HTMLDivElement>(null)
+
   const isTxHistoryEmpty = transactions.length === 0
+  const isPendingTab = selectedTabIndex === 0
+
+  const paused = !loading && !completed
+
+  const [tableHeight, setTableHeight] = useState(0)
+
+  const { pendingTokenDepositsCount } = useMemo(() => {
+    return transactions.reduce(
+      (acc, tx) => {
+        if (isTokenDeposit(tx) && isTxPending(tx)) {
+          acc.pendingTokenDepositsCount++
+        }
+        return acc
+      },
+      {
+        pendingTokenDepositsCount: 0
+      }
+    )
+  }, [transactions])
+
+  // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
+  useEffect(() => {
+    // Calculate table height to be passed to the React Virtualized Table
+    const currentRef = contentAboveTable.current
+    const SIDE_PANEL_HEADER_HEIGHT = 125
+
+    // Adjust the table size whenever the content above it is resized
+    const observer = new ResizeObserver(entries => {
+      if (entries[0]) {
+        const aboveHeight = entries[0].contentRect.height
+        const viewportHeight = window.innerHeight
+        const newTableHeight = Math.max(
+          viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT,
+          0
+        )
+        setTableHeight(newTableHeight)
+      }
+    })
+
+    if (currentRef) {
+      observer.observe(currentRef)
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+    }
+  }, [transactions.length])
+
+  const FailedChainPairsTooltip = useCallback(() => {
+    if (failedChainPairs.length === 0) {
+      return null
+    }
+    return (
+      <Tooltip
+        content={
+          <div className="flex flex-col space-y-1 text-xs">
+            <span>
+              We were unable to fetch data for the following chain pairs:
+            </span>
+            <ul className="flex list-disc flex-col pl-4">
+              {failedChainPairs.map(pair => (
+                <li key={`${pair.parentChain}-${pair.chain}`}>
+                  <b>{getNetworkName(pair.parentChain)}</b>
+                  {' <> '}
+                  <b>{getNetworkName(pair.chain)}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
+      >
+        <ExclamationCircleIcon height={20} className="text-error" />
+      </Tooltip>
+    )
+  }, [failedChainPairs])
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -108,7 +213,24 @@ export const TransactionHistoryTable = ({
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
 
+  const numberOfDaysString = `${numberOfDays}${
+    numberOfDays === 1 ? ' day' : ' days'
+  }`
+
   if (isTxHistoryEmpty) {
+    if (loading) {
+      return (
+        <div
+          className={twMerge(
+            'flex items-center space-x-2 rounded-tr-lg bg-white p-4',
+            isPendingTab ? '' : 'rounded-tl-lg'
+          )}
+        >
+          <Loader color="black" size="small" />
+          <span className="text-sm">Loading transactions...</span>
+        </div>
+      )
+    }
     if (error) {
       return (
         <div className="flex space-x-2 bg-white p-4 text-sm text-error">
@@ -127,11 +249,39 @@ export const TransactionHistoryTable = ({
         </div>
       )
     }
-    if (loading) {
+    if (paused) {
       return (
-        <div className="flex space-x-2 bg-white p-4">
-          <Loader wrapperClass="animate-pulse" color="black" size="small" />
-          <span className="animate-pulse text-sm">Loading transactions...</span>
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
+        </div>
+      )
+    }
+    if (paused) {
+      return (
+        <div>
+          <div className="flex justify-between bg-white p-4">
+            <span className="text-sm">
+              Looks like there are no transactions in the last{' '}
+              {numberOfDaysString}.
+            </span>
+          </div>
+          <button onClick={resume} className="arb-hover text-sm">
+            <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <span>Load more</span>
+              <ArrowDownOnSquareIcon width={16} />
+            </div>
+          </button>
         </div>
       )
     }
@@ -143,19 +293,53 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className={twMerge('flex h-full flex-col rounded-lg', className)}>
-      <AutoSizer>
-        {({ width, height }) => (
+    <div className="h-full flex-col overflow-x-auto">
+      <div
+        className={twMerge(
+          'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
+          isPendingTab ? '' : 'rounded-tl-lg'
+        )}
+        ref={contentAboveTable}
+      >
+        {loading ? (
+          <div className="flex items-center space-x-2">
+            <FailedChainPairsTooltip />
+            <Loader color="black" size="small" />
+            <span className="text-sm">Loading transactions...</span>
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <div className="flex justify-start space-x-1">
+              <FailedChainPairsTooltip />
+              <span className="text-sm">
+                Showing {transactions.length}{' '}
+                {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
+                {numberOfDaysString}.
+              </span>
+            </div>
+
+            {!completed && (
+              <button onClick={resume} className="arb-hover text-sm">
+                <div className="flex space-x-1 rounded border border-black px-2 py-1">
+                  <span>Load more</span>
+                  <ArrowDownOnSquareIcon width={16} />
+                </div>
+              </button>
+            )}
+          </div>
+        )}
+        <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
+      </div>
+      <AutoSizer disableHeight>
+        {() => (
           <Table
-            width={width}
-            height={height - 52}
+            width={960}
+            height={tableHeight}
             rowHeight={({ index }) => getRowHeight(index)}
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
-              <div className="flex bg-white" style={{ width: width }}>
-                {props.columns}
-              </div>
+              <div className="flex w-[960px] bg-white">{props.columns}</div>
             )}
             className="table-auto"
             rowGetter={({ index }) => transactions[index]}
@@ -167,31 +351,37 @@ export const TransactionHistoryTable = ({
                 return null
               }
 
+              const bgColorSettled = isEvenRow ? 'bg-cyan' : 'bg-white'
+              const bgColorPending = 'bg-orange'
+
               return (
                 <div
                   key={key}
                   style={{ ...style, height: `${getRowHeight(index)}px` }}
                 >
-                  {tx.isWithdrawal ? (
+                  {tx.isWithdrawal || tx.isCctp ? (
                     <TransactionsTableClaimableRow
                       tx={tx}
-                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                      className={
+                        isPending(tx) ? bgColorPending : bgColorSettled
+                      }
                     />
                   ) : (
                     <TransactionsTableDepositRow
                       tx={tx}
-                      className={isEvenRow ? 'bg-cyan' : 'bg-white'}
+                      className={
+                        isPending(tx) ? bgColorPending : bgColorSettled
+                      }
                     />
                   )}
                 </div>
               )
             }}
           >
-            {/* TODO: FIX LAYOUT FOR HEADERS AND COLUMNS: WIDTH AND PADDING */}
             <Column
               label="Status"
               dataKey="status"
-              width={width / 6}
+              width={144}
               headerRenderer={() => (
                 <TableHeader className="pl-8">Status</TableHeader>
               )}
@@ -199,7 +389,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Date"
               dataKey="date"
-              width={width / 5}
+              width={228}
               headerRenderer={() => (
                 <TableHeader className="pl-6">Date</TableHeader>
               )}
@@ -207,7 +397,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Token"
               dataKey="token"
-              width={width / 6}
+              width={144}
               headerRenderer={() => (
                 <TableHeader className="pl-12">Token</TableHeader>
               )}
@@ -215,7 +405,7 @@ export const TransactionHistoryTable = ({
             <Column
               label="Networks"
               dataKey="networks"
-              width={width / 6}
+              width={100}
               headerRenderer={() => (
                 <TableHeader className="pl-6">Networks</TableHeader>
               )}

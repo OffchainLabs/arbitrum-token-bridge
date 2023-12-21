@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
@@ -16,11 +16,7 @@ import {
   isNetwork
 } from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import {
-  isCustomDestinationAddressTx,
-  findMatchingL1TxForWithdrawal,
-  isPending
-} from '../../state/app/utils'
+import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
 import { TokenIcon, TransactionDateTime } from './TransactionHistoryTable'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
@@ -29,7 +25,7 @@ import { useRemainingTime } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
-import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
+import { getWithdrawalClaimParentChainTxDetails } from './helpers'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -38,9 +34,9 @@ type CommonProps = {
 
 function ClaimableRowStatus({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
-  const matchingL1Tx = tx.isCctp
+  const matchingL1TxId = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
-    : findMatchingL1TxForWithdrawal(tx)
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
   switch (tx.status) {
     case 'pending':
@@ -97,7 +93,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
       )
 
     case 'Executed': {
-      if (typeof matchingL1Tx === 'undefined') {
+      if (typeof matchingL1TxId === 'undefined') {
         return (
           <div className="flex flex-col space-y-1">
             <StatusBadge
@@ -188,13 +184,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
     )
   }
 
-  const claimedTx = tx.isCctp
-    ? {
-        createdAt: tx.cctpData?.receiveMessageTimestamp
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxTimestamp = tx.isCctp
+    ? tx.cctpData?.receiveMessageTimestamp
+    : getWithdrawalClaimParentChainTxDetails(tx)?.timestamp
 
-  if (typeof claimedTx === 'undefined') {
+  if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>{layer} Transaction time</span>}>
@@ -214,10 +208,10 @@ function ClaimableRowTime({ tx }: CommonProps) {
       <Tooltip content={<span>{layer} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
-      {claimedTx?.createdAt && (
+      {claimedTxTimestamp && (
         <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            <TransactionDateTime standardizedDate={claimedTx?.createdAt} />
+            <TransactionDateTime standardizedDate={claimedTxTimestamp} />
           </span>
         </Tooltip>
       )}
@@ -232,13 +226,11 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
 
-  const claimedTx = tx.isCctp
-    ? {
-        txId: tx.cctpData?.receiveMessageTransactionHash
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxId = tx.isCctp
+    ? tx.cctpData?.receiveMessageTransactionHash
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
-  if (!claimedTx?.txId) {
+  if (!claimedTxId) {
     return (
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
@@ -258,10 +250,10 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
       <NetworkImage chainId={toNetworkId} />
       {getNetworkName(toNetworkId)}:{' '}
       <ExternalLink
-        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
+        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTxId}`}
         className="arb-hover text-blue-link"
       >
-        {shortenTxHash(claimedTx.txId)}
+        {shortenTxHash(claimedTxId)}
       </ExternalLink>
     </span>
   )
@@ -311,11 +303,6 @@ export function TransactionsTableClaimableRow({
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
-  const tokensFromLists = useTokensFromLists({
-    parentChainId: tx.parentChainId,
-    chainId: tx.childChainId
-  })
-
   const bgClassName = useMemo(() => {
     if (isError) return 'bg-brick'
     if (isPending(tx)) return 'bg-orange'
@@ -344,17 +331,6 @@ export function TransactionsTableClaimableRow({
     [tx]
   )
 
-  const getTokenLogoURI = useCallback(
-    (tx: MergedTransaction) => {
-      if (!tx.tokenAddress) {
-        return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-      }
-
-      return tokensFromLists[tx.tokenAddress]?.logoURI
-    },
-    [tokensFromLists]
-  )
-
   if (!tx.sender || !address) {
     return null
   }
@@ -370,7 +346,7 @@ export function TransactionsTableClaimableRow({
       <tr data-testid={`withdrawal-row-${tx.txId}`}>
         <td
           className={twMerge(
-            'w-1/5 py-3 pl-6 pr-3 align-middle',
+            'w-[160px] py-3 pl-6 pr-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -382,7 +358,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 px-3 py-3 align-middle',
+            'w-[250px] px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -394,7 +370,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 whitespace-nowrap px-3 py-3 align-middle',
+            'w-[120px] whitespace-nowrap px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -410,7 +386,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'w-1/5 px-3 py-3 align-middle',
+            'w-[270px] px-3 py-3 align-middle',
             customAddressTxPadding
           )}
         >
@@ -422,7 +398,7 @@ export function TransactionsTableClaimableRow({
 
         <td
           className={twMerge(
-            'relative w-1/5 py-3 pl-3 pr-6 text-right align-middle',
+            'relative w-[160px] py-3 pl-3 pr-6 text-right align-middle',
             customAddressTxPadding
           )}
         >

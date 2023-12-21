@@ -1,10 +1,31 @@
 import dayjs from 'dayjs'
 import {
+  StaticJsonRpcProvider,
+  TransactionReceipt
+} from '@ethersproject/providers'
+import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  EthDepositMessage,
+  L1ToL2MessageReader
+} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+
+import {
   DepositStatus,
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { isNetwork } from '../../util/networks'
+import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
+import { Deposit, isCctpTransfer } from '../../hooks/useTransactionHistory'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { getDepositStatus } from '../../state/app/utils'
+import { getBlockBeforeConfirmation } from '../../state/cctpState'
+import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+
+const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
+  'arbitrum:bridge:claim:parent:tx:details'
+const DEPOSITS_LOCAL_STORAGE_KEY = 'arbitrum:bridge:deposits'
 
 export enum StatusLabel {
   PENDING = 'Pending',
@@ -26,6 +47,9 @@ export function isTxCompleted(tx: MergedTransaction) {
 }
 
 export function isTxPending(tx: MergedTransaction) {
+  if (tx.isCctp && tx.status === 'pending') {
+    return true
+  }
   if (isDeposit(tx)) {
     return (
       tx.depositStatus === DepositStatus.L1_PENDING ||
@@ -36,6 +60,9 @@ export function isTxPending(tx: MergedTransaction) {
 }
 
 export function isTxClaimable(tx: MergedTransaction) {
+  if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
+    return true
+  }
   if (isDeposit(tx)) {
     return false
   }
@@ -69,6 +96,355 @@ export function getSourceChainId(tx: MergedTransaction) {
 
 export function getDestChainId(tx: MergedTransaction) {
   return isDeposit(tx) ? tx.childChainId : tx.parentChainId
+}
+
+export function getProvider(chainId: ChainId) {
+  const rpcUrl =
+    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
+  return new StaticJsonRpcProvider(rpcUrl)
+}
+
+export function isSameTransaction(
+  txDetails_1: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  },
+  txDetails_2: {
+    txId: string
+    parentChainId: ChainId
+    childChainId: ChainId
+  }
+) {
+  return (
+    txDetails_1.txId === txDetails_2.txId &&
+    txDetails_1.parentChainId === txDetails_2.parentChainId &&
+    txDetails_1.childChainId === txDetails_2.childChainId
+  )
+}
+
+export function getTxReceipt(tx: MergedTransaction) {
+  const parentChainProvider = getProvider(tx.parentChainId)
+  const childChainProvider = getProvider(tx.childChainId)
+
+  const provider = tx.isWithdrawal ? childChainProvider : parentChainProvider
+
+  return provider.getTransactionReceipt(tx.txId)
+}
+
+function getWithdrawalStatusFromReceipt(
+  receipt: TransactionReceipt
+): WithdrawalStatus | undefined {
+  switch (receipt.status) {
+    case 0:
+      return WithdrawalStatus.FAILURE
+    case 1:
+      return WithdrawalStatus.UNCONFIRMED
+    default:
+      return undefined
+  }
+}
+
+export function getDepositsWithoutStatusesFromCache(
+  address: string | undefined
+): Deposit[] {
+  if (!address) {
+    return []
+  }
+  return JSON.parse(
+    localStorage.getItem(
+      `${DEPOSITS_LOCAL_STORAGE_KEY}-${address.toLowerCase()}`
+    ) ?? '[]'
+  ) as Deposit[]
+}
+
+/**
+ * Cache deposits from event logs. We don't fetch these so we need to store them locally.
+ *
+ * @param {MergedTransaction} tx - Deposit from event logs to be cached.
+ */
+export function addDepositToCache(tx: Deposit) {
+  if (tx.direction !== 'deposit') {
+    return
+  }
+
+  const cachedDeposits = getDepositsWithoutStatusesFromCache(
+    tx.sender.toLowerCase()
+  )
+
+  const foundInCache = cachedDeposits.find(cachedTx =>
+    isSameTransaction(
+      { ...cachedTx, txId: cachedTx.txID },
+      { ...tx, txId: tx.txID }
+    )
+  )
+
+  if (foundInCache) {
+    return
+  }
+
+  const newCachedDeposits = [tx, ...cachedDeposits]
+
+  localStorage.setItem(
+    `${DEPOSITS_LOCAL_STORAGE_KEY}-${tx.sender.toLowerCase()}`,
+    JSON.stringify(newCachedDeposits)
+  )
+}
+
+/**
+ * Cache parent chain tx details when claiming. This is the chain the funds were claimed on. We store locally because we don't have access to this tx from the child chain tx data.
+ *
+ * @param {MergedTransaction} tx - Transaction that initiated the withdrawal (child chain transaction).
+ * @param {string} parentChainTxId - Transaction ID of the claim transaction (parent chain transaction ID).
+ */
+export function setParentChainTxDetailsOfWithdrawalClaimTx(
+  tx: MergedTransaction,
+  parentChainTxId: string
+) {
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxId = JSON.parse(
+    localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
+  )
+
+  if (key in cachedClaimParentChainTxId) {
+    // already set
+    return
+  }
+
+  localStorage.setItem(
+    PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX,
+    JSON.stringify({
+      ...cachedClaimParentChainTxId,
+      [key]: {
+        txId: parentChainTxId,
+        timestamp: dayjs().valueOf()
+      }
+    })
+  )
+}
+
+export function getWithdrawalClaimParentChainTxDetails(
+  tx: MergedTransaction
+): { txId: string; timestamp: number } | undefined {
+  if (!tx.isWithdrawal || tx.isCctp) {
+    return undefined
+  }
+
+  const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+
+  const cachedClaimParentChainTxDetails = (
+    JSON.parse(
+      localStorage.getItem(PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX) ?? '{}'
+    ) as {
+      [key in string]: {
+        txId: string
+        timestamp: number
+      }
+    }
+  )[key]
+
+  return cachedClaimParentChainTxDetails
+}
+
+export async function getUpdatedEthDeposit(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (
+    !isTxPending(tx) ||
+    tx.assetType !== AssetType.ETH ||
+    tx.isWithdrawal ||
+    tx.isCctp
+  ) {
+    return tx
+  }
+
+  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+    depositTxId: tx.txId,
+    isEthDeposit: true,
+    l1Provider: getProvider(tx.parentChainId),
+    l2Provider: getProvider(tx.childChainId)
+  })
+
+  if (!l1ToL2Msg) {
+    const receipt = await getTxReceipt(tx)
+
+    if (!receipt || receipt.status !== 0) {
+      // not failure
+      return tx
+    }
+
+    // failure
+    const newDeposit = { ...tx, status: 'failure' }
+    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
+  }
+
+  const status = await l1ToL2Msg?.status()
+  const isDeposited = status === EthDepositStatus.DEPOSITED
+
+  const newDeposit: MergedTransaction = {
+    ...tx,
+    status: 'success',
+    resolvedAt: isDeposited ? dayjs().valueOf() : null,
+    l1ToL2MsgData: {
+      fetchingUpdate: false,
+      status: isDeposited
+        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        : L1ToL2MessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).l2DepositTxHash,
+      // Only show `l2TxID` after the deposit is confirmed
+      l2TxID: isDeposited
+        ? (l1ToL2Msg as EthDepositMessage).l2DepositTxHash
+        : undefined
+    }
+  }
+
+  return {
+    ...newDeposit,
+    depositStatus: getDepositStatus(newDeposit)
+  }
+}
+
+export async function getUpdatedTokenDeposit(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (
+    !isTxPending(tx) ||
+    tx.assetType !== AssetType.ERC20 ||
+    tx.isWithdrawal ||
+    tx.isCctp
+  ) {
+    return tx
+  }
+
+  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
+    depositTxId: tx.txId,
+    isEthDeposit: false,
+    l1Provider: getProvider(tx.parentChainId),
+    l2Provider: getProvider(tx.childChainId)
+  })
+  const _l1ToL2Msg = l1ToL2Msg as L1ToL2MessageReader
+
+  if (!l1ToL2Msg) {
+    const receipt = await getTxReceipt(tx)
+
+    if (!receipt || receipt.status !== 0) {
+      // not failure
+      return tx
+    }
+
+    // failure
+    const newDeposit = { ...tx, status: 'failure' }
+    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
+  }
+
+  const res = await _l1ToL2Msg.getSuccessfulRedeem()
+
+  const l2TxID = (() => {
+    if (res.status === L1ToL2MessageStatus.REDEEMED) {
+      return res.l2TxReceipt.transactionHash
+    } else {
+      return undefined
+    }
+  })()
+
+  const newDeposit: MergedTransaction = {
+    ...tx,
+    status: [3, 4].includes(res.status) ? 'success' : tx.status,
+    l1ToL2MsgData: {
+      status: res.status,
+      l2TxID,
+      fetchingUpdate: false,
+      retryableCreationTxID: _l1ToL2Msg.retryableCreationId
+    }
+  }
+
+  return {
+    ...newDeposit,
+    depositStatus: getDepositStatus(newDeposit)
+  }
+}
+
+export async function getUpdatedWithdrawal(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || !tx.isWithdrawal || tx.isCctp) {
+    return tx
+  }
+
+  const receipt = await getTxReceipt(tx)
+
+  if (receipt) {
+    const newStatus = getWithdrawalStatusFromReceipt(receipt)
+
+    if (typeof newStatus !== 'undefined') {
+      return {
+        ...tx,
+        status: newStatus
+      }
+    }
+  }
+
+  return tx
+}
+
+export async function getUpdatedCctpTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  if (!isTxPending(tx) || !tx.isCctp) {
+    return tx
+  }
+
+  const receipt = await getTxReceipt(tx)
+  const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+    tx.parentChainId
+  )
+  const blockTime = getBlockTime(tx.parentChainId)
+
+  const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
+
+  if (receipt.status === 0) {
+    return {
+      ...txWithTxId,
+      status: 'Failure'
+    }
+  }
+  if (tx.cctpData?.receiveMessageTransactionHash) {
+    return {
+      ...txWithTxId,
+      status: 'Executed'
+    }
+  }
+  if (receipt.blockNumber && !tx.blockNum) {
+    // If blockNumber was never set (for example, network switch just after the deposit)
+    const { messageBytes, attestationHash } =
+      getAttestationHashAndMessageFromReceipt(receipt)
+    return {
+      ...txWithTxId,
+      blockNum: receipt.blockNumber,
+      cctpData: {
+        ...tx.cctpData,
+        messageBytes,
+        attestationHash
+      }
+    }
+  }
+  const isConfirmed =
+    tx.createdAt &&
+    dayjs().diff(tx.createdAt, 'second') >
+      requiredL1BlocksBeforeConfirmation * blockTime
+  if (
+    // If transaction claim was set to failure, don't reset to Confirmed
+    tx.status !== 'Failure' &&
+    isConfirmed
+  ) {
+    return {
+      ...txWithTxId,
+      status: 'Confirmed'
+    }
+  }
+
+  return tx
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
