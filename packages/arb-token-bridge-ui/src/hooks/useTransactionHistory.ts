@@ -305,7 +305,9 @@ const useTransactionHistoryWithoutStatuses = (
   )
 
   const deposits = [
-    ...getDepositsWithoutStatusesFromCache(),
+    ...getDepositsWithoutStatusesFromCache().filter(tx =>
+      isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
+    ),
     (depositsData || []).flat()
   ]
 
@@ -319,6 +321,7 @@ const useTransactionHistoryWithoutStatuses = (
   ].flat()
 
   // duplicates may occur when txs are taken from the local storage
+  // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
   const dedupedTransactions = useMemo(
     () =>
       Array.from(
@@ -326,7 +329,7 @@ const useTransactionHistoryWithoutStatuses = (
           transactions.map(tx => [
             `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
               tx
-            )}}`,
+            )?.toLowerCase()}}`,
             tx
           ])
         ).values()

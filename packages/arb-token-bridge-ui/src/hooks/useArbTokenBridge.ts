@@ -189,9 +189,8 @@ export const useArbTokenBridge = (
     }
 
     const ethBridger = await EthBridger.fromProvider(l2.provider)
-    const parentChainBlockTimestamp = Math.floor(
-      (await l1.provider.getBlock('latest')).timestamp
-    )
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     let tx: L1EthDepositTransaction
 
@@ -421,9 +420,8 @@ export const useArbTokenBridge = (
       return
     }
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    const parentChainBlockTimestamp = Math.floor(
-      (await l1.provider.getBlock('latest')).timestamp
-    )
+    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
+      .timestamp
 
     try {
       const { symbol, decimals } = await fetchErc20Data({
