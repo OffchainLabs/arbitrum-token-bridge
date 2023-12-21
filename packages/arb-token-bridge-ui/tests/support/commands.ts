@@ -14,8 +14,14 @@ import {
   NetworkName,
   startWebApp,
   getL1NetworkConfig,
-  getL2NetworkConfig
+  getL2NetworkConfig,
+  getInitialERC20Balance
 } from './common'
+import { Wallet, utils } from 'ethers'
+import { CommonAddress } from '../../src/util/CommonAddressUtils'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 function shouldChangeNetwork(networkName: NetworkName) {
   // synpress throws if trying to connect to a network we are already connected to
@@ -122,9 +128,81 @@ export const openTransactionsPanel = () => {
   )
 }
 
+const goerliRpcUrl = Cypress.env('ETH_GOERLI_RPC_URL')
+const arbGoerliRpcUrl = Cypress.env('ARB_GOERLI_RPC_URL')
+const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
+const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
+const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
+const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
+
+export async function resetCctpAllowance(networkType: 'L1' | 'L2') {
+  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+  const { USDC, tokenMessengerContractAddress } =
+    networkType === 'L1' ? CommonAddress.Goerli : CommonAddress.ArbitrumGoerli
+
+  const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
+  const allowance = await contract.allowance(
+    userWallet.address,
+    tokenMessengerContractAddress
+  )
+  if (allowance.gt(0)) {
+    await contract.decreaseAllowance(tokenMessengerContractAddress, allowance)
+  }
+}
+
+export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
+  console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
+  const usdcContractAddress =
+    networkType === 'L1'
+      ? CommonAddress.Goerli.USDC
+      : CommonAddress.ArbitrumGoerli.USDC
+
+  const usdcBalance = await getInitialERC20Balance({
+    address: userWallet.address,
+    rpcURL: networkType === 'L1' ? goerliRpcUrl : arbGoerliRpcUrl,
+    tokenAddress: usdcContractAddress,
+    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
+  })
+
+  // Fund only if the balance is less than 0.0001 USDC
+  if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.0001', 6))) {
+    console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
+    const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
+    const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
+    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+    const contract = new ERC20__factory().connect(localWallet.connect(provider))
+    const token = contract.attach(usdcContractAddress)
+    await token.deployed()
+    const tx = await token.transfer(
+      userWallet.address,
+      utils.parseUnits('1', 6)
+    )
+    await tx.wait()
+  }
+}
+
+async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+  console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
+  const address = await userWallet.getAddress()
+  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+  const balance = await provider.getBalance(address)
+  // Fund only if the balance is less than 0.005 eth
+  const amountToTransfer = '0.005'
+  if (balance.lt(utils.parseEther(amountToTransfer))) {
+    const tx = await localWallet.connect(provider).sendTransaction({
+      to: address,
+      value: utils.parseEther(amountToTransfer)
+    })
+    await tx.wait()
+  }
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
   logout,
-  openTransactionsPanel
+  openTransactionsPanel,
+  resetCctpAllowance,
+  fundUserUsdcTestnet,
+  fundUserWalletEth
 })
