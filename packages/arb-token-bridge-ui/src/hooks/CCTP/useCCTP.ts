@@ -23,7 +23,8 @@ type Contracts = {
 
 const contracts: Record<CCTPSupportedChainId, Contracts> = {
   [ChainId.Ethereum]: {
-    tokenMessengerContractAddress: '0xbd3fa81b58ba92a82136038b25adec7066af3155',
+    tokenMessengerContractAddress:
+      CommonAddress.Ethereum.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumOne,
     usdcContractAddress: CommonAddress.Ethereum.USDC,
@@ -33,7 +34,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
   [ChainId.Goerli]: {
-    tokenMessengerContractAddress: '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
+    tokenMessengerContractAddress:
+      CommonAddress.Goerli.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumGoerli,
     usdcContractAddress: CommonAddress.Goerli.USDC,
@@ -43,7 +45,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
   },
   [ChainId.ArbitrumOne]: {
-    tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
+    tokenMessengerContractAddress:
+      CommonAddress.ArbitrumOne.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.Ethereum,
     targetChainId: ChainId.Ethereum,
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
@@ -53,7 +56,8 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
   },
   [ChainId.ArbitrumGoerli]: {
-    tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
+    tokenMessengerContractAddress:
+      CommonAddress.ArbitrumGoerli.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.Ethereum,
     targetChainId: ChainId.Goerli,
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
