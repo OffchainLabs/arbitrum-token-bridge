@@ -1,7 +1,10 @@
 import { PropsWithChildren, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, Column, Table } from 'react-virtualized'
-import { ArrowDownOnSquareIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowDownOnSquareIcon,
+  ExclamationCircleIcon
+} from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -17,6 +20,9 @@ import { SafeImage } from '../common/SafeImage'
 import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
+import { ChainPair } from '../../hooks/useTransactionHistory'
+import { Tooltip } from '../common/Tooltip'
+import { getNetworkName } from '../../util/networks'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -83,6 +89,7 @@ export const TransactionHistoryTable = ({
   loading,
   completed,
   error,
+  failedChainPairs,
   numberOfDays,
   resume,
   rowHeight,
@@ -93,6 +100,7 @@ export const TransactionHistoryTable = ({
   loading: boolean
   completed: boolean
   error: unknown
+  failedChainPairs: ChainPair[]
   numberOfDays: number
   resume: () => void
   rowHeight: number
@@ -103,6 +111,34 @@ export const TransactionHistoryTable = ({
   const isPendingTab = selectedTabIndex === 0
 
   const paused = !loading && !completed
+
+  const FailedChainPairsTooltip = useCallback(() => {
+    if (failedChainPairs.length === 0) {
+      return null
+    }
+    return (
+      <Tooltip
+        content={
+          <div className="flex flex-col space-y-1 text-xs">
+            <span>
+              We were unable to fetch data for the following chain pairs:
+            </span>
+            <ul className="flex list-disc flex-col pl-4">
+              {failedChainPairs.map(pair => (
+                <li key={`${pair.parentChain}-${pair.chain}`}>
+                  <b>{getNetworkName(pair.parentChain)}</b>
+                  {' <> '}
+                  <b>{getNetworkName(pair.chain)}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+        }
+      >
+        <ExclamationCircleIcon height={20} className="text-error" />
+      </Tooltip>
+    )
+  }, [failedChainPairs])
 
   const getRowHeight = useCallback(
     (index: number) => {
@@ -208,16 +244,20 @@ export const TransactionHistoryTable = ({
       >
         {loading ? (
           <div className="flex space-x-2">
-            <Loader color="black" size="small" />
+            <FailedChainPairsTooltip />
+            <Loader size="small" />
             <span className="text-sm">Loading transactions...</span>
           </div>
         ) : (
           <div className="flex justify-between">
-            <span className="text-sm">
-              Showing {transactions.length}{' '}
-              {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
-              {numberOfDaysString}.
-            </span>
+            <div className="flex justify-start space-x-1">
+              <FailedChainPairsTooltip />
+              <span className="text-sm">
+                Showing {transactions.length}{' '}
+                {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
+                {numberOfDaysString}.
+              </span>
+            </div>
 
             {!completed && (
               <button onClick={resume} className="arb-hover text-sm">
