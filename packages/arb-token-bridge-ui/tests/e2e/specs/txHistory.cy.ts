@@ -1,10 +1,8 @@
 const DEPOSIT_ROW_IDENTIFIER = /deposit-row-*/i
-const DEPOSIT_SEARCH_IDENTIFIER = /Search for a full or partial L1 tx ID/i
 const WITHDRAWAL_ROW_IDENTIFIER = /withdrawal-row-*/i
-const WITHDRAWAL_SEARCH_IDENTIFIER = /Search for a full or partial L2 tx ID/i
 
 describe('Transaction History', () => {
-  it('should successfuly open and use pending transactions panel', () => {
+  it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'L1',
       networkName: 'goerli'
@@ -44,7 +42,7 @@ describe('Transaction History', () => {
     })
   })
 
-  it('should successfuly open and use settled transactions panel', () => {
+  it('should successfully open and use settled transactions panel', () => {
     cy.login({
       networkType: 'L1',
       networkName: 'goerli'
@@ -84,7 +82,7 @@ describe('Transaction History', () => {
       numberOfWithdrawals.should('be.gt', 0)
 
       const numberOfDeposits = cy
-        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
+        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
         .its('length')
 
       numberOfDeposits.should('be.gt', 0)
