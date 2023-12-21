@@ -11,6 +11,7 @@ import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
 export const motionDivProps = {
   layout: true,
@@ -62,6 +63,8 @@ export function MainContent() {
     <div className="flex w-full justify-center">
       <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
+
+        <TransactionStatusInfo />
 
         <AnimatePresence>
           <motion.div
