@@ -17,7 +17,7 @@ import {
 } from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
-import { TokenIcon, TransactionDateTime } from './TransactionHistoryTable'
+import { TransactionDateTime } from './TransactionHistoryTable'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -374,14 +374,11 @@ export function TransactionsTableClaimableRow({
             customAddressTxPadding
           )}
         >
-          <div className="flex space-x-1">
-            <TokenIcon tx={tx} />
-            <span>
-              {formatAmount(Number(tx.value), {
-                symbol: tokenSymbol
-              })}
-            </span>
-          </div>
+          <span>
+            {formatAmount(Number(tx.value), {
+              symbol: tokenSymbol
+            })}
+          </span>
         </td>
 
         <td

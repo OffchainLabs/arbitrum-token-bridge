@@ -18,7 +18,7 @@ import {
   isFailed,
   isPending
 } from '../../state/app/utils'
-import { TokenIcon, TransactionDateTime } from './TransactionHistoryTable'
+import { TransactionDateTime } from './TransactionHistoryTable'
 import { formatAmount } from '../../util/NumberUtils'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
@@ -328,7 +328,6 @@ export function TransactionsTableDepositRow({
           )}
         >
           <div className="flex space-x-1">
-            <TokenIcon tx={tx} />
             <span>
               {formatAmount(Number(tx.value), {
                 symbol: tokenSymbol

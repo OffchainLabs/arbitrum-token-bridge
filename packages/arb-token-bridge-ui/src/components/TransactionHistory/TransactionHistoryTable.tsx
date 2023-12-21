@@ -23,8 +23,6 @@ import {
 } from '../../state/app/utils'
 import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
 import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { useTokensFromLists } from '../TransferPanel/TokenSearchUtils'
-import { SafeImage } from '../common/SafeImage'
 import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
@@ -51,32 +49,6 @@ export const TransactionDateTime = ({
         {getStandardizedTime(standardizedDate)}
       </span>
     </div>
-  )
-}
-
-export const TokenIcon = ({ tx }: { tx: MergedTransaction }) => {
-  const tokensFromLists = useTokensFromLists({
-    parentChainId: tx.parentChainId,
-    chainId: tx.childChainId
-  })
-
-  if (!tx.tokenAddress) {
-    const ethIconUrl =
-      'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
-
-    return (
-      /* SafeImage throws an error if eth logo is loaded from an external domain */
-      /* eslint-disable-next-line @next/next/no-img-element */
-      <img src={ethIconUrl} alt="Ether logo" className="h-5 w-5 rounded-full" />
-    )
-  }
-
-  return (
-    <SafeImage
-      src={tokensFromLists[tx.tokenAddress]?.logoURI}
-      alt="Token logo"
-      className="h-5 w-5 rounded-full"
-    />
   )
 }
 
