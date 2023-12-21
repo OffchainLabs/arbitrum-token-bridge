@@ -55,7 +55,7 @@ describe('Deposit ETH', () => {
     cy.confirmMetamaskTransaction().then(() => {
       cy.findByText('~10 mins remaining').should('be.visible')
       cy.findByText(
-        `${formatAmount(0.0001, {
+        `${formatAmount(ETHAmountToDeposit, {
           symbol: 'ETH'
         })}`
       ).should('be.visible')
