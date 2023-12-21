@@ -143,7 +143,7 @@ export const TransactionHistoryTable = ({
   useEffect(() => {
     // Calculate table height to be passed to the React Virtualized Table
     const currentRef = contentAboveTable.current
-    const SIDE_PANEL_HEADER_HEIGHT = 120
+    const SIDE_PANEL_HEADER_HEIGHT = 125
 
     // Adjust the table size whenever the content above it is resized
     const observer = new ResizeObserver(entries => {
@@ -167,7 +167,7 @@ export const TransactionHistoryTable = ({
         observer.unobserve(currentRef)
       }
     }
-  }, [])
+  }, [transactions.length])
 
   const FailedChainPairsTooltip = useCallback(() => {
     if (failedChainPairs.length === 0) {
@@ -218,7 +218,7 @@ export const TransactionHistoryTable = ({
       return (
         <div
           className={twMerge(
-            'flex space-x-2 rounded-tr-lg bg-white p-4',
+            'flex items-center space-x-2 rounded-tr-lg bg-white p-4',
             isPendingTab ? '' : 'rounded-tl-lg'
           )}
         >
@@ -298,9 +298,9 @@ export const TransactionHistoryTable = ({
         ref={contentAboveTable}
       >
         {loading ? (
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <FailedChainPairsTooltip />
-            <Loader size="small" />
+            <Loader color="black" size="small" />
             <span className="text-sm">Loading transactions...</span>
           </div>
         ) : (
