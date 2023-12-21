@@ -350,7 +350,7 @@ export async function getUpdatedTokenDeposit(
 
   const newDeposit: MergedTransaction = {
     ...tx,
-    status: [3, 4].includes(res.status) ? 'success' : tx.status,
+    status: _l1ToL2Msg.retryableCreationId ? 'success' : tx.status,
     l1ToL2MsgData: {
       status: res.status,
       l2TxID,
