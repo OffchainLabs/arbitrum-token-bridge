@@ -19,6 +19,27 @@ describe('Transaction History', () => {
         .should('have.attr', 'data-headlessui-state')
         .and('equal', 'selected')
     })
+
+    // wait for transactions to fetch
+    cy.waitUntil(
+      () =>
+        cy
+          .findByText(
+            /Showing \d+ pending transactions for the last \d+ days\./
+          )
+          .should('be.visible'),
+      {
+        errorMsg: 'Failed to fetch transactions.',
+        timeout: 30_000,
+        interval: 500
+      }
+    ).then(() => {
+      const numberOfWithdrawals = cy
+        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
+        .its('length')
+
+      numberOfWithdrawals.should('be.gt', 0)
+    })
   })
 
   it('should successfully open and use settled transactions panel', () => {
