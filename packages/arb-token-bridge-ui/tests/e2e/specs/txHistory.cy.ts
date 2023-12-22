@@ -84,7 +84,7 @@ describe('Transaction History', () => {
         .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
         .its('length')
 
-        numberOfDeposits.should('be.gt', 0)
+      numberOfDeposits.should('be.gt', 0)
     })
   })
 })
