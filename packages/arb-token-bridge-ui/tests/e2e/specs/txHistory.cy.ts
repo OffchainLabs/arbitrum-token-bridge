@@ -61,13 +61,11 @@ describe('Transaction History', () => {
         .and('equal', 'selected')
     })
 
-    // there are no goerli transactions because they are old
-    // TODO: find a way to test old txs
     cy.waitUntil(
       () =>
         cy
           .findByText(
-            /Looks like there are no transactions in the last \d+ days\./
+            /Showing \d+ settled transactions for the last \d+ days\./
           )
           .should('be.visible'),
       {
@@ -75,6 +73,18 @@ describe('Transaction History', () => {
         timeout: 30_000,
         interval: 500
       }
-    )
+    ).then(() => {
+      const numberOfWithdrawals = cy
+        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
+        .its('length')
+
+      numberOfWithdrawals.should('be.gt', 0)
+
+      const numberOfDeposits = cy
+        .findAllByTestId(DEPOSIT_ROW_IDENTIFIER)
+        .its('length')
+
+        numberOfDeposits.should('be.gt', 0)
+    })
   })
 })

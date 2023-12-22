@@ -17,6 +17,10 @@ function mockClassicDepositTransaction(
 
   return {
     type: 'deposit-l1',
+    direction: 'deposit',
+    source: 'event_logs',
+    parentChainId: 1,
+    childChainId: 42161,
     status: 'success',
     assetName: 'ETH',
     assetType: AssetType.ETH,
@@ -44,7 +48,7 @@ describe('Read classic deposit messages', () => {
         networkName: 'mainnet'
       })
       window.localStorage.setItem(
-        'arbTransactions',
+        'arbitrum:bridge:deposits',
         JSON.stringify([
           mockClassicDepositTransaction({
             txID: '0x00000a813d47f2c478dcc3298d5361cb3aed817648f25cace6d0c1a59d2b8309',
@@ -83,7 +87,7 @@ describe('Read classic deposit messages', () => {
         networkName: 'mainnet'
       })
       window.localStorage.setItem(
-        'arbTransactions',
+        'arbitrum:bridge:deposits',
         JSON.stringify([
           mockClassicDepositTransaction({
             txID: '0x000153c231eb9fd3690b5e818fb671bdd09d678fe46b16b8f694f3beb9cf6db1',
