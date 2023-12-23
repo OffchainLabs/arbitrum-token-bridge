@@ -1,3 +1,4 @@
+import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -336,12 +337,13 @@ const useTransactionHistoryWithoutStatuses = (
     () => fetcher('withdrawals')
   )
 
-  const deposits = [
-    ...getDepositsWithoutStatusesFromCache(address).filter(tx =>
+  const depositsFromCache = useMemo(() => {
+    return getDepositsWithoutStatusesFromCache(address).filter(tx =>
       isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-    ),
-    (depositsData || []).flat()
-  ]
+    )
+  }, [address, isTestnetMode])
+
+  const deposits = [...depositsFromCache, (depositsData || []).flat()]
 
   const withdrawals = (withdrawalsData || []).flat()
 
@@ -386,6 +388,7 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): TransactionHistoryParams => {
+  const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
   // Pause fetching after specified number of days. User can resume fetching to get another batch.
@@ -590,19 +593,16 @@ export const useTransactionHistory = (
   )
 
   useEffect(() => {
-    if (!runFetcher) {
+    if (!runFetcher || !connector) {
       return
     }
-    // when trasactions data changes we make sure it's for the same transactions we have fetched so far
-    // otherwise it means the account has changed and we need to start fetching again
-    if (data[0] && transactions[0]) {
-      if (getTxIdFromTransaction(data[0]) !== transactions[0].txId) {
-        setPage(1)
-        setPauseCount(0)
-        setFetching(true)
-      }
-    }
-  }, [data, setPage, transactions, runFetcher])
+    // reset state on account change
+    connector.on('change', () => {
+      setPage(1)
+      setPauseCount(0)
+      setFetching(true)
+    })
+  }, [connector, runFetcher, setPage])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {
