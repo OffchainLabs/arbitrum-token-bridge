@@ -405,10 +405,10 @@ export const useTransactionHistory = (
       }
 
       return address && !loading
-        ? (['complete_tx_list', address, pageNumber] as const)
+        ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, loading]
+    [address, loading, data]
   )
 
   const {
@@ -420,12 +420,12 @@ export const useTransactionHistory = (
     isValidating
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page]) => {
+    ([, , _page, _data]) => {
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        data.slice(startIndex, endIndex).map(transformTransaction)
+        _data.slice(startIndex, endIndex).map(transformTransaction)
       )
     },
     {
@@ -449,8 +449,10 @@ export const useTransactionHistory = (
     )
 
   const transactions: MergedTransaction[] = useMemo(() => {
-    return [...(newTransactionsData || []), ...(txPages || [])].flat()
-  }, [newTransactionsData, txPages])
+    const txs = [...(newTransactionsData || []), ...(txPages || [])].flat()
+    // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
+    return txs.filter(tx => tx.sender?.toLowerCase() === address?.toLowerCase())
+  }, [newTransactionsData, txPages, address])
 
   const transactionsMap = useMemo(() => {
     return transactions.reduce<{ [key: string]: MergedTransaction }>(
@@ -586,6 +588,21 @@ export const useTransactionHistory = (
     },
     [transactionsMap, updateCachedTransaction]
   )
+
+  useEffect(() => {
+    if (!runFetcher) {
+      return
+    }
+    // when trasactions data changes we make sure it's for the same transactions we have fetched so far
+    // otherwise it means the account has changed and we need to start fetching again
+    if (data[0] && transactions[0]) {
+      if (getTxIdFromTransaction(data[0]) !== transactions[0].txId) {
+        setPage(1)
+        setPauseCount(0)
+        setFetching(true)
+      }
+    }
+  }, [data, setPage, transactions, runFetcher])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {
