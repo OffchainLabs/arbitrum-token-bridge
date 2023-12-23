@@ -48,14 +48,21 @@ export const SettingsDialog = () => {
     setIsArbitrumStatsVisible(false)
   }
 
-  const enableTestnetMode = useCallback(() => {
-    setIsTestnetMode(true)
-  }, [setIsTestnetMode])
+  const enableTestnetMode = useCallback(
+    ({ reload = true } = {}) => {
+      setIsTestnetMode(true)
+      if (reload) {
+        location.reload()
+      }
+    },
+    [setIsTestnetMode]
+  )
 
   const disableTestnetMode = useCallback(() => {
     // can't turn test mode off if connected to testnet
     if (!isConnectedToTestnet) {
       setIsTestnetMode(false)
+      location.reload()
     } else {
       warningToast(
         'Cannot disable Testnet mode while connected to a testnet network'
@@ -70,7 +77,7 @@ export const SettingsDialog = () => {
   useEffect(() => {
     // force test mode if connected to testnet
     if (isConnectedToTestnet) {
-      enableTestnetMode()
+      enableTestnetMode({ reload: false })
     }
   }, [isConnectedToTestnet, enableTestnetMode])
 

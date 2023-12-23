@@ -319,7 +319,9 @@ const useTransactionHistoryWithoutStatuses = (
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'deposits', address, isTestnetMode] : null,
+    address && typeof isTestnetMode !== 'undefined'
+      ? ['tx_list', 'deposits', address, isTestnetMode]
+      : null,
     () => fetcher('deposits')
   )
 
@@ -328,7 +330,9 @@ const useTransactionHistoryWithoutStatuses = (
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    address ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
+    address && typeof isTestnetMode !== 'undefined'
+      ? ['tx_list', 'withdrawals', address, isTestnetMode]
+      : null,
     () => fetcher('withdrawals')
   )
 
