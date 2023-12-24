@@ -40,6 +40,7 @@ import {
   getUpdatedEthDeposit,
   getUpdatedTokenDeposit,
   getUpdatedWithdrawal,
+  isCctpTransfer,
   isSameTransaction,
   isTxPending
 } from '../components/TransactionHistory/helpers'
@@ -67,7 +68,7 @@ export type Withdrawal =
   | EthWithdrawal
 
 type DepositOrWithdrawal = Deposit | Withdrawal
-type Transfer = DepositOrWithdrawal | MergedTransaction
+export type Transfer = DepositOrWithdrawal | MergedTransaction
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -134,10 +135,6 @@ function isWithdrawalFromSubgraph(
 
 function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
   return tx.direction === 'deposit'
-}
-
-export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
-  return (tx as MergedTransaction).isCctp === true
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
@@ -535,9 +532,9 @@ export const useTransactionHistory = (
 
       // all old pages including the new updated page
       const newTxPages = [
-        ...[...txPages].slice(0, pageNumberToUpdate),
+        ...txPages.slice(0, pageNumberToUpdate),
         updatedPage,
-        ...[...txPages].slice(pageNumberToUpdate + 1)
+        ...txPages.slice(pageNumberToUpdate + 1)
       ]
 
       mutateTxPages(newTxPages, false)

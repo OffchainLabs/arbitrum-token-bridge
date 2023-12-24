@@ -15,7 +15,7 @@ import {
   WithdrawalStatus
 } from '../../state/app/state'
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
-import { Deposit, isCctpTransfer } from '../../hooks/useTransactionHistory'
+import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -37,6 +37,10 @@ export enum StatusLabel {
 
 function isDeposit(tx: MergedTransaction) {
   return !tx.isWithdrawal
+}
+
+export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
+  return (tx as MergedTransaction).isCctp === true
 }
 
 export function isTxCompleted(tx: MergedTransaction) {
@@ -275,8 +279,7 @@ export async function getUpdatedEthDeposit(
     }
 
     // failure
-    const newDeposit = { ...tx, status: 'failure' }
-    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
+    return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
   const status = await l1ToL2Msg?.status()
@@ -334,8 +337,7 @@ export async function getUpdatedTokenDeposit(
     }
 
     // failure
-    const newDeposit = { ...tx, status: 'failure' }
-    return { ...newDeposit, depositStatus: getDepositStatus(newDeposit) }
+    return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
   }
 
   const res = await _l1ToL2Msg.getSuccessfulRedeem()
