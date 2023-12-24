@@ -297,6 +297,8 @@ export const TransactionHistoryTable = ({
               const bgColorSettled = isEvenRow ? 'bg-cyan' : 'bg-white'
               const bgColorPending = 'bg-orange'
 
+              const bgColor = isPending(tx) ? bgColorPending : bgColorSettled
+
               return (
                 <div
                   key={key}
@@ -305,17 +307,10 @@ export const TransactionHistoryTable = ({
                   {tx.isWithdrawal || tx.isCctp ? (
                     <TransactionsTableClaimableRow
                       tx={tx}
-                      className={
-                        isPending(tx) ? bgColorPending : bgColorSettled
-                      }
+                      className={bgColor}
                     />
                   ) : (
-                    <TransactionsTableDepositRow
-                      tx={tx}
-                      className={
-                        isPending(tx) ? bgColorPending : bgColorSettled
-                      }
-                    />
+                    <TransactionsTableDepositRow tx={tx} className={bgColor} />
                   )}
                 </div>
               )
