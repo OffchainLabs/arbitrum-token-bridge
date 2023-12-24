@@ -189,10 +189,6 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
-function getTransactionsMapKey(tx: MergedTransaction) {
-  return `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
-}
-
 function getTxIdFromTransaction(tx: Transfer) {
   if (isCctpTransfer(tx)) {
     return tx.txId
@@ -331,13 +327,7 @@ const useTransactionHistoryWithoutStatuses = (
     () => fetcher('withdrawals')
   )
 
-  const depositsFromCache = useMemo(() => {
-    return getDepositsWithoutStatusesFromCache(address).filter(tx =>
-      isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-    )
-  }, [address, isTestnetMode])
-
-  const deposits = [...depositsFromCache, (depositsData || []).flat()]
+  const deposits = (depositsData || []).flat()
 
   const withdrawals = (withdrawalsData || []).flat()
 
@@ -348,25 +338,8 @@ const useTransactionHistoryWithoutStatuses = (
     ...combinedCctpTransfers
   ].flat()
 
-  // duplicates may occur when txs are taken from the local storage
-  // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
-  const dedupedTransactions = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          transactions.map(tx => [
-            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
-              tx
-            )?.toLowerCase()}}`,
-            tx
-          ])
-        ).values()
-      ).sort(sortByTimestampDescending),
-    [transactions]
-  )
-
   return {
-    data: dedupedTransactions,
+    data: transactions,
     loading: depositsLoading || withdrawalsLoading || cctpLoading,
     error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
@@ -382,6 +355,7 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): TransactionHistoryParams => {
+  const [isTestnetMode] = useIsTestnetMode()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -416,6 +390,12 @@ export const useTransactionHistory = (
     [address, loading, data]
   )
 
+  const depositsFromCache = useMemo(() => {
+    return getDepositsWithoutStatusesFromCache(address).filter(tx =>
+      isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
+    )
+  }, [address, isTestnetMode])
+
   const {
     data: txPages,
     error: txPagesError,
@@ -426,11 +406,30 @@ export const useTransactionHistory = (
   } = useSWRInfinite(
     getCacheKey,
     ([, , _page, _data]) => {
+      // we get cached data and dedupe here because we need to ensure _data never mutates
+      // otherwise, if we added a new tx to cache, it would return a new reference and cause side effects
+      const dataWithCache = [..._data, ...depositsFromCache]
+
+      // duplicates may occur when txs are taken from the local storage
+      // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
+      const dedupedTransactions = Array.from(
+        new Map(
+          dataWithCache.map(tx => [
+            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
+              tx
+            )?.toLowerCase()}}`,
+            tx
+          ])
+        ).values()
+      ).sort(sortByTimestampDescending)
+
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
       return Promise.all(
-        _data.slice(startIndex, endIndex).map(transformTransaction)
+        dedupedTransactions
+          .slice(startIndex, endIndex)
+          .map(transformTransaction)
       )
     },
     {
@@ -462,17 +461,6 @@ export const useTransactionHistory = (
       )
     )
   }, [newTransactionsData, txPages, address])
-
-  const transactionsMap = useMemo(() => {
-    return transactions.reduce<{ [key: string]: MergedTransaction }>(
-      (acc, tx) => {
-        const key = getTransactionsMapKey(tx)
-        acc[key] = tx
-        return acc
-      },
-      {}
-    )
-  }, [transactions])
 
   const addPendingTransaction = useCallback(
     (tx: MergedTransaction) => {
@@ -556,15 +544,6 @@ export const useTransactionHistory = (
 
   const updatePendingTransaction = useCallback(
     async (tx: MergedTransaction) => {
-      // sanity check, this should never happen
-      const found =
-        typeof transactionsMap[getTransactionsMapKey(tx)] !== 'undefined'
-
-      if (!found) {
-        // tx does not exist
-        return
-      }
-
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
@@ -595,7 +574,7 @@ export const useTransactionHistory = (
       const updatedTokenDeposit = await getUpdatedTokenDeposit(tx)
       updateCachedTransaction(updatedTokenDeposit)
     },
-    [transactionsMap, updateCachedTransaction]
+    [updateCachedTransaction]
   )
 
   useEffect(() => {
