@@ -46,10 +46,7 @@ import {
 import { useIsTestnetMode } from './useIsTestnetMode'
 
 export type TransactionHistoryParams = {
-  data: {
-    transactions: MergedTransaction[]
-    numberOfDays: number
-  }
+  transactions: MergedTransaction[]
   loading: boolean
   completed: boolean
   error: unknown
@@ -648,15 +645,6 @@ export const useTransactionHistory = (
     }
   }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
 
-  const oldestTransactionDaysAgo = useMemo(() => {
-    const daysAgo = dayjs().diff(
-      dayjs(transactions[transactions.length - 1]?.createdAt),
-      'days'
-    )
-    // don't show 0
-    return Math.max(daysAgo, 1)
-  }, [transactions])
-
   function pause() {
     setFetching(false)
   }
@@ -668,7 +656,7 @@ export const useTransactionHistory = (
 
   if (loading || error) {
     return {
-      data: { transactions: [], numberOfDays: 1 },
+      transactions: [],
       loading,
       error,
       failedChainPairs: [],
@@ -681,10 +669,7 @@ export const useTransactionHistory = (
   }
 
   return {
-    data: {
-      transactions,
-      numberOfDays: oldestTransactionDaysAgo
-    },
+    transactions,
     loading: fetching,
     completed: transactions.length === data.length,
     error: txPagesError ?? error,

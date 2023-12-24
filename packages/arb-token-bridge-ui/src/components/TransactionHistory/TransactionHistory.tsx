@@ -23,7 +23,7 @@ export const TransactionHistory = ({
   props: TransactionHistoryParams & { address: `0x${string}` | undefined }
 }) => {
   const {
-    data: { transactions, numberOfDays },
+    transactions,
     address,
     loading,
     completed,
@@ -100,7 +100,6 @@ export const TransactionHistory = ({
             completed={completed}
             error={error}
             failedChainPairs={failedChainPairs}
-            numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={94}
             rowHeightCustomDestinationAddress={126}
@@ -114,7 +113,6 @@ export const TransactionHistory = ({
             completed={completed}
             error={error}
             failedChainPairs={failedChainPairs}
-            numberOfDays={numberOfDays}
             resume={resume}
             rowHeight={85}
             rowHeightCustomDestinationAddress={117}

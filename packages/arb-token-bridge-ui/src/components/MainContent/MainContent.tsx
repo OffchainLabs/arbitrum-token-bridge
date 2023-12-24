@@ -42,10 +42,7 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const {
-    data: { transactions },
-    updatePendingTransaction
-  } = transactionHistoryProps
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
 
   const pendingTransactions = useMemo(() => {
     return transactions.filter(isTxPending)

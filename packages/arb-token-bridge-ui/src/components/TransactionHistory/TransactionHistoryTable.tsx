@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import {
   PropsWithChildren,
   useCallback,
@@ -56,14 +57,14 @@ const TableHeader = ({
   children,
   className
 }: PropsWithChildren<{ className?: string }>) => (
-  <th
+  <div
     className={twMerge(
       'h-full w-full py-4 pl-2 text-left text-sm font-normal',
       className
     )}
   >
     {children}
-  </th>
+  </div>
 )
 
 export const TransactionHistoryTable = ({
@@ -72,7 +73,6 @@ export const TransactionHistoryTable = ({
   completed,
   error,
   failedChainPairs,
-  numberOfDays,
   resume,
   rowHeight,
   rowHeightCustomDestinationAddress,
@@ -83,7 +83,6 @@ export const TransactionHistoryTable = ({
   completed: boolean
   error: unknown
   failedChainPairs: ChainPair[]
-  numberOfDays: number
   resume: () => void
   rowHeight: number
   rowHeightCustomDestinationAddress: number
@@ -110,6 +109,10 @@ export const TransactionHistoryTable = ({
         pendingTokenDepositsCount: 0
       }
     )
+  }, [transactions])
+
+  const oldestTxTimeAgoString = useMemo(() => {
+    return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
   }, [transactions])
 
   // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
@@ -185,10 +188,6 @@ export const TransactionHistoryTable = ({
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
 
-  const numberOfDaysString = `${numberOfDays}${
-    numberOfDays === 1 ? ' day' : ' days'
-  }`
-
   if (isTxHistoryEmpty) {
     if (loading) {
       return (
@@ -227,7 +226,7 @@ export const TransactionHistoryTable = ({
           <div className="flex justify-between bg-white p-4">
             <span className="text-sm">
               Looks like there are no transactions in the last{' '}
-              {numberOfDaysString}.
+              {oldestTxTimeAgoString}.
             </span>
           </div>
           <button onClick={resume} className="arb-hover text-sm">
@@ -268,7 +267,7 @@ export const TransactionHistoryTable = ({
               <span className="text-sm">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
-                {numberOfDaysString}.
+                {oldestTxTimeAgoString}.
               </span>
             </div>
 

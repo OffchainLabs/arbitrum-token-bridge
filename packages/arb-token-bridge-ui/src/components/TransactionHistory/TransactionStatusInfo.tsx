@@ -29,9 +29,7 @@ export const TransactionStatusInfo = () => {
   } = useNetworksAndSigners()
   const l2NetworkName = getNetworkName(l2Network.id)
   const { openTransactionHistoryPanel } = useAppContextActions()
-  const {
-    data: { transactions }
-  } = useTransactionHistory(address)
+  const { transactions } = useTransactionHistory(address)
 
   const { numWithdrawalsReadyToClaim, numRetryablesToRedeem } = useMemo(() => {
     return transactions.reduce(
