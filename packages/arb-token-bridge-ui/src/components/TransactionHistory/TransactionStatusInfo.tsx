@@ -94,7 +94,7 @@ export const TransactionStatusInfo = () => {
         {numWithdrawalsReadyToClaim ? (
           <span className="font-bold">
             {`${numWithdrawalsReadyToClaim} ${
-              numWithdrawalsReadyToClaim > 1 ? 'transactions' : 'transaction'
+              numWithdrawalsReadyToClaim > 1 ? 'withdrawals' : 'withdrawal'
             } ready to claim`}
           </span>
         ) : null}
