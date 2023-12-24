@@ -102,7 +102,7 @@ export const TransactionHistory = ({
             failedChainPairs={failedChainPairs}
             resume={resume}
             rowHeight={94}
-            rowHeightCustomDestinationAddress={126}
+            rowHeightCustomDestinationAddress={130}
             selectedTabIndex={0}
           />
         </Tab.Panel>

@@ -1,6 +1,6 @@
 /*
-A small info banner that we show when the user has some pending claim withdrawals OR some retryables to redeem.
-Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
+  A small info banner that we show when the user has some pending claim withdrawals OR some retryables to redeem.
+  Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
 */
 
 import { useAccount } from 'wagmi'

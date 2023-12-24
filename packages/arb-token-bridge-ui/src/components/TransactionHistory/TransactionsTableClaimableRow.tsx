@@ -337,80 +337,78 @@ export function TransactionsTableClaimableRow({
 
   return (
     <div
+      data-testid={`withdrawal-row-${tx.txId}`}
       className={twMerge(
-        'relative h-full border-b border-dark text-sm text-dark',
+        'relative grid h-full grid-cols-[150px_250px_140px_280px_150px] border-b border-dark text-sm text-dark',
         className,
         bgClassName
       )}
     >
-      <tr data-testid={`withdrawal-row-${tx.txId}`}>
-        <td
-          className={twMerge(
-            'w-[160px] py-3 pl-6 pr-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <ClaimableRowStatus
-            tx={tx}
-            isSourceChainArbitrum={isSourceChainIdArbitrum}
-          />
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[250px] px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <ClaimableRowTime
-            tx={tx}
-            isSourceChainArbitrum={isSourceChainIdArbitrum}
-          />
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[120px] whitespace-nowrap px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <span>
-            {formatAmount(Number(tx.value), {
-              symbol: tokenSymbol
-            })}
-          </span>
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[270px] px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <ClaimableRowTxID
-            tx={tx}
-            isSourceChainArbitrum={isSourceChainIdArbitrum}
-          />
-        </td>
-
-        <td
-          className={twMerge(
-            'relative w-[160px] py-3 pl-3 pr-6 text-right align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <TransactionsTableRowAction
-            tx={tx}
-            isError={isError}
-            type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-          />
-        </td>
-        {isCustomDestinationAddressTx(tx) && (
-          <td>
-            <TransactionsTableCustomAddressLabel tx={tx} />
-          </td>
+      <div
+        style={{ display: 'table-cell' }}
+        className={twMerge(
+          'py-4 pl-6 pr-3 align-middle',
+          customAddressTxPadding
         )}
-      </tr>
+      >
+        <ClaimableRowStatus
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
+      </div>
+
+      <div
+        style={{ display: 'table-cell' }}
+        className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
+      >
+        <ClaimableRowTime
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
+      </div>
+
+      <div
+        style={{ display: 'table-cell' }}
+        className={twMerge(
+          'whitespace-nowrap px-3 py-5 align-middle',
+          customAddressTxPadding
+        )}
+      >
+        <span>
+          {formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}
+        </span>
+      </div>
+
+      <div
+        style={{ display: 'table-cell' }}
+        className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
+      >
+        <ClaimableRowTxID
+          tx={tx}
+          isSourceChainArbitrum={isSourceChainIdArbitrum}
+        />
+      </div>
+
+      <div
+        style={{ display: 'table-cell' }}
+        className={twMerge(
+          'relative py-5 pl-3 pr-6 text-right align-middle',
+          customAddressTxPadding
+        )}
+      >
+        <TransactionsTableRowAction
+          tx={tx}
+          isError={isError}
+          type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        />
+      </div>
+      {isCustomDestinationAddressTx(tx) && (
+        <div>
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </div>
+      )}
     </div>
   )
 }

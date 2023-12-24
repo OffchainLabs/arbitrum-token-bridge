@@ -23,7 +23,7 @@ import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
-  direction: 'deposit' | 'withdrawal'
+  direction: 'withdrawal'
   source: 'subgraph' | 'event_logs' | 'local_storage_cache'
   parentChainId: number
   childChainId: number

@@ -14,7 +14,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
   l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
-  direction: 'deposit' | 'withdrawal'
+  direction: 'withdrawal'
   source: 'subgraph'
   parentChainId: number
   childChainId: number

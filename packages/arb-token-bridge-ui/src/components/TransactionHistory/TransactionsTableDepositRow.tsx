@@ -27,6 +27,7 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -245,7 +246,7 @@ export function TransactionsTableDepositRow({
 
     if (tx.depositStatus === DepositStatus.CREATION_FAILED) {
       // In case of a retryable ticket creation failure, mark only the token deposits as errors
-      return tx.asset.toLowerCase() !== 'eth'
+      return tx.assetType === AssetType.ETH
     }
 
     return false
@@ -295,115 +296,105 @@ export function TransactionsTableDepositRow({
 
   return (
     <div
+      data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative border-b border-dark text-sm text-dark',
+        'relative grid h-full grid-cols-[150px_250px_140px_280px_150px] border-b border-dark text-sm text-dark',
         bgClassName,
-        className,
-        rowHeight
+        className
       )}
+      style={{ gridAutoRows: rowHeight }}
     >
-      <tr data-testid={`deposit-row-${tx.txId}`}>
-        <td
-          className={twMerge(
-            'w-[160px] py-3 pl-6 pr-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <DepositRowStatus tx={tx} />
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[250px] px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <DepositRowTime tx={tx} />
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[116px] whitespace-nowrap px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <div className="flex space-x-1">
-            <span>
-              {formatAmount(Number(tx.value), {
-                symbol: tokenSymbol
-              })}
-            </span>
-          </div>
-        </td>
-
-        <td
-          className={twMerge(
-            'w-[200px] px-3 py-3 align-middle',
-            customAddressTxPadding
-          )}
-        >
-          <DepositRowTxID tx={tx} />
-        </td>
-
-        <td
-          className={twMerge(
-            'relative w-[160px] py-3 pl-3 pr-6 text-right align-middle',
-            customAddressTxPadding
-          )}
-        >
-          {showRedeemRetryableButton && (
-            <Tooltip
-              show={isRedeemButtonDisabled}
-              wrapperClassName=""
-              content={
-                <span>
-                  Please connect to the L2 network to re-execute your deposit.
-                  You have 7 days to re-execute a failed tx. After that, the tx
-                  is no longer recoverable.
-                </span>
-              }
-            >
-              <Button
-                variant="primary"
-                loading={isRedeeming}
-                disabled={isRedeemButtonDisabled}
-                onClick={() => redeem(tx)}
-              >
-                Retry
-              </Button>
-            </Tooltip>
-          )}
-
-          {showRetryableExpiredText && (
-            <Tooltip
-              wrapperClassName=""
-              content={
-                <span>
-                  You have 7 days to re-execute a failed tx. After that, the tx
-                  is no longer recoverable.
-                </span>
-              }
-            >
-              <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark">
-                <InformationCircleIcon className="h-4 w-4" /> EXPIRED
-              </span>
-            </Tooltip>
-          )}
-
-          {tx.isCctp && (
-            <TransactionsTableRowAction
-              tx={tx}
-              isError={isError}
-              type="deposits"
-            />
-          )}
-        </td>
-        {isCustomDestinationAddressTx(tx) && (
-          <td>
-            <TransactionsTableCustomAddressLabel tx={tx} />
-          </td>
+      <div
+        className={twMerge(
+          'py-3 pl-6 pr-3 align-middle',
+          customAddressTxPadding
         )}
-      </tr>
+      >
+        <DepositRowStatus tx={tx} />
+      </div>
+
+      <div
+        className={twMerge('px-3 py-4 align-middle', customAddressTxPadding)}
+      >
+        <DepositRowTime tx={tx} />
+      </div>
+
+      <div
+        className={twMerge(
+          'whitespace-nowrap px-3 py-4 align-middle',
+          customAddressTxPadding
+        )}
+      >
+        <div className="flex space-x-1">
+          <span>{formatAmount(Number(tx.value), { symbol: tokenSymbol })}</span>
+        </div>
+      </div>
+
+      <div
+        className={twMerge('px-3 py-4 align-middle', customAddressTxPadding)}
+      >
+        <DepositRowTxID tx={tx} />
+      </div>
+
+      <div
+        className={twMerge(
+          'relative py-4 pl-3 pr-6 text-right align-middle',
+          customAddressTxPadding
+        )}
+      >
+        {showRedeemRetryableButton && (
+          <Tooltip
+            show={isRedeemButtonDisabled}
+            wrapperClassName=""
+            content={
+              <span>
+                Please connect to the L2 network to re-execute your deposit. You
+                have 7 days to re-execute a failed tx. After that, the tx is no
+                longer recoverable.
+              </span>
+            }
+          >
+            <Button
+              variant="primary"
+              loading={isRedeeming}
+              disabled={isRedeemButtonDisabled}
+              onClick={() => redeem(tx)}
+            >
+              Retry
+            </Button>
+          </Tooltip>
+        )}
+
+        {showRetryableExpiredText && (
+          <Tooltip
+            wrapperClassName=""
+            content={
+              <span>
+                You have 7 days to re-execute a failed tx. After that, the tx is
+                no longer recoverable.
+              </span>
+            }
+          >
+            <span className="text-md flex flex-nowrap items-center gap-1 font-normal uppercase text-brick-dark">
+              <InformationCircleIcon className="h-4 w-4" /> EXPIRED
+            </span>
+          </Tooltip>
+        )}
+
+        {tx.isCctp && (
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type="deposits"
+          />
+        )}
+      </div>
+
+      {isCustomDestinationAddressTx(tx) && (
+        <div className="col-span-5">
+          <TransactionsTableCustomAddressLabel tx={tx} />
+        </div>
+      )}
     </div>
   )
 }

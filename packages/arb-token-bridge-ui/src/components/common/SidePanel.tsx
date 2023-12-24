@@ -2,7 +2,7 @@ import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-import { Transition } from '@headlessui/react'
+import { Transition } from './Transition'
 
 type SidePanelProps = {
   heading: string
@@ -22,27 +22,14 @@ export const SidePanel = ({
   scrollable = true
 }: SidePanelProps) => {
   return (
-    <Transition show={isOpen}>
+    <Transition show={isOpen} duration="normal">
       <Dialog
         open={isOpen}
         onClose={() => onClose?.()}
         className="fixed z-50 h-screen max-h-screen"
       >
         {/* The backdrop, rendered as a fixed sibling to the panel container */}
-        <Transition.Child
-          enter={`transition-opacity duration-300`}
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave={`transition-opacity duration-300`}
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-          className="h-full"
-        >
-          <div
-            className="fixed inset-0 bg-dark opacity-80"
-            aria-hidden="true"
-          />
-        </Transition.Child>
+        <div className="fixed inset-0 bg-dark opacity-80" aria-hidden="true" />
 
         {/* Full-screen container to center the panel */}
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">

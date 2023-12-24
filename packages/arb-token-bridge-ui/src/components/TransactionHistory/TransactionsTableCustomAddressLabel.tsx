@@ -18,14 +18,14 @@ export const CustomAddressTxExplorer = ({
   const { address } = useAccount()
   const { l1, l2 } = useNetworksAndSigners()
 
-  const isDifferentSenderTx = useMemo(() => {
+  const isFromDifferentSender = useMemo(() => {
     if (!tx.sender || !address) {
       return false
     }
     return tx.sender.toLowerCase() !== address.toLowerCase()
   }, [tx.sender, address])
 
-  const isCustomDestinationTx = useMemo(() => {
+  const isToDifferentRecipient = useMemo(() => {
     if (!address || !tx.destination) {
       return false
     }
@@ -33,7 +33,8 @@ export const CustomAddressTxExplorer = ({
   }, [tx.destination, address])
 
   const explorerChainId = useMemo(() => {
-    if (!isDifferentSenderTx && !isCustomDestinationTx) {
+    if (!isFromDifferentSender && !isToDifferentRecipient) {
+      // at least one must be true in a valid transaction
       return null
     }
 
@@ -41,14 +42,14 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isDifferentSenderTx ? l2.network.id : l1.network.id
+      return isFromDifferentSender ? l2.network.id : l1.network.id
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isDifferentSenderTx ? l1.network.id : l2.network.id
-  }, [isDifferentSenderTx, isCustomDestinationTx, l1, l2, tx])
+    return isFromDifferentSender ? l1.network.id : l2.network.id
+  }, [isFromDifferentSender, isToDifferentRecipient, l1, l2, tx])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null
@@ -60,7 +61,7 @@ export const CustomAddressTxExplorer = ({
 
   return (
     <>
-      {isDifferentSenderTx ? (
+      {isFromDifferentSender ? (
         <span>Funds received from: </span>
       ) : (
         <span>Funds sent to: </span>
@@ -68,10 +69,10 @@ export const CustomAddressTxExplorer = ({
       <ExternalLink
         className={explorerClassName}
         href={`${getExplorerUrl(explorerChainId)}/address/${
-          isDifferentSenderTx ? tx.sender : tx.destination
+          isFromDifferentSender ? tx.sender : tx.destination
         }`}
       >
-        {shortenAddress(isDifferentSenderTx ? tx.sender : tx.destination)}
+        {shortenAddress(isFromDifferentSender ? tx.sender : tx.destination)}
       </ExternalLink>
     </>
   )
