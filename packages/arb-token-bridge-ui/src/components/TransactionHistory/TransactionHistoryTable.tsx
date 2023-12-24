@@ -225,8 +225,7 @@ export const TransactionHistoryTable = ({
         <div>
           <div className="flex justify-between bg-white p-4">
             <span className="text-sm">
-              Looks like there are no transactions in the last{' '}
-              {oldestTxTimeAgoString}.
+              You have made no transactions in {oldestTxTimeAgoString}.
             </span>
           </div>
           <button onClick={resume} className="arb-hover text-sm">
@@ -266,7 +265,7 @@ export const TransactionHistoryTable = ({
               <FailedChainPairsTooltip />
               <span className="text-sm">
                 Showing {transactions.length}{' '}
-                {isPendingTab ? 'pending' : 'settled'} transactions for the last{' '}
+                {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
                 {oldestTxTimeAgoString}.
               </span>
             </div>

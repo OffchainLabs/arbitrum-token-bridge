@@ -25,7 +25,7 @@ describe('Transaction History', () => {
       () =>
         cy
           .findByText(
-            /Showing \d+ pending transactions for the last \d+ days\./
+            /Showing \d+ pending transactions made in/
           )
           .should('be.visible'),
       {
@@ -65,7 +65,7 @@ describe('Transaction History', () => {
       () =>
         cy
           .findByText(
-            /Showing \d+ settled transactions for the last \d+ days\./
+            /Showing \d+ settled transactions made in/
           )
           .should('be.visible'),
       {

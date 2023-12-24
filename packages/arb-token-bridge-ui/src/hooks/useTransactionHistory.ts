@@ -390,15 +390,23 @@ export const useTransactionHistory = (
 
   const [fetching, setFetching] = useState(true)
   const [pauseCount, setPauseCount] = useState(0)
+  const [completed, setCompleted] = useState(false)
 
   const { data, loading, error, failedChainPairs } =
     useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
-      if (prevPageTxs && prevPageTxs.length === 0) {
-        // no more pages
-        return null
+      if (prevPageTxs) {
+        if (prevPageTxs.length !== MAX_BATCH_SIZE) {
+          // page size was less than the minimum batch size, there won't be more pages AFTER this one
+          setCompleted(true)
+        }
+
+        if (prevPageTxs.length === 0) {
+          // THIS is the last page
+          return null
+        }
       }
 
       return address && !loading
@@ -448,7 +456,11 @@ export const useTransactionHistory = (
   const transactions: MergedTransaction[] = useMemo(() => {
     const txs = [...(newTransactionsData || []), ...(txPages || [])].flat()
     // make sure txs are for the current account, we can have a mismatch when switching accounts for a bit
-    return txs.filter(tx => tx.sender?.toLowerCase() === address?.toLowerCase())
+    return txs.filter(tx =>
+      [tx.sender?.toLowerCase(), tx.destination?.toLowerCase()].includes(
+        address?.toLowerCase()
+      )
+    )
   }, [newTransactionsData, txPages, address])
 
   const transactionsMap = useMemo(() => {
@@ -668,7 +680,7 @@ export const useTransactionHistory = (
   return {
     transactions,
     loading: fetching,
-    completed: transactions.length === data.length,
+    completed: completed && !fetching && !loading,
     error: txPagesError ?? error,
     failedChainPairs,
     pause,

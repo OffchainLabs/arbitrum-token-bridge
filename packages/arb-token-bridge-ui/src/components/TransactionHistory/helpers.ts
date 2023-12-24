@@ -44,6 +44,9 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
 }
 
 export function isTxCompleted(tx: MergedTransaction) {
+  if (tx.isCctp) {
+    return tx.cctpData?.receiveMessageTransactionHash
+  }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
   }
