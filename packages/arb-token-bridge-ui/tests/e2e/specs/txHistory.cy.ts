@@ -24,9 +24,7 @@ describe('Transaction History', () => {
     cy.waitUntil(
       () =>
         cy
-          .findByText(
-            /Showing \d+ pending transactions made in/
-          )
+          .findByText(/Showing \d+ pending transactions made in/)
           .should('be.visible'),
       {
         errorMsg: 'Failed to fetch transactions.',
@@ -64,9 +62,7 @@ describe('Transaction History', () => {
     cy.waitUntil(
       () =>
         cy
-          .findByText(
-            /Showing \d+ settled transactions made in/
-          )
+          .findByText(/Showing \d+ settled transactions made in/)
           .should('be.visible'),
       {
         errorMsg: 'Failed to fetch transactions.',
