@@ -42,7 +42,7 @@ export const SidePanel = ({
             )}
           >
             <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-black py-4 text-white">
-              {heading && <span className="text-xl">{heading}</span>}
+              <span className="text-xl">{heading}</span>
               <button className="arb-hover" onClick={onClose}>
                 <XMarkIcon className="h-6 w-6 text-white" />
               </button>
