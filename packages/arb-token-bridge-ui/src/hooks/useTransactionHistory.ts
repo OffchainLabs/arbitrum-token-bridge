@@ -602,11 +602,13 @@ export const useTransactionHistory = (
     if (!runFetcher || !connector) {
       return
     }
-    // reset state on account change
-    connector.on('change', () => {
-      setPage(1)
-      setPauseCount(0)
-      setFetching(true)
+    connector.on('change', e => {
+      // reset state on account change
+      if (e.account) {
+        setPage(1)
+        setPauseCount(0)
+        setFetching(true)
+      }
     })
   }, [connector, runFetcher, setPage])
 
