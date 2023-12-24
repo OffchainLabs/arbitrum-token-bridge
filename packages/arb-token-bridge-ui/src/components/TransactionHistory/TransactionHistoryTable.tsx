@@ -97,18 +97,9 @@ export const TransactionHistoryTable = ({
 
   const [tableHeight, setTableHeight] = useState(0)
 
-  const { pendingTokenDepositsCount } = useMemo(() => {
-    return transactions.reduce(
-      (acc, tx) => {
-        if (isTokenDeposit(tx) && isTxPending(tx)) {
-          acc.pendingTokenDepositsCount++
-        }
-        return acc
-      },
-      {
-        pendingTokenDepositsCount: 0
-      }
-    )
+  const pendingTokenDepositsCount = useMemo(() => {
+    return transactions.filter(tx => isTokenDeposit(tx) && isTxPending(tx))
+      .length
   }, [transactions])
 
   const oldestTxTimeAgoString = useMemo(() => {
