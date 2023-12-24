@@ -34,7 +34,9 @@ export const CustomAddressTxExplorer = ({
 
   const explorerChainId = useMemo(() => {
     if (!isFromDifferentSender && !isToDifferentRecipient) {
-      // at least one must be true in a valid transaction
+      // transaction is not initiated by a different address and not sent to a different address
+      // which means it is sent to the same account
+      // do not show the custom address label
       return null
     }
 
