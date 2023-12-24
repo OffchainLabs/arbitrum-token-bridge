@@ -38,19 +38,15 @@ export const TransactionHistory = ({
         (acc, tx) => {
           if (isTxCompleted(tx) || isTxExpired(tx)) {
             acc.settled.push(tx)
-            return acc
           }
           if (isTxPending(tx)) {
             acc.pending.push(tx)
-            return acc
           }
           if (isTxClaimable(tx)) {
             acc.claimable.push(tx)
-            return acc
           }
           if (isTxFailed(tx)) {
             acc.failed.push(tx)
-            return acc
           }
           return acc
         },
