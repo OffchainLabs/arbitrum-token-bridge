@@ -345,7 +345,6 @@ export function TransactionsTableClaimableRow({
       )}
     >
       <div
-        style={{ display: 'table-cell' }}
         className={twMerge(
           'py-4 pl-6 pr-3 align-middle',
           customAddressTxPadding
@@ -358,8 +357,10 @@ export function TransactionsTableClaimableRow({
       </div>
 
       <div
-        style={{ display: 'table-cell' }}
-        className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
+        className={twMerge(
+          'flex items-center px-3 py-5 align-middle',
+          customAddressTxPadding
+        )}
       >
         <ClaimableRowTime
           tx={tx}
@@ -368,9 +369,8 @@ export function TransactionsTableClaimableRow({
       </div>
 
       <div
-        style={{ display: 'table-cell' }}
         className={twMerge(
-          'whitespace-nowrap px-3 py-5 align-middle',
+          'flex items-center whitespace-nowrap px-3 py-5 align-middle',
           customAddressTxPadding
         )}
       >
@@ -382,7 +382,6 @@ export function TransactionsTableClaimableRow({
       </div>
 
       <div
-        style={{ display: 'table-cell' }}
         className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
       >
         <ClaimableRowTxID
@@ -392,7 +391,6 @@ export function TransactionsTableClaimableRow({
       </div>
 
       <div
-        style={{ display: 'table-cell' }}
         className={twMerge(
           'relative py-5 pl-3 pr-6 text-right align-middle',
           customAddressTxPadding

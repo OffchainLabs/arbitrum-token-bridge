@@ -28,6 +28,7 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { isTxCompleted } from './helpers'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -306,22 +307,26 @@ export function TransactionsTableDepositRow({
     >
       <div
         className={twMerge(
-          'py-3 pl-6 pr-3 align-middle',
-          customAddressTxPadding
+          'pl-6 pr-3 align-middle',
+          customAddressTxPadding,
+          isTxCompleted(tx) ? 'py-3' : 'py-4'
         )}
       >
         <DepositRowStatus tx={tx} />
       </div>
 
       <div
-        className={twMerge('px-3 py-4 align-middle', customAddressTxPadding)}
+        className={twMerge(
+          'flex items-center px-3 py-4 align-middle',
+          customAddressTxPadding
+        )}
       >
         <DepositRowTime tx={tx} />
       </div>
 
       <div
         className={twMerge(
-          'whitespace-nowrap px-3 py-4 align-middle',
+          'flex items-center whitespace-nowrap px-3 py-4 align-middle',
           customAddressTxPadding
         )}
       >
@@ -331,7 +336,11 @@ export function TransactionsTableDepositRow({
       </div>
 
       <div
-        className={twMerge('px-3 py-4 align-middle', customAddressTxPadding)}
+        className={twMerge(
+          'px-3 align-middle',
+          customAddressTxPadding,
+          isTxCompleted(tx) ? 'py-4' : 'py-5'
+        )}
       >
         <DepositRowTxID tx={tx} />
       </div>
