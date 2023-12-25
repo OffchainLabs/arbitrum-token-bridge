@@ -356,6 +356,8 @@ export async function getUpdatedTokenDeposit(
   const newDeposit: MergedTransaction = {
     ...tx,
     status: _l1ToL2Msg.retryableCreationId ? 'success' : tx.status,
+    resolvedAt:
+      res.status === L1ToL2MessageStatus.REDEEMED ? dayjs().valueOf() : null,
     l1ToL2MsgData: {
       status: res.status,
       l2TxID,

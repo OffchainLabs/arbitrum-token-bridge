@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
@@ -31,6 +32,10 @@ export const TransactionHistory = ({
     failedChainPairs,
     resume
   } = props
+
+  const oldestTxTimeAgoString = useMemo(() => {
+    return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
+  }, [transactions])
 
   const groupedTransactions = useMemo(
     () =>
@@ -100,6 +105,7 @@ export const TransactionHistory = ({
             rowHeight={94}
             rowHeightCustomDestinationAddress={130}
             selectedTabIndex={0}
+            oldestTxTimeAgoString={oldestTxTimeAgoString}
           />
         </Tab.Panel>
         <Tab.Panel className="h-full">
@@ -113,6 +119,7 @@ export const TransactionHistory = ({
             rowHeight={85}
             rowHeightCustomDestinationAddress={117}
             selectedTabIndex={1}
+            oldestTxTimeAgoString={oldestTxTimeAgoString}
           />
         </Tab.Panel>
       </Tab.Panels>

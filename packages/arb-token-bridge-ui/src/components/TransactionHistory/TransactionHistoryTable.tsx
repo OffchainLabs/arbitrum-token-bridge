@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import {
   PropsWithChildren,
   useCallback,
@@ -76,7 +75,8 @@ export const TransactionHistoryTable = ({
   resume,
   rowHeight,
   rowHeightCustomDestinationAddress,
-  selectedTabIndex
+  selectedTabIndex,
+  oldestTxTimeAgoString
 }: {
   transactions: MergedTransaction[]
   loading: boolean
@@ -87,6 +87,7 @@ export const TransactionHistoryTable = ({
   rowHeight: number
   rowHeightCustomDestinationAddress: number
   selectedTabIndex: number
+  oldestTxTimeAgoString: string
 }) => {
   const contentAboveTable = useRef<HTMLDivElement>(null)
 
@@ -100,10 +101,6 @@ export const TransactionHistoryTable = ({
   const pendingTokenDepositsCount = useMemo(() => {
     return transactions.filter(tx => isTokenDeposit(tx) && isTxPending(tx))
       .length
-  }, [transactions])
-
-  const oldestTxTimeAgoString = useMemo(() => {
-    return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
   }, [transactions])
 
   // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
@@ -213,12 +210,11 @@ export const TransactionHistoryTable = ({
     }
     if (paused) {
       return (
-        <div>
-          <div className="flex justify-between bg-white p-4">
-            <span className="text-sm">
-              You have made no transactions in {oldestTxTimeAgoString}.
-            </span>
-          </div>
+        <div className="flex justify-between bg-white p-4">
+          <span className="text-sm">
+            There are no recent {isPendingTab ? 'pending' : 'settled'}{' '}
+            transactions.
+          </span>
           <button onClick={resume} className="arb-hover text-sm">
             <div className="flex space-x-1 rounded border border-black px-2 py-1">
               <span>Load more</span>

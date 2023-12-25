@@ -1,4 +1,4 @@
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -45,6 +45,11 @@ import {
   isTxPending
 } from '../components/TransactionHistory/helpers'
 import { useIsTestnetMode } from './useIsTestnetMode'
+import { useAccountType } from './useAccountType'
+import {
+  shouldIncludeReceivedTxs,
+  shouldIncludeSentTxs
+} from '../util/SubgraphUtils'
 
 export type TransactionHistoryParams = {
   transactions: MergedTransaction[]
@@ -211,15 +216,58 @@ function getTxIdFromTransaction(tx: Transfer) {
 const useTransactionHistoryWithoutStatuses = (
   address: `0x${string}` | undefined
 ) => {
+  const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  // Check what type of CCTP (deposit, withdrawal or all) to fetch
+  // We need this because of Smart Contract Wallets
+  const cctpTypeToFetch = useCallback(
+    (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
+      if (
+        isLoadingAccountType ||
+        !chain ||
+        typeof isTestnetMode === 'undefined'
+      ) {
+        return undefined
+      }
+      if (isSmartContractWallet) {
+        // fetch based on the connected network
+        if (chain.id === chainPair.parentChain) {
+          return 'deposits'
+        }
+        if (chain.id === chainPair.chain) {
+          return 'withdrawals'
+        }
+        return undefined
+      }
+      // EOA
+      // fetch all for testnet mode, do not fetch testnets if testnet mode disabled
+      if (isTestnetMode) {
+        return 'all'
+      }
+      return isNetwork(chain.id).isTestnet ? undefined : 'all'
+    },
+    [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
+  )
 
   const cctpTransfersMainnet = useCctpFetching({
     walletAddress: address,
     l1ChainId: ChainId.Ethereum,
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
-    pageSize: 1000,
-    type: 'all'
+    pageSize: cctpTypeToFetch({
+      parentChain: ChainId.Ethereum,
+      chain: ChainId.ArbitrumOne
+    })
+      ? 1000
+      : 0,
+    type:
+      cctpTypeToFetch({
+        parentChain: ChainId.Ethereum,
+        chain: ChainId.ArbitrumOne
+      }) ?? 'all'
   })
 
   const cctpTransfersTestnet = useCctpFetching({
@@ -227,8 +275,17 @@ const useTransactionHistoryWithoutStatuses = (
     l1ChainId: ChainId.Goerli,
     l2ChainId: ChainId.ArbitrumGoerli,
     pageNumber: 0,
-    pageSize: isTestnetMode ? 1000 : 0,
-    type: 'all'
+    pageSize: cctpTypeToFetch({
+      parentChain: ChainId.Goerli,
+      chain: ChainId.ArbitrumGoerli
+    })
+      ? 1000
+      : 0,
+    type:
+      cctpTypeToFetch({
+        parentChain: ChainId.Goerli,
+        chain: ChainId.ArbitrumGoerli
+      }) ?? 'all'
   })
 
   // TODO: Clean up this logic when introducing testnet/mainnet split
@@ -256,11 +313,19 @@ const useTransactionHistoryWithoutStatuses = (
 
   const fetcher = useCallback(
     (type: 'deposits' | 'withdrawals') => {
+      if (!chain) {
+        return []
+      }
+
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
         multiChainFetchList
           .filter(chainPair => {
+            if (isSmartContractWallet) {
+              // only fetch txs from the connected network
+              return [chainPair.parentChain, chainPair.chain].includes(chain.id)
+            }
             if (isTestnetMode) {
               // in testnet mode we fetch all chain pairs
               return true
@@ -269,10 +334,26 @@ const useTransactionHistoryWithoutStatuses = (
             return !isNetwork(chainPair.parentChain).isTestnet
           })
           .map(async chainPair => {
+            // SCW address is tied to a specific network
+            // that's why we need to limit shown txs either to sent or received funds
+            // otherwise we'd display funds for a different network, which could be someone else's account
+            const isConnectedToParentChain = chainPair.parentChain === chain.id
+
+            const includeSentTxs = shouldIncludeSentTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
+
+            const includeReceivedTxs = shouldIncludeReceivedTxs({
+              type,
+              isSmartContractWallet,
+              isConnectedToParentChain
+            })
             try {
               return await fetcherFn({
-                sender: address,
-                receiver: address,
+                sender: includeSentTxs ? address : undefined,
+                receiver: includeReceivedTxs ? address : undefined,
                 l1Provider: getProvider(chainPair.parentChain),
                 l2Provider: getProvider(chainPair.chain),
                 pageNumber: 0,
@@ -302,17 +383,21 @@ const useTransactionHistoryWithoutStatuses = (
           })
       )
     },
-    [address, isTestnetMode, addFailedChainPair]
+    [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
+
+  const shouldFetch =
+    address &&
+    chain &&
+    !isLoadingAccountType &&
+    typeof isTestnetMode !== 'undefined'
 
   const {
     data: depositsData,
     error: depositsError,
     isLoading: depositsLoading
   } = useSWRImmutable(
-    address && typeof isTestnetMode !== 'undefined'
-      ? ['tx_list', 'deposits', address, isTestnetMode]
-      : null,
+    shouldFetch ? ['tx_list', 'deposits', address, isTestnetMode] : null,
     () => fetcher('deposits')
   )
 
@@ -321,9 +406,7 @@ const useTransactionHistoryWithoutStatuses = (
     error: withdrawalsError,
     isLoading: withdrawalsLoading
   } = useSWRImmutable(
-    address && typeof isTestnetMode !== 'undefined'
-      ? ['tx_list', 'withdrawals', address, isTestnetMode]
-      : null,
+    shouldFetch ? ['tx_list', 'withdrawals', address, isTestnetMode] : null,
     () => fetcher('withdrawals')
   )
 
@@ -356,6 +439,9 @@ export const useTransactionHistory = (
   { runFetcher = false } = {}
 ): TransactionHistoryParams => {
   const [isTestnetMode] = useIsTestnetMode()
+  const { chain } = useNetwork()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
   const MAX_BATCH_SIZE = 10
@@ -391,10 +477,27 @@ export const useTransactionHistory = (
   )
 
   const depositsFromCache = useMemo(() => {
-    return getDepositsWithoutStatusesFromCache(address).filter(tx =>
-      isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-    )
-  }, [address, isTestnetMode])
+    if (isLoadingAccountType || !chain) {
+      return []
+    }
+    return getDepositsWithoutStatusesFromCache(address)
+      .filter(tx =>
+        isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
+      )
+      .filter(tx => {
+        if (isSmartContractWallet) {
+          // only include txs for the connected network
+          return tx.parentChainId === chain.id
+        }
+        return tx
+      })
+  }, [
+    address,
+    isTestnetMode,
+    isLoadingAccountType,
+    isSmartContractWallet,
+    chain
+  ])
 
   const {
     data: txPages,
@@ -407,7 +510,7 @@ export const useTransactionHistory = (
     getCacheKey,
     ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
-      // otherwise, if we added a new tx to cache, it would return a new reference and cause side effects
+      // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
       const dataWithCache = [..._data, ...depositsFromCache]
 
       // duplicates may occur when txs are taken from the local storage
