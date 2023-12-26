@@ -23,7 +23,6 @@ import {
   L2ToL1EventResultPlus,
   PendingWithdrawalsMap,
   TokenType,
-  OutgoingMessageState,
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
@@ -46,7 +45,10 @@ import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
 import { DepositStatus, WithdrawalStatus } from '../state/app/state'
-import { addDepositToCache } from '../components/TransactionHistory/helpers'
+import {
+  addDepositToCache,
+  getProvider
+} from '../components/TransactionHistory/helpers'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -877,8 +879,15 @@ export const useArbTokenBridge = (
       return
     }
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
-    const res = await messageWriter.execute(l2.provider)
+    const parentChainProvider = getProvider(event.parentChainId)
+    const childChainProvider = getProvider(event.childChainId)
+
+    const messageWriter = L2ToL1Message.fromEvent(
+      l1Signer,
+      event,
+      parentChainProvider
+    )
+    const res = await messageWriter.execute(childChainProvider)
 
     const rec = await res.wait()
 
@@ -926,9 +935,16 @@ export const useArbTokenBridge = (
       return
     }
 
-    const messageWriter = L2ToL1Message.fromEvent(l1Signer, event, l1.provider)
+    const parentChainProvider = getProvider(event.parentChainId)
+    const childChainProvider = getProvider(event.childChainId)
 
-    const res = await messageWriter.execute(l2.provider)
+    const messageWriter = L2ToL1Message.fromEvent(
+      l1Signer,
+      event,
+      parentChainProvider
+    )
+
+    const res = await messageWriter.execute(childChainProvider)
 
     const rec = await res.wait()
 
