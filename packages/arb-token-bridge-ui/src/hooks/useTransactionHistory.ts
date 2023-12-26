@@ -247,7 +247,7 @@ const useTransactionHistoryWithoutStatuses = (
       if (isTestnetMode) {
         return 'all'
       }
-      return isNetwork(chain.id).isTestnet ? undefined : 'all'
+      return isNetwork(chainPair.parentChain).isTestnet ? undefined : 'all'
     },
     [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
   )
