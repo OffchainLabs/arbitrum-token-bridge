@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 
-import { TransactionHistoryParams } from '../../hooks/useTransactionHistory'
+import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import {
   isTxClaimable,
@@ -21,7 +21,7 @@ const roundedTabClasses =
 export const TransactionHistory = ({
   props
 }: {
-  props: TransactionHistoryParams & { address: `0x${string}` | undefined }
+  props: UseTransactionHistoryResult & { address: `0x${string}` | undefined }
 }) => {
   const {
     transactions,

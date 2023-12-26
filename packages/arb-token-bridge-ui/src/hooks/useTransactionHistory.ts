@@ -51,7 +51,7 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 
-export type TransactionHistoryParams = {
+export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
   loading: boolean
   completed: boolean
@@ -437,7 +437,7 @@ export const useTransactionHistory = (
   address: `0x${string}` | undefined,
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
-): TransactionHistoryParams => {
+): UseTransactionHistoryResult => {
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
