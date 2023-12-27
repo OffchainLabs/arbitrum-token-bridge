@@ -1,5 +1,5 @@
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
