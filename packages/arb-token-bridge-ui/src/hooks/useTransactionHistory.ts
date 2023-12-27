@@ -766,7 +766,7 @@ export const useTransactionHistory = (
   return {
     transactions,
     loading: isLoadingFirstPage || isLoadingMore,
-    completed: completed && !fetching && !isLoadingTxsWithoutStatus,
+    completed: completed && !isLoadingFirstPage && !isLoadingMore,
     error: txPagesError ?? error,
     failedChainPairs,
     pause,
