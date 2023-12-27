@@ -444,8 +444,12 @@ export const useTransactionHistory = (
   const [pauseCount, setPauseCount] = useState(0)
   const [completed, setCompleted] = useState(false)
 
-  const { data, loading, error, failedChainPairs } =
-    useTransactionHistoryWithoutStatuses(address)
+  const {
+    data,
+    loading: loadingTxnsWithoutStatus,
+    error,
+    failedChainPairs
+  } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -461,11 +465,11 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !loading
+      return address && !loadingTxnsWithoutStatus
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, loading, data]
+    [address, loadingTxnsWithoutStatus, data]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -497,6 +501,7 @@ export const useTransactionHistory = (
     size: page,
     setSize: setPage,
     mutate: mutateTxPages,
+    isLoading: loadingTxnStatus,
     isValidating
   } = useSWRInfinite(
     getCacheKey,
@@ -739,10 +744,10 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (loading || error) {
+  if (loadingTxnsWithoutStatus || error) {
     return {
       transactions: [],
-      loading,
+      loading: loadingTxnsWithoutStatus,
       error,
       failedChainPairs: [],
       completed: true,
@@ -753,14 +758,14 @@ export const useTransactionHistory = (
     }
   }
 
+  const isLoadingMore =
+    page > 0 && transactions && typeof transactions[page - 1] === 'undefined'
+
   return {
     transactions,
     loading:
-      fetching ||
-      (page > 0 &&
-        transactions &&
-        typeof transactions[page - 1] === 'undefined'),
-    completed: completed && !fetching && !loading,
+      fetching || loadingTxnsWithoutStatus || loadingTxnStatus || isLoadingMore,
+    completed: completed && !fetching && !loadingTxnsWithoutStatus,
     error: txPagesError ?? error,
     failedChainPairs,
     pause,
