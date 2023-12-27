@@ -225,11 +225,7 @@ const useTransactionHistoryWithoutStatuses = (
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (
-        isLoadingAccountType ||
-        !chain ||
-        typeof isTestnetMode === 'undefined'
-      ) {
+      if (isLoadingAccountType || !chain) {
         return undefined
       }
       if (isSmartContractWallet) {
@@ -386,11 +382,7 @@ const useTransactionHistoryWithoutStatuses = (
     [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
 
-  const shouldFetch =
-    address &&
-    chain &&
-    !isLoadingAccountType &&
-    typeof isTestnetMode !== 'undefined'
+  const shouldFetch = address && chain && !isLoadingAccountType
 
   const {
     data: depositsData,
