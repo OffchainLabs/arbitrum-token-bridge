@@ -444,8 +444,12 @@ export const useTransactionHistory = (
   const [pauseCount, setPauseCount] = useState(0)
   const [completed, setCompleted] = useState(false)
 
-  const { data, loading, error, failedChainPairs } =
-    useTransactionHistoryWithoutStatuses(address)
+  const {
+    data,
+    loading: isLoadingTxsWithoutStatus,
+    error,
+    failedChainPairs
+  } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
@@ -461,11 +465,11 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !loading
+      return address && !isLoadingTxsWithoutStatus
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, loading, data]
+    [address, isLoadingTxsWithoutStatus, data]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -497,7 +501,8 @@ export const useTransactionHistory = (
     size: page,
     setSize: setPage,
     mutate: mutateTxPages,
-    isValidating
+    isValidating,
+    isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
     ([, , _page, _data]) => {
@@ -539,6 +544,11 @@ export const useTransactionHistory = (
       dedupingInterval: 1_000_000
     }
   )
+
+  const isLoadingMore =
+    page > 0 &&
+    typeof txPages !== 'undefined' &&
+    typeof txPages[page - 1] === 'undefined'
 
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
@@ -739,10 +749,10 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (loading || error) {
+  if (isLoadingTxsWithoutStatus || error) {
     return {
       transactions: [],
-      loading,
+      loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
       completed: true,
@@ -755,8 +765,8 @@ export const useTransactionHistory = (
 
   return {
     transactions,
-    loading: fetching,
-    completed: completed && !fetching && !loading,
+    loading: isLoadingFirstPage || isLoadingMore,
+    completed: completed && !fetching && !isLoadingTxsWithoutStatus,
     error: txPagesError ?? error,
     failedChainPairs,
     pause,
