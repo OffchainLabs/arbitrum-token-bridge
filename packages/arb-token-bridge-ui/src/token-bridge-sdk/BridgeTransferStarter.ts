@@ -57,11 +57,12 @@ export type RequiresTokenApprovalProps = {
 
 export type ApproveTokenProps = {
   signer: Signer
+  amount?: BigNumber
 }
 
 export type ApproveTokenEstimateGasProps = {
-  amount: BigNumber
   signer: Signer
+  amount?: BigNumber
 }
 
 export abstract class BridgeTransferStarter {

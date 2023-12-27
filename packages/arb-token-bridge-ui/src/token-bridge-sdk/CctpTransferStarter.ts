@@ -1,5 +1,5 @@
 import { prepareWriteContract, writeContract } from '@wagmi/core'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
@@ -62,10 +62,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return allowance.lt(amount)
   }
 
-  public async approveToken({
-    signer,
-    amount
-  }: ApproveTokenProps & { amount: BigNumber }) {
+  public async approveToken({ signer, amount }: ApproveTokenProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
     const { usdcContractAddress, tokenMessengerContractAddress } =
@@ -75,7 +72,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
     const tx = await contract.functions.approve(
       tokenMessengerContractAddress,
-      amount
+      amount ?? constants.MaxInt256
     )
     return tx
   }
@@ -90,7 +87,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
     return await contract.estimateGas.approve(
       tokenMessengerContractAddress,
-      amount
+      amount ?? constants.MaxInt256
     )
   }
 
