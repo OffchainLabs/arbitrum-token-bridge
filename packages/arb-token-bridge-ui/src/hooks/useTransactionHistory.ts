@@ -755,7 +755,11 @@ export const useTransactionHistory = (
 
   return {
     transactions,
-    loading: fetching,
+    loading:
+      fetching ||
+      (page > 0 &&
+        transactions &&
+        typeof transactions[page - 1] === 'undefined'),
     completed: completed && !fetching && !loading,
     error: txPagesError ?? error,
     failedChainPairs,
