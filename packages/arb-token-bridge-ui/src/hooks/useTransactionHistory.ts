@@ -545,6 +545,8 @@ export const useTransactionHistory = (
     }
   )
 
+  // based on an example from SWR
+  // https://swr.vercel.app/examples/infinite-loading
   const isLoadingMore =
     page > 0 &&
     typeof txPages !== 'undefined' &&
