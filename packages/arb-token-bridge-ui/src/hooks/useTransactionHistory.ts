@@ -552,6 +552,8 @@ export const useTransactionHistory = (
     typeof txPages !== 'undefined' &&
     typeof txPages[page - 1] === 'undefined'
 
+  const isEmpty = !isLoadingFirstPage && data.length === 0
+
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
   const { data: newTransactionsData, mutate: mutateNewTransactionsData } =
@@ -751,7 +753,7 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (isLoadingTxsWithoutStatus || error) {
+  if (isLoadingTxsWithoutStatus || isEmpty || error) {
     return {
       transactions: [],
       loading: isLoadingTxsWithoutStatus,
