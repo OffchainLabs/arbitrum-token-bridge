@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import dayjs from 'dayjs'
+import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, ContractTransaction, constants, utils } from 'ethers'
 import { isAddress } from 'ethers/lib/utils'
@@ -22,11 +23,7 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import {
-  TransactionHistoryTab,
-  useAppContextActions,
-  useAppContextState
-} from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import {
   trackEvent,
   shouldTrackAnalytics,
@@ -57,7 +54,7 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK, ether } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   getDestinationAddressError,
   useDestinationAddressStore
@@ -68,14 +65,9 @@ import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getUsdcTokenAddressFromSourceChainId,
-  useCctpFetching,
-  useCctpState
-} from '../../state/cctpState'
+import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -104,6 +96,7 @@ import { isNonCanonicalToken } from '../../token-bridge-sdk/v2/core/isNonCanonic
 import { Provider } from '@ethersproject/providers'
 import { getChainIdFromProvider } from '../../token-bridge-sdk/v2/core/getChainIdFromProvider'
 import { CctpTransferStarterV2 } from '../../token-bridge-sdk/v2/CctpTransferV2'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 function useTokenFromSearchParams(): string | undefined {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
@@ -167,6 +160,8 @@ export function TransferPanel() {
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
+  const { data: signer } = useSigner()
+
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
   })
@@ -174,24 +169,9 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { data: signer } = useSigner()
-
-  const { setPendingTransfer } = useCctpFetching({
-    l1ChainId: l1Network.id,
-    l2ChainId: l2Network.id,
-    walletAddress,
-    pageSize: 10,
-    pageNumber: 0,
-    type: 'all'
-  })
-
-  const {
-    openTransactionHistoryPanel,
-    setTransferring,
-    showCctpDepositsTransactions,
-    showCctpWithdrawalsTransactions,
-    setTransactionHistoryTab
-  } = useAppContextActions()
+  const { openTransactionHistoryPanel, setTransferring } =
+    useAppContextActions()
+  const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const { isArbitrumNova } = isNetwork(l2Network.id)
 
@@ -650,7 +630,7 @@ export function TransferPanel() {
         asset: 'USDC',
         assetType: AssetType.ERC20,
         blockNum: null,
-        createdAt: getStandardizedTimestamp(new Date().toString()),
+        createdAt: dayjs().valueOf(),
         direction: isDepositMode ? 'deposit' : 'withdraw',
         isWithdrawal: !isDepositMode,
         resolvedAt: null,
@@ -663,17 +643,15 @@ export function TransferPanel() {
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
         cctpData: {
-          sourceChainId
-        }
+          sourceChainId,
+          attestationHash: null,
+          messageBytes: null,
+          receiveMessageTransactionHash: null,
+          receiveMessageTimestamp: null
+        },
+        parentChainId: l1Network.id,
+        childChainId: l2Network.id
       }
-      setPendingTransfer(newTransfer, isDepositMode ? 'deposit' : 'withdrawal')
-
-      if (isDepositMode) {
-        showCctpDepositsTransactions()
-      } else {
-        showCctpWithdrawalsTransactions()
-      }
-      setTransactionHistoryTab(TransactionHistoryTab.CCTP)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
@@ -690,18 +668,7 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        setPendingTransfer(
-          {
-            txId: depositForBurnTx.hash,
-            blockNum: depositTxReceipt.blockNumber,
-            status: 'Unconfirmed',
-            cctpData: {
-              attestationHash,
-              messageBytes
-            }
-          },
-          isDepositMode ? 'deposit' : 'withdrawal'
-        )
+        addPendingTransaction(newTransfer)
       }
     } catch (error) {
     } finally {
@@ -907,19 +874,12 @@ export function TransferPanel() {
       assetType: isNativeCurrencyTransfer ? AssetType.ETH : AssetType.ERC20,
       sender: walletAddress,
       destination: destinationAddress ?? walletAddress,
-      l1NetworkID: sourceChainId.toString(),
-      l2NetworkID: destinationChainId.toString()
-    } as NewTransaction
+      childChainId: sourceChainId.toString(),
+      parentChainId: destinationChainId.toString()
+    } as unknown as MergedTransaction // to-do - fix this type, temp fix
 
     // add transaction to the transaction history
-    transactions.addTransaction(uiCompatibleTransactionObject)
-
-    // set the correct tab
-    setTransactionHistoryTab(
-      isDeposit
-        ? TransactionHistoryTab.DEPOSITS
-        : TransactionHistoryTab.WITHDRAWALS
-    )
+    addPendingTransaction(uiCompatibleTransactionObject)
 
     // open tx history
     openTransactionHistoryPanel()

@@ -4,6 +4,7 @@ import '@synthetixio/synpress/support'
 import {
   getL1NetworkConfig,
   getL2NetworkConfig,
+  getL2TestnetNetworkConfig,
   metamaskLocalL1RpcUrl
 } from './common'
 
@@ -27,6 +28,7 @@ before(() => {
 
       // L2
       cy.addMetamaskNetwork(getL2NetworkConfig())
+      cy.addMetamaskNetwork(getL2TestnetNetworkConfig())
 
       cy.task('setNetworkSetupComplete')
     }

@@ -14,7 +14,7 @@ export function PendingDepositWarning() {
   return (
     <Disclosure
       as="div"
-      className="flex w-full flex-col justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark"
+      className="mt-4 flex w-full flex-col justify-start gap-1 rounded-lg border border-orange-dark bg-orange p-3 text-sm text-orange-dark"
     >
       <Disclosure.Button className="flex items-center text-left">
         <div className="flex items-start gap-1">

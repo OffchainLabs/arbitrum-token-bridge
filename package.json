@@ -14,8 +14,11 @@
     "test:e2e": "yarn workspace arb-token-bridge-ui e2e:run --browser chrome",
     "test:ci:e2e": "start-server-and-test 'yarn build && yarn workspace arb-token-bridge-ui start' http-get://localhost:3000 'env-cmd -f ./packages/arb-token-bridge-ui/.e2e.env synpress run --project ./packages/arb-token-bridge-ui --configFile synpress.config.ts'",
     "test:ci:e2e:install": "yarn workspace arb-token-bridge-ui e2e:install",
+    "test:e2e:cctp": "yarn workspace arb-token-bridge-ui e2e:run:cctp",
     "prettier:check": "./node_modules/.bin/prettier --check .",
-    "prettier:format": "./node_modules/.bin/prettier --write ."
+    "prettier:format": "./node_modules/.bin/prettier --write .",
+    "lint": "yarn workspace arb-token-bridge-ui lint",
+    "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix"
   },
   "keywords": [],
   "author": "",
