@@ -225,11 +225,7 @@ const useTransactionHistoryWithoutStatuses = (
   // We need this because of Smart Contract Wallets
   const cctpTypeToFetch = useCallback(
     (chainPair: ChainPair): 'deposits' | 'withdrawals' | 'all' | undefined => {
-      if (
-        isLoadingAccountType ||
-        !chain ||
-        typeof isTestnetMode === 'undefined'
-      ) {
+      if (isLoadingAccountType || !chain) {
         return undefined
       }
       if (isSmartContractWallet) {
@@ -386,11 +382,7 @@ const useTransactionHistoryWithoutStatuses = (
     [address, isTestnetMode, addFailedChainPair, isSmartContractWallet, chain]
   )
 
-  const shouldFetch =
-    address &&
-    chain &&
-    !isLoadingAccountType &&
-    typeof isTestnetMode !== 'undefined'
+  const shouldFetch = address && chain && !isLoadingAccountType
 
   const {
     data: depositsData,
@@ -450,30 +442,28 @@ export const useTransactionHistory = (
 
   const [fetching, setFetching] = useState(true)
   const [pauseCount, setPauseCount] = useState(0)
-  const [completed, setCompleted] = useState(false)
 
-  const { data, loading, error, failedChainPairs } =
-    useTransactionHistoryWithoutStatuses(address)
+  const {
+    data,
+    loading: isLoadingTxsWithoutStatus,
+    error,
+    failedChainPairs
+  } = useTransactionHistoryWithoutStatuses(address)
 
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs) {
-        if (prevPageTxs.length !== MAX_BATCH_SIZE) {
-          // page size was less than the minimum batch size, there won't be more pages AFTER this one
-          setCompleted(true)
-        }
-
         if (prevPageTxs.length === 0) {
           // THIS is the last page
           return null
         }
       }
 
-      return address && !loading
+      return address && !isLoadingTxsWithoutStatus
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, loading, data]
+    [address, isLoadingTxsWithoutStatus, data]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -505,7 +495,8 @@ export const useTransactionHistory = (
     size: page,
     setSize: setPage,
     mutate: mutateTxPages,
-    isValidating
+    isValidating,
+    isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
     ([, , _page, _data]) => {
@@ -547,6 +538,18 @@ export const useTransactionHistory = (
       dedupingInterval: 1_000_000
     }
   )
+
+  // based on an example from SWR
+  // https://swr.vercel.app/examples/infinite-loading
+  const isLoadingMore =
+    page > 0 &&
+    typeof txPages !== 'undefined' &&
+    typeof txPages[page - 1] === 'undefined'
+
+  const completed =
+    !isLoadingFirstPage &&
+    typeof txPages !== 'undefined' &&
+    data.length === txPages.flat().length
 
   // transfers initiated by the user during the current session
   // we store it separately as there are a lot of side effects when mutating SWRInfinite
@@ -747,10 +750,10 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (loading || error) {
+  if (isLoadingTxsWithoutStatus || error) {
     return {
       transactions: [],
-      loading,
+      loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
       completed: true,
@@ -763,8 +766,8 @@ export const useTransactionHistory = (
 
   return {
     transactions,
-    loading: fetching,
-    completed: completed && !fetching && !loading,
+    loading: isLoadingFirstPage || isLoadingMore,
+    completed,
     error: txPagesError ?? error,
     failedChainPairs,
     pause,
