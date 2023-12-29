@@ -1,6 +1,5 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
-import { ERC20BridgeToken } from '../hooks/arbTokenBridge.types'
 import { MergedTransaction } from '../state/app/state'
 
 type Asset = 'erc20' | 'eth'
@@ -10,8 +9,6 @@ type TxStatus = 'pending' | 'success' | 'error'
 
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type TransferType = `${Asset}_${TxType}` | 'cctp'
-
-export type SelectedToken = ERC20BridgeToken
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: `0x${string}` | null
@@ -30,7 +27,7 @@ export type BridgeTransfer = {
 export type BridgeTransferStarterProps = {
   sourceChainProvider: Provider
   destinationChainProvider: Provider
-  selectedToken?: SelectedToken
+  sourceChainErc20Address?: string
 }
 
 export type TransferProps = {
@@ -51,7 +48,7 @@ export type ApproveNativeCurrencyProps = {
 
 export type RequiresTokenApprovalProps = {
   amount: BigNumber
-  address: string
+  signer: Signer
   destinationAddress?: string
 }
 
@@ -60,22 +57,17 @@ export type ApproveTokenProps = {
   amount?: BigNumber
 }
 
-export type ApproveTokenEstimateGasProps = {
-  signer: Signer
-  amount?: BigNumber
-}
-
 export abstract class BridgeTransferStarter {
   public sourceChainProvider: Provider
   public destinationChainProvider: Provider
-  public selectedToken?: SelectedToken
+  public sourceChainErc20Address?: string
 
   abstract transferType: TransferType
 
   constructor(props: BridgeTransferStarterProps) {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
-    this.selectedToken = props.selectedToken ?? undefined // if token not provided, fallback to eth, or let the child class define it's token (eg. CCTP)
+    this.sourceChainErc20Address = props.sourceChainErc20Address
   }
 
   public abstract requiresNativeCurrencyApproval(
@@ -91,7 +83,7 @@ export abstract class BridgeTransferStarter {
   ): Promise<boolean>
 
   public abstract approveTokenEstimateGas(
-    props: ApproveTokenEstimateGasProps
+    props: ApproveTokenProps
   ): Promise<BigNumber>
 
   public abstract approveToken(

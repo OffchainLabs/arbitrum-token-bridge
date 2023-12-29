@@ -606,7 +606,7 @@ export function TransferPanel() {
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
-          address: walletAddress
+          signer
         })
 
       if (isTokenApprovalRequired) {

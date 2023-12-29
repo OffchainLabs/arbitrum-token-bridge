@@ -3,7 +3,6 @@ import { constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 import {
-  ApproveTokenEstimateGasProps,
   ApproveTokenProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
@@ -12,11 +11,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
-import {
-  fetchPerMessageBurnLimit,
-  getCctpContracts,
-  getUsdcToken
-} from './cctp'
+import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
@@ -37,15 +32,14 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
   public async requiresTokenApproval({
     amount,
-    address,
+    signer,
     destinationAddress
   }: RequiresTokenApprovalProps): Promise<boolean> {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
-    // hardcode cctp token within this class, no need to pass externally
-    const selectedToken = getUsdcToken({
-      sourceChainId
-    })
+    const address = await getAddressFromSigner(signer)
+
+    const { usdcContractAddress } = getCctpContracts({ sourceChainId })
 
     const recipient = destinationAddress ?? address
     const { tokenMessengerContractAddress } = getCctpContracts({
@@ -53,7 +47,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     })
 
     const allowance = await fetchErc20Allowance({
-      address: selectedToken.address,
+      address: usdcContractAddress,
       provider: this.sourceChainProvider,
       owner: recipient,
       spender: tokenMessengerContractAddress
@@ -77,10 +71,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     return tx
   }
 
-  public async approveTokenEstimateGas({
-    signer,
-    amount
-  }: ApproveTokenEstimateGasProps) {
+  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
     const { usdcContractAddress, tokenMessengerContractAddress } =
       getCctpContracts({ sourceChainId })
@@ -91,13 +82,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transfer({ amount, destinationAddress, signer }: TransferProps) {
+  public async transfer({ signer, amount, destinationAddress }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
-
-    // hardcode cctp token within this class, no need to pass externally
-    const selectedToken = getUsdcToken({
-      sourceChainId
-    })
 
     const address = await getAddressFromSigner(signer)
 
@@ -108,7 +94,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     if (burnLimit.lte(amount)) {
       const formatedLimit = formatAmount(burnLimit, {
-        decimals: selectedToken.decimals,
+        decimals: 6, // hardcode for USDC
         symbol: 'USDC'
       })
       throw Error(

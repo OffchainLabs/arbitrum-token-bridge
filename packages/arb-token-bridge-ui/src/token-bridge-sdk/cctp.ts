@@ -163,30 +163,3 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     waitForAttestation
   }
 }
-
-export function getUsdcToken({ sourceChainId }: { sourceChainId: ChainId }) {
-  const commonUSDC = {
-    name: 'USD Coin',
-    type: TokenType.ERC20,
-    symbol: 'USDC',
-    decimals: 6,
-    listIds: new Set<number>()
-  }
-
-  let tokenAddress = null
-
-  if (isNetwork(sourceChainId).isArbitrumGoerli) {
-    tokenAddress = CommonAddress.ArbitrumGoerli.USDC
-  } else if (isNetwork(sourceChainId).isGoerli) {
-    tokenAddress = CommonAddress.Goerli.USDC
-  } else if (isNetwork(sourceChainId).isArbitrumOne) {
-    tokenAddress = CommonAddress.ArbitrumOne.USDC
-  } else {
-    tokenAddress = CommonAddress.Ethereum.USDC
-  }
-
-  return {
-    ...commonUSDC,
-    address: tokenAddress
-  }
-}
