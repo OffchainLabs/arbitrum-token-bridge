@@ -8,6 +8,7 @@ import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import { Provider } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -28,7 +29,6 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
-import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL2ERC20Address,
   fetchErc20Allowance,
@@ -36,8 +36,7 @@ import {
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
-  isTokenMainnetUSDC,
-  isAllowedL2
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -59,12 +58,11 @@ import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
-  getWarningTokenDescription,
-  onTxError
+  getWarningTokenDescription
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
@@ -72,6 +70,8 @@ import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
 
 function useTokenFromSearchParams(): string | undefined {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
@@ -296,25 +296,6 @@ export function TransferPanel() {
       throw new Error('Invalid app state: no selected token')
     }
 
-    function getDialogType(): TokenDepositCheckDialogType | null {
-      let type: TokenDepositCheckDialogType | null = null
-
-      if (isBridgingANewStandardToken) {
-        type = 'new-token'
-      } else {
-        const isUserAddedToken =
-          selectedToken &&
-          selectedToken?.listIds.size === 0 &&
-          typeof selectedToken.l2Address === 'undefined'
-
-        if (isUserAddedToken) {
-          type = 'user-added-token'
-        }
-      }
-
-      return type
-    }
-
     // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
     const dialogType = getDialogType()
 
@@ -478,12 +459,106 @@ export function TransferPanel() {
     return confirmed
   }
 
+  const customFeeTokenApproval = async () => {
+    const waitForInput = openCustomFeeTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const canonicalBridgeDepositConfirmation = async () => {
+    const waitForInput = openDepositConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const tokenAllowanceApproval = async () => {
+    setIsCctp(false)
+    const waitForInput = openTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const showDelayInSmartContractTransaction = async () => {
+    // a custom 3 second delay to show a tooltip after SC transaction goes through
+    // to give a visual feedback to the user that something happened
+    await setTimeout(() => {
+      setShowSCWalletTooltip(true)
+    }, 3000)
+    return true
+  }
+
+  function getDialogType(): TokenDepositCheckDialogType | null {
+    let type: TokenDepositCheckDialogType | null = null
+
+    if (isBridgingANewStandardToken) {
+      type = 'new-token'
+    } else {
+      const isUserAddedToken =
+        selectedToken &&
+        selectedToken?.listIds.size === 0 &&
+        typeof selectedToken.l2Address === 'undefined'
+
+      if (isUserAddedToken) {
+        type = 'user-added-token'
+      }
+    }
+
+    return type
+  }
+
+  const firstTimeTokenBridgingConfirmation = async () => {
+    // Check if we need to show `TokenDepositCheckDialog` for first-time bridging
+    const dialogType = getDialogType()
+    if (dialogType) {
+      setTokenDepositCheckDialogType(dialogType)
+      const waitForInput = openTokenCheckDialog()
+      const [confirmed] = await waitForInput()
+      return confirmed
+    } else {
+      // else pass the check
+      return true
+    }
+  }
+
+  const confirmWithdrawal = async () => {
+    const waitForInput = openWithdrawalConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
       setShowSCWalletTooltip(true)
     }, 3000)
+
+  const checkTokenSuspension = async ({
+    selectedToken,
+    sourceChainProvider,
+    destinationChainProvider
+  }: {
+    selectedToken: ERC20BridgeToken
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) => {
+    // check that a registration is not currently in progress
+    const l2RoutedAddress = await getL2ERC20Address({
+      erc20L1Address: selectedToken.address,
+      l1Provider: sourceChainProvider,
+      l2Provider: destinationChainProvider
+    })
+
+    // check if the token is suspended
+    if (
+      selectedToken.l2Address &&
+      selectedToken.l2Address.toLowerCase() !== l2RoutedAddress.toLowerCase()
+    ) {
+      return true
+    }
+
+    return false
+  }
 
   const transferCctp = async () => {
     if (!selectedToken) {
@@ -761,11 +836,126 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (isDepositMode) {
-        if (!l1Signer) {
-          throw signerUndefinedError
+      if (!signer) {
+        throw signerUndefinedError
+      }
+
+      const warningToken =
+        selectedToken && warningTokens[selectedToken.address.toLowerCase()]
+      if (warningToken) {
+        const description = getWarningTokenDescription(warningToken.type)
+        return window.alert(
+          `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
+        )
+      }
+
+      const isParentChainEthereum = isNetwork(
+        l1Network.id
+      ).isEthereumMainnetOrTestnet
+      // Only switch to L1 if the selected L1 network is Ethereum.
+      // Or if connected to an Orbit chain as it can't make deposits.
+      if (
+        (isConnectedToArbitrum.current && isParentChainEthereum) ||
+        isConnectedToOrbitChain.current
+      ) {
+        if (shouldTrackAnalytics(l2NetworkName)) {
+          trackEvent('Switch Network and Transfer', {
+            type: 'Deposit',
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : 'ETH',
+            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
+        }
+        await switchNetworkAsync?.(
+          latestNetworksAndSigners.current.l1.network.id
+        )
+
+        while (
+          (isConnectedToArbitrum.current && isParentChainEthereum) ||
+          isConnectedToOrbitChain.current ||
+          !latestEth.current ||
+          !arbTokenBridgeLoaded
+        ) {
+          await new Promise(r => setTimeout(r, 100))
         }
 
+        await new Promise(r => setTimeout(r, 3000))
+      }
+
+      const l1ChainID = latestNetworksAndSigners.current.l1.network.id
+      const connectedChainID = latestConnectedProvider.current?.network?.chainId
+      const l1ChainEqualsConnectedChain =
+        l1ChainID && connectedChainID && l1ChainID === connectedChainID
+
+      if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
+        // Deposit is invalid if the connected chain doesn't match L1...
+        // ...or if connected to an Orbit chain, as it can't make deposits.
+        return networkConnectionWarningToast()
+      }
+
+      const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
+      const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
+      const sourceChainErc20Address = isDepositMode
+        ? selectedToken?.address
+        : selectedToken?.l2Address
+
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+        sourceChainProvider,
+        destinationChainProvider,
+        sourceChainErc20Address
+      })
+
+      const { transferType } = bridgeTransferStarter
+
+      // validation: signer should be connected
+      if (!signer) throw Error('Signer not connected!')
+
+      // validation: SCW transfers are not enabled for ETH transfers yet
+      if (transferType.includes('eth') && isSmartContractWallet) {
+        console.error(
+          "ETH transfers aren't enabled for smart contract wallets."
+        )
+        return
+      }
+
+      // validation: if destination address is added, validate it
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet
+      })
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
+      // logic: check if native currency approval is required for selected transfer type
+      const isNativeCurrencyApprovalRequired =
+        await bridgeTransferStarter.requiresNativeCurrencyApproval({
+          signer,
+          amount: amountBigNumber
+        })
+
+      if (isNativeCurrencyApprovalRequired) {
+        // user confirmation: show native currency approval dialog
+        const userConfirmation = await customFeeTokenApproval()
+        if (!userConfirmation) return false
+
+        // logic: approve native currency
+        await bridgeTransferStarter.approveNativeCurrency({
+          signer
+        })
+      }
+
+      // checks for selected token, if any
+      if (selectedToken) {
+        const tokenAddress = selectedToken.address
+
+        // validation: is selected token deployed on parent-chain?
+        if (!tokenAddress) Error('Token not deployed on source chain.')
+
+        // validation: check if the selected token is a warning token
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -775,347 +965,124 @@ export function TransferPanel() {
           )
         }
 
-        const isParentChainEthereum = isNetwork(
-          l1Network.id
-        ).isEthereumMainnetOrTestnet
-        // Only switch to L1 if the selected L1 network is Ethereum.
-        // Or if connected to an Orbit chain as it can't make deposits.
-        if (
-          (isConnectedToArbitrum.current && isParentChainEthereum) ||
-          isConnectedToOrbitChain.current
-        ) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Deposit',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l1.network.id
-          )
-
-          while (
-            (isConnectedToArbitrum.current && isParentChainEthereum) ||
-            isConnectedToOrbitChain.current ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
-          ) {
-            await new Promise(r => setTimeout(r, 100))
-          }
-
-          await new Promise(r => setTimeout(r, 3000))
+        // validation: check if the selected token is suspended
+        const isTokenSuspended = await checkTokenSuspension({
+          selectedToken,
+          sourceChainProvider,
+          destinationChainProvider
+        })
+        if (isTokenSuspended) {
+          const message =
+            'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
+          alert(message)
+          throw message
         }
 
-        const l1ChainID = latestNetworksAndSigners.current.l1.network.id
-        const connectedChainID =
-          latestConnectedProvider.current?.network?.chainId
-        const l1ChainEqualsConnectedChain =
-          l1ChainID && connectedChainID && l1ChainID === connectedChainID
-
-        if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
-          // Deposit is invalid if the connected chain doesn't match L1...
-          // ...or if connected to an Orbit chain, as it can't make deposits.
-          return networkConnectionWarningToast()
+        // user confirmation: check for first time token deployment from user
+        const userConfirmationForFirstTimeTokenBridging =
+          await firstTimeTokenBridgingConfirmation()
+        if (!userConfirmationForFirstTimeTokenBridging) {
+          throw Error('User declined bridging the token for the first time')
         }
-        if (selectedToken) {
-          const { decimals } = selectedToken
-          const amountRaw = utils.parseUnits(amount, decimals)
 
-          // check that a registration is not currently in progress
-          const l2RoutedAddress = await getL2ERC20Address({
-            erc20L1Address: selectedToken.address,
-            l1Provider,
-            l2Provider
+        // validation: check if the token is non-canonical
+        if (isNonCanonicalToken) {
+          const userConfirmation = await canonicalBridgeDepositConfirmation()
+          if (!userConfirmation) {
+            throw Error('Deposit via canonical bridge declined')
+          }
+        }
+
+        // logic: check if selected token approval is required for selected transfer type
+        const isTokenApprovalRequired =
+          await bridgeTransferStarter.requiresTokenApproval({
+            amount: amountBigNumber,
+            signer,
+            destinationAddress
           })
 
-          if (
-            selectedToken.l2Address &&
-            selectedToken.l2Address.toLowerCase() !==
-              l2RoutedAddress.toLowerCase()
-          ) {
-            alert(
-              'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
-            )
-            return
-          }
+        if (isTokenApprovalRequired) {
+          // user confirmation: show selected token approval dialog
+          const userConfirmation = await tokenAllowanceApproval()
+          if (!userConfirmation) return false
 
-          if (isNonCanonicalToken) {
-            const waitForInput = openDepositConfirmationDialog()
-            const [confirmed] = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-          }
-
-          if (nativeCurrency.isCustom) {
-            const approved = await approveCustomFeeTokenForGateway()
-
-            if (!approved) {
-              return
-            }
-          }
-
-          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-            erc20L1Address: selectedToken.address,
-            l1Provider,
-            l2Provider
-          })
-
-          const allowanceForL1Gateway = await fetchErc20Allowance({
-            address: selectedToken.address,
-            provider: l1Provider,
-            owner: walletAddress,
-            spender: l1GatewayAddress
-          })
-
-          if (!allowanceForL1Gateway.gte(amountRaw)) {
-            setAllowance(allowance)
-            const waitForInput = openTokenApprovalDialog()
-            const [confirmed] = await waitForInput()
-
-            if (!confirmed) {
-              return false
-            }
-            await latestToken.current.approve({
-              erc20L1Address: selectedToken.address,
-              l1Signer
-            })
-          }
-
+          // logic: approve selected token
           if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
-            // we can't call this inside the deposit method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Deposit', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
+            showDelayInSmartContractTransaction()
           }
-
-          await latestToken.current.deposit({
-            erc20L1Address: selectedToken.address,
-            amount: amountRaw,
-            l1Signer,
-            destinationAddress,
-            txLifecycle: {
-              onTxSubmit: () => {
-                openTransactionHistoryPanel()
-                setTransferring(false)
-                clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Deposit', {
-                    tokenSymbol: selectedToken.symbol,
-                    assetType: 'ERC-20',
-                    accountType: 'EOA',
-                    network: l2NetworkName,
-                    amount: Number(amount)
-                  })
-                }
-              },
-              onTxError
-            }
-          })
-        } else {
-          if (nativeCurrency.isCustom) {
-            const approved = await approveCustomFeeTokenForInbox()
-
-            if (!approved) {
-              return
-            }
-          }
-
-          await latestEth.current.deposit({
-            amount: utils.parseUnits(amount, nativeCurrency.decimals),
-            l1Signer,
-            txLifecycle: {
-              onTxSubmit: () => {
-                openTransactionHistoryPanel()
-                setTransferring(false)
-                clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Deposit', {
-                    assetType: 'ETH',
-                    accountType: 'EOA',
-                    network: l2NetworkName,
-                    amount: Number(amount)
-                  })
-                }
-              },
-              onTxError
-            }
-          })
-        }
-      } else {
-        if (!l2Signer) {
-          throw signerUndefinedError
-        }
-
-        const isConnectedToEthereum =
-          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-        const { isOrbitChain } = isNetwork(l2Network.id)
-
-        if (
-          isConnectedToEthereum ||
-          (isConnectedToArbitrum.current && isOrbitChain)
-        ) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Withdrawal',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l2.network.id
-          )
-
-          while (
-            (!isConnectedToArbitrum.current &&
-              !isConnectedToOrbitChain.current) ||
-            (isConnectedToArbitrum.current && isOrbitChain) ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
-          ) {
-            await new Promise(r => setTimeout(r, 100))
-          }
-
-          await new Promise(r => setTimeout(r, 3000))
-        }
-
-        if (!isSmartContractWallet) {
-          const waitForInput = openWithdrawalConfirmationDialog()
-          const [confirmed] = await waitForInput()
-
-          if (!confirmed) {
-            return
-          }
-        }
-
-        const l2ChainID = latestNetworksAndSigners.current.l2.network.id
-        const connectedChainID =
-          latestConnectedProvider.current?.network?.chainId
-        if (
-          !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
-        ) {
-          return networkConnectionWarningToast()
-        }
-
-        if (selectedToken) {
-          const { decimals } = selectedToken
-          const amountRaw = utils.parseUnits(amount, decimals)
-
-          if (
-            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
-            selectedToken.l2Address
-          ) {
-            const allowed = await isAllowedL2({
-              l1TokenAddress: selectedToken.address,
-              l2TokenAddress: selectedToken.l2Address,
-              walletAddress,
-              amountNeeded: amountRaw,
-              l2Provider: latestNetworksAndSigners.current.l2.provider
-            })
-            if (!allowed) {
-              if (isSmartContractWallet) {
-                showDelayedSCTxRequest()
-              }
-
-              await latestToken.current.approveL2({
-                erc20L1Address: selectedToken.address,
-                l2Signer
-              })
-            }
-          }
-
-          if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
-            // we can't call this inside the withdraw method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Withdraw', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
-          }
-
-          await latestToken.current.withdraw({
-            erc20L1Address: selectedToken.address,
-            amount: amountRaw,
-            l2Signer,
-            destinationAddress,
-            txLifecycle: {
-              onTxSubmit: () => {
-                openTransactionHistoryPanel()
-                setTransferring(false)
-                clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Withdraw', {
-                    tokenSymbol: selectedToken.symbol,
-                    assetType: 'ERC-20',
-                    accountType: 'EOA',
-                    network: l2NetworkName,
-                    amount: Number(amount)
-                  })
-                }
-              },
-              onTxError
-            }
-          })
-        } else {
-          await latestEth.current.withdraw({
-            amount: utils.parseUnits(amount, nativeCurrency.decimals),
-            l2Signer,
-            txLifecycle: {
-              onTxSubmit: () => {
-                openTransactionHistoryPanel()
-                setTransferring(false)
-                clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
-                  trackEvent('Withdraw', {
-                    assetType: 'ETH',
-                    accountType: 'EOA',
-                    network: l2NetworkName,
-                    amount: Number(amount)
-                  })
-                }
-              },
-              onTxError
-            }
+          await bridgeTransferStarter.approveToken({
+            signer
           })
         }
       }
+
+      // user confirmation: if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
+      if (transferType.includes('withdrawal') && !isSmartContractWallet) {
+        const withdrawalConfirmation = await confirmWithdrawal()
+        if (!withdrawalConfirmation) return false
+      }
+
+      if (isSmartContractWallet) {
+        showDelayInSmartContractTransaction()
+      }
+      // logic: finally, call the transfer function
+      const transfer = await bridgeTransferStarter.transfer({
+        amount: amountBigNumber,
+        signer,
+        isSmartContractWallet,
+        destinationAddress
+      })
+
+      // transaction submitted callback
+      onTxSubmit(transfer)
     } catch (ex) {
       console.log(ex)
     } finally {
       setTransferring(false)
     }
+  }
+
+  const onTxSubmit = async (transfer: BridgeTransfer) => {
+    // here, handle all transformations
+
+    // todo: this should be just the verbose event tracking code
+    // trackTransferPanelEvent(isDepositMode ? 'Deposit' : 'Withdraw')
+
+    const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
+    const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
+
+    const { transferType, sourceChainTransaction } = transfer
+    const isDeposit = transferType.includes('deposit')
+    const isNativeCurrencyTransfer = transferType.includes('eth')
+
+    const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
+    const destinationChainId = await getChainIdFromProvider(
+      destinationChainProvider
+    )
+
+    const uiCompatibleTransactionObject = {
+      type: isDeposit ? 'deposit-l1' : 'withdraw',
+      status: 'pending',
+      value: utils.formatUnits(
+        amountBigNumber,
+        isNativeCurrencyTransfer
+          ? nativeCurrency.decimals
+          : selectedToken?.decimals
+      ),
+      txID: sourceChainTransaction.hash,
+      assetName: isNativeCurrencyTransfer ? 'ETH' : selectedToken?.symbol,
+      assetType: isNativeCurrencyTransfer ? AssetType.ETH : AssetType.ERC20,
+      sender: walletAddress,
+      destination: destinationAddress ?? walletAddress,
+      childChainId: sourceChainId.toString(),
+      parentChainId: destinationChainId.toString()
+    } as unknown as MergedTransaction // to-do - fix this type, temp fix
+
+    // add transaction to the transaction history
+    addPendingTransaction(uiCompatibleTransactionObject)
+
+    // open tx history
+    openTransactionHistoryPanel()
   }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
