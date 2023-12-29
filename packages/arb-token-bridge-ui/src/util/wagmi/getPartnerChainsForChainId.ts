@@ -13,7 +13,8 @@ import {
   arbitrumSepolia,
   chainToWagmiChain,
   stylusTestnet,
-  xaiTestnet
+  xaiTestnet,
+  inspace
 } from './wagmiAdditionalNetworks'
 
 export function getPartnerChainsForChainId(chainId: number): Chain[] {
@@ -42,7 +43,7 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumSepolia]
 
     case ChainId.ArbitrumOne:
-      return [mainnet, ...customArbitrumOneChains]
+      return [mainnet, inspace, ...customArbitrumOneChains]
 
     case ChainId.ArbitrumNova:
       return [mainnet, ...customArbitrumNovaChains]
@@ -58,6 +59,9 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
 
     case ChainId.XaiTestnet:
       return [arbitrumGoerli]
+
+    case ChainId.Inspace:
+      return [arbitrumOne]
 
     default:
       const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(

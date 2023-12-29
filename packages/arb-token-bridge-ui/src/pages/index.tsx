@@ -4,7 +4,11 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
+import {
+  getCustomChainsFromLocalStorage,
+  xaiTestnet,
+  inspace
+} from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -20,8 +24,6 @@ const App = dynamic(() => import('../components/App/App'), {
 
 export default function Index() {
   useEffect(() => {
-    // user-added custom chains do not persists between sessions
-    // we add locally stored custom chains
     getCustomChainsFromLocalStorage().forEach(chain => {
       try {
         addCustomChain({ customChain: chain })
@@ -37,6 +39,17 @@ export default function Index() {
         // already added
       }
     })
+
+    try {
+      addCustomNetwork({ customL2Network: inspace })
+    } catch (error: any) {
+      console.error(`Failed to register inspace network: ${error.message}`)
+    }
+    try {
+      addCustomChain({ customChain: inspace })
+    } catch (error: any) {
+      console.error(`Failed to register inspace network: ${error.message}`)
+    }
 
     try {
       addCustomNetwork({ customL2Network: xaiTestnet })

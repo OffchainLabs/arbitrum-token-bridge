@@ -172,8 +172,16 @@ function NetworkContainer({
       isArbitrumNova,
       isOrbitChain,
       isXaiTestnet,
-      isStylusTestnet
+      isStylusTestnet,
+      isInspace
     } = isNetwork(network.id)
+
+    if (isInspace) {
+      return {
+        backgroundImage: `url('/images/InspaceLogo.png')`,
+        backgroundClassName: 'bg-xai-dark'
+      }
+    }
 
     if (isXaiTestnet) {
       return {

@@ -6,6 +6,7 @@ import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
 import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
+  inspace,
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
@@ -38,6 +39,7 @@ const chainList = isTestingEnvironment
       // Orbit chains
       xaiTestnet,
       stylusTestnet,
+      inspace,
       // add local environments during testing
       local,
       arbitrumLocal,
@@ -54,6 +56,7 @@ const chainList = isTestingEnvironment
       arbitrumSepolia,
       xaiTestnet,
       stylusTestnet,
+      inspace,
       ...customChains
     ]
 

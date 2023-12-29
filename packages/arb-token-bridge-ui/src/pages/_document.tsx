@@ -1,7 +1,7 @@
 import { Html, Head, Main, NextScript } from 'next/document'
 
 export const siteTitle = 'Bridge to Arbitrum'
-const siteDomain = 'https://bridge.arbitrum.io'
+const siteDomain = 'https://bridge.inspace.network'
 const siteDescription =
   'Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.'
 

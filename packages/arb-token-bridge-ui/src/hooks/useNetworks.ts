@@ -16,7 +16,8 @@ import {
   xaiTestnet,
   stylusTestnet,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  inspace
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
@@ -37,6 +38,8 @@ function getChainByChainId(chainId: ChainId): Chain {
     // L3
     [ChainId.XaiTestnet]: xaiTestnet,
     [ChainId.StylusTestnet]: stylusTestnet,
+    [ChainId.Inspace]: inspace,
+
     // E2E
     [ChainId.Local]: local,
     [ChainId.ArbitrumLocal]: arbitrumLocal
@@ -96,6 +99,7 @@ function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
     arbitrumSepolia.id,
     stylusTestnet.id,
     xaiTestnet.id,
+    inspace.id,
     arbitrumLocal.id,
     local.id,
     ...customChainIds

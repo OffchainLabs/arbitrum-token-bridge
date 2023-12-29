@@ -28,11 +28,16 @@ export function NetworkListbox({
       isArbitrumNova,
       isOrbitChain,
       isXaiTestnet,
-      isStylusTestnet
+      isStylusTestnet,
+      isInspace
     } = isNetwork(value.id)
 
     if (isXaiTestnet) {
       return 'bg-xai-primary'
+    }
+
+    if (isInspace) {
+      return 'bg-eth-primary'
     }
 
     if (isStylusTestnet) {
