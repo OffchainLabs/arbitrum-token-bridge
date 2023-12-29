@@ -7,8 +7,6 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { JsonRpcProvider } from '@ethersproject/providers'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 
 import { useAppState } from '../../state'
@@ -35,11 +33,11 @@ import {
   getL2ERC20Address,
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
-  fetchErc20L2GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
-  isTokenMainnetUSDC
+  isTokenMainnetUSDC,
+  isAllowedL2
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -74,31 +72,6 @@ import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-
-const isAllowedL2 = async ({
-  l1TokenAddress,
-  l2TokenAddress,
-  walletAddress,
-  amountNeeded,
-  l2Provider
-}: {
-  l1TokenAddress: string
-  l2TokenAddress: string
-  walletAddress: string
-  amountNeeded: BigNumber
-  l2Provider: JsonRpcProvider
-}) => {
-  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
-
-  const gatewayAddress = await fetchErc20L2GatewayAddress({
-    erc20L1Address: l1TokenAddress,
-    l2Provider
-  })
-
-  return (await token.allowance(walletAddress, gatewayAddress)).gte(
-    amountNeeded
-  )
-}
 
 function useTokenFromSearchParams(): string | undefined {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()

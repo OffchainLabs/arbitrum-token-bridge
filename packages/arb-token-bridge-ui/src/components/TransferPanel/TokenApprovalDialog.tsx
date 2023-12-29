@@ -21,13 +21,13 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress
 } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -85,25 +85,28 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
       let gasEstimate
 
-      if (isCctp) {
-        if (!signer) {
-          gasEstimate = constants.Zero
-        } else {
-          const cctpTransferStarter = new CctpTransferStarter({
-            sourceChainProvider: provider,
-            destinationChainProvider: isDepositMode ? l2.provider : l1.provider
-          })
-          gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
-            amount: constants.MaxUint256,
-            signer
-          })
-        }
-      } else if (walletAddress) {
-        gasEstimate = await approveTokenEstimateGas({
-          erc20L1Address: token.address,
-          address: walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+      if (!signer) {
+        gasEstimate = constants.Zero
+      } else if (isCctp) {
+        const cctpTransferStarter = new CctpTransferStarter({
+          sourceChainProvider: provider,
+          destinationChainProvider: isDepositMode ? l2.provider : l1.provider
+        })
+        gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
+          amount: constants.MaxUint256,
+          signer
+        })
+      } else {
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+          sourceChainProvider: provider,
+          destinationChainProvider: isDepositMode ? l2.provider : l1.provider,
+          sourceChainErc20Address: isDepositMode
+            ? token.address
+            : token.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
+        })
+
+        gasEstimate = await bridgeTransferStarter.approveTokenEstimateGas({
+          signer
         })
       }
 
@@ -123,6 +126,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     signer,
     walletAddress,
     token?.address,
+    token?.l2Address,
     l1.provider,
     l2.provider
   ])

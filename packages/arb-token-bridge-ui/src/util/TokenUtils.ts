@@ -1,4 +1,4 @@
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
@@ -353,4 +353,29 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     decimals: data.decimals,
     listIds: new Set()
   }
+}
+
+export const isAllowedL2 = async ({
+  l1TokenAddress,
+  l2TokenAddress,
+  walletAddress,
+  amountNeeded,
+  l2Provider
+}: {
+  l1TokenAddress: string
+  l2TokenAddress: string
+  walletAddress: string
+  amountNeeded: BigNumber
+  l2Provider: Provider
+}) => {
+  const token = ERC20__factory.connect(l2TokenAddress, l2Provider)
+
+  const gatewayAddress = await fetchErc20L2GatewayAddress({
+    erc20L1Address: l1TokenAddress,
+    l2Provider
+  })
+
+  return (await token.allowance(walletAddress, gatewayAddress)).gte(
+    amountNeeded
+  )
 }

@@ -84,11 +84,11 @@ export abstract class BridgeTransferStarter {
 
   public abstract approveTokenEstimateGas(
     props: ApproveTokenProps
-  ): Promise<BigNumber>
+  ): Promise<BigNumber | void>
 
   public abstract approveToken(
     props: ApproveTokenProps
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction | void>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }
