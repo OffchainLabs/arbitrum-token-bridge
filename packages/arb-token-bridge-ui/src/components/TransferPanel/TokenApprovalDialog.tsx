@@ -122,7 +122,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     provider,
     signer,
     walletAddress,
-    token,
+    token?.address,
     l1.provider,
     l2.provider
   ])

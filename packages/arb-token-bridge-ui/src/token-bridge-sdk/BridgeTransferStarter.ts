@@ -26,8 +26,8 @@ export type BridgeTransfer = {
 
 export type BridgeTransferStarterProps = {
   sourceChainProvider: Provider
-  destinationChainProvider: Provider
   sourceChainErc20Address?: string
+  destinationChainProvider: Provider
 }
 
 export type TransferProps = {
