@@ -53,10 +53,11 @@ describe('Deposit ETH', () => {
       name: 'Move funds to Arbitrum'
     }).click()
     cy.confirmMetamaskTransaction().then(() => {
+      cy.findByText('~10 mins remaining').should('be.visible')
       cy.findByText(
-        `Moving ${formatAmount(0.0001, {
+        `${formatAmount(ETHAmountToDeposit, {
           symbol: 'ETH'
-        })} to Arbitrum`
+        })}`
       ).should('be.visible')
     })
   })

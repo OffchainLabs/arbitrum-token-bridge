@@ -7,6 +7,7 @@ import {
   getBlockTime,
   getConfirmPeriodBlocks
 } from '../../util/networks'
+import { MergedTransaction } from '../../state/app/state'
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed.
@@ -37,10 +38,10 @@ export function getTxConfirmationDate({
 }
 
 export function WithdrawalCountdown({
-  createdAt
+  tx
 }: {
-  createdAt: string | null
-}): JSX.Element {
+  tx: MergedTransaction
+}): JSX.Element | null {
   const {
     l1: { network: l1Network },
     l2: { network: l2Network }
@@ -52,8 +53,9 @@ export function WithdrawalCountdown({
   })
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
+  const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
-    createdAt: dayjs(createdAt),
+    createdAt: createdAtDate,
     withdrawalFromChainId: l2Network.id,
     baseChainId
   })
