@@ -47,9 +47,7 @@ import {
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
-  isTokenMainnetUSDC,
-  isTokenUSDC,
-  sanitizeTokenSymbol
+  isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
@@ -57,10 +55,7 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import {
-  createBlockExplorerUrlForToken,
-  shortenAddress
-} from '../../util/CommonUtils'
+import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
@@ -299,8 +294,8 @@ function TokenBalance({
   }
 
   return (
-    <p>
-      <span>{prefix}</span>
+    <p aria-label={`${forToken.symbol} balance on ${on}`}>
+      <span className="font-light">{prefix}</span>
       <span className="tabular-nums">
         {formatAmount(balance, {
           decimals: forToken.decimals

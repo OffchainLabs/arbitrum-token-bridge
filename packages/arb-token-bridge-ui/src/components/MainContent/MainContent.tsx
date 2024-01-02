@@ -1,19 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import useLocalStorage from '@rehooks/local-storage'
+import { useAccount } from 'wagmi'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { useAppState } from '../../state'
-import { useDeposits } from '../../hooks/useDeposits'
-import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useWithdrawals } from '../../hooks/useWithdrawals'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
-import { isNetwork } from '../../util/networks'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { isTxPending } from '../TransactionHistory/helpers'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
 export const motionDivProps = {
   layout: true,
@@ -32,7 +29,11 @@ export const motionDivProps = {
 }
 
 export function MainContent() {
+  const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
@@ -40,69 +41,26 @@ export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
 
-  const { l2 } = useNetworksAndSigners()
-
-  const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
-    searchString: '',
-    pageNumber: 0,
-    pageSize: 10
-  })
-
-  const [withdrawalsPageParams, setWithdrawalsPageParams] =
-    useState<PageParams>({
-      searchString: '',
-      pageNumber: 0,
-      pageSize: 10
-    })
-
-  const pageSize = useMemo(
-    () => (isNetwork(l2.network.id).isOrbitChain ? 5 : 10),
-    [l2.network.id]
-  )
-
-  const {
-    data: depositsData = {
-      deposits: [],
-      pendingDeposits: [],
-      transformedDeposits: []
-    },
-    isValidating: depositsLoading,
-    error: depositsError
-  } = useDeposits({ ...depositsPageParams, pageSize })
-
-  const {
-    data: withdrawalsData = {
-      withdrawals: [],
-      pendingWithdrawals: [],
-      transformedWithdrawals: []
-    },
-    isValidating: withdrawalsLoading,
-    error: withdrawalsError
-  } = useWithdrawals({ ...withdrawalsPageParams, pageSize })
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
 
   useEffect(() => {
-    // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.transactions?.setDepositsInStore?.(
-      depositsData.pendingDeposits
-    )
-  }, [JSON.stringify(depositsData.pendingDeposits)]) // only run side effect on value change, not reference (Call stack exceeded)
+    const interval = setInterval(() => {
+      pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
 
-  useEffect(() => {
-    // if pending withdrawals found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsData.pendingWithdrawals)
-  }, [JSON.stringify(withdrawalsData.pendingWithdrawals)]) // only run side effect on value change, not reference (Call stack exceeded)
+    return () => clearInterval(interval)
+  }, [pendingTransactions, updatePendingTransaction])
 
   return (
     <div className="flex w-full justify-center">
       <div className="main-panel flex w-full max-w-[600px] flex-col gap-2">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
 
-        {/* if the user has some pending claim txns or retryables to redeem, show that banner here */}
-        <TransactionStatusInfo deposits={depositsData.transformedDeposits} />
+        <TransactionStatusInfo />
 
         <TransferPanel />
       </div>
@@ -110,22 +68,9 @@ export function MainContent() {
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
         onClose={closeTransactionHistoryPanel}
+        scrollable={false}
       >
-        {/* Transaction history - pending transactions + history table */}
-        <TransactionHistory
-          {...{
-            depositsPageParams: { ...depositsPageParams, pageSize },
-            withdrawalsPageParams: { ...withdrawalsPageParams, pageSize },
-            depositsData,
-            depositsLoading,
-            depositsError,
-            withdrawalsData,
-            withdrawalsLoading,
-            withdrawalsError,
-            setDepositsPageParams,
-            setWithdrawalsPageParams
-          }}
-        />
+        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
       </SidePanel>
 
       {/* Settings panel */}

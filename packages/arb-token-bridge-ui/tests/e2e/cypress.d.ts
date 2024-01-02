@@ -4,7 +4,10 @@ import {
   connectToApp,
   login,
   logout,
-  openTransactionsPanel
+  openTransactionsPanel,
+  resetCctpAllowance,
+  fundUserUsdcTestnet,
+  fundUserWalletEth
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -25,6 +28,9 @@ declare global {
       }): typeof login
       logout(): typeof logout
       openTransactionsPanel(): typeof openTransactionsPanel
+      resetCctpAllowance: typeof resetCctpAllowance
+      fundUserUsdcTestnet: typeof fundUserUsdcTestnet
+      fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
     }
   }

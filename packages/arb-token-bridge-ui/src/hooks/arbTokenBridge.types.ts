@@ -89,13 +89,17 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  chainId?: number
-  parentChainId?: number
+  parentChainId: number
+  childChainId: number
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
   timestamp?: BigNumber
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
+  parentChainId: number
+  childChainId: number
 }
 
 export interface PendingWithdrawalsMap {
@@ -160,7 +164,7 @@ export interface ArbTokenBridgeEth {
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
@@ -194,7 +198,7 @@ export interface ArbTokenBridgeToken {
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }

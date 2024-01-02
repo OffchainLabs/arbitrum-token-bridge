@@ -65,7 +65,7 @@ describe('Approve token and deposit afterwards', () => {
       cy.confirmMetamaskTransaction().then(() => {
         cy.findByText(
           // PATCH : Find a proper fix later : `0.000000000001` will be rounded to 0 by our formatAmount function in tx cards
-          `Moving < 0.00001 ${ERC20TokenSymbol} to Arbitrum`
+          `< 0.00001 ${ERC20TokenSymbol}`
         ).should('be.visible')
       })
     })
