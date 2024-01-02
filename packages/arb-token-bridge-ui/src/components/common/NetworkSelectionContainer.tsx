@@ -1,5 +1,4 @@
 import { Popover, Transition } from '@headlessui/react'
-import useLocalStorage from '@rehooks/local-storage'
 import Image from 'next/image'
 import { CSSProperties, useMemo, useState } from 'react'
 import { useNetwork } from 'wagmi'
@@ -14,7 +13,7 @@ import {
 } from '../../util/networks'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
-import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { twMerge } from 'tailwind-merge'
@@ -200,7 +199,7 @@ export const NetworkSelectionContainer = ({
   children: React.ReactNode
 }) => {
   const { chain } = useNetwork()
-  const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
+  const [isTestnetMode] = useIsTestnetMode()
 
   const supportedNetworks = getSupportedNetworks(
     chain?.id,
