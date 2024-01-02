@@ -81,8 +81,7 @@ export function HeaderAccountPopover({
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
 
-  const { openTransactionHistoryPanel, setTransactionHistoryTab } =
-    useAppContextActions()
+  const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
 
   const [showCopied, setShowCopied] = useState(false)
@@ -125,7 +124,6 @@ export function HeaderAccountPopover({
   }
 
   function openTransactionHistory() {
-    setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }

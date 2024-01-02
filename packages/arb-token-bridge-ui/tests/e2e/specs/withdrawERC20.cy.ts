@@ -119,10 +119,11 @@ describe('Withdraw ERC20 Token', () => {
               .click()
 
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findAllByText(
-                `Moving ${formatAmount(0.0001, {
+              cy.findByText('an hour remaining').should('be.visible')
+              cy.findByText(
+                `${formatAmount(ERC20ToWithdraw, {
                   symbol: 'WETH'
-                })} to Ethereum`
+                })}`
               ).should('be.visible')
             })
           })
