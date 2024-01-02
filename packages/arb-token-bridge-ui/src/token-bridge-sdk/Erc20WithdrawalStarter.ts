@@ -9,13 +9,13 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { approveNativeCurrency } from './core/approveNativeCurrency'
+import { approveNativeCurrency } from './approveNativeCurrency'
 import {
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
-import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
+import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
 import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import { constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -168,6 +168,13 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     }
 
     const address = await getAddressFromSigner(signer)
+
+    const isSmartContractAddress =
+      (await this.sourceChainProvider.getCode(String(tokenAddress))).length < 2
+
+    if (isSmartContractAddress && !destinationAddress) {
+      throw new Error(`Missing destination address`)
+    }
 
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.sourceChainProvider

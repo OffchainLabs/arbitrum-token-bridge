@@ -1,6 +1,6 @@
 import { EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { ApproveNativeCurrencyProps } from '../BridgeTransferStarter'
+import { ApproveNativeCurrencyProps } from './BridgeTransferStarter'
 
 export async function approveNativeCurrency({
   signer,

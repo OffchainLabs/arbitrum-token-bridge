@@ -7,8 +7,8 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
-import { approveNativeCurrency } from './core/approveNativeCurrency'
+import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
+import { approveNativeCurrency } from './approveNativeCurrency'
 import { getAddressFromSigner } from './utils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {

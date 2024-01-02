@@ -1,14 +1,14 @@
 import { EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { fetchErc20Allowance } from '../../util/TokenUtils'
-import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
+import { fetchErc20Allowance } from '../util/TokenUtils'
+import { fetchNativeCurrency } from '../hooks/useNativeCurrency'
 import {
   getProviderFromSigner,
   getAddressFromSigner,
   getChainIdFromProvider
-} from '../utils'
-import { isNetwork } from '../../util/networks'
-import { RequiresTokenApprovalProps } from '../BridgeTransferStarter'
+} from './utils'
+import { isNetwork } from '../util/networks'
+import { RequiresTokenApprovalProps } from './BridgeTransferStarter'
 
 export async function requiresNativeCurrencyApproval({
   amount,

@@ -9,12 +9,12 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { approveNativeCurrency } from './core/approveNativeCurrency'
+import { approveNativeCurrency } from './approveNativeCurrency'
 import {
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress
 } from '../util/TokenUtils'
-import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
+import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
 import { getAddressFromSigner } from './utils'
 import { constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'

@@ -7,8 +7,10 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { requiresNativeCurrencyApproval } from './core/requiresNativeCurrencyApproval'
-import { approveNativeCurrency } from './core/approveNativeCurrency'
+import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
+import { approveNativeCurrency } from './approveNativeCurrency'
+import { getAddressFromSigner, percentIncrease } from './utils'
+import { BigNumber } from 'ethers'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -46,12 +48,25 @@ export class EthDepositStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, signer }: TransferProps) {
+    const address = await getAddressFromSigner(signer)
+
     const ethBridger = await EthBridger.fromProvider(
       this.destinationChainProvider
     )
+
+    const depositRequest = await ethBridger.getDepositRequest({
+      amount,
+      from: address
+    })
+
+    const gasLimit = await this.sourceChainProvider.estimateGas(
+      depositRequest.txRequest
+    )
+
     const tx = await ethBridger.deposit({
       amount,
-      l1Signer: signer
+      l1Signer: signer,
+      overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 
     return {

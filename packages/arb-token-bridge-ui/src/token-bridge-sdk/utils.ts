@@ -1,4 +1,4 @@
-import { Signer } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
 
@@ -45,4 +45,12 @@ export const getBridgeTransferProperties = async ({
     isDeposit,
     isNativeCurrencyTransfer
   }
+}
+
+// https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L76
+export function percentIncrease(
+  num: BigNumber,
+  increase: BigNumber
+): BigNumber {
+  return num.add(num.mul(increase).div(100))
 }
