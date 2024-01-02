@@ -86,22 +86,6 @@ describe('getBaseChainIdByChainId', () => {
     })
   })
 
-  describe('chainId is the id of an L3 Orbit chain', () => {
-    it('should return the correct base chain', () => {
-      expect(
-        getBaseChainIdByChainId({
-          chainId: ChainId.XaiTestnet
-        })
-      ).toBe(ChainId.Goerli)
-
-      expect(
-        getBaseChainIdByChainId({
-          chainId: ChainId.StylusTestnet
-        })
-      ).toBe(ChainId.Sepolia)
-    })
-  })
-
   describe('chainId is the id of an L2 chain', () => {
     it('should return the correct base chain', () => {
       expect(
@@ -113,6 +97,22 @@ describe('getBaseChainIdByChainId', () => {
       expect(
         getBaseChainIdByChainId({
           chainId: ChainId.ArbitrumSepolia
+        })
+      ).toBe(ChainId.Sepolia)
+    })
+  })
+
+  describe('chainId is the id of an L3 Orbit chain', () => {
+    it('should return the correct base chain', () => {
+      expect(
+        getBaseChainIdByChainId({
+          chainId: ChainId.XaiTestnet
+        })
+      ).toBe(ChainId.Goerli)
+
+      expect(
+        getBaseChainIdByChainId({
+          chainId: ChainId.StylusTestnet
         })
       ).toBe(ChainId.Sepolia)
     })
