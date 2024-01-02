@@ -81,7 +81,7 @@ export type L2ToL1MessageData = {
 
 type TransactionBase = {
   type: TxnType
-  status: TxnStatus
+  status?: TxnStatus
   value: string | null
   txID?: string
   assetName: string
@@ -101,6 +101,11 @@ type TransactionBase = {
 
 export interface Transaction extends TransactionBase {
   txID: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
+  parentChainId: number
+  childChainId: number
+  nonce?: number
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -515,7 +520,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
-    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }

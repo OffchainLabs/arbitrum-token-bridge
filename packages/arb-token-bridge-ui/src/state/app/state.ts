@@ -48,15 +48,23 @@ export enum DepositStatus {
   CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
 }
 
+export enum WithdrawalStatus {
+  EXECUTED = 'Executed',
+  UNCONFIRMED = 'Unconfirmed',
+  CONFIRMED = 'Confirmed',
+  EXPIRED = 'Expired',
+  FAILURE = 'Failure'
+}
+
 export interface MergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31
   // should return sender as well, then we can make it non-optional
   sender?: string
   destination?: string
   direction: TxnType
-  status: string // TODO: Use enums
-  createdAt: string | null
-  resolvedAt: string | null
+  status: string | undefined // TODO: Use enums
+  createdAt: number | null
+  resolvedAt: number | null
   txId: string
   asset: string
   assetType: AssetType
@@ -70,14 +78,14 @@ export interface MergedTransaction {
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
   depositStatus?: DepositStatus
-  chainId?: number
-  parentChainId?: number
+  childChainId: number
+  parentChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
     attestationHash?: `0x${string}` | null
     messageBytes?: string | null
     receiveMessageTransactionHash?: `0x${string}` | null
-    receiveMessageTimestamp?: string | null
+    receiveMessageTimestamp?: number | null
   }
 }
 

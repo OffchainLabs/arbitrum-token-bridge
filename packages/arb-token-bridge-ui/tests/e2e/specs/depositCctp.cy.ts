@@ -223,9 +223,9 @@ describe('Deposit USDC through CCTP', () => {
               cy.wait(40_000)
               cy.confirmMetamaskTransaction().then(() => {
                 cy.findByText(
-                  `Moving ${formatAmount(USDCAmountToSend, {
+                  `${formatAmount(USDCAmountToSend, {
                     symbol: 'USDC'
-                  })} to Arbitrum Goerli`
+                  })}`
                 ).should('be.visible')
               })
             }
