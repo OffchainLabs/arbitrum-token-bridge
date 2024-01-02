@@ -29,45 +29,29 @@ export type ChainWithRpcUrl = Chain & {
 }
 
 export function getBaseChainIdByChainId({
-  chainId,
-  parentChainId
+  chainId
 }: {
   chainId: number
-  parentChainId: number
 }): number {
-  const {
-    isOrbitChain: isChildChainOrbitChain,
-    isEthereumMainnetOrTestnet: isChildChainEthereumMainnetOrTestnet
-  } = isNetwork(chainId)
-  const { isEthereumMainnetOrTestnet: isParentChainEthereumMainnetOrTestnet } =
-    isNetwork(parentChainId)
-  const parentChain = parentChains[parentChainId]
+  const chain = chains[chainId]
 
-  // Arbitrum Goerli is not a parent of any Orbit chains in the sdk
-  // aka Arbitrum Goerli does not have partnerChainIDs
-  // but we need to support it before we remove support from Goerli
-  // hardcode for now
-  if (parentChainId === ChainId.ArbitrumGoerli) {
-    return ChainId.Goerli
-  }
-
-  if (isChildChainEthereumMainnetOrTestnet) {
+  if (!chain || !chain.partnerChainID) {
     return chainId
   }
 
-  if (isParentChainEthereumMainnetOrTestnet) {
-    return parentChainId
-  }
+  const parentChain = parentChains[chain.partnerChainID]
 
-  // the parent chain passed in is probably the base chain
   if (!parentChain) {
-    return parentChainId
+    return chainId
   }
 
-  if (isChildChainOrbitChain) {
-    return (parentChains[parentChainId] as L2Network)?.partnerChainID
+  const parentOfParentChain = (parentChain as L2Network).partnerChainID
+
+  if (parentOfParentChain) {
+    return parentOfParentChain
   }
-  return parentChain.chainID
+
+  return parentChain.chainID ?? chainId
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
@@ -81,7 +65,7 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
 
   return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
     .filter(
-      // filter again in case local storage is compromized
+      // filter again in case local storage is compromised
       chain => !supportedCustomOrbitParentChains.includes(Number(chain.chainID))
     )
     .map(chain => {

@@ -73,8 +73,7 @@ export function WithdrawalConfirmationDialog(
 
   const { isArbitrumOne } = isNetwork(l2.network.id)
   const baseChainId = getBaseChainIdByChainId({
-    chainId: l2.network.id,
-    parentChainId: l1.network.id
+    chainId: l2.network.id
   })
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
