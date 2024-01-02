@@ -51,6 +51,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
   isTokenMainnetUSDC,
+  isTokenUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import {
@@ -59,7 +60,10 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
+import {
+  createBlockExplorerUrlForToken,
+  shortenAddress
+} from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useChainLayers } from '../../hooks/useChainLayers'
@@ -68,7 +72,7 @@ import {
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
-import { TransferPanelMainRichErrorMessage } from './TransferPanelMainErrorMessage'
+import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 
 enum NetworkType {
   l1 = 'l1',
@@ -265,7 +269,9 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+      <span className="tabular-nums">
+        {formatAmount(balance, { symbol: ether.symbol })}
+      </span>
     </p>
   )
 }
@@ -284,6 +290,13 @@ function TokenBalance({
   tokenSymbolOverride?: string
 }) {
   const { l1, l2 } = useNetworksAndSigners()
+  const isParentChain = on === NetworkType.l1
+  const chain = isParentChain ? l1.network : l2.network
+
+  const isERC20BridgeToken = (
+    token: ERC20BridgeToken | NativeCurrencyErc20 | null
+  ): token is ERC20BridgeToken =>
+    token !== null && !token.hasOwnProperty('isCustom')
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -294,10 +307,10 @@ function TokenBalance({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(forToken.symbol, {
         erc20L1Address: forToken.address,
-        chain: on === NetworkType.l1 ? l1.network : l2.network
+        chain
       })
     )
-  }, [forToken, tokenSymbolOverride, on, l1, l2])
+  }, [forToken, tokenSymbolOverride, chain])
 
   if (!forToken) {
     return null
@@ -308,14 +321,29 @@ function TokenBalance({
   }
 
   return (
-    <p>
+    <p aria-label={`${symbol} balance on ${on}`}>
       <span className="font-light">{prefix}</span>
-      <span>
+      <span className="tabular-nums">
         {formatAmount(balance, {
-          decimals: forToken.decimals,
-          symbol
+          decimals: forToken.decimals
         })}
-      </span>
+      </span>{' '}
+      {/* we don't want to show explorer link for native currency (either ETH or custom token), or USDC because user can bridge USDC to USDC.e or native USDC, vice versa */}
+      {isERC20BridgeToken(forToken) && !isTokenUSDC(forToken.address) ? (
+        <ExternalLink
+          className="arb-hover underline"
+          href={createBlockExplorerUrlForToken({
+            explorerLink: chain.blockExplorers
+              ? chain.blockExplorers.default.url
+              : undefined,
+            tokenAddress: isParentChain ? forToken.address : forToken.l2Address
+          })}
+        >
+          <span>{symbol}</span>
+        </ExternalLink>
+      ) : (
+        <span>{symbol}</span>
+      )}
     </p>
   )
 }
@@ -347,7 +375,7 @@ export function TransferPanelMain({
 }: {
   amount: string
   setAmount: (value: string) => void
-  errorMessage?: TransferPanelMainRichErrorMessage | string
+  errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
 
@@ -489,7 +517,7 @@ export function TransferPanelMain({
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Mainnet.USDC] ?? null,
+        l1: erc20L1Balances[CommonAddress.Ethereum.USDC] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
@@ -628,9 +656,12 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(nativeCurrencyBalance)
 
+      // for a withdrawal init tx, this is the batch posting fee needed for the tx
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        l1GasPrice
+        // node interface returns l1 gas based on l2 gas price for withdrawals
+        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
+        isDepositMode ? l1GasPrice : l2GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
         result.estimatedL2Gas,
@@ -642,9 +673,10 @@ export function TransferPanelMain({
         utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
       )
       const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      setAmount(
-        String(nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4)
-      )
+      const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
+      // make sure it's always a positive number
+      // if it's negative, set it to user's balance to show insufficient for gas error
+      setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
     } catch (error) {
       console.error(error)
     } finally {
@@ -717,7 +749,7 @@ export function TransferPanelMain({
     }
 
     switch (errorMessage) {
-      case TransferPanelMainRichErrorMessage.GAS_ESTIMATION_FAILURE:
+      case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
         return (
           <span>
             Gas estimation failed, join our{' '}
@@ -731,7 +763,8 @@ export function TransferPanelMain({
           </span>
         )
 
-      case TransferPanelMainRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+      case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
+      case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
         return (
           <>
             <span>This token can&apos;t be bridged over.</span>{' '}
@@ -780,10 +813,10 @@ export function TransferPanelMain({
       listIds: new Set<number>()
     }
     if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Mainnet.USDC)
+      token.updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
-        address: CommonAddress.Mainnet.USDC,
+        address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
     } else if (isArbGoerliUSDC) {
@@ -827,17 +860,79 @@ export function TransferPanelMain({
     }
 
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
+      const isFromOrbitChain = isNetwork(from.id).isOrbitChain
+      const isToOrbitChain = isNetwork(to.id).isOrbitChain
+      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
+
       // Add L1 network to the list
       return [l1.network, ...options].filter(option => {
+        const isSourceChainList = direction === 'from'
+        const isDestinationChainList = direction === 'to'
+        const isSameAsSourceChain = option.id === from.id
+        const isSameAsDestinationChain = option.id === to.id
+        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+          option.id
+        )
         // Remove the origin network from the destination list for contract wallets
         // It's done so that the origin network is not changed
         if (
           isSmartContractWallet &&
-          direction === 'to' &&
-          option.id === from.id
+          isDestinationChainList &&
+          isSameAsSourceChain
         ) {
           return false
         }
+
+        // If this is the Source network list options
+        // and the selected source is an Arbitrum Base chain
+        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isSourceChainList &&
+          isOrbitChain &&
+          !isSameAsDestinationChain
+        ) {
+          return false
+        }
+
+        // If this is the Destination network list options
+        // and the selected destination is an Arbitrum chain
+        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
+        if (
+          isSelectedArbitrumChain &&
+          isDestinationChainList &&
+          isOrbitChain &&
+          !isSameAsSourceChain
+        ) {
+          return false
+        }
+
+        // If the source chain is an Orbit Chain,
+        // and this is the Destination network list options
+        if (isFromOrbitChain && isDestinationChainList) {
+          // we do not show Ethereum Mainnet or Testnet as options
+          if (isEthereumMainnetOrTestnet) {
+            return false
+          }
+          // we do not show other Orbit chains as options
+          if (isOrbitChain && !isSameAsSourceChain) {
+            return false
+          }
+        }
+
+        // If the destination chain is an Orbit Chain,
+        // and this is the Source network list options
+        if (isToOrbitChain && isSourceChainList) {
+          // we do not show Ethereum Mainnet or Testnet as options
+          if (isEthereumMainnetOrTestnet) {
+            return false
+          }
+          // we do not show other Orbit chains as options
+          if (isOrbitChain && !isSameAsDestinationChain) {
+            return false
+          }
+        }
+
         // Remove selected network from the list
         return option.id !== selectedChainId
       })
@@ -862,7 +957,7 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereum } = isNetwork(network.id)
+            const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
 
             if (shouldOpenOneNovaDialog([network.id, to.id])) {
               setOneNovaTransferDestinationNetworkId(to.id)
@@ -876,7 +971,7 @@ export function TransferPanelMain({
               const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
               // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
               // Otherwise we want to keep the current chain, in case it's Nova.
-              if (isEthereum && isOrbitChainSelected) {
+              if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
                 updatePreferredL2Chain(
                   mapChainToDefaultPartnerChain(network.id)
                 )
@@ -895,7 +990,9 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            const { isEthereum, isOrbitChain } = isNetwork(network.id)
+            const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+              network.id
+            )
             const defaultPartnerChain = mapChainToDefaultPartnerChain(
               network.id
             )
@@ -916,7 +1013,7 @@ export function TransferPanelMain({
             ).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereum && isOrbitChainCurrentlySelected) {
+            if (isEthereumMainnetOrTestnet && isOrbitChainCurrentlySelected) {
               updatePreferredL2Chain(defaultPartnerChain)
               return
             }
@@ -951,7 +1048,7 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          const { isEthereum } = isNetwork(network.id)
+          const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
 
           if (shouldOpenOneNovaDialog([network.id, to.id])) {
             setOneNovaTransferDestinationNetworkId(to.id)
@@ -966,7 +1063,7 @@ export function TransferPanelMain({
             const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
             // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereum && isOrbitChainSelected) {
+            if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
               updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
               return
             }
@@ -983,7 +1080,9 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereum, isOrbitChain } = isNetwork(network.id)
+          const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
+            network.id
+          )
           const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
 
           if (network.id === from.id) {
@@ -997,7 +1096,7 @@ export function TransferPanelMain({
             return
           }
 
-          if (isEthereum) {
+          if (isEthereumMainnetOrTestnet) {
             if (isConnectedToOrbitChain) {
               try {
                 // If connected to an Orbit chain, we need to change network to Arbitrum.

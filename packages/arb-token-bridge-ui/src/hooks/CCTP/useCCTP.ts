@@ -22,18 +22,20 @@ type Contracts = {
 }
 
 const contracts: Record<CCTPSupportedChainId, Contracts> = {
-  [ChainId.Mainnet]: {
-    tokenMessengerContractAddress: '0xbd3fa81b58ba92a82136038b25adec7066af3155',
+  [ChainId.Ethereum]: {
+    tokenMessengerContractAddress:
+      CommonAddress.Ethereum.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumOne,
-    usdcContractAddress: CommonAddress.Mainnet.USDC,
+    usdcContractAddress: CommonAddress.Ethereum.USDC,
     messageTransmitterContractAddress:
       '0xc30362313fbba5cf9163f0bb16a0e01f01a896ca',
     attestationApiUrl: 'https://iris-api.circle.com/v1',
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
   [ChainId.Goerli]: {
-    tokenMessengerContractAddress: '0xd0c3da58f55358142b8d3e06c1c30c5c6114efe8',
+    tokenMessengerContractAddress:
+      CommonAddress.Goerli.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.ArbitrumOne,
     targetChainId: ChainId.ArbitrumGoerli,
     usdcContractAddress: CommonAddress.Goerli.USDC,
@@ -43,9 +45,10 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
   },
   [ChainId.ArbitrumOne]: {
-    tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
-    targetChainDomain: ChainDomain.Mainnet,
-    targetChainId: ChainId.Mainnet,
+    tokenMessengerContractAddress:
+      CommonAddress.ArbitrumOne.tokenMessengerContractAddress,
+    targetChainDomain: ChainDomain.Ethereum,
+    targetChainId: ChainId.Ethereum,
     usdcContractAddress: CommonAddress.ArbitrumOne.USDC,
     messageTransmitterContractAddress:
       '0x0a992d191deec32afe36203ad87d7d289a738f81',
@@ -53,8 +56,9 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
   },
   [ChainId.ArbitrumGoerli]: {
-    tokenMessengerContractAddress: '0x12dcfd3fe2e9eac2859fd1ed86d2ab8c5a2f9352',
-    targetChainDomain: ChainDomain.Mainnet,
+    tokenMessengerContractAddress:
+      CommonAddress.ArbitrumGoerli.tokenMessengerContractAddress,
+    targetChainDomain: ChainDomain.Ethereum,
     targetChainId: ChainId.Goerli,
     usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
     messageTransmitterContractAddress:
@@ -76,10 +80,10 @@ export type AttestationResponse =
 
 export function getContracts(chainId: ChainId | undefined) {
   if (!chainId) {
-    return contracts[ChainId.Mainnet]
+    return contracts[ChainId.Ethereum]
   }
   return (
-    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Mainnet]
+    contracts[chainId as CCTPSupportedChainId] || contracts[ChainId.Ethereum]
   )
 }
 

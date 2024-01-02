@@ -8,7 +8,7 @@ import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConf
 const networkButtonsStyles: {
   [key in ChainId]?: { btnThemeClass: string }
 } = {
-  [ChainId.Mainnet]: {
+  [ChainId.Ethereum]: {
     btnThemeClass: 'bg-ocl-blue'
   },
   [ChainId.ArbitrumOne]: {

@@ -14,7 +14,7 @@ const handleSwitchNetworkNotSupported = (
   attemptedChainId: number,
   isSwitchingNetworkBeforeTx: boolean
 ) => {
-  const isDeposit = isNetwork(attemptedChainId).isEthereum
+  const isDeposit = isNetwork(attemptedChainId).isEthereumMainnetOrTestnet
   const targetTxName = isDeposit ? 'deposit' : 'withdraw'
   const networkName = getNetworkName(attemptedChainId)
 

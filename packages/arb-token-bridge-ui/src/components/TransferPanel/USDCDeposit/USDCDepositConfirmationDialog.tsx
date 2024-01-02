@@ -63,7 +63,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
       to: to.id,
       fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.Goerli.USDC
-        : CommonAddress.Mainnet.USDC,
+        : CommonAddress.Ethereum.USDC,
       toTokenAddress: isArbitrumGoerli
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,
@@ -94,9 +94,13 @@ export function USDCDepositConfirmationDialog(props: Props) {
             </button>
           </div>
           <Tab.List className="flex bg-ocl-blue">
-            <TabButton>Arbitrum&apos;s bridge (USDC.e)</TabButton>
-            <TabButton>Third party (USDC)</TabButton>
-            <TabButton>Circle (USDC)</TabButton>
+            <TabButton aria-label="Arbitrum's bridge (USDC.e)">
+              Arbitrum&apos;s bridge (USDC.e)
+            </TabButton>
+            <TabButton aria-label="Third party (USDC)">
+              Third party (USDC)
+            </TabButton>
+            <TabButton aria-label="Circle (USDC)">Circle (USDC)</TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">

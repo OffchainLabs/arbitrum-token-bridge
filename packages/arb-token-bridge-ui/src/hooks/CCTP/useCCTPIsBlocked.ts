@@ -3,7 +3,7 @@ import { ChainId } from '../../util/networks'
 import { useCCTP } from './useCCTP'
 
 export function useCCTPIsBlocked() {
-  const { fetchAttestation } = useCCTP({ sourceChainId: ChainId.Mainnet })
+  const { fetchAttestation } = useCCTP({ sourceChainId: ChainId.Ethereum })
 
   return useSWRImmutable(['cctp-check'], async () => {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful

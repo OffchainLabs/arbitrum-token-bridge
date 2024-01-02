@@ -3,6 +3,7 @@ import dayjs, { Dayjs } from 'dayjs'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChainId } from '../../util/networks'
+import { MergedTransaction } from '../../state/app/state'
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should usually/always be less in practice.
@@ -37,7 +38,7 @@ function getTxConfirmationRemainingMinutes({
 function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
   const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
-  if (parentChainId === ChainId.Mainnet) {
+  if (parentChainId === ChainId.Ethereum) {
     return SEVEN_DAYS_IN_MINUTES
   }
 
@@ -46,25 +47,22 @@ function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
 }
 
 export function WithdrawalCountdown({
-  createdAt
+  tx
 }: {
-  createdAt: string | null
-}): JSX.Element {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
+  tx: MergedTransaction
+}): JSX.Element | null {
   const isLargeScreen = useMedia('(min-width: 1024px)')
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
-  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+  const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
-    parentChainId: l1Network.id
+    parentChainId: tx.parentChainId
   })
 
   const minutesLeft = getTxConfirmationRemainingMinutes({
     createdAt: createdAtDate,
-    parentChainId: l1Network.id
+    parentChainId: tx.parentChainId
   })
 
   const remainingTextOrEmpty =

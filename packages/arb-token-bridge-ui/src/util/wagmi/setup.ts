@@ -2,7 +2,8 @@ import { createClient, configureChains, goerli } from 'wagmi'
 import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
+import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
   sepolia,
@@ -68,7 +69,7 @@ const appInfo = {
 }
 
 enum TargetChainKey {
-  Mainnet = 'mainnet',
+  Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
   Goerli = 'goerli',
@@ -80,12 +81,12 @@ enum TargetChainKey {
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
   if (targetChainKey === null) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   // Default to Ethereum Mainnet if invalid
   if (!(Object.values(TargetChainKey) as string[]).includes(targetChainKey)) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   return targetChainKey as TargetChainKey
@@ -93,8 +94,8 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
-    case TargetChainKey.Mainnet:
-      return ChainId.Mainnet
+    case TargetChainKey.Ethereum:
+      return ChainId.Ethereum
 
     case TargetChainKey.ArbitrumOne:
       return ChainId.ArbitrumOne
@@ -132,7 +133,10 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [publicProvider()]
+    [
+      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
+      publicProvider()
+    ]
   )
 
   const { wallets } = getDefaultWallets({
@@ -144,10 +148,7 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        ledgerWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 

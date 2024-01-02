@@ -2,33 +2,30 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { NodeBlockDeadlineStatusTypes } from '../../../hooks/arbTokenBridge.types'
-import { MergedTransaction } from '../../../state/app/state'
-import { StatusBadge } from '../../common/StatusBadge'
+import { MergedTransaction } from '../../state/app/state'
+import { StatusBadge } from '../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
-import { ExternalLink } from '../../common/ExternalLink'
-import { shortenTxHash } from '../../../util/CommonUtils'
-import { Tooltip } from '../../common/Tooltip'
+import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
+import { ExternalLink } from '../common/ExternalLink'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { Tooltip } from '../common/Tooltip'
 import {
   ChainId,
   getExplorerUrl,
   getNetworkName,
   isNetwork
-} from '../../../util/networks'
+} from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import {
-  isCustomDestinationAddressTx,
-  findMatchingL1TxForWithdrawal,
-  isPending
-} from '../../../state/app/utils'
-import { TransactionDateTime } from './TransactionsTable'
-import { formatAmount } from '../../../util/NumberUtils'
-import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
+import { TransactionDateTime } from './TransactionHistoryTable'
+import { formatAmount } from '../../util/NumberUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { useRemainingTime } from '../../../state/cctpState'
-import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useRemainingTime } from '../../state/cctpState'
+import { useChainLayers } from '../../hooks/useChainLayers'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { NetworkImage } from '../common/NetworkImage'
+import { getWithdrawalClaimParentChainTxDetails } from './helpers'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -37,9 +34,9 @@ type CommonProps = {
 
 function ClaimableRowStatus({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
-  const matchingL1Tx = tx.isCctp
+  const matchingL1TxId = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
-    : findMatchingL1TxForWithdrawal(tx)
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
   switch (tx.status) {
     case 'pending':
@@ -96,7 +93,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
       )
 
     case 'Executed': {
-      if (typeof matchingL1Tx === 'undefined') {
+      if (typeof matchingL1TxId === 'undefined') {
         return (
           <div className="flex flex-col space-y-1">
             <StatusBadge
@@ -167,11 +164,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {tx.isCctp ? (
-          <>{remainingTime}</>
-        ) : (
-          <WithdrawalCountdown createdAt={tx.createdAt} />
-        )}
+        {tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />}
       </div>
     )
   }
@@ -191,13 +184,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
     )
   }
 
-  const claimedTx = tx.isCctp
-    ? {
-        createdAt: tx.cctpData?.receiveMessageTimestamp
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxTimestamp = tx.isCctp
+    ? tx.cctpData?.receiveMessageTimestamp
+    : getWithdrawalClaimParentChainTxDetails(tx)?.timestamp
 
-  if (typeof claimedTx === 'undefined') {
+  if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>{layer} Transaction time</span>}>
@@ -217,10 +208,10 @@ function ClaimableRowTime({ tx }: CommonProps) {
       <Tooltip content={<span>{layer} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
-      {claimedTx?.createdAt && (
+      {claimedTxTimestamp && (
         <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            <TransactionDateTime standardizedDate={claimedTx?.createdAt} />
+            <TransactionDateTime standardizedDate={claimedTxTimestamp} />
           </span>
         </Tooltip>
       )}
@@ -229,27 +220,23 @@ function ClaimableRowTime({ tx }: CommonProps) {
 }
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum ? l1.network.id : l2.network.id
+  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
-  if (!isExecuted && !isBeingClaimed) {
-    return null
-  }
 
-  const claimedTx = tx.isCctp
-    ? {
-        txId: tx.cctpData?.receiveMessageTransactionHash
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxId = tx.isCctp
+    ? tx.cctpData?.receiveMessageTransactionHash
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
-  if (!claimedTx?.txId) {
+  if (!claimedTxId) {
     return (
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
-        <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-        {getNetworkName(toNetworkId)}: Not available
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+        <NetworkImage chainId={toNetworkId} />
+        <span className="pl-1">{getNetworkName(toNetworkId)}: </span>
+        {!isExecuted && !isBeingClaimed ? 'Pending' : 'Not available'}
       </span>
     )
   }
@@ -259,22 +246,24 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
       aria-label={`${parentLayer} Transaction Link`}
     >
-      <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
+      <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+      <NetworkImage chainId={toNetworkId} />
       {getNetworkName(toNetworkId)}:{' '}
       <ExternalLink
-        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
+        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTxId}`}
         className="arb-hover text-blue-link"
       >
-        {shortenTxHash(claimedTx.txId)}
+        {shortenTxHash(claimedTxId)}
       </ExternalLink>
     </span>
   )
 }
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { l1, l2 } = useNetworksAndSigners()
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum ? l2.network.id : l1.network.id
+  const fromNetworkId = isSourceChainArbitrum
+    ? tx.childChainId
+    : tx.parentChainId
 
   return (
     <div className="flex flex-col space-y-3">
@@ -282,8 +271,9 @@ function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label={`${layer} Transaction Link`}
       >
-        <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(fromNetworkId)}:{' '}
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
+        <NetworkImage chainId={fromNetworkId} />
+        <span className="pl-1">{getNetworkName(fromNetworkId)}: </span>
         <ExternalLink
           href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
@@ -306,10 +296,9 @@ export function TransactionsTableClaimableRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const { l1, l2 } = useNetworksAndSigners()
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
-    isEthereum: isSourceChainIdEthereum,
+    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
     isArbitrum: isSourceChainIdArbitrum
   } = isNetwork(sourceChainId)
   const { address } = useAccount()
@@ -324,9 +313,17 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: isSourceChainIdEthereum ? l1.network : l2.network
+        chain: getWagmiChain(
+          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
+        )
       }),
-    [tx.asset, tx.tokenAddress, isSourceChainIdEthereum, l1.network, l2.network]
+    [
+      tx.asset,
+      tx.tokenAddress,
+      tx.parentChainId,
+      tx.childChainId,
+      isSourceChainIdEthereum
+    ]
   )
 
   const customAddressTxPadding = useMemo(
@@ -339,49 +336,63 @@ export function TransactionsTableClaimableRow({
   }
 
   return (
-    <tr
-      className={twMerge(
-        'relative text-sm text-dark',
-        bgClassName || 'bg-cyan even:bg-white',
-        className
-      )}
+    <div
       data-testid={`withdrawal-row-${tx.txId}`}
+      className={twMerge(
+        'relative grid h-full grid-cols-[150px_250px_140px_280px_150px] border-b border-dark text-sm text-dark',
+        className,
+        bgClassName
+      )}
     >
-      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
+      <div
+        className={twMerge(
+          'py-4 pl-6 pr-3 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <ClaimableRowStatus
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <div
+        className={twMerge(
+          'flex items-center px-3 py-5 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <ClaimableRowTime
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td
+      <div
         className={twMerge(
-          'w-1/5 whitespace-nowrap px-3 py-3',
+          'flex items-center whitespace-nowrap px-3 py-5 align-middle',
           customAddressTxPadding
         )}
       >
-        {formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}
-      </td>
+        <span>
+          {formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}
+        </span>
+      </div>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <div
+        className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
+      >
         <ClaimableRowTxID
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td
+      <div
         className={twMerge(
-          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          'relative py-5 pl-3 pr-6 text-right align-middle',
           customAddressTxPadding
         )}
       >
@@ -390,12 +401,12 @@ export function TransactionsTableClaimableRow({
           isError={isError}
           type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
         />
-      </td>
+      </div>
       {isCustomDestinationAddressTx(tx) && (
-        <td>
+        <div>
           <TransactionsTableCustomAddressLabel tx={tx} />
-        </td>
+        </div>
       )}
-    </tr>
+    </div>
   )
 }

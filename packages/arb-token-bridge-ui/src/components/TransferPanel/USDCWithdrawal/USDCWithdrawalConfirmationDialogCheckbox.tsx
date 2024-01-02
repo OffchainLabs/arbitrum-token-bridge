@@ -51,7 +51,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
             <span className="font-medium">
               {isTestnet ? '~1 minute' : '~15 minutes'}
             </span>{' '}
-            before I can claim my USDC on {isTestnet ? 'Goerli' : 'Mainnet'}.
+            before I can claim my USDC on {isTestnet ? 'Goerli' : 'Ethereum'}.
           </span>
         }
         checked={checkboxesChecked[1] ?? false}

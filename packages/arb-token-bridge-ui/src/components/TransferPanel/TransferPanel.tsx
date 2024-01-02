@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
@@ -25,11 +26,7 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
-import {
-  TransactionHistoryTab,
-  useAppContextActions,
-  useAppContextState
-} from '../App/AppContext'
+import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
@@ -51,7 +48,7 @@ import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitCha
 import { errorToast, warningToast } from '../common/atoms/Toast'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
-import { DOCS_DOMAIN, GET_HELP_LINK, ether } from '../../constants'
+import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
   getDestinationAddressError,
   useDestinationAddressStore
@@ -62,14 +59,9 @@ import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getUsdcTokenAddressFromSourceChainId,
-  useCctpFetching,
-  useCctpState
-} from '../../state/cctpState'
+import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getStandardizedTimestamp } from '../../state/app/utils'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -82,6 +74,7 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -177,22 +170,9 @@ export function TransferPanel() {
     chainId: l2Network.id
   })
 
-  const { setPendingTransfer } = useCctpFetching({
-    l1ChainId: l1Network.id,
-    l2ChainId: l2Network.id,
-    walletAddress,
-    pageSize: 10,
-    pageNumber: 0,
-    type: 'all'
-  })
-
-  const {
-    openTransactionHistoryPanel,
-    setTransferring,
-    showCctpDepositsTransactions,
-    showCctpWithdrawalsTransactions,
-    setTransactionHistoryTab
-  } = useAppContextActions()
+  const { openTransactionHistoryPanel, setTransferring } =
+    useAppContextActions()
+  const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const { isArbitrumNova } = isNetwork(l2Network.id)
 
@@ -684,7 +664,7 @@ export function TransferPanel() {
         asset: 'USDC',
         assetType: AssetType.ERC20,
         blockNum: null,
-        createdAt: getStandardizedTimestamp(new Date().toString()),
+        createdAt: dayjs().valueOf(),
         direction: isDeposit ? 'deposit' : 'withdraw',
         isWithdrawal: !isDeposit,
         resolvedAt: null,
@@ -697,17 +677,16 @@ export function TransferPanel() {
         isCctp: true,
         tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
         cctpData: {
-          sourceChainId
-        }
+          sourceChainId,
+          attestationHash: null,
+          messageBytes: null,
+          receiveMessageTransactionHash: null,
+          receiveMessageTimestamp: null
+        },
+        parentChainId: l1Network.id,
+        childChainId: l2Network.id
       }
-      setPendingTransfer(newTransfer, isDeposit ? 'deposit' : 'withdrawal')
 
-      if (isDeposit) {
-        showCctpDepositsTransactions()
-      } else {
-        showCctpWithdrawalsTransactions()
-      }
-      setTransactionHistoryTab(TransactionHistoryTab.CCTP)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
@@ -722,18 +701,7 @@ export function TransferPanel() {
       }
 
       if (messageBytes && attestationHash) {
-        setPendingTransfer(
-          {
-            txId: depositForBurnTx.hash,
-            blockNum: depositTxReceipt.blockNumber,
-            status: 'Unconfirmed',
-            cctpData: {
-              attestationHash,
-              messageBytes
-            }
-          },
-          isDeposit ? 'deposit' : 'withdrawal'
-        )
+        addPendingTransaction(newTransfer)
       }
     } catch (e) {
     } finally {
@@ -775,8 +743,8 @@ export function TransferPanel() {
     // Make sure Ethereum and/or Orbit chains are not selected as a pair.
     const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
       id => {
-        const { isEthereum, isOrbitChain } = isNetwork(id)
-        return isEthereum || isOrbitChain
+        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(id)
+        return isEthereumMainnetOrTestnet || isOrbitChain
       }
     )
     if (ethereumOrOrbitPairsSelected) {
@@ -803,7 +771,9 @@ export function TransferPanel() {
           )
         }
 
-        const isParentChainEthereum = isNetwork(l1Network.id).isEthereum
+        const isParentChainEthereum = isNetwork(
+          l1Network.id
+        ).isEthereumMainnetOrTestnet
         // Only switch to L1 if the selected L1 network is Ethereum.
         // Or if connected to an Orbit chain as it can't make deposits.
         if (
@@ -934,7 +904,6 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -968,7 +937,6 @@ export function TransferPanel() {
             l1Signer,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -1094,7 +1062,6 @@ export function TransferPanel() {
             destinationAddress,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
@@ -1120,7 +1087,6 @@ export function TransferPanel() {
             l2Signer,
             txLifecycle: {
               onTxSubmit: () => {
-                setTransactionHistoryTab(TransactionHistoryTab.WITHDRAWALS)
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
