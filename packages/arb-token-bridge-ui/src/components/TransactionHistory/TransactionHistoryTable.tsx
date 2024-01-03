@@ -325,7 +325,7 @@ export const TransactionHistoryTable = ({
               dataKey="date"
               width={228}
               headerRenderer={() => (
-                <TableHeader className="pl-6">Date</TableHeader>
+                <TableHeader className="pl-4">Date</TableHeader>
               )}
             />
             <Column
@@ -333,7 +333,7 @@ export const TransactionHistoryTable = ({
               dataKey="token"
               width={144}
               headerRenderer={() => (
-                <TableHeader className="pl-12">Token</TableHeader>
+                <TableHeader className="pl-10 ">Token</TableHeader>
               )}
             />
             <Column
@@ -341,7 +341,7 @@ export const TransactionHistoryTable = ({
               dataKey="networks"
               width={100}
               headerRenderer={() => (
-                <TableHeader className="pl-6">Networks</TableHeader>
+                <TableHeader className="pl-9">Networks</TableHeader>
               )}
             />
           </Table>
