@@ -450,7 +450,12 @@ export const useArbTokenBridge = (
         from: walletAddress,
         erc20L1Address,
         destinationAddress,
-        amount
+        amount,
+        retryableGasOverrides: {
+          // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+          // the 30% gas limit increase should cover the difference
+          gasLimit: { percentIncrease: BigNumber.from(30) }
+        }
       })
 
       const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
