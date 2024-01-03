@@ -30,12 +30,10 @@ import {
   HeaderOverrides,
   HeaderOverridesProps
 } from '../common/Header'
-import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { Notifications } from '../common/Notifications'
 import { isNetwork, rpcURLs } from '../../util/networks'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
@@ -106,10 +104,6 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer>
-          <HeaderNetworkInformation />
-        </NetworkSelectionContainer>
-
         <HeaderAccountPopover />
       </HeaderContent>
 
