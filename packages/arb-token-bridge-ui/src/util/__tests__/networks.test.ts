@@ -90,15 +90,29 @@ describe('getBaseChainIdByChainId', () => {
     it('should return the correct base chain', () => {
       expect(
         getBaseChainIdByChainId({
+          chainId: ChainId.ArbitrumOne
+        })
+      ).toBe(ChainId.Ethereum)
+      expect(
+        getBaseChainIdByChainId({
+          chainId: ChainId.ArbitrumNova
+        })
+      ).toBe(ChainId.Ethereum)
+      expect(
+        getBaseChainIdByChainId({
           chainId: ChainId.ArbitrumGoerli
         })
       ).toBe(ChainId.Goerli)
-
       expect(
         getBaseChainIdByChainId({
           chainId: ChainId.ArbitrumSepolia
         })
       ).toBe(ChainId.Sepolia)
+      expect(
+        getBaseChainIdByChainId({
+          chainId: ChainId.ArbitrumLocal
+        })
+      ).toBe(ChainId.Local)
     })
   })
 
