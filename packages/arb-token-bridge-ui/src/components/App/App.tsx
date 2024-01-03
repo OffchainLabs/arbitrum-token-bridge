@@ -33,7 +33,6 @@ import {
   HeaderOverridesProps
 } from '../common/Header'
 import { HeaderNetworkLoadingIndicator } from '../common/HeaderNetworkLoadingIndicator'
-import { HeaderNetworkInformation } from '../common/HeaderNetworkInformation'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { Notifications } from '../common/Notifications'
@@ -43,8 +42,6 @@ import {
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
 import { MainNetworkNotSupported } from '../common/MainNetworkNotSupported'
-import { HeaderNetworkNotSupported } from '../common/HeaderNetworkNotSupported'
-import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import FixingSpaceship from '@/images/arbinaut-fixing-spaceship.webp'
@@ -111,10 +108,6 @@ const AppContent = (): JSX.Element => {
       <HeaderOverrides {...headerOverridesProps} />
 
       <HeaderContent>
-        <NetworkSelectionContainer>
-          <HeaderNetworkInformation />
-        </NetworkSelectionContainer>
-
         <HeaderAccountPopover />
       </HeaderContent>
 
@@ -314,10 +307,6 @@ function ConnectionFallback(props: FallbackProps): JSX.Element {
       return (
         <>
           <HeaderContent>
-            <NetworkSelectionContainer>
-              <HeaderNetworkNotSupported />
-            </NetworkSelectionContainer>
-
             <HeaderAccountPopover isCorrectNetworkConnected={false} />
           </HeaderContent>
 

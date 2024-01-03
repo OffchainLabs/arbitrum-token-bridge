@@ -14,6 +14,7 @@ import {
   getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
+  getSupportedNetworks,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -73,6 +74,7 @@ import {
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -429,6 +431,7 @@ export function TransferPanelMain({
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
+  const [isTestnetMode] = useIsTestnetMode()
 
   useEffect(() => {
     if (nativeCurrency.isCustom) {
@@ -924,7 +927,9 @@ export function TransferPanelMain({
       })
     }
 
-    const fromOptions = modifyOptions(from.id, 'from')
+    const fromOptions = getSupportedNetworks(from.id, !!isTestnetMode)
+      .filter(chainId => chainId !== from.id)
+      .map(chainId => getWagmiChain(chainId))
     const toOptions = modifyOptions(to.id, 'to')
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
