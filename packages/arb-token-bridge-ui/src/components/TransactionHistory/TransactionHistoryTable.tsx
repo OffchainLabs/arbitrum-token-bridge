@@ -333,7 +333,7 @@ export const TransactionHistoryTable = ({
               dataKey="token"
               width={144}
               headerRenderer={() => (
-                <TableHeader className="pl-10 ">Token</TableHeader>
+                <TableHeader className="pl-10">Token</TableHeader>
               )}
             />
             <Column
