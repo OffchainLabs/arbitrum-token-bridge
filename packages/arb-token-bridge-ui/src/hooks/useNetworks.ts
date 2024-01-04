@@ -31,9 +31,11 @@ function getChainByChainId(chainId: ChainId): Chain {
     // L2
     [ChainId.ArbitrumOne]: arbitrum,
     [ChainId.ArbitrumNova]: arbitrumNova,
+    [ChainId.Parallel]: parallel,
     // L2 Testnet
     [ChainId.ArbitrumGoerli]: arbitrumGoerli,
     [ChainId.ArbitrumSepolia]: arbitrumSepolia,
+    [ChainId.ParallelTestnet]: parallelTestnet,
     // L3
     [ChainId.XaiTestnet]: xaiTestnet,
     [ChainId.StylusTestnet]: stylusTestnet,
@@ -98,6 +100,8 @@ function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
     xaiTestnet.id,
     arbitrumLocal.id,
     local.id,
+    parallel.id,
+    parallelTestnet.id,
     ...customChainIds
   ].includes(chainId)
 }

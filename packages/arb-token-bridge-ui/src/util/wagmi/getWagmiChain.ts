@@ -9,7 +9,9 @@ import {
   xaiTestnet,
   stylusTestnet,
   localL1Network,
-  localL2Network
+  localL2Network,
+  parallelTestnet,
+  parallel
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
 import { getCustomChainFromLocalStorageById } from '../networks'
@@ -49,6 +51,12 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.StylusTestnet:
       return stylusTestnet
+
+    case ChainId.ParallelTestnet:
+      return parallelTestnet
+
+    case ChainId.Parallel:
+      return parallel
 
     // Local networks
     case ChainId.Local:

@@ -4,7 +4,12 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import { getCustomChainsFromLocalStorage, xaiTestnet } from '../util/networks'
+import {
+  getCustomChainsFromLocalStorage,
+  xaiTestnet,
+  parallel,
+  parallelTestnet
+} from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -47,6 +52,28 @@ export default function Index() {
       addCustomChain({ customChain: xaiTestnet })
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
+    }
+
+    try {
+      addCustomNetwork({ customL2Network: parallelTestnet })
+    } catch (error: any) {
+      console.error(`Failed to register Parallel Testnet: ${error.message}`)
+    }
+    try {
+      addCustomChain({ customChain: parallelTestnet })
+    } catch (error: any) {
+      console.error(`Failed to register Parallel Testnet: ${error.message}`)
+    }
+
+    try {
+      addCustomNetwork({ customL2Network: parallel })
+    } catch (error: any) {
+      console.error(`Failed to register Parallel: ${error.message}`)
+    }
+    try {
+      addCustomChain({ customChain: parallel })
+    } catch (error: any) {
+      console.error(`Failed to register Parallel: ${error.message}`)
     }
   }, [])
 

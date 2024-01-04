@@ -115,6 +115,48 @@ export const stylusTestnet: Chain = {
   }
 }
 
+export const parallel: Chain = {
+  id: ChainId.Parallel,
+  name: 'Parallel Network',
+  network: 'parallel-network',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Parallel]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Parallel]!]
+    }
+  },
+  blockExplorers: {
+    default: {
+      name: 'Parallel scan',
+      url: explorerUrls[ChainId.Parallel]!
+    }
+  }
+}
+
+export const parallelTestnet: Chain = {
+  id: ChainId.ParallelTestnet,
+  name: 'Parallel Testnet',
+  network: 'parallel-testnet',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.ParallelTestnet]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.ParallelTestnet]!]
+    }
+  },
+  blockExplorers: {
+    default: {
+      name: 'Parallel Testnet scan',
+      url: explorerUrls[ChainId.ParallelTestnet]!
+    }
+  }
+}
+
 /**
  * For e2e testing
  */

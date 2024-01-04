@@ -100,9 +100,10 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
   // Ethereum as the parent chain
   switch (l1ChainId) {
     case ChainId.Ethereum:
-      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova, ChainId.Parallel]
     case ChainId.Goerli:
       return [
+        ChainId.ParallelTestnet,
         ChainId.ArbitrumGoerli,
         ChainId.XaiTestnet,
         ...getCustomChainIds(ChainId.ArbitrumGoerli)
@@ -154,7 +155,11 @@ export enum ChainId {
   ArbitrumLocal = 412346,
   // Orbit Testnets
   XaiTestnet = 47279324479,
-  StylusTestnet = 23011913
+  StylusTestnet = 23011913,
+
+  //Parallel
+  ParallelTestnet = 2982896226593698,
+  Parallel = 1024
 }
 
 export const supportedCustomOrbitParentChains = [
@@ -185,7 +190,11 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc',
-  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
+  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc',
+
+  [ChainId.Parallel]: 'https://rpc.parallel.fi',
+  [ChainId.ParallelTestnet]:
+    'https://rpc-surprised-harlequin-bonobo-fvcy2k9oqh.t.conduit.xyz'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -202,7 +211,11 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
-  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
+  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io',
+
+  [ChainId.Parallel]: 'https://explorer.parallel.fi',
+  [ChainId.ParallelTestnet]:
+    'https://explorerl2new-surprised-harlequin-bonobo-fvcy2k9oqh.t.conduit.xyz'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -250,16 +263,22 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 // Default L2 Chain to use for a certain chainId
 export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   // L1
-  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
+  [ChainId.Ethereum]: [
+    ChainId.ArbitrumOne,
+    ChainId.ArbitrumNova,
+    ChainId.Parallel
+  ],
   // L1 Testnets
   [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
   [ChainId.Sepolia]: [ChainId.ArbitrumSepolia],
   // L2
   [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
+  [ChainId.Parallel]: [ChainId.Parallel],
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli, ChainId.XaiTestnet],
   [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia, ChainId.StylusTestnet],
+  [ChainId.ParallelTestnet]: [ChainId.ParallelTestnet],
   // Orbit Testnets
   [ChainId.XaiTestnet]: [ChainId.XaiTestnet],
   [ChainId.StylusTestnet]: [ChainId.StylusTestnet]
@@ -352,6 +371,81 @@ export const xaiTestnet: Chain = {
   depositTimeout: 1800000
 }
 
+export const parallelTestnet: Chain = {
+  chainID: ChainId.ParallelTestnet,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0x58b372C1903F5bcc568c5c86891cEbeb767a2c31', // from "coreContracts.bridge"
+    inbox: '0x31c57Fb8a5F73Ba157eD7Ba995170d3c7039dF67', // from "coreContracts.inbox"
+    outbox: '0x902F4883fb2852fac77c0bF951eBde4ad7976a0C', // from "coreContracts.outbox"
+    rollup: '0x753F9B3e9F93f058519D868052d8C91BED0F9000', // from "coreContracts.rollup"
+    sequencerInbox: '0x696Cf54bEEC2Ed0a0D8f5810f41b7E0593B35cd6' // from "coreContracts.sequencerInbox"
+  },
+  explorerUrl:
+    'https://explorerl2new-surprised-harlequin-bonobo-fvcy2k9oqh.t.conduit.xyz',
+  isArbitrum: true,
+  isCustom: true,
+  name: 'Parallel Testnet',
+  partnerChainID: 42161, // from "chainInfo.parentChainId"
+  retryableLifetimeSeconds: 604800,
+  tokenBridge: {
+    l1CustomGateway: '0x626dec785C672A488C1d195EF9ff5B951Cee3EA9', // from "tokenBridgeContracts.l2Contracts.customGateway"
+    l1ERC20Gateway: '0xc8c0485e335e8f263038fc5A0Ba5744Fb22A6D7A', // from "tokenBridgeContracts.l2Contracts.standardGateway"
+    l1GatewayRouter: '0x6F00031B0C5A131dd02Dc56Ff649D34d4D2f159d', // from "tokenBridgeContracts.l2Contracts.router"
+    l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822', // from "tokenBridgeContracts.l2Contracts.multicall"
+    l1ProxyAdmin: '0x5745FB3E541Ab3339Bd8E44120d8f4a1aC412C45', // from "tokenBridgeContracts.l2Contracts.proxyAdmin"
+    l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // from "tokenBridgeContracts.l2Contracts.weth"
+    l1WethGateway: '0xD2982b7F1a0A8DC358615973C582e1Fe6Aa47151', // from "tokenBridgeContracts.l2Contracts.wethGateway"
+    l2CustomGateway: '0xBa909c567C7bCb21D19f542646e8d2fEFdA2Ab92', // from "tokenBridgeContracts.l3Contracts.customGateway"
+    l2ERC20Gateway: '0x4b07ed8C2632294dC8B474269C09bC13536EFD30', // from "tokenBridgeContracts.l3Contracts.standardGateway"
+    l2GatewayRouter: '0x7E76F1ef0f47FB92262b5Ef8De93e3e2175C1c54', // from "tokenBridgeContracts.l3Contracts.router"
+    l2Multicall: '0x3da780AD9D84218d34441cb2DcB30d1924a61B28', // from "tokenBridgeContracts.l3Contracts.multicall"
+    l2ProxyAdmin: '0x7CDb2411FF668915A94682e0ba0CEffCf4c157b7', // from "tokenBridgeContracts.l3Contracts.proxyAdmin"
+    l2Weth: '0xe0f66fa781837eBcb3f9DFA037BB3Be5fEA9e255', // from "tokenBridgeContracts.l3Contracts.weth"
+    l2WethGateway: '0xC28CD1646B7b291Bbad95E172f3952Fa68fEb650' // from "tokenBridgeContracts.l3Contracts.wethGateway"
+  },
+  nitroGenesisBlock: 0,
+  nitroGenesisL1Block: 0,
+  depositTimeout: 1800000
+}
+
+export const parallel: Chain = {
+  chainID: ChainId.Parallel,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0x58b372C1903F5bcc568c5c86891cEbeb767a2c31', // from "coreContracts.bridge"
+    inbox: '0x31c57Fb8a5F73Ba157eD7Ba995170d3c7039dF67', // from "coreContracts.inbox"
+    outbox: '0x902F4883fb2852fac77c0bF951eBde4ad7976a0C', // from "coreContracts.outbox"
+    rollup: '0x753F9B3e9F93f058519D868052d8C91BED0F9000', // from "coreContracts.rollup"
+    sequencerInbox: '0x696Cf54bEEC2Ed0a0D8f5810f41b7E0593B35cd6' // from "coreContracts.sequencerInbox"
+  },
+  explorerUrl: 'https://scan.insapce.network',
+  isArbitrum: true,
+  isCustom: true,
+  name: 'Parallel',
+  partnerChainID: 42161, // from "chainInfo.parentChainId"
+  retryableLifetimeSeconds: 604800,
+  tokenBridge: {
+    l1CustomGateway: '0x626dec785C672A488C1d195EF9ff5B951Cee3EA9', // from "tokenBridgeContracts.l2Contracts.customGateway"
+    l1ERC20Gateway: '0xc8c0485e335e8f263038fc5A0Ba5744Fb22A6D7A', // from "tokenBridgeContracts.l2Contracts.standardGateway"
+    l1GatewayRouter: '0x6F00031B0C5A131dd02Dc56Ff649D34d4D2f159d', // from "tokenBridgeContracts.l2Contracts.router"
+    l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822', // from "tokenBridgeContracts.l2Contracts.multicall"
+    l1ProxyAdmin: '0x5745FB3E541Ab3339Bd8E44120d8f4a1aC412C45', // from "tokenBridgeContracts.l2Contracts.proxyAdmin"
+    l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', // from "tokenBridgeContracts.l2Contracts.weth"
+    l1WethGateway: '0xD2982b7F1a0A8DC358615973C582e1Fe6Aa47151', // from "tokenBridgeContracts.l2Contracts.wethGateway"
+    l2CustomGateway: '0xBa909c567C7bCb21D19f542646e8d2fEFdA2Ab92', // from "tokenBridgeContracts.l3Contracts.customGateway"
+    l2ERC20Gateway: '0x4b07ed8C2632294dC8B474269C09bC13536EFD30', // from "tokenBridgeContracts.l3Contracts.standardGateway"
+    l2GatewayRouter: '0x7E76F1ef0f47FB92262b5Ef8De93e3e2175C1c54', // from "tokenBridgeContracts.l3Contracts.router"
+    l2Multicall: '0x3da780AD9D84218d34441cb2DcB30d1924a61B28', // from "tokenBridgeContracts.l3Contracts.multicall"
+    l2ProxyAdmin: '0x7CDb2411FF668915A94682e0ba0CEffCf4c157b7', // from "tokenBridgeContracts.l3Contracts.proxyAdmin"
+    l2Weth: '0xe0f66fa781837eBcb3f9DFA037BB3Be5fEA9e255', // from "tokenBridgeContracts.l3Contracts.weth"
+    l2WethGateway: '0xC28CD1646B7b291Bbad95E172f3952Fa68fEb650' // from "tokenBridgeContracts.l3Contracts.wethGateway"
+  },
+  nitroGenesisBlock: 0,
+  nitroGenesisL1Block: 0,
+  depositTimeout: 1800000
+}
+
 export type RegisterLocalNetworkParams = {
   l1Network: L1Network
   l2Network: L2Network
@@ -411,6 +505,8 @@ export function isNetwork(chainId: ChainId) {
 
   const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
+  const isParallel = chainId === ChainId.Parallel
+  const isParallelTestnet = chainId === ChainId.ParallelTestnet
 
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isGoerli || isSepolia || isLocal
@@ -420,7 +516,8 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumNova ||
     isArbitrumGoerli ||
     isArbitrumLocal ||
-    isArbitrumSepolia
+    isArbitrumSepolia ||
+    isParallel
 
   const customChainIds = customChains.map(chain => chain.chainID)
   const isCustomOrbitChain = customChainIds.includes(chainId)
@@ -433,7 +530,8 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia ||
     isXaiTestnet ||
     isStylusTestnet ||
-    isCustomOrbitChain
+    isCustomOrbitChain ||
+    isParallelTestnet
 
   const isSupported =
     isArbitrumOne ||
@@ -444,7 +542,9 @@ export function isNetwork(chainId: ChainId) {
     isSepolia ||
     isArbitrumSepolia ||
     isStylusTestnet ||
-    isXaiTestnet // is network supported on bridge
+    isXaiTestnet ||
+    isParallel ||
+    isParallelTestnet // is network supported on bridge
 
   return {
     // L1
@@ -457,9 +557,11 @@ export function isNetwork(chainId: ChainId) {
     isArbitrum,
     isArbitrumOne,
     isArbitrumNova,
+    isParallel,
     // L2 Testnets
     isArbitrumGoerli,
     isArbitrumSepolia,
+    isParallelTestnet,
     // Orbit chains
     isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
     isXaiTestnet,
@@ -512,6 +614,12 @@ export function getNetworkName(chainId: number) {
     case ChainId.StylusTestnet:
       return 'Stylus Testnet'
 
+    case ChainId.Parallel:
+      return 'Parallel'
+
+    case ChainId.ParallelTestnet:
+      return 'Parallel Testnet'
+
     default:
       return 'Unknown'
   }
@@ -546,6 +654,10 @@ export function getNetworkLogo(
     case ChainId.StylusTestnet:
       return '/images/StylusLogo.svg'
 
+    case ChainId.Parallel:
+    case ChainId.ParallelTestnet:
+      return '/images/ParallelLogo.svg'
+
     default:
       const { isArbitrum, isOrbitChain } = isNetwork(chainId)
       if (isArbitrum) {
@@ -568,13 +680,15 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.ArbitrumSepolia,
     ChainId.XaiTestnet,
     ChainId.StylusTestnet,
+    ChainId.ParallelTestnet,
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 
   const mainnetNetworks = [
     ChainId.Ethereum,
     ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova
+    ChainId.ArbitrumNova,
+    ChainId.Parallel
   ]
 
   return isNetwork(chainId).isTestnet

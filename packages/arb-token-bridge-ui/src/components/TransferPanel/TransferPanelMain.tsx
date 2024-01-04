@@ -172,7 +172,9 @@ function NetworkContainer({
       isArbitrumNova,
       isOrbitChain,
       isXaiTestnet,
-      isStylusTestnet
+      isStylusTestnet,
+      isParallelTestnet,
+      isParallel
     } = isNetwork(network.id)
 
     if (isXaiTestnet) {
@@ -207,6 +209,13 @@ function NetworkContainer({
       return {
         backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
         backgroundClassName: 'bg-arb-nova-dark'
+      }
+    }
+
+    if (isParallelTestnet || isParallel) {
+      return {
+        backgroundImage: `url('/images/ParallelLogo.svg')`,
+        backgroundClassName: 'bg-eth-dark'
       }
     }
 

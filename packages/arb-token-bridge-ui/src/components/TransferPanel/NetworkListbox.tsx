@@ -28,7 +28,9 @@ export function NetworkListbox({
       isArbitrumNova,
       isOrbitChain,
       isXaiTestnet,
-      isStylusTestnet
+      isStylusTestnet,
+      isParallelTestnet,
+      isParallel
     } = isNetwork(value.id)
 
     if (isXaiTestnet) {
@@ -49,6 +51,10 @@ export function NetworkListbox({
 
     if (isArbitrumNova) {
       return 'bg-arb-nova-primary'
+    }
+
+    if (isParallelTestnet || isParallel) {
+      return 'bg-parallel-primary'
     }
 
     return 'bg-arb-one-primary'
