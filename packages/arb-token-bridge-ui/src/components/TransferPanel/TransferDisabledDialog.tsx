@@ -26,7 +26,7 @@ export function TransferDisabledDialog() {
     isOpen: isOpenTransferDisabledDialog,
     closeDialog: closeTransferDisabledDialog
   } = useTransferDisabledDialogStore()
-  const unsupportedToken = selectedToken?.symbol ?? 'this token'
+  const unsupportedToken = selectedToken?.symbol
 
   const onClose = () => {
     setSelectedToken(null)
