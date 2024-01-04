@@ -14,6 +14,7 @@ import {
   getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
+  getNetworkName,
   getSupportedNetworks,
   isNetwork
 } from '../../util/networks'
@@ -75,6 +76,7 @@ import {
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 
 enum NetworkType {
   l1 = 'l1',
@@ -1147,11 +1149,55 @@ export function TransferPanelMain({
     isConnectedToOrbitChain
   ])
 
+  const fromButtonClassName = useMemo(() => {
+    const {
+      isArbitrum,
+      isArbitrumNova,
+      isOrbitChain,
+      isXaiTestnet,
+      isStylusTestnet
+    } = isNetwork(from.id)
+
+    if (isXaiTestnet) {
+      return 'bg-xai-primary'
+    }
+
+    if (isStylusTestnet) {
+      return 'bg-stylus-primary'
+    }
+
+    if (isOrbitChain) {
+      return 'bg-orbit-primary'
+    }
+
+    if (!isArbitrum) {
+      return 'bg-eth-primary'
+    }
+
+    if (isArbitrumNova) {
+      return 'bg-arb-nova-primary'
+    }
+
+    return 'bg-arb-one-primary'
+  }, [from.id])
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={from}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="From:" {...networkListboxProps.from} />
+          <NetworkSelectionContainer>
+            <button
+              className={twMerge(
+                'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3',
+                fromButtonClassName
+              )}
+            >
+              <span className="max-w-[220px] truncate md:max-w-[250px]">
+                From: {getNetworkName(from.id)}
+              </span>
+              <ChevronDownIcon className="h-4 w-4" />
+            </button>
+          </NetworkSelectionContainer>
           <BalancesContainer>
             {isSwitchingL2Chain ? (
               <StyledLoader />
