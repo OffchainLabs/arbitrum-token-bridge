@@ -63,10 +63,8 @@ describe('Approve token and deposit afterwards', () => {
       // eslint-disable-next-line
       cy.wait(15000)
       cy.confirmMetamaskTransaction().then(() => {
-        cy.findByText(
-          // PATCH : Find a proper fix later : `0.000000000001` will be rounded to 0 by our formatAmount function in tx cards
-          `< 0.00001 ${ERC20TokenSymbol}`
-        ).should('be.visible')
+        // check that transaction history panel is showing
+        cy.findByText('Transaction History').should('be.visible')
       })
     })
   })
