@@ -130,7 +130,6 @@ export function TransactionsTableRowAction({
     tx.depositStatus === DepositStatus.L2_PENDING ||
     typeof cctpRemainingTime !== 'undefined'
   ) {
-    // TODO: Change to time remaining
     return (
       <div className="flex flex-col text-center text-[10px]">
         <span>Time left:</span>
