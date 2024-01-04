@@ -100,6 +100,14 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed CMC List',
     isDefault: true,
     logoURI: CMCLogo
+  },
+  {
+    id: 10,
+    originChainID: 421614,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
