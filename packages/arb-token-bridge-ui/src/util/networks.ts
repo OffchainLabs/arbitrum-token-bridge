@@ -157,6 +157,38 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
+type ChainInfo = {
+  description: string
+  chainType: string
+  nativeCurrency: string
+}
+
+export const chainInfo: { [chainId: number]: ChainInfo } = {
+  [ChainId.Ethereum]: {
+    description: 'The OG chain that started it all.',
+    chainType: 'Ethereum',
+    nativeCurrency: 'ETH'
+  },
+  [ChainId.ArbitrumOne]: {
+    description:
+      'Rollup protocol. Permissionless validation,  secured by operational fraud proofs.',
+    chainType: 'Rollup',
+    nativeCurrency: 'ETH'
+  },
+  [ChainId.ArbitrumNova]: {
+    description:
+      'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).',
+    chainType: 'AnyTrust',
+    nativeCurrency: 'ETH'
+  },
+  [ChainId.XaiTestnet]: {
+    description:
+      'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
+    chainType: 'AnyTrust',
+    nativeCurrency: 'XAI'
+  }
+}
+
 export const supportedCustomOrbitParentChains = [
   ChainId.ArbitrumGoerli,
   ChainId.ArbitrumSepolia
