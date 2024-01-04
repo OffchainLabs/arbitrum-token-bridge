@@ -51,8 +51,6 @@ export function WithdrawalCountdown({
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const isLargeScreen = useMedia('(min-width: 1024px)')
-
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
@@ -65,11 +63,8 @@ export function WithdrawalCountdown({
     parentChainId: tx.parentChainId
   })
 
-  const remainingTextOrEmpty =
-    isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
-
   const timeLeftText =
     minutesLeft === 0 ? 'Almost there...' : dayjs().to(txConfirmationDate, true)
 
-  return <span>{timeLeftText + remainingTextOrEmpty}</span>
+  return <span>{timeLeftText}</span>
 }

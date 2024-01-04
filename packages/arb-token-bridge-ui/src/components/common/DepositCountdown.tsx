@@ -12,7 +12,7 @@ function getMinutesRemainingText(minutesRemaining: number): string {
     return 'Less than a minute...'
   }
 
-  return `~${minutesRemaining} mins remaining`
+  return `${minutesRemaining} minutes`
 }
 
 function getEstimatedDepositDurationInMinutes(
