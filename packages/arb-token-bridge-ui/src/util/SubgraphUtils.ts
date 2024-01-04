@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch'
 import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
+import { ChainId } from './networks'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -22,6 +23,13 @@ const L1SubgraphClient = {
       fetch
     }),
     cache: new InMemoryCache()
+  }),
+  ArbitrumSepolia: new ApolloClient({
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/arb-bridge-eth-sepolia',
+      fetch
+    }),
+    cache: new InMemoryCache()
   })
 }
 
@@ -33,9 +41,17 @@ const L2SubgraphClient = {
     }),
     cache: new InMemoryCache()
   }),
+  // ArbitrumNova is unavailable because Subgraph does not support Arbitrum Nova network
   ArbitrumGoerli: new ApolloClient({
     link: new HttpLink({
       uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-goerli',
+      fetch
+    }),
+    cache: new InMemoryCache()
+  }),
+  ArbitrumSepolia: new ApolloClient({
+    link: new HttpLink({
+      uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/layer2-token-gateway-sepolia',
       fetch
     }),
     cache: new InMemoryCache()
@@ -44,14 +60,17 @@ const L2SubgraphClient = {
 
 export function getL1SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
-    case 42161:
+    case ChainId.ArbitrumOne:
       return L1SubgraphClient.ArbitrumOne
 
-    case 42170:
+    case ChainId.ArbitrumNova:
       return L1SubgraphClient.ArbitrumNova
 
-    case 421613:
+    case ChainId.ArbitrumGoerli:
       return L1SubgraphClient.ArbitrumGoerli
+
+    case ChainId.ArbitrumSepolia:
+      return L1SubgraphClient.ArbitrumSepolia
 
     default:
       throw new Error(`[getL1SubgraphClient] Unsupported network: ${l2ChainId}`)
@@ -60,11 +79,14 @@ export function getL1SubgraphClient(l2ChainId: number) {
 
 export function getL2SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
-    case 42161:
+    case ChainId.ArbitrumOne:
       return L2SubgraphClient.ArbitrumOne
 
-    case 421613:
+    case ChainId.ArbitrumGoerli:
       return L2SubgraphClient.ArbitrumGoerli
+
+    case ChainId.ArbitrumSepolia:
+      return L2SubgraphClient.ArbitrumSepolia
 
     default:
       throw new Error(`[getL2SubgraphClient] Unsupported network: ${l2ChainId}`)
@@ -124,7 +146,7 @@ export const shouldIncludeSentTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposit' | 'withdrawal'
+  type: 'deposits' | 'withdrawals'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {
@@ -132,7 +154,9 @@ export const shouldIncludeSentTxs = ({
     // show txs sent from this account for:
     // 1. deposits if we are connected to the parent chain, or
     // 2. withdrawals if we are connected to the child chain
-    return isConnectedToParentChain ? type === 'deposit' : type === 'withdrawal'
+    return isConnectedToParentChain
+      ? type === 'deposits'
+      : type === 'withdrawals'
   }
   // always show for EOA
   return true
@@ -143,7 +167,7 @@ export const shouldIncludeReceivedTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposit' | 'withdrawal'
+  type: 'deposits' | 'withdrawals'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {
@@ -151,7 +175,9 @@ export const shouldIncludeReceivedTxs = ({
     // show txs sent to this account for:
     // 1. withdrawals if we are connected to the parent chain, or
     // 2. deposits if we are connected to the child chain
-    return isConnectedToParentChain ? type === 'withdrawal' : type === 'deposit'
+    return isConnectedToParentChain
+      ? type === 'withdrawals'
+      : type === 'deposits'
   }
   // always show for EOA
   return true

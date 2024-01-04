@@ -100,6 +100,14 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed CMC List',
     isDefault: true,
     logoURI: CMCLogo
+  },
+  {
+    id: 10,
+    originChainID: 421614,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
@@ -118,6 +126,8 @@ export interface TokenListWithId extends TokenList {
 export const validateTokenList = (tokenList: TokenList) => {
   const ajv = new Ajv()
   addFormats(ajv)
+  // https://github.com/OffchainLabs/arbitrum-token-lists/blob/master/src/lib/validateTokenList.ts#L10
+  schema.properties.tokens.maxItems = 15_000
   const validate = ajv.compile(schema)
 
   return validate(tokenList)

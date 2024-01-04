@@ -91,10 +91,11 @@ describe('Withdraw ETH', () => {
                   .click()
                   .then(() => {
                     cy.confirmMetamaskTransaction().then(() => {
-                      cy.findAllByText(
-                        `Moving ${formatAmount(0.0001, {
+                      cy.findByText('an hour remaining').should('be.visible')
+                      cy.findByText(
+                        `${formatAmount(ETHToWithdraw, {
                           symbol: 'ETH'
-                        })} to Ethereum`
+                        })}`
                       ).should('be.visible')
                     })
                   })
