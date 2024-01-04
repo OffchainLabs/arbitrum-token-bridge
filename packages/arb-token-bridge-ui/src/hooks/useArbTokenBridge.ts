@@ -276,7 +276,7 @@ export const useArbTokenBridge = (
       const tx = await ethBridger.withdraw({
         ...withdrawalRequest,
         l2Signer,
-        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -567,7 +567,7 @@ export const useArbTokenBridge = (
       const tx = await erc20Bridger.withdraw({
         ...withdrawalRequest,
         l2Signer,
-        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
