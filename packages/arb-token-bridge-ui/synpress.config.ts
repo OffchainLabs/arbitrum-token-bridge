@@ -11,12 +11,16 @@ import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
+  getInitialERC20Balance,
   l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
+import { CommonAddress } from './src/util/CommonAddressUtils'
+import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -63,32 +67,42 @@ export default defineConfig({
       }
 
       const userWalletAddress = await userWallet.getAddress()
+      if (!process.env.E2E_CCTP) {
+        // Deploy ERC-20 token to L1
+        const l1ERC20Token = await deployERC20ToL1()
 
-      // Deploy ERC-20 token to L1
-      const l1ERC20Token = await deployERC20ToL1()
+        // Deploy ERC-20 token to L2
+        await deployERC20ToL2(l1ERC20Token.address)
 
-      // Deploy ERC-20 token to L2
-      await deployERC20ToL2(l1ERC20Token.address)
+        // Mint ERC-20 token
+        // We need this to test token approval
+        // WETH is pre-approved so we need a new token
+        const mintedL1Erc20Token = await l1ERC20Token.mint()
+        await mintedL1Erc20Token.wait()
 
-      // Mint ERC-20 token
-      // We need this to test token approval
-      // WETH is pre-approved so we need a new token
-      const mintedL1Erc20Token = await l1ERC20Token.mint()
-      await mintedL1Erc20Token.wait()
+        // Send minted ERC-20 to the test userWallet
+        await l1ERC20Token
+          .connect(localWallet.connect(ethProvider))
+          .transfer(userWalletAddress, BigNumber.from(50000000))
 
-      // Send minted ERC-20 to the test userWallet
-      await l1ERC20Token
-        .connect(localWallet.connect(ethProvider))
-        .transfer(userWalletAddress, BigNumber.from(50000000))
+        // Fund the userWallet. We do this to run tests on a small amount of ETH.
+        await Promise.all([
+          fundWalletEth(userWallet.address, 'L1', 2),
+          fundWalletEth(userWallet.address, 'L2', 2)
+        ])
 
-      // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
+        // Wrap ETH to test ERC-20 transactions
+        await Promise.all([wrapEth('L1'), wrapEth('L2')])
 
-      // Wrap ETH to test ERC-20 transactions
-      await Promise.all([wrapEth('L1'), wrapEth('L2')])
-
-      // Approve WETH
-      await approveWeth()
+        // Approve WETH
+        await approveWeth()
+        config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+        config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
+          erc20L1Address: l1ERC20Token.address,
+          l1Provider: ethProvider,
+          l2Provider: arbProvider
+        })
+      }
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
@@ -98,14 +112,7 @@ export default defineConfig({
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-      config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
-
-      config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
-        erc20L1Address: l1ERC20Token.address,
-        l1Provider: ethProvider,
-        l2Provider: arbProvider
-      })
 
       synpressPlugins(on, config)
       setupCypressTasks(on)
@@ -168,16 +175,51 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+export async function fundUserUsdcTestnet(
+  address: string,
+  networkType: 'L1' | 'L2'
+) {
+  console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
+  const usdcContractAddress =
+    networkType === 'L1'
+      ? CommonAddress.Goerli.USDC
+      : CommonAddress.ArbitrumGoerli.USDC
+
+  const usdcBalance = await getInitialERC20Balance({
+    address: address,
+    rpcURL: networkType === 'L1' ? goerliRpcUrl : arbGoerliRpcUrl,
+    tokenAddress: usdcContractAddress,
+    multiCallerAddress: MULTICALL_TESTNET_ADDRESS
+  })
+
+  // Fund only if the balance is less than 0.0001 USDC
+  const amount = utils.parseUnits('0.0001', 6)
+  if (usdcBalance && usdcBalance.lt(amount)) {
+    console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
+    const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
+    const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
+    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+    const contract = new ERC20__factory().connect(localWallet.connect(provider))
+    const token = contract.attach(usdcContractAddress)
+    await token.deployed()
+    const tx = await token.transfer(address, amount)
+    await tx.wait()
+  }
+}
+
+async function fundWalletEth(
+  address: string,
+  networkType: 'L1' | 'L2',
+  amount: number
+) {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
-  const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
   const balance = await provider.getBalance(address)
-  // Fund only if the balance is less than 2 eth
-  if (balance.lt(utils.parseEther('2'))) {
+  // Fund only if the balance is less than {amount} eth
+  if (balance.lt(utils.parseEther(amount.toString()))) {
     const tx = await localWallet.connect(provider).sendTransaction({
       to: address,
-      value: utils.parseEther('2')
+      value: utils.parseEther(amount.toString())
     })
     await tx.wait()
   }
