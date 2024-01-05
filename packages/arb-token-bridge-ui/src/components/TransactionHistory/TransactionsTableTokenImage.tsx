@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -11,6 +12,16 @@ export const TransactionsTableTokenImage = ({
 }) => {
   const tokenLists = useTokenLists(ChainId.ArbitrumOne)
 
+  const allTokens = useMemo(() => {
+    return tokenLists.data?.map(t => t.tokens).flat() || []
+  }, [tokenLists])
+
+  const token = useMemo(() => {
+    return allTokens.find(
+      t => t.symbol.toLowerCase() === tokenSymbol.toLowerCase()
+    )
+  }, [allTokens, tokenSymbol])
+
   if (tokenSymbol.toLowerCase() === 'eth') {
     return (
       <Image
@@ -22,15 +33,9 @@ export const TransactionsTableTokenImage = ({
     )
   }
 
-  const allTokens = tokenLists.data?.map(t => t.tokens).flat()
-
   if (!allTokens) {
     return null
   }
-
-  const token = allTokens.find(
-    t => t.symbol.toLowerCase() === tokenSymbol.toLowerCase()
-  )
 
   return (
     <img
