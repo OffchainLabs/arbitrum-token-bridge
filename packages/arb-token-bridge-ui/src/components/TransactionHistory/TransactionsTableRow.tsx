@@ -24,7 +24,13 @@ import { Button } from '../common/Button'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 
-export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
+export function TransactionsTableRow({
+  tx,
+  className = ''
+}: {
+  tx: MergedTransaction
+  className?: string
+}) {
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
 
   const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
@@ -131,7 +137,8 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
     <div
       data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
       className={twMerge(
-        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white'
+        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+        className
       )}
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
