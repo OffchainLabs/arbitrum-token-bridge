@@ -158,7 +158,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
       acceptMetamaskAccess()
-      cy.task('setWalletConnectedToDapp')
+      cy.task('setWalletConnectedToDapp', true)
     }
   })
 }

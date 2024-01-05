@@ -5,7 +5,6 @@ import {
   login,
   logout,
   openTransactionsPanel,
-  resetCctpAllowance,
   fundUserUsdcTestnet,
   fundUserWalletEth
 } from '../support/commands'
@@ -28,7 +27,6 @@ declare global {
       }): typeof login
       logout(): typeof logout
       openTransactionsPanel(): typeof openTransactionsPanel
-      resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
