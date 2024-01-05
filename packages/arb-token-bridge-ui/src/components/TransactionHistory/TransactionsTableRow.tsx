@@ -170,14 +170,14 @@ export function TransactionsTableRow({
       <div className="pr-3 align-middle">
         <StatusLabel />
       </div>
-      <div className="flex justify-center pr-3 align-middle">
+      <div className="flex justify-center px-3 align-middle">
         <TransactionsTableRowAction
           tx={tx}
           isError={isError}
           type={tx.isCctp || !tx.isWithdrawal ? 'deposits' : 'withdrawals'}
         />
       </div>
-      <div className="align-middle">
+      <div className="pl-3 align-middle">
         <Button
           variant="primary"
           className="rounded border border-white p-2 text-xs text-white"
