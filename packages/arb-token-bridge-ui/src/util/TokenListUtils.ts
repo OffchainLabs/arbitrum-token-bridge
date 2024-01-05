@@ -20,6 +20,7 @@ export interface BridgeTokenList {
   isDefault: boolean
   isArbitrumTokenTokenList?: boolean
   logoURI: ImageProps['src']
+  isValid?: boolean
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
@@ -157,12 +158,19 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
       }
     })
 
-    if (!validateTokenList(data)) {
-      console.warn('Token List Invalid', data)
-      return { isValid: false, data }
+    const isValid = validateTokenList(data)
+
+    const tokenList = BRIDGE_TOKEN_LISTS.find(list => list.url === tokenListURL)
+
+    if (tokenList) {
+      tokenList.isValid = isValid
     }
 
-    return { isValid: true, data }
+    if (!isValid) {
+      console.warn('Token List Invalid', data)
+    }
+
+    return { isValid, data }
   } catch (error) {
     console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }
