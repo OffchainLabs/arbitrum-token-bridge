@@ -71,6 +71,7 @@ function TokenListsPanel() {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
   const { bridgeTokens, token } = arbTokenBridge
+  const { data } = useTokenLists(l2Network.id)
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
     if (typeof l2Network === 'undefined') {
@@ -78,18 +79,21 @@ function TokenListsPanel() {
     }
 
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
-      if (!tokenList.isValid) {
-        return false
-      }
-
       // Don't show the Arbitrum Token token list, because it's special and can't be disabled
       if (tokenList.isArbitrumTokenTokenList) {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      if (!data) {
+        return false
+      }
+
+      return (
+        tokenList.originChainID === l2Network.id &&
+        data.find(list => tokenList.id === list.bridgeTokenListId)
+      )
     })
-  }, [l2Network])
+  }, [data, l2Network])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,

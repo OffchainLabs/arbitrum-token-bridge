@@ -6,42 +6,48 @@ import {
   TokenListWithId
 } from '../util/TokenListUtils'
 
-export function fetchTokenLists(
+export async function fetchTokenLists(
   forL2ChainId: number
 ): Promise<TokenListWithId[]> {
-  return new Promise(resolve => {
-    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList =>
-        bridgeTokenList.originChainID === forL2ChainId ||
-        // Always load the Arbitrum Token token list
-        bridgeTokenList.isArbitrumTokenTokenList
+  const requestListArray = BRIDGE_TOKEN_LISTS.filter(
+    bridgeTokenList =>
+      bridgeTokenList.originChainID === forL2ChainId ||
+      // Always load the Arbitrum Token token list
+      bridgeTokenList.isArbitrumTokenTokenList
+  )
+
+  const lists = await Promise.all(
+    requestListArray.map(bridgeTokenList =>
+      fetchTokenListFromURL(bridgeTokenList.url)
     )
+  ).then(responses => {
+    return responses.map((tokenList, index) => {
+      const bridgeTokenListId = requestListArray[index]?.id
 
-    Promise.all(
-      requestListArray.map(bridgeTokenList =>
-        fetchTokenListFromURL(bridgeTokenList.url)
-      )
-    ).then(responses => {
-      const tokenListsWithBridgeTokenListId = responses
-        .map(({ data, isValid }, index) => {
-          const bridgeTokenListId = requestListArray[index]?.id
+      if (typeof bridgeTokenListId === 'undefined') {
+        return tokenList
+      }
 
-          if (typeof bridgeTokenListId === 'undefined') {
-            return { ...data, isValid }
-          }
+      if (typeof tokenList === 'undefined') {
+        return undefined
+      }
 
-          return {
-            l2ChainId: forL2ChainId,
-            bridgeTokenListId,
-            isValid,
-            ...data
-          }
-        })
-        .filter(list => list?.isValid)
+      if (tokenList.tokens.length === 0) {
+        return undefined
+      }
 
-      resolve(tokenListsWithBridgeTokenListId as TokenListWithId[])
+      return {
+        l2ChainId: forL2ChainId,
+        bridgeTokenListId,
+        ...tokenList
+      }
     })
   })
+
+  return lists.filter(
+    (tokenList): tokenList is TokenListWithId =>
+      typeof tokenList !== 'undefined'
+  )
 }
 
 export function useTokenLists(

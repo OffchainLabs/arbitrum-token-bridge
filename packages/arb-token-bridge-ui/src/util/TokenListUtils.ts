@@ -15,12 +15,11 @@ export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
 export interface BridgeTokenList {
   id: number
   originChainID: number
-  url: string
+  url: `https://tokenlist.arbitrum.io/${string}`
   name: string
   isDefault: boolean
   isArbitrumTokenTokenList?: boolean
   logoURI: ImageProps['src']
-  isValid?: boolean
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
@@ -121,7 +120,6 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
 export interface TokenListWithId extends TokenList {
   l2ChainId: string
   bridgeTokenListId: number
-  isValid?: boolean
 }
 
 export const validateTokenList = (tokenList: TokenList) => {
@@ -136,45 +134,32 @@ export const addBridgeTokenListToBridge = (
   bridgeTokenList: BridgeTokenList,
   arbTokenBridge: ArbTokenBridge
 ) => {
-  fetchTokenListFromURL(bridgeTokenList.url).then(
-    ({ isValid, data: tokenList }) => {
-      if (!isValid) return
-
-      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+  fetchTokenListFromURL(bridgeTokenList.url).then(tokenList => {
+    if (!tokenList) {
+      return
     }
-  )
+    arbTokenBridge.token.addTokensFromList(tokenList, bridgeTokenList.id)
+  })
 }
 
-export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
-  isValid: boolean
-  data: TokenList | undefined
-}> {
+export async function fetchTokenListFromURL(
+  tokenListURL: BridgeTokenList['url']
+): Promise<TokenList | undefined> {
   try {
-    if (!tokenListURL.startsWith('https://tokenlist.arbitrum.io')) {
-      throw new Error('Token list URL must be from tokenlist.arbitrum.io')
-    }
-
     const { data } = await axios.get(tokenListURL, {
       headers: {
         'Access-Control-Allow-Origin': '*'
       }
     })
 
-    const isValid = validateTokenList(data)
-
     const tokenList = BRIDGE_TOKEN_LISTS.find(list => list.url === tokenListURL)
-
-    if (tokenList) {
-      tokenList.isValid = isValid
+    if (!tokenList) {
+      return undefined
     }
 
-    if (!isValid) {
-      console.warn('Token List Invalid', data)
-    }
-
-    return { isValid, data }
+    return data
   } catch (error) {
     console.warn('Token List URL Invalid', tokenListURL)
-    return { isValid: false, data: undefined }
+    return undefined
   }
 }
