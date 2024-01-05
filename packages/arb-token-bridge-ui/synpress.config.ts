@@ -11,16 +11,12 @@ import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
-  getInitialERC20Balance,
   l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
-import { CommonAddress } from './src/util/CommonAddressUtils'
-import { MULTICALL_TESTNET_ADDRESS } from './src/constants'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -86,7 +82,7 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      await Promise.all([fundWalletEth('L1'), fundWalletEth('L2')])
+      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
 
       // Wrap ETH to test ERC-20 transactions
       await Promise.all([wrapEth('L1'), wrapEth('L2')])
@@ -172,7 +168,7 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundWalletEth(networkType: 'L1' | 'L2') {
+async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
@@ -181,7 +177,7 @@ async function fundWalletEth(networkType: 'L1' | 'L2') {
   if (balance.lt(utils.parseEther('2'))) {
     const tx = await localWallet.connect(provider).sendTransaction({
       to: address,
-      value: utils.parseEther('2'.toString())
+      value: utils.parseEther('2')
     })
     await tx.wait()
   }
