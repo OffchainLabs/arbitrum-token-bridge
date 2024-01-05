@@ -25,7 +25,7 @@ describe('Withdraw USDC through CCTP', () => {
       cy.importMetamaskAccount(wallet.privateKey)
       cy.switchMetamaskAccount(3 + Cypress.currentRetry)
 
-      cy.fundUserUsdcTestnet(address, 'L1').then(() => {
+      cy.fundUserUsdcTestnet(address, 'L2').then(() => {
         getInitialERC20Balance({
           tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
           multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
