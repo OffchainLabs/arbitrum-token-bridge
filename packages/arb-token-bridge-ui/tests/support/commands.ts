@@ -80,7 +80,8 @@ Cypress.Commands.add(
       $input => $input.val() === text,
       {
         log: false,
-        timeout: 240_000
+        timeout: 240_000,
+        delay: 2_000
       }
     )
       // the recursion yields whatever the command function yields
