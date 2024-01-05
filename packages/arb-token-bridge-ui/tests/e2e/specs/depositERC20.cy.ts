@@ -77,7 +77,8 @@ describe('Deposit ERC20 Token', () => {
       context('should show ERC-20 balance correctly', () => {
         cy.findByLabelText('WETH balance on l1')
           .should('be.visible')
-          .contains(l1ERC20bal)
+          .findByText(l1ERC20bal.split(' ')[0]) // only use the number
+          .should('be.visible')
       })
 
       context('should show gas estimations', () => {
