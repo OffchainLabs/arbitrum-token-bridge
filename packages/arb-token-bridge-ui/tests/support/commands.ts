@@ -81,7 +81,7 @@ Cypress.Commands.add(
       {
         log: false,
         timeout: 240_000,
-        delay: 2_000
+        delay: 4_000
       }
     )
       // the recursion yields whatever the command function yields
