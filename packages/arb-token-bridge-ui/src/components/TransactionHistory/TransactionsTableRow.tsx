@@ -59,7 +59,6 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
           <span>Failed</span>
           <ExternalLink
             href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-            className="mb-1"
           >
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
@@ -74,10 +73,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <div className="flex items-center space-x-1 text-yellow-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
           <span>Pending</span>
-          <ExternalLink
-            href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
-            className="mb-1"
-          >
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -91,7 +87,6 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
           <span>Claimable</span>
           <ExternalLink
             href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-            className="mb-1"
           >
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
@@ -106,7 +101,6 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <span>Success</span>
         <ExternalLink
           href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-          className="mb-1"
         >
           <ArrowTopRightOnSquareIcon height={10} />
         </ExternalLink>
@@ -152,7 +146,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
             chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
           />
         </span>
-        <span className="inline-block w-[50px] break-words">
+        <span className="inline-block w-[55px] break-words">
           {getNetworkName(tx.isWithdrawal ? tx.childChainId : tx.parentChainId)}
         </span>
       </div>
@@ -162,7 +156,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
             chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
           />
         </span>
-        <span className="inline-block w-[50px] break-words">
+        <span className="inline-block w-[55px] break-words">
           {getNetworkName(tx.isWithdrawal ? tx.parentChainId : tx.childChainId)}
         </span>
       </div>
@@ -179,7 +173,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
       <div className="align-middle">
         <Button
           variant="primary"
-          className="border border-white p-2 text-xs text-white"
+          className="rounded border border-white p-2 text-xs text-white"
         >
           See Details
         </Button>

@@ -33,7 +33,10 @@ const GetHelpButton = ({
     <Button
       variant={variant}
       onClick={onClick}
-      className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
+      className={twMerge(
+        'w-16 rounded',
+        variant === 'secondary' ? 'bg-white px-4 py-3' : ''
+      )}
     >
       Get Help
     </Button>
@@ -116,7 +119,7 @@ export function TransactionsTableRowAction({
           loading={isRedeeming}
           disabled={isRedeemButtonDisabled}
           onClick={() => redeem(tx)}
-          className="bg-red-400 p-2 text-xs"
+          className="w-16 rounded bg-red-400 p-2 text-xs"
         >
           Retry
         </Button>
@@ -131,7 +134,7 @@ export function TransactionsTableRowAction({
     typeof cctpRemainingTime !== 'undefined'
   ) {
     return (
-      <div className="flex flex-col text-center text-[10px]">
+      <div className="flex flex-col text-center text-xs">
         <span>Time left:</span>
         {tx.isCctp && <>{cctpRemainingTime}</>}
         {!tx.isCctp &&
@@ -166,10 +169,8 @@ export function TransactionsTableRowAction({
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
           className={twMerge(
-            'p-2 text-xs',
-            currentChainIsValid
-              ? 'bg-green-400 text-black'
-              : 'border border-white text-white'
+            'w-16 rounded p-2 text-xs text-black',
+            currentChainIsValid ? 'bg-green-400' : 'bg-white'
           )}
           onClick={async () => {
             try {
@@ -196,7 +197,7 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          {currentChainIsValid ? 'Claim' : 'Switch Network'}
+          {currentChainIsValid ? 'Claim' : 'Switch'}
         </Button>
       </Tooltip>
     )
