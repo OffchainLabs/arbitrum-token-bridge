@@ -14,19 +14,19 @@ import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore
 import { Loader } from '../common/atoms/Loader'
 
 const depositGasFeeTooltip = ({
-  l1NetworkName,
-  l2NetworkName,
+  parentChainName,
+  childChainName,
   depositToOrbit = false
 }: {
-  l1NetworkName: string
-  l2NetworkName: string
+  parentChainName: string
+  childChainName: string
   depositToOrbit?: boolean
 }) => ({
-  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
+  L1: `${parentChainName} fees go to Ethereum Validators.`,
   L2: `${
-    depositToOrbit ? l1NetworkName : l2NetworkName
+    depositToOrbit ? parentChainName : childChainName
   } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
+  Orbit: `${childChainName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
 })
 
 function StyledLoader() {
@@ -51,13 +51,13 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
-  const l1NetworkName = getNetworkName(l1.network.id)
-  const l2NetworkName = getNetworkName(l2.network.id)
+  const parentChainName = getNetworkName(l1.network.id)
+  const childChainName = getNetworkName(l2.network.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
   const layer = isParentChain ? parentLayer : childLayer
 
-  const withdrawalParentChain = !isDepositMode && isParentChain
+  const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
     if (!isDepositMode && !isParentChain) {
@@ -74,20 +74,20 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
     const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
 
     return depositGasFeeTooltip({
-      l1NetworkName,
-      l2NetworkName,
+      parentChainName,
+      childChainName,
       depositToOrbit: isDepositToOrbitChain
     })[layer]
   }
 
-  if (withdrawalParentChain) {
+  if (isWithdrawalParentChain) {
     return (
       <div
         className={twMerge(
           'grid items-center rounded-md bg-white/25 px-3 py-2 text-xs font-light text-white'
         )}
       >
-        You’ll have to pay {l1NetworkName} gas fee upon claiming.
+        You’ll have to pay {parentChainName} gas fee upon claiming.
       </div>
     )
   }
@@ -101,7 +101,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
     >
       <div className="flex flex-row items-center gap-1">
         <span className="text-left">
-          {isParentChain ? l1NetworkName : l2NetworkName} gas
+          {isParentChain ? parentChainName : childChainName} gas
         </span>
         <Tooltip content={layerGasFeeTooltipContent(layer)}>
           <InformationCircleIcon className="h-4 w-4" />
