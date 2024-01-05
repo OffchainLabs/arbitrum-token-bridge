@@ -44,6 +44,12 @@ describe('Withdraw USDC through CCTP', () => {
       cy.fundUserWalletEth(address, 'L1')
     })
 
+    afterEach(() => {
+      cy.disconnectMetamaskWalletFromAllDapps()
+      cy.task('setWalletConnectedToDapp', false)
+      cy.changeMetamaskNetwork('arbitrum-goerli')
+    })
+
     it('should bridge USDC through CCTP successfully', () => {
       cy.login({ networkType: 'L2', networkName: 'arbitrum-goerli' })
       context('should show L1 and L2 chains, and ETH correctly', () => {

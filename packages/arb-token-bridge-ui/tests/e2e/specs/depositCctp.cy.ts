@@ -50,6 +50,7 @@ describe('Deposit USDC through CCTP', () => {
       cy.task('setWalletConnectedToDapp', false)
       cy.changeMetamaskNetwork('goerli')
     })
+
     it('should bridge USDC through CCTP successfully', () => {
       cy.login({ networkType: 'L1', networkName: 'goerli' })
 
