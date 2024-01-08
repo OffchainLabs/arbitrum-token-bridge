@@ -79,10 +79,8 @@ Cypress.Commands.add(
       // and returns a boolean. If it returns true, the recursion stops
       $input => $input.val() === text,
       {
-        log: false,
-        limit: 10,
-        timeout: 240_000,
-        delay: 1_000
+        log: true,
+        timeout: 240_000
       }
     )
       // the recursion yields whatever the command function yields
