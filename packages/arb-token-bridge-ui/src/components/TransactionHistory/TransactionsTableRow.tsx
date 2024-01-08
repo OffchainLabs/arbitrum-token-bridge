@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 import {
@@ -21,13 +21,23 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const [txRelativeTime, setTxRelativeTime] = useState(
+    dayjs(tx.createdAt).fromNow()
+  )
 
   const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
     isNetwork(sourceChainId)
 
   const isClaimableTx = tx.isCctp || tx.isWithdrawal
 
-  const txRelativeTime = dayjs(tx.createdAt).fromNow()
+  useEffect(() => {
+    // make sure relative time updates periodically
+    const interval = setInterval(() => {
+      setTxRelativeTime(dayjs(tx.createdAt).fromNow())
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [tx])
 
   const tokenSymbol = useMemo(
     () =>
