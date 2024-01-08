@@ -52,7 +52,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <div className="flex items-center space-x-1 text-red-400">
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
-          <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -76,7 +76,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <div className="flex items-center space-x-1 text-green-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
           <span>Claimable</span>
-          <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -88,7 +88,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
       <div className="flex items-center space-x-1">
         <CheckCircleIcon height={14} className="mr-1" />
         <span>Success</span>
-        <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
+        <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
           <ArrowTopRightOnSquareIcon height={10} />
         </ExternalLink>
       </div>
