@@ -9,43 +9,55 @@ const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_default.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
+  'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coingecko.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
+  'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
-  'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json'
+  'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coingecko.json',
+  'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json',
+  'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_coingecko.json'
 ]
 
-// denylisted destination addresses in order: One, Nova, Goerli
+// denylisted destination addresses in order: One, Nova, Goerli, Sepolia
+// https://docs.arbitrum.io/for-devs/useful-addresses
 const DESTINATION_ADDRESS_DENYLIST = [
   // Protocol (L1)
   // ChallengeManager
   '0xe5896783a2F463446E1f624e64Aa6836BE4C6f58',
   '0xA59075221b50C598aED0Eae0bB9869639513af0D',
   '0xCaA89A8A8771Dfd95020FbA805f2dC774d2E625D',
+  '0x84EDD049A8a54fB6ED6c239Ad46f5B021F150700',
   // OneStepProver0
   '0x499A4f574f2e4F8837E242adEc86223Ef7DeEfcC',
   '0x8323B58C522690E6aFae94044825F0c79A93d236',
   '0xD7422f07fe48f6e82E40587feb2acaE1451f08A6',
+  '0xAF57ce898670D8fb4BEa8d3C37E22CbA01B70ddA',
   // OneStepProverMemory
   '0xb556F3Bb0FdCFeAf81a1c393e024a69a3327B676',
   '0x7a6C0503107858f82a790E481024134092e19979',
   '0x9221854E95283670E58738805a2d20405d17682E',
+  '0xA6Aca7d478e5236868bd8C8fD95B061685CBf0c5',
   // OneStepProverMath
   '0xd315Ac3a82E8EDAA84b347F478e0F59801747970',
   '0x1efb116EBC38CE895Eb2E5e009234E0E0836f2F5',
   '0xFe18aB9B105a8C13Fbd67a0DaCb1C70e84Bb5d5E',
+  '0xfEe5c93D21b1b036eD6C250ca08F274a1a7d42F4',
   // OneStepProverHostIo
   '0xb965b08A826D4C7634e0Df4c5eF5E1d1f9b5D13A',
   '0x9CBC3F14a57CE6eAD0e770F528E2f1E8b8C37613',
   '0x5518772ddb8e65416c6572E28BE58dAfc8A3834c',
+  '0xA53aA7d75C6672d774D4229c3cCf1F79870B752a',
   // OneStepProofEntry
   '0x3E1f62AA8076000c3218493FE3e0Ae40bcB9A1DF',
   '0x7AdcA86896c4220f19B2f7f9746e7A99E57B0Fc5',
   '0xe46a0585C3Cb05AaE200161534Af1aE5Dff61294',
+  '0x08a289543e8e3423db585DcFF8fa0a6E4b515961',
   // CoreProxyAdmin
   '0x554723262467F125Ac9e1cDFa9Ce15cc53822dbD',
   '0x71D78dC7cCC0e037e12de1E50f5470903ce37148',
   '0x4e845AcF190e4b36f8E6057be87E8715BEe7C56b',
+  '0x1ed74a4e4F4C42b86A7002e9951e98DBcC890686',
   //
   // L1 Dai Gateway
   '0xD3B5b60020504bc3489D6949d545893982BA3011',
@@ -108,6 +120,7 @@ const DESTINATION_ADDRESS_DENYLIST = [
   '0x9549263185294a7FB24bf357b0050252d3653C74',
   '0xAa01D5570E932a13eF9a06677eaf97d56a33393f',
   '0xe08339b8Da134f1e39876b7523586c4D2a4173d8'
+  // Testnet: Sepolia
 ]
 
 async function main() {
