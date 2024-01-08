@@ -117,6 +117,10 @@ const multiChainFetchList: ChainPair[] = [
   },
   // Orbit
   {
+    parentChain: ChainId.ArbitrumOne,
+    chain: ChainId.Xai
+  },
+  {
     parentChain: ChainId.ArbitrumGoerli,
     chain: ChainId.XaiTestnet
   },

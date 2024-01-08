@@ -38,7 +38,11 @@ function getTxConfirmationRemainingMinutes({
 function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
   const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
 
-  if (parentChainId === ChainId.Ethereum) {
+  if (
+    [ChainId.Ethereum, ChainId.ArbitrumOne, ChainId.ArbitrumNova].includes(
+      parentChainId
+    )
+  ) {
     return SEVEN_DAYS_IN_MINUTES
   }
 
