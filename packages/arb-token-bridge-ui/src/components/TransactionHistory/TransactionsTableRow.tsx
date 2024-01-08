@@ -174,7 +174,7 @@ export function TransactionsTableRow({
         <TransactionsTableRowAction
           tx={tx}
           isError={isError}
-          type={tx.isCctp || !tx.isWithdrawal ? 'deposits' : 'withdrawals'}
+          type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
         />
       </div>
       <div className="pl-3 align-middle">
