@@ -7,8 +7,7 @@ import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
-import { Provider } from '@ethersproject/providers'
+import { Provider, TransactionResponse } from '@ethersproject/providers'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -31,8 +30,6 @@ import { TransferPanelMain } from './TransferPanelMain'
 import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import {
   getL2ERC20Address,
-  fetchErc20Allowance,
-  fetchErc20L1GatewayAddress,
   isTokenArbitrumGoerliNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenGoerliUSDC,
@@ -72,6 +69,11 @@ import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+import { addDepositToCache } from '../TransactionHistory/helpers'
+import {
+  convertBridgeSdkToMergedTransaction,
+  convertBridgeSdkToPendingDepositTransaction
+} from './bridgeSdkConversionUtils'
 
 function useTokenFromSearchParams(): string | undefined {
   const [{ token: tokenFromSearchParams }] = useArbQueryParams()
@@ -188,11 +190,11 @@ export function TransferPanel() {
   ] = useDialog()
 
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
+    eth: [ethL1Balance, updateEthL1Balance],
+    erc20: [erc20L1Balances, updateErc20L1Balance]
   } = useBalance({ provider: l1Provider, walletAddress })
   const {
-    eth: [ethL2Balance],
+    eth: [ethL2Balance, updateEthL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({ provider: l2Provider, walletAddress })
 
@@ -311,107 +313,6 @@ export function TransferPanel() {
     } else {
       transfer()
     }
-  }
-
-  async function approveCustomFeeTokenForInbox(): Promise<boolean> {
-    if (typeof walletAddress === 'undefined') {
-      throw new Error('walletAddress is undefined')
-    }
-
-    if (!l1Signer) {
-      throw new Error('failed to find signer')
-    }
-
-    const ethBridger = await EthBridger.fromProvider(l2Provider)
-    const { l2Network } = ethBridger
-
-    if (typeof l2Network.nativeToken === 'undefined') {
-      throw new Error('l2 network does not use custom fee token')
-    }
-
-    const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
-      address: l2Network.nativeToken,
-      provider: l1Provider,
-      owner: walletAddress,
-      spender: l2Network.ethBridge.inbox
-    })
-
-    const amountBigNumber = utils.parseUnits(amount, nativeCurrency.decimals)
-
-    // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
-    if (!customFeeTokenAllowanceForInbox.gte(amountBigNumber)) {
-      const waitForInput = openCustomFeeTokenApprovalDialog()
-      const [confirmed] = await waitForInput()
-
-      if (!confirmed) {
-        return false
-      }
-
-      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
-        l1Signer
-      })
-      await approveCustomFeeTokenTx.wait()
-    }
-
-    return true
-  }
-
-  async function approveCustomFeeTokenForGateway(): Promise<boolean> {
-    if (typeof walletAddress === 'undefined') {
-      throw new Error('walletAddress is undefined')
-    }
-
-    if (!l1Signer) {
-      throw new Error('failed to find signer')
-    }
-
-    if (!selectedToken) {
-      throw new Error('no selected token')
-    }
-
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-    const l2Network = erc20Bridger.l2Network
-
-    if (typeof l2Network.nativeToken === 'undefined') {
-      throw new Error('l2 network does not use custom fee token')
-    }
-
-    const l1Gateway = await fetchErc20L1GatewayAddress({
-      erc20L1Address: selectedToken.address,
-      l1Provider,
-      l2Provider
-    })
-
-    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
-      address: l2Network.nativeToken,
-      provider: l1Provider,
-      owner: walletAddress,
-      spender: l1Gateway
-    })
-
-    const estimatedL2GasFees = utils.parseUnits(
-      String(gasSummary.estimatedL2GasFees),
-      nativeCurrency.decimals
-    )
-
-    // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the chain will be paid in the custom fee token
-    // We have to check if the allowance is enough to cover the fees
-    if (!customFeeTokenAllowanceForL1Gateway.gte(estimatedL2GasFees)) {
-      const waitForInput = openCustomFeeTokenApprovalDialog()
-      const [confirmed] = await waitForInput()
-
-      if (!confirmed) {
-        return false
-      }
-
-      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
-        erc20L1Address: selectedToken.address,
-        l1Signer
-      })
-      await approveCustomFeeTokenTx.wait()
-    }
-
-    return true
   }
 
   const amountBigNumber = useMemo(() => {
@@ -1028,6 +929,8 @@ export function TransferPanel() {
         destinationAddress
       })
 
+      window.alert('Transfer initiated, handle in UI')
+
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (ex) {
@@ -1037,47 +940,59 @@ export function TransferPanel() {
     }
   }
 
-  const onTxSubmit = async (transfer: BridgeTransfer) => {
-    // here, handle all transformations
-
+  const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
     // todo: this should be just the verbose event tracking code
     // trackTransferPanelEvent(isDepositMode ? 'Deposit' : 'Withdraw')
 
-    const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
-    const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
-
-    const { transferType, sourceChainTransaction } = transfer
+    const { transferType, sourceChainTransaction } = bridgeTransfer
     const isDeposit = transferType.includes('deposit')
-    const isNativeCurrencyTransfer = transferType.includes('eth')
 
-    const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
-    const destinationChainId = await getChainIdFromProvider(
-      destinationChainProvider
-    )
-
-    const uiCompatibleTransactionObject = {
-      type: isDeposit ? 'deposit-l1' : 'withdraw',
-      status: 'pending',
-      value: utils.formatUnits(
-        amountBigNumber,
-        isNativeCurrencyTransfer
-          ? nativeCurrency.decimals
-          : selectedToken?.decimals
-      ),
-      txID: sourceChainTransaction.hash,
-      assetName: isNativeCurrencyTransfer ? 'ETH' : selectedToken?.symbol,
-      assetType: isNativeCurrencyTransfer ? AssetType.ETH : AssetType.ERC20,
-      sender: walletAddress,
-      destination: destinationAddress ?? walletAddress,
-      childChainId: sourceChainId.toString(),
-      parentChainId: destinationChainId.toString()
-    } as unknown as MergedTransaction // to-do - fix this type, temp fix
+    const uiCompatibleTransactionObject = convertBridgeSdkToMergedTransaction({
+      bridgeTransfer,
+      l1Network,
+      l2Network,
+      selectedToken,
+      walletAddress: walletAddress!,
+      destinationAddress,
+      nativeCurrency,
+      amount: amountBigNumber
+    })
 
     // add transaction to the transaction history
     addPendingTransaction(uiCompatibleTransactionObject)
 
-    // open tx history
+    // if deposit, add to local cache
+    if (isDeposit) {
+      addDepositToCache(
+        convertBridgeSdkToPendingDepositTransaction({
+          bridgeTransfer,
+          l1Network,
+          l2Network,
+          selectedToken,
+          walletAddress: walletAddress!,
+          destinationAddress,
+          nativeCurrency,
+          amount: amountBigNumber
+        })
+      )
+    }
+
     openTransactionHistoryPanel()
+    setTransferring(false)
+    clearAmountInput()
+
+    await (sourceChainTransaction as TransactionResponse).wait()
+
+    // tx confirmed, update balances
+    await Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+
+    if (selectedToken) {
+      token.updateTokenData(selectedToken.address)
+    }
+
+    if (nativeCurrency.isCustom) {
+      await updateErc20L1Balance([nativeCurrency.address])
+    }
   }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds
