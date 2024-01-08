@@ -1,7 +1,5 @@
-import { useMedia } from 'react-use'
 import dayjs, { Dayjs } from 'dayjs'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { ChainId } from '../../util/networks'
 import { MergedTransaction } from '../../state/app/state'
 
@@ -64,7 +62,9 @@ export function WithdrawalCountdown({
   })
 
   const timeLeftText =
-    minutesLeft === 0 ? 'Almost there...' : dayjs().to(txConfirmationDate, true)
+    minutesLeft === 0
+      ? 'less than a minute'
+      : dayjs().to(txConfirmationDate, true)
 
   return <span>{timeLeftText}</span>
 }

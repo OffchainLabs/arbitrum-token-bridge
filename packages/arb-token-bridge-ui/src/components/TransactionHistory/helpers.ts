@@ -45,7 +45,7 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
 
 export function isTxCompleted(tx: MergedTransaction) {
   if (tx.isCctp) {
-    return tx.cctpData?.receiveMessageTransactionHash
+    return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -570,5 +570,5 @@ export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
   if (minutesLeft > 0) {
     return formattedMinutesLeft
   }
-  return 'Almost there...'
+  return 'less than a minute'
 }

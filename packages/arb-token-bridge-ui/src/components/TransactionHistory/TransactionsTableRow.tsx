@@ -24,6 +24,7 @@ import { Button } from '../common/Button'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
+import { useTxDetailsStore } from './TransactionHistory'
 
 export function TransactionsTableRow({
   tx,
@@ -32,6 +33,8 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
+  const { open: openTxDetails } = useTxDetailsStore()
+
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
 
   const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
@@ -135,60 +138,69 @@ export function TransactionsTableRow({
   }, [tx])
 
   return (
-    <div
-      data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
-      className={twMerge(
-        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
-        className
-      )}
-    >
-      <div className="pr-3 align-middle">{txRelativeTime}</div>
-      <div className="flex items-center pr-3 align-middle">
-        <TransactionsTableTokenImage tokenSymbol={tx.asset} />
-        <span className="ml-2">
-          {formatAmount(Number(tx.value), {
-            symbol: tokenSymbol
-          })}
-        </span>
-      </div>
-      <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
+    <>
+      <div
+        data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${
+          tx.txId
+        }`}
+        className={twMerge(
+          'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+          className
+        )}
+      >
+        <div className="pr-3 align-middle">{txRelativeTime}</div>
+        <div className="flex items-center pr-3 align-middle">
+          <TransactionsTableTokenImage tokenSymbol={tx.asset} />
+          <span className="ml-2">
+            {formatAmount(Number(tx.value), {
+              symbol: tokenSymbol
+            })}
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span>
+            <NetworkImage
+              chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
+            />
+          </span>
+          <span className="inline-block w-[55px] break-words">
+            {getNetworkName(
+              tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+            )}
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span>
+            <NetworkImage
+              chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
+            />
+          </span>
+          <span className="inline-block w-[55px] break-words">
+            {getNetworkName(
+              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+            )}
+          </span>
+        </div>
+        <div className="pr-3 align-middle">
+          <StatusLabel />
+        </div>
+        <div className="flex justify-center px-3 align-middle">
+          <TransactionsTableRowAction
+            tx={tx}
+            isError={isError}
+            type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
           />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.childChainId : tx.parentChainId)}
-        </span>
+        </div>
+        <div className="pl-3 align-middle">
+          <Button
+            variant="primary"
+            className="rounded border border-white p-2 text-xs text-white"
+            onClick={() => openTxDetails(tx)}
+          >
+            See Details
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
-          />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.parentChainId : tx.childChainId)}
-        </span>
-      </div>
-      <div className="pr-3 align-middle">
-        <StatusLabel />
-      </div>
-      <div className="flex justify-center px-3 align-middle">
-        <TransactionsTableRowAction
-          tx={tx}
-          isError={isError}
-          type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-        />
-      </div>
-      <div className="pl-3 align-middle">
-        <Button
-          variant="primary"
-          className="rounded border border-white p-2 text-xs text-white"
-        >
-          See Details
-        </Button>
-      </div>
-    </div>
+    </>
   )
 }

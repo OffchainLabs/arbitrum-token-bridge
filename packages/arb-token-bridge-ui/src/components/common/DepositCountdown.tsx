@@ -5,11 +5,7 @@ import { isNetwork } from '../../util/networks'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
-    if (minutesRemaining <= 0) {
-      return 'Almost there...'
-    }
-
-    return 'Less than a minute...'
+    return 'Less than a minute'
   }
 
   return `${minutesRemaining} minutes`
