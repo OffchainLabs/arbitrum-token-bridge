@@ -1,24 +1,14 @@
-import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
-import {
-  EthWithdrawal,
-  attachTimestampToTokenWithdrawal,
-  isTokenWithdrawal,
-  mapETHWithdrawalToL2ToL1EventResult,
-  mapTokenWithdrawalFromEventLogsToL2ToL1EventResult,
-  mapWithdrawalToL2ToL1EventResult
-} from './helpers'
 import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
-import {
-  L2ToL1EventResultPlus,
-  WithdrawalInitiated
-} from '../../hooks/arbTokenBridge.types'
 import { fetchL2Gateways } from '../fetchL2Gateways'
+import { Withdrawal } from '../../hooks/useTransactionHistory'
+import { attachTimestampToTokenWithdrawal } from './helpers'
+import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -32,20 +22,7 @@ export type FetchWithdrawalsParams = {
   searchString?: string
 }
 
-type Timestamped = {
-  timestamp?: BigNumber
-}
-
-function sortByTimestampDescending(a: Timestamped, b: Timestamped) {
-  const aTimestamp = a.timestamp ?? constants.Zero
-  const bTimestamp = b.timestamp ?? constants.Zero
-
-  return aTimestamp.gt(bTimestamp) ? -1 : 1
-}
-
-/* Fetch complete withdrawals - both ETH and Token withdrawals from subgraph and event logs into one list */
-/* Also fills in any additional data required per transaction for our UI logic to work well */
-export const fetchWithdrawals = async ({
+export async function fetchWithdrawals({
   sender,
   receiver,
   l1Provider,
@@ -55,7 +32,7 @@ export const fetchWithdrawals = async ({
   searchString,
   fromBlock,
   toBlock
-}: FetchWithdrawalsParams) => {
+}: FetchWithdrawalsParams): Promise<Withdrawal[]> {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined') {
     return []
   }
@@ -111,76 +88,50 @@ export const fetchWithdrawals = async ({
     })
   ])
 
-  // get txs to be displayed on the current page (event logs)
-  const currentPageStart = pageNumber * pageSize
-  const currentPageEnd = currentPageStart + pageSize
-
-  // we need timestamps to sort token withdrawals along ETH withdrawals
-  const tokenWithdrawalsFromEventLogsWithTimestamp = await Promise.all(
-    tokenWithdrawalsFromEventLogs.map(withdrawal =>
-      attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
-    )
-  )
-
-  // get ETH and token withdrawals that will be displayed on the current page
-  const paginatedWithdrawalsFromEventLogs = [
-    ...ethWithdrawalsFromEventLogs,
-    ...tokenWithdrawalsFromEventLogsWithTimestamp
-  ]
-    .sort(sortByTimestampDescending)
-    .slice(currentPageStart, currentPageEnd)
-
-  const paginatedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] = []
-  const paginatedEthWithdrawalsFromEventLogs: EthWithdrawal[] = []
-
-  for (const withdrawal of paginatedWithdrawalsFromEventLogs) {
-    if (isTokenWithdrawal(withdrawal)) {
-      paginatedTokenWithdrawalsFromEventLogs.push(withdrawal)
-    } else {
-      paginatedEthWithdrawalsFromEventLogs.push(withdrawal)
-    }
+  if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
+    return withdrawalsFromSubgraph.map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'subgraph',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
+    })
   }
 
-  const mappedTokenWithdrawalsFromEventLogs = await Promise.all(
-    paginatedTokenWithdrawalsFromEventLogs.map(withdrawal =>
-      mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-        withdrawal,
-        l1Provider,
-        l2Provider,
-        l2ChainID
+  const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
+    ethWithdrawalsFromEventLogs.map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'event_logs',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
+    })
+
+  const mappedTokenWithdrawalsFromEventLogs: WithdrawalInitiated[] =
+    tokenWithdrawalsFromEventLogs.map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'event_logs',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
+    })
+
+  // we need timestamps to sort token withdrawals along ETH withdrawals
+  const tokenWithdrawalsFromEventLogsWithTimestamp: Withdrawal[] =
+    await Promise.all(
+      mappedTokenWithdrawalsFromEventLogs.map(withdrawal =>
+        attachTimestampToTokenWithdrawal({ withdrawal, l2Provider })
       )
     )
-  )
 
-  const l2ToL1Txns = [
-    ...(await Promise.all([
-      ...withdrawalsFromSubgraph.map(withdrawal =>
-        mapWithdrawalToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
-      ),
-      ...paginatedEthWithdrawalsFromEventLogs.map(withdrawal =>
-        mapETHWithdrawalToL2ToL1EventResult(
-          withdrawal,
-          l1Provider,
-          l2Provider,
-          l2ChainID
-        )
-      )
-    ])),
-    ...mappedTokenWithdrawalsFromEventLogs
+  return [
+    ...mappedEthWithdrawalsFromEventLogs,
+    ...tokenWithdrawalsFromEventLogsWithTimestamp
   ]
-    .filter((msg): msg is L2ToL1EventResultPlus => typeof msg !== 'undefined')
-    .sort(sortByTimestampDescending)
-
-  return l2ToL1Txns.map(tx => ({
-    ...tx,
-
-    // attach the chain ids to the withdrawal object
-    chainId: l2ChainID,
-    parentChainId: l1ChainID
-  }))
 }

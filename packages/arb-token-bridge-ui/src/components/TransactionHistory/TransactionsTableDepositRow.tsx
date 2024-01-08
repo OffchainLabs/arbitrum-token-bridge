@@ -2,30 +2,33 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { DepositStatus, MergedTransaction } from '../../../state/app/state'
-import { StatusBadge } from '../../common/StatusBadge'
-import { useRedeemRetryable } from '../../../hooks/useRedeemRetryable'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
-import { shortenTxHash } from '../../../util/CommonUtils'
-import { DepositCountdown } from '../../common/DepositCountdown'
-import { ExternalLink } from '../../common/ExternalLink'
-import { Button } from '../../common/Button'
-import { Tooltip } from '../../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../../util/networks'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
+import { StatusBadge } from '../common/StatusBadge'
+import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { DepositCountdown } from '../common/DepositCountdown'
+import { ExternalLink } from '../common/ExternalLink'
+import { Button } from '../common/Button'
+import { Tooltip } from '../common/Tooltip'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
   isDepositReadyToRedeem,
+  isFailed,
   isPending
-} from '../../../state/app/utils'
-import { TransactionDateTime } from './TransactionsTable'
-import { formatAmount } from '../../../util/NumberUtils'
-import { useIsConnectedToArbitrum } from '../../../hooks/useIsConnectedToArbitrum'
-import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+} from '../../state/app/utils'
+import { TransactionDateTime } from './TransactionHistoryTable'
+import { formatAmount } from '../../util/NumberUtils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { useChainLayers } from '../../../hooks/useChainLayers'
-import { AssetType } from '../../../hooks/arbTokenBridge.types'
+import { useChainLayers } from '../../hooks/useChainLayers'
+import { NetworkImage } from '../common/NetworkImage'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { isTxCompleted } from './helpers'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -33,12 +36,20 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
       return (
-        <StatusBadge
-          variant="yellow"
-          aria-label={`${parentLayer} Transaction Status`}
-        >
-          Pending
-        </StatusBadge>
+        <div className="flex flex-col space-y-1">
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${parentLayer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+          <StatusBadge
+            variant="yellow"
+            aria-label={`${layer} Transaction Status`}
+          >
+            Pending
+          </StatusBadge>
+        </div>
       )
 
     case DepositStatus.L1_FAILURE:
@@ -159,7 +170,6 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
-  const { l1, l2 } = useNetworksAndSigners()
   const { parentLayer, layer } = useChainLayers()
   const l2TxHash = (() => {
     if (tx.l1ToL2MsgData?.l2TxID) {
@@ -175,31 +185,35 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
         aria-label={`${parentLayer} Transaction Link`}
       >
-        <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(l1.network.id)}:{' '}
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
+        <NetworkImage chainId={tx.parentChainId} />
+        <span className="pl-1">{getNetworkName(tx.parentChainId)}: </span>
         <ExternalLink
-          href={`${getExplorerUrl(l1.network.id)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
         </ExternalLink>
       </span>
 
-      {l2TxHash && (
-        <span
-          className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-          aria-label={`${layer} Transaction Link`}
-        >
-          <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-          {getNetworkName(l2.network.id)}:{' '}
+      <span
+        className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+        aria-label={`${layer} Transaction Link`}
+      >
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+        <NetworkImage chainId={tx.childChainId} />
+        <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+        {l2TxHash ? (
           <ExternalLink
-            href={`${getExplorerUrl(l2.network.id)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}
           </ExternalLink>
-        </span>
-      )}
+        ) : (
+          <>Pending</>
+        )}
+      </span>
     </div>
   )
 }
@@ -211,7 +225,6 @@ export function TransactionsTableDepositRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const { l1 } = useNetworksAndSigners()
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -261,9 +274,9 @@ export function TransactionsTableDepositRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: l1.network
+        chain: getWagmiChain(tx.parentChainId)
       }),
-    [l1.network, tx.asset, tx.tokenAddress]
+    [tx.parentChainId, tx.asset, tx.tokenAddress]
   )
 
   const customAddressTxPadding = useMemo(
@@ -271,45 +284,70 @@ export function TransactionsTableDepositRow({
     [tx]
   )
 
+  const rowHeight = useMemo(() => {
+    if (isPending(tx) || isFailed(tx)) {
+      return isCustomDestinationAddressTx(tx) ? 'h-[126px]' : 'h-[94px]'
+    }
+    return isCustomDestinationAddressTx(tx) ? 'h-[117px]' : 'h-[85px]'
+  }, [tx])
+
   if (!tx.sender || !address) {
     return null
   }
 
   return (
-    <tr
+    <div
+      data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative text-sm text-dark',
-        bgClassName || 'bg-cyan even:bg-white',
+        'relative grid h-full grid-cols-[150px_250px_140px_290px_140px] border-b border-dark text-sm text-dark',
+        bgClassName,
         className
       )}
-      data-testid={`deposit-row-${tx.txId}`}
+      style={{ gridAutoRows: rowHeight }}
     >
-      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
-        <DepositRowStatus tx={tx} />
-      </td>
-
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <DepositRowTime tx={tx} />
-      </td>
-
-      <td
+      <div
         className={twMerge(
-          'w-1/5 whitespace-nowrap px-3 py-3',
+          'pl-6 pr-3 align-middle',
+          customAddressTxPadding,
+          isTxCompleted(tx) ? 'py-3' : 'py-4'
+        )}
+      >
+        <DepositRowStatus tx={tx} />
+      </div>
+
+      <div
+        className={twMerge(
+          'flex items-center px-3 py-4 align-middle',
           customAddressTxPadding
         )}
       >
-        {formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}
-      </td>
+        <DepositRowTime tx={tx} />
+      </div>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
-        <DepositRowTxID tx={tx} />
-      </td>
-
-      <td
+      <div
         className={twMerge(
-          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          'flex items-center whitespace-nowrap px-3 py-4 align-middle',
+          customAddressTxPadding
+        )}
+      >
+        <div className="flex space-x-1">
+          <span>{formatAmount(Number(tx.value), { symbol: tokenSymbol })}</span>
+        </div>
+      </div>
+
+      <div
+        className={twMerge(
+          'px-3 align-middle',
+          customAddressTxPadding,
+          isTxCompleted(tx) ? 'py-4' : 'py-5'
+        )}
+      >
+        <DepositRowTxID tx={tx} />
+      </div>
+
+      <div
+        className={twMerge(
+          'relative py-4 pl-3 pr-6 text-right align-middle',
           customAddressTxPadding
         )}
       >
@@ -359,12 +397,13 @@ export function TransactionsTableDepositRow({
             type="deposits"
           />
         )}
-      </td>
+      </div>
+
       {isCustomDestinationAddressTx(tx) && (
-        <td>
+        <div className="col-span-5">
           <TransactionsTableCustomAddressLabel tx={tx} />
-        </td>
+        </div>
       )}
-    </tr>
+    </div>
   )
 }

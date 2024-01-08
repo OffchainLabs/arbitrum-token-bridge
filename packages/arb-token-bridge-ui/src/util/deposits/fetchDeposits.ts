@@ -104,6 +104,8 @@ export const fetchDeposits = async ({
       return {
         type: 'deposit-l1',
         status: 'pending',
+        direction: 'deposit',
+        source: 'subgraph',
         value: utils.formatUnits(amount || 0, decimals),
         txID: tx.transactionHash,
         tokenAddress: assetDetails.tokenAddress,
@@ -119,7 +121,7 @@ export const fetchDeposits = async ({
         timestampCreated: tx.timestamp,
         isClassic: tx.isClassic,
 
-        chainId: l2ChainId,
+        childChainId: l2ChainId,
         parentChainId: l1ChainId
       }
     }

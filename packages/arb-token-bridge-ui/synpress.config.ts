@@ -7,6 +7,7 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
+import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
@@ -14,11 +15,17 @@ import {
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
+
 import { registerLocalNetwork } from './src/util/networks'
 
-const tests = process.env.TEST_FILE
-  ? [process.env.TEST_FILE]
-  : specFiles.map(file => file.file)
+let tests: string[]
+if (process.env.TEST_FILE) {
+  tests = [process.env.TEST_FILE]
+} else if (process.env.E2E_CCTP) {
+  tests = cctpFiles.map(file => file.file)
+} else {
+  tests = specFiles.map(file => file.file)
+}
 
 export default defineConfig({
   userAgent: 'synpress',
@@ -49,6 +56,11 @@ export default defineConfig({
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
+      if (!goerliRpcUrl) {
+        throw new Error(
+          'process.env.NEXT_PUBLIC_GOERLI_RPC_URL variable missing.'
+        )
+      }
 
       const userWalletAddress = await userWallet.getAddress()
 
@@ -70,26 +82,24 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      // L1
-      await fundUserWallet('L1')
-      // L2
-      await fundUserWallet('L2')
+      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
 
       // Wrap ETH to test ERC-20 transactions
-      // L1
-      await wrapEth('L1')
-      // L2
-      await wrapEth('L2')
+      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+
       // Approve WETH
       await approveWeth()
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
+      config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
+      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
 
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
@@ -107,8 +117,20 @@ export default defineConfig({
   }
 })
 
-const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
+
+const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
+const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+
+const ethRpcUrl =
+  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+const goerliRpcUrl =
+  process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL
+const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
@@ -146,8 +168,8 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWallet(networkType: 'L1' | 'L2') {
-  console.log(`Funding user wallet: ${networkType}...`)
+async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+  console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
   const balance = await provider.getBalance(address)

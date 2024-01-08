@@ -6,11 +6,7 @@ import {
   L1ToL2MessageStatus,
   L2ToL1MessageStatus as OutgoingMessageState
 } from '@arbitrum/sdk'
-import {
-  EthDepositMessage,
-  L1ToL2MessageReader,
-  L1ToL2MessageReaderClassic
-} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { L1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -28,7 +24,6 @@ import {
 } from '@arbitrum/sdk/dist/lib/message/L2Transaction'
 
 import {
-  FailedTransaction,
   NewTransaction,
   Transaction,
   L1ToL2MessageData
@@ -89,18 +84,19 @@ export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   symbol: string
   decimals: number
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  chainId?: number
-  parentChainId?: number
+  parentChainId: number
+  childChainId: number
 }
 
 export type WithdrawalInitiated = EventArgs<WithdrawalInitiatedEvent> & {
   txHash: string
   timestamp?: BigNumber
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
+  parentChainId: number
+  childChainId: number
 }
 
-export interface PendingWithdrawalsMap {
-  [id: string]: L2ToL1EventResultPlus
-}
 export interface BridgeToken {
   type: TokenType
   name: string
@@ -160,7 +156,7 @@ export interface ArbTokenBridgeEth {
     txLifecycle?: L2ContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
@@ -194,23 +190,13 @@ export interface ArbTokenBridgeToken {
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    id: string
+    event: L2ToL1EventResultPlus
     l1Signer: Signer
   }) => Promise<void | ContractReceipt>
 }
 
 export interface TransactionActions {
-  addFailedTransaction: (transaction: FailedTransaction) => void
-
-  setDepositsInStore: (transactions: Transaction[]) => void
-  setTransactionSuccess: (txID: string) => void
-  setTransactionFailure: (txID?: string) => void
-  removeTransaction: (txID: string) => void
-
   addTransaction: (transaction: NewTransaction) => void
-  addTransactions: (transactions: Transaction[]) => void
-  clearPendingTransactions: () => void
-  setTransactionConfirmed: (txID: string) => void
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
@@ -222,31 +208,13 @@ export interface TransactionActions {
     isEthDeposit: boolean,
     status: L1ToL2MessageStatus
   ) => void
-  fetchAndUpdateL1ToL2MsgClassicStatus: (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReaderClassic,
-    isEthDeposit: boolean,
-    status: L1ToL2MessageStatus
-  ) => void
-  fetchAndUpdateEthDepositMessageStatus: (
-    txID: string,
-    ethDepositMessage: EthDepositMessage
-  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {
   transactions: Transaction[]
 } & Pick<
   TransactionActions,
-  | 'addTransaction'
-  | 'clearPendingTransactions'
-  | 'setTransactionConfirmed'
-  | 'updateTransaction'
-  | 'addTransactions'
-  | 'fetchAndUpdateL1ToL2MsgStatus'
-  | 'fetchAndUpdateL1ToL2MsgClassicStatus'
-  | 'fetchAndUpdateEthDepositMessageStatus'
-  | 'setDepositsInStore'
+  'addTransaction' | 'updateTransaction' | 'fetchAndUpdateL1ToL2MsgStatus'
 >
 
 export interface ArbTokenBridge {
@@ -254,6 +222,4 @@ export interface ArbTokenBridge {
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions
-  pendingWithdrawalsMap: PendingWithdrawalsMap
-  setWithdrawalsInStore: (txns: L2ToL1EventResultPlus[]) => void
 }

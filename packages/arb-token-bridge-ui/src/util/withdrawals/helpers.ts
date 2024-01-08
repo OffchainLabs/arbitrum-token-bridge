@@ -23,6 +23,10 @@ import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
 export type EthWithdrawal = L2ToL1EventResult & {
   l2TxHash?: string
   transactionHash?: string
+  direction: 'withdrawal'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
+  parentChainId: number
+  childChainId: number
 }
 
 export const updateAdditionalWithdrawalData = async (
@@ -56,18 +60,21 @@ export async function attachTimestampToTokenWithdrawal({
   }
 }
 
-export async function mapETHWithdrawalToL2ToL1EventResult(
-  event: EthWithdrawal,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus> {
+export async function mapETHWithdrawalToL2ToL1EventResult({
+  event,
+  l1Provider,
+  l2Provider
+}: {
+  event: EthWithdrawal
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus> {
   const { callvalue } = event
   const outgoingMessageState = await getOutgoingMessageState(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    event.childChainId
   )
 
   const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
@@ -80,8 +87,10 @@ export async function mapETHWithdrawalToL2ToL1EventResult(
     value: callvalue,
     symbol: nativeCurrency.symbol,
     outgoingMessageState,
-    decimals: nativeCurrency.decimals,
-    l2TxHash: event.l2TxHash || event.transactionHash
+    l2TxHash: event.l2TxHash || event.transactionHash,
+    parentChainId: event.parentChainId,
+    childChainId: event.childChainId,
+    decimals: nativeCurrency.decimals
   }
 }
 
@@ -167,12 +176,15 @@ export function isTokenWithdrawal(
   return typeof (withdrawal as WithdrawalInitiated).l1Token !== 'undefined'
 }
 
-export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
-  result: WithdrawalInitiated,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l2ChainID: number
-): Promise<L2ToL1EventResultPlus | undefined> {
+export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
+  result,
+  l1Provider,
+  l2Provider
+}: {
+  result: WithdrawalInitiated
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus | undefined> {
   const { symbol, decimals } = await fetchErc20Data({
     address: result.l1Token,
     provider: l1Provider
@@ -192,7 +204,7 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainID
+    result.childChainId
   )
 
   // We cannot access sender and destination from the withdrawal object.
@@ -235,18 +247,22 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult(
     outgoingMessageState,
     symbol,
     decimals,
-    l2TxHash: l2TxReceipt.transactionHash
+    l2TxHash: l2TxReceipt.transactionHash,
+    parentChainId: result.parentChainId,
+    childChainId: result.childChainId
   }
 }
 
-export async function mapWithdrawalToL2ToL1EventResult(
-  withdrawal: FetchWithdrawalsFromSubgraphResult,
-  l1Provider: Provider,
-  l2Provider: Provider,
-  l2ChainId: number
-): Promise<L2ToL1EventResultPlus | undefined> {
+export async function mapWithdrawalToL2ToL1EventResult({
+  withdrawal,
+  l1Provider,
+  l2Provider
+}: {
+  withdrawal: FetchWithdrawalsFromSubgraphResult
+  l1Provider: Provider
+  l2Provider: Provider
+}): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
-
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
   const l2TxReceipt = new L2TransactionReceipt(txReceipt)
 
@@ -261,7 +277,7 @@ export async function mapWithdrawalToL2ToL1EventResult(
     event,
     l1Provider,
     l2Provider,
-    l2ChainId
+    withdrawal.childChainId
   )
 
   if (withdrawal.type === 'TokenWithdrawal' && withdrawal?.l1Token?.id) {
@@ -281,7 +297,9 @@ export async function mapWithdrawalToL2ToL1EventResult(
       outgoingMessageState,
       symbol,
       decimals,
-      l2TxHash: l2TxReceipt.transactionHash
+      l2TxHash: l2TxReceipt.transactionHash,
+      parentChainId: withdrawal.parentChainId,
+      childChainId: withdrawal.childChainId
     } as L2ToL1EventResultPlus
   }
 
@@ -297,6 +315,8 @@ export async function mapWithdrawalToL2ToL1EventResult(
     outgoingMessageState,
     l2TxHash: l2TxReceipt.transactionHash,
     symbol: nativeCurrency.symbol,
-    decimals: nativeCurrency.decimals
+    decimals: nativeCurrency.decimals,
+    parentChainId: withdrawal.parentChainId,
+    childChainId: withdrawal.childChainId
   } as L2ToL1EventResultPlus
 }
