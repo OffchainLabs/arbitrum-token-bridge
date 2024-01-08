@@ -99,7 +99,7 @@ export const xai: Chain = {
   name: 'Xai',
   network: 'xai',
   nativeCurrency: {
-    name: 'XAI',
+    name: 'Xai',
     symbol: 'XAI',
     decimals: 18
   },

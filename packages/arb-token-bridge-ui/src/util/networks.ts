@@ -359,8 +359,8 @@ export const xaiTestnet: Chain = {
 }
 
 export const xai: Chain = {
-  chainID: 660279,
-  confirmPeriodBlocks: 150,
+  chainID: ChainId.Xai,
+  confirmPeriodBlocks: 45818,
   ethBridge: {
     bridge: '0x7dd8A76bdAeBE3BBBaCD7Aa87f1D4FDa1E60f94f',
     inbox: '0xaE21fDA3de92dE2FDAF606233b2863782Ba046F9',
@@ -373,7 +373,7 @@ export const xai: Chain = {
   isArbitrum: true,
   isCustom: true,
   name: 'Xai',
-  partnerChainID: 42161,
+  partnerChainID: ChainId.ArbitrumOne,
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
     l1CustomGateway: '0xb15A0826d65bE4c2fDd961b72636168ee70Af030',
@@ -490,6 +490,7 @@ export function isNetwork(chainId: ChainId) {
     isSepolia ||
     isArbitrumSepolia ||
     isStylusTestnet ||
+    isXai ||
     isXaiTestnet // is network supported on bridge
 
   return {
@@ -618,7 +619,6 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
     ChainId.XaiTestnet,
-    ChainId.Xai,
     ChainId.StylusTestnet,
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
@@ -626,7 +626,8 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
   const mainnetNetworks = [
     ChainId.Ethereum,
     ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova
+    ChainId.ArbitrumNova,
+    ChainId.Xai
   ]
 
   return isNetwork(chainId).isTestnet
