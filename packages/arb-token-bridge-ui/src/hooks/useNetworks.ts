@@ -10,6 +10,7 @@ import {
   rpcURLs
 } from '../util/networks'
 import {
+  xai,
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
@@ -35,6 +36,7 @@ function getChainByChainId(chainId: ChainId): Chain {
     [ChainId.ArbitrumGoerli]: arbitrumGoerli,
     [ChainId.ArbitrumSepolia]: arbitrumSepolia,
     // L3
+    [ChainId.Xai]: xai,
     [ChainId.XaiTestnet]: xaiTestnet,
     [ChainId.StylusTestnet]: stylusTestnet,
     // E2E
