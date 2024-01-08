@@ -88,10 +88,7 @@ function TokenListsPanel() {
         return false
       }
 
-      return (
-        tokenList.originChainID === l2Network.id &&
-        data.find(list => tokenList.id === list.bridgeTokenListId)
-      )
+      return data.find(list => tokenList.id === list.bridgeTokenListId)
     })
   }, [data, l2Network])
 
