@@ -54,7 +54,10 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const parentChainName = getNetworkName(l1.network.id)
   const childChainName = getNetworkName(l2.network.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
+  const showPrice = useMemo(
+    () => isBridgingEth && !isNetwork(l1.network.id).isTestnet,
+    [isBridgingEth, l1.network.id]
+  )
   const layer = isParentChain ? parentLayer : childLayer
 
   const isWithdrawalParentChain = !isDepositMode && isParentChain
