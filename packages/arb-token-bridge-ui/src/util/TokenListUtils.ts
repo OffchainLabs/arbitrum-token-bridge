@@ -1,7 +1,5 @@
 import axios from 'axios'
 import { schema, TokenList } from '@uniswap/token-lists'
-import Ajv from 'ajv'
-import addFormats from 'ajv-formats'
 import { ImageProps } from 'next/image'
 import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
@@ -120,14 +118,6 @@ BRIDGE_TOKEN_LISTS.forEach(bridgeTokenList => {
 export interface TokenListWithId extends TokenList {
   l2ChainId: string
   bridgeTokenListId: number
-}
-
-export const validateTokenList = (tokenList: TokenList) => {
-  const ajv = new Ajv()
-  addFormats(ajv)
-  const validate = ajv.compile(schema)
-
-  return validate(tokenList)
 }
 
 export const addBridgeTokenListToBridge = (
