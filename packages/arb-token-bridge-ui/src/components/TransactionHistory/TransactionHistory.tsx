@@ -15,7 +15,7 @@ import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 
 const tabClasses =
-  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:font-thin'
+  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
 
 export const TransactionHistory = ({
   props

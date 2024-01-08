@@ -19,7 +19,6 @@ import {
   getStandardizedTime,
   isTokenDeposit
 } from '../../state/app/utils'
-import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
@@ -221,7 +220,7 @@ export const TransactionHistoryTable = ({
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <div className="flex justify-start space-x-1">
+            <div className="flex items-center justify-start space-x-1">
               <FailedChainPairsTooltip />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
