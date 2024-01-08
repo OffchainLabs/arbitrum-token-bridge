@@ -11,12 +11,7 @@ import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import {
-  ChainId,
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import { isTxClaimable, isTxFailed, isTxPending } from './helpers'
 import { ExternalLink } from '../common/ExternalLink'
@@ -25,7 +20,7 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
-  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
+  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
 
   const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
     isNetwork(sourceChainId)
@@ -57,9 +52,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <div className="flex items-center space-x-1 text-red-400">
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
-          <ExternalLink
-            href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-          >
+          <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -67,8 +60,6 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
     }
 
     if (isTxPending(tx)) {
-      const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-
       return (
         <div className="flex items-center space-x-1 text-yellow-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
@@ -85,9 +76,7 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
         <div className="flex items-center space-x-1 text-green-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
           <span>Claimable</span>
-          <ExternalLink
-            href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-          >
+          <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -99,14 +88,12 @@ export function TransactionsTableRow({ tx }: { tx: MergedTransaction }) {
       <div className="flex items-center space-x-1">
         <CheckCircleIcon height={14} className="mr-1" />
         <span>Success</span>
-        <ExternalLink
-          href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-        >
+        <ExternalLink href={`${sourceChainId}/tx/${tx.txId}`}>
           <ArrowTopRightOnSquareIcon height={10} />
         </ExternalLink>
       </div>
     )
-  }, [tx])
+  }, [tx, sourceChainId])
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {
