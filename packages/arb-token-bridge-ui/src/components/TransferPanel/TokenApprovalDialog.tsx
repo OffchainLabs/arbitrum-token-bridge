@@ -90,7 +90,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           gasEstimate = constants.Zero
         } else {
           const cctpTransferStarter = new CctpTransferStarter({
-            sourceChainProvider: provider,
+            sourceChainProvider: isDepositMode ? l1.provider : l2.provider,
             destinationChainProvider: isDepositMode ? l2.provider : l1.provider
           })
           gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({

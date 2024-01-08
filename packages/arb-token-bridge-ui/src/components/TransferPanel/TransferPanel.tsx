@@ -570,7 +570,7 @@ export function TransferPanel() {
 
       const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
 
-      // user confirmation: show confirmation popup before cctp transfer
+      // show confirmation popup before cctp transfer
       if (isDepositMode) {
         const depositConfirmation =
           await confirmUsdcDepositFromNormalOrCctpBridge()
@@ -587,7 +587,6 @@ export function TransferPanel() {
         if (!withdrawalConfirmation) return
       }
 
-      // validation: if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
         isSmartContractWallet
@@ -602,7 +601,6 @@ export function TransferPanel() {
         destinationChainProvider
       })
 
-      // logic: check if selected token approval is required for selected transfer type
       const isTokenApprovalRequired =
         await cctpTransferStarter.requiresTokenApproval({
           amount: amountBigNumber,
@@ -610,11 +608,9 @@ export function TransferPanel() {
         })
 
       if (isTokenApprovalRequired) {
-        // user confirmation: show selected token approval dialog
         const userConfirmation = await tokenAllowanceApprovalCctp()
         if (!userConfirmation) return false
 
-        // logic: approve selected token
         if (isSmartContractWallet) {
           showDelayedSCTxRequest()
         }
@@ -639,7 +635,6 @@ export function TransferPanel() {
         }
       }
 
-      // logic: finally, call the transfer function
       let depositForBurnTx
 
       try {
