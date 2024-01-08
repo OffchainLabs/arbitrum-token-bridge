@@ -1194,7 +1194,7 @@ export function TransferPanelMain({
             </p>
           )}
         </div>
-        {/* <EstimatedGas chain={app.isDepositMode ? 'parent' : 'child'} /> */}
+        <EstimatedGas chain={app.isDepositMode ? 'parent' : 'child'} />
       </NetworkContainer>
 
       <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
@@ -1271,7 +1271,7 @@ export function TransferPanelMain({
             )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
-        {/* <EstimatedGas chain={app.isDepositMode ? 'child' : 'parent'} /> */}
+        <EstimatedGas chain={app.isDepositMode ? 'child' : 'parent'} />
       </NetworkContainer>
 
       <Dialog
