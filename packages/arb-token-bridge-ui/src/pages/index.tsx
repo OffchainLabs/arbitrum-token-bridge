@@ -7,7 +7,7 @@ import { Loader } from '../components/common/atoms/Loader'
 import {
   getCustomChainsFromLocalStorage,
   xaiTestnet,
-  xaiTestnetV2
+  xai
 } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
 
@@ -54,14 +54,14 @@ export default function Index() {
     }
 
     try {
-      addCustomNetwork({ customL2Network: xaiTestnetV2 })
+      addCustomNetwork({ customL2Network: xai })
     } catch (error: any) {
-      console.error(`Failed to register Xai Testnet v2: ${error.message}`)
+      console.error(`Failed to register Xai: ${error.message}`)
     }
     try {
-      addCustomChain({ customChain: xaiTestnetV2 })
+      addCustomChain({ customChain: xai })
     } catch (error: any) {
-      console.error(`Failed to register Xai Testnet v2: ${error.message}`)
+      console.error(`Failed to register Xai: ${error.message}`)
     }
   }, [])
 

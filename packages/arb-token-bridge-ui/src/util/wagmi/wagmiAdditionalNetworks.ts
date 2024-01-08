@@ -94,27 +94,27 @@ export const xaiTestnet: Chain = {
   }
 }
 
-export const xaiTestnetV2: Chain = {
-  id: ChainId.XaiTestnetV2,
-  name: 'Xai Orbit Testnet v2',
-  network: 'xai-testnet-v2',
+export const xai: Chain = {
+  id: ChainId.Xai,
+  name: 'Xai',
+  network: 'xai',
   nativeCurrency: {
-    name: 'sXAI',
-    symbol: 'sXAI',
+    name: 'XAI',
+    symbol: 'XAI',
     decimals: 18
   },
   rpcUrls: {
     default: {
-      http: [rpcURLs[ChainId.XaiTestnetV2]!]
+      http: [rpcURLs[ChainId.Xai]!]
     },
     public: {
-      http: [rpcURLs[ChainId.XaiTestnetV2]!]
+      http: [rpcURLs[ChainId.Xai]!]
     }
   },
   blockExplorers: {
     default: {
       name: 'Blockscout',
-      url: 'https://testnet-explorer-v2.xai-chain.net'
+      url: 'https://explorer.xai-chain.net'
     }
   }
 }

@@ -100,7 +100,9 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
   // Ethereum as the parent chain
   switch (l1ChainId) {
     case ChainId.Ethereum:
-      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova]
+      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova, ChainId.Xai]
+    case ChainId.ArbitrumOne:
+      return [ChainId.Ethereum, ChainId.Xai]
     case ChainId.Goerli:
       return [
         ChainId.ArbitrumGoerli,
@@ -111,7 +113,6 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
       return [
         ChainId.ArbitrumSepolia,
         ChainId.StylusTestnet,
-        ChainId.XaiTestnetV2,
         ...getCustomChainIds(ChainId.ArbitrumSepolia)
       ]
     case ChainId.Local:
@@ -130,7 +131,6 @@ export function getL2ChainIds(l1ChainId: number): ChainId[] {
       return [
         ChainId.Sepolia,
         ChainId.StylusTestnet,
-        ChainId.XaiTestnetV2,
         ...getCustomChainIds(ChainId.ArbitrumSepolia)
       ]
     case ChainId.ArbitrumLocal:
@@ -156,7 +156,7 @@ export enum ChainId {
   ArbitrumLocal = 412346,
   // Orbit Testnets
   XaiTestnet = 47279324479,
-  XaiTestnetV2 = 37714555429,
+  Xai = 660279,
   StylusTestnet = 23011913
 }
 
@@ -188,7 +188,7 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet.xai-chain.net/rpc',
-  [ChainId.XaiTestnetV2]: 'https://testnet-v2.xai-chain.net/rpc',
+  [ChainId.Xai]: 'https://xai-chain.net/rpc',
   [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
 }
 
@@ -206,7 +206,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
   [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
-  [ChainId.XaiTestnetV2]: 'https://testnet-explorer-v2.xai-chain.net',
+  [ChainId.Xai]: 'https://explorer.xai-chain.net',
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
 }
 
@@ -260,18 +260,14 @@ export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
   [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
   [ChainId.Sepolia]: [ChainId.ArbitrumSepolia],
   // L2
-  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne],
+  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne, ChainId.Xai],
   [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
   // L2 Testnets
   [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli, ChainId.XaiTestnet],
-  [ChainId.ArbitrumSepolia]: [
-    ChainId.ArbitrumSepolia,
-    ChainId.StylusTestnet,
-    ChainId.XaiTestnetV2
-  ],
+  [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia, ChainId.StylusTestnet],
   // Orbit Testnets
   [ChainId.XaiTestnet]: [ChainId.XaiTestnet],
-  [ChainId.XaiTestnetV2]: [ChainId.XaiTestnetV2],
+  [ChainId.Xai]: [ChainId.Xai],
   [ChainId.StylusTestnet]: [ChainId.StylusTestnet]
 }
 
@@ -362,36 +358,36 @@ export const xaiTestnet: Chain = {
   depositTimeout: 1800000
 }
 
-export const xaiTestnetV2: Chain = {
-  chainID: 37714555429,
+export const xai: Chain = {
+  chainID: 660279,
   confirmPeriodBlocks: 150,
   ethBridge: {
-    bridge: '0x6c7FAC4edC72E86B3388B48979eF37Ecca5027e6',
-    inbox: '0x6396825803B720bc6A43c63caa1DcD7B31EB4dd0',
-    outbox: '0xc7491a559b416540427f9f112C5c98b1412c5d51',
-    rollup: '0xeedE9367Df91913ab149e828BDd6bE336df2c892',
-    sequencerInbox: '0x529a2061A1973be80D315770bA9469F3Da40D938'
+    bridge: '0x7dd8A76bdAeBE3BBBaCD7Aa87f1D4FDa1E60f94f',
+    inbox: '0xaE21fDA3de92dE2FDAF606233b2863782Ba046F9',
+    outbox: '0x1E400568AD4840dbE50FB32f306B842e9ddeF726',
+    rollup: '0xC47DacFbAa80Bd9D8112F4e8069482c2A3221336',
+    sequencerInbox: '0x995a9d3ca121D48d21087eDE20bc8acb2398c8B1'
   },
-  nativeToken: '0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2',
-  explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
+  nativeToken: '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66',
+  explorerUrl: 'https://explorer.xai-chain.net',
   isArbitrum: true,
   isCustom: true,
-  name: 'Xai Testnet V2',
-  partnerChainID: 421614,
+  name: 'Xai',
+  partnerChainID: 42161,
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
-    l1CustomGateway: '0x04e14E04949D49ae9c551ca8Cc3192310Ce65D88',
-    l1ERC20Gateway: '0xCcB451C4Df22addCFe1447c58bC6b2f264Bb1256',
-    l1GatewayRouter: '0x185b868DBBF41554465fcb99C6FAb9383E15f47A',
-    l1MultiCall: '0xA115146782b7143fAdB3065D86eACB54c169d092',
-    l1ProxyAdmin: '0x022c515aEAb29aaFf82e86A10950cE14eA89C9c5',
+    l1CustomGateway: '0xb15A0826d65bE4c2fDd961b72636168ee70Af030',
+    l1ERC20Gateway: '0xb591cE747CF19cF30e11d656EB94134F523A9e77',
+    l1GatewayRouter: '0x22CCA5Dc96a4Ac1EC32c9c7C5ad4D66254a24C35',
+    l1MultiCall: '0x842eC2c7D803033Edf55E478F461FC547Bc54EB2',
+    l1ProxyAdmin: '0xd570aCE65C43af47101fC6250FD6fC63D1c22a86',
     l1Weth: '0x0000000000000000000000000000000000000000',
     l1WethGateway: '0x0000000000000000000000000000000000000000',
-    l2CustomGateway: '0xea1ce1CC75C948488515A3058E10aa82da40cE8F',
-    l2ERC20Gateway: '0xD840761a09609394FaFA3404bEEAb312059AC558',
-    l2GatewayRouter: '0x3B8ba769a43f34cdD67a20aF60d08D54C9C8f1AD',
-    l2Multicall: '0x5CBd60Ae5Af80A42FA8b0F20ADF95A8879844984',
-    l2ProxyAdmin: '0x7C1BA251d812fb34aF5C2566040C3C30585aFed9',
+    l2CustomGateway: '0x96551194230725c72ACF8E9573B1382CCBC70635',
+    l2ERC20Gateway: '0x0c71417917D24F4A6A6A55559B98c5cCEcb33F7a',
+    l2GatewayRouter: '0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF',
+    l2Multicall: '0xEEC168551A85911Ec3A905e0561b656979f3ea67',
+    l2ProxyAdmin: '0xC65de812db42Bfa8bd4E0fCf6ffcad8fe3072D44',
     l2Weth: '0x0000000000000000000000000000000000000000',
     l2WethGateway: '0x0000000000000000000000000000000000000000'
   },
@@ -457,8 +453,9 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
-  const isXaiTestnet =
-    chainId === ChainId.XaiTestnet || chainId === ChainId.XaiTestnetV2
+  const isXai = chainId === ChainId.Xai
+
+  const isXaiTestnet = chainId === ChainId.XaiTestnet
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
   const isEthereumMainnetOrTestnet =
@@ -511,6 +508,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
+    isXai,
     isXaiTestnet,
     isStylusTestnet,
     // Testnet
@@ -558,8 +556,8 @@ export function getNetworkName(chainId: number) {
     case ChainId.XaiTestnet:
       return 'Xai Testnet'
 
-    case ChainId.XaiTestnetV2:
-      return 'Xai Testnet v2'
+    case ChainId.Xai:
+      return 'Xai'
 
     case ChainId.StylusTestnet:
       return 'Stylus Testnet'
@@ -593,7 +591,7 @@ export function getNetworkLogo(
       return '/images/ArbitrumNovaLogo.svg'
 
     case ChainId.XaiTestnet:
-    case ChainId.XaiTestnetV2:
+    case ChainId.Xai:
       return '/images/XaiLogo.svg'
 
     case ChainId.StylusTestnet:
@@ -620,7 +618,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
     ChainId.XaiTestnet,
-    ChainId.XaiTestnetV2,
+    ChainId.Xai,
     ChainId.StylusTestnet,
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
