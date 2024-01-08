@@ -109,6 +109,7 @@ describe('Deposit ERC20 Token', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum'
         })
+          .scrollIntoView()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
