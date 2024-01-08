@@ -28,7 +28,7 @@ describe('Approve token and deposit afterwards', () => {
         .should('have.text', ERC20TokenSymbol)
 
       cy.findByPlaceholderText('Enter amount')
-        .typeRecursively(ERC20Amount)
+        .type(ERC20Amount)
         .then(() => {
           cy.findByText('You will pay in gas fees:')
             .siblings()
