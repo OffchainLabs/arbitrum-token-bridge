@@ -89,7 +89,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         gasEstimate = constants.Zero
       } else if (isCctp) {
         const cctpTransferStarter = new CctpTransferStarter({
-          sourceChainProvider: provider,
+          sourceChainProvider: isDepositMode ? l1.provider : l2.provider,
           destinationChainProvider: isDepositMode ? l2.provider : l1.provider
         })
         gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
@@ -98,7 +98,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         })
       } else {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
-          sourceChainProvider: provider,
+          sourceChainProvider: isDepositMode ? l1.provider : l2.provider,
           destinationChainProvider: isDepositMode ? l2.provider : l1.provider,
           sourceChainErc20Address: isDepositMode
             ? token.address

@@ -39,12 +39,10 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const { usdcContractAddress } = getCctpContracts({ sourceChainId })
+    const { usdcContractAddress, tokenMessengerContractAddress } =
+      getCctpContracts({ sourceChainId })
 
     const recipient = destinationAddress ?? address
-    const { tokenMessengerContractAddress } = getCctpContracts({
-      sourceChainId
-    })
 
     const allowance = await fetchErc20Allowance({
       address: usdcContractAddress,
@@ -64,11 +62,10 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     // approve USDC token for burn
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    const tx = await contract.functions.approve(
+    return contract.functions.approve(
       tokenMessengerContractAddress,
       amount ?? constants.MaxInt256
     )
-    return tx
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
@@ -76,7 +73,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     const { usdcContractAddress, tokenMessengerContractAddress } =
       getCctpContracts({ sourceChainId })
     const contract = ERC20__factory.connect(usdcContractAddress, signer)
-    return await contract.estimateGas.approve(
+    return contract.estimateGas.approve(
       tokenMessengerContractAddress,
       amount ?? constants.MaxInt256
     )
@@ -92,7 +89,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    if (burnLimit.lte(amount)) {
+    if (amount.gt(burnLimit)) {
       const formatedLimit = formatAmount(burnLimit, {
         decimals: 6, // hardcode for USDC
         symbol: 'USDC'
@@ -102,7 +99,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       )
     }
 
-    const recipient = destinationAddress || address
+    const recipient = destinationAddress ?? address
 
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
 
