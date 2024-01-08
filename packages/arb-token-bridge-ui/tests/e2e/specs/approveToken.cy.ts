@@ -18,7 +18,9 @@ describe('Approve token and deposit afterwards', () => {
 
       // Select the ERC-20 token
       cy.findByText('Added by User').should('exist')
-      cy.findByText(ERC20TokenName).click()
+      cy.findByText(ERC20TokenName).trigger('click', {
+        force: true
+      })
 
       // ERC-20 token should be selected now and popup should be closed after selection
       cy.findByRole('button', { name: 'Select Token' })
