@@ -78,6 +78,10 @@ function TokenListsPanel() {
     }
 
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
+      if (!tokenList.isValid) {
+        return false
+      }
+
       // Don't show the Arbitrum Token token list, because it's special and can't be disabled
       if (tokenList.isArbitrumTokenTokenList) {
         return false
