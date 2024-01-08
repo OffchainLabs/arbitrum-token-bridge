@@ -78,8 +78,8 @@ export async function withdrawInitTxEstimateGas({
       // WETH withdrawal 1,381,140
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedL2Gas: isToken
-        ? BigNumber.from(800_000)
-        : BigNumber.from(1_400_000)
+        ? BigNumber.from(1_400_000)
+        : BigNumber.from(800_000)
     }
   }
 }
