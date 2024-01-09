@@ -363,7 +363,7 @@ export const xaiTestnet: Chain = {
 
 export const inspace: Chain = {
   chainID: 2024, // from "chainInfo.chainId"
-  confirmPeriodBlocks: 40230,
+  confirmPeriodBlocks: 40320,
   ethBridge: {
     bridge: '0x58b372C1903F5bcc568c5c86891cEbeb767a2c31', // from "coreContracts.bridge"
     inbox: '0x31c57Fb8a5F73Ba157eD7Ba995170d3c7039dF67', // from "coreContracts.inbox"
