@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import Image from 'next/image'
+import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
-import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import { ChainId } from '../../util/networks'
+import { ether } from '../../constants'
 
 export const TransactionsTableTokenImage = ({
   tokenSymbol
@@ -23,7 +24,7 @@ export const TransactionsTableTokenImage = ({
     )
   }, [allTokens, tokenSymbol])
 
-  if (tokenSymbol.toLowerCase() === 'eth') {
+  if (tokenSymbol.toLowerCase() === ether.symbol.toLowerCase()) {
     return (
       <Image
         height={20}
