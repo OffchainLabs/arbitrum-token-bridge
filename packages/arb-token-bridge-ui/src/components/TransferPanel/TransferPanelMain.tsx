@@ -339,7 +339,6 @@ export function TransferPanelMain({
   setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
-  console.log('TransferPanelMain')
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
