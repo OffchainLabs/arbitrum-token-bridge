@@ -6,6 +6,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
 import { z } from 'zod'
+import { RollupAdminLogic__factory } from '@arbitrum/sdk/dist/lib/abi/factories/RollupAdminLogic__factory'
 
 import {
   ChainId,
@@ -20,6 +21,7 @@ import {
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
+import { getProviderForChainId } from '../../hooks/useNetworks'
 
 const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 
@@ -164,10 +166,18 @@ function saveOrbitConfigToLocalStorage(data: OrbitConfig) {
   )
 }
 
-function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
+async function mapOrbitConfigToOrbitChain(
+  data: OrbitConfig
+): Promise<ChainWithRpcUrl> {
+  const rollup = RollupAdminLogic__factory.connect(
+    data.coreContracts.rollup,
+    getProviderForChainId(data.chainInfo.parentChainId)
+  )
+  const confirmPeriodBlocks =
+    (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
   return {
     chainID: data.chainInfo.chainId,
-    confirmPeriodBlocks: 150,
+    confirmPeriodBlocks,
     ethBridge: {
       bridge: data.coreContracts.bridge,
       inbox: data.coreContracts.inbox,
@@ -250,7 +260,7 @@ export const AddCustomChain = () => {
       // validate config
       ZodOrbitConfig.parse(data)
 
-      const customChain = mapOrbitConfigToOrbitChain(data)
+      const customChain = await mapOrbitConfigToOrbitChain(data)
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
