@@ -14,6 +14,7 @@ import {
   getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getL2ChainIds,
+  getNetworkName,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -1221,7 +1222,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              Make sure you have {nativeCurrency.symbol} in your{' '}
+              {getNetworkName(l2.network.id)} account, as you’ll need it to
               power transactions.
               <br />
               <ExternalLink
