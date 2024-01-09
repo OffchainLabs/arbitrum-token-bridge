@@ -670,7 +670,7 @@ export const useTransactionHistory = (
       }
 
       // ETH deposit
-      if (tx.asset === AssetType.ETH) {
+      if (tx.assetType === AssetType.ETH) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return
