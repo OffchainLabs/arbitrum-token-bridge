@@ -35,7 +35,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   // withdrawals
   return getTxConfirmationDate({
     createdAt: dayjs(),
-    withdrawalFromChainId: tx.parentChainId
+    withdrawalFromChainId: tx.childChainId
     // we set from to createdAt so that we get the full withdrawal confirmation time
   }).from(dayjs(), true)
 }
