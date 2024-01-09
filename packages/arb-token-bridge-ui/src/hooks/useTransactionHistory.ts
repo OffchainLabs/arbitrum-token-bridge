@@ -211,7 +211,7 @@ function getTxIdFromTransaction(tx: Transfer) {
   if (isTokenWithdrawal(tx)) {
     return tx.txHash
   }
-  return tx.l2TxHash
+  return tx.l2TxHash ?? tx.transactionHash
 }
 
 /**
