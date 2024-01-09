@@ -1,12 +1,14 @@
+import { ReactNode } from 'react'
+import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
-import { MergedTransaction } from '../../state/app/state'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
 import {
   ArrowTopRightOnSquareIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+
+import { MergedTransaction } from '../../state/app/state'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { ReactNode } from 'react'
 import { isTxClaimable, isTxCompleted, isTxPending } from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
@@ -16,7 +18,6 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
-import dayjs from 'dayjs'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.parentChainId)
@@ -36,7 +37,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   return getTxConfirmationDate({
     createdAt: dayjs(),
     withdrawalFromChainId: tx.childChainId
-    // we set from to createdAt so that we get the full withdrawal confirmation time
+    // we set from to current time so that we get the full withdrawal confirmation time
   }).from(dayjs(), true)
 }
 
