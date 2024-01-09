@@ -10,33 +10,34 @@ import { ReactNode } from 'react'
 import { isTxClaimable, isTxCompleted, isTxPending } from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
-import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
+import {
+  WithdrawalCountdown,
+  getTxConfirmationDate
+} from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
+import dayjs from 'dayjs'
 
 function getTransferDurationText(tx: MergedTransaction) {
-  if (isNetwork(tx.parentChainId).isTestnet) {
-    if (tx.isCctp) {
-      return '1 minute'
-    }
-    if (tx.isWithdrawal) {
-      return '1 hour'
-    }
-    // deposits
-    if (isNetwork(tx.childChainId).isOrbitChain) {
-      return '1 minute'
-    }
-    return '10 minutes'
-  }
+  const { isTestnet, isOrbitChain } = isNetwork(tx.parentChainId)
 
   if (tx.isCctp) {
-    return '10 minutes'
+    return isTestnet ? '1 minute' : '10 minutes'
   }
-  if (tx.isWithdrawal) {
-    return '7 days'
+
+  if (!tx.isWithdrawal) {
+    if (isOrbitChain) {
+      return '1 minute'
+    }
+    return isTestnet ? '10 minutes' : '15 minutes'
   }
-  // deposits
-  return '15 minutes'
+
+  // withdrawals
+  return getTxConfirmationDate({
+    createdAt: dayjs(),
+    withdrawalFromChainId: tx.parentChainId
+    // we set from to createdAt so that we get the full withdrawal confirmation time
+  }).from(dayjs(), true)
 }
 
 function needsToClaimTransfer(tx: MergedTransaction) {
