@@ -408,6 +408,10 @@ export async function getUpdatedCctpTransfer(
   )
   const blockTime = getBlockTime(tx.parentChainId)
 
+  if (!receipt) {
+    return tx
+  }
+
   const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
 
   if (receipt.status === 0) {

@@ -680,8 +680,8 @@ export function TransferPanel() {
           receiveMessageTransactionHash: null,
           receiveMessageTimestamp: null
         },
-        parentChainId: networks.sourceChain.id,
-        childChainId: networks.destinationChain.id
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
       }
 
       openTransactionHistoryPanel()
