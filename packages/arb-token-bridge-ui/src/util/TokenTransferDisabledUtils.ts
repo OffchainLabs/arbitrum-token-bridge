@@ -16,16 +16,11 @@ const transferDisabledTokens: { [chainId: number]: TransferDisabledToken[] } = {
   ]
 }
 
-/**
- *
- * @param erc20L1Address
- * @param chainId - Arbitrum chain id
- */
 export function isTransferDisabledToken(
   erc20L1Address: string,
-  chainId: number
+  childChainId: number
 ) {
-  return (transferDisabledTokens[chainId] ?? [])
+  return (transferDisabledTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }

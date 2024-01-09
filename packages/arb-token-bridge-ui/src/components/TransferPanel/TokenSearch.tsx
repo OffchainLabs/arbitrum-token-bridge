@@ -42,6 +42,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useTokenFromSearchParams } from './TransferPanelUtils'
 
 enum Panel {
   TOKENS,
@@ -474,13 +475,7 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({
-  close,
-  onImportToken
-}: {
-  close: () => void
-  onImportToken: (address: string) => void
-}) {
+export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
@@ -496,6 +491,7 @@ export function TokenSearch({
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
+  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -542,7 +538,7 @@ export function TokenSearch({
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        onImportToken(_token.address)
+        setTokenQueryParam(_token.address)
         return
       }
 

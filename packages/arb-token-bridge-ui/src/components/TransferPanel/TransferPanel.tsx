@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
-import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
@@ -67,7 +66,8 @@ import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
-  onTxError
+  onTxError,
+  useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
@@ -99,35 +99,6 @@ const isAllowedL2 = async ({
   )
 }
 
-export function useTokenFromSearchParams(): {
-  tokenFromSearchParams: string | undefined
-  setTokenQueryParam: (token: string | undefined) => void
-} {
-  const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
-
-  const setTokenQueryParam = (token: string | undefined) =>
-    setQueryParams({ token })
-
-  if (!tokenFromSearchParams) {
-    return {
-      tokenFromSearchParams: undefined,
-      setTokenQueryParam
-    }
-  }
-
-  if (!isAddress(tokenFromSearchParams)) {
-    return {
-      tokenFromSearchParams,
-      setTokenQueryParam
-    }
-  }
-
-  return {
-    tokenFromSearchParams,
-    setTokenQueryParam
-  }
-}
-
 const networkConnectionWarningToast = () =>
   warningToast(
     <>
@@ -140,7 +111,8 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const { tokenFromSearchParams } = useTokenFromSearchParams()
+  const { tokenFromSearchParams, setTokenQueryParam } =
+    useTokenFromSearchParams()
 
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
@@ -246,8 +218,6 @@ export function TransferPanel() {
   const [isCctp, setIsCctp] = useState(false)
 
   const { destinationAddress } = useDestinationAddressStore()
-
-  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)

@@ -11,7 +11,6 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useTokenFromSearchParams } from './TransferPanel'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -23,8 +22,6 @@ export function TokenButton(): JSX.Element {
     }
   } = useAppState()
   const { status, l1, l2 } = useNetworksAndSigners()
-
-  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
@@ -91,9 +88,7 @@ export function TokenButton(): JSX.Element {
           </div>
         </Popover.Button>
         <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
-          {({ close }) => (
-            <TokenSearch close={close} onImportToken={setTokenQueryParam} />
-          )}
+          {({ close }) => <TokenSearch close={close} />}
         </Popover.Panel>
       </Popover>
     </>
