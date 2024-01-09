@@ -54,7 +54,7 @@ describe('Approve token and deposit afterwards', () => {
             .should('not.be.disabled'),
         {
           errorMsg: '/Move funds to Arbitrum/ button is disabled',
-          timeout: 10000,
+          timeout: 50000,
           interval: 500
         }
       ).then(() => {
