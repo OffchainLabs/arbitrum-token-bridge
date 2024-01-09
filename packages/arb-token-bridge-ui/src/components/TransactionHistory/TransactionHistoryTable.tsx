@@ -17,13 +17,8 @@ import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
-  isCustomDestinationAddressTx,
-  isPending,
   isTokenDeposit
 } from '../../state/app/utils'
-import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
-import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
-import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
@@ -31,6 +26,7 @@ import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { TransactionsTableRow } from './TransactionsTableRow'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -58,7 +54,7 @@ const TableHeader = ({
 }: PropsWithChildren<{ className?: string }>) => (
   <div
     className={twMerge(
-      'h-full w-full py-4 pl-2 text-left text-sm font-normal',
+      'h-full w-full py-4 text-left text-sm font-normal',
       className
     )}
   >
@@ -73,8 +69,6 @@ export const TransactionHistoryTable = ({
   error,
   failedChainPairs,
   resume,
-  rowHeight,
-  rowHeightCustomDestinationAddress,
   selectedTabIndex,
   oldestTxTimeAgoString
 }: {
@@ -84,8 +78,6 @@ export const TransactionHistoryTable = ({
   error: unknown
   failedChainPairs: ChainPair[]
   resume: () => void
-  rowHeight: number
-  rowHeightCustomDestinationAddress: number
   selectedTabIndex: number
   oldestTxTimeAgoString: string
 }) => {
@@ -161,33 +153,12 @@ export const TransactionHistoryTable = ({
     )
   }, [failedChainPairs])
 
-  const getRowHeight = useCallback(
-    (index: number) => {
-      const tx = transactions[index]
-
-      if (!tx) {
-        return 0
-      }
-
-      return isCustomDestinationAddressTx(tx)
-        ? rowHeightCustomDestinationAddress
-        : rowHeight
-    },
-    [transactions, rowHeight, rowHeightCustomDestinationAddress]
-  )
-
   if (isTxHistoryEmpty) {
     if (loading) {
       return (
-        <div
-          className={twMerge(
-            'flex items-center space-x-2 rounded-tr-lg bg-white p-4',
-            isPendingTab ? '' : 'rounded-tl-lg'
-          )}
-        >
-          <Loader color="black" size="small" />
-          <span className="text-sm">Loading transactions...</span>
-        </div>
+        <span className="animate-pulse text-xs text-white">
+          Loading transactions...
+        </span>
       )
     }
     if (error) {
@@ -232,10 +203,10 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className="h-full flex-col overflow-x-auto">
+    <div className="h-full flex-col overflow-x-auto rounded bg-[#191919] text-white">
       <div
         className={twMerge(
-          'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
+          'w-[960px] rounded-tr-lg px-4 pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
         ref={contentAboveTable}
@@ -243,14 +214,15 @@ export const TransactionHistoryTable = ({
         {loading ? (
           <div className="flex items-center space-x-2">
             <FailedChainPairsTooltip />
-            <Loader color="black" size="small" />
-            <span className="text-sm">Loading transactions...</span>
+            <span className="animate-pulse text-xs">
+              Loading transactions...
+            </span>
           </div>
         ) : (
-          <div className="flex justify-between">
-            <div className="flex justify-start space-x-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start space-x-1">
               <FailedChainPairsTooltip />
-              <span className="text-sm">
+              <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
                 {oldestTxTimeAgoString}.
@@ -258,8 +230,8 @@ export const TransactionHistoryTable = ({
             </div>
 
             {!completed && (
-              <button onClick={resume} className="arb-hover text-sm">
-                <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <button onClick={resume} className="arb-hover text-xs">
+                <div className="flex space-x-1 rounded border border-white px-2 py-1">
                   <span>Load more</span>
                   <ArrowDownOnSquareIcon width={16} />
                 </div>
@@ -274,75 +246,64 @@ export const TransactionHistoryTable = ({
           <Table
             width={960}
             height={tableHeight}
-            rowHeight={({ index }) => getRowHeight(index)}
+            rowHeight={60}
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
-              <div className="flex w-[960px] bg-white">{props.columns}</div>
+              <div className="mx-4 flex w-[928px] border-b border-white/30 text-white">
+                {props.columns}
+              </div>
             )}
-            className="table-auto"
+            className="table-auto last:border-b-0"
             rowGetter={({ index }) => transactions[index]}
             rowRenderer={({ index, key, style }) => {
               const tx = transactions[index]
-              const isEvenRow = index % 2 === 0
 
               if (!tx) {
                 return null
               }
 
-              const bgColorSettled = isEvenRow ? 'bg-cyan' : 'bg-white'
-              const bgColorPending = 'bg-orange'
-
-              const bgColor = isPending(tx) ? bgColorPending : bgColorSettled
+              const isLastRow = index + 1 === transactions.length
 
               return (
-                <div
-                  key={key}
-                  style={{ ...style, height: `${getRowHeight(index)}px` }}
-                >
-                  {tx.isWithdrawal || tx.isCctp ? (
-                    <TransactionsTableClaimableRow
-                      tx={tx}
-                      className={bgColor}
-                    />
-                  ) : (
-                    <TransactionsTableDepositRow tx={tx} className={bgColor} />
-                  )}
+                <div key={key} style={style}>
+                  <TransactionsTableRow
+                    tx={tx}
+                    className={isLastRow ? 'border-b-0' : ''}
+                  />
                 </div>
               )
             }}
           >
             <Column
-              label="Status"
-              dataKey="status"
-              width={144}
-              headerRenderer={() => (
-                <TableHeader className="pl-8">Status</TableHeader>
-              )}
+              label="time"
+              dataKey="time"
+              width={139}
+              headerRenderer={() => <TableHeader>TIME</TableHeader>}
             />
             <Column
-              label="Date"
-              dataKey="date"
-              width={228}
-              headerRenderer={() => (
-                <TableHeader className="pl-4">Date</TableHeader>
-              )}
-            />
-            <Column
-              label="Token"
+              label="token"
               dataKey="token"
-              width={144}
-              headerRenderer={() => (
-                <TableHeader className="pl-10">Token</TableHeader>
-              )}
+              width={141}
+              headerRenderer={() => <TableHeader>TOKEN</TableHeader>}
             />
             <Column
-              label="Networks"
-              dataKey="networks"
+              label="from"
+              dataKey="from"
+              width={142}
+              headerRenderer={() => <TableHeader>FROM</TableHeader>}
+            />
+            <Column
+              label="to"
+              dataKey="to"
+              width={137}
+              headerRenderer={() => <TableHeader>TO</TableHeader>}
+            />
+            <Column
+              label="status"
+              dataKey="status"
               width={100}
-              headerRenderer={() => (
-                <TableHeader className="pl-9">Networks</TableHeader>
-              )}
+              headerRenderer={() => <TableHeader>STATUS</TableHeader>}
             />
           </Table>
         )}

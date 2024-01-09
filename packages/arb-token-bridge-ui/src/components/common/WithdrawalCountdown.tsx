@@ -1,4 +1,3 @@
-import { useMedia } from 'react-use'
 import dayjs, { Dayjs } from 'dayjs'
 
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
@@ -43,7 +42,6 @@ export function WithdrawalCountdown({
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const isLargeScreen = useMedia('(min-width: 1024px)')
   const baseChainId = getBaseChainIdByChainId({
     chainId: l2Network.id
   })
@@ -58,11 +56,8 @@ export function WithdrawalCountdown({
 
   const minutesLeft = Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 
-  const remainingTextOrEmpty =
-    isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
-
   const timeLeftText =
     minutesLeft === 0 ? 'Almost there...' : txConfirmationDate.fromNow(true)
 
-  return <span>{timeLeftText + remainingTextOrEmpty}</span>
+  return <span>{timeLeftText}</span>
 }
