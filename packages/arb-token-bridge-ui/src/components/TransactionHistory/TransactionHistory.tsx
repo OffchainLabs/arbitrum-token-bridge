@@ -18,7 +18,7 @@ import { TransactionsTableDetails } from './TransactionsTableDetails'
 import { ChainId } from '../../util/networks'
 
 const tabClasses =
-  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:font-thin'
+  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
 
 type TxDetailsStore = {
   parentChainId: ChainId | null

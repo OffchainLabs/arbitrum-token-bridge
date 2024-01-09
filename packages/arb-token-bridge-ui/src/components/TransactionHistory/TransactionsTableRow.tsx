@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 import {
@@ -11,12 +11,7 @@ import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import {
-  ChainId,
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import { isTxClaimable, isTxFailed, isTxPending } from './helpers'
 import { ExternalLink } from '../common/ExternalLink'
@@ -35,14 +30,24 @@ export function TransactionsTableRow({
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
 
-  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
+  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const [txRelativeTime, setTxRelativeTime] = useState(
+    dayjs(tx.createdAt).fromNow()
+  )
 
   const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
     isNetwork(sourceChainId)
 
   const isClaimableTx = tx.isCctp || tx.isWithdrawal
 
-  const txRelativeTime = dayjs(tx.createdAt).fromNow()
+  useEffect(() => {
+    // make sure relative time updates periodically
+    const interval = setInterval(() => {
+      setTxRelativeTime(dayjs(tx.createdAt).fromNow())
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [tx])
 
   const tokenSymbol = useMemo(
     () =>
@@ -67,9 +72,7 @@ export function TransactionsTableRow({
         <div className="flex items-center space-x-1 text-red-400">
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
-          <ExternalLink
-            href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-          >
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -77,8 +80,6 @@ export function TransactionsTableRow({
     }
 
     if (isTxPending(tx)) {
-      const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-
       return (
         <div className="flex items-center space-x-1 text-yellow-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
@@ -95,9 +96,7 @@ export function TransactionsTableRow({
         <div className="flex items-center space-x-1 text-green-400">
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
           <span>Claimable</span>
-          <ExternalLink
-            href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-          >
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
         </div>
@@ -109,14 +108,12 @@ export function TransactionsTableRow({
       <div className="flex items-center space-x-1">
         <CheckCircleIcon height={14} className="mr-1" />
         <span>Success</span>
-        <ExternalLink
-          href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
-        >
+        <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
           <ArrowTopRightOnSquareIcon height={10} />
         </ExternalLink>
       </div>
     )
-  }, [tx])
+  }, [tx, sourceChainId])
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {
