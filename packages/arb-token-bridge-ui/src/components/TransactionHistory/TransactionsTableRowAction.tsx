@@ -35,7 +35,7 @@ const GetHelpButton = ({
       onClick={onClick}
       className={twMerge(
         'w-16 rounded',
-        variant === 'secondary' ? 'bg-white px-4 py-3' : ''
+        variant === 'secondary' && 'bg-white px-4 py-3'
       )}
     >
       Get Help
@@ -108,9 +108,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            Please connect to the L2 network to re-execute your deposit. You
-            have 7 days to re-execute a failed tx. After that, the tx is no
-            longer recoverable.
+            Please connect to {getNetworkName(tx.childChainId)} to re-execute
+            your deposit. You have 7 days to re-execute a failed tx. After that,
+            the tx is no longer recoverable.
           </span>
         }
       >
