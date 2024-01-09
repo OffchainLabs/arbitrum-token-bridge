@@ -102,8 +102,6 @@ export const TransactionHistory = ({
             error={error}
             failedChainPairs={failedChainPairs}
             resume={resume}
-            rowHeight={94}
-            rowHeightCustomDestinationAddress={130}
             selectedTabIndex={0}
             oldestTxTimeAgoString={oldestTxTimeAgoString}
           />
@@ -116,8 +114,6 @@ export const TransactionHistory = ({
             error={error}
             failedChainPairs={failedChainPairs}
             resume={resume}
-            rowHeight={85}
-            rowHeightCustomDestinationAddress={117}
             selectedTabIndex={1}
             oldestTxTimeAgoString={oldestTxTimeAgoString}
           />

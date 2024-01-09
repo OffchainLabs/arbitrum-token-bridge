@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { MergedTransaction } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
@@ -16,6 +16,11 @@ import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
+import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
+import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
+import { DepositCountdown } from '../common/DepositCountdown'
 
 const GetHelpButton = ({
   variant,
@@ -28,7 +33,10 @@ const GetHelpButton = ({
     <Button
       variant={variant}
       onClick={onClick}
-      className={variant === 'secondary' ? 'bg-white px-4 py-3' : ''}
+      className={twMerge(
+        'w-16 rounded',
+        variant === 'secondary' && 'bg-white px-4 py-3'
+      )}
     >
       Get Help
     </Button>
@@ -57,6 +65,9 @@ export function TransactionsTableRowAction({
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
+  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { redeem, isRedeeming } = useRedeemRetryable()
+  const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
   const currentChainIsValid = useMemo(() => {
     if (!chain) {
@@ -72,6 +83,14 @@ export function TransactionsTableRowAction({
     return isClaiming || isClaimingCctp || !isConfirmed
   }, [isClaiming, isClaimingCctp, isConfirmed])
 
+  const isRedeemButtonDisabled = useMemo(
+    () =>
+      typeof isConnectedToArbitrum !== 'undefined'
+        ? !isConnectedToArbitrum
+        : true,
+    [isConnectedToArbitrum]
+  )
+
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
 
@@ -81,16 +100,50 @@ export function TransactionsTableRowAction({
     }
   }
 
-  if (tx.status === 'Unconfirmed') {
+  if (isDepositReadyToRedeem(tx)) {
+    // Failed retryable
     return (
       <Tooltip
+        show={isRedeemButtonDisabled}
         wrapperClassName=""
-        content={<span>Funds aren&apos;t ready to claim yet</span>}
+        content={
+          <span>
+            Please connect to {getNetworkName(tx.childChainId)} to re-execute
+            your deposit. You have 7 days to re-execute a failed tx. After that,
+            the tx is no longer recoverable.
+          </span>
+        }
       >
-        <Button variant="primary" disabled>
-          Claim
+        <Button
+          variant="primary"
+          loading={isRedeeming}
+          disabled={isRedeemButtonDisabled}
+          onClick={() => redeem(tx)}
+          className="w-16 rounded bg-red-400 p-2 text-xs"
+        >
+          Retry
         </Button>
       </Tooltip>
+    )
+  }
+
+  if (
+    tx.status === 'Unconfirmed' ||
+    tx.depositStatus === DepositStatus.L1_PENDING ||
+    tx.depositStatus === DepositStatus.L2_PENDING ||
+    typeof cctpRemainingTime !== 'undefined'
+  ) {
+    return (
+      <div className="flex flex-col text-center text-xs">
+        <span>Time left:</span>
+        {tx.isCctp && <>{cctpRemainingTime}</>}
+        {!tx.isCctp &&
+          (tx.isWithdrawal ? (
+            <WithdrawalCountdown tx={tx} />
+          ) : (
+            <DepositCountdown tx={tx} />
+          ))}
+      </div>
     )
   }
 
@@ -115,7 +168,10 @@ export function TransactionsTableRowAction({
           variant="primary"
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}
-          className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
+          className={twMerge(
+            'w-16 rounded p-2 text-xs text-black',
+            currentChainIsValid ? 'bg-green-400' : 'bg-white'
+          )}
           onClick={async () => {
             try {
               if (!currentChainIsValid) {
@@ -141,7 +197,7 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          {currentChainIsValid ? 'Claim' : 'Switch Network'}
+          {currentChainIsValid ? 'Claim' : 'Switch'}
         </Button>
       </Tooltip>
     )

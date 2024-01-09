@@ -730,7 +730,7 @@ export function useRemainingTime(tx: MergedTransaction) {
     if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
     } else {
-      setRemainingTime(canBeClaimedDate.fromNow().toString())
+      setRemainingTime(canBeClaimedDate.fromNow(true).toString())
     }
   }, 2000)
 

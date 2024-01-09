@@ -17,12 +17,8 @@ import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
-  isCustomDestinationAddressTx,
-  isPending,
   isTokenDeposit
 } from '../../state/app/utils'
-import { TransactionsTableClaimableRow } from './TransactionsTableClaimableRow'
-import { TransactionsTableDepositRow } from './TransactionsTableDepositRow'
 import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
@@ -31,6 +27,7 @@ import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { TransactionsTableRow } from './TransactionsTableRow'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -73,8 +70,6 @@ export const TransactionHistoryTable = ({
   error,
   failedChainPairs,
   resume,
-  rowHeight,
-  rowHeightCustomDestinationAddress,
   selectedTabIndex,
   oldestTxTimeAgoString
 }: {
@@ -84,8 +79,6 @@ export const TransactionHistoryTable = ({
   error: unknown
   failedChainPairs: ChainPair[]
   resume: () => void
-  rowHeight: number
-  rowHeightCustomDestinationAddress: number
   selectedTabIndex: number
   oldestTxTimeAgoString: string
 }) => {
@@ -160,21 +153,6 @@ export const TransactionHistoryTable = ({
       </Tooltip>
     )
   }, [failedChainPairs])
-
-  const getRowHeight = useCallback(
-    (index: number) => {
-      const tx = transactions[index]
-
-      if (!tx) {
-        return 0
-      }
-
-      return isCustomDestinationAddressTx(tx)
-        ? rowHeightCustomDestinationAddress
-        : rowHeight
-    },
-    [transactions, rowHeight, rowHeightCustomDestinationAddress]
-  )
 
   if (isTxHistoryEmpty) {
     if (loading) {
@@ -274,7 +252,7 @@ export const TransactionHistoryTable = ({
           <Table
             width={960}
             height={tableHeight}
-            rowHeight={({ index }) => getRowHeight(index)}
+            rowHeight={60}
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
@@ -284,64 +262,56 @@ export const TransactionHistoryTable = ({
             rowGetter={({ index }) => transactions[index]}
             rowRenderer={({ index, key, style }) => {
               const tx = transactions[index]
-              const isEvenRow = index % 2 === 0
 
               if (!tx) {
                 return null
               }
 
-              const bgColorSettled = isEvenRow ? 'bg-cyan' : 'bg-white'
-              const bgColorPending = 'bg-orange'
-
-              const bgColor = isPending(tx) ? bgColorPending : bgColorSettled
-
               return (
-                <div
-                  key={key}
-                  style={{ ...style, height: `${getRowHeight(index)}px` }}
-                >
-                  {tx.isWithdrawal || tx.isCctp ? (
-                    <TransactionsTableClaimableRow
-                      tx={tx}
-                      className={bgColor}
-                    />
-                  ) : (
-                    <TransactionsTableDepositRow tx={tx} className={bgColor} />
-                  )}
+                <div key={key} style={style}>
+                  <TransactionsTableRow tx={tx} />
                 </div>
               )
             }}
           >
             <Column
-              label="Status"
-              dataKey="status"
+              label="time"
+              dataKey="time"
               width={144}
               headerRenderer={() => (
-                <TableHeader className="pl-8">Status</TableHeader>
+                <TableHeader className="pl-6">TIME</TableHeader>
               )}
             />
             <Column
-              label="Date"
-              dataKey="date"
-              width={228}
-              headerRenderer={() => (
-                <TableHeader className="pl-4">Date</TableHeader>
-              )}
-            />
-            <Column
-              label="Token"
+              label="token"
               dataKey="token"
               width={144}
               headerRenderer={() => (
-                <TableHeader className="pl-10">Token</TableHeader>
+                <TableHeader className="pl-7">TOKEN</TableHeader>
               )}
             />
             <Column
-              label="Networks"
-              dataKey="networks"
+              label="from"
+              dataKey="from"
+              width={144}
+              headerRenderer={() => (
+                <TableHeader className="pl-10">FROM</TableHeader>
+              )}
+            />
+            <Column
+              label="to"
+              dataKey="to"
               width={100}
               headerRenderer={() => (
-                <TableHeader className="pl-9">Networks</TableHeader>
+                <TableHeader className="pl-9">TO</TableHeader>
+              )}
+            />
+            <Column
+              label="status"
+              dataKey="status"
+              width={100}
+              headerRenderer={() => (
+                <TableHeader className="pl-9">STATUS</TableHeader>
               )}
             />
           </Table>
