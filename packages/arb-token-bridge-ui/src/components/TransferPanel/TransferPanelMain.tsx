@@ -175,11 +175,12 @@ function NetworkContainer({
       isArbitrum,
       isArbitrumNova,
       isOrbitChain,
+      isXai,
       isXaiTestnet,
       isStylusTestnet
     } = isNetwork(network.id)
 
-    if (isXaiTestnet) {
+    if (isXaiTestnet || isXai) {
       return {
         backgroundImage: `url('/images/XaiLogo.svg')`,
         backgroundClassName: 'bg-xai-dark'
@@ -841,6 +842,8 @@ export function TransferPanelMain({
         case ChainId.Sepolia:
         case ChainId.StylusTestnet:
           return ChainId.ArbitrumSepolia
+        case ChainId.Xai:
+          return ChainId.ArbitrumOne
         default:
           return ChainId.ArbitrumGoerli
       }
