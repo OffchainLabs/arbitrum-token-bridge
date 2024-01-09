@@ -6,7 +6,6 @@ import {
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20Amount = '0.000000000001'
 
 describe('Approve token and deposit afterwards', () => {
   // log in to metamask
@@ -27,8 +26,8 @@ describe('Approve token and deposit afterwards', () => {
         .should('be.visible')
         .should('have.text', ERC20TokenSymbol)
 
-      cy.findByPlaceholderText('Enter amount')
-        .type(ERC20Amount)
+      cy.findByText('MAX')
+        .click()
         .then(() => {
           cy.findByText('You will pay in gas fees:')
             .siblings()
