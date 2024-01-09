@@ -22,7 +22,7 @@ export function getTxConfirmationDate({
   withdrawalFromChainId,
   baseChainId
 }: {
-  createdAt?: Dayjs | null
+  createdAt: Dayjs
   withdrawalFromChainId: number
   baseChainId: number
 }) {
