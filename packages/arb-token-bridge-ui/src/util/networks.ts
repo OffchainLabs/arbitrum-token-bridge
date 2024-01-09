@@ -289,7 +289,7 @@ const defaultL2Network: ParentChain = {
   partnerChainIDs: [
     // Orbit chains will go here
   ],
-  confirmPeriodBlocks: 40320,
+  confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
     inbox: '0xff4a24b22f94979e9ba5f3eb35838aa814bad6f1',
@@ -363,7 +363,7 @@ export const xaiTestnet: Chain = {
 
 export const inspace: Chain = {
   chainID: 2024, // from "chainInfo.chainId"
-  confirmPeriodBlocks: 20,
+  confirmPeriodBlocks: 40230,
   ethBridge: {
     bridge: '0x58b372C1903F5bcc568c5c86891cEbeb767a2c31', // from "coreContracts.bridge"
     inbox: '0x31c57Fb8a5F73Ba157eD7Ba995170d3c7039dF67', // from "coreContracts.inbox"
