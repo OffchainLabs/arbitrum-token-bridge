@@ -134,6 +134,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x3082CC23568eA640225c2467653dB90e9250AaA0',
       l1Address: '0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893',
       l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
+    },
+    {
+      symbol: 'GSWIFT',
+      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
     }
   ],
   [ChainId.ArbitrumNova]: []
