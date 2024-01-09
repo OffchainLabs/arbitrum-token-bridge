@@ -81,7 +81,7 @@ const Step = ({
         textColorClassName
       )}
     >
-      <div className="flex space-x-3">
+      <div className="flex items-center space-x-3">
         {done ? (
           <CheckCircleIcon height={18} />
         ) : (
