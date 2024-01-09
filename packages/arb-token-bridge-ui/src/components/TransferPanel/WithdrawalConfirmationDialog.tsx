@@ -17,30 +17,32 @@ import { BridgesTable } from '../common/BridgesTable'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getBaseChainIdByChainId,
+  getNetworkName,
+  isNetwork
+} from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useWithdrawalConfirmationPeriod } from '../../util/WithdrawalUtils'
+import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 
 function getCalendarUrl(
-  confirmationHours: number,
+  withdrawalDate: dayjs.Dayjs,
   amount: string,
   token: string,
   networkName: string
 ) {
   const title = `${amount} ${token} Withdrawal from ${networkName}`
 
-  // Add 1 extra hour to account for remaining minutes
-  const withdrawalDate = dayjs().add(confirmationHours + 1, 'hour')
-  // Google event date format: YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS
+  // Google event date format: YYYYMMDDTHHmmss/YYYYMMDDTHHmmss
   const parsedWithdrawalDate = withdrawalDate.format(
-    'YYYYMMDD[T]HH[0000%2F]YYYYMMDD[T]HH[0000]'
+    'YYYYMMDD[T]HHmm[00%2F]YYYYMMDD[T]HHmm[00]'
   )
 
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${parsedWithdrawalDate}&details=Withdrawn+on+%3Ca%20href=%22https://bridge.arbitrum.io%22%3Ehttps://bridge.arbitrum.io%3C/a%3E`
+  return `https://calendar.google.com/calendar/event?action=TEMPLATE&text=${title}&dates=${parsedWithdrawalDate}&details=Withdrawn+on+%3Ca%20href=%22https://bridge.arbitrum.io%22%3Ehttps://bridge.arbitrum.io%3C/a%3E`
 }
 
 export function WithdrawalConfirmationDialog(
@@ -54,8 +56,6 @@ export function WithdrawalConfirmationDialog(
     app: { selectedToken }
   } = useAppState()
 
-  const { confirmationHours, confirmationPeriod } =
-    useWithdrawalConfirmationPeriod()
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
   const from = isConnectedToArbitrum ? l2.network : l1.network
@@ -71,9 +71,19 @@ export function WithdrawalConfirmationDialog(
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
+  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: l2.network.id
+  })
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
-  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const estimatedConfirmationDate = getTxConfirmationDate({
+    createdAt: dayjs(new Date()),
+    withdrawalFromChainId: l2.network.id,
+    baseChainId
+  })
+
+  const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -179,7 +189,7 @@ export function WithdrawalConfirmationDialog(
                   <div className="flex justify-center">
                     <ExternalLink
                       href={getCalendarUrl(
-                        confirmationHours,
+                        estimatedConfirmationDate,
                         props.amount,
                         selectedToken?.symbol || nativeCurrency.symbol,
                         getNetworkName(l2.network.id)

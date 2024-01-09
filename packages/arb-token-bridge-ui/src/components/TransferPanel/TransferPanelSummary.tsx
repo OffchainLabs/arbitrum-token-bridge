@@ -4,14 +4,19 @@ import { twMerge } from 'tailwind-merge'
 import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getBaseChainIdByChainId,
+  getNetworkName,
+  isNetwork
+} from '../../util/networks'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
-import { useWithdrawalConfirmationPeriod } from '../../util/WithdrawalUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import dayjs from 'dayjs'
+import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 
 export type TransferPanelSummaryProps = {
   amount: number
@@ -55,7 +60,17 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
-  const { confirmationPeriod } = useWithdrawalConfirmationPeriod()
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: l2.network.id
+  })
+
+  const estimatedConfirmationDate = getTxConfirmationDate({
+    createdAt: dayjs(new Date()),
+    withdrawalFromChainId: l2.network.id,
+    baseChainId
+  })
+
+  const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
   const isBridgingEth = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
