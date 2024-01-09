@@ -28,6 +28,32 @@ export type ChainWithRpcUrl = Chain & {
   nativeTokenData?: Erc20Data
 }
 
+export function getBaseChainIdByChainId({
+  chainId
+}: {
+  chainId: number
+}): number {
+  const chain = chains[chainId]
+
+  if (!chain || !chain.partnerChainID) {
+    return chainId
+  }
+
+  const parentChain = parentChains[chain.partnerChainID]
+
+  if (!parentChain) {
+    return chainId
+  }
+
+  const parentOfParentChain = (parentChain as L2Network).partnerChainID
+
+  if (parentOfParentChain) {
+    return parentOfParentChain
+  }
+
+  return parentChain.chainID ?? chainId
+}
+
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
@@ -39,7 +65,7 @@ export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
 
   return (JSON.parse(customChainsFromLocalStorage) as ChainWithRpcUrl[])
     .filter(
-      // filter again in case local storage is compromized
+      // filter again in case local storage is compromised
       chain => !supportedCustomOrbitParentChains.includes(Number(chain.chainID))
     )
     .map(chain => {
