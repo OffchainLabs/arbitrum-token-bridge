@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
-import { twMerge } from 'tailwind-merge'
 
 import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
@@ -15,8 +14,8 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 
-const roundedTabClasses =
-  'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
+const tabClasses =
+  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
 
 export const TransactionHistory = ({
   props
@@ -75,19 +74,16 @@ export const TransactionHistory = ({
 
   return (
     <Tab.Group key={address} as="div" className="h-full overflow-hidden">
-      <Tab.List className="flex">
+      <Tab.List className="mb-4 flex border-b border-white/30">
         <TabButton
           aria-label="show pending transactions"
-          className={twMerge(roundedTabClasses, 'roundedTabRight')}
+          className={tabClasses}
         >
           <span className="text-xs md:text-base">Pending transactions</span>
         </TabButton>
         <TabButton
           aria-label="show settled transactions"
-          className={twMerge(
-            roundedTabClasses,
-            'roundedTabLeft roundedTabRight'
-          )}
+          className={tabClasses}
         >
           <span className="text-xs md:text-base">Settled transactions</span>
         </TabButton>

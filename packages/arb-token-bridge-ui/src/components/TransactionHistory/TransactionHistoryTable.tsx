@@ -19,7 +19,6 @@ import {
   getStandardizedTime,
   isTokenDeposit
 } from '../../state/app/utils'
-import { Loader } from '../common/atoms/Loader'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
@@ -55,7 +54,7 @@ const TableHeader = ({
 }: PropsWithChildren<{ className?: string }>) => (
   <div
     className={twMerge(
-      'h-full w-full py-4 pl-2 text-left text-sm font-normal',
+      'h-full w-full py-4 text-left text-sm font-normal',
       className
     )}
   >
@@ -157,15 +156,9 @@ export const TransactionHistoryTable = ({
   if (isTxHistoryEmpty) {
     if (loading) {
       return (
-        <div
-          className={twMerge(
-            'flex items-center space-x-2 rounded-tr-lg bg-white p-4',
-            isPendingTab ? '' : 'rounded-tl-lg'
-          )}
-        >
-          <Loader color="black" size="small" />
-          <span className="text-sm">Loading transactions...</span>
-        </div>
+        <span className="animate-pulse text-xs text-white">
+          Loading transactions...
+        </span>
       )
     }
     if (error) {
@@ -210,10 +203,10 @@ export const TransactionHistoryTable = ({
   }
 
   return (
-    <div className="h-full flex-col overflow-x-auto">
+    <div className="h-full flex-col overflow-x-auto rounded bg-[#191919] text-white">
       <div
         className={twMerge(
-          'w-[960px] rounded-tr-lg bg-white px-8 pt-4',
+          'w-[960px] rounded-tr-lg px-4 pt-4',
           isPendingTab ? '' : 'rounded-tl-lg'
         )}
         ref={contentAboveTable}
@@ -221,14 +214,15 @@ export const TransactionHistoryTable = ({
         {loading ? (
           <div className="flex items-center space-x-2">
             <FailedChainPairsTooltip />
-            <Loader color="black" size="small" />
-            <span className="text-sm">Loading transactions...</span>
+            <span className="animate-pulse text-xs">
+              Loading transactions...
+            </span>
           </div>
         ) : (
-          <div className="flex justify-between">
-            <div className="flex justify-start space-x-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start space-x-1">
               <FailedChainPairsTooltip />
-              <span className="text-sm">
+              <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
                 {oldestTxTimeAgoString}.
@@ -236,8 +230,8 @@ export const TransactionHistoryTable = ({
             </div>
 
             {!completed && (
-              <button onClick={resume} className="arb-hover text-sm">
-                <div className="flex space-x-1 rounded border border-black px-2 py-1">
+              <button onClick={resume} className="arb-hover text-xs">
+                <div className="flex space-x-1 rounded border border-white px-2 py-1">
                   <span>Load more</span>
                   <ArrowDownOnSquareIcon width={16} />
                 </div>
@@ -256,9 +250,11 @@ export const TransactionHistoryTable = ({
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
-              <div className="flex w-[960px] bg-white">{props.columns}</div>
+              <div className="mx-4 flex w-[928px] border-b border-white/30 text-white">
+                {props.columns}
+              </div>
             )}
-            className="table-auto"
+            className="table-auto last:border-b-0"
             rowGetter={({ index }) => transactions[index]}
             rowRenderer={({ index, key, style }) => {
               const tx = transactions[index]
@@ -267,9 +263,14 @@ export const TransactionHistoryTable = ({
                 return null
               }
 
+              const isLastRow = index + 1 === transactions.length
+
               return (
                 <div key={key} style={style}>
-                  <TransactionsTableRow tx={tx} />
+                  <TransactionsTableRow
+                    tx={tx}
+                    className={isLastRow ? 'border-b-0' : ''}
+                  />
                 </div>
               )
             }}
@@ -277,42 +278,32 @@ export const TransactionHistoryTable = ({
             <Column
               label="time"
               dataKey="time"
-              width={144}
-              headerRenderer={() => (
-                <TableHeader className="pl-6">TIME</TableHeader>
-              )}
+              width={139}
+              headerRenderer={() => <TableHeader>TIME</TableHeader>}
             />
             <Column
               label="token"
               dataKey="token"
-              width={144}
-              headerRenderer={() => (
-                <TableHeader className="pl-7">TOKEN</TableHeader>
-              )}
+              width={141}
+              headerRenderer={() => <TableHeader>TOKEN</TableHeader>}
             />
             <Column
               label="from"
               dataKey="from"
-              width={144}
-              headerRenderer={() => (
-                <TableHeader className="pl-10">FROM</TableHeader>
-              )}
+              width={142}
+              headerRenderer={() => <TableHeader>FROM</TableHeader>}
             />
             <Column
               label="to"
               dataKey="to"
-              width={100}
-              headerRenderer={() => (
-                <TableHeader className="pl-9">TO</TableHeader>
-              )}
+              width={137}
+              headerRenderer={() => <TableHeader>TO</TableHeader>}
             />
             <Column
               label="status"
               dataKey="status"
               width={100}
-              headerRenderer={() => (
-                <TableHeader className="pl-9">STATUS</TableHeader>
-              )}
+              headerRenderer={() => <TableHeader>STATUS</TableHeader>}
             />
           </Table>
         )}

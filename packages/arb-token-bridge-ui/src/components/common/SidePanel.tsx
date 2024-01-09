@@ -5,7 +5,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from './Transition'
 
 type SidePanelProps = {
-  heading: string
+  heading?: string
   isOpen: boolean
   onClose?: () => void
   children: React.ReactNode
@@ -41,15 +41,32 @@ export const SidePanel = ({
               !scrollable ? '' : 'overflow-y-auto'
             )}
           >
-            <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-black py-4 text-white">
-              <span className="text-xl">{heading}</span>
+            <Dialog.Title
+              className={twMerge(
+                'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black py-4 text-white',
+                heading ? 'border-b-[1px] border-gray-6' : ''
+              )}
+            >
+              {heading && <span className="text-xl">{heading}</span>}
               <button className="arb-hover" onClick={onClose}>
-                <XMarkIcon className="h-6 w-6 text-white" />
+                <XMarkIcon
+                  className={twMerge(
+                    'h-5 w-5 text-white',
+                    heading ? '' : 'ml-2'
+                  )}
+                />
               </button>
             </Dialog.Title>
 
             {/* Contents of the panel */}
-            <div className="side-panel-content z-40 h-full p-4">{children}</div>
+            <div
+              className={twMerge(
+                'side-panel-content z-40 h-full',
+                heading ? 'p-4' : 'px-4 pb-4'
+              )}
+            >
+              {children}
+            </div>
           </Dialog.Panel>
         </div>
       </Dialog>
