@@ -47,11 +47,23 @@ describe('Approve token and deposit afterwards', () => {
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
         })
-      cy.findByRole('button', {
-        name: 'Move funds to Arbitrum'
+      cy.waitUntil(
+        () =>
+          cy
+            .findByRole('button', { name: /Move funds to Arbitrum/i })
+            .should('not.be.disabled'),
+        {
+          errorMsg: '/Move funds to Arbitrum/ button is disabled',
+          timeout: 10000,
+          interval: 500
+        }
+      ).then(() => {
+        cy.findByRole('button', {
+          name: 'Move funds to Arbitrum'
+        })
+          .scrollIntoView()
+          .click()
       })
-        .scrollIntoView()
-        .click()
       cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
