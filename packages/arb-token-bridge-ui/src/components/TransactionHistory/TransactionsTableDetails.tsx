@@ -39,8 +39,7 @@ const DetailsBox = ({
 
 export const TransactionsTableDetails = () => {
   const { address } = useAccount()
-  const { tx: txFromStore, isOpen, close, reset } =
-    useTxDetailsStore()
+  const { tx: txFromStore, isOpen, close, reset } = useTxDetailsStore()
   const { ethToUSD } = useETHPrice()
   const { transactions } = useTransactionHistory(address)
 
