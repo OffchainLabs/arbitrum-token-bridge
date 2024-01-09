@@ -35,7 +35,7 @@ export const TransactionsTableTokenImage = ({
     )
   }
 
-  if (!allTokens) {
+  if (!token || !token.logoURI) {
     return null
   }
 
@@ -45,8 +45,8 @@ export const TransactionsTableTokenImage = ({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       className="h-[20px]"
-      alt={token?.symbol + ' logo'}
-      src={token?.logoURI}
+      alt={token.symbol + ' logo'}
+      src={token.logoURI}
     />
   )
 }
