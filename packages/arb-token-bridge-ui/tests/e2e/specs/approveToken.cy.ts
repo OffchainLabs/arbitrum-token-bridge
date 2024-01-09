@@ -49,7 +49,9 @@ describe('Approve token and deposit afterwards', () => {
         })
       cy.findByRole('button', {
         name: 'Move funds to Arbitrum'
-      }).click()
+      })
+        .scrollIntoView()
+        .click()
       cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
