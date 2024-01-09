@@ -39,7 +39,7 @@ const DetailsBox = ({
 
 export const TransactionsTableDetails = () => {
   const { address } = useAccount()
-  const { parentChainId, childChainId, txId, isOpen, close, reset } =
+  const { tx: txFromStore, isOpen, close, reset } =
     useTxDetailsStore()
   const { ethToUSD } = useETHPrice()
   const { transactions } = useTransactionHistory(address)
@@ -50,17 +50,18 @@ export const TransactionsTableDetails = () => {
   }
 
   const tx = useMemo(() => {
-    if (!parentChainId || !childChainId || !txId) {
+    if (!txFromStore) {
       return null
     }
 
+    // we need to get tx from the hook to make sure we have up to date details, e.g. status
     return transactions.find(
       t =>
-        t.parentChainId === parentChainId &&
-        t.childChainId === childChainId &&
-        t.txId === txId
+        t.parentChainId === txFromStore.parentChainId &&
+        t.childChainId === txFromStore.childChainId &&
+        t.txId === txFromStore.txId
     )
-  }, [transactions, parentChainId, childChainId, txId])
+  }, [transactions, txFromStore])
 
   const nativeCurrency = useNativeCurrency({
     provider: getProvider(tx?.parentChainId ?? 1)

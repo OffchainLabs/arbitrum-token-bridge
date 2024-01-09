@@ -15,15 +15,12 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
-import { ChainId } from '../../util/networks'
 
 const tabClasses =
   'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
 
 type TxDetailsStore = {
-  parentChainId: ChainId | null
-  childChainId: ChainId | null
-  txId: string | null
+  tx: MergedTransaction | null
   isOpen: boolean
   open: (tx: MergedTransaction) => void
   close: () => void
@@ -31,19 +28,15 @@ type TxDetailsStore = {
 }
 
 export const useTxDetailsStore = create<TxDetailsStore>(set => ({
-  parentChainId: null,
-  childChainId: null,
-  txId: null,
+  tx: null,
   isOpen: false,
   open: (tx: MergedTransaction) =>
     set(() => ({
-      parentChainId: tx.parentChainId,
-      childChainId: tx.childChainId,
-      txId: tx.txId,
+      tx,
       isOpen: true
     })),
   close: () => set({ isOpen: false }),
-  reset: () => set({ parentChainId: null, childChainId: null, txId: null })
+  reset: () => set({ tx: null })
 }))
 
 export const TransactionHistory = ({
