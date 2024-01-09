@@ -289,7 +289,7 @@ const defaultL2Network: ParentChain = {
   partnerChainIDs: [
     // Orbit chains will go here
   ],
-  confirmPeriodBlocks: 20,
+  confirmPeriodBlocks: 40320,
   ethBridge: {
     bridge: '0x2b360a9881f21c3d7aa0ea6ca0de2a3341d4ef3c',
     inbox: '0xff4a24b22f94979e9ba5f3eb35838aa814bad6f1',
