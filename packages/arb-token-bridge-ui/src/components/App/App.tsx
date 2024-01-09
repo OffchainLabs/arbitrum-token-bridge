@@ -23,8 +23,6 @@ import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
-import { PendingTransactionsUpdater } from '../syncers/PendingTransactionsUpdater'
-import { RetryableTxnsIncluder } from '../syncers/RetryableTxnsIncluder'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { useDialog } from '../common/Dialog'
 import {
@@ -114,9 +112,6 @@ const AppContent = (): JSX.Element => {
 
         <HeaderAccountPopover />
       </HeaderContent>
-
-      <PendingTransactionsUpdater />
-      <RetryableTxnsIncluder />
 
       <TokenListSyncer />
       <BalanceUpdater />

@@ -3,20 +3,18 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
+import { GET_HELP_LINK } from '../../constants'
+import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
+import { MergedTransaction } from '../../state/app/state'
+import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
+import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
+import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { getNetworkName } from '../../util/networks'
+import { errorToast } from '../common/atoms/Toast'
+import { Button } from '../common/Button'
+import { Tooltip } from '../common/Tooltip'
+import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
-import { GET_HELP_LINK } from '../../../constants'
-import { useClaimWithdrawal } from '../../../hooks/useClaimWithdrawal'
-import { MergedTransaction } from '../../../state/app/state'
-import { useClaimCctp, useRemainingTime } from '../../../state/cctpState'
-import { shouldTrackAnalytics, trackEvent } from '../../../util/AnalyticsUtils'
-import { isUserRejectedError } from '../../../util/isUserRejectedError'
-import { getNetworkName, isNetwork } from '../../../util/networks'
-import { errorToast } from '../../common/atoms/Toast'
-import { Button } from '../../common/Button'
-import { Tooltip } from '../../common/Tooltip'
-import { useSwitchNetworkWithConfig } from '../../../hooks/useSwitchNetworkWithConfig'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 const GetHelpButton = ({
   variant,
@@ -46,32 +44,22 @@ export function TransactionsTableRowAction({
   type: 'deposits' | 'withdrawals'
 }) {
   const { chain } = useNetwork()
-  const [networks] = useNetworks()
   const { switchNetwork } = useSwitchNetworkWithConfig()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
-  const destinationChain = type === 'deposits' ? childChain : parentChain
   const networkName = getNetworkName(chain?.id ?? 0)
-  const targetNetworkName = getNetworkName(destinationChain.id)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
 
-  const { isEthereumMainnetOrTestnet, isArbitrum } = isNetwork(chain?.id ?? 0)
-
   const currentChainIsValid = useMemo(() => {
-    const isWithdrawalSourceOrbitChain = isNetwork(childChain.id).isOrbitChain
-
-    if (isWithdrawalSourceOrbitChain) {
-      // Enable claim if withdrawn from an Orbit chain and is connected to L2
-      return isArbitrum
+    if (!chain) {
+      return false
     }
-
-    return (
-      (type === 'deposits' && isArbitrum) ||
-      (type === 'withdrawals' && isEthereumMainnetOrTestnet)
-    )
-  }, [isArbitrum, isEthereumMainnetOrTestnet, childChain.id, type])
+    if (type === 'deposits') {
+      return chain.id === tx.childChainId
+    }
+    return chain.id === tx.parentChainId
+  }, [type, chain, tx.parentChainId, tx.childChainId])
 
   const isClaimButtonDisabled = useMemo(() => {
     return isClaiming || isClaimingCctp || !isConfirmed
@@ -110,9 +98,9 @@ export function TransactionsTableRowAction({
         wrapperClassName=""
         content={
           <span>
-            {`Please switch to ${targetNetworkName} to claim your ${
-              type === 'deposits' ? 'deposit' : 'withdrawal'
-            }.`}
+            {`Please switch to ${getNetworkName(
+              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+            )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
           </span>
         }
       >
@@ -123,9 +111,13 @@ export function TransactionsTableRowAction({
           className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
-              if (chain?.id !== destinationChain.id) {
-                switchNetwork?.(destinationChain.id)
-                return
+              const destinationChain = tx.isWithdrawal
+                ? tx.parentChainId
+                : tx.childChainId
+              if (!currentChainIsValid && chain?.id !== destinationChain) {
+                return switchNetwork?.(
+                  tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+                )
               }
 
               if (tx.isCctp) {

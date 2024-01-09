@@ -3,6 +3,8 @@
   Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
 */
 
+import { useAccount } from 'wagmi'
+import { useMemo } from 'react'
 import {
   CheckCircleIcon,
   InformationCircleIcon
@@ -10,40 +12,41 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useAppState } from '../../state'
-import { MergedTransaction } from '../../state/app/state'
+
 import {
   isDepositReadyToRedeem,
   isWithdrawalReadyToClaim
 } from '../../state/app/utils'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName } from '../../util/networks'
-import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
-export const TransactionStatusInfo = ({
-  deposits
-}: {
-  deposits: MergedTransaction[]
-}) => {
+export const TransactionStatusInfo = () => {
+  const { address } = useAccount()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
   const l2NetworkName = getNetworkName(childChain.id)
-  const { openTransactionHistoryPanel, setTransactionHistoryTab } =
-    useAppContextActions()
+  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { transactions } = useTransactionHistory(address)
 
-  // get the pending withdrawals to claim
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
-  const numWithdrawalsReadyToClaim = mergedTransactions.filter(tx =>
-    isWithdrawalReadyToClaim(tx)
-  ).length
-
-  // get the pending retryables to redeem
-  const numRetryablesToRedeem = deposits.filter(tx =>
-    isDepositReadyToRedeem(tx)
-  ).length
+  const { numWithdrawalsReadyToClaim, numRetryablesToRedeem } = useMemo(() => {
+    return transactions.reduce(
+      (acc, tx) => {
+        // standard bridge withdrawal
+        if (isWithdrawalReadyToClaim(tx)) {
+          acc.numWithdrawalsReadyToClaim += 1
+        }
+        // failed retryable
+        if (isDepositReadyToRedeem(tx)) {
+          acc.numRetryablesToRedeem += 1
+        }
+        return acc
+      },
+      { numWithdrawalsReadyToClaim: 0, numRetryablesToRedeem: 0 }
+    )
+  }, [transactions])
 
   // don't show this banner if user doesn't have anything to claim or redeem
   if (numWithdrawalsReadyToClaim === 0 && numRetryablesToRedeem === 0)
@@ -58,7 +61,6 @@ export const TransactionStatusInfo = ({
           : 'bg-lime text-lime-dark'
       )}
       onClick={() => {
-        setTransactionHistoryTab(TransactionHistoryTab.DEPOSITS)
         openTransactionHistoryPanel()
         if (shouldTrackAnalytics(l2NetworkName)) {
           trackEvent('Open Transaction History Click', {

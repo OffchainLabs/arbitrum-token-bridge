@@ -20,6 +20,7 @@ export interface BridgeTokenList {
   isDefault: boolean
   isArbitrumTokenTokenList?: boolean
   logoURI: ImageProps['src']
+  isValid?: boolean
 }
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
@@ -100,6 +101,14 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed CMC List',
     isDefault: true,
     logoURI: CMCLogo
+  },
+  {
+    id: 10,
+    originChainID: 421614,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
@@ -118,6 +127,8 @@ export interface TokenListWithId extends TokenList {
 export const validateTokenList = (tokenList: TokenList) => {
   const ajv = new Ajv()
   addFormats(ajv)
+  // https://github.com/OffchainLabs/arbitrum-token-lists/blob/master/src/lib/validateTokenList.ts#L10
+  schema.properties.tokens.maxItems = 15_000
   const validate = ajv.compile(schema)
 
   return validate(tokenList)
@@ -147,12 +158,19 @@ export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
       }
     })
 
-    if (!validateTokenList(data)) {
-      console.warn('Token List Invalid', data)
-      return { isValid: false, data }
+    const isValid = validateTokenList(data)
+
+    const tokenList = BRIDGE_TOKEN_LISTS.find(list => list.url === tokenListURL)
+
+    if (tokenList) {
+      tokenList.isValid = isValid
     }
 
-    return { isValid: true, data }
+    if (!isValid) {
+      console.warn('Token List Invalid', data)
+    }
+
+    return { isValid, data }
   } catch (error) {
     console.warn('Token List URL Invalid', tokenListURL)
     return { isValid: false, data: undefined }

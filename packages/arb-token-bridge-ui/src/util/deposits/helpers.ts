@@ -13,11 +13,15 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 
-export const updateAdditionalDepositData = async (
-  depositTx: Transaction,
-  l1Provider: Provider,
+export const updateAdditionalDepositData = async ({
+  depositTx,
+  l1Provider,
+  l2Provider
+}: {
+  depositTx: Transaction
+  l1Provider: Provider
   l2Provider: Provider
-): Promise<Transaction> => {
+}): Promise<Transaction> => {
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
 

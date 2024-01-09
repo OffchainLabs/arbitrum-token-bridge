@@ -2,33 +2,29 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { MergedTransaction } from '../../../state/app/state'
-import { StatusBadge } from '../../common/StatusBadge'
+import { MergedTransaction } from '../../state/app/state'
+import { StatusBadge } from '../common/StatusBadge'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
-import { WithdrawalCountdown } from '../../common/WithdrawalCountdown'
-import { ExternalLink } from '../../common/ExternalLink'
-import { shortenTxHash } from '../../../util/CommonUtils'
-import { Tooltip } from '../../common/Tooltip'
+import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
+import { ExternalLink } from '../common/ExternalLink'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { Tooltip } from '../common/Tooltip'
 import {
   ChainId,
   getExplorerUrl,
   getNetworkName,
   isNetwork
-} from '../../../util/networks'
+} from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import {
-  isCustomDestinationAddressTx,
-  findMatchingL1TxForWithdrawal,
-  isPending
-} from '../../../state/app/utils'
-import { TransactionDateTime } from './TransactionsTable'
-import { formatAmount } from '../../../util/NumberUtils'
-import { sanitizeTokenSymbol } from '../../../util/TokenUtils'
+import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
+import { TransactionDateTime } from './TransactionHistoryTable'
+import { formatAmount } from '../../util/NumberUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { useRemainingTime } from '../../../state/cctpState'
-import { useChainLayers } from '../../../hooks/useChainLayers'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useRemainingTime } from '../../state/cctpState'
+import { useChainLayers } from '../../hooks/useChainLayers'
+import { NetworkImage } from '../common/NetworkImage'
+import { getWithdrawalClaimParentChainTxDetails } from './helpers'
 
 type CommonProps = {
   tx: MergedTransaction
@@ -37,12 +33,9 @@ type CommonProps = {
 
 function ClaimableRowStatus({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
-  const sourceLayer = tx.isWithdrawal ? layer : parentLayer
-  const destinationLayer = tx.isWithdrawal ? parentLayer : layer
-
-  const matchingL1Tx = tx.isCctp
+  const matchingL1TxId = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
-    : findMatchingL1TxForWithdrawal(tx)
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
   switch (tx.status) {
     case 'pending':
@@ -50,7 +43,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="yellow"
-            aria-label={`${sourceLayer} Transaction Status`}
+            aria-label={`${layer} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -61,13 +54,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${sourceLayer} Transaction Status`}
+            aria-label={`${layer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${destinationLayer} Transaction Status`}
+            aria-label={`${parentLayer} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -79,18 +72,18 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${sourceLayer} Transaction Status`}
+            aria-label={`${layer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <Tooltip
             content={
-              <span>Funds are ready to be claimed on {destinationLayer}</span>
+              <span>Funds are ready to be claimed on {parentLayer}</span>
             }
           >
             <StatusBadge
               variant="yellow"
-              aria-label={`${destinationLayer} Transaction Status`}
+              aria-label={`${parentLayer} Transaction Status`}
             >
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
@@ -99,26 +92,26 @@ function ClaimableRowStatus({ tx }: CommonProps) {
       )
 
     case 'Executed': {
-      if (typeof matchingL1Tx === 'undefined') {
+      if (typeof matchingL1TxId === 'undefined') {
         return (
           <div className="flex flex-col space-y-1">
             <StatusBadge
               variant="green"
-              aria-label={`${sourceLayer} Transaction Status`}
+              aria-label={`${layer} Transaction Status`}
             >
               Success
             </StatusBadge>
             <Tooltip
               content={
                 <span>
-                  Executed: Funds have been claimed on {destinationLayer}, but
-                  the corresponding Tx ID was not found
+                  Executed: Funds have been claimed on {parentLayer}, but the
+                  corresponding Tx ID was not found
                 </span>
               }
             >
               <StatusBadge
                 variant="gray"
-                aria-label={`${destinationLayer} Transaction Status`}
+                aria-label={`${parentLayer} Transaction Status`}
               >
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
@@ -131,13 +124,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${sourceLayer} Transaction Status`}
+            aria-label={`${layer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="green"
-            aria-label={`${destinationLayer} Transaction Status`}
+            aria-label={`${parentLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
@@ -148,10 +141,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
     case 'Failure':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge
-            variant="red"
-            aria-label={`${sourceLayer} Transaction Status`}
-          >
+          <StatusBadge variant="red" aria-label={`${layer} Transaction Status`}>
             Failed
           </StatusBadge>
         </div>
@@ -175,11 +165,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {tx.isCctp ? (
-          <>{remainingTime}</>
-        ) : (
-          <WithdrawalCountdown createdAt={tx.createdAt} />
-        )}
+        {tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />}
       </div>
     )
   }
@@ -199,13 +185,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
     )
   }
 
-  const claimedTx = tx.isCctp
-    ? {
-        createdAt: tx.cctpData?.receiveMessageTimestamp
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxTimestamp = tx.isCctp
+    ? tx.cctpData?.receiveMessageTimestamp
+    : getWithdrawalClaimParentChainTxDetails(tx)?.timestamp
 
-  if (typeof claimedTx === 'undefined') {
+  if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
         <Tooltip content={<span>{sourceLayer} Transaction time</span>}>
@@ -227,10 +211,10 @@ function ClaimableRowTime({ tx }: CommonProps) {
       <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
-      {claimedTx?.createdAt && (
-        <Tooltip content={<span>{destinationLayer} Transaction Time</span>}>
+      {claimedTxTimestamp && (
+        <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
           <span className="whitespace-nowrap">
-            <TransactionDateTime standardizedDate={claimedTx?.createdAt} />
+            <TransactionDateTime standardizedDate={claimedTxTimestamp} />
           </span>
         </Tooltip>
       )}
@@ -239,29 +223,23 @@ function ClaimableRowTime({ tx }: CommonProps) {
 }
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
-  const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { layer, parentLayer } = useChainLayers()
-  const sourceLayer = tx.isWithdrawal ? layer : parentLayer
-  const toNetworkId = isSourceChainArbitrum ? parentChain.id : childChain.id
+  const { parentLayer } = useChainLayers()
+  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
-  if (!isExecuted && !isBeingClaimed) {
-    return null
-  }
 
-  const claimedTx = tx.isCctp
-    ? {
-        txId: tx.cctpData?.receiveMessageTransactionHash
-      }
-    : findMatchingL1TxForWithdrawal(tx)
+  const claimedTxId = tx.isCctp
+    ? tx.cctpData?.receiveMessageTransactionHash
+    : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
-  if (!claimedTx?.txId) {
+  if (!claimedTxId) {
     return (
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
-        <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
-        {getNetworkName(toNetworkId)}: Not available
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+        <NetworkImage chainId={toNetworkId} />
+        <span className="pl-1">{getNetworkName(toNetworkId)}: </span>
+        {!isExecuted && !isBeingClaimed ? 'Pending' : 'Not available'}
       </span>
     )
   }
@@ -269,35 +247,36 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   return (
     <span
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-      aria-label={`${sourceLayer} Transaction Link`}
+      aria-label={`${parentLayer} Transaction Link`}
     >
-      <span className="rounded-md px-2 text-xs text-dark">Step 2</span>
+      <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
+      <NetworkImage chainId={toNetworkId} />
       {getNetworkName(toNetworkId)}:{' '}
       <ExternalLink
-        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTx.txId}`}
+        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTxId}`}
         className="arb-hover text-blue-link"
       >
-        {shortenTxHash(claimedTx.txId)}
+        {shortenTxHash(claimedTxId)}
       </ExternalLink>
     </span>
   )
 }
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
-  const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { layer, parentLayer } = useChainLayers()
-  const sourceLayer = tx.isWithdrawal ? layer : parentLayer
-  const fromNetworkId = isSourceChainArbitrum ? childChain.id : parentChain.id
+  const { layer } = useChainLayers()
+  const fromNetworkId = isSourceChainArbitrum
+    ? tx.childChainId
+    : tx.parentChainId
 
   return (
     <div className="flex flex-col space-y-3">
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label={`${sourceLayer} Transaction Link`}
+        aria-label={`${layer} Transaction Link`}
       >
-        <span className="rounded-md px-2 text-xs text-dark">Step 1</span>
-        {getNetworkName(fromNetworkId)}:{' '}
+        <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
+        <NetworkImage chainId={fromNetworkId} />
+        <span className="pl-1">{getNetworkName(fromNetworkId)}: </span>
         <ExternalLink
           href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
@@ -320,8 +299,6 @@ export function TransactionsTableClaimableRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
   const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
   const {
     isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
@@ -339,14 +316,14 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: isSourceChainIdEthereum ? parentChain.id : childChain.id
+        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
       }),
     [
       tx.asset,
       tx.tokenAddress,
-      isSourceChainIdEthereum,
-      parentChain.id,
-      childChain.id
+      tx.parentChainId,
+      tx.childChainId,
+      isSourceChainIdEthereum
     ]
   )
 
@@ -360,49 +337,63 @@ export function TransactionsTableClaimableRow({
   }
 
   return (
-    <tr
-      className={twMerge(
-        'relative text-sm text-dark',
-        bgClassName || 'bg-cyan even:bg-white',
-        className
-      )}
+    <div
       data-testid={`withdrawal-row-${tx.txId}`}
+      className={twMerge(
+        'relative grid h-full grid-cols-[150px_250px_140px_290px_140px] border-b border-dark text-sm text-dark',
+        className,
+        bgClassName
+      )}
     >
-      <td className={twMerge('w-1/5 py-3 pl-6 pr-3', customAddressTxPadding)}>
+      <div
+        className={twMerge(
+          'py-4 pl-6 pr-3 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <ClaimableRowStatus
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <div
+        className={twMerge(
+          'flex items-center px-3 py-5 align-middle',
+          customAddressTxPadding
+        )}
+      >
         <ClaimableRowTime
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td
+      <div
         className={twMerge(
-          'w-1/5 whitespace-nowrap px-3 py-3',
+          'flex items-center whitespace-nowrap px-3 py-5 align-middle',
           customAddressTxPadding
         )}
       >
-        {formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}
-      </td>
+        <span>
+          {formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}
+        </span>
+      </div>
 
-      <td className={twMerge('w-1/5 px-3 py-3', customAddressTxPadding)}>
+      <div
+        className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
+      >
         <ClaimableRowTxID
           tx={tx}
           isSourceChainArbitrum={isSourceChainIdArbitrum}
         />
-      </td>
+      </div>
 
-      <td
+      <div
         className={twMerge(
-          'relative w-1/5 py-3 pl-3 pr-6 text-right',
+          'relative py-5 pl-3 pr-6 text-right align-middle',
           customAddressTxPadding
         )}
       >
@@ -411,12 +402,12 @@ export function TransactionsTableClaimableRow({
           isError={isError}
           type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
         />
-      </td>
+      </div>
       {isCustomDestinationAddressTx(tx) && (
-        <td>
+        <div>
           <TransactionsTableCustomAddressLabel tx={tx} />
-        </td>
+        </div>
       )}
-    </tr>
+    </div>
   )
 }

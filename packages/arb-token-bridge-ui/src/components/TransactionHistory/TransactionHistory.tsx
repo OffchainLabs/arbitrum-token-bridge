@@ -1,311 +1,128 @@
+import dayjs from 'dayjs'
+import { useMemo } from 'react'
 import { Tab } from '@headlessui/react'
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo
-} from 'react'
-import { useAccount } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
-import { CompleteDepositData } from '../../hooks/useDeposits'
-import { CompleteWithdrawalData } from '../../hooks/useWithdrawals'
-import { useAppState } from '../../state'
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
+import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
+import { TransactionHistoryTable } from './TransactionHistoryTable'
 import {
-  PageParams,
-  TransactionsTable
-} from './TransactionsTable/TransactionsTable'
-import { PendingTransactions } from './PendingTransactions'
-import { FailedTransactionsWarning } from './FailedTransactionsWarning'
-import { isFailed, isPending } from '../../state/app/utils'
-import Image from 'next/image'
-import { TabButton } from '../common/Tab'
-import { useAccountType } from '../../hooks/useAccountType'
-import {
-  TransactionHistoryTab,
-  useAppContextActions,
-  useAppContextState
-} from '../App/AppContext'
-import { useCctpFetching, useCctpState } from '../../state/cctpState'
+  isTxClaimable,
+  isTxCompleted,
+  isTxExpired,
+  isTxFailed,
+  isTxPending
+} from './helpers'
 import { MergedTransaction } from '../../state/app/state'
-import dayjs from 'dayjs'
-import { TransactionsTableCctp } from './TransactionsTable/TransactionsTableCctp'
-import { CustomMessageWarning } from './CustomMessageWarning'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { TabButton } from '../common/Tab'
+
+const roundedTabClasses =
+  'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
 export const TransactionHistory = ({
-  depositsPageParams,
-  withdrawalsPageParams,
-  depositsData,
-  depositsLoading,
-  depositsError,
-  withdrawalsData,
-  withdrawalsLoading,
-  withdrawalsError,
-  setDepositsPageParams,
-  setWithdrawalsPageParams
+  props
 }: {
-  depositsPageParams: PageParams
-  withdrawalsPageParams: PageParams
-  depositsData: CompleteDepositData
-  withdrawalsData: CompleteWithdrawalData
-  depositsLoading: boolean
-  depositsError: boolean
-  withdrawalsLoading: boolean
-  withdrawalsError: boolean
-  setDepositsPageParams: Dispatch<SetStateAction<PageParams>>
-  setWithdrawalsPageParams: Dispatch<SetStateAction<PageParams>>
+  props: UseTransactionHistoryResult & { address: `0x${string}` | undefined }
 }) => {
-  const [networks] = useNetworks()
-  const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { isSmartContractWallet } = useAccountType()
   const {
-    showCctpDepositsTransactions,
-    showCctpWithdrawalsTransactions,
-    setTransactionHistoryTab
-  } = useAppContextActions()
-  const {
-    layout: { transactionHistorySelectedTab }
-  } = useAppContextState()
-  const {
-    pendingIds: pendingIdsCctp,
-    transfers: transfersCctp,
-    transfersIds
-  } = useCctpState()
-  const { address } = useAccount()
-  const { isLoadingDeposits, depositsError: cctpDepositsError } =
-    useCctpFetching({
-      l1ChainId: parentChain.id,
-      l2ChainId: childChain.id,
-      walletAddress: address,
-      pageSize: 10,
-      pageNumber: 0,
-      type: 'deposits'
-    })
-  const { isLoadingWithdrawals, withdrawalsError: cctpWithdrawalsError } =
-    useCctpFetching({
-      l1ChainId: parentChain.id,
-      l2ChainId: childChain.id,
-      walletAddress: address,
-      pageSize: 10,
-      pageNumber: 0,
-      type: 'withdrawals'
-    })
+    transactions,
+    address,
+    loading,
+    completed,
+    error,
+    failedChainPairs,
+    resume
+  } = props
 
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
+  const oldestTxTimeAgoString = useMemo(() => {
+    return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
+  }, [transactions])
 
-  const isLoading =
-    depositsLoading ||
-    withdrawalsLoading ||
-    isLoadingDeposits ||
-    isLoadingWithdrawals
-  const error =
-    depositsError ||
-    withdrawalsError ||
-    cctpDepositsError ||
-    cctpWithdrawalsError
-
-  const isOrbitChainSelected = isNetwork(childChain.id).isOrbitChain
-
-  const pendingTransactions = useMemo(() => {
-    const pendingCctpTransactions = pendingIdsCctp
-      .map(pendingId => {
-        return transfersCctp[pendingId]
-      })
-      .filter(Boolean) as unknown as MergedTransaction[]
-    const transactions = mergedTransactions
-      .concat(pendingCctpTransactions)
-      .sort((t1, t2) => {
-        if (t1.createdAt && t2.createdAt) {
-          return dayjs(t2.createdAt).isAfter(t1.createdAt) ? 1 : -1
+  const groupedTransactions = useMemo(
+    () =>
+      transactions.reduce(
+        (acc, tx) => {
+          if (isTxCompleted(tx) || isTxExpired(tx)) {
+            acc.settled.push(tx)
+          }
+          if (isTxPending(tx)) {
+            acc.pending.push(tx)
+          }
+          if (isTxClaimable(tx)) {
+            acc.claimable.push(tx)
+          }
+          if (isTxFailed(tx)) {
+            acc.failed.push(tx)
+          }
+          return acc
+        },
+        {
+          settled: [] as MergedTransaction[],
+          pending: [] as MergedTransaction[],
+          claimable: [] as MergedTransaction[],
+          failed: [] as MergedTransaction[]
         }
-
-        if (t2.blockNum && t1.blockNum) {
-          return t2.blockNum - t1.blockNum
-        }
-
-        return 0
-      })
-    return transactions.filter(tx => isPending(tx))
-  }, [mergedTransactions, pendingIdsCctp, transfersCctp])
-
-  const failedTransactions = useMemo(() => {
-    return mergedTransactions.filter(tx => isFailed(tx))
-  }, [mergedTransactions])
-
-  const roundedTabClasses =
-    'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
-
-  const handleSmartContractWalletTxHistoryTab = useCallback(
-    (index: number) => {
-      if (!isSmartContractWallet) {
-        return
-      }
-      const isCctpTab = index === TransactionHistoryTab.CCTP
-      const isConnectedToArbitrum = isNetwork(
-        networks.sourceChain.id
-      ).isArbitrum
-
-      if (isCctpTab) {
-        if (isConnectedToArbitrum) {
-          showCctpDepositsTransactions()
-        } else {
-          showCctpWithdrawalsTransactions()
-        }
-      }
-    },
-    [
-      networks.sourceChain.id,
-      isSmartContractWallet,
-      showCctpDepositsTransactions,
-      showCctpWithdrawalsTransactions
-    ]
+      ),
+    [transactions]
   )
 
-  useEffect(() => {
-    // this function runs every time the network tab is changed, and here it is also triggered when the page loads
-    // it sets the tab to 0 (deposits), which is the default tab
-    handleSmartContractWalletTxHistoryTab(0)
-  }, [handleSmartContractWalletTxHistoryTab])
+  const pendingTransactions = [
+    ...groupedTransactions.failed,
+    ...groupedTransactions.pending,
+    ...groupedTransactions.claimable
+  ]
 
-  useEffect(() => {
-    // This check avoid the situation when we open the transaction history on CCTP tab after a transfer, but it would go back to "To Arbitrum" tab
-    if (transfersIds.length === 0) {
-      setTransactionHistoryTab(0)
-    }
-  }, [address, networks.sourceChain.id, setTransactionHistoryTab, transfersIds])
-
-  const displayCctp = transfersIds.length > 0 && !isOrbitChainSelected
+  const settledTransactions = groupedTransactions.settled
 
   return (
-    <div className="flex flex-col justify-around gap-6">
-      {isNetwork(childChain.id).isOrbitChain && (
-        <CustomMessageWarning>
-          Fetching transaction history details might be slower for Orbit chains.
-        </CustomMessageWarning>
-      )}
-      {/* Pending transactions cards */}
-      <PendingTransactions
-        loading={isLoading}
-        transactions={pendingTransactions}
-        error={error}
-      />
-
-      {/* Warning to show when there are 3 or more failed transactions for the user */}
-      <FailedTransactionsWarning transactions={failedTransactions} />
-
-      {/* Transaction history table */}
-      <div>
-        <Tab.Group
-          onChange={index => {
-            handleSmartContractWalletTxHistoryTab(index)
-            setTransactionHistoryTab(index)
-          }}
-          selectedIndex={transactionHistorySelectedTab}
+    <Tab.Group key={address} as="div" className="h-full overflow-hidden">
+      <Tab.List className="flex">
+        <TabButton
+          aria-label="show pending transactions"
+          className={twMerge(roundedTabClasses, 'roundedTabRight')}
         >
-          <Tab.List className={'flex flex-row whitespace-nowrap'}>
-            <TabButton
-              aria-label="show deposit transactions"
-              className={twMerge(roundedTabClasses, 'roundedTabRight')}
-            >
-              {/* Deposits */}
-              <Image
-                src={getNetworkLogo(childChain.id)}
-                className="hidden h-6 w-auto md:block"
-                alt="Deposit"
-                height={24}
-                width={24}
-              />
-              <span className="text-xs md:text-base">{`To ${getNetworkName(
-                childChain.id
-              )}`}</span>
-            </TabButton>
-            <TabButton
-              aria-label="show withdrawal transactions"
-              className={twMerge(
-                roundedTabClasses,
-                'roundedTabLeft',
-                // Withdrawal tab only has rounded right border on large screens or on small screen if there is CCTP
-                displayCctp ? 'roundedTabRight' : 'md:roundedTabRight'
-              )}
-            >
-              {/* Withdrawals */}
-              <Image
-                src={getNetworkLogo(parentChain.id)}
-                className="hidden h-6 w-auto md:block"
-                alt="Withdraw"
-                width={24}
-                height={24}
-              />
-              <span className="text-xs md:text-base">{`To ${getNetworkName(
-                parentChain.id
-              )}`}</span>
-            </TabButton>
-            {displayCctp && (
-              <TabButton
-                aria-label="show CCTP (Native USDC) transactions"
-                className={twMerge(
-                  roundedTabClasses,
-                  'roundedTabLeft',
-                  'md:roundedTabRight'
-                )}
-              >
-                {/* CCTP */}
-                <Image
-                  src="/icons/cctp.svg"
-                  className="hidden h-6 w-auto md:block"
-                  alt="Cross-Chain Transfer Protocol (Native USDC)"
-                  width={24}
-                  height={24}
-                />
-                <span className="hidden text-base md:block">
-                  Cross-Chain Transfer Protocol (Native USDC)
-                </span>
-                <span className="text-xs md:hidden">CCTP (Native USDC)</span>
-              </TabButton>
-            )}
-          </Tab.List>
-
-          <Tab.Panel className="overflow-auto">
-            <div className="sticky h-2 rounded-tr-lg bg-white" />
-            <TransactionsTable
-              type="deposits"
-              pageParams={depositsPageParams}
-              setPageParams={setDepositsPageParams}
-              transactions={depositsData.transformedDeposits}
-              loading={depositsLoading}
-              error={depositsError}
-            />
-          </Tab.Panel>
-          <Tab.Panel className="overflow-auto">
-            <div
-              className={twMerge(
-                'sticky h-2 rounded-tl-lg bg-white',
-                displayCctp ? 'rounded-tr-lg' : 'md:rounded-tr-lg'
-              )}
-            />
-            <TransactionsTable
-              type="withdrawals"
-              pageParams={withdrawalsPageParams}
-              setPageParams={setWithdrawalsPageParams}
-              transactions={withdrawalsData.transformedWithdrawals}
-              loading={withdrawalsLoading}
-              error={withdrawalsError}
-            />
-          </Tab.Panel>
-          {displayCctp && (
-            <Tab.Panel className="overflow-auto">
-              <div className="sticky h-2 rounded-tl-lg bg-white md:rounded-tr-lg" />
-              <TransactionsTableCctp />
-            </Tab.Panel>
+          <span className="text-xs md:text-base">Pending transactions</span>
+        </TabButton>
+        <TabButton
+          aria-label="show settled transactions"
+          className={twMerge(
+            roundedTabClasses,
+            'roundedTabLeft roundedTabRight'
           )}
-        </Tab.Group>
-      </div>
-    </div>
+        >
+          <span className="text-xs md:text-base">Settled transactions</span>
+        </TabButton>
+      </Tab.List>
+
+      <Tab.Panels className="h-full overflow-hidden">
+        <Tab.Panel className="h-full">
+          <TransactionHistoryTable
+            transactions={pendingTransactions}
+            loading={loading}
+            completed={completed}
+            error={error}
+            failedChainPairs={failedChainPairs}
+            resume={resume}
+            rowHeight={94}
+            rowHeightCustomDestinationAddress={130}
+            selectedTabIndex={0}
+            oldestTxTimeAgoString={oldestTxTimeAgoString}
+          />
+        </Tab.Panel>
+        <Tab.Panel className="h-full">
+          <TransactionHistoryTable
+            transactions={settledTransactions}
+            loading={loading}
+            completed={completed}
+            error={error}
+            failedChainPairs={failedChainPairs}
+            resume={resume}
+            rowHeight={85}
+            rowHeightCustomDestinationAddress={117}
+            selectedTabIndex={1}
+            oldestTxTimeAgoString={oldestTxTimeAgoString}
+          />
+        </Tab.Panel>
+      </Tab.Panels>
+    </Tab.Group>
   )
 }
