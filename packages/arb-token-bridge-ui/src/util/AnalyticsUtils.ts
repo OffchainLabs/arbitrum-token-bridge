@@ -4,19 +4,12 @@ import {
   ExploreArbitrumDeFiProjectName,
   ExploreArbitrumNFTProjectName
 } from '../components/MainContent/ExploreArbitrumContent'
-import {
-  NonCanonicalTokenAddresses,
-  NonCanonicalTokenNames,
-  NonCanonicalTokenSupportedBridges,
-  FastBridgeNames,
-  SpecialTokenSymbol
-} from './fastBridges'
+import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 import { getNetworkName } from './networks'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
 type FastBridgeName = `${FastBridgeNames}`
-type NonCanonicalTokenName = `${NonCanonicalTokenNames}`
 
 const AnalyticsNetworkNames = ['Arbitrum One', 'Arbitrum Nova'] as const
 type AllNetworkNames = ReturnType<typeof getNetworkName>
@@ -61,13 +54,10 @@ type AnalyticsEventMap = {
   'Explore: DeFi Project Click': { project: ExploreArbitrumDeFiProjectName }
   'Explore: NFT Project Click': { project: ExploreArbitrumNFTProjectName }
   'Fast Bridge Click': {
-    bridge:
-      | FastBridgeName
-      | NonCanonicalTokenSupportedBridges<NonCanonicalTokenAddresses.FRAX>
-    tokenSymbol?: NonCanonicalTokenName | SpecialTokenSymbol.USDC
+    bridge: FastBridgeName
+    tokenSymbol?: SpecialTokenSymbol.USDC
   }
-  'Use Arbitrum Bridge Click': { tokenSymbol: NonCanonicalTokenName | 'USDC' }
-  'Copy Bridge Link Click': { tokenSymbol: NonCanonicalTokenName }
+  'Use Arbitrum Bridge Click': { tokenSymbol: 'USDC' }
   'Switch Network and Transfer': {
     type: 'Deposit' | 'Withdrawal'
     tokenSymbol?: string

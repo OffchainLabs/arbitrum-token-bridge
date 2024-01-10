@@ -10,6 +10,7 @@ import {
   rpcURLs
 } from '../util/networks'
 import {
+  xai,
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
@@ -44,7 +45,7 @@ function createProviderWithCache(chainId: ChainId) {
   return provider
 }
 
-function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
+export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   const cachedProvider = getProviderForChainCache[chainId]
 
   if (typeof cachedProvider !== 'undefined') {
@@ -74,6 +75,7 @@ export function isSupportedChainId(
     arbitrumGoerli.id,
     arbitrumSepolia.id,
     stylusTestnet.id,
+    xai.id,
     xaiTestnet.id,
     arbitrumLocal.id,
     local.id,

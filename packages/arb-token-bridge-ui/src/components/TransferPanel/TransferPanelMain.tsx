@@ -11,6 +11,7 @@ import {
   ChainId,
   getExplorerUrl,
   getL2ChainIds,
+  getNetworkName,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -19,7 +20,7 @@ import {
   useDestinationAddressStore
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
-import { Dialog, useDialog } from '../common/Dialog'
+import { useDialog } from '../common/Dialog'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
@@ -58,7 +59,6 @@ import {
 } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import {
   useNativeCurrency,
   NativeCurrencyErc20
@@ -67,6 +67,10 @@ import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import {
+  TransferDisabledDialog,
+  useTransferDisabledDialogStore
+} from './TransferDisabledDialog'
 
 enum NetworkType {
   l1 = 'l1',
@@ -165,11 +169,12 @@ function NetworkContainer({
       isArbitrum,
       isArbitrumNova,
       isOrbitChain,
+      isXai,
       isXaiTestnet,
       isStylusTestnet
     } = isNetwork(network.id)
 
-    if (isXaiTestnet) {
+    if (isXaiTestnet || isXai) {
       return {
         backgroundImage: `url('/images/XaiLogo.svg')`,
         backgroundClassName: 'bg-xai-dark'
@@ -373,10 +378,9 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const { childChainProvider, parentChain, parentChainProvider } =
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
 
-  const { layer } = useChainLayers()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
     networks.destinationChain.id
   )
@@ -518,7 +522,8 @@ export function TransferPanelMain({
   }, [erc20L1Balances, erc20L2Balances, selectedToken])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
-  const [withdrawOnlyDialogProps, openWithdrawOnlyDialog] = useDialog()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
   const [oneNovaTransferDialogProps, openOneNovaTransferDialog] = useDialog()
   const [
     oneNovaTransferDestinationNetworkId,
@@ -728,14 +733,14 @@ export function TransferPanelMain({
             <span>This token can&apos;t be bridged over.</span>{' '}
             <button
               className="arb-hover underline"
-              onClick={openWithdrawOnlyDialog}
+              onClick={openTransferDisabledDialog}
             >
               Learn more.
             </button>
           </>
         )
     }
-  }, [errorMessage, openWithdrawOnlyDialog])
+  }, [errorMessage, openTransferDisabledDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
     setNetworks({
@@ -1054,7 +1059,8 @@ export function TransferPanelMain({
 
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
-              Make sure you have ETH in your {layer} wallet, you’ll need it to
+              Make sure you have {nativeCurrency.symbol} in your{' '}
+              {getNetworkName(childChain.id)} account, as you’ll need it to
               power transactions.
               <br />
               <ExternalLink
@@ -1145,19 +1151,7 @@ export function TransferPanelMain({
       </NetworkContainer>
 
       <AdvancedSettings />
-      <Dialog
-        closeable
-        title="Token not supported"
-        cancelButtonProps={{ className: 'hidden' }}
-        actionButtonTitle="Close"
-        {...withdrawOnlyDialogProps}
-        className="md:max-w-[628px]"
-      >
-        <p>
-          The Arbitrum bridge does not currently support {selectedToken?.symbol}
-          , please ask the {selectedToken?.symbol} team for more info.
-        </p>
-      </Dialog>
+      <TransferDisabledDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
         onClose={() => setOneNovaTransferDestinationNetworkId(null)}

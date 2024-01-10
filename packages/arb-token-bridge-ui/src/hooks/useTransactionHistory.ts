@@ -117,6 +117,10 @@ const multiChainFetchList: ChainPair[] = [
   },
   // Orbit
   {
+    parentChain: ChainId.ArbitrumOne,
+    chain: ChainId.Xai
+  },
+  {
     parentChain: ChainId.ArbitrumGoerli,
     chain: ChainId.XaiTestnet
   },
@@ -207,7 +211,7 @@ function getTxIdFromTransaction(tx: Transfer) {
   if (isTokenWithdrawal(tx)) {
     return tx.txHash
   }
-  return tx.l2TxHash
+  return tx.l2TxHash ?? tx.transactionHash
 }
 
 /**
@@ -670,7 +674,7 @@ export const useTransactionHistory = (
       }
 
       // ETH deposit
-      if (tx.asset === AssetType.ETH) {
+      if (tx.assetType === AssetType.ETH) {
         const updatedEthDeposit = await getUpdatedEthDeposit(tx)
         updateCachedTransaction(updatedEthDeposit)
         return

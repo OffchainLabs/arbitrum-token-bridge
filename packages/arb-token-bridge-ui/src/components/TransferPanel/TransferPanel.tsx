@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
-import { isAddress } from 'ethers/lib/utils'
 import { useLatest } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
@@ -23,12 +22,10 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
-import { DepositConfirmationDialog } from './DepositConfirmationDialog'
 import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
-import { NonCanonicalTokensBridgeInfo } from '../../util/fastBridges'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   getL2ERC20Address,
@@ -68,7 +65,8 @@ import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
-  onTxError
+  onTxError,
+  useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
@@ -102,20 +100,6 @@ const isAllowedL2 = async ({
   )
 }
 
-function useTokenFromSearchParams(): string | undefined {
-  const [{ token: tokenFromSearchParams }] = useArbQueryParams()
-
-  if (!tokenFromSearchParams) {
-    return undefined
-  }
-
-  if (!isAddress(tokenFromSearchParams)) {
-    return undefined
-  }
-
-  return tokenFromSearchParams
-}
-
 const networkConnectionWarningToast = () =>
   warningToast(
     <>
@@ -128,7 +112,8 @@ const networkConnectionWarningToast = () =>
   )
 
 export function TransferPanel() {
-  const tokenFromSearchParams = useTokenFromSearchParams()
+  const { tokenFromSearchParams, setTokenQueryParam } =
+    useTokenFromSearchParams()
 
   const [tokenDepositCheckDialogType, setTokenDepositCheckDialogType] =
     useState<TokenDepositCheckDialogType>('new-token')
@@ -197,13 +182,12 @@ export function TransferPanel() {
     sourceChainId: latestNetworks.current.sourceChain.id
   })
 
+  const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
   const [customFeeTokenApprovalDialogProps, openCustomFeeTokenApprovalDialog] =
     useDialog()
   const [withdrawalConfirmationDialogProps, openWithdrawalConfirmationDialog] =
-    useDialog()
-  const [depositConfirmationDialogProps, openDepositConfirmationDialog] =
     useDialog()
   const [
     usdcWithdrawalConfirmationDialogProps,
@@ -230,6 +214,12 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  function closeWithResetTokenImportDialog() {
+    setTokenQueryParam(undefined)
+    setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
+    tokenImportDialogProps.onClose(false)
+  }
+
   function clearAmountInput() {
     // clear amount input on transfer panel
     setAmount('')
@@ -237,8 +227,7 @@ export function TransferPanel() {
 
   useImportTokenModal({
     importTokenModalStatus,
-    connectionState,
-    setImportTokenModalStatus
+    connectionState
   })
 
   const ethL1BalanceFloat = useMemo(
@@ -307,15 +296,6 @@ export function TransferPanel() {
 
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
-
-  const isNonCanonicalToken = useMemo(() => {
-    if (selectedToken) {
-      return Object.keys(NonCanonicalTokensBridgeInfo)
-        .map(key => key.toLowerCase())
-        .includes(selectedToken.address.toLowerCase())
-    }
-    return false
-  }, [selectedToken])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -833,15 +813,6 @@ export function TransferPanel() {
             return
           }
 
-          if (isNonCanonicalToken) {
-            const waitForInput = openDepositConfirmationDialog()
-            const [confirmed] = await waitForInput()
-
-            if (!confirmed) {
-              return
-            }
-          }
-
           if (nativeCurrency.isCustom) {
             const approved = await approveCustomFeeTokenForGateway()
 
@@ -1181,11 +1152,6 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <DepositConfirmationDialog
-        {...depositConfirmationDialogProps}
-        amount={amount}
-      />
-
       <USDCWithdrawalConfirmationDialog
         {...usdcWithdrawalConfirmationDialogProps}
         amount={amount}
@@ -1305,10 +1271,8 @@ export function TransferPanel() {
 
         {typeof tokenFromSearchParams !== 'undefined' && (
           <TokenImportDialog
-            isOpen={importTokenModalStatus === ImportTokenModalStatus.OPEN}
-            onClose={() =>
-              setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
-            }
+            {...tokenImportDialogProps}
+            onClose={closeWithResetTokenImportDialog}
             tokenAddress={tokenFromSearchParams}
           />
         )}

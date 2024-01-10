@@ -9,10 +9,15 @@ export function useStyles() {
   const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const depositButtonColorClassName = useMemo(() => {
-    const { isArbitrumNova, isXaiTestnet, isStylusTestnet, isOrbitChain } =
-      isNetwork(childChain.id)
+    const {
+      isArbitrumNova,
+      isXaiTestnet,
+      isXai,
+      isStylusTestnet,
+      isOrbitChain
+    } = isNetwork(childChain.id)
 
-    if (isXaiTestnet) {
+    if (isXaiTestnet || isXai) {
       return 'bg-xai-dark'
     }
 

@@ -40,6 +40,10 @@ import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useTokenFromSearchParams } from './TransferPanelUtils'
 
 enum Panel {
   TOKENS,
@@ -465,17 +469,12 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({
-  close,
-  onImportToken
-}: {
-  close: () => void
-  onImportToken: (address: string) => void
-}) {
+export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens },
+      isDepositMode
     }
   } = useAppState()
   const {
@@ -485,6 +484,9 @@ export function TokenSearch({
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -531,7 +533,7 @@ export function TokenSearch({
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        onImportToken(_token.address)
+        setTokenQueryParam(_token.address)
         return
       }
 
@@ -550,6 +552,17 @@ export function TokenSearch({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
+      }
+
+      // do not allow import of withdraw-only tokens at deposit mode
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
+        return
       }
     } catch (error: any) {
       console.warn(error)

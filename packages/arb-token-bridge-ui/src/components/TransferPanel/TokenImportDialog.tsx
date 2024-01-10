@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
+import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useActions, useAppState } from '../../state'
@@ -25,6 +26,9 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 
 enum ImportStatus {
   LOADING,
@@ -44,10 +48,25 @@ type TokenListSearchResult =
       status: ImportStatus
     }
 
-export type TokenImportDialogProps = UseDialogProps & { tokenAddress: string }
+type TokenImportDialogStore = {
+  isOpen: boolean
+  openDialog: () => void
+  closeDialog: () => void
+}
+
+export const useTokenImportDialogStore = create<TokenImportDialogStore>(
+  set => ({
+    isOpen: false,
+    openDialog: () => set({ isOpen: true }),
+    closeDialog: () => set({ isOpen: false })
+  })
+)
+
+type TokenImportDialogProps = Omit<UseDialogProps, 'isOpen'> & {
+  tokenAddress: string
+}
 
 export function TokenImportDialog({
-  isOpen,
   onClose,
   tokenAddress
 }: TokenImportDialogProps): JSX.Element {
@@ -55,11 +74,12 @@ export function TokenImportDialog({
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
+      isDepositMode,
       selectedToken
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChain, parentChainProvider } =
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const actions = useActions()
 
@@ -74,6 +94,9 @@ export function TokenImportDialog({
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
   const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+  const { isOpen } = useTokenImportDialogStore()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
@@ -270,6 +293,17 @@ export function TokenImportDialog({
       storeNewToken(l1Address).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
+    }
+
+    // do not allow import of withdraw-only tokens at deposit mode
+    if (isDepositMode && isWithdrawOnlyToken(l1Address, childChain.id)) {
+      openTransferDisabledDialog()
+      return
+    }
+
+    if (isTransferDisabledToken(l1Address, childChain.id)) {
+      openTransferDisabledDialog()
+      return
     }
   }
 
