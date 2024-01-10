@@ -11,7 +11,8 @@ const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
-  'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json'
+  'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
+  'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_uniswap_labs.json'
 ]
 
 // denylisted destination addresses in order: One, Nova, Goerli
