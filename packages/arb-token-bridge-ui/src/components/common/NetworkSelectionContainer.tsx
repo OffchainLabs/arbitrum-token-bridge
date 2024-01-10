@@ -1,7 +1,6 @@
 import { Popover, Transition } from '@headlessui/react'
 import Image from 'next/image'
 import { useCallback } from 'react'
-import { useNetwork } from 'wagmi'
 import { useWindowSize } from 'react-use'
 
 import {
@@ -12,27 +11,26 @@ import {
   isNetwork
 } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export const NetworkSelectionContainer = ({
   children
 }: {
   children: React.ReactNode
 }) => {
-  const { chain } = useNetwork()
+  const [{ sourceChain }, setNetworks] = useNetworks()
   const [isTestnetMode] = useIsTestnetMode()
 
   const windowSize = useWindowSize()
   const isLgScreen = windowSize.width >= 1024
 
   const supportedNetworks = getSupportedNetworks(
-    chain?.id,
+    sourceChain?.id,
     !!isTestnetMode
-  ).filter(chainId => chainId !== chain?.id)
+  ).filter(chainId => chainId !== sourceChain?.id)
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
 
   const l1Networks = supportedNetworks.filter(
     network => isNetwork(network).isEthereumMainnetOrTestnet
@@ -66,10 +64,10 @@ export const NetworkSelectionContainer = ({
           | undefined
       ) => void
     ) => {
-      switchNetwork?.(Number(chainId))
+      setNetworks({ sourceChainId: chainId })
       close?.() //close the popover after option-click
     },
-    [switchNetwork]
+    [setNetworks]
   )
 
   return (
