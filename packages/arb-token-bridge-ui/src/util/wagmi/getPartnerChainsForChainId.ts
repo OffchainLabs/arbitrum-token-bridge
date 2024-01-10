@@ -13,6 +13,7 @@ import {
   arbitrumSepolia,
   chainToWagmiChain,
   stylusTestnet,
+  xai,
   xaiTestnet,
   localL1Network,
   localL2Network
@@ -44,10 +45,13 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumSepolia]
 
     case ChainId.ArbitrumOne:
-      return [mainnet, ...customArbitrumOneChains]
+      return [mainnet, xai, ...customArbitrumOneChains]
 
     case ChainId.ArbitrumNova:
       return [mainnet, ...customArbitrumNovaChains]
+
+    case ChainId.Xai:
+      return [arbitrumOne]
 
     case ChainId.ArbitrumGoerli:
       return [goerli, xaiTestnet, ...customArbitrumGoerliChains]
