@@ -683,6 +683,31 @@ export function TransferPanel() {
     }
   }
 
+  const depositRequiresChainSwitch = () => {
+    const isParentChainEthereum = isNetwork(
+      l1Network.id
+    ).isEthereumMainnetOrTestnet
+
+    const { isOrbitChain } = isNetwork(l2Network.id)
+
+    return (
+      isDepositMode &&
+      ((isParentChainEthereum && isConnectedToArbitrum.current) || isOrbitChain)
+    )
+  }
+
+  const withdrawalRequiresChainSwitch = () => {
+    const isConnectedToEthereum =
+      !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+
+    const { isOrbitChain } = isNetwork(l2Network.id)
+
+    return (
+      !isDepositMode &&
+      (isConnectedToEthereum || (isConnectedToArbitrum.current && isOrbitChain))
+    )
+  }
+
   const transfer = async () => {
     const signerUndefinedError = 'Signer is undefined'
 
@@ -743,26 +768,7 @@ export function TransferPanel() {
         )
       }
 
-      const isParentChainEthereum = isNetwork(
-        l1Network.id
-      ).isEthereumMainnetOrTestnet
-
-      const isConnectedToEthereum =
-        !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-      const { isOrbitChain } = isNetwork(l2Network.id)
-
-      const depositChainMismatch =
-        isDepositMode &&
-        ((isParentChainEthereum && isConnectedToArbitrum.current) ||
-          isOrbitChain)
-
-      const withdrawalChainMismatch =
-        !isDepositMode &&
-        (isConnectedToEthereum ||
-          (isConnectedToArbitrum.current && isOrbitChain))
-
-      if (depositChainMismatch || withdrawalChainMismatch) {
+      if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
         if (shouldTrackAnalytics(l2NetworkName)) {
           trackEvent('Switch Network and Transfer', {
             type: 'Deposit', //todo: change this
@@ -780,9 +786,10 @@ export function TransferPanel() {
 
         await switchNetworkAsync?.(switchTargetChainId)
 
+        // keep checking till we know the connected chain-pair are correct for transfer
         while (
-          (isConnectedToArbitrum.current && isParentChainEthereum) ||
-          isConnectedToOrbitChain.current ||
+          depositRequiresChainSwitch() ||
+          withdrawalRequiresChainSwitch() ||
           !latestEth.current ||
           !arbTokenBridgeLoaded
         ) {
@@ -815,8 +822,12 @@ export function TransferPanel() {
         return networkConnectionWarningToast()
       }
 
-      const sourceChainProvider = isDepositMode ? l1Provider : l2Provider
-      const destinationChainProvider = isDepositMode ? l2Provider : l1Provider
+      const sourceChainProvider = isDepositMode
+        ? latestNetworksAndSigners.current.l1.provider
+        : latestNetworksAndSigners.current.l2.provider
+      const destinationChainProvider = isDepositMode
+        ? latestNetworksAndSigners.current.l2.provider
+        : latestNetworksAndSigners.current.l1.provider
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address
