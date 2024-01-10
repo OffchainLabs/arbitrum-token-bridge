@@ -249,6 +249,19 @@ export function NetworksAndSignersProvider(
       return
     }
 
+    setResult({
+      status: UseNetworksAndSignersStatus.CONNECTED,
+      l1: {
+        network: getWagmiChain(11155111),
+        provider: new StaticJsonRpcProvider(rpcURLs[11155111])
+      },
+      l2: {
+        network: getWagmiChain(23011913),
+        provider: new StaticJsonRpcProvider(rpcURLs[23011913])
+      }
+    })
+    return
+
     /***
      * Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId.' Need to set 'preferredL2ChainId' to an Orbit chain.
      * Case 2: selectedChainId is defined but not supported by provider => reset query params -> case 1

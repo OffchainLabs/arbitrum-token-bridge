@@ -41,9 +41,12 @@ export const getBridgeTransferProperties = async ({
 
   const isNativeCurrencyTransfer = !sourceChainErc20Address
 
+  const isTeleport = isBaseChainEthereum && isDestinationChainOrbit
+
   return {
     isDeposit,
-    isNativeCurrencyTransfer
+    isNativeCurrencyTransfer,
+    isTeleport
   }
 }
 

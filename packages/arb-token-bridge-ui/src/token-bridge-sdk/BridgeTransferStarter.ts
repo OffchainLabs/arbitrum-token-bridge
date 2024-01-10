@@ -3,7 +3,7 @@ import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
 
 type Asset = 'erc20' | 'eth'
-type TxType = 'deposit' | 'withdrawal'
+type TxType = 'deposit' | 'withdrawal' | 'teleport'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 

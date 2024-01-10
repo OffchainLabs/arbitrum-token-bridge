@@ -663,11 +663,8 @@ export function TransferPanel() {
       l1Network.id
     ).isEthereumMainnetOrTestnet
 
-    const { isOrbitChain } = isNetwork(l2Network.id)
-
     return (
-      isDepositMode &&
-      ((isParentChainEthereum && isConnectedToArbitrum.current) || isOrbitChain)
+      isDepositMode && isParentChainEthereum && isConnectedToArbitrum.current
     )
   }
 
@@ -713,17 +710,17 @@ export function TransferPanel() {
       return
     }
 
-    // Make sure Ethereum and/or Orbit chains are not selected as a pair.
-    const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
-      id => {
-        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(id)
-        return isEthereumMainnetOrTestnet || isOrbitChain
-      }
-    )
-    if (ethereumOrOrbitPairsSelected) {
-      console.error('Cannot transfer funds between L1 and/or Orbit chains.')
-      return
-    }
+    // // Make sure Ethereum and/or Orbit chains are not selected as a pair.
+    // const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
+    //   id => {
+    //     const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(id)
+    //     return isEthereumMainnetOrTestnet || isOrbitChain
+    //   }
+    // )
+    // if (ethereumOrOrbitPairsSelected) {
+    //   console.error('Cannot transfer funds between L1 and/or Orbit chains.')
+    //   return
+    // }
 
     const l2NetworkName = getNetworkName(l2Network.id)
 

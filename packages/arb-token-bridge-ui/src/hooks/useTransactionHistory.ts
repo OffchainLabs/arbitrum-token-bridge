@@ -38,6 +38,7 @@ import {
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
+  getUpdatedTeleportTransfer,
   getUpdatedTokenDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
@@ -657,6 +658,12 @@ export const useTransactionHistory = (
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
+        return
+      }
+
+      if (tx.isTeleport) {
+        const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
+        updateCachedTransaction(updatedTeleportTransfer)
         return
       }
 

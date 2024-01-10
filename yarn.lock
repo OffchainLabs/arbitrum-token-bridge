@@ -39,10 +39,9 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.1.13-orbit-custom-fee-token.1":
-  version "3.1.13-orbit-custom-fee-token.1"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.1.13-orbit-custom-fee-token.1.tgz#c10e26c71447eb8c9d0cb1c6efe26c57841b18b7"
-  integrity sha512-DkKk92Ga1lAsn0FZ+6/HAMcPHdmdAvCalZYfWhyHxTQXYdAWDA9Pz0gRi1KaOBPV2eQn7t64Cluz9Z3LU+7Bog==
+"@arbitrum/sdk@/Users/dewanshparashar/Documents/GitHub/arbitrum-sdk/arbitrum-sdk-v3.1.13-teleporter-v1.0.tgz":
+  version "3.1.13-teleporter-v1.0"
+  resolved "/Users/dewanshparashar/Documents/GitHub/arbitrum-sdk/arbitrum-sdk-v3.1.13-teleporter-v1.0.tgz#f90895c1b50a91fa8bef0c4cb13e617312d156a4"
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -1295,6 +1294,11 @@
   dependencies:
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
+
+"@ledgerhq/connect-kit-loader@^1.0.1":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/connect-kit-loader/-/connect-kit-loader-1.1.8.tgz#6cc32191660dd9d6e8f89047af09b0f201e30190"
+  integrity sha512-mDJsOucVW8m3Lk2fdQst+P74SgiKebvq1iBk4sXLbADQOwhL9bWGaArvO+tW7jPJZwEfSPWBdHcHoYi11XAwZw==
 
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"

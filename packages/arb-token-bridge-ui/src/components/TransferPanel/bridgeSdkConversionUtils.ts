@@ -37,7 +37,8 @@ export const convertBridgeSdkToMergedTransaction = ({
   amount
 }: SdkToUiConversionProps): MergedTransaction => {
   const { transferType, sourceChainTransaction: tx } = bridgeTransfer
-  const isDeposit = transferType.includes('deposit')
+  const isTeleport = transferType.includes('teleport')
+  const isDeposit = transferType.includes('deposit') || isTeleport
 
   return {
     sender: walletAddress!,
@@ -56,6 +57,7 @@ export const convertBridgeSdkToMergedTransaction = ({
     depositStatus: isDeposit ? DepositStatus.L1_PENDING : undefined,
     uniqueId: null,
     isWithdrawal: !isDeposit,
+    isTeleport,
     blockNum: null,
     tokenAddress: selectedToken ? selectedToken.address : undefined,
     parentChainId: Number(l1Network.id),

@@ -454,6 +454,65 @@ export async function getUpdatedCctpTransfer(
   return tx
 }
 
+export async function getUpdatedTeleportTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  // if (!isTxPending(tx) || !tx.isCctp) {
+  //   return tx
+  // }
+
+  // const receipt = await getTxReceipt(tx)
+  // const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+  //   tx.parentChainId
+  // )
+  // const blockTime = getBlockTime(tx.parentChainId)
+
+  // const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
+
+  // if (receipt.status === 0) {
+  //   return {
+  //     ...txWithTxId,
+  //     status: 'Failure'
+  //   }
+  // }
+  // if (tx.cctpData?.receiveMessageTransactionHash) {
+  //   return {
+  //     ...txWithTxId,
+  //     status: 'Executed'
+  //   }
+  // }
+  // if (receipt.blockNumber && !tx.blockNum) {
+  //   // If blockNumber was never set (for example, network switch just after the deposit)
+  //   const { messageBytes, attestationHash } =
+  //     getAttestationHashAndMessageFromReceipt(receipt)
+  //   return {
+  //     ...txWithTxId,
+  //     blockNum: receipt.blockNumber,
+  //     cctpData: {
+  //       ...tx.cctpData,
+  //       messageBytes,
+  //       attestationHash
+  //     }
+  //   }
+  // }
+  // const isConfirmed =
+  //   tx.createdAt &&
+  //   dayjs().diff(tx.createdAt, 'second') >
+  //     requiredL1BlocksBeforeConfirmation * blockTime
+  // if (
+  //   // If transaction claim was set to failure, don't reset to Confirmed
+  //   tx.status !== 'Failure' &&
+  //   isConfirmed
+  // ) {
+  //   return {
+  //     ...txWithTxId,
+  //     status: 'Confirmed'
+  //   }
+  // }
+
+  return tx
+}
+
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
   if (isDeposit(tx)) {
     switch (tx.depositStatus) {

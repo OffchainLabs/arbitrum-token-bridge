@@ -53,6 +53,7 @@ export interface MergedTransaction {
   value: string | null
   uniqueId: BigNumber | null
   isWithdrawal: boolean
+  isTeleport?: boolean
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
