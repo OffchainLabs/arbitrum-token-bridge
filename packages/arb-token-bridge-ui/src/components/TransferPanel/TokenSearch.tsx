@@ -555,12 +555,12 @@ export function TokenSearch({ close }: { close: () => void }) {
       }
 
       // do not allow import of withdraw-only tokens at deposit mode
-      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
 
-      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+      if (isTransferDisabledToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
