@@ -18,9 +18,9 @@ const transferDisabledTokens: { [chainId: number]: TransferDisabledToken[] } = {
 
 export function isTransferDisabledToken(
   erc20L1Address: string,
-  chainId: number
+  childChainId: number
 ) {
-  return (transferDisabledTokens[chainId] ?? [])
+  return (transferDisabledTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }
