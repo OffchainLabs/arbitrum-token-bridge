@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { ConnectorData, useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -127,26 +127,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { selectedToken } = app
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
-  const [networks, setNetworks] = useNetworks()
+  const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const { connector } = useAccount()
-
-  useEffect(() => {
-    function handleChainChange(newChain: ConnectorData<any>) {
-      if (newChain.chain && isSupportedChainId(newChain.chain?.id)) {
-        setNetworks({
-          sourceChainId: newChain.chain.id
-        })
-      }
-    }
-    connector?.addListener('change', handleChainChange)
-
-    return () => {
-      connector?.removeListener('change', handleChainChange)
-    }
-  }, [connector, setNetworks])
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
