@@ -796,10 +796,14 @@ export function TransferPanelMain({
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
     function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
-      const isSourceOrbitChain = isNetwork(networks.sourceChain.id).isOrbitChain
-      const isDestinationOrbitChain = isNetwork(
-        networks.destinationChain.id
-      ).isOrbitChain
+      const {
+        isOrbitChain: isSourceOrbitChain,
+        isArbitrumNova: isSourceArbitrumNova
+      } = isNetwork(networks.sourceChain.id)
+      const {
+        isOrbitChain: isDestinationOrbitChain,
+        isArbitrumNova: isDestinationArbitrumNova
+      } = isNetwork(networks.destinationChain.id)
       const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
       const options = getListboxOptionsFromL1Network(parentChain.id)
 
@@ -824,19 +828,11 @@ export function TransferPanelMain({
         }
 
         // Do not display Orbit chains for Nova
-        if (
-          isOrbitChain &&
-          isSourceChainList &&
-          isNetwork(to.id).isArbitrumNova
-        ) {
+        if (isOrbitChain && isSourceChainList && isDestinationArbitrumNova) {
           return false
         }
 
-        if (
-          isOrbitChain &&
-          isDestinationChainList &&
-          isNetwork(from.id).isArbitrumNova
-        ) {
+        if (isOrbitChain && isDestinationChainList && isSourceArbitrumNova) {
           return false
         }
 
