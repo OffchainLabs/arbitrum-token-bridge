@@ -33,6 +33,10 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
+import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
+import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useTokenFromSearchParams } from './TransferPanelUtils'
 
 const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -67,6 +71,10 @@ function TokenListsPanel() {
     }
 
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
+      if (!tokenList.isValid) {
+        return false
+      }
+
       // Don't show the Arbitrum Token token list, because it's special and can't be disabled
       if (tokenList.isArbitrumTokenTokenList) {
         return false
@@ -429,17 +437,12 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({
-  close,
-  onImportToken
-}: {
-  close: () => void
-  onImportToken: (address: string) => void
-}) {
+export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token, bridgeTokens },
+      isDepositMode
     }
   } = useAppState()
   const {
@@ -448,6 +451,9 @@ export function TokenSearch({
   const { l1, l2 } = useNetworksAndSigners()
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+  const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -492,7 +498,7 @@ export function TokenSearch({
 
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
-        onImportToken(_token.address)
+        setTokenQueryParam(_token.address)
         return
       }
 
@@ -511,6 +517,17 @@ export function TokenSearch({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
         })
+      }
+
+      // do not allow import of withdraw-only tokens at deposit mode
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+        openTransferDisabledDialog()
+        return
       }
     } catch (error: any) {
       console.warn(error)
