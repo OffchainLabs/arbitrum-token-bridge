@@ -11,6 +11,15 @@ export type WithdrawOnlyToken = {
 }
 
 const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
+  [ChainId.ArbitrumGoerli]: [
+    {
+      // this is purely for testing the UI
+      symbol: 'ZRX',
+      l2CustomAddr: '',
+      l1Address: '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165',
+      l2Address: '0xce7d45e033d5727eee28cba5df1f2a7c24750ca6'
+    }
+  ],
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -54,17 +63,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l1Address: '0x10010078a54396F62c96dF8532dc2B4847d47ED3',
       l2Address: '0x626195b5a8b5f865E3516201D6ac30ee1B46A6e9'
     },
-    // We comment this out because when user tries to deposit FRAX,
-    // we show a dialog to use a fast bridge (Celer) instead
-    // and the user can never make a deposit on our UI
-    // eventually we should do that to all other withdraw-only
-    // tokens as well
-    // {
-    //   symbol: 'FRAX',
-    //   l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
-    //   l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
-    //   l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
-    // },
+    {
+      symbol: 'FRAX',
+      l2CustomAddr: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
+      l1Address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+      l2Address: '0x7468a5d8E02245B00E8C0217fCE021C70Bc51305'
+    },
     {
       symbol: 'FXS',
       l2CustomAddr: '0x9d2F299715D94d8A7E6F5eaa8E654E8c74a988A7',
@@ -130,11 +134,22 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x3082CC23568eA640225c2467653dB90e9250AaA0',
       l1Address: '0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893',
       l2Address: '0xa4431f62db9955bfd056c30e5ae703bf0d0eaec8'
+    },
+    {
+      symbol: 'GSWIFT',
+      l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
+      l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
     }
   ],
   [ChainId.ArbitrumNova]: []
 }
 
+/**
+ *
+ * @param erc20L1Address
+ * @param chainId - Arbitrum chain id
+ */
 export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
   return (withdrawOnlyTokens[chainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
