@@ -797,9 +797,21 @@ export function TransferPanel() {
       const l1ChainEqualsConnectedChain =
         l1ChainID && connectedChainID && l1ChainID === connectedChainID
 
-      if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
+      const l2ChainID = latestNetworksAndSigners.current.l2.network.id
+
+      const depositNetworkConnectionWarning =
+        isDepositMode &&
+        (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current)
+      const withdrawalNetworkConnectionWarning =
+        !isDepositMode &&
+        !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
+
+      if (
+        depositNetworkConnectionWarning ||
+        withdrawalNetworkConnectionWarning
+      ) {
         // Deposit is invalid if the connected chain doesn't match L1...
-        // ...or if connected to an Orbit chain, as it can't make deposits.
+        // ...or if connected to an Orbit chain, as it can't make deposits. .. and same for withdrawals: todo: make the comment better
         return networkConnectionWarningToast()
       }
 
