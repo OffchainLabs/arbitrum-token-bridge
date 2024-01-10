@@ -54,6 +54,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
+    const parentChainBlockTimestamp = (
+      await this.sourceChainProvider.getBlock('latest')
+    ).timestamp
+
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
       from: address
@@ -73,7 +77,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
+      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
       destinationChainProvider: this.destinationChainProvider
     }
   }

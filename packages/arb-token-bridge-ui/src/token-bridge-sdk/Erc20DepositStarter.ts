@@ -15,8 +15,8 @@ import {
   fetchErc20L1GatewayAddress
 } from '../util/TokenUtils'
 import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
-import { getAddressFromSigner } from './utils'
-import { constants } from 'ethers'
+import { getAddressFromSigner, percentIncrease } from './utils'
+import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
@@ -129,25 +129,39 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
+    const parentChainBlockTimestamp = (
+      await this.sourceChainProvider.getBlock('latest')
+    ).timestamp
+
     const depositRequest = await erc20Bridger.getDepositRequest({
       l1Provider: this.sourceChainProvider,
       l2Provider: this.destinationChainProvider,
       from: address,
       erc20L1Address: tokenAddress,
       destinationAddress,
-      amount
+      amount,
+      retryableGasOverrides: {
+        // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+        // the 30% gas limit increase should cover the difference
+        gasLimit: { percentIncrease: BigNumber.from(30) }
+      }
     })
+
+    const gasLimit = await this.sourceChainProvider.estimateGas(
+      depositRequest.txRequest
+    )
 
     const tx = await erc20Bridger.deposit({
       ...depositRequest,
-      l1Signer: signer
+      l1Signer: signer,
+      overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
+      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
       destinationChainProvider: this.destinationChainProvider
     }
   }

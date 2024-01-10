@@ -137,8 +137,6 @@ export function TransferPanel() {
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner()
-
   const { data: l1Signer } = useSigner({
     chainId: l1Network.id
   })
@@ -732,7 +730,7 @@ export function TransferPanel() {
     setTransferring(true)
 
     try {
-      if (!signer) {
+      if ((isDepositMode && !l1Signer) || (!isDepositMode && !l2Signer)) {
         throw signerUndefinedError
       }
 
@@ -748,15 +746,26 @@ export function TransferPanel() {
       const isParentChainEthereum = isNetwork(
         l1Network.id
       ).isEthereumMainnetOrTestnet
-      // Only switch to L1 if the selected L1 network is Ethereum.
-      // Or if connected to an Orbit chain as it can't make deposits.
-      if (
-        (isConnectedToArbitrum.current && isParentChainEthereum) ||
-        isConnectedToOrbitChain.current
-      ) {
+
+      const isConnectedToEthereum =
+        !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+
+      const { isOrbitChain } = isNetwork(l2Network.id)
+
+      const depositChainMismatch =
+        isDepositMode &&
+        ((isParentChainEthereum && isConnectedToArbitrum.current) ||
+          isOrbitChain)
+
+      const withdrawalChainMismatch =
+        !isDepositMode &&
+        (isConnectedToEthereum ||
+          (isConnectedToArbitrum.current && isOrbitChain))
+
+      if (depositChainMismatch || withdrawalChainMismatch) {
         if (shouldTrackAnalytics(l2NetworkName)) {
           trackEvent('Switch Network and Transfer', {
-            type: 'Deposit',
+            type: 'Deposit', //todo: change this
             tokenSymbol: selectedToken?.symbol,
             assetType: selectedToken ? 'ERC-20' : 'ETH',
             accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -764,9 +773,12 @@ export function TransferPanel() {
             amount: Number(amount)
           })
         }
-        await switchNetworkAsync?.(
-          latestNetworksAndSigners.current.l1.network.id
-        )
+
+        const switchTargetChainId = isDepositMode
+          ? latestNetworksAndSigners.current.l1.network.id
+          : latestNetworksAndSigners.current.l2.network.id
+
+        await switchNetworkAsync?.(switchTargetChainId)
 
         while (
           (isConnectedToArbitrum.current && isParentChainEthereum) ||
@@ -796,6 +808,8 @@ export function TransferPanel() {
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address
+
+      const signer = isDepositMode ? l1Signer : l2Signer
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
         sourceChainProvider,
