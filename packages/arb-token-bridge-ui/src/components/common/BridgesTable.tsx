@@ -8,7 +8,6 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 
 import { ExternalLink } from './ExternalLink'
 import {
-  NonCanonicalTokenNames,
   FastBridgeInfo,
   FastBridgeNames,
   SpecialTokenSymbol
@@ -17,7 +16,7 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 
 export function BridgesTable(props: {
   bridgeList: FastBridgeInfo[]
-  selectedNonCanonicalToken?: NonCanonicalTokenNames | SpecialTokenSymbol.USDC
+  selectedNonCanonicalToken?: SpecialTokenSymbol.USDC
 }) {
   const [favorites, setFavorites] = useLocalStorage<string[]>(
     'arbitrum:bridge:favorite-fast-bridges',
