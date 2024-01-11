@@ -9,8 +9,6 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
 export const motionDivProps = {
@@ -30,31 +28,13 @@ export const motionDivProps = {
 }
 
 export function MainContent() {
-  const { address } = useAccount()
   const { closeTransactionHistoryPanel } = useAppContextActions()
-  const transactionHistoryProps = useTransactionHistory(address, {
-    runFetcher: true
-  })
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
 
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
-
-  const { transactions, updatePendingTransaction } = transactionHistoryProps
-
-  const pendingTransactions = useMemo(() => {
-    return transactions.filter(isTxPending)
-  }, [transactions])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      pendingTransactions.forEach(updatePendingTransaction)
-    }, 10_000)
-
-    return () => clearInterval(interval)
-  }, [pendingTransactions, updatePendingTransaction])
 
   return (
     <div className="flex w-full justify-center">
@@ -79,7 +59,7 @@ export function MainContent() {
         onClose={closeTransactionHistoryPanel}
         scrollable={false}
       >
-        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
+        <TransactionHistory />
       </SidePanel>
 
       {/* Settings panel */}

@@ -14,7 +14,7 @@
 
 */
 import React from 'react'
-import { NextAdapter } from 'next-query-params'
+import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
 import {
   BooleanParam,
@@ -169,7 +169,7 @@ export function ArbQueryParamProvider({
 }) {
   return (
     <QueryParamProvider
-      adapter={NextAdapter}
+      adapter={NextAdapterPages}
       options={{
         searchStringToObject: queryString.parse,
         objectToSearchString: queryString.stringify,

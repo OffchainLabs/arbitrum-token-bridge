@@ -1,9 +1,10 @@
 import dayjs from 'dayjs'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Tab } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
 
-import { UseTransactionHistoryResult } from '../../hooks/useTransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { TransactionHistoryTable } from './TransactionHistoryTable'
 import {
   isTxClaimable,
@@ -18,20 +19,31 @@ import { TabButton } from '../common/Tab'
 const roundedTabClasses =
   'roundedTab ui-not-selected:arb-hover relative flex flex-row flex-nowrap items-center gap-0.5 md:gap-2 rounded-tl-lg rounded-tr-lg px-2 md:px-4 py-2 text-base ui-selected:bg-white ui-not-selected:text-white justify-center md:justify-start grow md:grow-0'
 
-export const TransactionHistory = ({
-  props
-}: {
-  props: UseTransactionHistoryResult & { address: `0x${string}` | undefined }
-}) => {
+export const TransactionHistory = () => {
+  const { address } = useAccount()
   const {
     transactions,
-    address,
+    updatePendingTransaction,
     loading,
     completed,
     error,
     failedChainPairs,
     resume
-  } = props
+  } = useTransactionHistory(address, {
+    runFetcher: true
+  })
+
+  const _pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      _pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [_pendingTransactions, updatePendingTransaction])
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
