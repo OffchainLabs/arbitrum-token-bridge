@@ -51,6 +51,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -134,7 +135,12 @@ const multiChainFetchList: ChainPair[] = [
       parentChain: chain.partnerChainID,
       chain: chain.chainID
     }
-  })
+  }),
+  // Teleport
+  {
+    parentChain: ChainId.Sepolia,
+    chain: ChainId.StylusTestnet
+  }
 ]
 
 function isWithdrawalFromSubgraph(
@@ -661,7 +667,12 @@ export const useTransactionHistory = (
         return
       }
 
-      if (tx.isTeleport) {
+      if (
+        isTeleport({
+          sourceChainId: tx.parentChainId,
+          destinationChainId: tx.childChainId
+        })
+      ) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
         return

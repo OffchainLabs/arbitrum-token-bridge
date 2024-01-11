@@ -12,6 +12,7 @@ import {
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
+import { L1ToL2MessageWaitResult } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 export enum WhiteListState {
   VERIFYING,
@@ -53,7 +54,6 @@ export interface MergedTransaction {
   value: string | null
   uniqueId: BigNumber | null
   isWithdrawal: boolean
-  isTeleport?: boolean
   blockNum: number | null
   tokenAddress: string | null
   isCctp?: boolean
@@ -69,6 +69,11 @@ export interface MergedTransaction {
     messageBytes?: string | null
     receiveMessageTransactionHash?: `0x${string}` | null
     receiveMessageTimestamp?: number | null
+  }
+  teleportData?: {
+    l2Retryable: L1ToL2MessageWaitResult
+    l3Retryable: L1ToL2MessageWaitResult
+    completed: boolean
   }
 }
 

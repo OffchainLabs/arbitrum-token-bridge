@@ -1,6 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
+import { isTeleport } from './teleport'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -41,12 +42,10 @@ export const getBridgeTransferProperties = async ({
 
   const isNativeCurrencyTransfer = !sourceChainErc20Address
 
-  const isTeleport = isBaseChainEthereum && isDestinationChainOrbit
-
   return {
     isDeposit,
     isNativeCurrencyTransfer,
-    isTeleport
+    isTeleport: isTeleport({ sourceChainId, destinationChainId })
   }
 }
 

@@ -73,6 +73,7 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -946,7 +947,12 @@ export function TransferPanel() {
     // trackTransferPanelEvent(isDepositMode ? 'Deposit' : 'Withdraw')
 
     const { transferType, sourceChainTransaction } = bridgeTransfer
-    const isDeposit = transferType.includes('deposit')
+    const isDeposit =
+      transferType.includes('deposit') ||
+      isTeleport({
+        sourceChainId: l1Network.id,
+        destinationChainId: l2Network.id
+      })
 
     const uiCompatibleTransactionObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,

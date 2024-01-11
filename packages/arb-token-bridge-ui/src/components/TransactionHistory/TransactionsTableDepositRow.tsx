@@ -29,6 +29,8 @@ import { NetworkImage } from '../common/NetworkImage'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { isTxCompleted } from './helpers'
+import { getPartnerChainsForChainId } from '../../util/wagmi/getPartnerChainsForChainId'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
   const { parentLayer, layer } = useChainLayers()
@@ -179,6 +181,28 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
     return tx.isCctp && tx.cctpData?.receiveMessageTransactionHash
   })()
 
+  const isTeleportTx = isTeleport({
+    sourceChainId: tx.parentChainId,
+    destinationChainId: tx.childChainId
+  })
+
+  const l2ChainIdForTeleport =
+    (isTeleportTx &&
+      Number(getPartnerChainsForChainId(tx.childChainId)[0]?.id)) ||
+    undefined
+
+  const l2TxHashForTeleport = useMemo(() => {
+    if (!l2ChainIdForTeleport) return undefined
+
+    if (tx.teleportData?.l2Retryable) {
+      // @ts-ignore : receipt is not reachable in retryable object due to union types
+      return tx.teleportData?.l2Retryable?.l2TxReceipt
+        ?.transactionHash as string
+    }
+
+    return undefined
+  }, [tx, l2ChainIdForTeleport])
+
   return (
     <div className="flex flex-col space-y-3">
       <span
@@ -195,6 +219,29 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
           {shortenTxHash(tx.txId)}
         </ExternalLink>
       </span>
+
+      {isTeleportTx && l2ChainIdForTeleport && (
+        <span
+          className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
+          aria-label={`${parentLayer} Transaction Link`}
+        >
+          <span className="w-8 rounded-md pr-2 text-xs text-dark">Via</span>
+          <NetworkImage chainId={l2ChainIdForTeleport} />
+          <span className="pl-1">{getNetworkName(l2ChainIdForTeleport)}: </span>
+          {l2TxHashForTeleport ? (
+            <ExternalLink
+              href={`${getExplorerUrl(
+                l2ChainIdForTeleport
+              )}/tx/${l2TxHashForTeleport}`}
+              className="arb-hover text-blue-link"
+            >
+              {shortenTxHash(l2TxHashForTeleport)}
+            </ExternalLink>
+          ) : (
+            <>Pending</>
+          )}
+        </span>
+      )}
 
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"

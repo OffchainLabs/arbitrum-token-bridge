@@ -12,6 +12,7 @@ import { approveNativeCurrency } from './approveNativeCurrency'
 import { getAddressFromSigner } from './utils'
 import { BigNumber } from 'ethers'
 import { getProvider } from '../components/TransactionHistory/helpers'
+import { getL2ConfigForTeleport } from './teleport'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -56,8 +57,9 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     const l3Network = await getChain(this.destinationChainProvider)
 
     // get the intermediate L2 chain provider
-    const l2ChainId = l3Network.partnerChainID
-    const l2Provider = getProvider(l2ChainId)
+    const { l2Provider } = await getL2ConfigForTeleport({
+      destinationChainProvider: this.destinationChainProvider
+    })
 
     const l1l3Bridger = new EthL1L3Bridger(l3Network)
 
@@ -81,7 +83,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
-    //@ts-ignore: hardcode the gas limit until we have an sdk solution
+    //@ts-ignore: hardcode the gas limit until we have a solution in sdk
     depositRequest.txRequest.gasLimit = 1_000_000
 
     const tx = await l1l3Bridger.executeDepositRequest(depositRequest, signer)

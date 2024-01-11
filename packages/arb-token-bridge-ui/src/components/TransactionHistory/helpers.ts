@@ -22,6 +22,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { getTeleportStatusDataFromTxId } from '@/token-bridge-sdk/teleport'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -457,60 +458,44 @@ export async function getUpdatedCctpTransfer(
 export async function getUpdatedTeleportTransfer(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  // if (!isTxPending(tx) || !tx.isCctp) {
-  //   return tx
-  // }
+  if (!isTxPending(tx)) {
+    return tx
+  }
 
-  // const receipt = await getTxReceipt(tx)
-  // const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
-  //   tx.parentChainId
-  // )
-  // const blockTime = getBlockTime(tx.parentChainId)
+  const { l2Retryable, l3Retryable, completed } =
+    await getTeleportStatusDataFromTxId({
+      txId: tx.txId,
+      sourceChainProvider: getProvider(tx.parentChainId),
+      destinationChainProvider: getProvider(tx.childChainId)
+    })
 
-  // const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
+  // @ts-ignore - check why l2TxReceipt is not in the type
+  const l3TxId = l3Retryable.l2TxReceipt?.transactionHash
 
-  // if (receipt.status === 0) {
-  //   return {
-  //     ...txWithTxId,
-  //     status: 'Failure'
-  //   }
-  // }
-  // if (tx.cctpData?.receiveMessageTransactionHash) {
-  //   return {
-  //     ...txWithTxId,
-  //     status: 'Executed'
-  //   }
-  // }
-  // if (receipt.blockNumber && !tx.blockNum) {
-  //   // If blockNumber was never set (for example, network switch just after the deposit)
-  //   const { messageBytes, attestationHash } =
-  //     getAttestationHashAndMessageFromReceipt(receipt)
-  //   return {
-  //     ...txWithTxId,
-  //     blockNum: receipt.blockNumber,
-  //     cctpData: {
-  //       ...tx.cctpData,
-  //       messageBytes,
-  //       attestationHash
-  //     }
-  //   }
-  // }
-  // const isConfirmed =
-  //   tx.createdAt &&
-  //   dayjs().diff(tx.createdAt, 'second') >
-  //     requiredL1BlocksBeforeConfirmation * blockTime
-  // if (
-  //   // If transaction claim was set to failure, don't reset to Confirmed
-  //   tx.status !== 'Failure' &&
-  //   isConfirmed
-  // ) {
-  //   return {
-  //     ...txWithTxId,
-  //     status: 'Confirmed'
-  //   }
-  // }
+  const newDeposit: MergedTransaction = {
+    ...tx,
+    status: completed ? 'success' : tx.status,
+    resolvedAt: completed ? dayjs().valueOf() : null,
 
-  return tx
+    // for now feeding the L3 retryable data inside the deposit status object
+    // ideally for teleport it should have 2 separate message-tracker objects
+    l1ToL2MsgData: {
+      status: l3Retryable
+        ? l3Retryable.status
+        : l2Retryable
+        ? l2Retryable.status
+        : L1ToL2MessageStatus.NOT_YET_CREATED,
+      l2TxID: l3TxId,
+      fetchingUpdate: false,
+      retryableCreationTxID: l3TxId
+    }
+  }
+
+  return {
+    ...newDeposit,
+    depositStatus: getDepositStatus(newDeposit),
+    teleportData: { l2Retryable, l3Retryable, completed }
+  }
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {

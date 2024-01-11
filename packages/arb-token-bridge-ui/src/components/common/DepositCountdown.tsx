@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { isNetwork } from '../../util/networks'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
@@ -15,14 +16,22 @@ function getMinutesRemainingText(minutesRemaining: number): string {
   return `~${minutesRemaining} mins remaining`
 }
 
-function getEstimatedDepositDurationInMinutes(
-  parentChainId: number | undefined
-) {
+function getEstimatedDepositDurationInMinutes(tx: MergedTransaction) {
+  const { parentChainId, childChainId } = tx
   if (!parentChainId) {
     return 15
   }
 
   const { isEthereumMainnetOrTestnet, isTestnet } = isNetwork(parentChainId)
+
+  if (
+    isTeleport({
+      sourceChainId: parentChainId,
+      destinationChainId: childChainId
+    })
+  ) {
+    return 20 // assuming 15 L2 + 5 Orbit // not sure tho
+  }
 
   // this covers orbit chains
   if (!isEthereumMainnetOrTestnet) {
@@ -48,7 +57,7 @@ export function DepositCountdown({
   ) {
     // Subtract the diff from the initial deposit time
     const minutesRemaining =
-      getEstimatedDepositDurationInMinutes(tx.parentChainId) -
+      getEstimatedDepositDurationInMinutes(tx) -
       now.diff(whenCreated, 'minutes')
     return (
       <span className="whitespace-nowrap">

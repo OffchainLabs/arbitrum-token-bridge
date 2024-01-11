@@ -14,6 +14,7 @@ import { Deposit } from '../../hooks/useTransactionHistory'
 import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { Chain } from 'wagmi'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 type SdkToUiConversionProps = {
   bridgeTransfer: BridgeTransfer
@@ -37,8 +38,12 @@ export const convertBridgeSdkToMergedTransaction = ({
   amount
 }: SdkToUiConversionProps): MergedTransaction => {
   const { transferType, sourceChainTransaction: tx } = bridgeTransfer
-  const isTeleport = transferType.includes('teleport')
-  const isDeposit = transferType.includes('deposit') || isTeleport
+  const isDeposit =
+    transferType.includes('deposit') ||
+    isTeleport({
+      sourceChainId: Number(l1Network.id),
+      destinationChainId: Number(l2Network.id)
+    })
 
   return {
     sender: walletAddress!,
@@ -57,7 +62,6 @@ export const convertBridgeSdkToMergedTransaction = ({
     depositStatus: isDeposit ? DepositStatus.L1_PENDING : undefined,
     uniqueId: null,
     isWithdrawal: !isDeposit,
-    isTeleport,
     blockNum: null,
     tokenAddress: selectedToken ? selectedToken.address : undefined,
     parentChainId: Number(l1Network.id),

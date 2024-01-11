@@ -31,6 +31,7 @@ import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -169,9 +170,18 @@ export const TransactionHistoryTable = ({
         return 0
       }
 
-      return isCustomDestinationAddressTx(tx)
-        ? rowHeightCustomDestinationAddress
-        : rowHeight
+      const extraHeight = isTeleport({
+        sourceChainId: tx.parentChainId,
+        destinationChainId: tx.childChainId
+      })
+        ? 30
+        : 0
+
+      return (
+        (isCustomDestinationAddressTx(tx)
+          ? rowHeightCustomDestinationAddress
+          : rowHeight) + extraHeight
+      )
     },
     [transactions, rowHeight, rowHeightCustomDestinationAddress]
   )
