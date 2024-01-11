@@ -3,7 +3,7 @@ import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
-import { getNativeTokenLogo, getNetworkLogo, rpcURLs } from '../util/networks'
+import { getNativeTokenLogo, rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
 
 type NativeCurrencyBase = {
