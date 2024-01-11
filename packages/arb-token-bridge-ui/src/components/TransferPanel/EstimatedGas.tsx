@@ -82,7 +82,9 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
     return (
       <div
         className={twMerge(
-          'grid items-center rounded-md bg-white/25 px-3 py-2 text-xs font-light text-white'
+          'grid items-center rounded-md',
+          'bg-white/25 px-3 py-2',
+          'text-xs font-light text-white'
         )}
       >
         You’ll have to pay {parentChainName} gas fee upon claiming.
