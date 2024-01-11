@@ -93,7 +93,9 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   return (
     <div
       className={twMerge(
-        'flex items-center justify-between rounded-md bg-white/25 px-3 py-2 text-right text-xs font-light text-white'
+        'flex items-center justify-between',
+        'rounded-md bg-white/25 px-3 py-2',
+        'text-right text-xs font-light text-white'
       )}
     >
       <div className="flex w-1/2 flex-row items-center gap-1">
