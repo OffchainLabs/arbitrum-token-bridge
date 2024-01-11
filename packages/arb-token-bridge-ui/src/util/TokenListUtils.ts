@@ -7,6 +7,7 @@ import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
 import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
+import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
@@ -57,6 +58,14 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Gemini List',
     isDefault: true,
     logoURI: GeminiLogo
+  },
+  {
+    id: 4,
+    originChainID: 42161,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coingecko.json',
+    name: 'Arbed CoinGecko List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo
   },
   {
     id: 5,
@@ -110,6 +119,31 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
+  },
+  // CoinGecko
+  {
+    id: 11,
+    originChainID: 42170,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
+    name: 'Arbed CoinGecko List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo
+  },
+  {
+    id: 12,
+    originChainID: 421613,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coingecko.json',
+    name: 'Arbed CoinGecko List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo
+  },
+  {
+    id: 13,
+    originChainID: 421614,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_coingecko.json',
+    name: 'Arbed CoinGecko List',
+    isDefault: true,
+    logoURI: CoinGeckoLogo
   }
 ]
 
