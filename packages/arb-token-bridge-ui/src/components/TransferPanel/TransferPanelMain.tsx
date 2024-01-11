@@ -386,7 +386,6 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
@@ -505,8 +504,17 @@ export function TransferPanelMain({
       result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
-    if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    if (
+      erc20L2Balances &&
+      selectedToken.l2Address &&
+      selectedToken.l2Address in erc20L2Balances
+    ) {
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    }
+
+    // token not bridge to the child chain, show zero
+    if (!selectedToken.l2Address) {
+      result.l2 = constants.Zero
     }
 
     if (
@@ -979,6 +987,7 @@ export function TransferPanelMain({
 
             try {
               await switchNetworkAsync?.(network.id)
+              actions.app.setSelectedToken(null)
 
               const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
               // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
@@ -1019,6 +1028,8 @@ export function TransferPanelMain({
               openOneNovaTransferDialog()
               return
             }
+
+            actions.app.setSelectedToken(null)
 
             const isOrbitChainCurrentlySelected = isNetwork(
               l2.network.id
@@ -1071,6 +1082,7 @@ export function TransferPanelMain({
           try {
             // In withdraw mode we always switch to the L2 network.
             await switchNetworkAsync?.(network.id)
+            actions.app.setSelectedToken(null)
 
             const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
             // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
@@ -1107,6 +1119,8 @@ export function TransferPanelMain({
             openOneNovaTransferDialog()
             return
           }
+
+          actions.app.setSelectedToken(null)
 
           if (isEthereumMainnetOrTestnet) {
             if (isConnectedToOrbitChain) {
@@ -1164,6 +1178,7 @@ export function TransferPanelMain({
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog,
+    actions.app,
     isConnectedToArbitrum,
     isConnectedToOrbitChain
   ])
