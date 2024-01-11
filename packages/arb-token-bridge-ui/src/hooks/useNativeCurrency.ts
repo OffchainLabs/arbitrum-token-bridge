@@ -3,7 +3,7 @@ import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
-import { rpcURLs } from '../util/networks'
+import { ChainId, rpcURLs } from '../util/networks'
 import { fetchErc20Data, getNativeTokenLogo } from '../util/TokenUtils'
 
 type NativeCurrencyBase = {
@@ -29,8 +29,7 @@ export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
 const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
-  logoUrl:
-    'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png',
+  logoUrl: getNativeTokenLogo(ChainId.Ethereum),
   isCustom: false
 }
 
