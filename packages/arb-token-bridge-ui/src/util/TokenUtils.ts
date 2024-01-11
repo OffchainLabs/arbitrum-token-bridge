@@ -360,6 +360,6 @@ export function getNativeTokenLogo(chainId: number) {
     case ChainId.Xai:
       return '/images/XaiLogo.svg'
     default:
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return '/images/EthereumLogoRound.svg'
   }
 }
