@@ -13,7 +13,7 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
 import { Loader } from '../common/atoms/Loader'
 
-const depositGasFeeTooltip = ({
+const gasFeeTooltip = ({
   parentChainName,
   childChainName,
   depositToOrbit = false
@@ -37,7 +37,7 @@ function StyledLoader() {
   )
 }
 
-export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
+export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   const {
     app: { isDepositMode, selectedToken }
   } = useAppState()
@@ -45,8 +45,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   const { parentLayer, layer: childLayer } = useChainLayers()
   const { ethToUSD } = useETHPrice()
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
-  const isParentChain = chain === 'parent'
+  const isParentChain = chainType === 'parent'
   const {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
@@ -70,13 +69,9 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentChain])
 
   const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    if (!isDepositMode) {
-      return null
-    }
-
     const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
 
-    return depositGasFeeTooltip({
+    return gasFeeTooltip({
       parentChainName,
       childChainName,
       depositToOrbit: isDepositToOrbitChain
@@ -98,11 +93,12 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
   return (
     <div
       className={twMerge(
-        'grid items-center rounded-md bg-white/25 px-3 py-2 text-right text-xs font-light text-white',
-        showPrice ? 'grid-cols-3' : 'grid-cols-2'
+        // 'grid items-center rounded-md bg-white/25 px-3 py-2 text-right text-xs font-light text-white',
+        // showPrice ? 'grid-cols-3' : 'grid-cols-2'
+        'flex items-center justify-between rounded-md bg-white/25 px-3 py-2 text-right text-xs font-light text-white'
       )}
     >
-      <div className="flex flex-row items-center gap-1">
+      <div className="flex w-1/2 flex-row items-center gap-1">
         <span className="text-left">
           {isParentChain ? parentChainName : childChainName} gas
         </span>
@@ -116,12 +112,15 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
           <StyledLoader />
         </>
       ) : (
-        <>
+        <div
+          className={twMerge(
+            'flex w-1/2',
+            showPrice ? ' justify-between' : 'justify-end'
+          )}
+        >
           <span className="text-right tabular-nums">
             {formatAmount(estimatedGasFee, {
-              symbol: isParentChain
-                ? parentChainNativeCurrency.symbol
-                : nativeCurrency.symbol
+              symbol: nativeCurrency.symbol
             })}
           </span>
 
@@ -130,7 +129,7 @@ export function EstimatedGas({ chain }: { chain: 'parent' | 'child' }) {
               {formatUSD(ethToUSD(estimatedGasFee))}
             </span>
           )}
-        </>
+        </div>
       )}
     </div>
   )

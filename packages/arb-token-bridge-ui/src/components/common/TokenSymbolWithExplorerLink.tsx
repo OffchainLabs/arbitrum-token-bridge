@@ -26,8 +26,9 @@ export function TokenSymbolWithExplorerLink({
 }) {
   const { l1, l2 } = useNetworksAndSigners()
   const chain = isParentChain ? l1.network : l2.network
+  // always use native currency of child chain
   const nativeCurrency = useNativeCurrency({
-    provider: isParentChain ? l1.provider : l2.provider
+    provider: l2.provider
   })
 
   const symbol = useMemo(() => {
