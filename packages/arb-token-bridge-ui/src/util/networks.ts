@@ -41,10 +41,12 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  const parentOfParentChain = (parentChain as L2Network).partnerChainID
+  if ('partnerChainID' in parentChain) {
+    const parentOfParentChain = parentChain.partnerChainID
 
-  if (parentOfParentChain) {
-    return parentOfParentChain
+    if (parentOfParentChain && typeof parentOfParentChain === 'number') {
+      return parentOfParentChain
+    }
   }
 
   return parentChain.chainID ?? chainId
