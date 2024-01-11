@@ -1,15 +1,11 @@
 import { L1Network, L2Network, addCustomNetwork } from '@arbitrum/sdk'
 import {
-  Chain,
-  ParentChain,
-  l2Networks,
-  chains,
-  parentChains,
-  addCustomChain
+  l1Networks,
+  l2Networks
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
-import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
+import { loadEnvironmentVariableWithFallback } from './index'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -23,7 +19,7 @@ const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
-export type ChainWithRpcUrl = Chain & {
+export type ChainWithRpcUrl = L2Network & {
   rpcUrl: string
   nativeTokenData?: Erc20Data
 }
@@ -33,13 +29,13 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  const chain = chains[chainId]
+  const chain = l2Networks[chainId]
 
   if (!chain || !chain.partnerChainID) {
     return chainId
   }
 
-  const parentChain = parentChains[chain.partnerChainID]
+  const parentChain = l1Networks[chain.partnerChainID]
 
   if (!parentChain) {
     return chainId
@@ -242,7 +238,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getBlockTime = (chainId: ChainId) => {
-  const network = parentChains[chainId]
+  const network = l1Networks[chainId] || l2Networks[chainId]
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
@@ -250,7 +246,7 @@ export const getBlockTime = (chainId: ChainId) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = l2Networks[chainId] || chains[chainId]
+  const network = l2Networks[chainId]
   if (!network) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
@@ -307,8 +303,9 @@ const defaultL1Network: L1Network = {
   isArbitrum: false
 }
 
-const defaultL2Network: ParentChain = {
+const defaultL2Network: L2Network = {
   chainID: 412346,
+  blockTime: 12,
   partnerChainIDs: [
     // Orbit chains will go here
   ],
@@ -347,8 +344,10 @@ const defaultL2Network: ParentChain = {
   }
 }
 
-export const xaiTestnet: Chain = {
+export const xaiTestnet: L2Network = {
   chainID: 47279324479,
+  blockTime: 12,
+  partnerChainIDs: [],
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0xf958e56d431eA78C7444Cf6A6184Af732Ae6a8A3',
@@ -384,8 +383,10 @@ export const xaiTestnet: Chain = {
   depositTimeout: 1800000
 }
 
-export const xai: Chain = {
+export const xai: L2Network = {
   chainID: ChainId.Xai,
+  blockTime: 12,
+  partnerChainIDs: [],
   confirmPeriodBlocks: 45818,
   ethBridge: {
     bridge: '0x7dd8A76bdAeBE3BBBaCD7Aa87f1D4FDa1E60f94f',
@@ -456,11 +457,6 @@ export function registerLocalNetwork(
     addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
-  }
-  try {
-    addCustomChain({ customParentChain: l1Network, customChain: l2Network })
-  } catch (error: any) {
-    //
   }
 }
 

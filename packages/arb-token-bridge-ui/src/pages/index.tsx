@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
+import { addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
@@ -28,7 +28,7 @@ export default function Index() {
     // we add locally stored custom chains
     getCustomChainsFromLocalStorage().forEach(chain => {
       try {
-        addCustomChain({ customChain: chain })
+        addCustomNetwork({ customL2Network: chain })
         mapCustomChainToNetworkData(chain)
       } catch (_) {
         // already added
@@ -48,7 +48,7 @@ export default function Index() {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
     }
     try {
-      addCustomChain({ customChain: xaiTestnet })
+      addCustomNetwork({ customL2Network: xaiTestnet })
     } catch (error: any) {
       console.error(`Failed to register Xai Testnet: ${error.message}`)
     }
@@ -59,7 +59,7 @@ export default function Index() {
       console.error(`Failed to register Xai: ${error.message}`)
     }
     try {
-      addCustomChain({ customChain: xai })
+      addCustomNetwork({ customL2Network: xai })
     } catch (error: any) {
       console.error(`Failed to register Xai: ${error.message}`)
     }
