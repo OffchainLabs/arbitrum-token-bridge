@@ -344,7 +344,7 @@ export function TokenRow({
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 grow-0 rounded-full"
+          className="h-8 w-8 grow-0"
           fallback={<TokenLogoFallback />}
         />
 

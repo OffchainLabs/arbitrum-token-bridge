@@ -354,3 +354,12 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     listIds: new Set()
   }
 }
+
+export function getNativeTokenLogo(chainId: ChainId) {
+  switch (chainId) {
+    case ChainId.Xai:
+      return '/images/XaiLogo.svg'
+    default:
+      return '/images/EthereumLogoRound.svg'
+  }
+}
