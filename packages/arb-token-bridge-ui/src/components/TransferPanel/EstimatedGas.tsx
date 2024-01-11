@@ -22,7 +22,7 @@ const depositGasFeeTooltip = ({
   childChainName: string
   depositToOrbit?: boolean
 }) => ({
-  L1: `${parentChainName} fees go to Ethereum Validators.`,
+  L1: `${parentChainName} fees go to ${parentChainName} Validators.`,
   L2: `${
     depositToOrbit ? parentChainName : childChainName
   } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
