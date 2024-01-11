@@ -61,7 +61,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 4,
-    originChainID: 42161,
+    originChainID: ChainId.ArbitrumOne,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
@@ -123,7 +123,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   // CoinGecko
   {
     id: 11,
-    originChainID: 42170,
+    originChainID: ChainId.ArbitrumNova,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
@@ -131,7 +131,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 12,
-    originChainID: 421613,
+    originChainID: ChainId.ArbitrumGoerli,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
@@ -139,11 +139,20 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   },
   {
     id: 13,
-    originChainID: 421614,
+    originChainID: ChainId.ArbitrumSepolia,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421614_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
     logoURI: CoinGeckoLogo
+  },
+  // Orbit
+  {
+    id: 14,
+    originChainID: ChainId.Xai,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/660279_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
