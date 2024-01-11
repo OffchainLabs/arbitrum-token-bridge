@@ -22,7 +22,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../state/cctpState'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
 import { getWithdrawalClaimParentChainTxDetails } from './helpers'
@@ -33,10 +32,16 @@ type CommonProps = {
 }
 
 function ClaimableRowStatus({ tx }: CommonProps) {
-  const { parentLayer, layer } = useChainLayers()
   const matchingL1TxId = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
     : getWithdrawalClaimParentChainTxDetails(tx)?.txId
+
+  const sourceNetworkName = getNetworkName(
+    tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  )
+  const destNetworkName = getNetworkName(
+    tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  )
 
   switch (tx.status) {
     case 'pending':
@@ -44,7 +49,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="yellow"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -55,13 +60,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${destNetworkName} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -73,18 +78,18 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
           <Tooltip
             content={
-              <span>Funds are ready to be claimed on {parentLayer}</span>
+              <span>Funds are ready to be claimed on {destNetworkName}</span>
             }
           >
             <StatusBadge
               variant="yellow"
-              aria-label={`${parentLayer} Transaction Status`}
+              aria-label={`${destNetworkName} Transaction Status`}
             >
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
@@ -98,21 +103,21 @@ function ClaimableRowStatus({ tx }: CommonProps) {
           <div className="flex flex-col space-y-1">
             <StatusBadge
               variant="green"
-              aria-label={`${layer} Transaction Status`}
+              aria-label={`${sourceNetworkName} Transaction Status`}
             >
               Success
             </StatusBadge>
             <Tooltip
               content={
                 <span>
-                  Executed: Funds have been claimed on {parentLayer}, but the
-                  corresponding Tx ID was not found
+                  Executed: Funds have been claimed on {destNetworkName}, but
+                  the corresponding Tx ID was not found
                 </span>
               }
             >
               <StatusBadge
                 variant="gray"
-                aria-label={`${parentLayer} Transaction Status`}
+                aria-label={`${destNetworkName} Transaction Status`}
               >
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
@@ -125,13 +130,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${destNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
@@ -142,7 +147,10 @@ function ClaimableRowStatus({ tx }: CommonProps) {
     case 'Failure':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="red" aria-label={`${layer} Transaction Status`}>
+          <StatusBadge
+            variant="red"
+            aria-label={`${sourceNetworkName} Transaction Status`}
+          >
             Failed
           </StatusBadge>
         </div>
@@ -154,13 +162,19 @@ function ClaimableRowStatus({ tx }: CommonProps) {
 }
 
 function ClaimableRowTime({ tx }: CommonProps) {
-  const { parentLayer, layer } = useChainLayers()
   const { remainingTime } = useRemainingTime(tx)
+
+  const sourceNetworkName = getNetworkName(
+    tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  )
+  const destNetworkName = getNetworkName(
+    tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  )
 
   if (tx.status === 'Unconfirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceNetworkName} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
@@ -172,11 +186,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (tx.status === 'Confirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceNetworkName} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
+          <Tooltip content={<span>{destNetworkName} Transaction Time</span>}>
             <span className="whitespace-nowrap">Ready</span>
           </Tooltip>
         )}
@@ -191,11 +205,13 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction time</span>}>
+        <Tooltip content={<span>{sourceNetworkName} Transaction time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>Ready to claim funds on {parentLayer}</span>}>
+          <Tooltip
+            content={<span>Ready to claim funds on {destNetworkName}</span>}
+          >
             <span className="whitespace-nowrap">n/a</span>
           </Tooltip>
         )}
@@ -205,11 +221,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>{layer} Transaction Time</span>}>
+      <Tooltip content={<span>{sourceNetworkName} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {claimedTxTimestamp && (
-        <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
+        <Tooltip content={<span>{destNetworkName} Transaction Time</span>}>
           <span className="whitespace-nowrap">
             <TransactionDateTime standardizedDate={claimedTxTimestamp} />
           </span>
@@ -220,7 +236,6 @@ function ClaimableRowTime({ tx }: CommonProps) {
 }
 
 function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { parentLayer } = useChainLayers()
   const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
 
   const isExecuted = tx.status === 'Executed'
@@ -244,7 +259,9 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   return (
     <span
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-      aria-label={`${parentLayer} Transaction Link`}
+      aria-label={`${getNetworkName(
+        tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+      )} Transaction Link`}
     >
       <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
       <NetworkImage chainId={toNetworkId} />
@@ -260,22 +277,20 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
 }
 
 function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
-  const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum
-    ? tx.childChainId
-    : tx.parentChainId
+  const sourceNetworkId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const sourceNetworkName = getNetworkName(sourceNetworkId)
 
   return (
     <div className="flex flex-col space-y-3">
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label={`${layer} Transaction Link`}
+        aria-label={`${sourceNetworkName} Transaction Link`}
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
-        <NetworkImage chainId={fromNetworkId} />
-        <span className="pl-1">{getNetworkName(fromNetworkId)}: </span>
+        <NetworkImage chainId={sourceNetworkId} />
+        <span className="pl-1">{getNetworkName(sourceNetworkId)}: </span>
         <ExternalLink
-          href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(sourceNetworkId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
