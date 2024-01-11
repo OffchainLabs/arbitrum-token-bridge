@@ -9,6 +9,7 @@ import { CommonAddress } from './CommonAddressUtils'
 import { isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { getBridger } from '@/token-bridge-sdk/utils'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -247,7 +248,11 @@ export async function getL2ERC20Address({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainProvider: l1Provider,
+    destinationChainProvider: l2Provider
+  })
+
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
@@ -263,7 +268,11 @@ export async function l1TokenIsDisabled({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<boolean> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainProvider: l1Provider,
+    destinationChainProvider: l2Provider
+  })
+
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 

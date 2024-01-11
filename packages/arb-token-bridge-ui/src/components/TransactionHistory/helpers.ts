@@ -23,6 +23,10 @@ import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { getTeleportStatusDataFromTxId } from '@/token-bridge-sdk/teleport'
+import {
+  EthDepositStatus as EthTeleportStatus,
+  Erc20DepositStatus as Erc20TeleportStatus
+} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -462,19 +466,35 @@ export async function getUpdatedTeleportTransfer(
     return tx
   }
 
-  const { l2Retryable, l3Retryable, completed } =
-    await getTeleportStatusDataFromTxId({
-      txId: tx.txId,
-      sourceChainProvider: getProvider(tx.parentChainId),
-      destinationChainProvider: getProvider(tx.childChainId)
-    })
+  const isNativeCurrencyTransfer = tx.assetType === AssetType.ETH
+
+  const depositStatus = await getTeleportStatusDataFromTxId({
+    txId: tx.txId,
+    sourceChainProvider: getProvider(tx.parentChainId),
+    destinationChainProvider: getProvider(tx.childChainId),
+    isNativeCurrencyTransfer
+  })
+
+  let l2Retryable, l3Retryable, completed
+
+  if (isNativeCurrencyTransfer) {
+    const status = depositStatus as EthTeleportStatus
+    l2Retryable = status.l2Retryable
+    l3Retryable = status.l3Retryable
+    completed = status.completed
+  } else {
+    const status = depositStatus as Erc20TeleportStatus
+    l2Retryable = status.bridgeToL2
+    l3Retryable = status.bridgeToL3
+    completed = status.completed
+  }
 
   // @ts-ignore - check why l2TxReceipt is not in the type
   const l3TxId = l3Retryable.l2TxReceipt?.transactionHash
 
   const newDeposit: MergedTransaction = {
     ...tx,
-    status: completed ? 'success' : tx.status,
+    status: 'success',
     resolvedAt: completed ? dayjs().valueOf() : null,
 
     // for now feeding the L3 retryable data inside the deposit status object

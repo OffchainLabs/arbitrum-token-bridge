@@ -74,6 +74,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
   l1Network,
   l2Network,
   walletAddress,
+  selectedToken,
   nativeCurrency,
   amount
 }: SdkToUiConversionProps): Deposit => {
@@ -84,11 +85,14 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     destination: walletAddress,
     status: 'pending',
     txID: transaction.hash,
-    assetName: nativeCurrency.symbol,
-    assetType: AssetType.ETH,
+    assetName: selectedToken ? selectedToken.symbol : nativeCurrency.symbol,
+    assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
     l1NetworkID: String(l1Network.id),
     l2NetworkID: String(l2Network.id),
-    value: utils.formatUnits(amount, nativeCurrency.decimals),
+    value: utils.formatUnits(
+      amount,
+      selectedToken ? selectedToken.decimals : nativeCurrency.decimals
+    ),
     parentChainId: Number(l1Network.id),
     childChainId: Number(l2Network.id),
     direction: 'deposit',

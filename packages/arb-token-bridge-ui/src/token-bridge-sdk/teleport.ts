@@ -1,6 +1,11 @@
 // utils for teleport type transactions
 
-import { EthL1L3Bridger, L1TransactionReceipt, getChain } from '@arbitrum/sdk'
+import {
+  Erc20L1L3Bridger,
+  EthL1L3Bridger,
+  L1TransactionReceipt,
+  getChain
+} from '@arbitrum/sdk'
 import { getProvider } from '../components/TransactionHistory/helpers'
 import { isNetwork } from '../util/networks'
 import { Provider } from '@ethersproject/providers'
@@ -33,11 +38,13 @@ export const getL2ConfigForTeleport = async ({
 export const getTeleportStatusDataFromTxId = async ({
   txId,
   sourceChainProvider,
-  destinationChainProvider
+  destinationChainProvider,
+  isNativeCurrencyTransfer
 }: {
   txId: string
   sourceChainProvider: Provider
   destinationChainProvider: Provider
+  isNativeCurrencyTransfer: boolean
 }) => {
   const l1Provider = sourceChainProvider
   const l3Provider = destinationChainProvider
@@ -49,12 +56,15 @@ export const getTeleportStatusDataFromTxId = async ({
 
   const l3Network = await getChain(l3Provider)
 
-  const l1l3Bridger = new EthL1L3Bridger(l3Network)
-
   const depositTx = await l1Provider.getTransaction(txId)
 
   const depositReceipt =
     L1TransactionReceipt.monkeyPatchContractCallWait(depositTx)
+
+  // just the type of bridger changes in case of Eth vs Erc20 teleport
+  const l1l3Bridger = isNativeCurrencyTransfer
+    ? new EthL1L3Bridger(l3Network)
+    : new Erc20L1L3Bridger(l3Network)
 
   return l1l3Bridger.getDepositStatus(
     await depositReceipt.wait(),

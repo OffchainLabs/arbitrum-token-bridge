@@ -8,6 +8,7 @@ import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 import { getBridgeTransferProperties } from './utils'
 import { EthTeleportStarter } from './EthTeleportStarter'
+import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 
 export class BridgeTransferStarterFactory {
   public static async init(
@@ -26,10 +27,16 @@ export class BridgeTransferStarterFactory {
         sourceChainErc20Address
       })
 
-    if (isTeleport && isNativeCurrencyTransfer) {
-      // return Eth teleport
-      console.log('bridge-sdk mode: Eth L1-L3 Teleport')
-      return new EthTeleportStarter(initProps)
+    if (isTeleport) {
+      if (isNativeCurrencyTransfer) {
+        // return Eth teleport
+        console.log('bridge-sdk mode: Eth L1-L3 Teleport')
+        return new EthTeleportStarter(initProps)
+      } else {
+        // return Erc20 teleport
+        console.log('bridge-sdk mode: Erc20 L1-L3 Teleport')
+        return new Erc20TeleportStarter(initProps)
+      }
     }
 
     if (isDeposit && isNativeCurrencyTransfer) {

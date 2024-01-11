@@ -28,6 +28,9 @@ import {
 } from '../../util/TokenUtils'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { getBridger } from '@/token-bridge-sdk/utils'
+import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -144,6 +147,21 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress('')
         return
       }
+
+      if (
+        isTeleport({
+          sourceChainId: l1.network.id,
+          destinationChainId: l2.network.id
+        })
+      ) {
+        const l1L3Bridger = (await getBridger({
+          sourceChainProvider: l1.provider,
+          destinationChainProvider: l2.provider
+        })) as Erc20L1L3Bridger
+        setContractAddress(l1L3Bridger.teleporterAddresses.l1Teleporter)
+        return
+      }
+
       if (isDepositMode) {
         setContractAddress(
           await fetchErc20L1GatewayAddress({

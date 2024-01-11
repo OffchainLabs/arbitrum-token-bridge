@@ -22,6 +22,7 @@ import {
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -129,6 +130,22 @@ export function useGasSummary(
 
       if (!walletAddress) {
         return
+      }
+
+      if (
+        isTeleport({
+          sourceChainId: l1.network.id,
+          destinationChainId: l2.network.id
+        })
+      ) {
+        // todo: hardcode gas to zero for now, otherwise code was breaking
+        // we will call gas estimation properly later
+        setStatus('success')
+        return {
+          estimatedL1Gas: constants.Zero,
+          estimatedL2Gas: constants.Zero,
+          estimatedL2SubmissionCost: constants.Zero
+        }
       }
 
       try {
