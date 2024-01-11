@@ -3,7 +3,7 @@ import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
-import { rpcURLs } from '../util/networks'
+import { getNetworkLogo, rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
 
 type NativeCurrencyBase = {
@@ -82,5 +82,14 @@ export async function fetchNativeCurrency({
     provider: parentChainProvider
   })
 
-  return { name, symbol, decimals, address, isCustom: true }
+  return {
+    name,
+    // for now Orbit chain's native token logos are the same as network logos
+    // this may be different in the future
+    logoUrl: getNetworkLogo(chain.chainID),
+    symbol,
+    decimals,
+    address,
+    isCustom: true
+  }
 }

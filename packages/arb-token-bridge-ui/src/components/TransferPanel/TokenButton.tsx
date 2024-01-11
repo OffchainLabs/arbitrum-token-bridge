@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
@@ -11,6 +12,7 @@ import {
 } from '../../hooks/useNetworksAndSigners'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { ether } from '../../constants'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -78,7 +80,10 @@ export function TokenButton(): JSX.Element {
               <img
                 src={tokenLogo}
                 alt="Token logo"
-                className="h-5 w-5 rounded-full sm:h-8 sm:w-8"
+                className={twMerge(
+                  'h-5 w-5 sm:h-8 sm:w-8',
+                  tokenSymbol === ether.symbol && 'rounded-full'
+                )}
               />
             )}
             <span className="text-xl font-light sm:text-3xl">

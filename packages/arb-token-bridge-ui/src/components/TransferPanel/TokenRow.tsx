@@ -32,6 +32,7 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { ether } from '../../constants'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -337,7 +338,10 @@ export function TokenRow({
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 grow-0 rounded-full"
+          className={twMerge(
+            'h-8 w-8 grow-0',
+            tokenSymbol === ether.symbol && 'rounded-full'
+          )}
           fallback={<TokenLogoFallback />}
         />
 
