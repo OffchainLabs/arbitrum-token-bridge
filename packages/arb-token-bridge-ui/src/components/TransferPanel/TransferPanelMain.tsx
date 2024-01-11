@@ -1178,7 +1178,6 @@ export function TransferPanelMain({
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog,
-    actions.app,
     isConnectedToArbitrum,
     isConnectedToOrbitChain
   ])
