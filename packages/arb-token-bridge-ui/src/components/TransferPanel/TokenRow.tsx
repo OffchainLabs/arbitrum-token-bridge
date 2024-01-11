@@ -359,12 +359,6 @@ export function TokenRow({
               </Tooltip>
             )}
 
-            {!token && (
-              <div className="flex w-full justify-end">
-                {tokenBalanceContent}
-              </div>
-            )}
-
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
                 <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-dark px-1 py-[2px] pr-2 text-sm">
@@ -437,6 +431,9 @@ export function TokenRow({
             </div>
           )}
         </div>
+        {!token && (
+          <div className="flex w-full justify-end">{tokenBalanceContent}</div>
+        )}
       </div>
     </button>
   )
