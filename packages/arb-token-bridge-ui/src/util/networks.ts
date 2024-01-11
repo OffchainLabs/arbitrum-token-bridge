@@ -638,6 +638,15 @@ export function getNetworkLogo(
   }
 }
 
+export function getNativeTokenLogo(chainId: number) {
+  switch (chainId) {
+    case ChainId.Xai:
+      return '/images/XaiLogo.svg'
+    default:
+      return '/images/EthereumLogo.svg'
+  }
+}
+
 export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
   const testnetNetworks = [
     ChainId.Goerli,
