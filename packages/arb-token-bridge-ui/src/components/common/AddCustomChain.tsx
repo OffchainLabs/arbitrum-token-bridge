@@ -177,7 +177,7 @@ async function mapOrbitConfigToOrbitChain(
     (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
   return {
     chainID: data.chainInfo.chainId,
-    blockTime: 12,
+    blockTime: 0.25,
     partnerChainIDs: [],
     confirmPeriodBlocks,
     ethBridge: {

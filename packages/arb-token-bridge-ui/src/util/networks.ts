@@ -35,7 +35,7 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  const parentChain = l1Networks[chain.partnerChainID]
+  const parentChain = { ...l1Networks, ...l2Networks }[chain.partnerChainID]
 
   if (!parentChain) {
     return chainId
@@ -307,7 +307,7 @@ const defaultL1Network: L1Network = {
 
 const defaultL2Network: L2Network = {
   chainID: 412346,
-  blockTime: 12,
+  blockTime: 0.25,
   partnerChainIDs: [
     // Orbit chains will go here
   ],
@@ -348,7 +348,7 @@ const defaultL2Network: L2Network = {
 
 export const xaiTestnet: L2Network = {
   chainID: 47279324479,
-  blockTime: 12,
+  blockTime: 0.25,
   partnerChainIDs: [],
   confirmPeriodBlocks: 20,
   ethBridge: {
@@ -387,7 +387,7 @@ export const xaiTestnet: L2Network = {
 
 export const xai: L2Network = {
   chainID: ChainId.Xai,
-  blockTime: 12,
+  blockTime: 0.25,
   partnerChainIDs: [],
   confirmPeriodBlocks: 45818,
   ethBridge: {

@@ -33,35 +33,22 @@ export default function Index() {
       } catch (_) {
         // already added
       }
-
-      try {
-        // adding to L2 networks too to be fully compatible with the sdk
-        addCustomNetwork({ customL2Network: chain })
-      } catch (_) {
-        // already added
-      }
     })
 
     try {
       addCustomNetwork({ customL2Network: xaiTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Xai Testnet: ${error.message}`)
-    }
-    try {
-      addCustomNetwork({ customL2Network: xaiTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Xai Testnet: ${error.message}`)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Failed to register Xai Testnet: ${error.message}`)
+      }
     }
 
     try {
       addCustomNetwork({ customL2Network: xai })
-    } catch (error: any) {
-      console.error(`Failed to register Xai: ${error.message}`)
-    }
-    try {
-      addCustomNetwork({ customL2Network: xai })
-    } catch (error: any) {
-      console.error(`Failed to register Xai: ${error.message}`)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Failed to register Xai: ${error.message}`)
+      }
     }
   }, [])
 

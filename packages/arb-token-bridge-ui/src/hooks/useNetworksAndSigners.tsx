@@ -26,6 +26,7 @@ import { Chain, useAccount, useNetwork, useProvider } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useLocalStorage } from 'react-use'
 import * as Sentry from '@sentry/react'
+import { getL1Network, getL2Network } from '@arbitrum/sdk'
 
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
@@ -41,7 +42,6 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { errorToast } from '../components/common/atoms/Toast'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
-import { getL1Network, getL2Network } from '@arbitrum/sdk'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
