@@ -74,13 +74,17 @@ export function TokenImportDialog({
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
-      isDepositMode,
       selectedToken
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()

@@ -7,7 +7,6 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
 import { useSigner } from 'wagmi'
-import { useAppState } from '../../state'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
@@ -42,17 +41,18 @@ export type TokenApprovalDialogProps = UseDialogProps & {
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
   const { allowance, isOpen, amount, token, isCctp } = props
-  const {
-    app: { isDepositMode }
-  } = useAppState()
 
   const allowanceParsed =
     allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)

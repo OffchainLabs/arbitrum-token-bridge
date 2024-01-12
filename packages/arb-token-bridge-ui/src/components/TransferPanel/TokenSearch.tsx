@@ -155,12 +155,11 @@ function TokensPanel({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider } =
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
@@ -475,15 +474,15 @@ export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
+  const { childChain, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =

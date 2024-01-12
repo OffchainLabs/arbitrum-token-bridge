@@ -84,14 +84,18 @@ export function TokenRow({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
 
   const chainId = isDepositMode ? parentChain.id : childChain.id
   const isSmallScreen = useMedia('(max-width: 419px)')

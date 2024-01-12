@@ -21,13 +21,6 @@ export const setChainIds = (
   state.app.l2NetworkChainId = payload.l2NetworkChainId
 }
 
-export const setIsDepositMode = (
-  { state }: Context,
-  isDepositMode: boolean
-) => {
-  state.app.isDepositMode = isDepositMode
-}
-
 export const setSelectedToken = (
   { state }: Context,
   token: ERC20BridgeToken | null

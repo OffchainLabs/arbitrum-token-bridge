@@ -98,13 +98,13 @@ export function useTransferReadiness({
   gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
   const {
-    app: { isDepositMode, selectedToken }
+    app: { selectedToken }
   } = useAppState()
   const {
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider } =
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
   const { address: walletAddress } = useAccount()

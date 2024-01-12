@@ -181,11 +181,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       isConnectedToOrbitChain
     ) {
       console.info('Withdrawal mode detected:')
-      actions.app.setIsDepositMode(false)
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
     } else {
       console.info('Deposit mode detected:')
-      actions.app.setIsDepositMode(true)
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     }
 

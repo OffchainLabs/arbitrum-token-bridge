@@ -65,10 +65,10 @@ export function useGasSummary(
   shouldRunGasEstimation: boolean
 ): UseGasSummaryResult {
   const {
-    app: { arbTokenBridge, isDepositMode }
+    app: { arbTokenBridge }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider } =
+  const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
 
@@ -271,13 +271,15 @@ export function TransferPanelSummary({
 }: TransferPanelSummaryProps) {
   const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
-  const {
-    app: { isDepositMode }
-  } = useAppState()
   const { ethToUSD } = useETHPrice()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })

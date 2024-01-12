@@ -380,8 +380,13 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
 
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
     networks.destinationChain.id
@@ -395,7 +400,7 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, isDepositMode, selectedToken } = app
+  const { arbTokenBridge, selectedToken } = app
   const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =

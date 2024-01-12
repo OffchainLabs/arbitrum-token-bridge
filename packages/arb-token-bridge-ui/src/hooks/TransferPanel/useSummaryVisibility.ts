@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 
-import { useAppState } from '../../state'
 import { useAppContextState } from '../../components/App/AppContext'
 import { GasEstimationStatus } from '../../components/TransferPanel/TransferPanelSummary'
 import { UseTransferReadinessTransferReady } from '../../components/TransferPanel/useTransferReadiness'
+import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
 
 export function useSummaryVisibility({
   transferReady: { deposit: depositReady, withdrawal: withdrawalReady },
@@ -13,12 +14,10 @@ export function useSummaryVisibility({
   gasEstimationStatus: GasEstimationStatus
 }) {
   const {
-    app: { isDepositMode }
-  } = useAppState()
-
-  const {
     layout: { isTransferring }
   } = useAppContextState()
+  const [networks] = useNetworks()
+  const { isDepositMode } = useNetworksRelationship(networks)
 
   const isSummaryVisible = useMemo(() => {
     if (gasEstimationStatus === 'error') {

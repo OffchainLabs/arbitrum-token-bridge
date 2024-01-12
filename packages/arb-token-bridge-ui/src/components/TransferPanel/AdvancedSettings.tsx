@@ -111,11 +111,16 @@ async function getDestinationAddressWarning({
 
 export const AdvancedSettings = () => {
   const {
-    app: { selectedToken, isDepositMode }
+    app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 

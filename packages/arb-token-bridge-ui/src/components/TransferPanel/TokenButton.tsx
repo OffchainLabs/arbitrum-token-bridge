@@ -15,12 +15,11 @@ export function TokenButton(): JSX.Element {
     app: {
       selectedToken,
       arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded,
-      isDepositMode
+      arbTokenBridgeLoaded
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain } =
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })

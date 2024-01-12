@@ -125,7 +125,6 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      isDepositMode,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
       warningTokens
@@ -139,8 +138,13 @@ export function TransferPanel() {
   })
   const chainId = useChainId()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
   const { isEOA, isSmartContractWallet } = useAccountType()
