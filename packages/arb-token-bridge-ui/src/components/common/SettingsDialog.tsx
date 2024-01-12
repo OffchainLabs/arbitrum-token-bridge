@@ -15,7 +15,6 @@ import { ExternalLink } from './ExternalLink'
 import { ORBIT_QUICKSTART_LINK } from '../../constants'
 import { useNetworks } from '../../hooks/useNetworks'
 
-export const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 const SectionTitle = ({
