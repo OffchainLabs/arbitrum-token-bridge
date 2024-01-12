@@ -271,7 +271,7 @@ jobs:
         if: steps.e2e-run.outputs.status == 'failed'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ fromJSON(toJSON(matrix)).name }}
+          name: test-results-${{ fromJSON(toJSON(matrix.tests)).name }}
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Output artifact ID
