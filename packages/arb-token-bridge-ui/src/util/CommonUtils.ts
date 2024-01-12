@@ -43,3 +43,13 @@ export const createBlockExplorerUrlForToken = ({
     return undefined
   }
 }
+
+export function lightenColor(color: string, percent: number) {
+  const num = parseInt(color.slice(1), 16),
+    amt = Math.round(2.55 * percent),
+    R = (num >> 16) + amt,
+    B = ((num >> 8) & 0x00ff) + amt,
+    G = (num & 0x0000ff) + amt
+
+  return `rgb(${Math.min(255, R)}, ${Math.min(255, B)}, ${Math.min(255, G)})`
+}

@@ -63,6 +63,7 @@ import {
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import {
   createBlockExplorerUrlForToken,
+  lightenColor,
   shortenAddress
 } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
@@ -126,16 +127,17 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+  const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
 
-  const bannerClassName = useMemo(() => {
+  const backgroundColor = useMemo(() => {
     if (!isArbitrum) {
-      return 'bg-cyan border-[#1A1C33]'
+      return 'bg-cyan'
     }
     if (isArbitrumNova) {
-      return 'bg-orange border-[#743600]'
+      return 'bg-orange'
     }
-    return 'bg-cyan border-[#001A6B]'
+    return 'bg-cyan'
   }, [isArbitrum, isArbitrumNova])
 
   if (!customAddress) {
@@ -144,9 +146,17 @@ function CustomAddressBanner({
 
   return (
     <div
+      style={{
+        backgroundColor: isOrbitChain
+          ? // create a lighter color from defined config colors for Orbit chains
+            lightenColor(primaryColor, 60)
+          : undefined,
+        color: secondaryColor,
+        borderColor: secondaryColor
+      }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        bannerClassName
+        !isOrbitChain && backgroundColor
       )}
     >
       <span>
