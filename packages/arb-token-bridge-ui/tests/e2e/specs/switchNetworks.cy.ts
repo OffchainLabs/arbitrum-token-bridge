@@ -8,7 +8,7 @@ describe('Switch Networks', () => {
   context('User is on test network L1', () => {
     it('should show L1 and L2 chains correctly', () => {
       cy.login({ networkType: 'L1' })
-      cy.findByRole('button', { name: /From: Ethereum2/i }).should('be.visible') // deliberate failure
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
     })
 
