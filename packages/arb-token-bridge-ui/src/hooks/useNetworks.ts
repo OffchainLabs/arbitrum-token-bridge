@@ -183,17 +183,6 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       sourceChainId: newSourceChainId,
       destinationChainId: newDestinationChainId
     }: UseNetworksSetStateParams) => {
-      if (
-        newSourceChainId === destinationChainId ||
-        newDestinationChainId === sourceChainId
-      ) {
-        setQueryParams({
-          sourceChain: destinationChainId,
-          destinationChain: sourceChainId
-        })
-        return
-      }
-
       const {
         sourceChainId: validSourceChainId,
         destinationChainId: validDestinationChainId
@@ -206,7 +195,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
         destinationChain: validDestinationChainId
       })
     },
-    [destinationChainId, setQueryParams, sourceChainId]
+    [setQueryParams]
   )
 
   if (
