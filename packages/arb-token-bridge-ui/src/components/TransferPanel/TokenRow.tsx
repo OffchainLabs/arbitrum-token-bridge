@@ -141,7 +141,7 @@ export function TokenRow({
     walletAddress
   })
   const {
-    eth: [nativeL2Balance],
+    eth: [ethL2Balance],
     erc20: [erc20L2Balances]
   } = useBalance({
     provider: childChainProvider,
@@ -161,10 +161,10 @@ export function TokenRow({
       if (nativeCurrency.isCustom) {
         return isDepositMode
           ? erc20L1Balances?.[nativeCurrency.address]
-          : nativeL2Balance
+          : ethL2Balance
       }
 
-      return isDepositMode ? ethL1Balance : nativeL2Balance
+      return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
     if (isDepositMode) {
@@ -182,7 +182,7 @@ export function TokenRow({
     ethL1Balance,
     isDepositMode,
     nativeCurrency,
-    nativeL2Balance,
+    ethL2Balance,
     token
   ])
 
