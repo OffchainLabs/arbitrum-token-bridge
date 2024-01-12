@@ -250,7 +250,16 @@ jobs:
 
       - name: Check if test results directory exists in docker
         id: screenshots-exist
-        run: docker-compose exec -i synpress-test sh -c "test -d /app/packages/arb-token-bridge-ui/cypress/screenshots" >> $GITHUB_OUTPUT
+        run: |
+          RESULT=$(docker-compose exec -i synpress-test sh -c "test -d /app/packages/arb-token-bridge-ui/cypress/screenshots")
+
+          echo RESULT
+
+          if [ $RESULT==0 ]; then
+            echo "screenshots=exist" >> "$GITHUB_OUTPUT"
+          else
+            echo "screenshots=none" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Log output
         run: echo ${{ steps.screenshots-exist.outputs.screenshots }}
