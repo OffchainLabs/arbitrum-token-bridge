@@ -48,6 +48,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const [networks] = useNetworks()
   const {
+    childChain,
     childChainProvider,
     parentChain,
     parentChainProvider,
@@ -212,7 +213,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
               <span className="text-xs text-gray-500">{token?.name}</span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(chainId)}/token/${token?.address}`}
+              href={`${getExplorerUrl(
+                isDepositMode ? parentChain.id : childChain.id
+              )}/token/${token?.address}`}
               className="text-xs text-blue-link underline"
             >
               {token?.address.toLowerCase()}

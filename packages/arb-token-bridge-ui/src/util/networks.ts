@@ -122,9 +122,9 @@ function getCustomChainIds(l2ChainID: number): ChainId[] {
     .map(chain => chain.chainID)
 }
 
-export function getL2ChainIds(chainId: number): ChainId[] {
+export function getL2ChainIds(parentChainId: number): ChainId[] {
   // Ethereum as the parent chain
-  switch (chainId) {
+  switch (parentChainId) {
     case ChainId.Ethereum:
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova, ChainId.Xai]
     case ChainId.ArbitrumOne:

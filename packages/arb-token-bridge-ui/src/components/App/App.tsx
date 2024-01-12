@@ -69,13 +69,13 @@ const rainbowkitTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
-  const { chain } = useNetwork()
+  const [{ sourceChain }] = useNetworks()
   const {
     app: { connectionState }
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isTestnet, isGoerli } = isNetwork(chain?.id ?? 0)
+    const { isTestnet, isGoerli } = isNetwork(sourceChain.id ?? 0)
     const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
 
     if (isGoerli) {
@@ -83,7 +83,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [chain])
+  }, [sourceChain])
 
   if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
     return (

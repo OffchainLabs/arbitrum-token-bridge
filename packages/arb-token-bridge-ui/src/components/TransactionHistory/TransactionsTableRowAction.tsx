@@ -111,10 +111,7 @@ export function TransactionsTableRowAction({
           className={twMerge(!currentChainIsValid && 'p-2 py-4 text-xs')}
           onClick={async () => {
             try {
-              const destinationChain = tx.isWithdrawal
-                ? tx.parentChainId
-                : tx.childChainId
-              if (!currentChainIsValid && chain?.id !== destinationChain) {
+              if (!currentChainIsValid) {
                 return switchNetwork?.(
                   tx.isWithdrawal ? tx.parentChainId : tx.childChainId
                 )
