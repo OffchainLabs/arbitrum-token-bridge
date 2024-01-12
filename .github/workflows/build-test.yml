@@ -242,10 +242,10 @@ jobs:
       - name: Run e2e tests
         id: e2e-run
         run: |
-          RESULT=$(docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress && echo 'exist' || echo 'none')
-
-          echo "screenshots=${RESULT}" >> "$GITHUB_OUTPUT"
-
+          RESULT=$(docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress)
+          echo 'status<<EOF' >> $GITHUB_OUTPUT
+          echo "${RESULT}" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -253,26 +253,26 @@ jobs:
           DOCKER_DEFAULT_PLATFORM: linux/amd64
 
       - name: Log output
-        run: echo ${{ steps.e2e-run.outputs.screenshots }}
+        run: echo ${{ steps.e2e-run.outputs.status }}
       
       - name: Create test results directory
-        if: steps.e2e-run.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.status == 'failed'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Copy test results from docker container volumes
-        if: steps.e2e-run.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.status == 'failed'
         run: |
           docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Upload test results
-        if: steps.e2e-run.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.status == 'failed'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ fromJSON(toJSON(matrix)).name }}
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Output artifact ID
-        if: steps.e2e-run.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
 
   test-e2e-success:
