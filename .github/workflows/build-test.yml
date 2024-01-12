@@ -253,7 +253,7 @@ jobs:
         run: |
           RESULT=$(docker-compose exec -i synpress-test sh -c "test -d /app/packages/arb-token-bridge-ui/cypress/screenshots")
 
-          echo RESULT
+          echo "${RESULT}"
 
           if [ $RESULT==0 ]; then
             echo "screenshots=exist" >> "$GITHUB_OUTPUT"
