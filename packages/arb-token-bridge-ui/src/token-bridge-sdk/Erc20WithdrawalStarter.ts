@@ -70,6 +70,8 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
 
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
+    // check first if token is even eligible for allowance check on l2
     if (
       tokenRequiresApprovalOnL2(destinationChainErc20Address, sourceChainId) &&
       this.sourceChainErc20Address
@@ -84,8 +86,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
         l2Provider: this.sourceChainProvider
       })
 
-      return (await token.allowance(address, gatewayAddress)).gte(amount)
+      const allowance = await token.allowance(address, gatewayAddress)
+
+      return amount.gt(allowance)
     }
+
     return false
   }
 

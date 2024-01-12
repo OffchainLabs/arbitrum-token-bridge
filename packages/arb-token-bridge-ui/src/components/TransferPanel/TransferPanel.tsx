@@ -410,18 +410,18 @@ export function TransferPanel() {
 
   const checkTokenSuspension = async ({
     selectedToken,
-    sourceChainProvider,
-    destinationChainProvider
+    l1Provider,
+    l2Provider
   }: {
     selectedToken: ERC20BridgeToken
-    sourceChainProvider: Provider
-    destinationChainProvider: Provider
+    l1Provider: Provider
+    l2Provider: Provider
   }) => {
     // check that a registration is not currently in progress
     const l2RoutedAddress = await getL2ERC20Address({
       erc20L1Address: selectedToken.address,
-      l1Provider: sourceChainProvider,
-      l2Provider: destinationChainProvider
+      l1Provider,
+      l2Provider
     })
 
     // check if the token is suspended
@@ -744,7 +744,7 @@ export function TransferPanel() {
       if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
         if (shouldTrackAnalytics(l2NetworkName)) {
           trackEvent('Switch Network and Transfer', {
-            type: 'Deposit', //todo: change this
+            type: isDepositMode ? 'Deposit' : 'Withdrawal',
             tokenSymbol: selectedToken?.symbol,
             assetType: selectedToken ? 'ERC-20' : 'ETH',
             accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -779,19 +779,17 @@ export function TransferPanel() {
 
       const l2ChainID = latestNetworksAndSigners.current.l2.network.id
 
+      // Transfer is invalid if the connected chain doesn't mismatches source-destination chain requirements
       const depositNetworkConnectionWarning =
         isDepositMode &&
         (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current)
       const withdrawalNetworkConnectionWarning =
         !isDepositMode &&
         !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
-
       if (
         depositNetworkConnectionWarning ||
         withdrawalNetworkConnectionWarning
       ) {
-        // Deposit is invalid if the connected chain doesn't match L1...
-        // ...or if connected to an Orbit chain, as it can't make deposits. .. and same for withdrawals: todo: make the comment better
         return networkConnectionWarningToast()
       }
 
@@ -815,10 +813,9 @@ export function TransferPanel() {
 
       const { transferType } = bridgeTransferStarter
 
-      // validation: signer should be connected
       if (!signer) throw Error('Signer not connected!')
 
-      // validation: SCW transfers are not enabled for ETH transfers yet
+      // SCW transfers are not enabled for ETH transfers yet
       if (transferType.includes('eth') && isSmartContractWallet) {
         console.error(
           "ETH transfers aren't enabled for smart contract wallets."
@@ -826,7 +823,7 @@ export function TransferPanel() {
         return
       }
 
-      // validation: if destination address is added, validate it
+      // if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
         isSmartContractWallet
@@ -836,7 +833,6 @@ export function TransferPanel() {
         return
       }
 
-      // logic: check if native currency approval is required for selected transfer type
       const isNativeCurrencyApprovalRequired =
         await bridgeTransferStarter.requiresNativeCurrencyApproval({
           signer,
@@ -844,11 +840,10 @@ export function TransferPanel() {
         })
 
       if (isNativeCurrencyApprovalRequired) {
-        // user confirmation: show native currency approval dialog
+        // show native currency approval dialog
         const userConfirmation = await customFeeTokenApproval()
         if (!userConfirmation) return false
 
-        // logic: approve native currency
         await bridgeTransferStarter.approveNativeCurrency({
           signer
         })
@@ -858,10 +853,10 @@ export function TransferPanel() {
       if (selectedToken) {
         const tokenAddress = selectedToken.address
 
-        // validation: is selected token deployed on parent-chain?
+        // is selected token deployed on parent-chain?
         if (!tokenAddress) Error('Token not deployed on source chain.')
 
-        // validation: check if the selected token is a warning token
+        // warning token handling
         const warningToken =
           selectedToken && warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
@@ -871,11 +866,11 @@ export function TransferPanel() {
           )
         }
 
-        // validation: check if the selected token is suspended
+        // token suspension handling
         const isTokenSuspended = await checkTokenSuspension({
           selectedToken,
-          sourceChainProvider,
-          destinationChainProvider
+          l1Provider,
+          l2Provider
         })
         if (isTokenSuspended) {
           const message =
@@ -884,28 +879,31 @@ export function TransferPanel() {
           throw message
         }
 
-        // user confirmation: check for first time token deployment from user
+        // if token is being bridged for first time, it will need to be registered in gateway
         const userConfirmationForFirstTimeTokenBridging =
           await firstTimeTokenBridgingConfirmation()
         if (!userConfirmationForFirstTimeTokenBridging) {
           throw Error('User declined bridging the token for the first time')
         }
 
-        // logic: check if selected token approval is required for selected transfer type
+        // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
+        if (transferType.includes('withdrawal') && !isSmartContractWallet) {
+          const withdrawalConfirmation = await confirmWithdrawal()
+          if (!withdrawalConfirmation) return false
+        }
+
+        // token approval
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
             signer,
             destinationAddress
           })
-
         if (isTokenApprovalRequired) {
-          // user confirmation: show selected token approval dialog
           const userConfirmation = await tokenAllowanceApproval()
           if (!userConfirmation) return false
 
-          // logic: approve selected token
-          if (isSmartContractWallet) {
+          if (isSmartContractWallet && transferType.includes('withdrawal')) {
             showDelayInSmartContractTransaction()
           }
           await bridgeTransferStarter.approveToken({
@@ -914,16 +912,21 @@ export function TransferPanel() {
         }
       }
 
-      // user confirmation: if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
-      if (transferType.includes('withdrawal') && !isSmartContractWallet) {
-        const withdrawalConfirmation = await confirmWithdrawal()
-        if (!withdrawalConfirmation) return false
-      }
-
+      // show a delay in case of SCW because tx is executed in an external app
       if (isSmartContractWallet) {
         showDelayInSmartContractTransaction()
+        if (shouldTrackAnalytics(l2NetworkName)) {
+          trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
+            tokenSymbol: selectedToken?.symbol,
+            assetType: 'ERC-20',
+            accountType: 'Smart Contract',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
+        }
       }
-      // logic: finally, call the transfer function
+
+      // finally, call the transfer function
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
@@ -941,8 +944,16 @@ export function TransferPanel() {
   }
 
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
-    // todo: this should be just the verbose event tracking code
-    // trackTransferPanelEvent(isDepositMode ? 'Deposit' : 'Withdraw')
+    const l2NetworkName = getNetworkName(l2Network.id)
+    if (!isSmartContractWallet && shouldTrackAnalytics(l2NetworkName)) {
+      trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
+        tokenSymbol: selectedToken?.symbol,
+        assetType: selectedToken ? 'ERC-20' : 'ETH',
+        accountType: 'EOA',
+        network: l2NetworkName,
+        amount: Number(amount)
+      })
+    }
 
     const { transferType, sourceChainTransaction } = bridgeTransfer
     const isDeposit =
