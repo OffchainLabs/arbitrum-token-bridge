@@ -252,16 +252,17 @@ jobs:
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Copy test results from docker container volumes
-        run: docker cp synpress-test:/app/tests/e2e/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+        run: docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
-      
-      - name: Stop docker
-        run: docker-compose down -f docker-compose.yml
+
+      - name: Output artifact ID
+        if: steps.test-results.outputs.artifact_id != ''
+        run: exit 1
 
   test-e2e-success:
     name: "Test E2E Success"
