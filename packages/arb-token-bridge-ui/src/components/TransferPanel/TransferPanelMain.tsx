@@ -1001,6 +1001,7 @@ export function TransferPanelMain({
   }, [
     networks.sourceChain,
     networks.destinationChain,
+    isTestnetMode,
     isDepositMode,
     isSmartContractWallet,
     parentChain,
