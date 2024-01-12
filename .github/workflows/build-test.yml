@@ -243,8 +243,8 @@ jobs:
         id: e2e-run
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
-          docker-compose run --rm synpress-test
-          if [[ $? -eq 0 ]]; then
+          result=$(docker wait synpress)
+          if [[ $result -eq 0 ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failed" >> $GITHUB_OUTPUT
