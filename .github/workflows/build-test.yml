@@ -251,7 +251,7 @@ jobs:
       - name: Check if test results directory exists in docker
         id: screenshots-exist
         run: |
-          RESULT=$(docker-compose exec synpress-test [ -d "/app/packages/arb-token-bridge-ui/cypress/screenshots" ] && echo "exist" || echo "none")
+          RESULT=$(docker exec synpress-test /bin/bash -c "[ -d '/app/packages/arb-token-bridge-ui/cypress/screenshots' ] && echo 'exist' || echo 'none'")
 
           echo "${RESULT}"
 
