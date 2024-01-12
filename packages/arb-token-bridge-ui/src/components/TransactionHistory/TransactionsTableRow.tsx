@@ -18,6 +18,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 
 export function TransactionsTableRow({
   tx,
@@ -139,10 +140,13 @@ export function TransactionsTableRow({
       )}
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
-      <div className="pr-3 align-middle">
-        {formatAmount(Number(tx.value), {
-          symbol: tokenSymbol
-        })}
+      <div className="flex items-center pr-3 align-middle">
+        <TransactionsTableTokenImage tokenSymbol={tx.asset} />
+        <span className="ml-2">
+          {formatAmount(Number(tx.value), {
+            symbol: tokenSymbol
+          })}
+        </span>
       </div>
       <div className="flex items-center space-x-2">
         <span>
