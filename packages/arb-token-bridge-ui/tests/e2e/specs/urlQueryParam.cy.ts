@@ -27,7 +27,7 @@ describe('User enters site with query params on URL', () => {
 
         cy.findByPlaceholderText(/Enter amount/i)
           .should('be.visible')
-          .should('not.have.text', 'max')
+          .should('have.text', 'max') // deliberate failure
           .should('not.have.text', 'MAX')
           // it's very hard to get the max amount separately
           // so this test only asserts the amount set for the input field is less than user's balance
