@@ -240,44 +240,39 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Run e2e tests
+        id: e2e-run
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
+          RESULT=$(docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress && echo 'exist' || echo 'none')
+
+          echo "screenshots=${RESULT}" >> "$GITHUB_OUTPUT"
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
 
-      - name: Check if test results directory exists in docker
-        id: screenshots-exist
-        run: |
-          RESULT=$(docker exec synpress-test /bin/bash -c "[ -d '/app/packages/arb-token-bridge-ui/cypress/screenshots' ] && echo 'exist' || echo 'none'")
-
-          echo "${RESULT}"
-
-          echo "screenshots=${RESULT}" >> "$GITHUB_OUTPUT"
-
       - name: Log output
-        run: echo ${{ steps.screenshots-exist.outputs.screenshots }}
+        run: echo ${{ steps.e2e-run.outputs.screenshots }}
       
       - name: Create test results directory
-        if: steps.screenshots-exist.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.screenshots == 'exist'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Copy test results from docker container volumes
-        if: steps.screenshots-exist.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.screenshots == 'exist'
         run: |
           docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Upload test results
-        if: steps.screenshots-exist.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.screenshots == 'exist'
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Output artifact ID
-        if: steps.screenshots-exist.outputs.screenshots == 'exist'
+        if: steps.e2e-run.outputs.screenshots == 'exist'
         run: exit 1
 
   test-e2e-success:
