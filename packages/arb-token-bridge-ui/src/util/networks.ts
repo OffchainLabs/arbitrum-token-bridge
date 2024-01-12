@@ -37,7 +37,7 @@ export function getBaseChainIdByChainId({
 
   const parentChain = { ...l1Networks, ...l2Networks }[chain.partnerChainID]
 
-  if (!parentChain) {
+  if (!parentChain || parentChain.partnerChainIDs.length === 0) {
     return chainId
   }
 
