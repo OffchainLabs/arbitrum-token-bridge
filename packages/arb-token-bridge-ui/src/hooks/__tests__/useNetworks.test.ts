@@ -47,8 +47,7 @@ describe('sanitizeQueryParams', () => {
     it('should not do anything', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
-        destinationChainId: ChainId.ArbitrumSepolia,
-        walletChainId: ChainId.Sepolia
+        destinationChainId: ChainId.ArbitrumSepolia
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -56,8 +55,7 @@ describe('sanitizeQueryParams', () => {
       })
       const resultWithArbitrumSepolia = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
-        destinationChainId: ChainId.ArbitrumSepolia,
-        walletChainId: ChainId.ArbitrumSepolia
+        destinationChainId: ChainId.ArbitrumSepolia
       })
       expect(resultWithArbitrumSepolia).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -65,8 +63,7 @@ describe('sanitizeQueryParams', () => {
       })
       const resultWithBothChainsBeingTheSame = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
-        destinationChainId: ChainId.Sepolia,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: ChainId.Sepolia
       })
       expect(resultWithBothChainsBeingTheSame).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -76,8 +73,7 @@ describe('sanitizeQueryParams', () => {
       // Orbit chains
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
-        destinationChainId: ChainId.ArbitrumSepolia,
-        walletChainId: ChainId.Sepolia
+        destinationChainId: ChainId.ArbitrumSepolia
       })
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
@@ -86,8 +82,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithGoerliOrbitChain = sanitizeQueryParams({
         sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli,
-        walletChainId: ChainId.Sepolia
+        destinationChainId: ChainId.ArbitrumGoerli
       })
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: 1111,
@@ -99,8 +94,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: 1234,
-        destinationChainId: ChainId.ArbitrumSepolia,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: ChainId.ArbitrumSepolia
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -110,8 +104,7 @@ describe('sanitizeQueryParams', () => {
       // Orbit chains
       const resultWithGoerliOrbitChain = sanitizeQueryParams({
         sourceChainId: 1234,
-        destinationChainId: 1111,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 1111
       })
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: ChainId.ArbitrumGoerli,
@@ -120,8 +113,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 1234,
-        destinationChainId: 2222,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 2222
       })
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: ChainId.ArbitrumSepolia,
@@ -130,8 +122,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithArbitrumOneChain = sanitizeQueryParams({
         sourceChainId: 1234,
-        destinationChainId: 3333,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 3333
       })
       expect(resultWithArbitrumOneChain).toEqual({
         sourceChainId: ChainId.ArbitrumOne,
@@ -140,8 +131,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithArbitrumNovaChain = sanitizeQueryParams({
         sourceChainId: 1234,
-        destinationChainId: 4444,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 4444
       })
       expect(resultWithArbitrumNovaChain).toEqual({
         sourceChainId: ChainId.ArbitrumNova,
@@ -153,8 +143,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
-        destinationChainId: ChainId.ArbitrumNova,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: ChainId.ArbitrumNova
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Ethereum,
@@ -163,8 +152,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithGoerliOrbitChain = sanitizeQueryParams({
         sourceChainId: undefined,
-        destinationChainId: 1111,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 1111
       })
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: ChainId.ArbitrumGoerli,
@@ -172,8 +160,7 @@ describe('sanitizeQueryParams', () => {
       })
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: undefined,
-        destinationChainId: 2222,
-        walletChainId: ChainId.Ethereum
+        destinationChainId: 2222
       })
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: ChainId.ArbitrumSepolia,
@@ -186,8 +173,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
-        destinationChainId: 12345,
-        walletChainId: ChainId.ArbitrumNova
+        destinationChainId: 12345
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -197,8 +183,7 @@ describe('sanitizeQueryParams', () => {
       // Orbit chains
       const resultWithGoerliOrbitChain = sanitizeQueryParams({
         sourceChainId: 1111,
-        destinationChainId: 1234,
-        walletChainId: ChainId.ArbitrumNova
+        destinationChainId: 1234
       })
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: 1111,
@@ -207,8 +192,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
-        destinationChainId: 1234,
-        walletChainId: ChainId.ArbitrumNova
+        destinationChainId: 1234
       })
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
@@ -217,8 +201,7 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithArbitrumOneChain = sanitizeQueryParams({
         sourceChainId: 3333,
-        destinationChainId: 1234,
-        walletChainId: ChainId.ArbitrumNova
+        destinationChainId: 1234
       })
       expect(resultWithArbitrumOneChain).toEqual({
         sourceChainId: 3333,
@@ -227,38 +210,11 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithArbitrumNovaChain = sanitizeQueryParams({
         sourceChainId: 4444,
-        destinationChainId: 1234,
-        walletChainId: ChainId.ArbitrumNova
+        destinationChainId: 1234
       })
       expect(resultWithArbitrumNovaChain).toEqual({
         sourceChainId: 4444,
         destinationChainId: ChainId.ArbitrumNova
-      })
-    })
-  })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is invalid', () => {
-    it('should set both chainId based on wallet state', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 12345,
-        walletChainId: ChainId.ArbitrumNova
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.ArbitrumNova,
-        destinationChainId: ChainId.Ethereum
-      })
-    })
-  })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is undefined', () => {
-    it('should set both chainId based on wallet state', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 12345,
-        walletChainId: ChainId.ArbitrumSepolia
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.ArbitrumSepolia,
-        destinationChainId: ChainId.Sepolia
       })
     })
   })
@@ -267,8 +223,7 @@ describe('sanitizeQueryParams', () => {
     it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
-        destinationChainId: undefined,
-        walletChainId: ChainId.Goerli
+        destinationChainId: undefined
       })
       expect(result).toEqual({
         sourceChainId: ChainId.Sepolia,
@@ -278,8 +233,7 @@ describe('sanitizeQueryParams', () => {
       // Orbit chains
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
-        destinationChainId: undefined,
-        walletChainId: ChainId.Goerli
+        destinationChainId: undefined
       })
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
@@ -288,37 +242,10 @@ describe('sanitizeQueryParams', () => {
 
       const resultWithGoerliOrbitChain = sanitizeQueryParams({
         sourceChainId: 1111,
-        destinationChainId: undefined,
-        walletChainId: ChainId.Goerli
+        destinationChainId: undefined
       })
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-    })
-  })
-  describe('when `destinationChainId` is undefined and `sourceChainId` is invalid', () => {
-    it('should set both chainId based on wallet state', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: undefined,
-        walletChainId: ChainId.Goerli
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Goerli,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-    })
-  })
-  describe('when`destinationChainId` is undefined and`sourceChainId` is undefined', () => {
-    it('should set both chainId based on wallet state', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: undefined,
-        walletChainId: ChainId.XaiTestnet
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.XaiTestnet,
         destinationChainId: ChainId.ArbitrumGoerli
       })
     })
