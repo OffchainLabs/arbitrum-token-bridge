@@ -220,8 +220,6 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
-  useSyncSelectedToken()
-
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
