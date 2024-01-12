@@ -565,8 +565,8 @@ export function TransferPanelMain({
         const result = await depositEthEstimateGas({
           amount: weiValue,
           address: walletAddress,
-          l1Provider: networks.sourceChainProvider,
-          l2Provider: networks.destinationChainProvider
+          l1Provider: parentChainProvider,
+          l2Provider: childChainProvider
         })
         return result
       }
@@ -574,17 +574,12 @@ export function TransferPanelMain({
       const result = await withdrawEthEstimateGas({
         amount: weiValue,
         address: walletAddress,
-        l2Provider: networks.destinationChainProvider
+        l2Provider: childChainProvider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [
-      walletAddress,
-      isDepositMode,
-      networks.destinationChainProvider,
-      networks.sourceChainProvider
-    ]
+    [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
   )
 
   const setMaxAmount = useCallback(async () => {
