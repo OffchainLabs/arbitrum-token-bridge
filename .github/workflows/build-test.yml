@@ -243,8 +243,8 @@ jobs:
         id: e2e-run
         run: |
           docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
-          result=$(docker wait synpress-test)
-          if [[ $result -eq 0 ]]; then
+          exitcode=$(docker wait synpress-test)
+          if [[ $exitcode -eq 0 ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=failed" >> $GITHUB_OUTPUT
@@ -254,9 +254,6 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
-
-      - name: Log output
-        run: echo ${{ steps.e2e-run.outputs.status }}
       
       - name: Create test results directory
         if: steps.e2e-run.outputs.status == 'failed'
@@ -271,10 +268,10 @@ jobs:
         if: steps.e2e-run.outputs.status == 'failed'
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ fromJSON(toJSON(matrix.tests)).name }}
+          name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
-      - name: Output artifact ID
+      - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
 
