@@ -130,12 +130,12 @@ function CustomAddressBanner({
 
   const bannerClassName = useMemo(() => {
     if (!isArbitrum) {
-      return 'bg-cyan border-eth-dark'
+      return 'bg-cyan border-[#1A1C33]'
     }
     if (isArbitrumNova) {
-      return 'bg-orange border-arb-nova-dark'
+      return 'bg-orange border-[#743600]'
     }
-    return 'bg-cyan border-arb-one-dark'
+    return 'bg-cyan border-[#001A6B]'
   }, [isArbitrum, isArbitrumNova])
 
   if (!customAddress) {
