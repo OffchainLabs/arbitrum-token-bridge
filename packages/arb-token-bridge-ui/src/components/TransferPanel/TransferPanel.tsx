@@ -931,8 +931,6 @@ export function TransferPanel() {
         destinationAddress
       })
 
-      window.alert('Transfer initiated, handle in UI')
-
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (ex) {
