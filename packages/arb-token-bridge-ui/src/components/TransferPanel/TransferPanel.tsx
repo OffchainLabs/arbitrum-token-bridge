@@ -409,18 +409,18 @@ export function TransferPanel() {
 
   const checkTokenSuspension = async ({
     selectedToken,
-    sourceChainProvider,
-    destinationChainProvider
+    l1Provider,
+    l2Provider
   }: {
     selectedToken: ERC20BridgeToken
-    sourceChainProvider: Provider
-    destinationChainProvider: Provider
+    l1Provider: Provider
+    l2Provider: Provider
   }) => {
     // check that a registration is not currently in progress
     const l2RoutedAddress = await getL2ERC20Address({
       erc20L1Address: selectedToken.address,
-      l1Provider: sourceChainProvider,
-      l2Provider: destinationChainProvider
+      l1Provider,
+      l2Provider
     })
 
     // check if the token is suspended
@@ -876,8 +876,8 @@ export function TransferPanel() {
         // validation: check if the selected token is suspended
         const isTokenSuspended = await checkTokenSuspension({
           selectedToken,
-          sourceChainProvider,
-          destinationChainProvider
+          l1Provider,
+          l2Provider
         })
         if (isTokenSuspended) {
           const message =
