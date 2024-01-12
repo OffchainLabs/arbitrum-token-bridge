@@ -851,7 +851,7 @@ export function TransferPanel() {
         })
       }
 
-      // checks for selected token, if any
+      // checks for the selected token
       if (selectedToken) {
         const tokenAddress = selectedToken.address
 
@@ -887,14 +887,16 @@ export function TransferPanel() {
         if (!userConfirmationForFirstTimeTokenBridging) {
           throw Error('User declined bridging the token for the first time')
         }
+      }
 
-        // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
-        if (!isDepositMode && !isSmartContractWallet) {
-          const withdrawalConfirmation = await confirmWithdrawal()
-          if (!withdrawalConfirmation) return false
-        }
+      // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
+      if (transferType.includes('withdrawal') && !isSmartContractWallet) {
+        const withdrawalConfirmation = await confirmWithdrawal()
+        if (!withdrawalConfirmation) return false
+      }
 
-        // token approval
+      // token approval
+      if (selectedToken) {
         const isTokenApprovalRequired =
           await bridgeTransferStarter.requiresTokenApproval({
             amount: amountBigNumber,
@@ -905,7 +907,7 @@ export function TransferPanel() {
           const userConfirmation = await tokenAllowanceApproval()
           if (!userConfirmation) return false
 
-          if (isSmartContractWallet && !isDepositMode) {
+          if (isSmartContractWallet && transferType.includes('withdrawal')) {
             showDelayInSmartContractTransaction()
           }
           await bridgeTransferStarter.approveToken({
