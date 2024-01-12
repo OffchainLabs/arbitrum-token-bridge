@@ -27,11 +27,12 @@ export function NetworkListbox({
       isArbitrum,
       isArbitrumNova,
       isOrbitChain,
+      isXai,
       isXaiTestnet,
       isStylusTestnet
     } = isNetwork(value.id)
 
-    if (isXaiTestnet) {
+    if (isXaiTestnet || isXai) {
       return 'bg-xai-primary'
     }
 

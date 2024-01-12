@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -21,7 +21,6 @@ import {
   ContractStorage,
   ERC20BridgeToken,
   L2ToL1EventResultPlus,
-  PendingWithdrawalsMap,
   TokenType,
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
@@ -149,37 +148,12 @@ export const useArbTokenBridge = (
       React.Dispatch<void>
     ]
 
-  const [pendingWithdrawalsMap, setPendingWithdrawalMap] =
-    useState<PendingWithdrawalsMap>({})
-
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
-  // once the l1/l2/account changes, we need to revalidate the withdrawal list in the store
-  // this prevents previous account/chains' transactions to show up in the current account
-  // also makes sure the state of app doesn't get incrementally bloated with all accounts' txns loaded up till date
-  useEffect(() => {
-    if (!walletAddress) {
-      return
-    }
-    // reset pending-withdrawal-map and re-fetch for new set of L1/L2/Account combination
-    setPendingWithdrawalMap({})
-  }, [l1NetworkID, l2NetworkID, walletAddress])
   const [
     transactions,
-    {
-      addTransaction,
-      addTransactions,
-      setDepositsInStore,
-      setTransactionFailure,
-      clearPendingTransactions,
-      setTransactionConfirmed,
-      setTransactionSuccess,
-      updateTransaction,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus
-    }
+    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
   ] = useTransactions()
 
   const depositEth = async ({
@@ -450,7 +424,12 @@ export const useArbTokenBridge = (
         from: walletAddress,
         erc20L1Address,
         destinationAddress,
-        amount
+        amount,
+        retryableGasOverrides: {
+          // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+          // the 30% gas limit increase should cover the difference
+          gasLimit: { percentIncrease: BigNumber.from(30) }
+        }
       })
 
       const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
@@ -978,18 +957,6 @@ export const useArbTokenBridge = (
     setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
-  const setWithdrawalsInStore = (withdrawalTxns: L2ToL1EventResultPlus[]) => {
-    const pwMap = {} as PendingWithdrawalsMap
-    withdrawalTxns.forEach(tx => {
-      const id = getUniqueIdOrHashFromEvent(tx).toString()
-      pwMap[id] = tx
-    })
-    setPendingWithdrawalMap(previousPendingWithdrawalsMap => ({
-      ...previousPendingWithdrawalsMap,
-      ...pwMap
-    }))
-  }
-
   return {
     bridgeTokens,
     eth: {
@@ -1011,17 +978,9 @@ export const useArbTokenBridge = (
     },
     transactions: {
       transactions,
-      setDepositsInStore,
-      clearPendingTransactions,
-      setTransactionConfirmed,
       updateTransaction,
       addTransaction,
-      addTransactions,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus
-    },
-    pendingWithdrawalsMap: pendingWithdrawalsMap,
-    setWithdrawalsInStore
+      fetchAndUpdateL1ToL2MsgStatus
+    }
   }
 }

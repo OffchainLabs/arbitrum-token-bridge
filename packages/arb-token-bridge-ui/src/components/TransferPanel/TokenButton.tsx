@@ -1,16 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
-import { TokenImportDialog } from './TokenImportDialog'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import {
   useNetworksAndSigners,
   UseNetworksAndSignersStatus
 } from '../../hooks/useNetworksAndSigners'
-import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 
@@ -24,9 +22,6 @@ export function TokenButton(): JSX.Element {
     }
   } = useAppState()
   const { status, l1, l2 } = useNetworksAndSigners()
-
-  const [tokenToImport, setTokenToImport] = useState<string>()
-  const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
@@ -68,26 +63,8 @@ export function TokenButton(): JSX.Element {
     })
   }, [selectedToken, nativeCurrency, isDepositMode, l2.network, l1.network])
 
-  function closeWithReset() {
-    setTokenToImport(undefined)
-    tokenImportDialogProps.onClose(false)
-  }
-
-  function importToken(address: string) {
-    setTokenToImport(address)
-    openTokenImportDialog()
-  }
-
   return (
     <>
-      {typeof tokenToImport !== 'undefined' && (
-        <TokenImportDialog
-          {...tokenImportDialogProps}
-          onClose={closeWithReset}
-          tokenAddress={tokenToImport}
-        />
-      )}
-
       <Popover className="h-full">
         <Popover.Button
           className="arb-hover h-full w-max rounded-bl-xl rounded-tl-xl bg-white px-3 hover:bg-gray-2"
@@ -101,7 +78,7 @@ export function TokenButton(): JSX.Element {
               <img
                 src={tokenLogo}
                 alt="Token logo"
-                className="h-5 w-5 rounded-full sm:h-8 sm:w-8"
+                className="h-5 w-5 sm:h-8 sm:w-8"
               />
             )}
             <span className="text-xl font-light sm:text-3xl">
@@ -111,9 +88,7 @@ export function TokenButton(): JSX.Element {
           </div>
         </Popover.Button>
         <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
-          {({ close }) => (
-            <TokenSearch close={close} onImportToken={importToken} />
-          )}
+          {({ close }) => <TokenSearch close={close} />}
         </Popover.Panel>
       </Popover>
     </>
