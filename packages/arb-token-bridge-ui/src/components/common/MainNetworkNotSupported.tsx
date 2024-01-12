@@ -1,8 +1,9 @@
 import Image from 'next/image'
 
-import { ChainId, getNetworkLogo, getNetworkName } from '../../util/networks'
+import { ChainId, getNetworkName } from '../../util/networks'
 import { Button } from './Button'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 // info about the logo and the button class of network list
 const networkButtonsStyles: {
@@ -50,7 +51,7 @@ export const MainNetworkNotSupported = ({
           <div className="flex flex-row items-center justify-center space-x-3">
             <div className="flex h-8 w-8 items-center justify-center">
               <Image
-                src={getNetworkLogo(Number(chainId))}
+                src={getBridgeUiConfigForChain(Number(chainId)).networkLogo}
                 alt={`${getNetworkName(Number(chainId))} logo`}
                 className="h-full w-auto"
                 width={32}

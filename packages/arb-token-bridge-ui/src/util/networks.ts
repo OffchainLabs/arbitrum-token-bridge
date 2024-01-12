@@ -10,7 +10,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
-import { getChainConfigUI } from './orbitChainsConfig'
+import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -547,59 +547,7 @@ export function isNetwork(chainId: ChainId) {
 }
 
 export function getNetworkName(chainId: number) {
-  const customChain = getCustomChainFromLocalStorageById(chainId)
-
-  if (customChain) {
-    return customChain.name
-  }
-
-  switch (chainId) {
-    case ChainId.Ethereum:
-      return 'Ethereum'
-
-    case ChainId.Goerli:
-      return 'Goerli'
-
-    case ChainId.Sepolia:
-      return 'Sepolia'
-
-    case ChainId.Local:
-      return 'Ethereum'
-
-    case ChainId.ArbitrumOne:
-      return 'Arbitrum One'
-
-    case ChainId.ArbitrumNova:
-      return 'Arbitrum Nova'
-
-    case ChainId.ArbitrumGoerli:
-      return 'Arbitrum Goerli'
-
-    case ChainId.ArbitrumSepolia:
-      return 'Arbitrum Sepolia'
-
-    case ChainId.ArbitrumLocal:
-      return 'Arbitrum'
-
-    case ChainId.XaiTestnet:
-      return 'Xai Testnet'
-
-    case ChainId.Xai:
-      return 'Xai'
-
-    case ChainId.StylusTestnet:
-      return 'Stylus Testnet'
-
-    default:
-      return 'Unknown'
-  }
-}
-
-export function getNetworkLogo(
-  chainId: number,
-  variant: 'light' | 'dark' = 'dark'
-) {
-  return getChainConfigUI(chainId, { variant }).networkLogo
+  return getBridgeUiConfigForChain(chainId).networkName
 }
 
 export function getSupportedNetworks(chainId = 0, includeTestnets = false) {

@@ -78,7 +78,7 @@ import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
-import { getChainConfigUI } from '../../util/orbitChainsConfig'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 enum NetworkType {
   l1 = 'l1',
@@ -172,7 +172,7 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { secondaryColor, networkLogo } = getChainConfigUI(network.id)
+  const { secondaryColor, networkLogo } = getBridgeUiConfigForChain(network.id)
 
   const backgroundImage = `url(${networkLogo})`
 

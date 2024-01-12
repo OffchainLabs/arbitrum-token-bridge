@@ -5,8 +5,8 @@ import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
 import Image from 'next/image'
 
-import { getNetworkLogo, getNetworkName } from '../../util/networks'
-import { getChainConfigUI } from '../../util/orbitChainsConfig'
+import { getNetworkName } from '../../util/networks'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export type NetworkListboxProps = {
   disabled?: boolean
@@ -23,7 +23,7 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  const { primaryColor } = getChainConfigUI(value.id)
+  const { primaryColor } = getBridgeUiConfigForChain(value.id)
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -77,7 +77,7 @@ export function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
-                    src={getNetworkLogo(option.id)}
+                    src={getBridgeUiConfigForChain(option.id).networkLogo}
                     alt={`${getNetworkName(option.id)} logo`}
                     className="max-h-7 w-auto"
                     width={36}

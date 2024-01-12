@@ -6,7 +6,6 @@ import { useWindowSize } from 'react-use'
 
 import {
   ChainId,
-  getNetworkLogo,
   getNetworkName,
   getSupportedNetworks,
   isNetwork
@@ -14,6 +13,7 @@ import {
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export const NetworkSelectionContainer = ({
   children
@@ -113,10 +113,11 @@ export const NetworkSelectionContainer = ({
                     >
                       <div className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
                         <Image
-                          src={getNetworkLogo(
-                            Number(chainId),
-                            isLgScreen ? 'dark' : 'light'
-                          )}
+                          src={
+                            getBridgeUiConfigForChain(Number(chainId), {
+                              variant: isLgScreen ? 'dark' : 'light'
+                            }).networkLogo
+                          }
                           alt={`${getNetworkName(Number(chainId))} logo`}
                           className="h-full w-auto"
                           width={24}

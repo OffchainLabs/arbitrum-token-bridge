@@ -71,7 +71,7 @@ import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenMod
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { getChainConfigUI } from '../../util/orbitChainsConfig'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -1230,7 +1230,8 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: getChainConfigUI(l2Network.id).secondaryColor
+                backgroundColor: getBridgeUiConfigForChain(l2Network.id)
+                  .secondaryColor
               }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
@@ -1257,7 +1258,8 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: getChainConfigUI(l1Network.id).secondaryColor
+                backgroundColor: getBridgeUiConfigForChain(l1Network.id)
+                  .secondaryColor
               }}
               className="w-full py-4 text-lg lg:text-2xl"
             >

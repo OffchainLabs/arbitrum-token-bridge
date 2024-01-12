@@ -3,8 +3,9 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import { useNetwork } from 'wagmi'
 
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export function HeaderNetworkInformation() {
   const { chain } = useNetwork()
@@ -30,7 +31,10 @@ export function HeaderNetworkInformation() {
         )}
       >
         <Image
-          src={getNetworkLogo(chain.id, 'light')}
+          src={
+            getBridgeUiConfigForChain(chain.id, { variant: 'light' })
+              .networkLogo
+          }
           alt={`${networkName} logo`}
           className="h-full w-auto"
           width={40}
