@@ -244,7 +244,7 @@ jobs:
         run: |
           RESULT=$(docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress)
           echo 'status<<EOF' >> $GITHUB_OUTPUT
-          echo "${RESULT}" >> $GITHUB_OUTPUT
+          echo '${RESULT}' >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
