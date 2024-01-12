@@ -10,6 +10,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
+import { getChainConfigUI } from './orbitChainsConfig'
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -598,44 +599,7 @@ export function getNetworkLogo(
   chainId: number,
   variant: 'light' | 'dark' = 'dark'
 ) {
-  switch (chainId) {
-    // L1 networks
-    case ChainId.Ethereum:
-    case ChainId.Goerli:
-    case ChainId.Sepolia:
-      return '/images/EthereumLogo.svg'
-
-    // L2 networks
-    case ChainId.ArbitrumOne:
-      return '/images/ArbitrumOneLogo.svg'
-
-    case ChainId.ArbitrumGoerli:
-    case ChainId.ArbitrumSepolia:
-    case ChainId.ArbitrumLocal:
-      return '/images/ArbitrumLogo.svg'
-
-    case ChainId.ArbitrumNova:
-      return '/images/ArbitrumNovaLogo.svg'
-
-    case ChainId.XaiTestnet:
-    case ChainId.Xai:
-      return '/images/XaiLogo.svg'
-
-    case ChainId.StylusTestnet:
-      return '/images/StylusLogo.svg'
-
-    default:
-      const { isArbitrum, isOrbitChain } = isNetwork(chainId)
-      if (isArbitrum) {
-        return '/images/ArbitrumOneLogo.svg'
-      }
-      if (isOrbitChain) {
-        return variant === 'dark'
-          ? '/images/OrbitLogo.svg'
-          : '/images/OrbitLogoWhite.svg'
-      }
-      return '/images/EthereumLogo.svg'
-  }
+  return getChainConfigUI(chainId, { variant }).networkLogo
 }
 
 export function getSupportedNetworks(chainId = 0, includeTestnets = false) {

@@ -78,6 +78,7 @@ import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
+import { getChainConfigUI } from '../../util/orbitChainsConfig'
 
 enum NetworkType {
   l1 = 'l1',
@@ -171,56 +172,9 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXai,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(network.id)
+  const { secondaryColor, networkLogo } = getChainConfigUI(network.id)
 
-    if (isXaiTestnet || isXai) {
-      return {
-        backgroundImage: `url('/images/XaiLogo.svg')`,
-        backgroundClassName: 'bg-xai-dark'
-      }
-    }
-
-    if (isStylusTestnet) {
-      return {
-        backgroundImage: `url('/images/StylusLogo.svg')`,
-        backgroundClassName: 'bg-stylus-dark'
-      }
-    }
-
-    if (isOrbitChain) {
-      return {
-        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
-        backgroundClassName: 'bg-orbit-dark'
-      }
-    }
-
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
-      }
-    }
-
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
-      }
-    }
-
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+  const backgroundImage = `url(${networkLogo})`
 
   const walletAddressLowercased = address?.toLowerCase()
 
@@ -240,8 +194,9 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
+        style={{ backgroundColor: secondaryColor }}
         className={twMerge(
-          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''
         )}
       >

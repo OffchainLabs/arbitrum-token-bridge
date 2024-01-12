@@ -3,7 +3,6 @@ import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useProvider, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -62,7 +61,6 @@ import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -73,6 +71,7 @@ import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenMod
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { getChainConfigUI } from '../../util/orbitChainsConfig'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -166,9 +165,6 @@ export function TransferPanel() {
 
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
-
-  const { depositButtonColorClassName, withdrawalButtonColorClassName } =
-    useStyles()
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -1233,10 +1229,10 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                depositButtonColorClassName
-              )}
+              style={{
+                backgroundColor: getChainConfigUI(l2Network.id).secondaryColor
+              }}
+              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
@@ -1260,10 +1256,10 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full py-4 text-lg lg:text-2xl',
-                withdrawalButtonColorClassName
-              )}
+              style={{
+                backgroundColor: getChainConfigUI(l1Network.id).secondaryColor
+              }}
+              className="w-full py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring

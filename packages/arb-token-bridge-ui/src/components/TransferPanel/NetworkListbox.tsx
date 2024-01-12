@@ -1,11 +1,12 @@
 import { Listbox, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-import { Fragment, useCallback, useMemo } from 'react'
+import { Fragment, useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
 import Image from 'next/image'
 
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkLogo, getNetworkName } from '../../util/networks'
+import { getChainConfigUI } from '../../util/orbitChainsConfig'
 
 export type NetworkListboxProps = {
   disabled?: boolean
@@ -22,38 +23,7 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  const buttonClassName = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXai,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(value.id)
-
-    if (isXaiTestnet || isXai) {
-      return 'bg-xai-primary'
-    }
-
-    if (isStylusTestnet) {
-      return 'bg-stylus-primary'
-    }
-
-    if (isOrbitChain) {
-      return 'bg-orbit-primary'
-    }
-
-    if (!isArbitrum) {
-      return 'bg-eth-primary'
-    }
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-primary'
-    }
-
-    return 'bg-arb-one-primary'
-  }, [value])
+  const { primaryColor } = getChainConfigUI(value.id)
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -79,7 +49,8 @@ export function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        className={`arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3 ${buttonClassName}`}
+        style={{ backgroundColor: primaryColor }}
+        className="arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3"
       >
         <span className="max-w-[220px] truncate md:max-w-[250px]">
           {label} {getNetworkName(value.id)}
