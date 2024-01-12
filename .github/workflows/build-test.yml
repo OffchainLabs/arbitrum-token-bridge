@@ -242,8 +242,13 @@ jobs:
       - name: Run e2e tests
         id: e2e-run
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
-          echo "status=$?" >> $GITHUB_OUTPUT
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
+          docker-compose run --rm synpress-test
+          if [[ $? -eq 0 ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
