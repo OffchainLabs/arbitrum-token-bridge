@@ -1022,9 +1022,9 @@ export function TransferPanelMain({
           <BalancesContainer>
             <>
               <TokenBalance
-                on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
                 balance={
-                  app.isDepositMode
+                  isDepositMode
                     ? selectedTokenBalances.l1
                     : selectedTokenBalances.l2
                 }
@@ -1034,9 +1034,9 @@ export function TransferPanelMain({
               {nativeCurrency.isCustom ? (
                 <>
                   <TokenBalance
-                    on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                    on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
                     balance={
-                      app.isDepositMode
+                      isDepositMode
                         ? customFeeTokenBalances.l1
                         : customFeeTokenBalances.l2
                     }
@@ -1044,11 +1044,11 @@ export function TransferPanelMain({
                     prefix={selectedToken ? '' : 'BALANCE: '}
                   />
                   {/* Only show ETH balance on L1 */}
-                  {app.isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                  {isDepositMode && <ETHBalance balance={ethL1Balance} />}
                 </>
               ) : (
                 <ETHBalance
-                  balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+                  balance={isDepositMode ? ethL1Balance : ethL2Balance}
                   prefix={selectedToken ? '' : 'BALANCE: '}
                 />
               )}
@@ -1120,17 +1120,17 @@ export function TransferPanelMain({
                 <>
                   <TokenBalance
                     balance={
-                      app.isDepositMode
+                      isDepositMode
                         ? selectedTokenBalances.l2
                         : selectedTokenBalances.l1
                     }
-                    on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                    on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                     forToken={selectedToken}
                     prefix={selectedToken ? 'BALANCE: ' : ''}
                   />
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {app.isDepositMode && showUSDCSpecificInfo && (
+                  {isDepositMode && showUSDCSpecificInfo && (
                     <TokenBalance
                       balance={
                         (isArbitrumOne
@@ -1151,22 +1151,20 @@ export function TransferPanelMain({
                   {nativeCurrency.isCustom ? (
                     <>
                       <TokenBalance
-                        on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                        on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                         balance={
-                          app.isDepositMode
+                          isDepositMode
                             ? customFeeTokenBalances.l2
                             : customFeeTokenBalances.l1
                         }
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'BALANCE: '}
                       />
-                      {!app.isDepositMode && (
-                        <ETHBalance balance={ethL1Balance} />
-                      )}
+                      {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
                     </>
                   ) : (
                     <ETHBalance
-                      balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                      balance={isDepositMode ? ethL2Balance : ethL1Balance}
                       prefix={selectedToken ? '' : 'BALANCE: '}
                     />
                   )}
