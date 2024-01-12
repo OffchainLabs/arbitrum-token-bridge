@@ -231,8 +231,6 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
-  [ChainId.XaiTestnet]: 'https://testnet-explorer.xai-chain.net',
-  [ChainId.Xai]: 'https://explorer.xai-chain.net',
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
 }
 
