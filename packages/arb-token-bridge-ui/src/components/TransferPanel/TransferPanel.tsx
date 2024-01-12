@@ -889,7 +889,7 @@ export function TransferPanel() {
         }
 
         // if withdrawal (and not smart-contract-wallet), confirm from user about the delays involved
-        if (transferType.includes('withdrawal') && !isSmartContractWallet) {
+        if (!isDepositMode && !isSmartContractWallet) {
           const withdrawalConfirmation = await confirmWithdrawal()
           if (!withdrawalConfirmation) return false
         }
@@ -905,7 +905,7 @@ export function TransferPanel() {
           const userConfirmation = await tokenAllowanceApproval()
           if (!userConfirmation) return false
 
-          if (isSmartContractWallet && transferType.includes('withdrawal')) {
+          if (isSmartContractWallet && !isDepositMode) {
             showDelayInSmartContractTransaction()
           }
           await bridgeTransferStarter.approveToken({
