@@ -130,7 +130,10 @@ function CustomAddressBanner({
   const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
   const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
 
-  const backgroundColor = useMemo(() => {
+  const backgroundColorForL1OrL2Chain = useMemo(() => {
+    if (isOrbitChain) {
+      return ''
+    }
     if (!isArbitrum) {
       return 'bg-cyan'
     }
@@ -138,7 +141,7 @@ function CustomAddressBanner({
       return 'bg-orange'
     }
     return 'bg-cyan'
-  }, [isArbitrum, isArbitrumNova])
+  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -156,7 +159,7 @@ function CustomAddressBanner({
       }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        !isOrbitChain && backgroundColor
+        !isOrbitChain && backgroundColorForL1OrL2Chain
       )}
     >
       <span>
