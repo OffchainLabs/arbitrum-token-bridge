@@ -30,7 +30,6 @@ describe('User enters site with query params on URL', () => {
             destinationChain: 'arbitrum-localhost'
           }
         })
-        cy.pause()
         cy.findByPlaceholderText(/Enter amount/i)
           .should('be.visible')
           .should('not.have.text', 'max')
