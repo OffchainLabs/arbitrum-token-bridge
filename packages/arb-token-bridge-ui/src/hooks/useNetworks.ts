@@ -1,4 +1,4 @@
-import { Chain, useNetwork } from 'wagmi'
+import { Chain, useChainId } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
@@ -173,8 +173,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
     setQueryParams
   ] = useArbQueryParams()
-  const { chain } = useNetwork()
-  let walletChainId = chain?.id ?? ChainId.Ethereum
+  const chainId = useChainId()
+  let walletChainId = chainId ?? ChainId.Ethereum
   if (!isSupportedChainId(walletChainId)) {
     // If the wallet chain is not supported, use sourceChainId if valid
     walletChainId = sourceChainId ?? ChainId.Ethereum
