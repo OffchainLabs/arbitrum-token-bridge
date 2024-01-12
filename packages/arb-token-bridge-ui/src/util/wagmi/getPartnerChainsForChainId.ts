@@ -12,8 +12,7 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   chainToWagmiChain,
-  stylusTestnet,
-  xaiTestnet
+  stylusTestnet
 } from './wagmiAdditionalNetworks'
 
 export function getPartnerChainsForChainId(chainId: number): Chain[] {
@@ -48,7 +47,7 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [mainnet, ...customArbitrumNovaChains]
 
     case ChainId.ArbitrumGoerli:
-      return [goerli, xaiTestnet, ...customArbitrumGoerliChains]
+      return [goerli, ...customArbitrumGoerliChains]
 
     case ChainId.ArbitrumSepolia:
       return [sepolia, stylusTestnet, ...customArbitrumSepoliaChains]

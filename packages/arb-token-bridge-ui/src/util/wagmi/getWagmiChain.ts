@@ -6,62 +6,76 @@ import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  xaiTestnet,
-  xai,
   stylusTestnet,
   localL1Network,
   localL2Network
 } from './wagmiAdditionalNetworks'
 import { ChainId } from '../networks'
 import { getCustomChainFromLocalStorageById } from '../networks'
+import { orbitChains } from '../orbitChainsList'
 
 export function getWagmiChain(chainId: number): Chain {
   const customChain = getCustomChainFromLocalStorageById(chainId)
+  // excluding Stylus because its part of the SDK
+  const orbitChain = orbitChains[chainId]
+
+  let wagmiChain: Chain | undefined
 
   if (customChain) {
-    return chainToWagmiChain(customChain)
+    wagmiChain = chainToWagmiChain(customChain)
+  }
+
+  if (orbitChain) {
+    wagmiChain = chainToWagmiChain(orbitChain)
   }
 
   switch (chainId) {
     case ChainId.Ethereum:
-      return mainnet
+      wagmiChain = mainnet
+      break
 
     case ChainId.ArbitrumOne:
-      return arbitrum
+      wagmiChain = arbitrum
+      break
 
     case ChainId.ArbitrumNova:
-      return arbitrumNova
+      wagmiChain = arbitrumNova
+      break
 
     // Testnets
     case ChainId.Goerli:
-      return goerli
+      wagmiChain = goerli
+      break
 
     case ChainId.ArbitrumGoerli:
-      return arbitrumGoerli
+      wagmiChain = arbitrumGoerli
+      break
 
     case ChainId.Sepolia:
-      return sepolia
+      wagmiChain = sepolia
+      break
 
     case ChainId.ArbitrumSepolia:
-      return arbitrumSepolia
-
-    case ChainId.XaiTestnet:
-      return xaiTestnet
-
-    case ChainId.Xai:
-      return xai
+      wagmiChain = arbitrumSepolia
+      break
 
     case ChainId.StylusTestnet:
-      return stylusTestnet
+      wagmiChain = stylusTestnet
+      break
 
     // Local networks
     case ChainId.Local:
-      return localL1Network
+      wagmiChain = localL1Network
+      break
 
     case ChainId.ArbitrumLocal:
-      return localL2Network
-
-    default:
-      throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
+      wagmiChain = localL2Network
+      break
   }
+
+  if (!wagmiChain) {
+    throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
+  }
+
+  return wagmiChain
 }

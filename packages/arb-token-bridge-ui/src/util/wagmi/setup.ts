@@ -9,8 +9,6 @@ import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  xaiTestnet,
-  xai,
   stylusTestnet,
   localL1Network as local,
   localL2Network as arbitrumLocal,
@@ -19,9 +17,14 @@ import {
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
+import { orbitChains } from '../orbitChainsList'
+import { getWagmiChain } from './getWagmiChain'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   chainToWagmiChain(chain)
+)
+const wagmiOrbitChains = Object.keys(orbitChains).map(chainId =>
+  getWagmiChain(Number(chainId))
 )
 
 const chainList = isTestingEnvironment
@@ -37,9 +40,8 @@ const chainList = isTestingEnvironment
       sepolia,
       arbitrumSepolia,
       // Orbit chains
-      xaiTestnet,
-      xai,
       stylusTestnet,
+      ...wagmiOrbitChains,
       // add local environments during testing
       local,
       arbitrumLocal,
@@ -54,9 +56,8 @@ const chainList = isTestingEnvironment
       arbitrumGoerli,
       sepolia,
       arbitrumSepolia,
-      xaiTestnet,
-      xai,
       stylusTestnet,
+      ...wagmiOrbitChains,
       ...customChains
     ]
 

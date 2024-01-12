@@ -7,6 +7,7 @@ import {
   getSupportedNetworks
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
+import { orbitChains } from '../util/orbitChainsList'
 
 const chainQueryParams = [
   'ethereum',
@@ -17,7 +18,6 @@ const chainQueryParams = [
   'arbitrum-goerli',
   'arbitrum-sepolia',
   'stylus-testnet',
-  'xai-testnet',
   'local',
   'arbitrum-local'
 ] as const
@@ -54,9 +54,6 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.StylusTestnet:
       return 'stylus-testnet'
 
-    case ChainId.XaiTestnet:
-      return 'xai-testnet'
-
     case ChainId.Sepolia:
       return 'sepolia'
 
@@ -75,8 +72,14 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
         customChain => customChain.chainID === chainId
       )
 
+      const orbitChain = orbitChains[chainId]
+
       if (customChain) {
         return customChain.chainID
+      }
+
+      if (orbitChain) {
+        return orbitChain.chainID
       }
 
       throw new Error(
@@ -112,9 +115,6 @@ export function getChainForChainKeyQueryParam(
 
     case 'stylus-testnet':
       return customChains.stylusTestnet
-
-    case 'xai-testnet':
-      return customChains.xaiTestnet
 
     case 'local':
       return customChains.localL1Network

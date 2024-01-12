@@ -10,42 +10,17 @@ import {
   rpcURLs
 } from '../util/networks'
 import {
-  xai,
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  xaiTestnet,
   stylusTestnet,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
 import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
-
-function getChainByChainId(chainId: ChainId): Chain {
-  const chain = {
-    // L1
-    [ChainId.Ethereum]: mainnet,
-    // L1 Testnet
-    [ChainId.Goerli]: goerli,
-    [ChainId.Sepolia]: sepolia,
-    // L2
-    [ChainId.ArbitrumOne]: arbitrum,
-    [ChainId.ArbitrumNova]: arbitrumNova,
-    // L2 Testnet
-    [ChainId.ArbitrumGoerli]: arbitrumGoerli,
-    [ChainId.ArbitrumSepolia]: arbitrumSepolia,
-    // L3
-    [ChainId.Xai]: xai,
-    [ChainId.XaiTestnet]: xaiTestnet,
-    [ChainId.StylusTestnet]: stylusTestnet,
-    // E2E
-    [ChainId.Local]: local,
-    [ChainId.ArbitrumLocal]: arbitrumLocal
-  }[chainId]
-
-  return chain
-}
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
+import { orbitChains } from '../util/orbitChainsList'
 
 function getPartnerChainsIds(chainId: ChainId): ChainId[] {
   try {
@@ -97,9 +72,9 @@ function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
     arbitrumGoerli.id,
     arbitrumSepolia.id,
     stylusTestnet.id,
-    xaiTestnet.id,
     arbitrumLocal.id,
     local.id,
+    ...Object.keys(orbitChains),
     ...customChainIds
   ].includes(chainId)
 }
@@ -223,8 +198,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
 
   // The return values of the hook will always be the sanitized values
   return useMemo(() => {
-    const sourceChain = getChainByChainId(validSourceChainId)
-    const destinationChain = getChainByChainId(validDestinationChainId)
+    const sourceChain = getWagmiChain(validSourceChainId)
+    const destinationChain = getWagmiChain(validDestinationChainId)
 
     return [
       {

@@ -4,12 +4,9 @@ import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
-import {
-  getCustomChainsFromLocalStorage,
-  xaiTestnet,
-  xai
-} from '../util/networks'
+import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
+import { orbitChains } from '../util/orbitChainsList'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -24,9 +21,16 @@ const App = dynamic(() => import('../components/App/App'), {
 
 export default function Index() {
   useEffect(() => {
+    const orbitChainsToBeAdded = Object.values(orbitChains)
+    const customOrbitChainsToBeAdded = getCustomChainsFromLocalStorage()
+
+    const chainsToBeAdded = [
+      ...orbitChainsToBeAdded,
+      ...customOrbitChainsToBeAdded
+    ]
     // user-added custom chains do not persists between sessions
     // we add locally stored custom chains
-    getCustomChainsFromLocalStorage().forEach(chain => {
+    chainsToBeAdded.forEach(chain => {
       try {
         addCustomChain({ customChain: chain })
         mapCustomChainToNetworkData(chain)
@@ -41,28 +45,6 @@ export default function Index() {
         // already added
       }
     })
-
-    try {
-      addCustomNetwork({ customL2Network: xaiTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Xai Testnet: ${error.message}`)
-    }
-    try {
-      addCustomChain({ customChain: xaiTestnet })
-    } catch (error: any) {
-      console.error(`Failed to register Xai Testnet: ${error.message}`)
-    }
-
-    try {
-      addCustomNetwork({ customL2Network: xai })
-    } catch (error: any) {
-      console.error(`Failed to register Xai: ${error.message}`)
-    }
-    try {
-      addCustomChain({ customChain: xai })
-    } catch (error: any) {
-      console.error(`Failed to register Xai: ${error.message}`)
-    }
   }, [])
 
   return <App />

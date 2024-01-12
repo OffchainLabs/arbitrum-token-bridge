@@ -73,52 +73,6 @@ export const arbitrumNova: Chain = {
   }
 }
 
-export const xaiTestnet: Chain = {
-  id: ChainId.XaiTestnet,
-  name: 'Xai Orbit Testnet',
-  network: 'xai-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://testnet-explorer.xai-chain.net'
-    }
-  }
-}
-
-export const xai: Chain = {
-  id: ChainId.Xai,
-  name: 'Xai',
-  network: 'xai',
-  nativeCurrency: {
-    name: 'Xai',
-    symbol: 'XAI',
-    decimals: 18
-  },
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.Xai]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.Xai]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://explorer.xai-chain.net'
-    }
-  }
-}
-
 export const stylusTestnet: Chain = {
   id: ChainId.StylusTestnet,
   name: 'Stylus Testnet',
