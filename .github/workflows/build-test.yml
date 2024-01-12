@@ -247,21 +247,29 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
+
+      - name: Check if test results directory exists in docker
+        id: screenshots-exist
+        run: docker exec -it mysqlserver sh -c "test -d /app/packages/arb-token-bridge-ui/cypress/screenshots" && echo 'screenshots="exist"' >> $GITHUB_OUTPUT
       
       - name: Create test results directory
+        if: steps.screenshots-exist.outputs.screenshots == 'exist'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Copy test results from docker container volumes
-        run: docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+        if: steps.screenshots-exist.outputs.screenshots == 'exist'
+        run: |
+          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Upload test results
+        if: steps.screenshots-exist.outputs.screenshots == 'exist'
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
       - name: Output artifact ID
-        if: steps.test-results.outputs.artifact_id == ''
+        if: steps.screenshots-exist.outputs.screenshots == 'exist'
         run: exit 1
 
   test-e2e-success:
