@@ -37,12 +37,12 @@
   {
     "name": "Import test ERC20",
     "file": "tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "true"
+    "recordVideo": "false"
   },
   {
     "name": "URL Query Param",
     "file": "tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "true"
+    "recordVideo": "false"
   },
   {
     "name": "Read classic deposits",
