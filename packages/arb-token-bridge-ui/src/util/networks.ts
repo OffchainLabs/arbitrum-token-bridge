@@ -134,8 +134,6 @@ export enum ChainId {
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
   // Orbit
-  Xai = 660279,
-  XaiTestnet = 47279324479,
   StylusTestnet = 23011913
 }
 

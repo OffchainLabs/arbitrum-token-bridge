@@ -14,6 +14,7 @@ import {
   chainToWagmiChain,
   stylusTestnet
 } from './wagmiAdditionalNetworks'
+import { orbitChains } from '../orbitChainsList'
 
 export function getPartnerChainsForChainId(chainId: number): Chain[] {
   const customWagmiChains = getCustomChainsFromLocalStorage()
@@ -55,9 +56,6 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
     case ChainId.StylusTestnet:
       return [arbitrumSepolia]
 
-    case ChainId.XaiTestnet:
-      return [arbitrumGoerli]
-
     default:
       const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(
         chain => chain.id
@@ -84,6 +82,11 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       }
       if (customArbitrumOneChainsIds.includes(chainId)) {
         return [arbitrumOne]
+      }
+
+      const orbitChain = orbitChains[chainId]
+      if (orbitChain) {
+        return [chainToWagmiChain(orbitChain)]
       }
 
       throw new Error(

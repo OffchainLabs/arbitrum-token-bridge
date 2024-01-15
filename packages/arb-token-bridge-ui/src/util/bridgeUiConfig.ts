@@ -25,7 +25,7 @@ const arbitrumBaseConfig: Omit<BaseBridgeConfigUi, 'networkLogo'> = {
 }
 
 export function getBridgeUiConfigForChain(
-  chainId: ChainId,
+  chainId: number,
   { variant }: { variant?: 'light' | 'dark' } = {}
 ): BridgeConfigUi {
   const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -96,7 +96,7 @@ export function getBridgeUiConfigForChain(
         networkLogo: '/images/StylusLogo.svg',
         nativeTokenLogo: '/images/EthereumLogoRound.svg'
       }
-    case ChainId.Xai:
+    case 660279:
       return {
         primaryColor: '#F30019',
         secondaryColor: '#87000E',
@@ -104,7 +104,7 @@ export function getBridgeUiConfigForChain(
         networkLogo: '/images/XaiLogo.svg',
         nativeTokenLogo: '/images/XaiLogo.svg'
       }
-    case ChainId.XaiTestnet:
+    case 47279324479:
       return {
         primaryColor: '#F30019',
         secondaryColor: '#87000E',

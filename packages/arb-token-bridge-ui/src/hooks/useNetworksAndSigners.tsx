@@ -30,18 +30,14 @@ import * as Sentry from '@sentry/react'
 
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
-import {
-  getValidDestinationChainIds,
-  getNetworkName,
-  isNetwork,
-  rpcURLs
-} from '../util/networks'
+import { getNetworkName, isNetwork, rpcURLs } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { useArbQueryParams } from './useArbQueryParams'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { errorToast } from '../components/common/atoms/Toast'
 
 import { TOS_LOCALSTORAGE_KEY } from '../constants'
+import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
 
 export enum UseNetworksAndSignersStatus {
   LOADING = 'loading',
@@ -234,9 +230,10 @@ export function NetworksAndSignersProvider(
     const thisInvocation = invocationCounter.current
 
     const providerChainId = chain.id
-    const validDestinationChainIds =
-      getValidDestinationChainIds(providerChainId)
-    const chainNotSupported = validDestinationChainIds.length === 0
+    const partnerChainIds = getPartnerChainsForChainId(providerChainId).map(
+      chain => chain.id
+    )
+    const chainNotSupported = partnerChainIds.length === 0
 
     if (chainNotSupported) {
       console.error(`Chain ${providerChainId} not supported`)
@@ -271,7 +268,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 2: use a default L2 based on the connected provider chainid
-    _selectedL2ChainId = _selectedL2ChainId || validDestinationChainIds[0]
+    _selectedL2ChainId = _selectedL2ChainId || partnerChainIds[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
       setResult({
@@ -282,7 +279,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 3: L2 is not supported by provider
-    if (!validDestinationChainIds.includes(_selectedL2ChainId)) {
+    if (!partnerChainIds.includes(_selectedL2ChainId)) {
       // remove the l2chainId, keeping the rest of the params intact
       setQueryParams({
         l2ChainId: undefined
