@@ -19,63 +19,47 @@ export function getWagmiChain(chainId: number): Chain {
   // excluding Stylus because its part of the SDK
   const orbitChain = orbitChains[chainId]
 
-  let wagmiChain: Chain | undefined
-
   if (customChain) {
-    wagmiChain = chainToWagmiChain(customChain)
+    return chainToWagmiChain(customChain)
   }
 
   if (orbitChain) {
-    wagmiChain = chainToWagmiChain(orbitChain)
+    return chainToWagmiChain(orbitChain)
   }
 
   switch (chainId) {
     case ChainId.Ethereum:
-      wagmiChain = mainnet
-      break
+      return mainnet
 
     case ChainId.ArbitrumOne:
-      wagmiChain = arbitrum
-      break
+      return arbitrum
 
     case ChainId.ArbitrumNova:
-      wagmiChain = arbitrumNova
-      break
+      return arbitrumNova
 
     // Testnets
     case ChainId.Goerli:
-      wagmiChain = goerli
-      break
+      return goerli
 
     case ChainId.ArbitrumGoerli:
-      wagmiChain = arbitrumGoerli
-      break
+      return arbitrumGoerli
 
     case ChainId.Sepolia:
-      wagmiChain = sepolia
-      break
+      return sepolia
 
     case ChainId.ArbitrumSepolia:
-      wagmiChain = arbitrumSepolia
-      break
+      return arbitrumSepolia
 
     case ChainId.StylusTestnet:
-      wagmiChain = stylusTestnet
-      break
+      return stylusTestnet
 
     // Local networks
     case ChainId.Local:
-      wagmiChain = localL1Network
-      break
+      return localL1Network
 
     case ChainId.ArbitrumLocal:
-      wagmiChain = localL2Network
-      break
+      return localL2Network
   }
 
-  if (!wagmiChain) {
-    throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
-  }
-
-  return wagmiChain
+  throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
 }
