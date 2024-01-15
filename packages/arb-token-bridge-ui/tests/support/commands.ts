@@ -182,7 +182,7 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   }
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
