@@ -240,13 +240,40 @@ jobs:
         uses: OffchainLabs/actions/node-modules/restore@main
 
       - name: Run e2e tests
+        id: e2e-run
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build --exit-code-from synpress
+          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
+          exitcode=$(docker wait synpress-test)
+          if [[ $exitcode -eq 0 ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
+      
+      - name: Create test results directory
+        if: steps.e2e-run.outputs.status == 'failed'
+        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+
+      - name: Copy test results from docker container volumes
+        if: steps.e2e-run.outputs.status == 'failed'
+        run: |
+          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+
+      - name: Upload test results
+        if: steps.e2e-run.outputs.status == 'failed'
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
+          path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+
+      - name: Throw error if tests failed
+        if: steps.e2e-run.outputs.status == 'failed'
+        run: exit 1
 
   test-e2e-success:
     name: "Test E2E Success"
