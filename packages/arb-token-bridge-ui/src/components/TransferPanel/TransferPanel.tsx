@@ -1230,8 +1230,9 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: getBridgeUiConfigForChain(l2Network.id)
-                  .secondaryColor
+                backgroundColor: transferReady.deposit
+                  ? getBridgeUiConfigForChain(l2Network.id).secondaryColor
+                  : undefined
               }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
@@ -1258,8 +1259,9 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: getBridgeUiConfigForChain(l1Network.id)
-                  .secondaryColor
+                backgroundColor: transferReady.withdrawal
+                  ? getBridgeUiConfigForChain(l1Network.id).secondaryColor
+                  : undefined
               }}
               className="w-full py-4 text-lg lg:text-2xl"
             >
