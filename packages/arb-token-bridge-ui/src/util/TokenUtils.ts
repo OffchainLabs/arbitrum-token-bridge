@@ -6,7 +6,7 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
-import { isNetwork } from './networks'
+import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 
@@ -352,5 +352,14 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     address: data.address,
     decimals: data.decimals,
     listIds: new Set()
+  }
+}
+
+export function getNativeTokenLogo(chainId: ChainId) {
+  switch (chainId) {
+    case ChainId.Xai:
+      return '/images/XaiLogo.svg'
+    default:
+      return '/images/EthereumLogoRound.svg'
   }
 }
