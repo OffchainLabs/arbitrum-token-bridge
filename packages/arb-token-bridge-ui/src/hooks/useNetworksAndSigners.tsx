@@ -228,11 +228,18 @@ export function NetworksAndSignersProvider(
     // making sure the latest state is applied
     invocationCounter.current += 1
     const thisInvocation = invocationCounter.current
-
     const providerChainId = chain.id
-    const partnerChainIds = getPartnerChainsForChainId(providerChainId).map(
-      chain => chain.id
-    )
+
+    let partnerChainIds: number[] = []
+
+    try {
+      partnerChainIds = getPartnerChainsForChainId(providerChainId).map(
+        chain => chain.id
+      )
+    } catch {
+      // we don't throw because we want to show unsupported network page
+    }
+
     const chainNotSupported = partnerChainIds.length === 0
 
     if (chainNotSupported) {
