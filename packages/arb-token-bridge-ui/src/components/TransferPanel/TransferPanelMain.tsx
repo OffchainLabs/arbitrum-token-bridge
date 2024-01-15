@@ -878,6 +878,23 @@ export function TransferPanelMain({
           return false
         }
 
+        // Do not display Orbit chains for Nova
+        if (
+          isOrbitChain &&
+          isSourceChainList &&
+          isNetwork(to.id).isArbitrumNova
+        ) {
+          return false
+        }
+
+        if (
+          isOrbitChain &&
+          isDestinationChainList &&
+          isNetwork(from.id).isArbitrumNova
+        ) {
+          return false
+        }
+
         // If this is the Source network list options
         // and the selected source is an Arbitrum Base chain
         // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
