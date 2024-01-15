@@ -204,6 +204,7 @@ jobs:
           envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
           envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          envkey_CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
           envkey_SKIP_METAMASK_SETUP: true
           envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
@@ -255,22 +256,40 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
       
-      - name: Create test results directory
+      - name: Create screenshots directory
         if: steps.e2e-run.outputs.status == 'failed'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
-      - name: Copy test results from docker container volumes
+      - name: Copy screenshots from docker container volumes
         if: steps.e2e-run.outputs.status == 'failed'
         run: |
           docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
-      - name: Upload test results
+      - name: Upload screenshots results
         if: steps.e2e-run.outputs.status == 'failed'
         uses: actions/upload-artifact@v4
         with:
           name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
 
+      - name: Create videos directory
+        if: matrix.tests.recordVideo == 'true'
+        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/videos
+
+      - name: Copy videos from docker container volumes
+        if: matrix.tests.recordVideo == 'true'
+        run: |
+          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/videos packages/arb-token-bridge-ui/tests/e2e/cypress/videos
+
+      - name: Upload videos results
+        if: matrix.tests.recordVideo == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-videos-${{ fromJSON(toJSON(matrix.tests)).name }}
+          path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
+          compression-level: 0
+          retention-days: 3
+            
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
