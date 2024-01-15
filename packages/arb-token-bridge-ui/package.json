@@ -96,6 +96,7 @@
     "@typescript-eslint/parser": "^6.13.2",
     "autoprefixer": "^10.4.13",
     "cypress-recurse": "^1.27.0",
+    "cypress-terminal-report": "^5.3.10",
     "cypress-wait-until": "^1.7.2",
     "env-cmd": "^10.1.0",
     "eslint": "^7.32.0",

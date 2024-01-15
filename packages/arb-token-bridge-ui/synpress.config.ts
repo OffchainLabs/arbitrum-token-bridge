@@ -48,6 +48,7 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
 
       if (!ethRpcUrl) {

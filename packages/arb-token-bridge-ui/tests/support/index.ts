@@ -1,5 +1,6 @@
 import './commands'
 import '@synthetixio/synpress/support'
+import logCollector from 'cypress-terminal-report/src/installLogsCollector'
 
 import {
   getL1NetworkConfig,
@@ -11,6 +12,8 @@ Cypress.Keyboard.defaults({
   // tests are flaky in CI with low keystroke delay
   keystrokeDelay: 150
 })
+
+logCollector()
 
 before(() => {
   // connect to goerli to avoid connecting to localhost twice and failing
