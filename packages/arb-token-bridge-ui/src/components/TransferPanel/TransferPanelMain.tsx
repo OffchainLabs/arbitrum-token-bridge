@@ -12,7 +12,6 @@ import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   chains,
-  getCustomChainFromLocalStorageById,
   getExplorerUrl,
   getNetworkName,
   isNetwork
@@ -41,7 +40,6 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
@@ -68,7 +66,6 @@ import {
 } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import {
   useNativeCurrency,
   NativeCurrencyErc20
@@ -352,11 +349,10 @@ export function TransferPanelMain({
   const actions = useActions()
 
   const { l1, l2 } = useNetworksAndSigners()
-  const { layer } = useChainLayers()
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const [isTestnetMode] = useIsTestnetMode()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
@@ -795,28 +791,28 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
-    // we can have a more dynamic solution in the future with more Orbit chains
-    function mapChainToDefaultPartnerChain(chainId: ChainId) {
-      const customOrbitChain = getCustomChainFromLocalStorageById(chainId)
-
-      if (customOrbitChain) {
-        return customOrbitChain.partnerChainID
-      }
-
-      switch (chainId) {
-        case ChainId.Sepolia:
-        case ChainId.StylusTestnet:
-          return ChainId.ArbitrumSepolia
-        case ChainId.Xai:
-          return ChainId.ArbitrumOne
-        default:
-          return ChainId.ArbitrumGoerli
-      }
-    }
+    // we hide local networks, these are for dev only and should be accessed from the wallet
+    const chainIdsToHide = [ChainId.Local, ChainId.ArbitrumLocal, 1338]
 
     function updatePreferredL2Chain(l2ChainId: number) {
       setQueryParams({ l2ChainId })
+    }
+
+    function sortChains(chainsToSort: Chain[]) {
+      return chainsToSort.sort((a, b) => {
+        // sorts by network layer: Ethereum on top, then Arbitrum and Orbit last
+        const aSortNumber = isNetwork(a.id).isEthereumMainnetOrTestnet
+          ? 1
+          : isNetwork(a.id).isArbitrum
+          ? 2
+          : 3
+        const bSortNumber = isNetwork(b.id).isEthereumMainnetOrTestnet
+          ? 1
+          : isNetwork(b.id).isArbitrum
+          ? 2
+          : 3
+        return aSortNumber - bSortNumber
+      })
     }
 
     function isChildChain(
@@ -827,9 +823,6 @@ export function TransferPanelMain({
       }
       return typeof (chain as L2Network).partnerChainID !== 'undefined'
     }
-
-    // we hide local networks, these are for dev only and should be accessed from the wallet
-    const chainIdsToHide = [ChainId.Local, ChainId.ArbitrumLocal, 1338]
 
     function getSourceChains() {
       return Object.keys(chains)
@@ -854,14 +847,24 @@ export function TransferPanelMain({
       const destinationChains =
         sourceChain?.partnerChainIDs?.map(getWagmiChain) || []
 
+      // if source chain is Arbitrum One, add Arbitrum Nova to destination
+      if (sourceChain?.chainID === ChainId.ArbitrumOne) {
+        destinationChains.push(getWagmiChain(ChainId.ArbitrumNova))
+      }
+
+      // if source chain is Arbitrum Nova, add Arbitrum One to destination
+      if (sourceChain?.chainID === ChainId.ArbitrumNova) {
+        destinationChains.push(getWagmiChain(ChainId.ArbitrumOne))
+      }
+
       if (parentChain) {
         return [parentChain, ...destinationChains]
       }
       return destinationChains
     }
 
-    const fromOptions = getSourceChains()
-    const toOptions = getDestinationChains()
+    const fromOptions = sortChains(getSourceChains())
+    const toOptions = sortChains(getDestinationChains())
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
@@ -869,58 +872,23 @@ export function TransferPanelMain({
       )
     }
 
-    if (isDepositMode) {
-      return {
-        from: {
-          disabled:
-            !fromOptions.length ||
-            isSmartContractWallet ||
-            typeof isSmartContractWallet === 'undefined',
-          options: fromOptions,
-          value: from,
-          onChange: async network => {
-            try {
-              await switchNetworkAsync?.(network.id)
-            } catch (error: any) {
-              if (!isUserRejectedError(error)) {
-                Sentry.captureException(error)
-              }
-            }
-          }
-        },
-        to: {
-          disabled: !toOptions.length,
-          options: toOptions,
-          value: to,
-          onChange: async network => {
-            if (network.id === from.id) {
-              switchNetworksOnTransferPanel()
-              return
-            }
-
-            if (shouldOpenOneNovaDialog([network.id, from.id])) {
-              setOneNovaTransferDestinationNetworkId(network.id)
-              openOneNovaTransferDialog()
-              return
-            }
-
-            updatePreferredL2Chain(network.id)
-            setTo(network)
-          }
-        }
-      }
-    }
-
     return {
       from: {
         disabled:
-          !fromOptions.length ||
+          fromOptions.length <= 1 ||
           isSmartContractWallet ||
-          typeof isSmartContractWallet === 'undefined',
+          isLoadingAccountType,
         options: fromOptions,
         value: from,
         onChange: async network => {
           try {
+            // this happens when user swaps networks and then selects a network that in destination now
+            // in this case we just swap networks back
+            if (to.id === network.id) {
+              switchNetworksOnTransferPanel()
+              return
+            }
+
             await switchNetworkAsync?.(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
@@ -930,7 +898,7 @@ export function TransferPanelMain({
         }
       },
       to: {
-        disabled: !toOptions.length,
+        disabled: toOptions.length <= 1,
         options: toOptions,
         value: to,
         onChange: async network => {
@@ -945,6 +913,7 @@ export function TransferPanelMain({
             return
           }
 
+          updatePreferredL2Chain(network.id)
           setTo(network)
         }
       }
@@ -953,7 +922,7 @@ export function TransferPanelMain({
     from,
     to,
     isSmartContractWallet,
-    isDepositMode,
+    isLoadingAccountType,
     setQueryParams,
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
