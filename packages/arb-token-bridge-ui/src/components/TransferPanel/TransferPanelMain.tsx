@@ -642,6 +642,12 @@ export function TransferPanelMain({
       const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
       // make sure it's always a positive number
       // if it's negative, set it to user's balance to show insufficient for gas error
+      console.log(
+        'TransferPanelMain: ',
+        maxAmount,
+        nativeCurrencyBalanceFloat,
+        estimatedTotalGasFees
+      )
       setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
     } catch (error) {
       console.error(error)
