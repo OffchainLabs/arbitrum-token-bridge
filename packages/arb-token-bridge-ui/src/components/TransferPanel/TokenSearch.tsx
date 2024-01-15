@@ -168,7 +168,9 @@ function TokensPanel({
 
   const nativeCurrency = useNativeCurrency({ provider: L2Provider })
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2Network.id)
+  const { isArbitrumOne, isArbitrumGoerli, isOrbitChain } = isNetwork(
+    l2Network.id
+  )
 
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
@@ -264,9 +266,9 @@ function TokensPanel({
             return true
           }
 
-          // Always show official ARB token
+          // Always show official ARB token except from or to Orbit chain
           if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            return true
+            return !isOrbitChain
           }
 
           const balance = getBalance(address)
@@ -322,6 +324,7 @@ function TokensPanel({
     isDepositMode,
     isArbitrumOne,
     isArbitrumGoerli,
+    isOrbitChain,
     getBalance,
     nativeCurrency
   ])
