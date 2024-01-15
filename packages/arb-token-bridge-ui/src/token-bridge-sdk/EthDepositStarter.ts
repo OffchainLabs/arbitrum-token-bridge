@@ -1,16 +1,17 @@
 import { EthBridger } from '@arbitrum/sdk'
+import { BigNumber } from 'ethers'
 import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
+  TransferEstimateGas,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
-import { approveNativeCurrency } from './approveNativeCurrency'
 import { getAddressFromSigner, percentIncrease } from './utils'
-import { BigNumber } from 'ethers'
+import { depositEthEstimateGas } from '../util/EthDepositUtils'
+import { fetchErc20Allowance } from '../util/TokenUtils'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -23,18 +24,36 @@ export class EthDepositStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresNativeCurrencyApprovalProps) {
-    return requiresNativeCurrencyApproval({
-      amount,
-      signer,
-      destinationChainProvider: this.destinationChainProvider
+    const address = await getAddressFromSigner(signer)
+
+    const ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
+    const { l2Network } = ethBridger
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      return false // no native currency found for the network
+    }
+
+    const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: this.sourceChainProvider,
+      owner: address,
+      spender: l2Network.ethBridge.inbox
     })
+
+    // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
+    return customFeeTokenAllowanceForInbox.lt(amount)
   }
 
   public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
-    return approveNativeCurrency({
-      signer,
-      destinationChainProvider: this.destinationChainProvider
+    const ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
+    const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+      l1Signer: signer
     })
+    await approveCustomFeeTokenTx.wait()
   }
 
   public requiresTokenApproval = async () => false
@@ -45,6 +64,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public approveToken = async () => {
     // no-op
+  }
+
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    const address = await getAddressFromSigner(signer)
+
+    return depositEthEstimateGas({
+      amount,
+      address,
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider
+    })
   }
 
   public async transfer({ amount, signer }: TransferProps) {

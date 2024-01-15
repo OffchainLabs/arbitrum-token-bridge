@@ -79,6 +79,14 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     )
   }
 
+  public async transferEstimateGas() {
+    // for cctp transfers we don't call our native gas estimation methods because we have completely different contracts
+    return {
+      estimatedL1Gas: constants.Zero,
+      estimatedL2Gas: constants.Zero
+    }
+  }
+
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
