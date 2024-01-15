@@ -3,7 +3,7 @@ import {
   Chain,
   ParentChain,
   l2Networks,
-  chains,
+  chains as arbitrumSdkChains,
   parentChains,
   addCustomChain
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
@@ -12,6 +12,8 @@ import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitTestnets } from './orbitChainsList'
+
+export const chains = { ...arbitrumSdkChains, ...parentChains }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -35,7 +37,7 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  const chain = chains[chainId]
+  const chain = arbitrumSdkChains[chainId]
 
   if (!chain || !chain.partnerChainID) {
     return chainId
@@ -115,57 +117,6 @@ export function removeCustomChainFromLocalStorage(chainId: number) {
     customChainLocalStorageKey,
     JSON.stringify(newCustomChains)
   )
-}
-
-function getCustomChainIds(l2ChainID: number): ChainId[] {
-  // gets custom chain IDs where l2ChainID matches the partnerChainID
-  return getCustomChainsFromLocalStorage()
-    .filter(chain => chain.partnerChainID === l2ChainID)
-    .map(chain => chain.chainID)
-}
-
-export function getL2ChainIds(l1ChainId: number): ChainId[] {
-  // Ethereum as the parent chain
-  switch (l1ChainId) {
-    case ChainId.Ethereum:
-      return [ChainId.ArbitrumOne, ChainId.ArbitrumNova, ChainId.Xai]
-    case ChainId.ArbitrumOne:
-      return [ChainId.Ethereum, ChainId.Xai]
-    case ChainId.Goerli:
-      return [
-        ChainId.ArbitrumGoerli,
-        ChainId.XaiTestnet,
-        ...getCustomChainIds(ChainId.ArbitrumGoerli)
-      ]
-    case ChainId.Sepolia:
-      return [
-        ChainId.ArbitrumSepolia,
-        ChainId.StylusTestnet,
-        ...getCustomChainIds(ChainId.ArbitrumSepolia)
-      ]
-    case ChainId.Local:
-      return [
-        ChainId.ArbitrumLocal,
-        ...getCustomChainIds(ChainId.ArbitrumLocal)
-      ]
-    // Arbitrum as the parent chain
-    case ChainId.ArbitrumGoerli:
-      return [
-        ChainId.Goerli,
-        ChainId.XaiTestnet,
-        ...getCustomChainIds(ChainId.ArbitrumGoerli)
-      ]
-    case ChainId.ArbitrumSepolia:
-      return [
-        ChainId.Sepolia,
-        ChainId.StylusTestnet,
-        ...getCustomChainIds(ChainId.ArbitrumSepolia)
-      ]
-    case ChainId.ArbitrumLocal:
-      return [ChainId.Local, ...getCustomChainIds(ChainId.ArbitrumLocal)]
-    default:
-      return []
-  }
 }
 
 export enum ChainId {
@@ -248,7 +199,7 @@ export const getBlockTime = (chainId: ChainId) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = l2Networks[chainId] || chains[chainId]
+  const network = l2Networks[chainId] || arbitrumSdkChains[chainId]
   if (!network) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
@@ -403,6 +354,8 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
+  const isStylusTestnet = chainId === ChainId.StylusTestnet
+
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isGoerli || isSepolia || isLocal
 
@@ -423,6 +376,7 @@ export function isNetwork(chainId: ChainId) {
     isSepolia ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
+    isStylusTestnet ||
     isTestnetOrbitChain
 
   const isSupported =

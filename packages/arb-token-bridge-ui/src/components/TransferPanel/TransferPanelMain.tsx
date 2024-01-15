@@ -11,9 +11,9 @@ import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
+  chains,
   getCustomChainFromLocalStorageById,
   getExplorerUrl,
-  getL2ChainIds,
   getNetworkName,
   isNetwork
 } from '../../util/networks'
@@ -80,6 +80,8 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { L2Network, ParentChain } from '@arbitrum/sdk'
 
 enum NetworkType {
   l1 = 'l1',
@@ -114,10 +116,6 @@ export function SwitchNetworksButton(
       )}
     </button>
   )
-}
-
-function getListboxOptionsFromL1Network(network: Chain) {
-  return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
 }
 
 function CustomAddressBanner({
@@ -359,6 +357,7 @@ export function TransferPanelMain({
   const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
   const { isSmartContractWallet } = useAccountType()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
 
@@ -796,8 +795,6 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    const options = getListboxOptionsFromL1Network(l1.network)
-
     // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
     // we can have a more dynamic solution in the future with more Orbit chains
     function mapChainToDefaultPartnerChain(chainId: ChainId) {
@@ -822,104 +819,49 @@ export function TransferPanelMain({
       setQueryParams({ l2ChainId })
     }
 
-    function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
-      const isFromOrbitChain = isNetwork(from.id).isOrbitChain
-      const isToOrbitChain = isNetwork(to.id).isOrbitChain
-      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
-
-      // Add L1 network to the list
-      return [l1.network, ...options].filter(option => {
-        const isSourceChainList = direction === 'from'
-        const isDestinationChainList = direction === 'to'
-        const isSameAsSourceChain = option.id === from.id
-        const isSameAsDestinationChain = option.id === to.id
-        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-          option.id
-        )
-        // Remove the origin network from the destination list for contract wallets
-        // It's done so that the origin network is not changed
-        if (
-          isSmartContractWallet &&
-          isDestinationChainList &&
-          isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // Do not display Orbit chains for Nova
-        if (
-          isOrbitChain &&
-          isSourceChainList &&
-          isNetwork(to.id).isArbitrumNova
-        ) {
-          return false
-        }
-
-        if (
-          isOrbitChain &&
-          isDestinationChainList &&
-          isNetwork(from.id).isArbitrumNova
-        ) {
-          return false
-        }
-
-        // If this is the Source network list options
-        // and the selected source is an Arbitrum Base chain
-        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isSourceChainList &&
-          isOrbitChain &&
-          !isSameAsDestinationChain
-        ) {
-          return false
-        }
-
-        // If this is the Destination network list options
-        // and the selected destination is an Arbitrum chain
-        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isDestinationChainList &&
-          isOrbitChain &&
-          !isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // If the source chain is an Orbit Chain,
-        // and this is the Destination network list options
-        if (isFromOrbitChain && isDestinationChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsSourceChain) {
-            return false
-          }
-        }
-
-        // If the destination chain is an Orbit Chain,
-        // and this is the Source network list options
-        if (isToOrbitChain && isSourceChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsDestinationChain) {
-            return false
-          }
-        }
-
-        // Remove selected network from the list
-        return option.id !== selectedChainId
-      })
+    function isChildChain(
+      chain: L2Network | ParentChain | undefined
+    ): chain is L2Network {
+      if (!chain) {
+        return false
+      }
+      return typeof (chain as L2Network).partnerChainID !== 'undefined'
     }
 
-    const fromOptions = modifyOptions(from.id, 'from')
-    const toOptions = modifyOptions(to.id, 'to')
+    // we hide local networks, these are for dev only and should be accessed from the wallet
+    const chainIdsToHide = [ChainId.Local, ChainId.ArbitrumLocal, 1338]
+
+    function getSourceChains() {
+      return Object.keys(chains)
+        .filter(chainId => {
+          if (chainIdsToHide.includes(Number(chainId))) {
+            return false
+          }
+          // don't show testnet networks if testnet mode is off
+          if (!isTestnetMode) {
+            return !isNetwork(Number(chainId)).isTestnet
+          }
+          return true
+        })
+        .map(chainId => getWagmiChain(Number(chainId)))
+    }
+
+    function getDestinationChains() {
+      const sourceChain = chains[from.id]
+      const parentChain = isChildChain(sourceChain)
+        ? getWagmiChain(sourceChain.partnerChainID)
+        : undefined
+      const destinationChains =
+        sourceChain?.partnerChainIDs?.map(getWagmiChain) || []
+
+      if (parentChain) {
+        return [parentChain, ...destinationChains]
+      }
+      return destinationChains
+    }
+
+    const fromOptions = getSourceChains()
+    const toOptions = getDestinationChains()
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
@@ -937,27 +879,8 @@ export function TransferPanelMain({
           options: fromOptions,
           value: from,
           onChange: async network => {
-            const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
-
-            if (shouldOpenOneNovaDialog([network.id, to.id])) {
-              setOneNovaTransferDestinationNetworkId(to.id)
-              openOneNovaTransferDialog()
-              return
-            }
-
             try {
               await switchNetworkAsync?.(network.id)
-
-              const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
-              // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-              // Otherwise we want to keep the current chain, in case it's Nova.
-              if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
-                updatePreferredL2Chain(
-                  mapChainToDefaultPartnerChain(network.id)
-                )
-                return
-              }
-              updatePreferredL2Chain(network.id)
             } catch (error: any) {
               if (!isUserRejectedError(error)) {
                 Sentry.captureException(error)
@@ -970,13 +893,6 @@ export function TransferPanelMain({
           options: toOptions,
           value: to,
           onChange: async network => {
-            const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-              network.id
-            )
-            const defaultPartnerChain = mapChainToDefaultPartnerChain(
-              network.id
-            )
-
             if (network.id === from.id) {
               switchNetworksOnTransferPanel()
               return
@@ -986,30 +902,6 @@ export function TransferPanelMain({
               setOneNovaTransferDestinationNetworkId(network.id)
               openOneNovaTransferDialog()
               return
-            }
-
-            const isOrbitChainCurrentlySelected = isNetwork(
-              l2.network.id
-            ).isOrbitChain
-            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-            // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereumMainnetOrTestnet && isOrbitChainCurrentlySelected) {
-              updatePreferredL2Chain(defaultPartnerChain)
-              return
-            }
-
-            // If Orbit chain is selected, we want to change network to Arbitrum One or Arbitrum Goerli.
-            if (isOrbitChain) {
-              try {
-                if (!isConnectedToArbitrum) {
-                  await switchNetworkAsync?.(defaultPartnerChain)
-                }
-              } catch (error: any) {
-                if (!isUserRejectedError(error)) {
-                  Sentry.captureException(error)
-                }
-                return
-              }
             }
 
             updatePreferredL2Chain(network.id)
@@ -1028,26 +920,8 @@ export function TransferPanelMain({
         options: fromOptions,
         value: from,
         onChange: async network => {
-          const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
-
-          if (shouldOpenOneNovaDialog([network.id, to.id])) {
-            setOneNovaTransferDestinationNetworkId(to.id)
-            openOneNovaTransferDialog()
-            return
-          }
-
           try {
-            // In withdraw mode we always switch to the L2 network.
             await switchNetworkAsync?.(network.id)
-
-            const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
-            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-            // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
-              updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
-              return
-            }
-            updatePreferredL2Chain(network.id)
           } catch (error: any) {
             if (!isUserRejectedError(error)) {
               Sentry.captureException(error)
@@ -1060,11 +934,6 @@ export function TransferPanelMain({
         options: toOptions,
         value: to,
         onChange: async network => {
-          const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-            network.id
-          )
-          const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
-
           if (network.id === from.id) {
             switchNetworksOnTransferPanel()
             return
@@ -1076,54 +945,11 @@ export function TransferPanelMain({
             return
           }
 
-          if (isEthereumMainnetOrTestnet) {
-            if (isConnectedToOrbitChain) {
-              try {
-                // If connected to an Orbit chain, we need to change network to Arbitrum.
-                // We can't withdraw from an Orbit chain to Ethereum.
-                await switchNetworkAsync?.(defaultPartnerChain)
-                updatePreferredL2Chain(defaultPartnerChain)
-                return
-              } catch (error: any) {
-                if (!isUserRejectedError(error)) {
-                  Sentry.captureException(error)
-                }
-                return
-              }
-            }
-            // Connected to Arbitrum.
-            updatePreferredL2Chain(defaultPartnerChain)
-          }
-
-          if (isOrbitChain) {
-            const isConnectedToEthereum =
-              !isConnectedToArbitrum && !isConnectedToOrbitChain
-
-            if (isConnectedToEthereum) {
-              // If connected to Ethereum, we need to change network to Arbitrum.
-              // We can't deposit from Ethereum to an Orbit chain.
-              await switchNetworkAsync?.(defaultPartnerChain)
-            }
-
-            const isOrbitChainCurrentlySelected = isNetwork(
-              l2.network.id
-            ).isOrbitChain
-            if (isOrbitChainCurrentlySelected) {
-              // long-term we will have to change to Orbit chain's parent network
-              // right now only Arbitrum Goerli is support so it's fine
-              await switchNetworkAsync?.(defaultPartnerChain)
-            }
-
-            updatePreferredL2Chain(network.id)
-          }
-
           setTo(network)
         }
       }
     }
   }, [
-    l1.network,
-    l2.network,
     from,
     to,
     isSmartContractWallet,
@@ -1132,8 +958,7 @@ export function TransferPanelMain({
     switchNetworkAsync,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog,
-    isConnectedToArbitrum,
-    isConnectedToOrbitChain
+    isTestnetMode
   ])
 
   return (
