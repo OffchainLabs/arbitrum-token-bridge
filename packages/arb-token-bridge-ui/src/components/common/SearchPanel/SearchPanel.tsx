@@ -77,7 +77,6 @@ export function SearchPanel({
   loadingMessage?: string
   bottomRightCTAtext?: string
 }>) {
-  console.log('showCloseButton? ', showCloseButton)
   const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
 
   if (currentPanel === Panel.MAIN) {

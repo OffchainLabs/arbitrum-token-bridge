@@ -543,6 +543,7 @@ export function TokenSearch({ close }: { close: () => void }) {
 
   return (
     <SearchPanel
+      showCloseButton={false}
       close={close}
       SearchPanelSecondaryPage={<TokenListsPanel />}
       mainPageTitle="Select Token"

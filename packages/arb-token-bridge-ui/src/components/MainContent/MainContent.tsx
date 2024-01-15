@@ -67,7 +67,7 @@ export function MainContent() {
           <motion.div
             key="transfer-panel"
             {...motionDivProps}
-            className="relative z-10"
+            className="relative"
           >
             <TransferPanel />
           </motion.div>

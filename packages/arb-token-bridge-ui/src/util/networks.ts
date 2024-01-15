@@ -215,6 +215,12 @@ export const chainInfo: { [chainId: number]: ChainInfo } = {
       'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
     chainType: 'AnyTrust',
     nativeCurrency: 'XAI'
+  },
+  [ChainId.Xai]: {
+    description:
+      'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
+    chainType: 'AnyTrust',
+    nativeCurrency: 'XAI'
   }
 }
 

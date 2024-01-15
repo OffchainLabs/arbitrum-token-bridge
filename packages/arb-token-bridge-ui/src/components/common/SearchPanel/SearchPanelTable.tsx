@@ -47,7 +47,7 @@ export const SearchPanelTable = ({
         )}
       </form>
       <div
-        className="h-[400px] rounded-md border border-gray-2 bg-white lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        className="h-[calc(100vh_-_230px)] rounded-md border border-gray-2 bg-white lg:h-[400px] lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
         <AutoSizer>
