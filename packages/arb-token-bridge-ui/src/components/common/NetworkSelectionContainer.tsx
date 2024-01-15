@@ -17,6 +17,8 @@ import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { twMerge } from 'tailwind-merge'
+import { TestnetToggle } from './TestnetToggle'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type NetworkInfo = {
   chainId: number
@@ -26,7 +28,7 @@ type NetworkInfo = {
 const chainGroupInfo = {
   core: {
     name: 'CORE CHAINS',
-    description: undefined
+    description: 'Chains managed directly by Ethereum or Arbitrum'
   },
   orbit: {
     name: 'ORBIT CHAINS',
@@ -87,13 +89,31 @@ function NetworkRow({
             <p className="text-left text-xs leading-[1.15]">
               {chainInfo[chainId]!.description}
             </p>
-            <p className="text-[8px] leading-none">
+            <p className="text-[10px] leading-none">
               {chainInfo[chainId]!.chainType} Chain,{' '}
               {chainInfo[chainId]!.nativeCurrency} is the native gas token
             </p>
           </>
         )}
       </p>
+    </button>
+  )
+}
+
+function AddCustomOrbitChainButton() {
+  const [, setQueryParams] = useArbQueryParams()
+  const [isTestnetMode] = useIsTestnetMode()
+
+  if (!isTestnetMode) {
+    return null
+  }
+
+  return (
+    <button
+      className="text-sm underline"
+      onClick={() => setQueryParams({ settingsOpen: true })}
+    >
+      <span>Add Custom Orbit Chain</span>
     </button>
   )
 }
@@ -139,57 +159,71 @@ function NetworksPanel({
   }, [debouncedNetworkSearched, networks])
 
   return (
-    <SearchPanelTable
-      searchInputPlaceholder="Search a network name"
-      searchInputValue={networkSearched}
-      onSearchInputChange={event => {
-        setErrorMessage('')
-        setNetworkSearched(event.target.value)
-      }}
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      errorMessage={errorMessage}
-      rowCount={networksToShowWithChainTypeInfo.length}
-      rowHeight={72}
-      rowRenderer={virtualizedProps => {
-        const networkOrChainTypeInfo =
-          networksToShowWithChainTypeInfo[virtualizedProps.index]
-        if (!networkOrChainTypeInfo) {
-          return null
-        }
+    <div className="flex flex-col gap-2">
+      <SearchPanelTable
+        searchInputPlaceholder="Search a network name"
+        searchInputValue={networkSearched}
+        onSearchInputChange={event => {
+          setErrorMessage('')
+          setNetworkSearched(event.target.value)
+        }}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        errorMessage={errorMessage}
+        rowCount={networksToShowWithChainTypeInfo.length}
+        rowHeight={72}
+        rowRenderer={virtualizedProps => {
+          const networkOrChainTypeInfo =
+            networksToShowWithChainTypeInfo[virtualizedProps.index]
+          if (!networkOrChainTypeInfo) {
+            return null
+          }
 
-        // Chain Type Info row
-        if (!('chainId' in networkOrChainTypeInfo)) {
-          const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
-          return (
-            <div
-              key={networkOrChainTypeInfo.name}
-              style={virtualizedProps.style}
-              className={twMerge(
-                'px-6 py-4',
-                !isCoreGroup &&
-                  'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
-              )}
-            >
-              <p className="text-sm text-dark">{networkOrChainTypeInfo.name}</p>
-              {networkOrChainTypeInfo.description && (
-                <p className="mt-2 text-xs">
-                  {networkOrChainTypeInfo.description}
+          // Chain Type Info row
+          if (!('chainId' in networkOrChainTypeInfo)) {
+            const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
+            return (
+              <div
+                key={networkOrChainTypeInfo.name}
+                style={virtualizedProps.style}
+                className={twMerge(
+                  'px-6 py-4',
+                  !isCoreGroup &&
+                    'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+                )}
+              >
+                <p className="text-sm text-dark">
+                  {networkOrChainTypeInfo.name}
                 </p>
-              )}
-            </div>
-          )
-        }
+                {networkOrChainTypeInfo.description && (
+                  <p className="mt-2 text-xs">
+                    {networkOrChainTypeInfo.description}
+                  </p>
+                )}
+              </div>
+            )
+          }
 
-        return (
-          <NetworkRow
-            key={networkOrChainTypeInfo.chainId}
-            style={virtualizedProps.style}
-            network={networkOrChainTypeInfo}
-            close={close}
-          />
-        )
-      }}
-    />
+          return (
+            <NetworkRow
+              key={networkOrChainTypeInfo.chainId}
+              style={virtualizedProps.style}
+              network={networkOrChainTypeInfo}
+              close={close}
+            />
+          )
+        }}
+      />
+      <div className="flex justify-between">
+        <TestnetToggle
+          className={{
+            switch:
+              'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
+          }}
+          label="Testnet mode"
+        />
+        <AddCustomOrbitChainButton />
+      </div>
+    </div>
   )
 }
 
@@ -245,7 +279,7 @@ export const NetworkSelectionContainer = ({
               secondPageTitle="Networks"
               isLoading={false}
               loadingMessage="Fetching Networks..."
-              bottomRightCTAtext="Manage networks"
+              bottomRightCTAtext=""
             >
               <NetworksPanel networks={finalNetworks} close={close} />
             </SearchPanel>

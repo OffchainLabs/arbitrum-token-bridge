@@ -36,21 +36,23 @@ function SearchPanelMainPage({
         )}
       </div>
       {children}
-      <div className="flex justify-end pt-6">
-        {isLoading ? (
-          <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
-            <Loader color="#28A0F0" size="small" />
-            {loadingMessage}
-          </span>
-        ) : (
-          <button
-            className="arb-hover text-gray text-sm font-medium text-blue-link"
-            onClick={bottomRightCTAonClick}
-          >
-            {bottomRightCTAtext}
-          </button>
-        )}
-      </div>
+      {bottomRightCTAtext && (
+        <div className="flex justify-end pt-6">
+          {isLoading ? (
+            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
+              <Loader color="#28A0F0" size="small" />
+              {loadingMessage}
+            </span>
+          ) : (
+            <button
+              className="arb-hover text-gray text-sm font-medium text-blue-link"
+              onClick={bottomRightCTAonClick}
+            >
+              {bottomRightCTAtext}
+            </button>
+          )}
+        </div>
+      )}
     </>
   )
 }
