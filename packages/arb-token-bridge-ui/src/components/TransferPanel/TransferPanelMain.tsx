@@ -15,6 +15,7 @@ import {
   chains,
   getExplorerUrl,
   getNetworkName,
+  getValidDestinationChainIds,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -844,8 +845,9 @@ export function TransferPanelMain({
       const parentChain = isChildChain(sourceChain)
         ? getWagmiChain(sourceChain.partnerChainID)
         : undefined
-      const destinationChains =
-        sourceChain?.partnerChainIDs?.map(getWagmiChain) || []
+      const destinationChains = getValidDestinationChainIds(from.id).map(
+        getWagmiChain
+      )
 
       // if source chain is Arbitrum One, add Arbitrum Nova to destination
       if (sourceChain?.chainID === ChainId.ArbitrumOne) {

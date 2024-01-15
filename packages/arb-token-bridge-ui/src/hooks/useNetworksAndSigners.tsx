@@ -31,7 +31,7 @@ import * as Sentry from '@sentry/react'
 import { useIsConnectedToOrbitChain } from './useIsConnectedToOrbitChain'
 import { useIsConnectedToArbitrum } from './useIsConnectedToArbitrum'
 import {
-  chainIdToDefaultL2ChainId,
+  getValidDestinationChainIds,
   getNetworkName,
   isNetwork,
   rpcURLs
@@ -234,7 +234,9 @@ export function NetworksAndSignersProvider(
     const thisInvocation = invocationCounter.current
 
     const providerChainId = chain.id
-    const chainNotSupported = !(providerChainId in chainIdToDefaultL2ChainId)
+    const validDestinationChainIds =
+      getValidDestinationChainIds(providerChainId)
+    const chainNotSupported = validDestinationChainIds.length === 0
 
     if (chainNotSupported) {
       console.error(`Chain ${providerChainId} not supported`)
@@ -257,7 +259,6 @@ export function NetworksAndSignersProvider(
      */
     const isSelectedL2ChainArbitrum = isNetwork(selectedL2ChainId!).isArbitrum
     let _selectedL2ChainId = selectedL2ChainId
-    const providerSupportedL2 = chainIdToDefaultL2ChainId[providerChainId]!
 
     // Case 1: Connected to an Orbit chain & Arbitrum is 'preferredL2ChainId'. Need to set 'preferredL2ChainId' to an Orbit chain.
     if (isConnectedToOrbitChain && isSelectedL2ChainArbitrum) {
@@ -270,7 +271,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 2: use a default L2 based on the connected provider chainid
-    _selectedL2ChainId = _selectedL2ChainId || providerSupportedL2[0]
+    _selectedL2ChainId = _selectedL2ChainId || validDestinationChainIds[0]
     if (typeof _selectedL2ChainId === 'undefined') {
       console.error(`Unknown provider chainId: ${providerChainId}`)
       setResult({
@@ -281,7 +282,7 @@ export function NetworksAndSignersProvider(
     }
 
     // Case 3: L2 is not supported by provider
-    if (!providerSupportedL2.includes(_selectedL2ChainId)) {
+    if (!validDestinationChainIds.includes(_selectedL2ChainId)) {
       // remove the l2chainId, keeping the rest of the params intact
       setQueryParams({
         l2ChainId: undefined

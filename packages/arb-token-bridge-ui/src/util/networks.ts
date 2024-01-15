@@ -11,7 +11,7 @@ import {
 import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitTestnets } from './orbitChainsList'
+import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 export const chains = { ...arbitrumSdkChains, ...parentChains }
 
@@ -227,23 +227,8 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
 }
 
-// Default L2 Chain to use for a certain chainId
-export const chainIdToDefaultL2ChainId: { [chainId: number]: ChainId[] } = {
-  // L1
-  [ChainId.Ethereum]: [ChainId.ArbitrumOne, ChainId.ArbitrumNova],
-  // L1 Testnets
-  [ChainId.Goerli]: [ChainId.ArbitrumGoerli],
-  [ChainId.Sepolia]: [ChainId.ArbitrumSepolia],
-  // L2
-  [ChainId.ArbitrumOne]: [ChainId.ArbitrumOne, ChainId.Xai],
-  [ChainId.ArbitrumNova]: [ChainId.ArbitrumNova],
-  // L2 Testnets
-  [ChainId.ArbitrumGoerli]: [ChainId.ArbitrumGoerli, ChainId.XaiTestnet],
-  [ChainId.ArbitrumSepolia]: [ChainId.ArbitrumSepolia, ChainId.StylusTestnet],
-  // Orbit Testnets
-  [ChainId.XaiTestnet]: [ChainId.XaiTestnet],
-  [ChainId.Xai]: [ChainId.Xai],
-  [ChainId.StylusTestnet]: [ChainId.StylusTestnet]
+export function getValidDestinationChainIds(sourceChainId: ChainId) {
+  return chains[sourceChainId]?.partnerChainIDs || []
 }
 
 const defaultL1Network: L1Network = {
@@ -323,9 +308,6 @@ export function registerLocalNetwork(
   try {
     rpcURLs[l1Network.chainID] = localL1NetworkRpcUrl
     rpcURLs[l2Network.chainID] = localL2NetworkRpcUrl
-
-    chainIdToDefaultL2ChainId[l1Network.chainID] = [l2Network.chainID]
-    chainIdToDefaultL2ChainId[l2Network.chainID] = [l2Network.chainID]
 
     addCustomNetwork({ customL1Network: l1Network, customL2Network: l2Network })
   } catch (error: any) {
@@ -420,8 +402,8 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.ArbitrumGoerli,
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
-    ChainId.XaiTestnet,
     ChainId.StylusTestnet,
+    ...Object.keys(orbitTestnets),
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 
@@ -429,7 +411,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Ethereum,
     ChainId.ArbitrumOne,
     ChainId.ArbitrumNova,
-    ChainId.Xai
+    ...Object.keys(orbitMainnets)
   ]
 
   return isNetwork(chainId).isTestnet
@@ -440,16 +422,6 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   // custom chain details need to be added to various objects to make it work with the UI
   //
-  // update default L2 Chain ID; it allows us to pair the Chain with its Parent Chain
-  chainIdToDefaultL2ChainId[chain.partnerChainID] = [
-    ...(chainIdToDefaultL2ChainId[chain.partnerChainID] ?? []),
-    chain.chainID
-  ]
-  // also set Chain's default chain to point to its own chain ID
-  chainIdToDefaultL2ChainId[chain.chainID] = [
-    ...(chainIdToDefaultL2ChainId[chain.chainID] ?? []),
-    chain.chainID
-  ]
   // add RPC
   rpcURLs[chain.chainID] = chain.rpcUrl
   // explorer URL
