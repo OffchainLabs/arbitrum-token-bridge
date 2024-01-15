@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
-import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import * as Sentry from '@sentry/react'
+import { L2Network, ParentChain } from '@arbitrum/sdk'
 import { Chain, useAccount } from 'wagmi'
 
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
@@ -78,7 +79,6 @@ import {
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
-import { L2Network, ParentChain } from '@arbitrum/sdk'
 
 enum NetworkType {
   l1 = 'l1',
