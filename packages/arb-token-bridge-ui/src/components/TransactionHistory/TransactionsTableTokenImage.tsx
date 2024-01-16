@@ -36,7 +36,7 @@ export const TransactionsTableTokenImage = ({
   }
 
   if (!token || !token.logoURI) {
-    return null
+    return <div className="h-[20px] w-[20px] rounded-full bg-white/20" />
   }
 
   return (
