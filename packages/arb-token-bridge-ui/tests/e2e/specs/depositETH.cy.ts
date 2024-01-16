@@ -6,23 +6,17 @@ import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Deposit ETH', () => {
-  // when all of our tests need to run in a logged-in state
-  // we have to make sure we preserve a healthy LocalStorage state
-  // because it is cleared between each `it` cypress test
-
   const ETHAmountToDeposit = 0.0001
-
-  beforeEach(() => {
-    cy.login({ networkType: 'L1' })
-  })
 
   // Happy Path
   it('should show L1 and L2 chains correctly', () => {
+    cy.login({ networkType: 'L1' })
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })
 
   it('should show summary and bridge successfully', () => {
+    cy.login({ networkType: 'L1' })
     cy.findByPlaceholderText('Enter amount')
       .typeRecursively(String(ETHAmountToDeposit))
       .then(() => {
