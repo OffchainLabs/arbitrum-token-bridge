@@ -1,16 +1,16 @@
 import { useEffect } from 'react'
 import { ImportTokenModalStatus } from '../../components/TransferPanel/TransferPanelUtils'
 import { ConnectionState } from '../../util'
+import { useTokenImportDialogStore } from '../../components/TransferPanel/TokenImportDialog'
 
 export function useImportTokenModal({
   importTokenModalStatus,
-  connectionState,
-  setImportTokenModalStatus
+  connectionState
 }: {
   importTokenModalStatus: ImportTokenModalStatus
   connectionState: number
-  setImportTokenModalStatus: (value: any) => void
 }) {
+  const { openDialog: openTokenImportDialog } = useTokenImportDialogStore()
   useEffect(() => {
     if (importTokenModalStatus !== ImportTokenModalStatus.IDLE) {
       return
@@ -20,7 +20,7 @@ export function useImportTokenModal({
       connectionState === ConnectionState.L1_CONNECTED ||
       connectionState === ConnectionState.L2_CONNECTED
     ) {
-      setImportTokenModalStatus(ImportTokenModalStatus.OPEN)
+      openTokenImportDialog()
     }
-  }, [connectionState, importTokenModalStatus, setImportTokenModalStatus])
+  }, [connectionState, importTokenModalStatus, openTokenImportDialog])
 }

@@ -15,7 +15,7 @@ type WaitForInputFunction = () => Promise<[boolean, unknown]>
 /**
  * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
  */
-type OpenDialogFunction = () => WaitForInputFunction
+export type OpenDialogFunction = () => WaitForInputFunction
 
 /**
  * Contains two props, `isOpen` and `onClose`, which should be passed down to a Dialog component.
