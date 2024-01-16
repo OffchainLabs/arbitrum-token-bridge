@@ -45,26 +45,27 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
+  // if networkName is not specified we connect to default network from config
+  const network =
+    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+  const networkNameWithDefault = networkName ?? network.networkName
+
   function _startWebApp() {
-    startWebApp(url, query)
+    const sourceChain =
+      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
+    startWebApp(url, { ...query, sourceChain })
   }
 
-  // if networkName is not specified we connect to default network from config
-  networkName =
-    networkName ||
-    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
-      .networkName
-
-  shouldChangeNetwork(networkName).then(changeNetwork => {
+  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkName).then(() => {
+      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkName)
+    cy.task('setCurrentNetworkName', networkNameWithDefault)
   })
 }
 
@@ -181,7 +182,7 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   }
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider

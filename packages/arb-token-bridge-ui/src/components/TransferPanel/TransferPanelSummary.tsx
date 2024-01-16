@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import {
@@ -9,7 +8,6 @@ import {
   getNetworkName,
   isNetwork
 } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -17,6 +15,10 @@ import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLi
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import dayjs from 'dayjs'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+
+export type TransferPanelSummaryToken = { symbol: string; address: string }
 
 export type TransferPanelSummaryProps = {
   amount: number
@@ -49,31 +51,37 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
 
-  const {
-    app: { isDepositMode }
-  } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
 
   const [{ amount }] = useArbQueryParams()
 
   const baseChainId = getBaseChainIdByChainId({
-    chainId: l2.network.id
+    chainId: childChain.id
   })
 
   const estimatedConfirmationDate = getTxConfirmationDate({
     createdAt: dayjs(new Date()),
-    withdrawalFromChainId: l2.network.id,
+    withdrawalFromChainId: childChain.id,
     baseChainId
   })
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
   const isBridgingEth = token === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingEth && !isNetwork(l1.network.id).isTestnet
+  const showPrice = isBridgingEth && !isNetwork(parentChain.id).isTestnet
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -145,7 +153,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       >
         <span>
           You will receive on{' '}
-          {getNetworkName(isDepositMode ? l2.network.id : l1.network.id)}:
+          {getNetworkName(isDepositMode ? childChain.id : parentChain.id)}:
         </span>
         <span className="font-medium">
           {formatAmount(Number(amount))}{' '}
@@ -159,7 +167,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
       {!isDepositMode && (
         <p className="flex flex-col gap-3 text-sm font-light text-gray-dark">
-          You will have to claim the withdrawal on {l1.network.name} in ~
+          You will have to claim the withdrawal on {parentChain.name} in ~
           {confirmationPeriod}.
         </p>
       )}

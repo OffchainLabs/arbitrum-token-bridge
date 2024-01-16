@@ -2,7 +2,8 @@ import { useCallback } from 'react'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
-import { useNetworksAndSigners } from '../useNetworksAndSigners'
+import { useNetworks } from '../useNetworks'
+import { useNetworksRelationship } from '../useNetworksRelationship'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
@@ -26,17 +27,19 @@ export function useUpdateUSDCBalances({
 }: {
   walletAddress: string | undefined
 }) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { parentChainProvider, childChainProvider } =
+    useNetworksRelationship(networks)
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    provider: parentChainProvider,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    provider: childChainProvider,
     walletAddress
   })
 

@@ -10,7 +10,8 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 import {
   isDepositReadyToRedeem,
@@ -24,10 +25,9 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.id)
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const l2NetworkName = getNetworkName(childChain.id)
   const { openTransactionHistoryPanel } = useAppContextActions()
   const { transactions } = useTransactionHistory(address)
 
