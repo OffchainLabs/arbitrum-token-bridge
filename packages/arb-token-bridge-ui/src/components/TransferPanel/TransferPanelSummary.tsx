@@ -9,7 +9,7 @@ import {
   isNetwork
 } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -49,7 +49,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
-  } = useGasSummaryStore()
+  } = useGasSummary()
 
   const { ethToUSD } = useETHPrice()
   const [networks] = useNetworks()

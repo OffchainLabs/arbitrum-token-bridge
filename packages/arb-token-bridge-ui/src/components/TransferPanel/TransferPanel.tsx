@@ -70,10 +70,7 @@ import {
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
-import {
-  useGasSummary,
-  useGasSummaryStore
-} from '../../hooks/TransferPanel/useGasSummaryStore'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -391,9 +388,7 @@ export function TransferPanel() {
     }
   }, [amount, selectedToken, nativeCurrency])
 
-  useGasSummary(amountBigNumber, selectedToken)
-
-  const { gasSummary, gasSummaryStatus } = useGasSummaryStore()
+  const { gasSummary, gasSummaryStatus } = useGasSummary()
 
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>

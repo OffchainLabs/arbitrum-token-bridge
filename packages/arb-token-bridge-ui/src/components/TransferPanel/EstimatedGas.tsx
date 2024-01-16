@@ -9,7 +9,7 @@ import { Tooltip } from '../common/Tooltip'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -52,7 +52,7 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   const {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
-  } = useGasSummaryStore()
+  } = useGasSummary()
   const parentChainName = getNetworkName(childChain.id)
   const childChainName = getNetworkName(parentChain.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom

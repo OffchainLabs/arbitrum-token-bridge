@@ -1002,14 +1002,10 @@ export function TransferPanelMain({
                 {isDepositMode && <ETHBalance balance={ethL1Balance} />}
               </>
             ) : (
-              <>
-                <ETHBalance
-                  balance={isDepositMode ? ethL1Balance : ethL2Balance}
-                  prefix={selectedToken ? '' : 'Balance: '}
-                />
-                {/* Only show ETH balance on L1 */}
-                {isDepositMode && <ETHBalance balance={ethL1Balance} />}
-              </>
+              <ETHBalance
+                balance={isDepositMode ? ethL1Balance : ethL2Balance}
+                prefix={selectedToken ? '' : 'Balance: '}
+              />
             )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>

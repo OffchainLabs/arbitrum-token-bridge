@@ -23,7 +23,7 @@ import { ether } from '../../constants'
 import {
   GasEstimationStatus,
   UseGasSummaryResult
-} from '../../hooks/TransferPanel/useGasSummaryStore'
+} from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'

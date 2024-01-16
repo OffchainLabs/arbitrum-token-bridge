@@ -1,5 +1,4 @@
 import { BigNumber, constants, utils } from 'ethers'
-import { create } from 'zustand'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -14,9 +13,10 @@ import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
-import { ERC20BridgeToken } from '../arbTokenBridge.types'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
+import { useArbQueryParams } from '../useArbQueryParams'
+import { useNativeCurrency } from '../useNativeCurrency'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated L1 gas, denominated in Wei, represented as a BigNumber
@@ -49,12 +49,12 @@ export type UseGasSummaryResult = {
   estimatedL2GasFees: number
 }
 
-export function useGasSummary(
-  amount: BigNumber,
-  token: ERC20BridgeToken | null
-): void {
+export function useGasSummary(): {
+  gasSummary: UseGasSummaryResult
+  gasSummaryStatus: GasEstimationStatus
+} {
   const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded }
+    app: { arbTokenBridge, arbTokenBridgeLoaded, selectedToken: token }
   } = useAppState()
   const [networks] = useNetworks()
   const {
@@ -65,14 +65,33 @@ export function useGasSummary(
     isDepositMode
   } = useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
-  const { gasSummary, setGasSummary, setGasSummaryStatus } =
-    useGasSummaryStore()
+  const [{ amount }] = useArbQueryParams()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const [gasSummaryStatus, setGasSummaryStatus] =
+    useState<GasEstimationStatus>('loading')
+  const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
+    INITIAL_GAS_SUMMARY_RESULT
+  )
+
+  const amountBigNumber = useMemo(() => {
+    try {
+      const amountSafe = amount || '0'
+
+      if (token) {
+        return utils.parseUnits(amountSafe, token.decimals)
+      }
+
+      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
+    } catch (error) {
+      return constants.Zero
+    }
+  }, [amount, token, nativeCurrency])
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
   const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
-  const amountDebounced = useDebouncedValue(amount, 1_500)
+  const amountDebounced = useDebouncedValue(amountBigNumber, 1_500)
 
   const [result, setResult] = useState<GasEstimationResult>(
     INITIAL_GAS_ESTIMATION_RESULT
@@ -84,7 +103,7 @@ export function useGasSummary(
     }
 
     const estimateGasFunctionParams = {
-      amount,
+      amount: amountDebounced,
       address: walletAddress,
       l2Provider: childChainProvider
     }
@@ -128,7 +147,7 @@ export function useGasSummary(
   }, [
     // Re-run gas estimation when:
     isDepositMode, // when user switches deposit/withdraw mode
-    amount,
+    amountDebounced,
     token, // when the token changes
     walletAddress, // when user switches account or if user is not connected
     setGasSummaryStatus,
@@ -158,7 +177,7 @@ export function useGasSummary(
   useEffect(() => {
     // Since we are using a debounced value, it's possible for the value to be outdated
     // Wait for it to sync before running the gas estimation
-    if (!amountDebounced.eq(amount)) {
+    if (!amountDebounced.eq(amountBigNumber)) {
       setGasSummaryStatus('loading')
       return
     }
@@ -187,7 +206,7 @@ export function useGasSummary(
     // Re-run gas estimation when:
     estimateGas,
     isDepositMode, // when user switches deposit/withdraw mode
-    amount, // when user changes the amount (check against the debounced value)
+    amountBigNumber, // when user changes the amount (check against the debounced value)
     amountDebounced,
     token, // when the token changes
     parentChain.id, // when L1 and L2 network id changes
@@ -201,8 +220,8 @@ export function useGasSummary(
     // rather than a deep equal, we are checking all the properties to see if they are sync
 
     if (
-      gasSummary.estimatedL1GasFees !== estimatedL1GasFees ||
-      gasSummary.estimatedL2GasFees !== estimatedL2GasFees
+      gasSummary?.estimatedL1GasFees !== estimatedL1GasFees ||
+      gasSummary?.estimatedL2GasFees !== estimatedL2GasFees
     ) {
       setGasSummary({
         estimatedL1GasFees,
@@ -219,24 +238,9 @@ export function useGasSummary(
     estimatedL2GasFees,
     setGasSummary
   ])
-}
 
-type GasSummaryStore = {
-  gasSummaryStatus: GasEstimationStatus
-  gasSummary: UseGasSummaryResult
-  setGasSummaryStatus: (gasSummaryStatus: GasEstimationStatus) => void
-  setGasSummary: (gasSummary: UseGasSummaryResult) => void
+  return {
+    gasSummary,
+    gasSummaryStatus
+  }
 }
-
-export const useGasSummaryStore = create<GasSummaryStore>()(set => ({
-  gasSummaryStatus: 'loading',
-  gasSummary: INITIAL_GAS_SUMMARY_RESULT,
-  setGasSummaryStatus: gasSummaryStatus =>
-    set(() => ({
-      gasSummaryStatus
-    })),
-  setGasSummary: gasSummary =>
-    set(() => ({
-      gasSummary
-    }))
-}))
