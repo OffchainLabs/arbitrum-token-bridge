@@ -388,9 +388,7 @@ export function TransferPanelMain({
     isDepositMode
   } = useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
-    childChain.id
-  )
+  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(childChain.id)
   const { isSmartContractWallet } = useAccountType()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
