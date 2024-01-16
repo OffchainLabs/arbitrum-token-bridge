@@ -1,5 +1,4 @@
 import {
-  getInitialETHBalance,
   invalidTokenAddress,
   ERC20TokenName,
   ERC20TokenSymbol,
