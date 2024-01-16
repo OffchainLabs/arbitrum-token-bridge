@@ -10,15 +10,7 @@ const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
 const ERC20TokenAddressL2: string = Cypress.env('ERC20_TOKEN_ADDRESS_L2')
 
 describe('Import token', () => {
-  // we use mainnet to test token lists
-
   context('User import token through UI', () => {
-    before(() => {
-      getInitialETHBalance(
-        `https://mainnet.infura.io/v3/${Cypress.env('INFURA_KEY')}`,
-        Cypress.env('ADDRESS')
-      )
-    })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
         cy.login({ networkType: 'L1' })
@@ -253,6 +245,9 @@ describe('Import token', () => {
             token: invalidTokenAddress
           }
         })
+
+        // eslint-disable-next-line
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
