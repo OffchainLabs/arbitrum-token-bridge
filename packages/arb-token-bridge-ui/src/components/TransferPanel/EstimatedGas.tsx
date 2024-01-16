@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
@@ -12,6 +11,8 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasSummaryStore } from '../../hooks/TransferPanel/useGasSummaryStore'
 import { Loader } from '../common/atoms/Loader'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const gasFeeTooltip = ({
   parentChainName,
@@ -39,23 +40,25 @@ function StyledLoader() {
 
 export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   const {
-    app: { isDepositMode, selectedToken }
+    app: { selectedToken }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer: childLayer } = useChainLayers()
   const { ethToUSD } = useETHPrice()
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const isParentChain = chainType === 'parent'
   const {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummaryStore()
-  const parentChainName = getNetworkName(l1.network.id)
-  const childChainName = getNetworkName(l2.network.id)
+  const parentChainName = getNetworkName(childChain.id)
+  const childChainName = getNetworkName(parentChain.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = useMemo(
-    () => isBridgingEth && !isNetwork(l1.network.id).isTestnet,
-    [isBridgingEth, l1.network.id]
+    () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
+    [isBridgingEth, childChain.id]
   )
   const layer = isParentChain ? parentLayer : childLayer
 
@@ -69,7 +72,7 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentChain])
 
   const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
+    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(childChain.id)
 
     return gasFeeTooltip({
       parentChainName,

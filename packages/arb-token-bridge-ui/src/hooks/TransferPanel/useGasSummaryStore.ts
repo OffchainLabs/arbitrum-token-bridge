@@ -3,7 +3,6 @@ import { create } from 'zustand'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useNetworksAndSigners } from '../useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
 import { useDebouncedValue } from '../useDebouncedValue'
@@ -16,6 +15,8 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { ERC20BridgeToken } from '../arbTokenBridge.types'
+import { useNetworksRelationship } from '../useNetworksRelationship'
+import { useNetworks } from '../useNetworks'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated L1 gas, denominated in Wei, represented as a BigNumber
@@ -53,19 +54,22 @@ export function useGasSummary(
   token: ERC20BridgeToken | null
 ): void {
   const {
-    app: { arbTokenBridge, isDepositMode, arbTokenBridgeLoaded }
+    app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
+  const [networks] = useNetworks()
   const {
-    l1: { provider: l1Provider, network: l1Network },
-    l2: { provider: l2Provider, network: l2Network }
-  } = networksAndSigners
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const { gasSummary, setGasSummary, setGasSummaryStatus } =
     useGasSummaryStore()
 
-  const l1GasPrice = useGasPrice({ provider: l1Provider })
-  const l2GasPrice = useGasPrice({ provider: l2Provider })
+  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
+  const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1_500)
@@ -82,7 +86,7 @@ export function useGasSummary(
     const estimateGasFunctionParams = {
       amount,
       address: walletAddress,
-      l2Provider
+      l2Provider: childChainProvider
     }
 
     let estimateGasResult: GasEstimationResult = INITIAL_GAS_ESTIMATION_RESULT
@@ -94,12 +98,12 @@ export function useGasSummary(
         estimateGasResult = token
           ? await depositTokenEstimateGas({
               ...estimateGasFunctionParams,
-              l1Provider,
+              l1Provider: parentChainProvider,
               erc20L1Address: token.address
             })
           : await depositEthEstimateGas({
               ...estimateGasFunctionParams,
-              l1Provider
+              l1Provider: parentChainProvider
             })
       } else {
         const partialEstimateGasResult = token
@@ -126,10 +130,10 @@ export function useGasSummary(
     isDepositMode, // when user switches deposit/withdraw mode
     amount,
     token, // when the token changes
-    l1Provider,
-    l2Provider,
     walletAddress, // when user switches account or if user is not connected
-    setGasSummaryStatus
+    setGasSummaryStatus,
+    parentChainProvider,
+    childChainProvider
   ])
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
@@ -186,8 +190,8 @@ export function useGasSummary(
     amount, // when user changes the amount (check against the debounced value)
     amountDebounced,
     token, // when the token changes
-    l1Network.id, // when L1 and L2 network id changes
-    l2Network.id,
+    parentChain.id, // when L1 and L2 network id changes
+    childChain.id,
     arbTokenBridgeLoaded,
     walletAddress, // when user switches account or if user is not connected
     setGasSummaryStatus

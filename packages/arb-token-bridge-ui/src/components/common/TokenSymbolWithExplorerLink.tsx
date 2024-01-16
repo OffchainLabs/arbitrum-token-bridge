@@ -8,7 +8,8 @@ import {
 import { createBlockExplorerUrlForToken } from '../../util/CommonUtils'
 import { isTokenUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { ExternalLink } from './ExternalLink'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 const isERC20BridgeToken = (
   token: ERC20BridgeToken | NativeCurrencyErc20 | null
@@ -24,11 +25,13 @@ export function TokenSymbolWithExplorerLink({
   tokenSymbolOverride?: string
   isParentChain: boolean
 }) {
-  const { l1, l2 } = useNetworksAndSigners()
-  const chain = isParentChain ? l1.network : l2.network
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
+  const chain = isParentChain ? parentChain : childChain
   // always use native currency of child chain
   const nativeCurrency = useNativeCurrency({
-    provider: l2.provider
+    provider: childChainProvider
   })
 
   const symbol = useMemo(() => {
@@ -40,7 +43,7 @@ export function TokenSymbolWithExplorerLink({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
-        chain
+        chainId: chain.id
       })
     )
   }, [token, tokenSymbolOverride, chain, nativeCurrency.symbol])
