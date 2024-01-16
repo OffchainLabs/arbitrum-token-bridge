@@ -7,9 +7,13 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { MergedTransaction } from '../../state/app/state'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { useChainLayers } from '../../hooks/useChainLayers'
-import { isTxClaimable, isTxCompleted, isTxPending } from './helpers'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import {
+  getDestNetworkTxId,
+  isTxClaimable,
+  isTxCompleted,
+  isTxPending
+} from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
 import {
@@ -20,15 +24,15 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 
 function getTransferDurationText(tx: MergedTransaction) {
-  const { isTestnet, isOrbitChain } = isNetwork(tx.parentChainId)
+  const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
 
   if (tx.isCctp) {
-    return isTestnet ? '1 minute' : '10 minutes'
+    return isTestnet ? 'a minute' : '10 minutes'
   }
 
   if (!tx.isWithdrawal) {
     if (isOrbitChain) {
-      return '1 minute'
+      return 'a minute'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
   }
@@ -76,8 +80,8 @@ const Step = ({
     <div
       className={twMerge(
         'my-3 flex items-center justify-between',
-        pending ? 'animate-pulse' : '',
-        claimable ? 'my-2' : '',
+        pending && 'animate-pulse',
+        claimable && 'my-2',
         textColorClassName
       )}
     >
@@ -104,26 +108,24 @@ export const TransactionsTableDetailsSteps = ({
 }: {
   tx: MergedTransaction
 }) => {
-  const { parentLayer, layer: childLayer } = useChainLayers({
-    parentChainIdOverride: tx.parentChainId,
-    childChainIdOverride: tx.childChainId
-  })
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
+
+  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+
+  const sourceNetworkName = getNetworkName(sourceChainId)
+  const destNetworkName = getNetworkName(destChainId)
+
+  const destNetworkTxId = getDestNetworkTxId(tx)
 
   return (
     <div className="flex flex-col text-xs">
       {/* First step when transfer is initiated */}
       <Step
         done
-        text={`Transaction initiated on ${
-          tx.isWithdrawal ? childLayer : parentLayer
-        }`}
+        text={`Transaction initiated on ${sourceNetworkName}`}
         endItem={
-          <ExternalLink
-            href={`${getExplorerUrl(
-              tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-            )}/tx/${tx.txId}`}
-          >
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={12} />
           </ExternalLink>
         }
@@ -133,7 +135,7 @@ export const TransactionsTableDetailsSteps = ({
       <Step
         pending={isTxPending(tx)}
         done={!isTxPending(tx)}
-        text={`Wait ${getTransferDurationText(tx)}`}
+        text={`Wait ~${getTransferDurationText(tx)}`}
         endItem={
           isTxPending(tx) && (
             <div>
@@ -173,7 +175,18 @@ export const TransactionsTableDetailsSteps = ({
       {/* The final step, showing the destination chain */}
       <Step
         done={isTxCompleted(tx)}
-        text={`Funds arrived on ${tx.isWithdrawal ? parentLayer : childLayer}`}
+        text={`Funds arrived on ${destNetworkName}`}
+        endItem={
+          destNetworkTxId && (
+            <ExternalLink
+              href={`${getExplorerUrl(destChainId)}/tx/${getDestNetworkTxId(
+                tx
+              )}`}
+            >
+              <ArrowTopRightOnSquareIcon height={12} />
+            </ExternalLink>
+          )
+        }
       />
     </div>
   )

@@ -35,7 +35,7 @@ export enum StatusLabel {
   FAILURE = 'Failure'
 }
 
-function isDeposit(tx: MergedTransaction) {
+function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal
 }
 
@@ -43,7 +43,7 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
-export function isTxCompleted(tx: MergedTransaction) {
+export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
@@ -53,7 +53,7 @@ export function isTxCompleted(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.EXECUTED
 }
 
-export function isTxPending(tx: MergedTransaction) {
+export function isTxPending(tx: MergedTransaction): boolean {
   if (tx.isCctp && tx.status === 'pending') {
     return true
   }
@@ -66,7 +66,7 @@ export function isTxPending(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.UNCONFIRMED
 }
 
-export function isTxClaimable(tx: MergedTransaction) {
+export function isTxClaimable(tx: MergedTransaction): boolean {
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
   }
@@ -76,14 +76,14 @@ export function isTxClaimable(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.CONFIRMED
 }
 
-export function isTxExpired(tx: MergedTransaction) {
+export function isTxExpired(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.EXPIRED
   }
   return tx.status === WithdrawalStatus.EXPIRED
 }
 
-export function isTxFailed(tx: MergedTransaction) {
+export function isTxFailed(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     if (!tx.depositStatus) {
       return false
@@ -571,4 +571,13 @@ export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
     return formattedMinutesLeft
   }
   return 'less than a minute'
+}
+
+export function getDestNetworkTxId(tx: MergedTransaction) {
+  if (tx.isCctp) {
+    return tx.cctpData?.receiveMessageTransactionHash
+  }
+  return tx.isWithdrawal
+    ? tx.l2ToL1MsgData?.uniqueId.toString()
+    : tx.l1ToL2MsgData?.l2TxID
 }
