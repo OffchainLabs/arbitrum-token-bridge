@@ -54,7 +54,9 @@ export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
   return createProviderWithCache(chainId)
 }
 
-function isSupportedChainId(chainId: ChainId | undefined): chainId is ChainId {
+export function isSupportedChainId(
+  chainId: ChainId | undefined
+): chainId is ChainId {
   if (!chainId) {
     return false
   }
@@ -155,11 +157,17 @@ export type UseNetworksSetStateParams =
     }
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
+/**
+ * We keep track of this so we only call `setQueryParams` once.
+ */
+let didUpdateUrlWithSanitizedValues = false
+
 export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   const [
     { sourceChain: sourceChainId, destinationChain: destinationChainId },
     setQueryParams
   ] = useArbQueryParams()
+
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
@@ -169,13 +177,16 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   })
 
   const setState = useCallback(
-    ({ sourceChainId, destinationChainId }: UseNetworksSetStateParams) => {
+    ({
+      sourceChainId: newSourceChainId,
+      destinationChainId: newDestinationChainId
+    }: UseNetworksSetStateParams) => {
       const {
         sourceChainId: validSourceChainId,
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
-        sourceChainId,
-        destinationChainId
+        sourceChainId: newSourceChainId,
+        destinationChainId: newDestinationChainId
       })
       setQueryParams({
         sourceChain: validSourceChainId,
@@ -189,11 +200,15 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     sourceChainId !== validSourceChainId ||
     destinationChainId !== validDestinationChainId
   ) {
-    // On the first render, update query params with the sanitized values
-    setQueryParams({
-      sourceChain: validSourceChainId,
-      destinationChain: validDestinationChainId
-    })
+    if (!didUpdateUrlWithSanitizedValues) {
+      // On the first render, update query params with the sanitized values
+      setQueryParams({
+        sourceChain: validSourceChainId,
+        destinationChain: validDestinationChainId
+      })
+
+      didUpdateUrlWithSanitizedValues = true
+    }
   }
 
   // The return values of the hook will always be the sanitized values

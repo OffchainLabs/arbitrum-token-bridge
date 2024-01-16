@@ -15,6 +15,8 @@ import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 export const chains = { ...arbitrumSdkChains, ...parentChains }
 
+console.log('chainsv2', chains)
+
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
 export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -30,6 +32,7 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
   nativeTokenData?: Erc20Data
+  slug: string
 }
 
 export function getBaseChainIdByChainId({

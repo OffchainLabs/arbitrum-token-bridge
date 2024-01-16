@@ -2,12 +2,13 @@ import { utils } from 'ethers'
 import useLocalStorage from '@rehooks/local-storage'
 import { useBlockNumber } from 'wagmi'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useChainLayers } from '../../hooks/useChainLayers'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -28,28 +29,30 @@ export const ArbitrumStats = () => {
     useLocalStorage<boolean>(statsLocalStorageKey)
   const [{ settingsOpen }] = useArbQueryParams()
 
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
   const { data: currentL1BlockNumber } = useBlockNumber({
-    chainId: l1.network.id,
+    chainId: parentChain.id,
     watch: true
   })
 
   const { data: currentL2BlockNumber } = useBlockNumber({
-    chainId: l2.network.id,
+    chainId: childChain.id,
     watch: true
   })
 
   const { data: tpsData, isValidating: tpsLoading } = useNetworkTPS()
 
-  const currentL1GasPrice = useGasPrice({ provider: l1.provider })
+  const currentL1GasPrice = useGasPrice({ provider: parentChainProvider })
   const currentL1GasPriceGwei = utils.formatUnits(currentL1GasPrice, 'gwei')
   const currentL1Activity = getActivityThresholdL1(
     Number(currentL1GasPriceGwei || 0)
   )
 
-  const currentL2GasPrice = useGasPrice({ provider: l2.provider })
+  const currentL2GasPrice = useGasPrice({ provider: childChainProvider })
   const currentL2GasPriceGwei = utils.formatUnits(currentL2GasPrice, 'gwei')
   const currentL2Activity = getActivityThresholdL2(
     Number(currentL2GasPriceGwei || 0)
@@ -66,7 +69,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l1.network.id)} ({parentLayer})
+          {getNetworkName(parentChain.id)} ({parentLayer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -86,7 +89,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(l2.network.id)} ({layer})
+          {getNetworkName(childChain.id)} ({layer})
         </span>
         <span>
           &gt; Block:{' '}
@@ -101,7 +104,7 @@ export const ArbitrumStats = () => {
         </span>
 
         {/* TPS info is not available for testnets */}
-        {!isNetwork(l2.network.id).isTestnet && (
+        {!isNetwork(childChain.id).isTestnet && (
           <span>
             &gt; TPS: {tpsLoading && <span>Loading...</span>}
             {!tpsLoading && (

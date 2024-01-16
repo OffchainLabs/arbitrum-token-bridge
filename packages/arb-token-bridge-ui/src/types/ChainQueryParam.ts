@@ -19,11 +19,13 @@ const chainQueryParams = [
   'arbitrum-sepolia',
   'stylus-testnet',
   'local',
-  'arbitrum-local'
+  'arbitrum-local',
+  'custom-localhost',
+  'arbitrum-localhost'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
-export type ChainQueryParam = ChainKeyQueryParam | ChainId | number
+export type ChainQueryParam = ChainKeyQueryParam | ChainId | number | string
 
 export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
@@ -61,10 +63,10 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'arbitrum-sepolia'
 
     case ChainId.Local:
-      return 'local'
+      return 'custom-localhost'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-local'
+      return 'arbitrum-localhost'
 
     default:
       const customChains = getCustomChainsFromLocalStorage()
@@ -79,7 +81,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       }
 
       if (orbitChain) {
-        return orbitChain.chainID
+        return orbitChain.slug
       }
 
       throw new Error(
@@ -119,7 +121,7 @@ export function getChainForChainKeyQueryParam(
     case 'local':
       return customChains.localL1Network
 
-    case 'arbitrum-local':
+    case 'arbitrum-localhost':
       return customChains.localL2Network
 
     default:

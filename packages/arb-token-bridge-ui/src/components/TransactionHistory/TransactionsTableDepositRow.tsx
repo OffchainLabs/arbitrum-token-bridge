@@ -26,7 +26,6 @@ import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAd
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { isTxCompleted } from './helpers'
 
@@ -274,7 +273,7 @@ export function TransactionsTableDepositRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(tx.parentChainId)
+        chainId: tx.parentChainId
       }),
     [tx.parentChainId, tx.asset, tx.tokenAddress]
   )

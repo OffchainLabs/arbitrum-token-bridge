@@ -17,6 +17,7 @@ export const orbitMainnets: { [key in number]: ChainWithRpcUrl } = {
     isArbitrum: true,
     isCustom: true,
     name: 'Xai',
+    slug: 'xai',
     partnerChainID: 42161,
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
@@ -57,6 +58,7 @@ export const orbitTestnets: { [key in number]: ChainWithRpcUrl } = {
     isArbitrum: true,
     isCustom: true,
     name: 'Xai Orbit Testnet',
+    slug: 'xai-testnet',
     partnerChainID: 421613,
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
