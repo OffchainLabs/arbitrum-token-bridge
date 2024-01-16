@@ -8,8 +8,8 @@ COPY package.json ./
 COPY yarn.lock ./
 
 FROM base as test
-RUN yarn install --frozen-lockfile
-RUN yarn install cypress@12.17.3
+RUN npm install
+RUN npm install cypress@12.17.3
 RUN yarn cypress install --force
 COPY . .
 
