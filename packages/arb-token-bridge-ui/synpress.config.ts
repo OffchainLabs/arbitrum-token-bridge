@@ -27,12 +27,14 @@ if (process.env.TEST_FILE) {
   tests = specFiles.map(file => file.file)
 }
 
+const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+
 export default defineConfig({
   userAgent: 'synpress',
-  retries: 2,
+  retries: shouldRecordVideo ? 0 : 2,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: false,
+  video: shouldRecordVideo,
   screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,

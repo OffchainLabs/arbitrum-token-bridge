@@ -78,7 +78,7 @@ export function TokenButton(): JSX.Element {
               <img
                 src={tokenLogo}
                 alt="Token logo"
-                className="h-5 w-5 rounded-full sm:h-8 sm:w-8"
+                className="h-5 w-5 sm:h-8 sm:w-8"
               />
             )}
             <span className="text-xl font-light sm:text-3xl">
