@@ -87,7 +87,7 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
           'text-xs font-light text-white'
         )}
       >
-        You’ll have to pay {parentChainName} gas fee upon claiming.
+        You&apos;ll have to pay {parentChainName} gas fee upon claiming.
       </div>
     )
   }
