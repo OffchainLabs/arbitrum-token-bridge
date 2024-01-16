@@ -3,15 +3,18 @@ import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 
-import { MergedTransaction } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
   getDestNetworkTxId,
   isTxClaimable,
   isTxCompleted,
+  isTxExpired,
+  isTxFailed,
   isTxPending
 } from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -53,12 +56,14 @@ const Step = ({
   done = false,
   claimable = false,
   pending = false,
+  failure = false,
   text,
   endItem = null
 }: {
   done?: boolean
   claimable?: boolean
   pending?: boolean
+  failure?: boolean
   text: string
   endItem?: ReactNode
 }) => {
@@ -76,6 +81,11 @@ const Step = ({
     iconColorClassName = 'text-yellow-400'
   }
 
+  if (failure) {
+    borderColorClassName = 'border-red-400'
+    iconColorClassName = 'text-red-400'
+  }
+
   return (
     <div
       className={twMerge(
@@ -85,9 +95,9 @@ const Step = ({
       )}
     >
       <div className="flex items-center space-x-3">
-        {done ? (
-          <CheckCircleIcon className={iconColorClassName} height={18} />
-        ) : (
+        {done && <CheckCircleIcon className={iconColorClassName} height={18} />}
+        {failure && <XCircleIcon className={iconColorClassName} height={18} />}
+        {!done && !failure && (
           <div
             className={twMerge(
               'ml-[2px] h-[15px] w-[15px] rounded-full border',
@@ -117,12 +127,25 @@ export const TransactionsTableDetailsSteps = ({
 
   const destNetworkTxId = getDestNetworkTxId(tx)
 
+  const isSourceChainDepositFailure =
+    typeof tx.depositStatus !== 'undefined' &&
+    [DepositStatus.CREATION_FAILED, DepositStatus.L1_FAILURE].includes(
+      tx.depositStatus
+    )
+
+  const isDestChainFailure = !isSourceChainDepositFailure && isTxFailed(tx)
+
   return (
     <div className="flex flex-col text-xs">
       {/* First step when transfer is initiated */}
       <Step
-        done
-        text={`Transaction initiated on ${sourceNetworkName}`}
+        done={!isSourceChainDepositFailure}
+        failure={isSourceChainDepositFailure}
+        text={
+          isSourceChainDepositFailure
+            ? `Transaction failed on ${sourceNetworkName}`
+            : `Transaction initiated on ${sourceNetworkName}`
+        }
         endItem={
           <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={12} />
@@ -151,8 +174,6 @@ export const TransactionsTableDetailsSteps = ({
         }
       />
 
-      {/* TODO next PR: Failed transactions */}
-
       {/* If claiming is required we show this step */}
       {needsToClaimTransfer(tx) && (
         <Step
@@ -171,10 +192,24 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
+      {isDestChainFailure && (
+        <Step
+          failure={true}
+          text={`Transaction failed on ${destNetworkName}`}
+        />
+      )}
+
       {/* The final step, showing the destination chain */}
       <Step
         done={isTxCompleted(tx)}
-        text={`Funds arrived on ${destNetworkName}`}
+        failure={isTxExpired(tx) || isDestChainFailure}
+        text={
+          isTxExpired(tx) || isDestChainFailure
+            ? `Transaction ${
+                isDestChainFailure ? 'failed' : 'expired'
+              } on ${destNetworkName}`
+            : `Funds arrived on ${destNetworkName}`
+        }
         endItem={
           destNetworkTxId && (
             <ExternalLink

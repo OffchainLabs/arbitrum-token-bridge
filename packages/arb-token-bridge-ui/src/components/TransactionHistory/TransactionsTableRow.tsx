@@ -16,6 +16,7 @@ import { NetworkImage } from '../common/NetworkImage'
 import {
   getDestNetworkTxId,
   isTxClaimable,
+  isTxExpired,
   isTxFailed,
   isTxPending
 } from './helpers'
@@ -79,6 +80,18 @@ export function TransactionsTableRow({
         <div className="flex items-center space-x-1 text-red-400">
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
+          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
+            <ArrowTopRightOnSquareIcon height={10} />
+          </ExternalLink>
+        </div>
+      )
+    }
+
+    if (isTxExpired(tx)) {
+      return (
+        <div className="flex items-center space-x-1 text-red-400">
+          <XCircleIcon height={14} className="mr-1" />
+          <span>Expired</span>
           <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
