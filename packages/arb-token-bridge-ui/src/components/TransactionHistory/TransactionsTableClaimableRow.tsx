@@ -23,7 +23,6 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
 import { getWithdrawalClaimParentChainTxDetails } from './helpers'
 
@@ -155,12 +154,14 @@ function ClaimableRowStatus({ tx }: CommonProps) {
 
 function ClaimableRowTime({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
+  const sourceLayer = tx.isWithdrawal ? layer : parentLayer
+  const destinationLayer = tx.isWithdrawal ? parentLayer : layer
   const { remainingTime } = useRemainingTime(tx)
 
   if (tx.status === 'Unconfirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
@@ -172,11 +173,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (tx.status === 'Confirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
+          <Tooltip content={<span>{destinationLayer} Transaction Time</span>}>
             <span className="whitespace-nowrap">Ready</span>
           </Tooltip>
         )}
@@ -191,11 +192,13 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>Ready to claim funds on {parentLayer}</span>}>
+          <Tooltip
+            content={<span>Ready to claim funds on {destinationLayer}</span>}
+          >
             <span className="whitespace-nowrap">n/a</span>
           </Tooltip>
         )}
@@ -205,7 +208,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>{layer} Transaction Time</span>}>
+      <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {claimedTxTimestamp && (
@@ -313,9 +316,7 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
-        )
+        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
       }),
     [
       tx.asset,
