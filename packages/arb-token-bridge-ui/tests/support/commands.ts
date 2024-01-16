@@ -53,7 +53,7 @@ export function login({
   function _startWebApp() {
     const sourceChain =
       networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { ...query, sourceChain })
+    startWebApp(url, { sourceChain, ...query }) // always use sourceChain from query params if provided
   }
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
