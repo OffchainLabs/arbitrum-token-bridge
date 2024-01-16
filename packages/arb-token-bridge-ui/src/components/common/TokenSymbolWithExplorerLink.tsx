@@ -1,15 +1,38 @@
 import { useMemo } from 'react'
+import * as Sentry from '@sentry/react'
 
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import {
   NativeCurrencyErc20,
   useNativeCurrency
 } from '../../hooks/useNativeCurrency'
-import { createBlockExplorerUrlForToken } from '../../util/CommonUtils'
 import { isTokenUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { ExternalLink } from './ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+
+const createBlockExplorerUrlForToken = ({
+  explorerLink,
+  tokenAddress
+}: {
+  explorerLink: string | undefined
+  tokenAddress: string | undefined
+}): string | undefined => {
+  if (!explorerLink) {
+    return undefined
+  }
+  if (!tokenAddress) {
+    return undefined
+  }
+  try {
+    const url = new URL(explorerLink)
+    url.pathname += `token/${tokenAddress}`
+    return url.toString()
+  } catch (error) {
+    Sentry.captureException(error)
+    return undefined
+  }
+}
 
 const isERC20BridgeToken = (
   token: ERC20BridgeToken | NativeCurrencyErc20 | null

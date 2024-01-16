@@ -184,7 +184,7 @@ export function useTransferReadiness({
   }, [nativeCurrency, erc20L1Balances])
 
   return useMemo(() => {
-    if (!Number(amount)) {
+    if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady()
     }
 
