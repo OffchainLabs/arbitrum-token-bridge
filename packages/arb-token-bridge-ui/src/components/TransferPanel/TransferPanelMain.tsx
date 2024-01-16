@@ -389,7 +389,7 @@ export function TransferPanelMain({
   } = useNetworksRelationship(networks)
 
   const { isArbitrumOne, isArbitrumGoerli } = isNetwork(
-    networks.destinationChain.id
+    childChain.id
   )
   const { isSmartContractWallet } = useAccountType()
 
