@@ -146,7 +146,7 @@ export const stylusTestnet: Chain = {
 export const localL1Network: Chain = {
   id: ChainId.Local,
   name: 'EthLocal',
-  network: 'local',
+  network: 'custom-localhost',
   nativeCurrency: ether,
   rpcUrls: {
     default: {
@@ -167,7 +167,7 @@ export const localL1Network: Chain = {
 export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
   name: 'ArbLocal',
-  network: 'arbitrum-local',
+  network: 'arbitrum-localhost',
   nativeCurrency: ether,
   rpcUrls: {
     default: {

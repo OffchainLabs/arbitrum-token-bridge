@@ -18,7 +18,6 @@ import {
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -33,6 +32,8 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
@@ -60,16 +61,11 @@ function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
-
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
       if (!tokenList.isValid) {
         return false
@@ -80,9 +76,9 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      return tokenList.originChainID === childChain.id
     })
-  }, [l2Network])
+  }, [childChain.id])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
@@ -148,30 +144,27 @@ function TokensPanel({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
 
-  const nativeCurrency = useNativeCurrency({ provider: L2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const { isArbitrumOne, isArbitrumGoerli, isOrbitChain } = isNetwork(
-    l2Network.id
+    childChain.id
   )
-
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
@@ -444,21 +437,22 @@ export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { setTokenQueryParam } = useTokenFromSearchParams()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -511,7 +505,7 @@ export function TokenSearch({ close }: { close: () => void }) {
 
       const data = await fetchErc20Data({
         address: _token.address,
-        provider: l1.provider
+        provider: parentChainProvider
       })
 
       if (data) {
@@ -523,12 +517,12 @@ export function TokenSearch({ close }: { close: () => void }) {
       }
 
       // do not allow import of withdraw-only tokens at deposit mode
-      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
 
-      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+      if (isTransferDisabledToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
