@@ -256,13 +256,14 @@ export const TransactionHistoryTable = ({
             )}
             className="table-auto last:border-b-0"
             rowGetter={({ index }) => transactions[index]}
-            rowRenderer={({ index, key, style }) => {
+            rowRenderer={({ index, style }) => {
               const tx = transactions[index]
 
               if (!tx) {
                 return null
               }
 
+              const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
               const isLastRow = index + 1 === transactions.length
 
               return (

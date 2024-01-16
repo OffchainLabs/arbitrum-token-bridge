@@ -18,19 +18,19 @@ const SECONDS_IN_MIN = 60
 
 export function getTxConfirmationDate({
   createdAt,
-  withdrawalFromChainId,
-  baseChainId
+  withdrawalFromChainId
 }: {
   createdAt: Dayjs
   withdrawalFromChainId: number
-  baseChainId: number
 }) {
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: withdrawalFromChainId
+  })
   // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
   // and similarly, the confirm period blocks is always the number of blocks on the base chain
   const confirmationSeconds =
     getBlockTime(baseChainId) * getConfirmPeriodBlocks(withdrawalFromChainId) +
     CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
-
   return createdAt.add(confirmationSeconds, 'second')
 }
 
@@ -42,22 +42,18 @@ export function WithdrawalCountdown({
   const {
     l2: { network: l2Network }
   } = useNetworksAndSigners()
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: l2Network.id
-  })
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
-    withdrawalFromChainId: l2Network.id,
-    baseChainId
+    withdrawalFromChainId: l2Network.id
   })
 
   const minutesLeft = Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 
   const timeLeftText =
-    minutesLeft === 0 ? 'Almost there...' : txConfirmationDate.fromNow(true)
+    minutesLeft === 0 ? 'less than a minute' : txConfirmationDate.fromNow(true)
 
   return <span>{timeLeftText}</span>
 }

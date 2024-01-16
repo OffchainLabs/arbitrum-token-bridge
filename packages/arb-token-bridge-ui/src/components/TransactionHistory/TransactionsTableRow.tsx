@@ -13,12 +13,18 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
-import { isTxClaimable, isTxFailed, isTxPending } from './helpers'
+import {
+  getDestNetworkTxId,
+  isTxClaimable,
+  isTxFailed,
+  isTxPending
+} from './helpers'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
+import { useTxDetailsStore } from './TransactionHistory'
 
 export function TransactionsTableRow({
   tx,
@@ -27,7 +33,11 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
+  const { open: openTxDetails } = useTxDetailsStore()
+
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+
   const [txRelativeTime, setTxRelativeTime] = useState(
     dayjs(tx.createdAt).fromNow()
   )
@@ -100,17 +110,23 @@ export function TransactionsTableRow({
       )
     }
 
+    const destNetworkTxId = getDestNetworkTxId(tx)
+
     // Success
     return (
       <div className="flex items-center space-x-1">
         <CheckCircleIcon height={14} className="mr-1" />
         <span>Success</span>
-        <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-          <ArrowTopRightOnSquareIcon height={10} />
-        </ExternalLink>
+        {destNetworkTxId && (
+          <ExternalLink
+            href={`${getExplorerUrl(destChainId)}/tx/${destNetworkTxId}`}
+          >
+            <ArrowTopRightOnSquareIcon height={10} />
+          </ExternalLink>
+        )}
       </div>
     )
-  }, [tx, sourceChainId])
+  }, [tx, sourceChainId, destChainId])
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {
@@ -182,6 +198,7 @@ export function TransactionsTableRow({
         <Button
           variant="primary"
           className="rounded border border-white p-2 text-xs text-white"
+          onClick={() => openTxDetails(tx)}
         >
           See Details
         </Button>
