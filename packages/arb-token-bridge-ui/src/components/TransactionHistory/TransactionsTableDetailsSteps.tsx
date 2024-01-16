@@ -64,16 +64,16 @@ const Step = ({
 }) => {
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
-  let textColorClassName = 'text-white/50'
+  let iconColorClassName = 'text-white/50'
 
   if (done || claimable) {
     borderColorClassName = 'border-green-400'
-    textColorClassName = 'text-green-400'
+    iconColorClassName = 'text-green-400'
   }
 
   if (pending) {
     borderColorClassName = 'border-yellow-400'
-    textColorClassName = 'text-yellow-400'
+    iconColorClassName = 'text-yellow-400'
   }
 
   return (
@@ -81,13 +81,12 @@ const Step = ({
       className={twMerge(
         'my-3 flex items-center justify-between',
         pending && 'animate-pulse',
-        claimable && 'my-2',
-        textColorClassName
+        claimable && 'my-2'
       )}
     >
       <div className="flex items-center space-x-3">
         {done ? (
-          <CheckCircleIcon height={18} />
+          <CheckCircleIcon className={iconColorClassName} height={18} />
         ) : (
           <div
             className={twMerge(
