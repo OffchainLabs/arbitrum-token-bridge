@@ -60,7 +60,13 @@ describe('Withdraw USDC through CCTP', () => {
         }
       },
       () => {
-        cy.login({ networkType: 'L2', networkName: 'arbitrum-goerli' })
+        cy.login({
+          networkType: 'L2',
+          query: {
+            sourceChain: 'arbitrum-goerli',
+            destinationChain: 'goerli'
+          }
+        })
         context('should show L1 and L2 chains, and ETH correctly', () => {
           cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
             'be.visible'

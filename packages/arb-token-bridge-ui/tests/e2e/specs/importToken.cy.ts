@@ -72,7 +72,10 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet'
+          query: {
+            sourceChain: 'mainnet',
+            destinationChain: 'arbitrum-one'
+          }
         })
 
         cy.findByRole('button', { name: 'Select Token' })

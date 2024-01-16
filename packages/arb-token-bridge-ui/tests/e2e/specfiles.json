@@ -37,7 +37,7 @@
   {
     "name": "Import test ERC20",
     "file": "tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "URL Query Param",

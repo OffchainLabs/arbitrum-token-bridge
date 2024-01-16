@@ -74,7 +74,13 @@ describe('Deposit USDC through CCTP', () => {
         }
       },
       () => {
-        cy.login({ networkType: 'L1', networkName: 'goerli' })
+        cy.login({
+          networkType: 'L1',
+          query: {
+            sourceChain: 'goerli',
+            destinationChain: 'arbitrum-goerli'
+          }
+        })
         context('should show L1 and L2 chains, and USD correctly', () => {
           cy.findByRole('button', { name: /From: Goerli/i }).should(
             'be.visible'

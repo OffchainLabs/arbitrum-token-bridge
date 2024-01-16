@@ -36,36 +36,47 @@ function shouldChangeNetwork(networkName: NetworkName) {
 
 export function login({
   networkType,
-  networkName,
   url,
   query
 }: {
   networkType: NetworkType
-  networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
 }) {
-  // if networkName is not specified we connect to default network from config
-  const network =
-    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const sourceChainNameForMM =
+    query?.sourceChain === 'ethereum'
+      ? 'mainnet'
+      : ((networkType === 'L1'
+          ? getL1NetworkConfig().networkName
+          : getL2NetworkConfig().networkName) as NetworkName)
+  // if sourceChain is not specified we connect to default network from config
+  const sourceChainName = query.sourceChain ?? sourceChainNameForMM
+
+  // Metamask uses "mainnet" rather than "ethereum"
+
+  const destinationChainName = (query.destinationChain ??
+    (networkType === 'L1'
+      ? getL2NetworkConfig().networkName
+      : getL1NetworkConfig().networkName)) as NetworkName
 
   function _startWebApp() {
-    const sourceChain =
-      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { sourceChain, ...query }) // always use sourceChain from query params if provided
+    startWebApp(url, {
+      sourceChain: sourceChainName,
+      destinationChain: destinationChainName,
+      ...query
+    }) // always use sourceChain from query params if provided
   }
 
-  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
+  shouldChangeNetwork(sourceChainNameForMM).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+      cy.changeMetamaskNetwork(sourceChainNameForMM).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkNameWithDefault)
+    cy.task('setCurrentNetworkName', sourceChainNameForMM)
   })
 }
 

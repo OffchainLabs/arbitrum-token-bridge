@@ -46,7 +46,10 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'L1',
-        networkName: 'mainnet'
+        query: {
+          sourceChain: 'ethereum',
+          destinationChain: 'arbitrum-one'
+        }
       })
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
@@ -93,7 +96,10 @@ describe('Read classic deposit messages', () => {
       // log in to metamask
       cy.login({
         networkType: 'L1',
-        networkName: 'mainnet'
+        query: {
+          sourceChain: 'ethereum',
+          destinationChain: 'arbitrum-one'
+        }
       })
       window.localStorage.setItem(
         `arbitrum:bridge:deposits-${Cypress.env('ADDRESS').toLowerCase()}`,
