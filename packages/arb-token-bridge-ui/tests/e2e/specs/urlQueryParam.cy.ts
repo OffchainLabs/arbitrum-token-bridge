@@ -23,16 +23,8 @@ describe('User enters site with query params on URL', () => {
     context(
       '?amount=max should set transfer panel amount to maximum amount possible based on balance',
       () => {
-        // cy.visit('/', {
-        //   qs: {
-        //     amount: 'max',
-        //     sourceChain: 'custom-localhost',
-        //     destinationChain: 'arbitrum-localhost'
-        //   }
-        // })
-        cy.login({
-          networkType: 'L1',
-          query: {
+        cy.visit('/', {
+          qs: {
             amount: 'max',
             sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
@@ -72,16 +64,8 @@ describe('User enters site with query params on URL', () => {
     context(
       '?amount=MAX should set transfer panel amount to maximum amount possible based on balance',
       () => {
-        // cy.visit('/', {
-        //   qs: {
-        //     amount: 'MAX',
-        //     sourceChain: 'custom-localhost',
-        //     destinationChain: 'arbitrum-localhost'
-        //   }
-        // })
-        cy.login({
-          networkType: 'L1',
-          query: {
+        cy.visit('/', {
+          qs: {
             amount: 'MAX',
             sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
@@ -121,16 +105,8 @@ describe('User enters site with query params on URL', () => {
     context(
       '?amount=MaX should set transfer panel amount to maximum amount possible based on balance',
       () => {
-        // cy.visit('/', {
-        //   qs: {
-        //     amount: 'MaX',
-        //     sourceChain: 'custom-localhost',
-        //     destinationChain: 'arbitrum-localhost'
-        //   }
-        // })
-        cy.login({
-          networkType: 'L1',
-          query: {
+        cy.visit('/', {
+          qs: {
             amount: 'MaX',
             sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'
@@ -169,16 +145,8 @@ describe('User enters site with query params on URL', () => {
       }
     )
     context('?amount=56 should set transfer panel amount to 56', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '56',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '56',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -199,16 +167,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
     })
     context('?amount=6 should set transfer panel amount to 6', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '6',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '6',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -218,16 +178,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
     })
     context('?amount=0.123 should set transfer panel amount to 0.123', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '0.123',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '0.123',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -238,16 +190,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
     context('?amount=-0.123 should set transfer panel amount to 0.123', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '-0.123',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '-0.123',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -257,16 +201,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
     it('?amount=asdfs should not set transfer panel amount', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: 'asdfs',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: 'asdfs',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -276,16 +212,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })
     context('?amount=0 should set transfer panel amount to 0', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '0',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '0',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -295,16 +223,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
     context('?amount=0.0001 should set transfer panel amount to 0.0001', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '0.0001',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '0.0001',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -314,16 +234,8 @@ describe('User enters site with query params on URL', () => {
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
     })
     context('?amount=123,3,43 should not set transfer panel amount', () => {
-      // cy.visit('/', {
-      //   qs: {
-      //     amount: '123,3,43',
-      //     sourceChain: 'custom-localhost',
-      //     destinationChain: 'arbitrum-localhost'
-      //   }
-      // })
-      cy.login({
-        networkType: 'L1',
-        query: {
+      cy.visit('/', {
+        qs: {
           amount: '123,3,43',
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
@@ -335,16 +247,8 @@ describe('User enters site with query params on URL', () => {
     context(
       '?amount=0, 123.222, 0.3 should not set transfer panel amount',
       () => {
-        // cy.visit('/', {
-        //   qs: {
-        //     amount: '0, 123.222, 0.3',
-        //     sourceChain: 'custom-localhost',
-        //     destinationChain: 'arbitrum-localhost'
-        //   }
-        // })
-        cy.login({
-          networkType: 'L1',
-          query: {
+        cy.visit('/', {
+          qs: {
             amount: '0, 123.222, 0.3',
             sourceChain: 'custom-localhost',
             destinationChain: 'arbitrum-localhost'

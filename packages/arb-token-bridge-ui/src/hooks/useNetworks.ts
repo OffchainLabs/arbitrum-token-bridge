@@ -204,6 +204,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   ) {
     if (!didUpdateUrlWithSanitizedValues) {
       // On the first render, update query params with the sanitized values
+      console.log('initial set query params in useNetworks')
       setQueryParams({
         sourceChain: validSourceChainId,
         destinationChain: validDestinationChainId
