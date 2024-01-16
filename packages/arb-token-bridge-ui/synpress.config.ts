@@ -27,12 +27,14 @@ if (process.env.TEST_FILE) {
   tests = specFiles.map(file => file.file)
 }
 
+const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+
 export default defineConfig({
   userAgent: 'synpress',
-  retries: 2,
+  retries: shouldRecordVideo ? 0 : 2,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: false,
+  video: shouldRecordVideo,
   screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
@@ -48,6 +50,7 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
 
       if (!ethRpcUrl) {
@@ -125,8 +128,22 @@ if (typeof INFURA_KEY === 'undefined') {
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 
-const ethRpcUrl =
-  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL
+const ethRpcUrl = (() => {
+  // MetaMask comes with a default http://localhost:8545 network with 'localhost' as network name
+  // On CI, the rpc is http://geth:8545 so we cannot reuse the 'localhost' network
+  // However, Synpress does not allow editing network name on the MetaMask extension
+  // For consistency purpose, we would be using 'custom-localhost'
+  // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
+  // so we have to add a / to the end of the rpc url
+  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+    return MAINNET_INFURA_RPC_URL
+  }
+  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  }
+  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+})()
+
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 const goerliRpcUrl =
   process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL

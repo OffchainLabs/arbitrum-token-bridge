@@ -9,15 +9,12 @@ import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
-  | 'localhost'
   | 'custom-localhost'
   | 'arbitrum-localhost'
   | 'arbitrum-goerli'
   | 'mainnet'
   | 'goerli'
-  | 'Sepolia test network'
-
-export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
+  | 'sepolia'
 
 type NetworkConfig = {
   networkName: NetworkName
@@ -30,12 +27,7 @@ type NetworkConfig = {
 
 export const getL1NetworkConfig = (): NetworkConfig => {
   return {
-    // reuse built-in Metamask network if possible
-    // we add a new network in CI because of a different rpc url
-    networkName:
-      Cypress.env('ETH_RPC_URL') === metamaskLocalL1RpcUrl
-        ? 'localhost'
-        : 'custom-localhost',
+    networkName: 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: '1337',
     symbol: 'ETH',

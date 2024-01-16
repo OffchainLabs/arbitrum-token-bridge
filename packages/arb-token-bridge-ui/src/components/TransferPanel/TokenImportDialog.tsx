@@ -10,7 +10,6 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useActions, useAppState } from '../../state'
 import { getExplorerUrl } from '../../util/networks'
 import {
@@ -25,6 +24,8 @@ import GrumpyCat from '@/images/grumpy-cat.webp'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
@@ -73,11 +74,17 @@ export function TokenImportDialog({
   const {
     app: {
       arbTokenBridge: { bridgeTokens, token },
-      isDepositMode,
       selectedToken
     }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -96,7 +103,7 @@ export function TokenImportDialog({
   const { isOpen } = useTokenImportDialogStore()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
-    l2Provider: l2.provider
+    l2Provider: childChainProvider
   })
 
   const modalTitle = useMemo(() => {
@@ -122,14 +129,14 @@ export function TokenImportDialog({
       return
     }
 
-    const erc20Params = { address: l1Address, provider: l1.provider }
+    const erc20Params = { address: l1Address, provider: parentChainProvider }
 
     if (!(await isValidErc20(erc20Params))) {
       throw new Error(`${l1Address} is not a valid ERC-20 token`)
     }
 
     return fetchErc20Data(erc20Params)
-  }, [l1, walletAddress, l1Address])
+  }, [parentChainProvider, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -293,12 +300,12 @@ export function TokenImportDialog({
     }
 
     // do not allow import of withdraw-only tokens at deposit mode
-    if (isDepositMode && isWithdrawOnlyToken(l1Address, l2.network.id)) {
+    if (isDepositMode && isWithdrawOnlyToken(l1Address, childChain.id)) {
       openTransferDisabledDialog()
       return
     }
 
-    if (isTransferDisabledToken(l1Address, l2.network.id)) {
+    if (isTransferDisabledToken(l1Address, childChain.id)) {
       openTransferDisabledDialog()
       return
     }
@@ -393,7 +400,7 @@ export function TokenImportDialog({
           </span>
           <span className="mb-3 mt-0">{tokenToImport?.name}</span>
           <a
-            href={`${getExplorerUrl(l1.network.id)}/token/${
+            href={`${getExplorerUrl(parentChain.id)}/token/${
               tokenToImport?.address
             }`}
             target="_blank"

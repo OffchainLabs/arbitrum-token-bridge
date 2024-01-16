@@ -83,7 +83,6 @@ export type AppState = {
   warningTokens: WarningTokens
   connectionState: number
   selectedToken: ERC20BridgeToken | null
-  isDepositMode: boolean
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -98,7 +97,6 @@ export const defaultState: AppState = {
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
-  isDepositMode: true,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {
