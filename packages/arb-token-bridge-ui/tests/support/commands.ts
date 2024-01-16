@@ -46,18 +46,19 @@ export function login({
   const sourceChainNameForMM =
     query?.sourceChain === 'ethereum'
       ? 'mainnet'
-      : ((networkType === 'L1'
-          ? getL1NetworkConfig().networkName
-          : getL2NetworkConfig().networkName) as NetworkName)
+      : networkType === 'L1'
+      ? getL1NetworkConfig().networkName
+      : getL2NetworkConfig().networkName
   // if sourceChain is not specified we connect to default network from config
-  const sourceChainName = query.sourceChain ?? sourceChainNameForMM
+  const sourceChainName = query?.sourceChain ?? sourceChainNameForMM
 
   // Metamask uses "mainnet" rather than "ethereum"
 
-  const destinationChainName = (query.destinationChain ??
+  const destinationChainName =
+    query?.destinationChain ??
     (networkType === 'L1'
       ? getL2NetworkConfig().networkName
-      : getL1NetworkConfig().networkName)) as NetworkName
+      : getL1NetworkConfig().networkName)
 
   function _startWebApp() {
     startWebApp(url, {
