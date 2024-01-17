@@ -22,10 +22,7 @@ import {
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
-import {
-  AmountQueryParamEnum,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
+import { AmountQueryParamEnum } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -541,8 +538,6 @@ export function TransferPanelMain({
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
     (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
 
-  const [, setQueryParams] = useArbQueryParams()
-
   const estimateGas = useCallback(
     async (
       weiValue: BigNumber
@@ -660,14 +655,11 @@ export function TransferPanelMain({
     customFeeTokenBalances
   ])
 
-  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
-    setQueryParams({ amount })
-
-    if (isMaxAmount) {
+    if (isMaxAmount && !loadingMaxAmount) {
       setMaxAmount()
     }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+  }, [isMaxAmount, loadingMaxAmount, setMaxAmount])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -1054,14 +1046,10 @@ export function TransferPanelMain({
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,
-              loading: isMaxAmount || loadingMaxAmount,
+              loading: loadingMaxAmount,
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageElement}
-            value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
           />
 
           {showUSDCSpecificInfo && (

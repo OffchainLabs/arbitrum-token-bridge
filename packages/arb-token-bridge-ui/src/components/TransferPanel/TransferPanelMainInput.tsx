@@ -1,6 +1,11 @@
 import { twMerge } from 'tailwind-merge'
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
+import { useCallback } from 'react'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -34,17 +39,29 @@ export type TransferPanelMainInputProps =
     maxButtonProps: MaxButtonProps & {
       visible: boolean
     }
-    value: string
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, ...rest } = props
-  const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
+  const { errorMessage, maxButtonProps, ...rest } = props
+  const {
+    visible: maxButtonVisible,
+    loading: isMaxButtonLoading,
+    ...restMaxButtonProps
+  } = maxButtonProps
+  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
       ? 'border border-[#cd0000]'
       : 'border border-gray-6'
+
+  const onChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setQueryParams({ amount: event.target.value })
+    },
+    [setQueryParams]
+  )
 
   return (
     <>
@@ -62,10 +79,16 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={value}
+            value={isMaxAmount ? '' : amount}
+            onChange={onChange}
             {...rest}
           />
-          {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
+          {maxButtonVisible && (
+            <MaxButton
+              loading={isMaxAmount || isMaxButtonLoading}
+              {...restMaxButtonProps}
+            />
+          )}
         </div>
       </div>
 
