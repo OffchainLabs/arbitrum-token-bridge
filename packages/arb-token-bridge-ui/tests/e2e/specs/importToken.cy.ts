@@ -155,119 +155,118 @@ describe('Import token', () => {
     })
   })
 
-  context('User import token through URL', () => {
-    context('User uses L1 address', () => {
-      it('should import token through URL using its L1 address', () => {
-        cy.login({
-          networkType: 'L1',
-          url: '/',
-          query: {
-            token: ERC20TokenAddressL1
-          }
-        })
-
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
-
-        // Modal is displayed
-        cy.get('h2')
-          .contains(/import unknown token/i)
-          .should('be.visible')
-        cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
-        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
-
-        // Import token
-        cy.findByRole('button', { name: 'Import token' })
-          .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
-
-            // Modal is closed
-            cy.findByRole('button', { name: 'Import token' }).should(
-              'not.exist'
-            )
-          })
+  context('User import token through URL with an L1 address', () => {
+    it('should import token through URL using its L1 address', () => {
+      cy.login({
+        networkType: 'L1',
+        url: '/',
+        query: {
+          token: ERC20TokenAddressL1
+        }
       })
+
+      // waiting for metamask notification to disappear
+      // eslint-disable-next-line
+      cy.wait(3000)
+
+      // Modal is displayed
+      cy.get('h2')
+        .contains(/import unknown token/i)
+        .should('be.visible')
+      cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
+      cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
+
+      // Import token
+      cy.findByRole('button', { name: 'Import token' })
+        .should('be.visible')
+        .trigger('click', {
+          force: true
+        })
+        .then(() => {
+          cy.findByRole('button', { name: 'Select Token' })
+            .should('be.visible')
+            .should('have.text', ERC20TokenSymbol)
+
+          // Modal is closed
+          cy.findByRole('button', { name: 'Import token' }).should('not.exist')
+        })
     })
+  })
 
-    context('User uses L2 address', () => {
-      it('should import token through URL using its L2 address', () => {
-        cy.login({
-          networkType: 'L1',
-          url: '/',
-          query: {
-            token: ERC20TokenAddressL2
-          }
+  context('User import token through URL with an L2 address', () => {
+    it('should import token through URL using its L2 address', () => {
+      cy.login({
+        networkType: 'L1',
+        url: '/',
+        query: {
+          token: ERC20TokenAddressL2
+        }
+      })
+
+      // waiting for metamask notification to disappear
+      // eslint-disable-next-line
+      cy.wait(3000)
+
+      // Modal is displayed
+      cy.get('h2')
+        .contains(/import unknown token/i)
+        .should('be.visible')
+      cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
+      // Modal should always display L1 address regardless of query parameter
+      cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
+
+      // Import token
+      cy.findByRole('button', { name: 'Import token' })
+        .should('be.visible')
+        .trigger('click', {
+          force: true
+        })
+        .then(() => {
+          cy.findByRole('button', { name: 'Select Token' })
+            .should('be.visible')
+            .should('have.text', ERC20TokenSymbol)
         })
 
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
-
-        // Modal is displayed
-        cy.get('h2')
-          .contains(/import unknown token/i)
-          .should('be.visible')
-        cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
-        // Modal should always display L1 address regardless of query parameter
-        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
-
-        // Import token
-        cy.findByRole('button', { name: 'Import token' })
-          .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
-          })
-
-        // Modal is closed
-        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
-      })
+      // Modal is closed
+      cy.findByRole('button', { name: 'Import token' }).should('not.exist')
     })
+  })
 
-    context('User uses invalid address', () => {
-      it('should display an error message after invalid URL', () => {
-        cy.login({
-          networkType: 'L1',
-          url: '/',
-          query: {
-            token: invalidTokenAddress
-          }
+  context('User import token through URL with an invalid address', () => {
+    it('should display an error message after invalid URL', () => {
+      cy.login({
+        networkType: 'L1',
+        query: {
+          token: invalidTokenAddress,
+          sourceChain: 'custom-localhost',
+          destinationChain: 'arbitrum-localhost'
+        }
+      })
+
+      // eslint-disable-next-line
+      cy.wait(3000)
+
+      // Modal is displayed
+      cy.get('h2')
+        .contains(/invalid token address/i)
+        .should('be.visible')
+      cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
+
+      cy.findByRole('button', { name: 'Import token' }).should('not.exist')
+      // Close modal
+      cy.findByRole('button', { name: 'Dialog Cancel' })
+        .should('be.visible')
+        .trigger('click', {
+          force: true
+        })
+        .then(() => {
+          cy.findByRole('button', { name: 'Select Token' })
+            .should('be.visible')
+            .should('have.text', 'ETH')
         })
 
-        // eslint-disable-next-line
-        cy.wait(3000)
-
-        // Modal is displayed
-        cy.get('h2').contains(/invalid token address/i)
-        cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
-
-        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
-        // Close modal
-        cy.findByRole('button', { name: 'Dialog Cancel' })
-          .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'ETH')
-          })
-
-        // Modal is closed
-        cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')
-      })
+      // Modal is closed
+      cy.findByRole('button', { name: 'Dialog Cancel' }).should('not.exist')
     })
   })
 })
