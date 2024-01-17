@@ -546,7 +546,7 @@ export function TransferPanel() {
 
         // if user selects usdc.e, redirect to our canonical transfer function
         if (depositConfirmation === 'bridge-normal-usdce') {
-          depositToken()
+          await depositToken()
           return
         }
       } else {
