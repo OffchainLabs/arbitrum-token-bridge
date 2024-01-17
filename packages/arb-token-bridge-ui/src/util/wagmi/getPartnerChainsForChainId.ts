@@ -13,7 +13,10 @@ import {
   arbitrumSepolia,
   chainToWagmiChain,
   stylusTestnet,
-  xaiTestnet
+  xai,
+  xaiTestnet,
+  localL1Network,
+  localL2Network
 } from './wagmiAdditionalNetworks'
 
 export function getPartnerChainsForChainId(chainId: number): Chain[] {
@@ -42,10 +45,13 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
       return [arbitrumSepolia]
 
     case ChainId.ArbitrumOne:
-      return [mainnet, ...customArbitrumOneChains]
+      return [mainnet, xai, ...customArbitrumOneChains]
 
     case ChainId.ArbitrumNova:
       return [mainnet, ...customArbitrumNovaChains]
+
+    case ChainId.Xai:
+      return [arbitrumOne]
 
     case ChainId.ArbitrumGoerli:
       return [goerli, xaiTestnet, ...customArbitrumGoerliChains]
@@ -58,6 +64,12 @@ export function getPartnerChainsForChainId(chainId: number): Chain[] {
 
     case ChainId.XaiTestnet:
       return [arbitrumGoerli]
+
+    case ChainId.Local:
+      return [localL2Network]
+
+    case ChainId.ArbitrumLocal:
+      return [localL1Network]
 
     default:
       const customArbitrumGoerliChainsIds = customArbitrumGoerliChains.map(

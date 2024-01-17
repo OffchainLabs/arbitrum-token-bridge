@@ -16,10 +16,11 @@ const chainQueryParams = [
   'arbitrum-nova',
   'arbitrum-goerli',
   'arbitrum-sepolia',
+  'xai',
   'stylus-testnet',
   'xai-testnet',
-  'local',
-  'arbitrum-local'
+  'custom-localhost',
+  'arbitrum-localhost'
 ] as const
 
 export type ChainKeyQueryParam = (typeof chainQueryParams)[number]
@@ -48,6 +49,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
 
+    case ChainId.Xai:
+      return 'xai'
+
     case ChainId.ArbitrumGoerli:
       return 'arbitrum-goerli'
 
@@ -64,10 +68,10 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'arbitrum-sepolia'
 
     case ChainId.Local:
-      return 'local'
+      return 'custom-localhost'
 
     case ChainId.ArbitrumLocal:
-      return 'arbitrum-local'
+      return 'arbitrum-localhost'
 
     default:
       const customChains = getCustomChainsFromLocalStorage()
@@ -104,6 +108,9 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-nova':
       return customChains.arbitrumNova
 
+    case 'xai':
+      return customChains.xai
+
     case 'arbitrum-goerli':
       return chains.arbitrumGoerli
 
@@ -116,10 +123,10 @@ export function getChainForChainKeyQueryParam(
     case 'xai-testnet':
       return customChains.xaiTestnet
 
-    case 'local':
+    case 'custom-localhost':
       return customChains.localL1Network
 
-    case 'arbitrum-local':
+    case 'arbitrum-localhost':
       return customChains.localL2Network
 
     default:

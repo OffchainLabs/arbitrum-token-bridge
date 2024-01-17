@@ -13,23 +13,23 @@ import {
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2 } = useNetworksAndSigners()
-  const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { isArbitrumGoerli } = isNetwork(l2.network.id)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
-  const from = l2.network
-  const to = l1.network
-  const toNetworkName = getNetworkName(to.id)
+  const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
+  const { isArbitrumGoerli } = isNetwork(childChain.id)
+  const destinationNetworkName = getNetworkName(parentChain.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
   useEffect(() => {
@@ -40,8 +40,8 @@ export function USDCWithdrawalConfirmationDialog(
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: from.id,
-      to: to.id,
+      from: childChain.id,
+      to: parentChain.id,
       fromTokenAddress: isArbitrumGoerli
         ? CommonAddress.ArbitrumGoerli.USDC
         : CommonAddress.ArbitrumOne.USDC,
@@ -59,7 +59,7 @@ export function USDCWithdrawalConfirmationDialog(
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {toNetworkName}
+              Move funds to {destinationNetworkName}
             </HeadlessUIDialog.Title>
             <button
               className="arb-hover"
@@ -82,7 +82,8 @@ export function USDCWithdrawalConfirmationDialog(
             <div className="flex flex-col space-y-3 font-light">
               <p>
                 Receive <span className="font-medium">USDC</span> on{' '}
-                {toNetworkName} using a third-party bridge with Circle&apos;s{' '}
+                {destinationNetworkName} using a third-party bridge with
+                Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover text-blue-link underline"
                   href={CCTP_DOCUMENTATION}
@@ -106,7 +107,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-6">
-              <CctpTabContent toNetworkName={toNetworkName}>
+              <CctpTabContent toNetworkName={destinationNetworkName}>
                 <div className="flex flex-col space-y-3">
                   <USDCWithdrawalConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {

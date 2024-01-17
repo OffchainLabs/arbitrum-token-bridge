@@ -53,8 +53,11 @@ export function isTxCompleted(tx: MergedTransaction): boolean {
   return tx.status === WithdrawalStatus.EXECUTED
 }
 
-export function isTxPending(tx: MergedTransaction): boolean {
-  if (tx.isCctp && tx.status === 'pending') {
+export function isTxPending(tx: MergedTransaction) {
+  if (
+    tx.isCctp &&
+    (tx.status === WithdrawalStatus.UNCONFIRMED || tx.status === 'pending')
+  ) {
     return true
   }
   if (isDeposit(tx)) {

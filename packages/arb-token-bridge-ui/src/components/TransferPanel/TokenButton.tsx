@@ -5,35 +5,31 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
-      isDepositMode,
       selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status, l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
       return nativeCurrency.logoUrl
     }
-    if (
-      status !== UseNetworksAndSignersStatus.CONNECTED ||
-      !arbTokenBridgeLoaded
-    ) {
+    if (!arbTokenBridgeLoaded) {
       return undefined
     }
     if (typeof bridgeTokens === 'undefined') {
@@ -48,9 +44,9 @@ export function TokenButton(): JSX.Element {
     nativeCurrency,
     bridgeTokens,
     selectedToken?.address,
-    status,
     arbTokenBridgeLoaded
   ])
+  const chainId = isDepositMode ? parentChain.id : childChain.id
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -59,9 +55,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chain: isDepositMode ? l1.network : l2.network
+      chainId
     })
-  }, [selectedToken, nativeCurrency, isDepositMode, l2.network, l1.network])
+  }, [selectedToken, chainId, nativeCurrency.symbol])
 
   return (
     <>

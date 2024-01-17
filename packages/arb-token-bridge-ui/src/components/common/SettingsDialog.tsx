@@ -1,5 +1,4 @@
 import { useCallback, useEffect } from 'react'
-import { useChainId } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 import useLocalStorage from '@rehooks/local-storage'
 
@@ -14,6 +13,8 @@ import { isNetwork } from '../../util/networks'
 import { warningToast } from './atoms/Toast'
 import { ExternalLink } from './ExternalLink'
 import { ORBIT_QUICKSTART_LINK } from '../../constants'
+import { useNetworks } from '../../hooks/useNetworks'
+
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 const SectionTitle = ({
@@ -27,8 +28,9 @@ const SectionTitle = ({
 )
 
 export const SettingsDialog = () => {
-  const chainId = useChainId()
-  const isConnectedToTestnet = isNetwork(chainId).isTestnet
+  const [{ sourceChain }] = useNetworks()
+
+  const isConnectedToTestnet = isNetwork(sourceChain.id).isTestnet
 
   const [{ settingsOpen }, setQueryParams] = useArbQueryParams()
 
