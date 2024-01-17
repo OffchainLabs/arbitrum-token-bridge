@@ -623,47 +623,49 @@ export const useTransactionHistory = (
 
       // tx not found in the new user initiated transaction list
       // look in the paginated historical data
-      if (!txPages) {
-        return
-      }
-
-      let pageNumberToUpdate = 0
-
-      // search cache for the tx to update
-      while (
-        !txPages[pageNumberToUpdate]?.find(oldTx =>
-          isSameTransaction(oldTx, newTx)
-        )
-      ) {
-        pageNumberToUpdate++
-
-        if (pageNumberToUpdate > txPages.length) {
-          // tx not found
+      mutateTxPages(prevTxPages => {
+        if (!prevTxPages) {
           return
         }
-      }
 
-      const oldPageToUpdate = txPages[pageNumberToUpdate]
+        let pageNumberToUpdate = 0
 
-      if (!oldPageToUpdate) {
-        return
-      }
+        // search cache for the tx to update
+        while (
+          !prevTxPages[pageNumberToUpdate]?.find(oldTx =>
+            isSameTransaction(oldTx, newTx)
+          )
+        ) {
+          pageNumberToUpdate++
 
-      // replace the old tx with the new tx
-      const updatedPage = oldPageToUpdate.map(oldTx => {
-        return isSameTransaction(oldTx, newTx) ? newTx : oldTx
-      })
+          if (pageNumberToUpdate > prevTxPages.length) {
+            // tx not found
+            return prevTxPages
+          }
+        }
 
-      // all old pages including the new updated page
-      const newTxPages = [
-        ...txPages.slice(0, pageNumberToUpdate),
-        updatedPage,
-        ...txPages.slice(pageNumberToUpdate + 1)
-      ]
+        const oldPageToUpdate = prevTxPages[pageNumberToUpdate]
 
-      mutateTxPages(newTxPages, false)
+        if (!oldPageToUpdate) {
+          return prevTxPages
+        }
+
+        // replace the old tx with the new tx
+        const updatedPage = oldPageToUpdate.map(oldTx => {
+          return isSameTransaction(oldTx, newTx) ? newTx : oldTx
+        })
+
+        // all old pages including the new updated page
+        const newTxPages = [
+          ...prevTxPages.slice(0, pageNumberToUpdate),
+          updatedPage,
+          ...prevTxPages.slice(pageNumberToUpdate + 1)
+        ]
+
+        return newTxPages
+      }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData, txPages]
+    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
   )
 
   const updatePendingTransaction = useCallback(
