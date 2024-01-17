@@ -143,10 +143,10 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   cy.visit(url, {
     qs
   })
-  if (Cypress.currentRetry > 0) {
-    // ensures we don't test with the same state that could have caused the test to fail
-    cy.reload(true)
-  }
+  // if (Cypress.currentRetry > 0) {
+  //   // ensures we don't test with the same state that could have caused the test to fail
+  //   cy.reload(true)
+  // }
 
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()

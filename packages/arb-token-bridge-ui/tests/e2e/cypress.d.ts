@@ -8,7 +8,7 @@ import {
   fundUserUsdcTestnet,
   fundUserWalletEth
 } from '../support/commands'
-import { NetworkType, NetworkName } from '../support/common'
+import { NetworkType } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -20,7 +20,6 @@ declare global {
       // eslint-disable-next-line no-unused-vars
       login(options: {
         networkType: NetworkType
-        networkName?: NetworkName
         url?: string
         query?: { [s: string]: string }
       }): typeof login

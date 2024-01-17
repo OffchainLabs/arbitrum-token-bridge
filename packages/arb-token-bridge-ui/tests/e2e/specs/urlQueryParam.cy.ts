@@ -20,6 +20,7 @@ describe('User enters site with query params on URL', () => {
   context('should correctly populate amount input from query param', () => {
     beforeEach(() => {
       cy.logout()
+      cy.wait(2_000)
     })
 
     // only ETH is supported for now so by default the following tests are assumed to be ETH
