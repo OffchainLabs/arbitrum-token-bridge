@@ -41,6 +41,10 @@ function mockClassicDepositTransaction(
 }
 
 describe('Read classic deposit messages', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
   context('User has classic ETH deposit transaction', () => {
     it('can read successful ETH deposit', () => {
       // log in to metamask
