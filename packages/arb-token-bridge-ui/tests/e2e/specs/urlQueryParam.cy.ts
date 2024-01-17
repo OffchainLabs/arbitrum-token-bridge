@@ -2,8 +2,14 @@
  * When user enters the page with query params on URL
  */
 
+import { BigNumber } from 'ethers'
+
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { getInitialETHBalance } from '../../support/common'
+
+function formatBalance(value: string | number | string[]) {
+  return formatAmount(BigNumber.from(value), { decimals: 18 })
+}
 
 describe('User enters site with query params on URL', () => {
   let l1ETHbal: number
@@ -55,7 +61,7 @@ describe('User enters site with query params on URL', () => {
               cy.findByPlaceholderText(/Enter amount/i)
                 .invoke('val')
                 .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+                  cy.wrap(formatBalance(value)).should('be.lte', l1ETHbal)
                 })
             })
           })
@@ -100,7 +106,7 @@ describe('User enters site with query params on URL', () => {
               cy.findByPlaceholderText(/Enter amount/i)
                 .invoke('val')
                 .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+                  cy.wrap(formatBalance(value)).should('be.lte', l1ETHbal)
                 })
             })
           })
@@ -146,7 +152,7 @@ describe('User enters site with query params on URL', () => {
               cy.findByPlaceholderText(/Enter amount/i)
                 .invoke('val')
                 .then(value => {
-                  cy.wrap(Number(value)).should('be.lt', l1ETHbal)
+                  cy.wrap(formatBalance(value)).should('be.lte', l1ETHbal)
                 })
             })
           })
