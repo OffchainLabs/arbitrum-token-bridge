@@ -56,7 +56,6 @@ import {
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import {
   createBlockExplorerUrlForToken,
-  lightenColor,
   shortenAddress
 } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
@@ -146,8 +145,8 @@ function CustomAddressBanner({
     <div
       style={{
         backgroundColor: isOrbitChain
-          ? // create a lighter color from defined config colors for Orbit chains
-            lightenColor(primaryColor, 60)
+          ? // add opacity to create a lighter shade
+            `${primaryColor}20`
           : undefined,
         color: secondaryColor,
         borderColor: secondaryColor

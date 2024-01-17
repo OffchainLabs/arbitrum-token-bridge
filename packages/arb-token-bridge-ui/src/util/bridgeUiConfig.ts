@@ -18,10 +18,11 @@ const ethereumBaseConfig: BaseBridgeConfigUi = {
   nativeTokenLogo: '/images/EthereumLogoRound.svg'
 }
 
-const arbitrumBaseConfig: Omit<BaseBridgeConfigUi, 'networkLogo'> = {
+const arbitrumBaseConfig: BaseBridgeConfigUi = {
   primaryColor: '#1B4ADD',
   secondaryColor: '#001A6B',
-  nativeTokenLogo: '/images/EthereumLogoRound.svg'
+  nativeTokenLogo: '/images/EthereumLogoRound.svg',
+  networkLogo: '/images/ArbitrumLogo.svg'
 }
 
 export function getBridgeUiConfigForChain(
@@ -65,20 +66,17 @@ export function getBridgeUiConfigForChain(
     case ChainId.ArbitrumGoerli:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Goerli',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum Goerli'
       }
     case ChainId.ArbitrumSepolia:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Sepolia',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum Sepolia'
       }
     case ChainId.ArbitrumLocal:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum'
       }
     case ChainId.ArbitrumNova:
       return {
