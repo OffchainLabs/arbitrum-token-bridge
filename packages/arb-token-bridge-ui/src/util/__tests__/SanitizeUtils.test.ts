@@ -1,4 +1,4 @@
-import { sanitizeAmount } from '../NumberUtils'
+import { sanitizeAmount } from '../SanitizeUtils'
 
 describe('sanitizeAmount', () => {
   describe('should sanitize amount values correctly', () => {

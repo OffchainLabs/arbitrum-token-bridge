@@ -22,10 +22,7 @@ import {
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
-import {
-  AmountQueryParamEnum,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -73,6 +70,7 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { AmountQueryParamEnum } from '../../util/SanitizeUtils'
 
 enum NetworkType {
   l1 = 'l1',

@@ -4,11 +4,8 @@ import { throttle } from 'lodash-es'
 
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
-import {
-  AmountQueryParamEnum,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
-import { sanitizeAmount } from '../../util/NumberUtils'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { isMaxAmount, sanitizeAmount } from '../../util/SanitizeUtils'
 
 type MaxButtonProps = Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -59,7 +56,6 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const [{ amount }, setQueryParams] = useArbQueryParams()
   const sanitizedAmount = sanitizeAmount(amount)
   const [inputAmount, setInputAmount] = useState(sanitizedAmount)
-  const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const setQueryParamAmount = throttle(function (amount: string) {
     setQueryParams({ amount })
@@ -116,7 +112,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
           />
           {maxButtonVisible && (
             <MaxButton
-              loading={isMaxAmount || isMaxButtonLoading}
+              loading={isMaxAmount(amount) || isMaxButtonLoading}
               onClick={onMaxButtonClick}
               {...restMaxButtonProps}
             />

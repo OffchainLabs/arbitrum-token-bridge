@@ -34,10 +34,6 @@ import {
 } from '../types/ChainQueryParam'
 import { ChainId } from '../util/networks'
 
-export enum AmountQueryParamEnum {
-  MAX = 'max'
-}
-
 export const useArbQueryParams = () => {
   /*
     returns [
