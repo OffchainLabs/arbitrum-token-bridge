@@ -10,8 +10,12 @@ import {
 } from '../../hooks/useArbQueryParams'
 import { sanitizeAmount } from '../../util/NumberUtils'
 
-type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type MaxButtonProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick'
+> & {
   loading: boolean
+  onClick: () => Promise<void>
 }
 
 function MaxButton(props: MaxButtonProps) {
@@ -49,6 +53,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const {
     visible: maxButtonVisible,
     loading: isMaxButtonLoading,
+    onClick: setMaxAmount,
     ...restMaxButtonProps
   } = maxButtonProps
   const [{ amount }, setQueryParams] = useArbQueryParams()
@@ -58,7 +63,6 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
 
   const setQueryParamAmount = throttle(function (amount: string) {
     setQueryParams({ amount })
-    console.log('set query params!')
   }, 300)
 
   useEffect(() => {
@@ -67,7 +71,11 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
     }
   }, [amount, sanitizedAmount, setQueryParamAmount])
 
-  const onChange = useCallback(
+  useEffect(() => {
+    setInputAmount(sanitizedAmount)
+  }, [sanitizedAmount])
+
+  const onInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const sanitizedInputAmount = sanitizeAmount(event.target.value)
       setInputAmount(sanitizedInputAmount)
@@ -75,6 +83,11 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
     },
     [setQueryParamAmount]
   )
+
+  const onMaxButtonClick = useCallback(async () => {
+    await setMaxAmount()
+    setInputAmount(sanitizedAmount)
+  }, [sanitizedAmount, setMaxAmount])
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
@@ -98,12 +111,13 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
             value={inputAmount}
-            onChange={onChange}
+            onChange={onInputChange}
             {...rest}
           />
           {maxButtonVisible && (
             <MaxButton
               loading={isMaxAmount || isMaxButtonLoading}
+              onClick={onMaxButtonClick}
               {...restMaxButtonProps}
             />
           )}
