@@ -23,7 +23,7 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  const { primaryColor } = getBridgeUiConfigForChain(value.id)
+  const { primaryColor, networkLogo } = getBridgeUiConfigForChain(value.id)
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -77,7 +77,7 @@ export function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
-                    src={getBridgeUiConfigForChain(option.id).networkLogo}
+                    src={networkLogo}
                     alt={`${getNetworkName(option.id)} logo`}
                     className="max-h-7 w-auto"
                     width={36}
