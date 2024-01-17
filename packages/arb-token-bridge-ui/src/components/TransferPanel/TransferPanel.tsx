@@ -177,6 +177,7 @@ export function TransferPanel() {
 
   const setAmount = useCallback(
     (newAmount: string) => {
+      console.log('SET QUERY PARAMS TRANFER PANEL', newAmount)
       setQueryParams({ amount: newAmount })
     },
     [setQueryParams]

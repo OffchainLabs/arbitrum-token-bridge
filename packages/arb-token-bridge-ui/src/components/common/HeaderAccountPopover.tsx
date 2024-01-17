@@ -224,7 +224,10 @@ export function HeaderAccountPopover({
             {isCorrectNetworkConnected && (
               <button
                 className={headerItemsClassName}
-                onClick={() => setQueryParams({ settingsOpen: true })}
+                onClick={() => {
+                  console.log('SET QUERY PARAMS HeaderAccountPopover.tsx')
+                  setQueryParams({ settingsOpen: true })
+                }}
               >
                 <Cog6ToothIcon className="h-4 w-4 text-white" />
                 <span>Settings</span>

@@ -33,8 +33,10 @@ export function useTokenFromSearchParams(): {
 } {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
 
-  const setTokenQueryParam = (token: string | undefined) =>
+  const setTokenQueryParam = (token: string | undefined) => {
+    console.log('SET QUERY PARAMS TRANFER PANEL UTIL', token)
     setQueryParams({ token })
+  }
 
   if (!tokenFromSearchParams) {
     return {

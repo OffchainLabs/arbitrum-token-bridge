@@ -66,6 +66,7 @@ export const SettingsDialog = () => {
   }, [isConnectedToTestnet, setIsTestnetMode])
 
   function closeSettings() {
+    console.log('SET QUERY PARAMS Settings')
     setQueryParams({ settingsOpen: false })
   }
 

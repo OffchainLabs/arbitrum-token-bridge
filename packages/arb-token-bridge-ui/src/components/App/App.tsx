@@ -385,6 +385,7 @@ function ConnectedChainSyncer() {
         destinationChainId: undefined
       })
 
+      console.log('SET QUERY PARAMS app.tsx', { sourceChain, destinationChain })
       setQueryParams({ sourceChain, destinationChain })
       setDidSync(true)
     }
