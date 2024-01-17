@@ -45,6 +45,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const [networks] = useNetworks()
+  const { sourceChainProvider, destinationChainProvider } = networks
   const {
     childChain,
     childChainProvider,
@@ -95,12 +96,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           gasEstimate = constants.Zero
         } else {
           const cctpTransferStarter = new CctpTransferStarter({
-            sourceChainProvider: isDepositMode
-              ? parentChainProvider
-              : childChainProvider,
-            destinationChainProvider: isDepositMode
-              ? childChainProvider
-              : parentChainProvider
+            sourceChainProvider,
+            destinationChainProvider
           })
           gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
             amount: constants.MaxUint256,
@@ -130,6 +127,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     signer,
     walletAddress,
     token?.address,
+    sourceChainProvider,
+    destinationChainProvider,
     parentChainProvider,
     childChainProvider,
     chainId
