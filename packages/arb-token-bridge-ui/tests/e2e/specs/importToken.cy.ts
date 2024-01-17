@@ -237,11 +237,13 @@ describe('Import token', () => {
       cy.login({
         networkType: 'L1',
         query: {
-          token: invalidTokenAddress,
           sourceChain: 'custom-localhost',
           destinationChain: 'arbitrum-localhost'
         }
       })
+      cy.visit(
+        `/?token=${invalidTokenAddress}&sourceChain=custom-localhost&destinationChain=arbitrum-localhost`
+      )
 
       // eslint-disable-next-line
       cy.wait(3000)

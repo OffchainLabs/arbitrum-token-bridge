@@ -2,13 +2,17 @@
  * When user enters the page with query params on URL
  */
 
-import { BigNumber } from 'ethers'
+import { ethers } from 'ethers'
 
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { getInitialETHBalance } from '../../support/common'
 
 function formatBalance(value: string | number | string[]) {
-  return formatAmount(BigNumber.from(value), { decimals: 18 })
+  return parseFloat(
+    formatAmount(ethers.utils.parseUnits(String(value), 'ether'), {
+      decimals: 18
+    })
+  )
 }
 
 describe('User enters site with query params on URL', () => {
@@ -23,19 +27,24 @@ describe('User enters site with query params on URL', () => {
     ).then(val => (l1ETHbal = parseFloat(formatAmount(val, { decimals: 18 }))))
   })
 
+  beforeEach(() => {
+    cy.login({
+      networkType: 'L1',
+      query: {
+        sourceChain: 'custom-localhost',
+        destinationChain: 'arbitrum-localhost'
+      }
+    })
+  })
+
   // only ETH is supported for now so by default the following tests are assumed to be ETH
   context(
     'set transfer panel amount to maximum amount possible based on balance',
     () => {
       it('?amount=max', () => {
-        cy.login({
-          networkType: 'L1',
-          query: {
-            amount: 'max',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
-          }
-        })
+        cy.visit(
+          '/?amount=max&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+        )
 
         cy.findByPlaceholderText(/Enter amount/i)
           .should('be.visible')
@@ -73,14 +82,9 @@ describe('User enters site with query params on URL', () => {
     'set transfer panel amount to maximum amount possible based on balance',
     () => {
       it('?amount=MAX', () => {
-        cy.login({
-          networkType: 'L1',
-          query: {
-            amount: 'MAX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
-          }
-        })
+        cy.visit(
+          '/?amount=MAX&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+        )
 
         cy.findByPlaceholderText(/Enter amount/i)
           .should('be.visible')
@@ -118,14 +122,9 @@ describe('User enters site with query params on URL', () => {
     'set transfer panel amount to maximum amount possible based on balance',
     () => {
       it('?amount=MaX', () => {
-        cy.login({
-          networkType: 'L1',
-          query: {
-            amount: 'MaX',
-            sourceChain: 'custom-localhost',
-            destinationChain: 'arbitrum-localhost'
-          }
-        })
+        cy.visit(
+          '/?amount=MaX&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+        )
 
         cy.findByPlaceholderText(/Enter amount/i)
           .should('be.visible')
@@ -162,14 +161,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=56', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '56',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=56&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '56')
     })
@@ -177,14 +171,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=1.6678', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '1.6678',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=1.6678&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '1.6678')
     })
@@ -192,14 +181,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=6', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '6',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=6&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '6')
     })
@@ -207,14 +191,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=0.123', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=0.123&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.url().should('include', 'amount=0.123')
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
@@ -223,14 +202,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=-0.123', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '-0.123',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=-0.123&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.123')
     })
@@ -238,14 +212,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=0', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '0',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=0&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0')
     })
@@ -253,14 +222,9 @@ describe('User enters site with query params on URL', () => {
 
   context('set transfer panel amount to specific amount', () => {
     it('?amount=0.0001', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '0.0001',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=0.0001&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('have.value', '0.0001')
     })
@@ -268,14 +232,9 @@ describe('User enters site with query params on URL', () => {
 
   context('not set transfer panel amount to specific amount', () => {
     it('?amount=asdfs', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: 'asdfs',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=asdfs&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })
@@ -283,14 +242,9 @@ describe('User enters site with query params on URL', () => {
 
   context('not set transfer panel amount to specific amount', () => {
     it('?amount=123,3,43', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '123,3,43',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=123,3,43&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })
@@ -298,14 +252,9 @@ describe('User enters site with query params on URL', () => {
 
   context('not set transfer panel amount to specific amount', () => {
     it('?amount=0, 123.222, 0.3', () => {
-      cy.login({
-        networkType: 'L1',
-        query: {
-          amount: '0, 123.222, 0.3',
-          sourceChain: 'custom-localhost',
-          destinationChain: 'arbitrum-localhost'
-        }
-      })
+      cy.visit(
+        '/?amount=0, 123.222, 0.3&sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+      )
 
       cy.findByPlaceholderText(/Enter amount/i).should('be.empty')
     })

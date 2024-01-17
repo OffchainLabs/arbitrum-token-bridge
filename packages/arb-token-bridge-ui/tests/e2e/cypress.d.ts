@@ -3,7 +3,6 @@ import '@synthetixio/synpress/support/index.d.ts'
 import {
   connectToApp,
   login,
-  logout,
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
@@ -26,7 +25,6 @@ declare global {
         url?: string
         query?: { [s: string]: string }
       }): typeof login
-      logout(): typeof logout
       openTransactionsPanel(): typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet

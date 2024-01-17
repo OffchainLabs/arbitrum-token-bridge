@@ -102,18 +102,6 @@ Cypress.Commands.add(
   }
 )
 
-// once all assertions are run, before test exit, make sure web-app is reset to original
-export const logout = () => {
-  cy.disconnectMetamaskWalletFromAllDapps().then(() => {
-    cy.resetMetamaskAccount().then(() => {
-      // resetMetamaskAccount doesn't seem to remove the connected network in CI
-      // changeMetamaskNetwork fails if already connected to the desired network
-      // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('goerli')
-    })
-  })
-}
-
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
   cy.findByText('Agree to terms').should('be.visible').click()
@@ -213,7 +201,6 @@ export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
 Cypress.Commands.addAll({
   connectToApp,
   login,
-  logout,
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
