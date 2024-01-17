@@ -107,6 +107,7 @@ export const logout = () => {
       // changeMetamaskNetwork fails if already connected to the desired network
       // as a workaround we switch to another network after all the tests
       cy.changeMetamaskNetwork('goerli')
+      cy.wait(2_000)
       cy.task('setWalletConnectedToDapp', false)
     })
   })
