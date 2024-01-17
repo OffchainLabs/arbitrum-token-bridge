@@ -22,7 +22,10 @@ import {
 } from './AdvancedSettings'
 import { ExternalLink } from '../common/ExternalLink'
 import { useDialog } from '../common/Dialog'
-import { AmountQueryParamEnum } from '../../hooks/useArbQueryParams'
+import {
+  AmountQueryParamEnum,
+  useArbQueryParams
+} from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
@@ -367,12 +370,8 @@ function NetworkListboxPlusBalancesContainer({
 }
 
 export function TransferPanelMain({
-  amount,
-  setAmount,
   errorMessage
 }: {
-  amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
@@ -532,7 +531,15 @@ export function TransferPanelMain({
     oneNovaTransferDestinationNetworkId,
     setOneNovaTransferDestinationNetworkId
   ] = useState<number | null>(null)
+  const [{ amount }, setQueryParams] = useArbQueryParams()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const setAmount = useCallback(
+    (newAmount: string) => {
+      setQueryParams({ amount: newAmount })
+    },
+    [setQueryParams]
+  )
 
   const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||

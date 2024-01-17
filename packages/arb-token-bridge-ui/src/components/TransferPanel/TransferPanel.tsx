@@ -1167,11 +1167,7 @@ export function TransferPanel() {
       />
 
       <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-x-6 lg:space-y-0 lg:rounded-xl">
-        <TransferPanelMain
-          amount={amount}
-          setAmount={setAmount}
-          errorMessage={errorMessage}
-        />
+        <TransferPanelMain errorMessage={errorMessage} />
 
         <div className="border-r border-gray-2" />
 

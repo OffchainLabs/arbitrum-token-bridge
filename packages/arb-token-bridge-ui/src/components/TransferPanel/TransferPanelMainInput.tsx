@@ -1,11 +1,14 @@
+import { useCallback, useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { throttle } from 'lodash-es'
+
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
 import {
   AmountQueryParamEnum,
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
-import { useCallback } from 'react'
+import { sanitizeAmount } from '../../util/NumberUtils'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -49,19 +52,34 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
     ...restMaxButtonProps
   } = maxButtonProps
   const [{ amount }, setQueryParams] = useArbQueryParams()
+  const sanitizedAmount = sanitizeAmount(amount)
+  const [inputAmount, setInputAmount] = useState(sanitizedAmount)
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
+
+  const setQueryParamAmount = throttle(function (amount: string) {
+    setQueryParams({ amount })
+    console.log('set query params!')
+  }, 300)
+
+  useEffect(() => {
+    if (amount !== sanitizedAmount) {
+      setQueryParamAmount(sanitizedAmount)
+    }
+  }, [amount, sanitizedAmount, setQueryParamAmount])
+
+  const onChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const sanitizedInputAmount = sanitizeAmount(event.target.value)
+      setInputAmount(sanitizedInputAmount)
+      setQueryParamAmount(sanitizedInputAmount)
+    },
+    [setQueryParamAmount]
+  )
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
       ? 'border border-[#cd0000]'
       : 'border border-gray-6'
-
-  const onChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setQueryParams({ amount: event.target.value })
-    },
-    [setQueryParams]
-  )
 
   return (
     <>
@@ -79,7 +97,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={isMaxAmount ? '' : amount}
+            value={inputAmount}
             onChange={onChange}
             {...rest}
           />
