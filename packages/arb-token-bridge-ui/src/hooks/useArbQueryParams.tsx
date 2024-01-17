@@ -173,6 +173,7 @@ export function ArbQueryParamProvider({
       options={{
         searchStringToObject: queryString.parse,
         objectToSearchString: queryString.stringify,
+        enableBatching: true,
         updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
         removeDefaultsFromUrl: true
       }}
