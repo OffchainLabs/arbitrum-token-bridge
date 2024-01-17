@@ -21,7 +21,8 @@ import {
   addressIsSmartContract,
   addressIsDenylisted
 } from '../../util/AddressUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -110,9 +111,16 @@ async function getDestinationAddressWarning({
 
 export const AdvancedSettings = () => {
   const {
-    app: { selectedToken, isDepositMode }
+    app: { selectedToken }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
 
@@ -150,7 +158,9 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: (isDepositMode ? l2 : l1).provider
+        destinationProvider: isDepositMode
+          ? childChainProvider
+          : parentChainProvider
       })
       if (isSubscribed) {
         setWarning(result)
@@ -161,7 +171,13 @@ export const AdvancedSettings = () => {
     return () => {
       isSubscribed = false
     }
-  }, [destinationAddress, isDepositMode, isEOA, l2, l1])
+  }, [
+    destinationAddress,
+    isDepositMode,
+    isEOA,
+    childChainProvider,
+    parentChainProvider
+  ])
 
   const collapsible = useMemo(() => {
     // cannot collapse if:
@@ -278,7 +294,7 @@ export const AdvancedSettings = () => {
             <ExternalLink
               className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
               href={`${getExplorerUrl(
-                (isDepositMode ? l2 : l1).network.id
+                isDepositMode ? childChain.id : parentChain.id
               )}/address/${destinationAddress}`}
             >
               <ArrowDownTrayIcon

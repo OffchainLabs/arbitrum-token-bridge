@@ -5,7 +5,6 @@ import {
   ExploreArbitrumNFTProjectName
 } from '../components/MainContent/ExploreArbitrumContent'
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
-import { ProviderName } from '../hooks/useNetworksAndSigners'
 import { getNetworkName } from './networks'
 
 type AccountType = 'EOA' | 'Smart Contract'
@@ -24,6 +23,17 @@ export const shouldTrackAnalytics = (
   }
   return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
 }
+
+// TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
+export type ProviderName =
+  | 'MetaMask'
+  | 'Coinbase Wallet'
+  | 'Trust Wallet'
+  | 'WalletConnect'
+  | 'Safe' // not used yet
+  | 'Injected'
+  | 'Ledger'
+  | 'Other'
 
 type AnalyticsEventMap = {
   Deposit: {

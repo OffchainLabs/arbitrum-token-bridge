@@ -463,11 +463,11 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus
+      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data]
+    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {

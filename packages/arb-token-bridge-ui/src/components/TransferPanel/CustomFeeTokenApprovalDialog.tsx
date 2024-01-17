@@ -7,13 +7,14 @@ import { Checkbox } from '../common/Checkbox'
 import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -28,11 +29,13 @@ export function CustomFeeTokenApprovalDialog(
   const { app } = useAppState()
   const { selectedToken } = app
 
-  const { l1, l2 } = useNetworksAndSigners()
-  const { isEthereumMainnet } = isNetwork(l1.network.id)
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
+  const { isEthereumMainnet } = isNetwork(parentChain.id)
 
-  const { data: l1Signer } = useSigner({ chainId: l1.network.id })
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
+  const { data: l1Signer } = useSigner({ chainId: parentChain.id })
+  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
@@ -60,15 +63,15 @@ export function CustomFeeTokenApprovalDialog(
           await approveCustomFeeTokenEstimateGas({
             erc20L1Address: selectedToken?.address,
             l1Signer,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
         )
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, selectedToken, l1Signer, l1.provider, l2.provider])
+  }, [isOpen, selectedToken, l1Signer, childChainProvider, parentChainProvider])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
@@ -110,7 +113,7 @@ export function CustomFeeTokenApprovalDialog(
               </span>
             </div>
             <ExternalLink
-              href={`${getExplorerUrl(l1.network.id)}/token/${
+              href={`${getExplorerUrl(parentChain.id)}/token/${
                 customFeeToken.address
               }`}
               className="text-xs text-blue-link underline"
