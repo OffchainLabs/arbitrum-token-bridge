@@ -36,36 +36,45 @@ function shouldChangeNetwork(networkName: NetworkName) {
 
 export function login({
   networkType,
-  networkName,
   url,
   query
 }: {
   networkType: NetworkType
-  networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
 }) {
-  // if networkName is not specified we connect to default network from config
-  const network =
-    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
-  const networkNameWithDefault = networkName ?? network.networkName
+  const sourceChainNameForMM =
+    query?.sourceChain === 'ethereum'
+      ? 'mainnet'
+      : networkType === 'L1'
+      ? getL1NetworkConfig().networkName
+      : getL2NetworkConfig().networkName
+  // if sourceChain is not specified we connect to default network from config
+  const sourceChainName = query?.sourceChain ?? sourceChainNameForMM
+  const destinationChainName =
+    query?.destinationChain ??
+    (networkType === 'L1'
+      ? getL2NetworkConfig().networkName
+      : getL1NetworkConfig().networkName)
 
   function _startWebApp() {
-    const sourceChain =
-      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { ...query, sourceChain })
+    startWebApp(url, {
+      sourceChain: sourceChainName,
+      destinationChain: destinationChainName,
+      ...query
+    }) // always use sourceChain from query params if provided
   }
 
-  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
+  shouldChangeNetwork(sourceChainNameForMM).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+      cy.changeMetamaskNetwork(sourceChainNameForMM).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkNameWithDefault)
+    cy.task('setCurrentNetworkName', sourceChainNameForMM)
   })
 }
 
@@ -97,16 +106,10 @@ export const logout = () => {
       // resetMetamaskAccount doesn't seem to remove the connected network in CI
       // changeMetamaskNetwork fails if already connected to the desired network
       // as a workaround we switch to another network after all the tests
+      cy.task('setWalletConnectedToDapp', false)
       cy.changeMetamaskNetwork('goerli')
     })
   })
-}
-
-export const connectToApp = () => {
-  // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
-  cy.findByText('Connect a Wallet').should('be.visible')
-  cy.findByText('MetaMask').should('be.visible').click()
 }
 
 export const openTransactionsPanel = () => {
@@ -199,7 +202,6 @@ export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
 }
 
 Cypress.Commands.addAll({
-  connectToApp,
   login,
   logout,
   openTransactionsPanel,

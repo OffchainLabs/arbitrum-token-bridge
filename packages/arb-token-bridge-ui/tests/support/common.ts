@@ -139,6 +139,7 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
   cy.clearLocalStorage('arbitrum:bridge:tos-v2')
+  cy.log('VISITING url', url, 'with qs', qs)
   cy.visit(url, {
     qs
   })
@@ -146,11 +147,16 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+
+  // initial modal prompts which come in the web-app
+  cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText('Connect a Wallet').should('be.visible')
+  cy.findByText('MetaMask').should('be.visible').click()
+
   cy.task('getWalletConnectedToDapp').then(connected => {
     if (!connected) {
       acceptMetamaskAccess()
-      cy.task('setWalletConnectedToDapp')
+      cy.task('setWalletConnectedToDapp', true)
     }
   })
 }

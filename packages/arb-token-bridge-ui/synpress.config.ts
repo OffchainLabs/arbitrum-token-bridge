@@ -248,8 +248,8 @@ function setupCypressTasks(on: Cypress.PluginEvents) {
     getNetworkSetupComplete: () => {
       return networkSetupComplete
     },
-    setWalletConnectedToDapp: () => {
-      walletConnectedToDapp = true
+    setWalletConnectedToDapp: (toggle: boolean) => {
+      walletConnectedToDapp = toggle
       return null
     },
     getWalletConnectedToDapp: () => {
