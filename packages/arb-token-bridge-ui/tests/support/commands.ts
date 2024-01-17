@@ -100,7 +100,7 @@ Cypress.Commands.add(
 )
 
 // once all assertions are run, before test exit, make sure web-app is reset to original
-export const logout = async () => {
+export const logout = () => {
   cy.disconnectMetamaskWalletFromAllDapps().then(() => {
     cy.resetMetamaskAccount().then(() => {
       // resetMetamaskAccount doesn't seem to remove the connected network in CI
