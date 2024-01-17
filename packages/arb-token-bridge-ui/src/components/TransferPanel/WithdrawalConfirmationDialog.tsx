@@ -14,7 +14,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import {
@@ -23,10 +22,11 @@ import {
   isNetwork
 } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 
 function getCalendarUrl(
@@ -48,22 +48,24 @@ function getCalendarUrl(
 export function WithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain } =
+    useNetworksRelationship(networks)
+
   const { parentLayer } = useChainLayers()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const networkName = getNetworkName(l1.network.id)
+  const networkName = getNetworkName(parentChain.id)
+
   const {
     app: { selectedToken }
   } = useAppState()
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-
-  const from = isConnectedToArbitrum ? l2.network : l1.network
-  const to = isConnectedToArbitrum ? l1.network : l2.network
+  const nativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
 
   const fastBridges = getFastBridges({
-    from: from.id,
-    to: to.id,
+    from: childChain.id,
+    to: parentChain.id,
     tokenSymbol: selectedToken?.symbol ?? nativeCurrency.symbol,
     amount: props.amount
   })
@@ -71,15 +73,15 @@ export function WithdrawalConfirmationDialog(
   const [checkbox1Checked, setCheckbox1Checked] = useState(false)
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
-  const { isArbitrumOne } = isNetwork(l2.network.id)
+  const { isArbitrumOne } = isNetwork(childChain.id)
   const baseChainId = getBaseChainIdByChainId({
-    chainId: l2.network.id
+    chainId: childChain.id
   })
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
   const estimatedConfirmationDate = getTxConfirmationDate({
     createdAt: dayjs(new Date()),
-    withdrawalFromChainId: l2.network.id,
+    withdrawalFromChainId: childChain.id,
     baseChainId
   })
 
@@ -192,7 +194,7 @@ export function WithdrawalConfirmationDialog(
                         estimatedConfirmationDate,
                         props.amount,
                         selectedToken?.symbol || nativeCurrency.symbol,
-                        getNetworkName(l2.network.id)
+                        getNetworkName(childChain.id)
                       )}
                       onClick={() => trackEvent('Add to Google Calendar Click')}
                       className="arb-hover flex space-x-2 rounded border border-ocl-blue px-4 py-2 text-ocl-blue"

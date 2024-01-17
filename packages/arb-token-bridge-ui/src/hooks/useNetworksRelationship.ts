@@ -9,6 +9,7 @@ type UseNetworksRelationshipState = {
   childChainProvider: StaticJsonRpcProvider
   parentChain: Chain
   parentChainProvider: StaticJsonRpcProvider
+  isDepositMode: boolean
 }
 export function useNetworksRelationship({
   sourceChain,
@@ -24,16 +25,17 @@ export function useNetworksRelationship({
     const { isOrbitChain: isDestinationChainOrbit } = isNetwork(
       destinationChain.id
     )
-    const isSourceChainParent =
+    const isDepositMode =
       isSourceChainEthereum ||
       (isSourceChainArbitrum && isDestinationChainOrbit)
 
-    if (isSourceChainParent) {
+    if (isDepositMode) {
       return {
         childChain: destinationChain,
         childChainProvider: destinationChainProvider,
         parentChain: sourceChain,
-        parentChainProvider: sourceChainProvider
+        parentChainProvider: sourceChainProvider,
+        isDepositMode
       }
     }
 
@@ -41,7 +43,8 @@ export function useNetworksRelationship({
       childChain: sourceChain,
       childChainProvider: sourceChainProvider,
       parentChain: destinationChain,
-      parentChainProvider: destinationChainProvider
+      parentChainProvider: destinationChainProvider,
+      isDepositMode
     }
   }, [
     sourceChain,

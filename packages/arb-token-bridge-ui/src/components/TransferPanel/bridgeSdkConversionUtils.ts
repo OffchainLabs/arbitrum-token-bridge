@@ -12,13 +12,12 @@ import {
 } from '../../state/app/state'
 import { Deposit } from '../../hooks/useTransactionHistory'
 import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import { Chain } from 'wagmi'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
 
 type SdkToUiConversionProps = {
   bridgeTransfer: BridgeTransfer
-  l1Network: Chain
-  l2Network: Chain
+  parentChainId: number
+  childChainId: number
   selectedToken: ERC20BridgeToken | null
   walletAddress: string
   destinationAddress?: string
@@ -28,8 +27,8 @@ type SdkToUiConversionProps = {
 
 export const convertBridgeSdkToMergedTransaction = ({
   bridgeTransfer,
-  l1Network,
-  l2Network,
+  parentChainId,
+  childChainId,
   selectedToken,
   walletAddress,
   destinationAddress,
@@ -58,15 +57,15 @@ export const convertBridgeSdkToMergedTransaction = ({
     isWithdrawal: !isDeposit,
     blockNum: null,
     tokenAddress: selectedToken ? selectedToken.address : undefined,
-    parentChainId: Number(l1Network.id),
-    childChainId: Number(l2Network.id)
+    parentChainId: Number(parentChainId),
+    childChainId: Number(childChainId)
   } as MergedTransaction
 }
 
 export const convertBridgeSdkToPendingDepositTransaction = ({
   bridgeTransfer,
-  l1Network,
-  l2Network,
+  parentChainId,
+  childChainId,
   walletAddress,
   nativeCurrency,
   amount
@@ -80,11 +79,11 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     txID: transaction.hash,
     assetName: nativeCurrency.symbol,
     assetType: AssetType.ETH,
-    l1NetworkID: String(l1Network.id),
-    l2NetworkID: String(l2Network.id),
+    l1NetworkID: String(parentChainId),
+    l2NetworkID: String(childChainId),
     value: utils.formatUnits(amount, nativeCurrency.decimals),
-    parentChainId: Number(l1Network.id),
-    childChainId: Number(l2Network.id),
+    parentChainId,
+    childChainId,
     direction: 'deposit',
     type: 'deposit-l1',
     source: 'local_storage_cache',

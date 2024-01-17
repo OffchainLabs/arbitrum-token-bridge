@@ -53,6 +53,22 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: ChainId.Sepolia,
         destinationChainId: ChainId.ArbitrumSepolia
       })
+      const resultWithArbitrumSepolia = sanitizeQueryParams({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
+      expect(resultWithArbitrumSepolia).toEqual({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
+      const resultWithBothChainsBeingTheSame = sanitizeQueryParams({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.Sepolia
+      })
+      expect(resultWithBothChainsBeingTheSame).toEqual({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
 
       // Orbit chains
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
@@ -75,7 +91,7 @@ describe('sanitizeQueryParams', () => {
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is invalid', () => {
-    it('should set `sourceChainId`', () => {
+    it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: 1234,
         destinationChainId: ChainId.ArbitrumSepolia
@@ -124,7 +140,7 @@ describe('sanitizeQueryParams', () => {
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is undefined', () => {
-    it('should set `sourceChainId`', () => {
+    it('should set `sourceChainId` based on `destinationChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: ChainId.ArbitrumNova
@@ -154,7 +170,7 @@ describe('sanitizeQueryParams', () => {
   })
 
   describe('when `destinationChainId` is invalid and `sourceChainId` is valid', () => {
-    it('should set `destinationChainId`', () => {
+    it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
         destinationChainId: 12345
@@ -202,33 +218,9 @@ describe('sanitizeQueryParams', () => {
       })
     })
   })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is invalid', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 12345
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
-  describe('when `destinationChainId` is invalid and `sourceChainId` is undefined', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 12345
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
 
   describe('when `destinationChainId` is undefined and `sourceChainId` is valid', () => {
-    it('should set `destinationChainId`', () => {
+    it('should set `destinationChainId` based on `sourceChainId`', () => {
       const result = sanitizeQueryParams({
         sourceChainId: ChainId.Sepolia,
         destinationChainId: undefined
@@ -255,30 +247,6 @@ describe('sanitizeQueryParams', () => {
       expect(resultWithGoerliOrbitChain).toEqual({
         sourceChainId: 1111,
         destinationChainId: ChainId.ArbitrumGoerli
-      })
-    })
-  })
-  describe('when `destinationChainId` is undefined and `sourceChainId` is invalid', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: undefined
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    })
-  })
-  describe('when`destinationChainId` is undefined and`sourceChainId` is undefined', () => {
-    it('should set both chainId', () => {
-      const result = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: undefined
-      })
-      expect(result).toEqual({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
       })
     })
   })
