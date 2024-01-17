@@ -479,11 +479,25 @@ export const useTransactionHistory = (
         isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
       )
       .filter(tx => {
+        const chainPairExists = multiChainFetchList.some(chainPair => {
+          return (
+            chainPair.parentChain === tx.parentChainId &&
+            chainPair.chain === tx.childChainId
+          )
+        })
+
+        if (!chainPairExists) {
+          // chain pair doesn't exist in the fetch list but exists in cached transactions
+          // this could happen if user made a transfer with a custom Orbit chain and then removed the network
+          // we don't want to include these txs as it would cause tx history errors
+          return false
+        }
+
         if (isSmartContractWallet) {
           // only include txs for the connected network
           return tx.parentChainId === chain.id
         }
-        return tx
+        return true
       })
   }, [
     address,
