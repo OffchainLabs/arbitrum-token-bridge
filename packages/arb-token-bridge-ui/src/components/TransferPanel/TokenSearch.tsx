@@ -22,7 +22,7 @@ import {
   fetchErc20Data,
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -60,12 +60,12 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-const ARB_GOERLI_NATIVE_USDC_TOKEN = {
+const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
-  address: CommonAddress.ArbitrumGoerli.USDC,
-  l2Address: CommonAddress.ArbitrumGoerli.USDC
+  address: CommonAddress.ArbitrumSepolia.USDC,
+  l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
 function TokenListsPanel() {
@@ -174,7 +174,7 @@ function TokensPanel({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isArbitrumOne, isArbitrumGoerli, isOrbitChain } = isNetwork(
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
     childChain.id
   )
   const tokensFromUser = useTokensFromUser()
@@ -208,7 +208,7 @@ function TokensPanel({
 
       if (
         isTokenArbitrumOneNativeUSDC(address) ||
-        isTokenArbitrumGoerliNativeUSDC(address)
+        isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
         return erc20L2Balances?.[address.toLowerCase()]
       }
@@ -237,8 +237,8 @@ function TokensPanel({
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isArbitrumGoerli) {
-        tokenAddresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
     }
     const tokens = [
@@ -256,9 +256,9 @@ function TokensPanel({
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
 
-        if (isTokenArbitrumGoerliNativeUSDC(address)) {
+        if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_GOERLI_NATIVE_USDC_TOKEN
+          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
@@ -330,7 +330,7 @@ function TokensPanel({
     tokensFromLists,
     isDepositMode,
     isArbitrumOne,
-    isArbitrumGoerli,
+    isArbitrumSepolia,
     isOrbitChain,
     getBalance,
     nativeCurrency
@@ -446,8 +446,8 @@ function TokensPanel({
                 let token: ERC20BridgeToken | null = null
                 if (isTokenArbitrumOneNativeUSDC(address)) {
                   token = ARB_ONE_NATIVE_USDC_TOKEN
-                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
-                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
+                } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
+                  token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
                 } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
@@ -513,7 +513,7 @@ export function TokenSearch({ close }: { close: () => void }) {
       // Native USDC on L2 won't have a corresponding L1 address
       const isNativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumGoerliNativeUSDC(_token.address)
+        isTokenArbitrumSepoliaNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
         if (isLoadingAccountType) {

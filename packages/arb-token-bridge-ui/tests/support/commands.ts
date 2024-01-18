@@ -139,7 +139,7 @@ const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 export async function resetCctpAllowance(networkType: 'L1' | 'L2') {
   const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
   const { USDC, tokenMessengerContractAddress } =
-    networkType === 'L1' ? CommonAddress.Goerli : CommonAddress.ArbitrumGoerli
+    networkType === 'L1' ? CommonAddress.Sepolia : CommonAddress.ArbitrumSepolia
 
   const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
   const allowance = await contract.allowance(
@@ -155,8 +155,8 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
   const usdcContractAddress =
     networkType === 'L1'
-      ? CommonAddress.Goerli.USDC
-      : CommonAddress.ArbitrumGoerli.USDC
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
 
   const usdcBalance = await getInitialERC20Balance({
     address: userWallet.address,

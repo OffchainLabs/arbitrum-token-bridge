@@ -42,9 +42,9 @@ export function getBlockBeforeConfirmation(chainId: ChainId) {
 
 export type CCTPSupportedChainId =
   | ChainId.Ethereum
-  | ChainId.Goerli
+  | ChainId.Sepolia
   | ChainId.ArbitrumOne
-  | ChainId.ArbitrumGoerli
+  | ChainId.ArbitrumSepolia
 
 function getSourceChainIdFromSourceDomain(
   sourceDomain: ChainDomain,
@@ -54,11 +54,11 @@ function getSourceChainIdFromSourceDomain(
 
   // Deposits
   if (sourceDomain === ChainDomain.Ethereum) {
-    return isTestnet ? ChainId.Goerli : ChainId.Ethereum
+    return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
   }
 
   // Withdrawals
-  return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+  return isTestnet ? ChainId.ArbitrumSepolia : ChainId.ArbitrumOne
 }
 
 function getDestinationChainIdFromSourceDomain(
@@ -69,19 +69,19 @@ function getDestinationChainIdFromSourceDomain(
 
   // Deposits
   if (sourceDomain === ChainDomain.Ethereum) {
-    return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+    return isTestnet ? ChainId.ArbitrumSepolia : ChainId.ArbitrumOne
   }
 
   // Withdrawals
-  return isTestnet ? ChainId.Goerli : ChainId.Ethereum
+  return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
 }
 
 export function getUSDCAddresses(chainId: CCTPSupportedChainId) {
   return {
     [ChainId.Ethereum]: CommonAddress.Ethereum,
     [ChainId.ArbitrumOne]: CommonAddress.ArbitrumOne,
-    [ChainId.Goerli]: CommonAddress.Goerli,
-    [ChainId.ArbitrumGoerli]: CommonAddress.ArbitrumGoerli
+    [ChainId.Sepolia]: CommonAddress.Sepolia,
+    [ChainId.ArbitrumSepolia]: CommonAddress.ArbitrumSepolia
   }[chainId]
 }
 
@@ -482,14 +482,14 @@ export function useCctpFetching({
   pageNumber,
   type
 }: useCctpFetchingParams) {
-  const { isEthereumMainnet: isL1Ethereum, isGoerli: isL1Goerli } =
+  const { isEthereumMainnet: isL1Ethereum, isSepolia: isL1Sepolia } =
     isNetwork(l1ChainId)
   const {
     isArbitrumOne: isL2ArbitrumOne,
-    isArbitrumGoerli: isL2ArbitrumGoerli
+    isArbitrumSepolia: isL2ArbitrumSepolia
   } = isNetwork(l2ChainId)
   const isValidChainPair =
-    (isL1Ethereum && isL2ArbitrumOne) || (isL1Goerli && isL2ArbitrumGoerli)
+    (isL1Ethereum && isL2ArbitrumOne) || (isL1Sepolia && isL2ArbitrumSepolia)
 
   const {
     data: deposits,
@@ -681,9 +681,9 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
 
   return {
     [ChainId.Ethereum]: ChainId.ArbitrumOne,
-    [ChainId.Goerli]: ChainId.ArbitrumGoerli,
+    [ChainId.Sepolia]: ChainId.ArbitrumSepolia,
     [ChainId.ArbitrumOne]: ChainId.Ethereum,
-    [ChainId.ArbitrumGoerli]: ChainId.Goerli
+    [ChainId.ArbitrumSepolia]: ChainId.Sepolia
   }[tx.cctpData.sourceChainId]
 }
 

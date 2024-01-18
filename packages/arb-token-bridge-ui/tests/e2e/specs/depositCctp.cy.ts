@@ -28,7 +28,7 @@ describe('Deposit USDC through CCTP', () => {
 
       const address = Cypress.env('ADDRESS')
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.Goerli.USDC,
+        tokenAddress: CommonAddress.Sepolia.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
         address
@@ -40,7 +40,7 @@ describe('Deposit USDC through CCTP', () => {
           }))
       )
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
+        tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
         address
@@ -52,7 +52,7 @@ describe('Deposit USDC through CCTP', () => {
           }))
       )
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
+        tokenAddress: CommonAddress.ArbitrumSepolia['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
         rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
         address
@@ -95,7 +95,7 @@ describe('Deposit USDC through CCTP', () => {
 
           // open the Select Token popup
           cy.findByPlaceholderText(/Search by token name/i)
-            .typeRecursively(CommonAddress.Goerli.USDC)
+            .typeRecursively(CommonAddress.Sepolia.USDC)
             .should('be.visible')
             .then(() => {
               // Click on the Add new token button
