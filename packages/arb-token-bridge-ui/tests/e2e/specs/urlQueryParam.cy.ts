@@ -18,9 +18,9 @@ describe('User enters site with query params on URL', () => {
   })
 
   context('should correctly populate amount input from query param', () => {
-    beforeEach(() => {
-      cy.logout()
-    })
+    // beforeEach(() => {
+    //   cy.logout()
+    // })
 
     // only ETH is supported for now so by default the following tests are assumed to be ETH
     it('?amount=max should set transfer panel amount to maximum amount possible based on balance', () => {

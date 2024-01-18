@@ -356,7 +356,7 @@ function ConnectedChainSyncer() {
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
 
-  const [{ sourceChain, destinationChain }, setQueryParams] =
+  const [{ amount, sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
   const { chain } = useNetwork()
 
@@ -390,6 +390,10 @@ function ConnectedChainSyncer() {
       setDidSync(true)
     }
   }, [chain, shouldSync, didSync, setQueryParams])
+
+  useEffect(() => {
+    console.log('App.tsx: amount changed to ', amount)
+  }, [amount])
 
   return null
 }
