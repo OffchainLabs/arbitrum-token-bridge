@@ -46,19 +46,21 @@ export default function WalletConnectChainDropdown() {
   }
 
   return (
-    <div className="m-3 flex max-w-md flex-col gap-2 self-end rounded-md bg-cyan px-3 py-2 text-sm text-cyan-dark">
-      <p>
-        For <strong>WalletConnect</strong> users, <br />
-        choose your chain before connecting:
-      </p>
-      <NetworkListbox
-        label={''}
-        placeholder="Select a chain"
-        value={chain}
-        options={options}
-        onChange={onChange}
-        buttonClassName="md:text-sm w-full justify-between"
-      />
+    <div className="p-3 lg:self-end">
+      <div className="flex w-full flex-col gap-2 rounded-md bg-cyan px-3 py-2 text-sm text-cyan-dark lg:max-w-md">
+        <p>
+          For <strong>WalletConnect</strong> users, <br />
+          choose your chain before connecting:
+        </p>
+        <NetworkListbox
+          label={''}
+          placeholder="Select a chain"
+          value={chain}
+          options={options}
+          onChange={onChange}
+          buttonClassName="md:text-sm w-full justify-between"
+        />
+      </div>
     </div>
   )
 }
