@@ -773,7 +773,7 @@ export function TransferPanelMain({
           }
           return true
         })
-        .map(chainId => getWagmiChain(chainId))
+        .map(getWagmiChain)
     }
 
     function getDestinationChains() {
