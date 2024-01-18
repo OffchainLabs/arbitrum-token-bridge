@@ -5,8 +5,7 @@ import { addCustomChain } from '@arbitrum/sdk'
 import {
   ChainId,
   ChainWithRpcUrl,
-  customChainLocalStorageKey,
-  saveCustomChainToLocalStorage
+  customChainLocalStorageKey
 } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
 
