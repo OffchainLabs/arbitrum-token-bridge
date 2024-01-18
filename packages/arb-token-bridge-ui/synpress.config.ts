@@ -239,7 +239,7 @@ function setupCypressTasks(on: Cypress.PluginEvents) {
       return null
     },
     getCurrentNetworkName: () => {
-      cy.log('currentNetworkName', currentNetworkName)
+      console.log('currentNetworkName', currentNetworkName)
       return currentNetworkName
     },
     setNetworkSetupComplete: () => {
