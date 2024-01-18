@@ -72,6 +72,7 @@ import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
@@ -120,17 +121,21 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+  const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
 
-  const bannerClassName = useMemo(() => {
+  const backgroundColorForL1OrL2Chain = useMemo(() => {
+    if (isOrbitChain) {
+      return ''
+    }
     if (!isArbitrum) {
-      return 'bg-cyan border-eth-dark'
+      return 'bg-cyan'
     }
     if (isArbitrumNova) {
-      return 'bg-orange border-arb-nova-dark'
+      return 'bg-orange'
     }
-    return 'bg-cyan border-arb-one-dark'
-  }, [isArbitrum, isArbitrumNova])
+    return 'bg-cyan'
+  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -138,9 +143,17 @@ function CustomAddressBanner({
 
   return (
     <div
+      style={{
+        backgroundColor: isOrbitChain
+          ? // add opacity to create a lighter shade
+            `${primaryColor}20`
+          : undefined,
+        color: secondaryColor,
+        borderColor: secondaryColor
+      }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        bannerClassName
+        !isOrbitChain && backgroundColorForL1OrL2Chain
       )}
     >
       <span>
@@ -166,56 +179,9 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXai,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(network.id)
+  const { secondaryColor, networkLogo } = getBridgeUiConfigForChain(network.id)
 
-    if (isXaiTestnet || isXai) {
-      return {
-        backgroundImage: `url('/images/XaiLogo.svg')`,
-        backgroundClassName: 'bg-xai-dark'
-      }
-    }
-
-    if (isStylusTestnet) {
-      return {
-        backgroundImage: `url('/images/StylusLogo.svg')`,
-        backgroundClassName: 'bg-stylus-dark'
-      }
-    }
-
-    if (isOrbitChain) {
-      return {
-        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
-        backgroundClassName: 'bg-orbit-dark'
-      }
-    }
-
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
-      }
-    }
-
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
-      }
-    }
-
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+  const backgroundImage = `url(${networkLogo})`
 
   const walletAddressLowercased = address?.toLowerCase()
 
@@ -235,8 +201,9 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
+        style={{ backgroundColor: secondaryColor }}
         className={twMerge(
-          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''
         )}
       >

@@ -1,5 +1,4 @@
 import { constants } from 'ethers'
-import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -352,14 +351,5 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     address: data.address,
     decimals: data.decimals,
     listIds: new Set()
-  }
-}
-
-export function getNativeTokenLogo(chainId: ChainId) {
-  switch (chainId) {
-    case ChainId.Xai:
-      return '/images/XaiLogo.svg'
-    default:
-      return '/images/EthereumLogoRound.svg'
   }
 }
