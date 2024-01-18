@@ -40,7 +40,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainId: ChainId.ArbitrumSepolia,
     usdcContractAddress: CommonAddress.Sepolia.USDC,
     messageTransmitterContractAddress:
-      '0x7865fAfC2db2093669d92c0F33AeEF291086BEFD',
+      '0xaCF1ceeF35caAc005e15888dDb8A3515C41B4872',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
     tokenMinterContractAddress: '0xE997d7d2F6E065a9A93Fa2175E878Fb9081F1f0A'
   },
@@ -62,7 +62,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     targetChainId: ChainId.Sepolia,
     usdcContractAddress: CommonAddress.ArbitrumSepolia.USDC,
     messageTransmitterContractAddress:
-      '0xaCF1ceeF35caAc005e15888dDb8A3515C41B4872',
+      '0x7865fAfC2db2093669d92c0F33AeEF291086BEFD',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
     tokenMinterContractAddress: '0xE997d7d2F6E065a9A93Fa2175E878Fb9081F1f0A'
   }

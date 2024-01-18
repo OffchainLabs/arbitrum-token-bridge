@@ -14,7 +14,7 @@ export const CommonAddress = {
   },
   ArbitrumSepolia: {
     USDC: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
-    'USDC.e': '0x8fb1e3fc51f3b789ded7557e680551d93ea9d892', // todo: this is for goerli for now
+    'USDC.e': '0x119f0E6303BEc7021B295EcaB27A4a1A5b37ECf0',
     tokenMessengerContractAddress: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5'
   }
 } as const
