@@ -1,42 +1,101 @@
 /**
  * @jest-environment jsdom
  */
-import { ChainId, customChainLocalStorageKey } from '../../util/networks'
+import { addCustomChain } from '@arbitrum/sdk'
+import {
+  ChainId,
+  ChainWithRpcUrl,
+  customChainLocalStorageKey,
+  saveCustomChainToLocalStorage
+} from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
+
+function createMockOrbitChain({
+  chainId,
+  parentChainId
+}: {
+  chainId: number
+  parentChainId: number
+}): ChainWithRpcUrl {
+  return {
+    chainID: chainId,
+    confirmPeriodBlocks: 45818,
+    ethBridge: {
+      bridge: '',
+      inbox: '',
+      outbox: '',
+      rollup: '',
+      sequencerInbox: ''
+    },
+    nativeToken: '',
+    explorerUrl: '',
+    rpcUrl: '',
+    isArbitrum: true,
+    isCustom: true,
+    name: `Mocked Orbit Chain ${chainId}`,
+    slug: `mocked-orbit-chain-${chainId}`,
+    partnerChainID: parentChainId,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '',
+      l1ERC20Gateway: '',
+      l1GatewayRouter: '',
+      l1MultiCall: '',
+      l1ProxyAdmin: '',
+      l1Weth: '',
+      l1WethGateway: '',
+      l2CustomGateway: '',
+      l2ERC20Gateway: '',
+      l2GatewayRouter: '',
+      l2Multicall: '',
+      l2ProxyAdmin: '',
+      l2Weth: '',
+      l2WethGateway: ''
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000
+  }
+}
 
 describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
 
   beforeAll(() => {
+    const mockedOrbitChain_1 = createMockOrbitChain({
+      chainId: 1111,
+      parentChainId: ChainId.ArbitrumGoerli
+    })
+    const mockedOrbitChain_2 = createMockOrbitChain({
+      chainId: 2222,
+      parentChainId: ChainId.ArbitrumSepolia
+    })
+    const mockedOrbitChain_3 = createMockOrbitChain({
+      chainId: 3333,
+      parentChainId: ChainId.ArbitrumOne
+    })
+    const mockedOrbitChain_4 = createMockOrbitChain({
+      chainId: 4444,
+      parentChainId: ChainId.ArbitrumNova
+    })
+
     localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
       key => {
         if (key === customChainLocalStorageKey) {
           return JSON.stringify([
-            {
-              chainID: '1111',
-              partnerChainID: ChainId.ArbitrumGoerli,
-              name: 'custom 1111 chain'
-            },
-            {
-              chainID: '2222',
-              partnerChainID: ChainId.ArbitrumSepolia,
-              name: 'custom 2222 chain'
-            },
-            {
-              chainID: '3333',
-              partnerChainID: ChainId.ArbitrumOne,
-              name: 'custom 3333 chain'
-            },
-            {
-              chainID: '4444',
-              partnerChainID: ChainId.ArbitrumNova,
-              name: 'custom 4444 chain'
-            }
+            mockedOrbitChain_1,
+            mockedOrbitChain_2,
+            mockedOrbitChain_3,
+            mockedOrbitChain_4
           ])
         }
         return null
       }
     )
+    addCustomChain({ customChain: mockedOrbitChain_1 })
+    addCustomChain({ customChain: mockedOrbitChain_2 })
+    addCustomChain({ customChain: mockedOrbitChain_3 })
+    addCustomChain({ customChain: mockedOrbitChain_4 })
   })
 
   afterAll(() => {
