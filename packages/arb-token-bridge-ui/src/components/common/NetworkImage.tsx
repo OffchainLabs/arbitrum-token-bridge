@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { getBridgeUiConfigForChain } from '../../util'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export const NetworkImage = ({
   chainId,

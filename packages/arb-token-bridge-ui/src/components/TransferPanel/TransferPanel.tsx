@@ -70,7 +70,7 @@ import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenMod
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
-import { getBridgeUiConfigForChain } from '../../util'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
