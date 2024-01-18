@@ -4,7 +4,7 @@ import {
   ParentChain,
   l2Networks,
   chains as arbitrumSdkChains,
-  parentChains,
+  parentChains as arbitrumSdkParentChains,
   addCustomChain
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
@@ -13,8 +13,9 @@ import { Erc20Data } from './TokenUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
+// TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead
 export const getChains = () => {
-  return { ...arbitrumSdkChains, ...parentChains }
+  return { ...arbitrumSdkChains, ...arbitrumSdkParentChains }
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -46,7 +47,7 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  const parentChain = parentChains[chain.partnerChainID]
+  const parentChain = arbitrumSdkParentChains[chain.partnerChainID]
 
   if (!parentChain) {
     return chainId
@@ -192,7 +193,7 @@ export const getExplorerUrl = (chainId: ChainId) => {
 }
 
 export const getBlockTime = (chainId: ChainId) => {
-  const network = parentChains[chainId]
+  const network = arbitrumSdkParentChains[chainId]
   if (!network) {
     throw new Error(`Couldn't get block time. Unexpected chain ID: ${chainId}`)
   }
@@ -427,4 +428,29 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   rpcURLs[chain.chainID] = chain.rpcUrl
   // explorer URL
   explorerUrls[chain.chainID] = chain.explorerUrl
+}
+
+function isChildChain(
+  chain: L2Network | ParentChain | undefined
+): chain is L2Network {
+  if (!chain) {
+    return false
+  }
+  return typeof (chain as L2Network).partnerChainID !== 'undefined'
+}
+
+export function getPartnerChainsIds(chainId: ChainId): ChainId[] {
+  const arbitrumSdkChain = getChains()[chainId]
+
+  const parentChainId = isChildChain(arbitrumSdkChain)
+    ? arbitrumSdkChain.partnerChainID
+    : undefined
+
+  const validDestinationChainIds = getValidDestinationChainIds(chainId)
+
+  if (parentChainId) {
+    return [parentChainId, ...validDestinationChainIds]
+  }
+
+  return validDestinationChainIds
 }

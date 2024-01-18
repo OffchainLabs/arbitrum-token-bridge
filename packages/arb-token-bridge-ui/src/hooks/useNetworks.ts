@@ -18,18 +18,9 @@ import {
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
-import { getPartnerChainsForChainId } from '../util/wagmi/getPartnerChainsForChainId'
+import { getPartnerChainsIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { orbitChains } from '../util/orbitChainsList'
-
-function getPartnerChainsIds(chainId: ChainId): ChainId[] {
-  try {
-    const partnerChains = getPartnerChainsForChainId(chainId)
-    return partnerChains.map(chain => chain.id)
-  } catch (e) {
-    return []
-  }
-}
 
 const getProviderForChainCache: {
   [chainId: number]: StaticJsonRpcProvider

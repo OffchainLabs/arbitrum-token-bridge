@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import { L2Network, ParentChain } from '@arbitrum/sdk'
 import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
@@ -13,7 +12,7 @@ import {
   getChains,
   getExplorerUrl,
   getNetworkName,
-  getValidDestinationChainIds,
+  getPartnerChainsIds,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -759,15 +758,6 @@ export function TransferPanelMain({
     // we hide local networks, these are for dev only and should be accessed from the wallet
     const chainIdsToHide = [ChainId.Local, ChainId.ArbitrumLocal, 1338]
 
-    function isChildChain(
-      chain: L2Network | ParentChain | undefined
-    ): chain is L2Network {
-      if (!chain) {
-        return false
-      }
-      return typeof (chain as L2Network).partnerChainID !== 'undefined'
-    }
-
     const chains = getChains()
 
     function getSourceChains() {
@@ -786,30 +776,19 @@ export function TransferPanelMain({
     }
 
     function getDestinationChains() {
-      const sourceChain = chains[networks.sourceChain.id]
-      const parentChain = isChildChain(sourceChain)
-        ? getWagmiChain(sourceChain.partnerChainID)
-        : undefined
-      const destinationChains = getValidDestinationChainIds(
-        networks.sourceChain.id
-      ).map(getWagmiChain)
+      const partnerChainIds = getPartnerChainsIds(networks.sourceChain.id)
 
       // if source chain is Arbitrum One, add Arbitrum Nova to destination
-      if (sourceChain?.chainID === ChainId.ArbitrumOne) {
-        destinationChains.push(getWagmiChain(ChainId.ArbitrumNova))
+      if (networks.sourceChain.id === ChainId.ArbitrumOne) {
+        partnerChainIds.push(ChainId.ArbitrumNova)
       }
 
       // if source chain is Arbitrum Nova, add Arbitrum One to destination
-      if (sourceChain?.chainID === ChainId.ArbitrumNova) {
-        destinationChains.push(getWagmiChain(ChainId.ArbitrumOne))
+      if (networks.sourceChain.id === ChainId.ArbitrumNova) {
+        partnerChainIds.push(ChainId.ArbitrumOne)
       }
 
-      return [
-        ...(parentChain ? [parentChain] : []),
-        getWagmiChain(networks.sourceChain.id),
-        ...destinationChains
-        // remove currently selected chain
-      ].filter(c => c.id !== networks.destinationChain.id)
+      return [networks.sourceChain.id, ...partnerChainIds].map(getWagmiChain)
     }
 
     const fromOptions = getSourceChains()
