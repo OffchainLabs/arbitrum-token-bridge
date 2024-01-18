@@ -1,18 +1,11 @@
 import { Popover } from '@headlessui/react'
 import Image from 'next/image'
 import { CSSProperties, useMemo, useState } from 'react'
-import { useNetwork } from 'wagmi'
-import { useDebounce, useWindowSize } from 'react-use'
+import { Chain, useNetwork } from 'wagmi'
+import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
-import {
-  chainInfo,
-  getNetworkLogo,
-  getNetworkName,
-  getSupportedNetworks,
-  isNetwork
-} from '../../util/networks'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+import { chainInfo, getSupportedNetworks, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
@@ -25,6 +18,8 @@ import {
   onPopoverButtonClick,
   onPopoverClose
 } from './SearchPanel/SearchPanelUtils'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 
 type NetworkInfo = {
   chainId: number
@@ -45,19 +40,20 @@ const chainGroupInfo = {
 function NetworkRow({
   network,
   style,
+  onClick,
   close
 }: {
   network: NetworkInfo
   style: CSSProperties
+  onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
-  const windowSize = useWindowSize()
-  const isLgScreen = windowSize.width >= 1024
-  const chainId = network.chainId
-  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { chainId } = network
+  const { networkLogo, networkName } = getBridgeUiConfigForChain(chainId)
+  const chain = getWagmiChain(chainId)
 
   const handleClick = () => {
-    switchNetwork?.(chainId)
+    onClick(chain)
     close() // close the popover after option-click
   }
 
@@ -72,22 +68,22 @@ function NetworkRow({
       key={chainId}
       style={style}
       type="button"
-      aria-label={`Switch to ${getNetworkName(chainId)}`}
+      aria-label={`Switch to ${networkName}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10'
       )}
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
         <Image
-          src={getNetworkLogo(chainId, isLgScreen ? 'dark' : 'light')}
-          alt={`${getNetworkName(chainId)} logo`}
+          src={networkLogo}
+          alt={`${networkName} logo`}
           className="h-full w-auto"
           width={24}
           height={24}
         />
       </span>
       <div className={twMerge('flex flex-col items-start gap-1')}>
-        <span className="truncate leading-none">{getNetworkName(chainId)}</span>
+        <span className="truncate leading-none">{networkName}</span>
         {chainInfo[chainId] && (
           <>
             <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
@@ -124,9 +120,11 @@ function AddCustomOrbitChainButton() {
 
 function NetworksPanel({
   networks,
+  onNetworkRowClick,
   close
 }: {
   networks: NetworkInfo[]
+  onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
   const [errorMessage, setErrorMessage] = useState('')
@@ -146,7 +144,9 @@ function NetworksPanel({
 
     if (_networkSearched) {
       return networks.filter(network => {
-        const networkName = getNetworkName(network.chainId).toLowerCase()
+        const networkName = getBridgeUiConfigForChain(
+          network.chainId
+        ).networkName.toLowerCase()
         return networkName.includes(_networkSearched)
       })
     }
@@ -212,6 +212,7 @@ function NetworksPanel({
               key={networkOrChainTypeInfo.chainId}
               style={virtualizedProps.style}
               network={networkOrChainTypeInfo}
+              onClick={onNetworkRowClick}
               close={close}
             />
           )
@@ -232,9 +233,15 @@ function NetworksPanel({
 }
 
 export const NetworkSelectionContainer = ({
-  children
+  children,
+  buttonClassName,
+  buttonStyle,
+  onChange
 }: {
   children: React.ReactNode
+  buttonClassName: string
+  buttonStyle?: CSSProperties
+  onChange: (value: Chain) => void
 }) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
@@ -267,8 +274,13 @@ export const NetworkSelectionContainer = ({
   return (
     <Popover className="relative w-full lg:w-max">
       <Popover.Button
-        disabled={isSmartContractWallet || isLoadingAccountType}
-        className="w-full lg:px-2"
+        style={buttonStyle}
+        disabled={
+          isSmartContractWallet ||
+          typeof isSmartContractWallet === 'undefined' ||
+          isLoadingAccountType
+        }
+        className={buttonClassName}
         onClick={onPopoverButtonClick}
       >
         {children}
@@ -300,7 +312,11 @@ export const NetworkSelectionContainer = ({
                   loadingMessage="Fetching Networks..."
                   bottomRightCTAtext=""
                 >
-                  <NetworksPanel networks={finalNetworks} close={onClose} />
+                  <NetworksPanel
+                    networks={finalNetworks}
+                    close={onClose}
+                    onNetworkRowClick={onChange}
+                  />
                 </SearchPanel>
               </div>
             </>

@@ -12,7 +12,6 @@ import {
   getExplorerUrl,
   getL2ChainIds,
   getNetworkName,
-  getSupportedNetworks,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -398,7 +397,6 @@ export function TransferPanelMain({
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
-  const [isTestnetMode] = useIsTestnetMode()
 
   useEffect(() => {
     if (nativeCurrency.isCustom) {
@@ -759,7 +757,7 @@ export function TransferPanelMain({
   }, [actions.app, isDepositMode, selectedToken, token])
 
   type NetworkListboxesProps = {
-    from: Omit<NetworkListboxProps, 'label'>
+    from: Omit<NetworkListboxProps, 'label' | 'options'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
@@ -860,12 +858,6 @@ export function TransferPanelMain({
       })
     }
 
-    const fromOptions = getSupportedNetworks(
-      networks.sourceChain.id,
-      !!isTestnetMode
-    )
-      .filter(chainId => chainId !== networks.sourceChain.id)
-      .map(chainId => getWagmiChain(chainId))
     const toOptions = modifyOptions(networks.destinationChain.id, 'to')
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
@@ -877,11 +869,6 @@ export function TransferPanelMain({
     if (isDepositMode) {
       return {
         from: {
-          disabled:
-            !fromOptions.length ||
-            isSmartContractWallet ||
-            typeof isSmartContractWallet === 'undefined',
-          options: fromOptions,
           value: networks.sourceChain,
           onChange: async network => {
             if (
@@ -926,11 +913,6 @@ export function TransferPanelMain({
 
     return {
       from: {
-        disabled:
-          !fromOptions.length ||
-          isSmartContractWallet ||
-          typeof isSmartContractWallet === 'undefined',
-        options: fromOptions,
         value: networks.sourceChain,
         onChange: async network => {
           if (
@@ -967,7 +949,6 @@ export function TransferPanelMain({
   }, [
     networks.sourceChain,
     networks.destinationChain,
-    isTestnetMode,
     isDepositMode,
     isSmartContractWallet,
     parentChain,
@@ -976,54 +957,23 @@ export function TransferPanelMain({
     switchNetworksOnTransferPanel
   ])
 
-  const fromButtonClassName = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(networks.sourceChain.id)
-
-    if (isXaiTestnet) {
-      return 'bg-xai-primary'
-    }
-
-    if (isStylusTestnet) {
-      return 'bg-stylus-primary'
-    }
-
-    if (isOrbitChain) {
-      return 'bg-orbit-primary'
-    }
-
-    if (!isArbitrum) {
-      return 'bg-eth-primary'
-    }
-
-    if (isArbitrumNova) {
-      return 'bg-arb-nova-primary'
-    }
-
-    return 'bg-arb-one-primary'
-  }, [networks.sourceChain.id])
+  const { primaryColor } = getBridgeUiConfigForChain(networks.sourceChain.id)
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkSelectionContainer>
-            <button
-              className={twMerge(
-                'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3',
-                fromButtonClassName
-              )}
-            >
-              <span className="max-w-[220px] truncate md:max-w-[250px]">
-                From: {getNetworkName(networks.sourceChain.id)}
-              </span>
-              <ChevronDownIcon className="h-4 w-4" />
-            </button>
+          <NetworkSelectionContainer
+            buttonStyle={{ backgroundColor: primaryColor }}
+            buttonClassName={twMerge(
+              'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+            )}
+            onChange={networkListboxProps.from.onChange}
+          >
+            <span className="max-w-[220px] truncate md:max-w-[250px]">
+              From: {getNetworkName(networks.sourceChain.id)}
+            </span>
+            <ChevronDownIcon className="h-4 w-4" />
           </NetworkSelectionContainer>
           <BalancesContainer>
             <>
