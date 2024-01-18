@@ -667,14 +667,8 @@ export function TransferPanel() {
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
-
-      const depositTxReceipt = await depositForBurnTx.wait()
-
-      if (depositTxReceipt.status === 0) {
-        errorToast('USDC deposit transaction failed')
-        return
-      }
     } catch (e) {
+      //
     } finally {
       setTransferring(false)
       setIsCctp(false)
