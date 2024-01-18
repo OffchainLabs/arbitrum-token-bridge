@@ -28,7 +28,7 @@ describe('Withdraw USDC through CCTP', () => {
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Sepolia.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ETH_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -40,7 +40,7 @@ describe('Withdraw USDC through CCTP', () => {
       getInitialERC20Balance({
         tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -60,12 +60,12 @@ describe('Withdraw USDC through CCTP', () => {
         }
       },
       () => {
-        cy.login({ networkType: 'L2', networkName: 'arbitrum-goerli' })
+        cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
         context('should show L1 and L2 chains, and ETH correctly', () => {
-          cy.findByRole('button', { name: /From: Arbitrum Goerli/i }).should(
+          cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
             'be.visible'
           )
-          cy.findByRole('button', { name: /To: Goerli/i }).should('be.visible')
+          cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
           cy.findByRole('button', { name: 'Select Token' })
             .should('be.visible')
             .should('have.text', 'ETH')
@@ -112,7 +112,7 @@ describe('Withdraw USDC through CCTP', () => {
             String(USDCAmountToSend)
           )
           cy.findByRole('button', {
-            name: /Move funds to Goerli/i
+            name: /Move funds to Sepolia/i
           })
             .should('be.visible')
             .should('be.enabled')

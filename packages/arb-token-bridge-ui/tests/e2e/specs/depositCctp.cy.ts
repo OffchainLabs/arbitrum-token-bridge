@@ -30,7 +30,7 @@ describe('Deposit USDC through CCTP', () => {
       getInitialERC20Balance({
         tokenAddress: CommonAddress.Sepolia.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ETH_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -42,7 +42,7 @@ describe('Deposit USDC through CCTP', () => {
       getInitialERC20Balance({
         tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -54,7 +54,7 @@ describe('Deposit USDC through CCTP', () => {
       getInitialERC20Balance({
         tokenAddress: CommonAddress.ArbitrumSepolia['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -74,12 +74,12 @@ describe('Deposit USDC through CCTP', () => {
         }
       },
       () => {
-        cy.login({ networkType: 'L1', networkName: 'goerli' })
+        cy.login({ networkType: 'L1', networkName: 'sepolia' })
         context('should show L1 and L2 chains, and USD correctly', () => {
-          cy.findByRole('button', { name: /From: Goerli/i }).should(
+          cy.findByRole('button', { name: /From: Sepolia/i }).should(
             'be.visible'
           )
-          cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
+          cy.findByRole('button', { name: /To: Arbitrum Sepolia/i }).should(
             'be.visible'
           )
           cy.findByRole('button', { name: 'Select Token' })
@@ -156,7 +156,7 @@ describe('Deposit USDC through CCTP', () => {
 
         context('should show clickable deposit button', () => {
           cy.findByRole('button', {
-            name: /Move funds to Arbitrum Goerli/i
+            name: /Move funds to Arbitrum Sepolia/i
           })
             .should('be.visible')
             .should('be.enabled')
