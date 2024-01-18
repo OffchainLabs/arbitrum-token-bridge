@@ -137,6 +137,7 @@ function decodeChainQueryParam(
   value: string | (string | null)[] | null | undefined
   // ChainId type doesn't include custom orbit chain, we need to add number type
 ): ChainId | number | undefined {
+  console.log('decodeChainQueryParam', value)
   const valueString = decodeString(value)
   if (!valueString) {
     return undefined

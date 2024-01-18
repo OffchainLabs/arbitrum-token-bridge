@@ -57,6 +57,8 @@ export function login({
       ? getL2NetworkConfig().networkName
       : getL1NetworkConfig().networkName)
 
+  console.log('commands:login:sourceChainNameForMM', sourceChainNameForMM)
+  console.log('commands:login:destinationChainName', destinationChainName)
   function _startWebApp() {
     startWebApp(url, {
       sourceChain: sourceChainName,
@@ -66,13 +68,14 @@ export function login({
   }
 
   shouldChangeNetwork(sourceChainNameForMM).then(changeNetwork => {
-    if (changeNetwork) {
-      cy.changeMetamaskNetwork(sourceChainNameForMM).then(() => {
-        _startWebApp()
-      })
-    } else {
+    console.log('commands:login:changeNetwork', changeNetwork)
+    // if (changeNetwork) {
+    cy.changeMetamaskNetwork(sourceChainNameForMM).then(() => {
       _startWebApp()
-    }
+    })
+    // } else {
+    //   _startWebApp()
+    // }
 
     cy.task('setCurrentNetworkName', sourceChainNameForMM)
   })
