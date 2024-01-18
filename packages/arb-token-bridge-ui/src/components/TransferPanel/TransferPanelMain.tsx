@@ -10,7 +10,7 @@ import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
-  chains,
+  getChains,
   getExplorerUrl,
   getNetworkName,
   getValidDestinationChainIds,
@@ -769,7 +769,7 @@ export function TransferPanelMain({
       return typeof (chain as L2Network).partnerChainID !== 'undefined'
     }
 
-    console.log({ chains })
+    const chains = getChains()
 
     function getSourceChains() {
       return Object.keys(chains)

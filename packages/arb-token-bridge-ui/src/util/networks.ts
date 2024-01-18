@@ -13,9 +13,9 @@ import { Erc20Data } from './TokenUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
-export const chains = { ...arbitrumSdkChains, ...parentChains }
-
-console.log('chainsv2', chains)
+export const getChains = () => {
+  return { ...arbitrumSdkChains, ...parentChains }
+}
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
@@ -229,7 +229,7 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 }
 
 export function getValidDestinationChainIds(sourceChainId: ChainId) {
-  return chains[sourceChainId]?.partnerChainIDs || []
+  return getChains()[sourceChainId]?.partnerChainIDs || []
 }
 
 const defaultL1Network: L1Network = {
