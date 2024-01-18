@@ -282,7 +282,7 @@ export const TransactionHistoryTable = ({
             )}
             className="table-auto"
             rowGetter={({ index }) => transactions[index]}
-            rowRenderer={({ index, key, style }) => {
+            rowRenderer={({ index, style }) => {
               const tx = transactions[index]
               const isEvenRow = index % 2 === 0
 
@@ -294,6 +294,8 @@ export const TransactionHistoryTable = ({
               const bgColorPending = 'bg-orange'
 
               const bgColor = isPending(tx) ? bgColorPending : bgColorSettled
+
+              const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
 
               return (
                 <div
