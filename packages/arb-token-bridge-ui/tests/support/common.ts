@@ -138,6 +138,9 @@ export const acceptMetamaskAccess = () => {
 export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
+  cy.task('getCurrentNetworkName').then(networkName => {
+    console.log('startwebapp networkName', networkName)
+  })
   cy.clearLocalStorage('arbitrum:bridge:tos-v2')
   cy.log('VISITING url', url, 'with qs', qs.sourceChain, qs.destinationChain)
   cy.visit(url, {

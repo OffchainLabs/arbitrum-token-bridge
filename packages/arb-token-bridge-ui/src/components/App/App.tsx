@@ -377,6 +377,7 @@ function ConnectedChainSyncer() {
   useEffect(() => {
     // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
     if (chain && shouldSync && !didSync) {
+      console.log('Metamask is conected to', chain.id)
       const {
         sourceChainId: sourceChain,
         destinationChainId: destinationChain
