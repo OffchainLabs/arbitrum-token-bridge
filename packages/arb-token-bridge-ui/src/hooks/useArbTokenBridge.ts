@@ -437,7 +437,12 @@ export const useArbTokenBridge = (
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
         l1Signer,
-        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) },
+        retryableGasOverrides: {
+          gasLimit: {
+            base: BigNumber.from(0)
+          }
+        }
       })
 
       if (txLifecycle?.onTxSubmit) {
