@@ -788,7 +788,7 @@ export function TransferPanelMain({
         partnerChainIds.push(ChainId.ArbitrumOne)
       }
 
-      return [networks.sourceChain.id, ...partnerChainIds].map(getWagmiChain)
+      return partnerChainIds.map(getWagmiChain)
     }
 
     const fromOptions = getSourceChains()
