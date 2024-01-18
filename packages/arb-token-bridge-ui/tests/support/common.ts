@@ -52,7 +52,7 @@ export const getL1TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'sepolia',
     rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
-    chainId: '5',
+    chainId: '11155111',
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS
@@ -63,7 +63,7 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   return {
     networkName: 'arbitrum-sepolia',
     rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
-    chainId: '421613',
+    chainId: '421614',
     symbol: 'ETH',
     isTestnet: true,
     multiCall: MULTICALL_TESTNET_ADDRESS
