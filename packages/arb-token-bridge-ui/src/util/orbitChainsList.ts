@@ -54,7 +54,7 @@ export const orbitTestnets: { [key in number]: ChainWithRpcUrl } = {
       sequencerInbox: '0x5fD0cCc5D31748A44b43cf8DFBFA0FAA32665464'
     },
     explorerUrl: 'https://testnet-explorer.xai-chain.net',
-    rpcUrl: 'https://testnet-explorer.xai-chain.net',
+    rpcUrl: 'https://testnet.xai-chain.net/rpc',
     isArbitrum: true,
     isCustom: true,
     name: 'Xai Orbit Testnet',
