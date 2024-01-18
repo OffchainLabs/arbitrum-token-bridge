@@ -1,6 +1,19 @@
+import { ETHER_TOKEN_LOGO } from '../constants'
 import { ChainWithRpcUrl } from './networks'
 
-export const orbitMainnets: { [key in number]: ChainWithRpcUrl } = {
+type BridgeConfigUi = {
+  primaryColor: `#${string}`
+  secondaryColor: `#${string}`
+  networkName: string
+  networkLogo: string
+  nativeTokenLogo: string
+}
+
+type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeConfigUi }
+
+export const orbitMainnets: {
+  [key in number]: OrbitChainConfig
+} = {
   660279: {
     chainID: 660279,
     confirmPeriodBlocks: 45818,
@@ -38,11 +51,18 @@ export const orbitMainnets: { [key in number]: ChainWithRpcUrl } = {
     },
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
-    depositTimeout: 1800000
+    depositTimeout: 1800000,
+    bridgeUiConfig: {
+      primaryColor: '#F30019',
+      secondaryColor: '#87000E',
+      networkName: 'Xai',
+      networkLogo: '/images/XaiLogo.svg',
+      nativeTokenLogo: '/images/XaiLogo.svg'
+    }
   }
 }
 
-export const orbitTestnets: { [key in number]: ChainWithRpcUrl } = {
+export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
   47279324479: {
     chainID: 47279324479,
     confirmPeriodBlocks: 20,
@@ -79,7 +99,14 @@ export const orbitTestnets: { [key in number]: ChainWithRpcUrl } = {
     },
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
-    depositTimeout: 1800000
+    depositTimeout: 1800000,
+    bridgeUiConfig: {
+      primaryColor: '#F30019',
+      secondaryColor: '#87000E',
+      networkName: 'Xai Testnet',
+      networkLogo: '/images/XaiLogo.svg',
+      nativeTokenLogo: ETHER_TOKEN_LOGO
+    }
   }
 }
 

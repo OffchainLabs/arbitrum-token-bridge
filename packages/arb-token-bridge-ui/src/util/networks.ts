@@ -10,7 +10,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { Erc20Data } from './TokenUtils'
-import { getBridgeUiConfigForChain } from './bridgeUiConfig'
+import { getBridgeUiConfigForChain } from './index'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 // TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead

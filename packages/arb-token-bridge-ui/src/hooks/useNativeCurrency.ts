@@ -5,7 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import { ether } from '../constants'
 import { ChainId, rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
-import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
+import { getBridgeUiConfigForChain } from '../util'
 
 type NativeCurrencyBase = {
   name: string

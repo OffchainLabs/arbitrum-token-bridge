@@ -72,7 +72,7 @@ import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getBridgeUiConfigForChain } from '../../util'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {

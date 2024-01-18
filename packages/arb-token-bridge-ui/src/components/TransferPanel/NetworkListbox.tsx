@@ -6,7 +6,7 @@ import { Chain } from 'wagmi'
 import Image from 'next/image'
 
 import { getNetworkName } from '../../util/networks'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getBridgeUiConfigForChain } from '../../util'
 
 export type NetworkListboxProps = {
   disabled?: boolean
