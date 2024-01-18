@@ -147,8 +147,6 @@ export function TransferPanel() {
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner()
-
   const { data: l1Signer } = useSigner({
     chainId: parentChain.id
   })
@@ -499,6 +497,8 @@ export function TransferPanel() {
       return
     }
 
+    const signer = isDepositMode ? l1Signer : l2Signer
+
     if (!signer) {
       throw 'Signer is undefined'
     }
@@ -532,7 +532,8 @@ export function TransferPanel() {
     }
 
     try {
-      const { sourceChainProvider, destinationChainProvider } = networks
+      const { sourceChainProvider, destinationChainProvider, sourceChain } =
+        networks
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
@@ -664,11 +665,9 @@ export function TransferPanel() {
         destination: destinationAddress ?? walletAddress,
         sender: walletAddress,
         isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(
-          networks.sourceChain.id
-        ),
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
         cctpData: {
-          sourceChainId: networks.sourceChain.id,
+          sourceChainId: sourceChain.id,
           attestationHash: null,
           messageBytes: null,
           receiveMessageTransactionHash: null,
