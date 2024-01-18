@@ -704,7 +704,7 @@ export function isTransferConfirmed(tx: MergedTransaction) {
 }
 
 export function useRemainingTime(tx: MergedTransaction) {
-  const [remainingTime, setRemainingTime] = useState<string>()
+  const [remainingTime, setRemainingTime] = useState<string>('Calculating...')
   const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
   const [isConfirmed, setIsConfirmed] = useState(
     tx.status === 'Confirmed' || tx.status === 'Executed'
@@ -732,7 +732,7 @@ export function useRemainingTime(tx: MergedTransaction) {
     if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
     } else {
-      setRemainingTime(canBeClaimedDate.fromNow().toString())
+      setRemainingTime(canBeClaimedDate.fromNow(true).toString() + ' remaining')
     }
   }, 2000)
 
