@@ -19,6 +19,7 @@ import {
 import { isTestingEnvironment } from '../CommonUtils'
 import { ChainId } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
+import { TargetChainKey } from '../WalletConnectUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   chainToWagmiChain(chain)
@@ -71,25 +72,15 @@ const appInfo = {
   projectId
 }
 
-enum TargetChainKey {
-  Ethereum = 'mainnet',
-  ArbitrumOne = 'arbitrum-one',
-  ArbitrumNova = 'arbitrum-nova',
-  Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli',
-  Sepolia = 'sepolia',
-  ArbitrumSepolia = 'arbitrum-sepolia'
-}
-
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
   if (targetChainKey === null) {
-    return TargetChainKey.Ethereum
+    return TargetChainKey['Ethereum']
   }
 
   // Default to Ethereum Mainnet if invalid
   if (!(Object.values(TargetChainKey) as string[]).includes(targetChainKey)) {
-    return TargetChainKey.Ethereum
+    return TargetChainKey['Ethereum']
   }
 
   return targetChainKey as TargetChainKey
@@ -97,25 +88,25 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
-    case TargetChainKey.Ethereum:
+    case TargetChainKey['Ethereum']:
       return ChainId.Ethereum
 
-    case TargetChainKey.ArbitrumOne:
+    case TargetChainKey['Arbitrum One']:
       return ChainId.ArbitrumOne
 
-    case TargetChainKey.ArbitrumNova:
+    case TargetChainKey['Arbitrum Nova']:
       return ChainId.ArbitrumNova
 
-    case TargetChainKey.Goerli:
+    case TargetChainKey['Goerli']:
       return ChainId.Goerli
 
-    case TargetChainKey.ArbitrumGoerli:
+    case TargetChainKey['Arbitrum Goerli']:
       return ChainId.ArbitrumGoerli
 
-    case TargetChainKey.Sepolia:
+    case TargetChainKey['Sepolia']:
       return ChainId.Sepolia
 
-    case TargetChainKey.ArbitrumSepolia:
+    case TargetChainKey['Arbitrum Sepolia']:
       return ChainId.ArbitrumSepolia
   }
 }

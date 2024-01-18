@@ -5,25 +5,31 @@ import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
 import Image from 'next/image'
 
-import { getNetworkName } from '../../util/networks'
+import { ChainId, getNetworkName } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export type NetworkListboxProps = {
   disabled?: boolean
   label: string
   options: Chain[]
-  value: Chain
+  placeholder?: string
+  value?: Chain
   onChange: (value: Chain) => void
+  buttonClassName?: string
 }
 
 export function NetworkListbox({
   disabled = false,
   label,
   options,
+  placeholder,
   value,
-  onChange
+  onChange,
+  buttonClassName
 }: NetworkListboxProps) {
-  const { primaryColor } = getBridgeUiConfigForChain(value.id)
+  const { primaryColor, networkName } = getBridgeUiConfigForChain(
+    value?.id || ChainId.Ethereum
+  )
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -45,15 +51,19 @@ export function NetworkListbox({
       as="div"
       className="relative"
       disabled={disabled}
+      placeholder={placeholder}
       value={value}
       onChange={onChange}
     >
       <Listbox.Button
         style={{ backgroundColor: primaryColor }}
-        className="arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3"
+        className={twMerge(
+          'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3',
+          buttonClassName
+        )}
       >
         <span className="max-w-[220px] truncate md:max-w-[250px]">
-          {label} {getNetworkName(value.id)}
+          {value ? `${label} ${networkName}` : placeholder}
         </span>
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>

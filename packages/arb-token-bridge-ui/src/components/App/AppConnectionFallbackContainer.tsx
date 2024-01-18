@@ -1,7 +1,16 @@
+import dynamic from 'next/dynamic'
 import Image, { ImageProps } from 'next/image'
 import ThreeArbinautsImg from '@/images/three-arbinauts.webp'
+
 import { ExternalLink } from '../common/ExternalLink'
-import { WalletConnectWarning } from '../common/WalletConnectWarning'
+import { LedgerWarning } from '../common/LedgerWarning'
+
+const WalletConnectChainDropdown = dynamic(
+  () => import('../common/WalletConnectChainDropdown'),
+  {
+    ssr: false
+  }
+)
 
 export function AppConnectionFallbackContainer({
   layout = 'col',
@@ -19,7 +28,8 @@ export function AppConnectionFallbackContainer({
 }) {
   return (
     <div className="flex flex-col">
-      <WalletConnectWarning />
+      <WalletConnectChainDropdown />
+      <LedgerWarning />
 
       <div className="my-24 flex items-center justify-center px-8">
         <div
