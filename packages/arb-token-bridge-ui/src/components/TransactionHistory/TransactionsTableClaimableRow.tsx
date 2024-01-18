@@ -183,7 +183,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />}
+        {tx.isCctp ? (
+          <span>{remainingTime}</span>
+        ) : (
+          <WithdrawalCountdown tx={tx} />
+        )}
       </div>
     )
   }
