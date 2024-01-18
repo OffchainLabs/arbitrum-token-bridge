@@ -71,7 +71,6 @@ import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 
 const isAllowedL2 = async ({
@@ -499,7 +498,7 @@ export function TransferPanel() {
     if (!walletAddress) {
       return
     }
-    const signer = isDepositMode ? l1Signer : l2Signer
+
     if (!signer) {
       throw 'Signer is undefined'
     }
@@ -534,8 +533,6 @@ export function TransferPanel() {
 
     try {
       const { sourceChainProvider, destinationChainProvider } = networks
-
-      const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
 
       // show confirmation popup before cctp transfer
       if (isDepositMode) {
@@ -667,9 +664,11 @@ export function TransferPanel() {
         destination: destinationAddress ?? walletAddress,
         sender: walletAddress,
         isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(
+          networks.sourceChain.id
+        ),
         cctpData: {
-          sourceChainId,
+          sourceChainId: networks.sourceChain.id,
           attestationHash: null,
           messageBytes: null,
           receiveMessageTransactionHash: null,
