@@ -59,7 +59,8 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumLocal:
       return localL2Network
-  }
 
-  throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
+    default:
+      throw new Error(`[getWagmiChain] Unexpected chain id: ${chainId}`)
+  }
 }
