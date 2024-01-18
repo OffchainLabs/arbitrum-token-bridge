@@ -762,17 +762,18 @@ export function TransferPanelMain({
 
     function getSourceChains() {
       return Object.keys(chains)
+        .map(Number)
         .filter(chainId => {
-          if (chainIdsToHide.includes(Number(chainId))) {
+          if (chainIdsToHide.includes(chainId)) {
             return false
           }
           // don't show testnet networks if testnet mode is off
           if (!isTestnetMode) {
-            return !isNetwork(Number(chainId)).isTestnet
+            return !isNetwork(chainId).isTestnet
           }
           return true
         })
-        .map(chainId => getWagmiChain(Number(chainId)))
+        .map(chainId => getWagmiChain(chainId))
     }
 
     function getDestinationChains() {
