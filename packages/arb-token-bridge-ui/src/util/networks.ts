@@ -324,6 +324,7 @@ export function registerLocalNetwork(
 
 export function isNetwork(chainId: ChainId) {
   const customChains = getCustomChainsFromLocalStorage()
+  const isMainnetOrbitChain = chainId in orbitMainnets
   const isTestnetOrbitChain = chainId in orbitTestnets
 
   const isEthereumMainnet = chainId === ChainId.Ethereum
@@ -370,7 +371,10 @@ export function isNetwork(chainId: ChainId) {
     isGoerli ||
     isArbitrumGoerli ||
     isSepolia ||
-    isArbitrumSepolia
+    isArbitrumSepolia ||
+    isCustomOrbitChain ||
+    isMainnetOrbitChain ||
+    isTestnetOrbitChain
 
   return {
     // L1
@@ -405,7 +409,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
     ChainId.StylusTestnet,
-    ...Object.keys(orbitTestnets),
+    ...Object.keys(orbitTestnets).map(Number),
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 
@@ -413,7 +417,7 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Ethereum,
     ChainId.ArbitrumOne,
     ChainId.ArbitrumNova,
-    ...Object.keys(orbitMainnets)
+    ...Object.keys(orbitMainnets).map(Number)
   ]
 
   return isNetwork(chainId).isTestnet

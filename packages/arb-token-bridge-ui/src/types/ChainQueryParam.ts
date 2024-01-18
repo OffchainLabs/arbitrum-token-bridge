@@ -3,11 +3,12 @@ import * as chains from 'wagmi/chains'
 
 import {
   ChainId,
-  getCustomChainsFromLocalStorage,
+  getCustomChainFromLocalStorageById,
   getSupportedNetworks
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
 import { orbitChains } from '../util/orbitChainsList'
+import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
   'ethereum',
@@ -27,7 +28,13 @@ export type ChainQueryParam = ChainKeyQueryParam | ChainId | number | string
 
 export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
-    return (chainQueryParams as readonly string[]).includes(value)
+    const isValidCoreChain = (chainQueryParams as readonly string[]).includes(
+      value
+    )
+    const isValidAddedOrbitChain = Object.values(orbitChains).some(
+      chain => chain.slug === value
+    )
+    return isValidCoreChain || isValidAddedOrbitChain
   }
 
   const supportedNetworkIds = getSupportedNetworks(value, true)
@@ -67,10 +74,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       return 'arbitrum-localhost'
 
     default:
-      const customChains = getCustomChainsFromLocalStorage()
-      const customChain = customChains.find(
-        customChain => customChain.chainID === chainId
-      )
+      const customChain = getCustomChainFromLocalStorageById(chainId)
 
       const orbitChain = orbitChains[chainId]
 
@@ -123,6 +127,14 @@ export function getChainForChainKeyQueryParam(
       return customChains.localL2Network
 
     default:
+      const orbitChain = Object.values(orbitChains).find(
+        chain => chain.slug === chainKeyQueryParam
+      )
+
+      if (orbitChain) {
+        return chainToWagmiChain(orbitChain)
+      }
+
       throw new Error(
         `[getChainForChainKeyQueryParam] Unexpected chainKeyQueryParam: ${chainKeyQueryParam}`
       )

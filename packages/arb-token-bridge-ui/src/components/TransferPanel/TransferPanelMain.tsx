@@ -789,7 +789,12 @@ export function TransferPanelMain({
         partnerChainIds.push(ChainId.ArbitrumOne)
       }
 
-      return partnerChainIds.map(getWagmiChain)
+      return (
+        partnerChainIds
+          // remove self
+          .filter(chainId => chainId !== networks.destinationChain.id)
+          .map(getWagmiChain)
+      )
     }
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
@@ -798,10 +803,13 @@ export function TransferPanelMain({
       )
     }
 
+    const sourceChains = getSourceChains()
+    const destinationChains = getDestinationChains()
+
     return {
       from: {
         disabled: isSmartContractWallet || isLoadingAccountType,
-        options: getSourceChains(),
+        options: sourceChains,
         value: networks.sourceChain,
         onChange: async network => {
           if (networks.destinationChain.id === network.id) {
@@ -813,7 +821,11 @@ export function TransferPanelMain({
         }
       },
       to: {
-        options: getDestinationChains(),
+        disabled:
+          isSmartContractWallet ||
+          isLoadingAccountType ||
+          destinationChains.length === 0,
+        options: destinationChains,
         value: networks.destinationChain,
         onChange: async network => {
           if (network.id === networks.sourceChain.id) {

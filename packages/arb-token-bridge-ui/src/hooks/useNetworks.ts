@@ -67,7 +67,7 @@ export function isSupportedChainId(
     stylusTestnet.id,
     arbitrumLocal.id,
     local.id,
-    ...Object.keys(orbitChains),
+    ...Object.keys(orbitChains).map(Number),
     ...customChainIds
   ].includes(chainId)
 }
