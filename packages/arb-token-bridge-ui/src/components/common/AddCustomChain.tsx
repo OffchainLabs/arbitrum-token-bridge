@@ -177,6 +177,7 @@ async function mapOrbitConfigToOrbitChain(
     (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
   return {
     chainID: data.chainInfo.chainId,
+    // slug is not required for custom Orbit chains because we use the chain ID to populate query params
     slug: '',
     confirmPeriodBlocks,
     ethBridge: {
