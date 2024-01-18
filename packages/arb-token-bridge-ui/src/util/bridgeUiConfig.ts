@@ -11,17 +11,20 @@ type BridgeConfigUi = {
 
 type BaseBridgeConfigUi = Omit<BridgeConfigUi, 'networkName'>
 
+const ETHER_TOKEN_LOGO = '/images/EthereumLogoRound.svg'
+
 const ethereumBaseConfig: BaseBridgeConfigUi = {
   primaryColor: '#454A75',
   secondaryColor: '#1A1C33',
   networkLogo: '/images/EthereumLogo.svg',
-  nativeTokenLogo: '/images/EthereumLogoRound.svg'
+  nativeTokenLogo: ETHER_TOKEN_LOGO
 }
 
-const arbitrumBaseConfig: Omit<BaseBridgeConfigUi, 'networkLogo'> = {
+const arbitrumBaseConfig: BaseBridgeConfigUi = {
   primaryColor: '#1B4ADD',
   secondaryColor: '#001A6B',
-  nativeTokenLogo: '/images/EthereumLogoRound.svg'
+  networkLogo: '/images/ArbitrumLogo.svg',
+  nativeTokenLogo: ETHER_TOKEN_LOGO
 }
 
 export function getBridgeUiConfigForChain(
@@ -65,20 +68,17 @@ export function getBridgeUiConfigForChain(
     case ChainId.ArbitrumGoerli:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Goerli',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum Goerli'
       }
     case ChainId.ArbitrumSepolia:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Sepolia',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum Sepolia'
       }
     case ChainId.ArbitrumLocal:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum',
-        networkLogo: '/images/ArbitrumLogo.svg'
+        networkName: 'Arbitrum'
       }
     case ChainId.ArbitrumNova:
       return {
@@ -86,7 +86,7 @@ export function getBridgeUiConfigForChain(
         secondaryColor: '#743600',
         networkName: 'Arbitrum Nova',
         networkLogo: '/images/ArbitrumNovaLogo.svg',
-        nativeTokenLogo: '/images/EthereumLogoRound.svg'
+        nativeTokenLogo: ETHER_TOKEN_LOGO
       }
     case ChainId.StylusTestnet:
       return {
@@ -94,7 +94,7 @@ export function getBridgeUiConfigForChain(
         secondaryColor: '#7E0028',
         networkName: 'Stylus Testnet',
         networkLogo: '/images/StylusLogo.svg',
-        nativeTokenLogo: '/images/EthereumLogoRound.svg'
+        nativeTokenLogo: ETHER_TOKEN_LOGO
       }
     case 660279:
       return {
@@ -110,7 +110,7 @@ export function getBridgeUiConfigForChain(
         secondaryColor: '#87000E',
         networkName: 'Xai Testnet',
         networkLogo: '/images/XaiLogo.svg',
-        nativeTokenLogo: '/images/EthereumLogoRound.svg'
+        nativeTokenLogo: ETHER_TOKEN_LOGO
       }
     default: {
       // custom Orbit chains
@@ -124,7 +124,7 @@ export function getBridgeUiConfigForChain(
             : '/images/OrbitLogo.svg',
         nativeTokenLogo: isCustomOrbitChainWithCustomNativeToken
           ? ''
-          : '/images/EthereumLogoRound.svg'
+          : ETHER_TOKEN_LOGO
       }
     }
   }
