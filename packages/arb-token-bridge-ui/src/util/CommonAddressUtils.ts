@@ -9,12 +9,12 @@ export const CommonAddress = {
     tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a'
   },
   Sepolia: {
-    USDC: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+    USDC: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
     tokenMessengerContractAddress: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5'
   },
   ArbitrumSepolia: {
-    USDC: '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
-    'USDC.e': '0x119f0E6303BEc7021B295EcaB27A4a1A5b37ECf0',
+    USDC: '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+    'USDC.e': '0x119f0e6303bec7021b295ecab27a4a1a5b37ecf0',
     tokenMessengerContractAddress: '0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5'
   }
 } as const
