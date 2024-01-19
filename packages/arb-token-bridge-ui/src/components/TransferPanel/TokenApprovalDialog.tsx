@@ -16,13 +16,11 @@ import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import {
-  approveCctpEstimateGas,
-  approveTokenEstimateGas
-} from '../../util/TokenApprovalUtils'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { getContracts } from '../../hooks/CCTP/useCCTP'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
+import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress
@@ -47,6 +45,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const [networks] = useNetworks()
+  const { sourceChainProvider, destinationChainProvider } = networks
   const {
     childChain,
     childChainProvider,
@@ -96,11 +95,14 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         if (!signer) {
           gasEstimate = constants.Zero
         } else {
-          gasEstimate = await approveCctpEstimateGas(
-            chainId,
-            constants.MaxUint256,
+          const cctpTransferStarter = new CctpTransferStarter({
+            sourceChainProvider,
+            destinationChainProvider
+          })
+          gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
+            amount: constants.MaxUint256,
             signer
-          )
+          })
         }
       } else if (walletAddress) {
         gasEstimate = await approveTokenEstimateGas({
@@ -125,6 +127,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     signer,
     walletAddress,
     token?.address,
+    sourceChainProvider,
+    destinationChainProvider,
     parentChainProvider,
     childChainProvider,
     chainId
@@ -133,7 +137,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   useEffect(() => {
     const getContractAddress = async function () {
       if (isCctp) {
-        setContractAddress(getContracts(chainId)?.tokenMessengerContractAddress)
+        setContractAddress(
+          getCctpContracts({ sourceChainId: chainId })
+            ?.tokenMessengerContractAddress
+        )
         return
       }
       if (!token?.address) {

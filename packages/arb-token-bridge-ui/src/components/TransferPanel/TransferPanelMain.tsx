@@ -36,7 +36,7 @@ import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -535,7 +535,7 @@ export function TransferPanelMain({
         return result
       }
 
-      const result = await withdrawEthEstimateGas({
+      const result = await withdrawInitTxEstimateGas({
         amount: weiValue,
         address: walletAddress,
         l2Provider: childChainProvider
@@ -586,12 +586,16 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(nativeCurrencyBalance)
 
-      // for a withdrawal init tx, this is the batch posting fee needed for the tx
+      /**
+       * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
+       *
+       * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
+       * @see
+       * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
+       */
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        // node interface returns l1 gas based on l2 gas price for withdrawals
-        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
-        isDepositMode ? l1GasPrice : l2GasPrice
+        l1GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
         result.estimatedL2Gas,
