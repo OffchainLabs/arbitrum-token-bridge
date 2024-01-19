@@ -68,7 +68,7 @@ const configs: ChainCombination[] = [
 
 async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
   const font = await getFont()
-  const imageName = `__${from.slug}-to-${to.slug}.jpg`
+  const imageName = `${from.slug}-to-${to.slug}.jpg`
 
   console.log(`Generating ${imageName}`)
 
