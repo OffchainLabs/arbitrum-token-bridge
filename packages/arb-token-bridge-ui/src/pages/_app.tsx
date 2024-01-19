@@ -15,10 +15,10 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
-import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
+import { getChainForChainKeyQueryParam } from '../types/ChainQueryParam'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -74,12 +74,52 @@ if (
   })
 }
 
-export default function App({ Component, pageProps }: AppProps) {
+function Meta({
+  sourceChain,
+  destinationChain
+}: {
+  sourceChain: string
+  destinationChain: string
+}) {
+  const siteTitle = `Bridge from ${sourceChain} to ${destinationChain}`
+  const siteDescription = `Bridge from ${sourceChain} to ${destinationChain} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
+  const siteDomain = 'https://bridge.arbitrum.io'
+
+  return (
+    <>
+      <title>{siteTitle}</title>
+      <meta name="description" content={siteDescription} />
+      {/* <!-- Facebook Meta Tags --> */}
+      <meta property="og:url" content={siteDomain} />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={siteTitle} />
+      {/* <meta property="og:description" content={siteDescription} /> */}
+      <meta property="og:image" content={`${siteDomain}/og-image.jpg`} />
+
+      {/* <!-- Twitter Meta Tags --> */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta property="twitter:domain" content="bridge.arbitrum.io" />
+      <meta property="twitter:url" content={siteDomain} />
+      <meta name="twitter:title" content={siteTitle} />
+      {/* <meta name="twitter:description" content={siteDescription} /> */}
+      <meta name="twitter:image" content={`${siteDomain}/og-image.jpg`} />
+    </>
+  )
+}
+
+export default function App({ Component, pageProps, router }: AppProps) {
+  const { sourceChain = 'ethereum', destinationChain = 'arbitrum-one' } =
+    router.query
+
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{siteTitle}</title>
+        <Meta
+          sourceChain={getChainForChainKeyQueryParam(sourceChain as any).name}
+          destinationChain={
+            getChainForChainKeyQueryParam(destinationChain as any).name
+          }
+        />
       </Head>
       <Layout>
         <Component {...pageProps} />

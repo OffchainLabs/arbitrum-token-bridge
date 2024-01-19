@@ -22,6 +22,12 @@ const App = dynamic(() => import('../components/App/App'), {
   )
 })
 
+export function getServerSideProps() {
+  return {
+    props: {}
+  }
+}
+
 export default function Index() {
   useEffect(() => {
     // user-added custom chains do not persists between sessions
