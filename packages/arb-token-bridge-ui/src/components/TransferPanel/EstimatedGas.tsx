@@ -6,13 +6,13 @@ import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
-import { formatAmount, formatUSD } from '../../util/NumberUtils'
+import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useETHPrice } from '../../hooks/useETHPrice'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { ETHPrice } from './ETHPrice'
 
 const gasFeeTooltip = ({
   parentChainName,
@@ -38,7 +38,11 @@ function StyledLoader() {
   )
 }
 
-export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
+export function EstimatedGas({
+  chainType
+}: {
+  chainType: 'source' | 'destination'
+}) {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -46,9 +50,11 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const { parentLayer, layer: childLayer } = useChainLayers()
-  const { ethToUSD } = useETHPrice()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const isParentChain = chainType === 'parent'
+  const isSourceChain = chainType === 'source'
+  const isParentChain = isSourceChain
+    ? networks.sourceChain.id === parentChain.id
+    : networks.destinationChain.id === parentChain.id
   const {
     gasSummaryStatus,
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
@@ -105,7 +111,10 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
     >
       <div className="flex w-1/2 flex-row items-center gap-1">
         <span className="text-left">
-          {isParentChain ? parentChainName : childChainName} gas
+          {isSourceChain
+            ? networks.sourceChain.name
+            : networks.destinationChain.name}{' '}
+          gas
         </span>
         <Tooltip content={layerGasFeeTooltipContent(layer)}>
           <InformationCircleIcon className="h-4 w-4" />
@@ -129,11 +138,7 @@ export function EstimatedGas({ chainType }: { chainType: 'parent' | 'child' }) {
             })}
           </span>
 
-          {showPrice && (
-            <span className="tabular-nums">
-              {formatUSD(ethToUSD(estimatedGasFee))}
-            </span>
-          )}
+          <ETHPrice amountInEth={estimatedGasFee} />
         </div>
       )}
     </div>

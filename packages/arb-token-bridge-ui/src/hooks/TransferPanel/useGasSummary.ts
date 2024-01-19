@@ -9,8 +9,7 @@ import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
-import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { useNetworksRelationship } from '../useNetworksRelationship'
@@ -125,12 +124,10 @@ export function useGasSummary(): {
               l1Provider: parentChainProvider
             })
       } else {
-        const partialEstimateGasResult = token
-          ? await withdrawTokenEstimateGas({
-              ...estimateGasFunctionParams,
-              erc20L1Address: token.address
-            })
-          : await withdrawEthEstimateGas(estimateGasFunctionParams)
+        const partialEstimateGasResult = await withdrawInitTxEstimateGas({
+          ...estimateGasFunctionParams,
+          erc20L1Address: token ? token.address : undefined
+        })
 
         estimateGasResult = {
           ...partialEstimateGasResult,

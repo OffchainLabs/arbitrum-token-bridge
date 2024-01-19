@@ -15,7 +15,7 @@ export function useETHPrice(): UseETHPriceResult {
     'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
     url => axios.get(url).then(res => res.data.ethereum.usd),
     {
-      refreshInterval: 30_000,
+      refreshInterval: 300_000, // 5 minutes
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000

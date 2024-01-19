@@ -1,13 +1,8 @@
 import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-import { useETHPrice } from '../../hooks/useETHPrice'
-import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import {
-  getBaseChainIdByChainId,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { formatAmount } from '../../util/NumberUtils'
+import { getBaseChainIdByChainId, getNetworkName } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -17,6 +12,7 @@ import dayjs from 'dayjs'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { ETHPrice } from './ETHPrice'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
@@ -51,7 +47,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummary()
 
-  const { ethToUSD } = useETHPrice()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -79,9 +74,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   })
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
-
-  const isBridgingEth = token === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingEth && !isNetwork(parentChain.id).isTestnet
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -142,7 +134,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
               symbol: nativeCurrency.symbol
             }
           )}{' '}
-          {showPrice && <>({formatUSD(ethToUSD(estimatedTotalGasFees))})</>}
+          <ETHPrice amountInEth={estimatedTotalGasFees} showBrackets />
         </span>
       </div>
 
@@ -161,7 +153,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             token={token}
             isParentChain={!isDepositMode}
           />{' '}
-          {showPrice && <>({formatUSD(ethToUSD(Number(amount)))})</>}
+          <ETHPrice amountInEth={Number(amount)} showBrackets />
         </span>
       </div>
 
