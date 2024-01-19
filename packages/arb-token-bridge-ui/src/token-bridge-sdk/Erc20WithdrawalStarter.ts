@@ -17,7 +17,7 @@ import {
 } from '../util/TokenUtils'
 import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
-import { withdrawTokenEstimateGas } from '../util/TokenWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
@@ -163,7 +163,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const address = (await getAddressFromSigner(signer)) as `0x${string}`
 
-    return withdrawTokenEstimateGas({
+    return withdrawInitTxEstimateGas({
       amount,
       address,
       erc20L1Address: tokenAddress,

@@ -7,7 +7,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getAddressFromSigner } from './utils'
-import { withdrawEthEstimateGas } from '../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'
@@ -38,7 +38,7 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     const address = (await getAddressFromSigner(signer)) as `0x${string}`
 
-    return withdrawEthEstimateGas({
+    return withdrawInitTxEstimateGas({
       amount,
       address,
       l2Provider: this.sourceChainProvider
