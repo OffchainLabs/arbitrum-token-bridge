@@ -86,8 +86,8 @@ function Meta({
   sourceChain: Something
   destinationChain: Something
 }) {
-  const siteTitle = `Bridge from ${sourceChain} to ${destinationChain}`
-  const siteDescription = `Bridge from ${sourceChain} to ${destinationChain} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
+  const siteTitle = `Bridge from ${sourceChain.name} to ${destinationChain.name}`
+  const siteDescription = `Bridge from ${sourceChain.name} to ${destinationChain.name} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
   const siteDomain =
     'https://arbitrum-token-bridge-git-feat-dynamic-meta-offchain-labs.vercel.app'
 
