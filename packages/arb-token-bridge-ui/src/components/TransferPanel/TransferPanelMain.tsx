@@ -826,11 +826,6 @@ export function TransferPanelMain({
         options: destinationChains,
         value: networks.destinationChain,
         onChange: async network => {
-          if (network.id === networks.sourceChain.id) {
-            switchNetworksOnTransferPanel()
-            return
-          }
-
           if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
             setOneNovaTransferDestinationNetworkId(network.id)
             openOneNovaTransferDialog()
