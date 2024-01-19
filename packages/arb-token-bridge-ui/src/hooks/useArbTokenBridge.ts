@@ -262,11 +262,21 @@ export const useArbTokenBridge = (
 
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-      const tx = await ethBridger.withdraw({
-        amount,
-        l2Signer,
+
+      const withdrawalRequest = await ethBridger.getWithdrawalRequest({
+        from: walletAddress,
         destinationAddress: walletAddress,
-        from: walletAddress
+        amount
+      })
+
+      const gasLimit = await l2.provider.estimateGas(
+        withdrawalRequest.txRequest
+      )
+
+      const tx = await ethBridger.withdraw({
+        ...withdrawalRequest,
+        l2Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -543,11 +553,21 @@ export const useArbTokenBridge = (
         return { symbol, decimals }
       })()
 
-      const tx = await erc20Bridger.withdraw({
-        l2Signer,
+      const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
+        from: walletAddress,
         erc20l1Address: erc20L1Address,
         destinationAddress: destinationAddress ?? walletAddress,
         amount
+      })
+
+      const gasLimit = await l2.provider.estimateGas(
+        withdrawalRequest.txRequest
+      )
+
+      const tx = await erc20Bridger.withdraw({
+        ...withdrawalRequest,
+        l2Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -709,8 +729,8 @@ export const useArbTokenBridge = (
       if (isNetwork(l2ChainID).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumGoerli) {
-        l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isNetwork(l2ChainID).isArbitrumSepolia) {
+        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {

@@ -45,6 +45,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const [networks] = useNetworks()
+  const { sourceChainProvider, destinationChainProvider } = networks
   const {
     childChain,
     childChainProvider,
@@ -53,7 +54,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isDepositMode
   } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
-  const { sourceChainProvider, destinationChainProvider } = networks
 
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
   const provider = isDepositMode ? parentChainProvider : childChainProvider

@@ -12,10 +12,9 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
@@ -88,11 +87,18 @@ export function useGasSummary(
     estimatedL2SubmissionCost: constants.Zero
   })
 
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+  /**
+   * Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+   *
+   * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
+   *
+   * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
+   * @see
+   * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
+   */
   const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice)))
+  }, [result.estimatedL1Gas, l1GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -166,7 +172,7 @@ export function useGasSummary(
 
             if (
               isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumGoerliNativeUSDC(token.address)
+              isTokenArbitrumSepoliaNativeUSDC(token.address)
             ) {
               estimateGasResult = {
                 estimatedL1Gas: constants.Zero,
@@ -175,7 +181,7 @@ export function useGasSummary(
               setStatus('unavailable')
               return
             } else {
-              estimateGasResult = await withdrawTokenEstimateGas({
+              estimateGasResult = await withdrawInitTxEstimateGas({
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
@@ -188,7 +194,7 @@ export function useGasSummary(
               estimatedL2SubmissionCost: constants.Zero
             })
           } else {
-            const estimateGasResult = await withdrawEthEstimateGas({
+            const estimateGasResult = await withdrawInitTxEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
               l2Provider: childChainProvider

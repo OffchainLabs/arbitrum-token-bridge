@@ -31,16 +31,16 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     attestationApiUrl: 'https://iris-api.circle.com/v1',
     tokenMinterContractAddress: '0xc4922d64a24675e16e1586e3e3aa56c06fabe907'
   },
-  [ChainId.Goerli]: {
+  [ChainId.Sepolia]: {
     tokenMessengerContractAddress:
-      CommonAddress.Goerli.tokenMessengerContractAddress,
+      CommonAddress.Sepolia.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.ArbitrumOne,
-    targetChainId: ChainId.ArbitrumGoerli,
-    usdcContractAddress: CommonAddress.Goerli.USDC,
+    targetChainId: ChainId.ArbitrumSepolia,
+    usdcContractAddress: CommonAddress.Sepolia.USDC,
     messageTransmitterContractAddress:
-      '0x109bc137cb64eab7c0b1dddd1edf341467dc2d35',
+      '0xacf1ceef35caac005e15888ddb8a3515c41b4872',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
-    tokenMinterContractAddress: '0xca6b4c00831ffb77afe22e734a6101b268b7fcbe'
+    tokenMinterContractAddress: '0xe997d7d2f6e065a9a93fa2175e878fb9081f1f0a'
   },
   [ChainId.ArbitrumOne]: {
     tokenMessengerContractAddress:
@@ -53,14 +53,14 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
     attestationApiUrl: 'https://iris-api.circle.com/v1',
     tokenMinterContractAddress: '0xe7ed1fa7f45d05c508232aa32649d89b73b8ba48'
   },
-  [ChainId.ArbitrumGoerli]: {
+  [ChainId.ArbitrumSepolia]: {
     tokenMessengerContractAddress:
-      CommonAddress.ArbitrumGoerli.tokenMessengerContractAddress,
+      CommonAddress.ArbitrumSepolia.tokenMessengerContractAddress,
     targetChainDomain: ChainDomain.Ethereum,
-    targetChainId: ChainId.Goerli,
-    usdcContractAddress: CommonAddress.ArbitrumGoerli.USDC,
+    targetChainId: ChainId.Sepolia,
+    usdcContractAddress: CommonAddress.ArbitrumSepolia.USDC,
     messageTransmitterContractAddress:
-      '0x26413e8157cd32011e726065a5462e97dd4d03d9',
+      '0x7865fafc2db2093669d92c0f33aeef291086befd',
     attestationApiUrl: 'https://iris-api-sandbox.circle.com/v1',
     tokenMinterContractAddress: '0xe997d7d2f6e065a9a93fa2175e878fb9081f1f0a'
   }
