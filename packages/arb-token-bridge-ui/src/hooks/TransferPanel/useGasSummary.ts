@@ -6,7 +6,7 @@ import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
 import { useDebouncedValue } from '../useDebouncedValue'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
@@ -185,7 +185,7 @@ export function useGasSummary(): {
     if (!isDepositMode) {
       if (
         isTokenArbitrumOneNativeUSDC(token?.address) ||
-        isTokenArbitrumGoerliNativeUSDC(token?.address)
+        isTokenArbitrumSepoliaNativeUSDC(token?.address)
       ) {
         setGasSummaryStatus('unavailable')
         return
