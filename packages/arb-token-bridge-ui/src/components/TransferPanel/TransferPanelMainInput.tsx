@@ -1,6 +1,8 @@
 import { twMerge } from 'tailwind-merge'
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
+import { sanitizeQueryParams } from '../../hooks/useNetworks'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -38,8 +40,9 @@ export type TransferPanelMainInputProps =
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, ...rest } = props
+  const { errorMessage, maxButtonProps, value } = props
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
+  const [, setQueryParams] = useArbQueryParams()
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
@@ -62,8 +65,10 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={value}
-            {...rest}
+            defaultValue={value}
+            onChange={e => {
+              setQueryParams({ amount: e.target.value })
+            }}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
         </div>
