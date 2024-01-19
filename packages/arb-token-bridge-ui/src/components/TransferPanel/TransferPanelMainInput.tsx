@@ -1,7 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
-import { sanitizeQueryParams } from '../../hooks/useNetworks'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -65,7 +64,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            defaultValue={value}
+            value={value}
             onChange={e => {
               setQueryParams({ amount: e.target.value })
             }}

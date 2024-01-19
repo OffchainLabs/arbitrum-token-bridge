@@ -337,12 +337,8 @@ function NetworkListboxPlusBalancesContainer({
 }
 
 export function TransferPanelMain({
-  amount,
-  setAmount,
   errorMessage
 }: {
-  amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
@@ -354,6 +350,13 @@ export function TransferPanelMain({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
+  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const setAmount = useCallback(
+    (amount: string) => {
+      setQueryParams({ amount })
+    },
+    [setQueryParams]
+  )
 
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const { isSmartContractWallet } = useAccountType()
@@ -508,8 +511,6 @@ export function TransferPanelMain({
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
     (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
-  const [, setQueryParams] = useArbQueryParams()
-
   const estimateGas = useCallback(
     async (
       weiValue: BigNumber
@@ -633,12 +634,10 @@ export function TransferPanelMain({
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
-    setQueryParams({ amount })
-
     if (isMaxAmount) {
       setMaxAmount()
     }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+  }, [isMaxAmount, setMaxAmount])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -979,6 +978,14 @@ export function TransferPanelMain({
     switchNetworksOnTransferPanel
   ])
 
+  const maxButtonProps = useMemo(() => {
+    return {
+      visible: maxButtonVisible,
+      loading: isMaxAmount || loadingMaxAmount,
+      onClick: setMaxAmount
+    }
+  }, [isMaxAmount, loadingMaxAmount, maxButtonVisible, setMaxAmount])
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={networks.sourceChain}>
@@ -1023,16 +1030,9 @@ export function TransferPanelMain({
 
         <div className="flex flex-col space-y-1 pb-2.5">
           <TransferPanelMainInput
-            maxButtonProps={{
-              visible: maxButtonVisible,
-              loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
-            }}
+            maxButtonProps={maxButtonProps}
             errorMessage={errorMessageElement}
             value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
           />
 
           {showUSDCSpecificInfo && (
