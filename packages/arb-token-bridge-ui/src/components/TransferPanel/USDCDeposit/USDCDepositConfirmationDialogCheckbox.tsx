@@ -63,7 +63,7 @@ export function USDCDepositConfirmationDialogCheckbox({
                   {isTestnet ? '~1 minute' : '~15 minutes'}
                 </span>{' '}
                 before I can claim my USDC on{' '}
-                {isTestnet ? 'Arbitrum Goerli' : 'Arbitrum One'}.
+                {isTestnet ? 'Arbitrum Sepolia' : 'Arbitrum One'}.
               </span>
             }
             checked={checkboxesChecked[1] ?? false}
