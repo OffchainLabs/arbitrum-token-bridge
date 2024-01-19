@@ -42,7 +42,7 @@ function getBaseUrl(url: string | undefined): string | null {
   }
 }
 
-export function ConnectedChainAnalyticsSyncer() {
+export function useSyncConnectedChainToAnalytics() {
   const { isConnected, connector } = useAccount()
 
   const [networks] = useNetworks()

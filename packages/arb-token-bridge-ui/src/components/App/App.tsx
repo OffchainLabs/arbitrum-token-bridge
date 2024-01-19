@@ -35,8 +35,8 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { ConnectedChainAnalyticsSyncer } from './ConnectedChainAnalyticsSyncer'
-import { ConnectedChainQueryParamsSyncer } from './ConnectedChainQueryParamSyncer'
+import { useSyncConnectedChainToAnalytics } from './ConnectedChainAnalyticsSyncer'
+import { useSyncConnectedChainToQueryParams } from './ConnectedChainQueryParamSyncer'
 
 declare global {
   interface Window {
@@ -119,6 +119,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
+
+  useSyncConnectedChainToAnalytics()
+  useSyncConnectedChainToQueryParams()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -285,8 +288,6 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <ConnectedChainAnalyticsSyncer />
-            <ConnectedChainQueryParamsSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <AppContextProvider>
               <Injector>{isTosAccepted && <AppContent />}</Injector>
