@@ -758,12 +758,9 @@ export function TransferPanelMain({
     const chains = getChains()
 
     function getSourceChains() {
-      return Object.keys(chains)
-        .map(Number)
+      return chains
+        .map(chain => chain.chainID)
         .filter(chainId => {
-          if (chainId === 1338) {
-            return false
-          }
           // don't show testnet networks if testnet mode is off
           if (!isTestnetMode) {
             return !isNetwork(chainId).isTestnet

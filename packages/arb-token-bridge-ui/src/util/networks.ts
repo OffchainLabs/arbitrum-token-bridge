@@ -15,7 +15,11 @@ import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 // TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead
 export const getChains = () => {
-  return { ...arbitrumSdkChains, ...arbitrumSdkParentChains }
+  const chains = Object.values({
+    ...arbitrumSdkChains,
+    ...arbitrumSdkParentChains
+  })
+  return chains.filter(chain => chain.chainID !== 1338)
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -230,7 +234,10 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
 }
 
 export function getValidDestinationChainIds(sourceChainId: ChainId) {
-  return getChains()[sourceChainId]?.partnerChainIDs || []
+  return (
+    getChains().find(chain => chain.chainID === sourceChainId)
+      ?.partnerChainIDs || []
+  )
 }
 
 const defaultL1Network: L1Network = {
@@ -445,7 +452,7 @@ function isChildChain(
 }
 
 export function getPartnerChainsIds(chainId: ChainId): ChainId[] {
-  const arbitrumSdkChain = getChains()[chainId]
+  const arbitrumSdkChain = getChains().find(chain => chain.chainID === chainId)
 
   const parentChainId = isChildChain(arbitrumSdkChain)
     ? arbitrumSdkChain.partnerChainID
