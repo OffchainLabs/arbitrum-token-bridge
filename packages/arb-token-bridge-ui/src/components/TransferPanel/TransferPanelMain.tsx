@@ -41,9 +41,9 @@ import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
   isTokenUSDC,
   sanitizeTokenSymbol
@@ -349,7 +349,7 @@ export function TransferPanelMain({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const [isTestnetMode] = useIsTestnetMode()
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -408,9 +408,9 @@ export function TransferPanelMain({
 
     if (
       isTokenMainnetUSDC(selectedToken.address) ||
-      isTokenGoerliUSDC(selectedToken.address) ||
+      isTokenSepoliaUSDC(selectedToken.address) ||
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
     ) {
       updateUSDCBalances(selectedToken.address)
       return
@@ -473,12 +473,12 @@ export function TransferPanelMain({
       }
     }
     if (
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address) &&
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l1: erc20L1Balances[CommonAddress.Sepolia.USDC] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
@@ -498,7 +498,7 @@ export function TransferPanelMain({
 
   const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
+    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -711,7 +711,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
+    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
       selectedToken?.address
     )
     // If user select native USDC on L2, when switching to deposit mode,
@@ -739,12 +739,12 @@ export function TransferPanelMain({
         address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
-    } else if (isArbGoerliUSDC) {
-      token.updateTokenData(CommonAddress.Goerli.USDC)
+    } else if (isArbSepoliaUSDC) {
+      token.updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
-        address: CommonAddress.Goerli.USDC,
-        l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
+        address: CommonAddress.Sepolia.USDC,
+        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
       })
     }
   }, [actions.app, isDepositMode, selectedToken, token])
@@ -976,7 +976,7 @@ export function TransferPanelMain({
                         (isArbitrumOne
                           ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
                           : erc20L2Balances?.[
-                              CommonAddress.ArbitrumGoerli.USDC
+                              CommonAddress.ArbitrumSepolia.USDC
                             ]) ?? constants.Zero
                       }
                       on={NetworkType.l2}

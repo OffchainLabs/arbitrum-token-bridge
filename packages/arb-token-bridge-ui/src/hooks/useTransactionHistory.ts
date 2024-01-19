@@ -271,19 +271,19 @@ const useTransactionHistoryWithoutStatuses = (
 
   const cctpTransfersTestnet = useCctpFetching({
     walletAddress: address,
-    l1ChainId: ChainId.Goerli,
-    l2ChainId: ChainId.ArbitrumGoerli,
+    l1ChainId: ChainId.Sepolia,
+    l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
     pageSize: cctpTypeToFetch({
-      parentChain: ChainId.Goerli,
-      chain: ChainId.ArbitrumGoerli
+      parentChain: ChainId.Sepolia,
+      chain: ChainId.ArbitrumSepolia
     })
       ? 1000
       : 0,
     type:
       cctpTypeToFetch({
-        parentChain: ChainId.Goerli,
-        chain: ChainId.ArbitrumGoerli
+        parentChain: ChainId.Sepolia,
+        chain: ChainId.ArbitrumSepolia
       }) ?? 'all'
   })
 

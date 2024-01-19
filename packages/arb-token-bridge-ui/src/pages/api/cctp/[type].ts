@@ -139,10 +139,10 @@ export default async function handler(
     }
 
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-sepolia'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-sepolia'
     )
 
     const messagesSentQuery = gql(`{
