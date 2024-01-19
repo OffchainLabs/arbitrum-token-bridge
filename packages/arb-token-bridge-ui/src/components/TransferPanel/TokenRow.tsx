@@ -87,6 +87,7 @@ export function TokenRow({
       arbTokenBridge: { bridgeTokens }
     }
   } = useAppState()
+  const { isConnected } = useAccount()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {
@@ -296,6 +297,10 @@ export function TokenRow({
   }, [childChain.id, isDepositMode, parentChain.id])
 
   const tokenBalanceContent = useMemo(() => {
+    if (!isConnected) {
+      return null
+    }
+
     if (!tokenIsAddedToTheBridge) {
       return <span className="text-sm font-medium text-blue-link">Import</span>
     }
@@ -327,6 +332,7 @@ export function TokenRow({
       </span>
     )
   }, [
+    isConnected,
     isLoadingAccountType,
     token?.decimals,
     tokenBalance,
