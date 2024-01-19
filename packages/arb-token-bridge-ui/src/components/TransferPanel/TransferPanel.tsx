@@ -51,13 +51,9 @@ import {
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
-import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
-import { formatAmount } from '../../util/NumberUtils'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
@@ -73,6 +69,7 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -177,10 +174,6 @@ export function TransferPanel() {
     },
     [setQueryParams]
   )
-
-  const { approveForBurn, depositForBurn } = useCCTP({
-    sourceChainId: latestNetworks.current.sourceChain.id
-  })
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -453,6 +446,37 @@ export function TransferPanel() {
     }
   }, [amount, selectedToken, nativeCurrency])
 
+  const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
+    const waitForInput = openUSDCDepositConfirmationDialog()
+    const [confirmed, primaryButtonClicked] = await waitForInput()
+
+    // user declined to transfer altogether
+    if (!confirmed) {
+      return false
+    }
+
+    // user has selected normal bridge (USDC.e)
+    if (primaryButtonClicked === 'bridged') {
+      return 'bridge-normal-usdce'
+    }
+
+    // user wants to bridge to native usdc using Circle's CCTP on destination chain
+    return 'bridge-cctp-usd'
+  }
+
+  const confirmUsdcWithdrawalForCctp = async () => {
+    const waitForInput = openUSDCWithdrawalConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const tokenAllowanceApprovalCctp = async () => {
+    setIsCctp(true)
+    const waitForInput = openTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
     setTimeout(() => {
@@ -460,7 +484,7 @@ export function TransferPanel() {
       setShowSCWalletTooltip(true)
     }, 3000)
 
-  const transferCctp = async (type: 'deposits' | 'withdrawals') => {
+  const transferCctp = async () => {
     if (!selectedToken) {
       return
     }
@@ -468,21 +492,8 @@ export function TransferPanel() {
       return
     }
 
-    try {
-      setTransferring(true)
-      if (chainId !== networks.sourceChain.id) {
-        await switchNetworkAsync?.(networks.sourceChain.id)
-      }
-    } catch (e) {
-      if (isUserRejectedError(e)) {
-        return
-      }
-    } finally {
-      setTransferring(false)
-    }
+    const signer = isDepositMode ? l1Signer : l2Signer
 
-    const isDeposit = type === 'deposits'
-    const signer = isDeposit ? l1Signer : l2Signer
     if (!signer) {
       throw 'Signer is undefined'
     }
@@ -491,13 +502,13 @@ export function TransferPanel() {
     const currentChain = latestNetworks.current.sourceChain
     const currentNetworkName = getNetworkName(currentChain.id)
     const isConnectedToTheWrongChain =
-      (isDeposit && isConnectedToArbitrum.current) ||
-      (!isDeposit && !isConnectedToArbitrum.current)
+      (isDepositMode && isConnectedToArbitrum.current) ||
+      (!isDepositMode && !isConnectedToArbitrum.current)
 
     if (isConnectedToTheWrongChain) {
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent('Switch Network and Transfer', {
-          type: isDeposit ? 'Deposit' : 'Withdrawal',
+          type: isDepositMode ? 'Deposit' : 'Withdrawal',
           tokenSymbol: 'USDC',
           assetType: 'ERC-20',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -516,63 +527,59 @@ export function TransferPanel() {
     }
 
     try {
-      const sourceChainId = latestNetworks.current.sourceChain.id
-      const waitForInput = isDeposit
-        ? openUSDCDepositConfirmationDialog()
-        : openUSDCWithdrawalConfirmationDialog()
-      const [confirmed, primaryButtonClicked] = await waitForInput()
+      const { sourceChainProvider, destinationChainProvider, sourceChain } =
+        networks
 
-      if (!confirmed) {
-        return
-      }
-      if (isDeposit && primaryButtonClicked === 'bridged') {
-        // User has selected normal bridge (USDC.e)
-        depositToken()
-        return
-      }
+      // show confirmation popup before cctp transfer
+      if (isDepositMode) {
+        const depositConfirmation =
+          await confirmUsdcDepositFromNormalOrCctpBridge()
 
-      // CCTP has an upper limit for transfer
-      const burnLimit = await fetchPerMessageBurnLimit({
-        sourceChainId
-      })
+        if (!depositConfirmation) return false
 
-      if (burnLimit.lte(amountBigNumber)) {
-        const formatedLimit = formatAmount(burnLimit, {
-          decimals: selectedToken.decimals,
-          symbol: 'USDC'
-        })
-        errorToast(
-          `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
-        )
-        return
-      }
-
-      const recipient = destinationAddress || walletAddress
-      const { usdcContractAddress, tokenMessengerContractAddress } =
-        getContracts(sourceChainId)
-
-      const allowance = await fetchErc20Allowance({
-        address: usdcContractAddress,
-        provider: networks.sourceChainProvider,
-        owner: walletAddress,
-        spender: tokenMessengerContractAddress
-      })
-
-      if (allowance.lt(amountBigNumber)) {
-        setAllowance(allowance)
-        setIsCctp(true)
-        const waitForInput = openTokenApprovalDialog()
-        const [confirmed] = await waitForInput()
-
-        if (!confirmed) {
+        // if user selects usdc.e, redirect to our canonical transfer function
+        if (depositConfirmation === 'bridge-normal-usdce') {
+          await depositToken()
           return
         }
+      } else {
+        const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
+        if (!withdrawalConfirmation) return
+      }
 
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet
+      })
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
+      const cctpTransferStarter = new CctpTransferStarter({
+        sourceChainProvider,
+        destinationChainProvider
+      })
+
+      const isTokenApprovalRequired =
+        await cctpTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          signer
+        })
+
+      if (isTokenApprovalRequired) {
+        const userConfirmation = await tokenAllowanceApprovalCctp()
+        if (!userConfirmation) return false
+
+        if (isSmartContractWallet) {
+          showDelayedSCTxRequest()
+        }
         try {
-          if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
-          }
-          const tx = await approveForBurn(amountBigNumber, signer)
+          const tx = await cctpTransferStarter.approveToken({
+            signer,
+            amount: amountBigNumber
+          })
+
           await tx.wait()
         } catch (error) {
           if (isUserRejectedError(error)) {
@@ -589,31 +596,32 @@ export function TransferPanel() {
       }
 
       let depositForBurnTx
+
       try {
         if (isSmartContractWallet) {
           showDelayedSCTxRequest()
         }
-        depositForBurnTx = await depositForBurn({
+        const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
-          signer,
-          recipient: destinationAddress || walletAddress
+          signer
         })
+        depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
         if (isUserRejectedError(error)) {
           return
         }
         Sentry.captureException(error)
         errorToast(
-          `USDC deposit transaction failed: ${
-            (error as Error)?.message ?? error
-          }`
+          `USDC ${
+            isDepositMode ? 'Deposit' : 'Withdrawal'
+          } transaction failed: ${(error as Error)?.message ?? error}`
         )
       }
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
         if (shouldTrackAnalytics(currentNetworkName)) {
-          trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
             accountType: 'Smart Contract',
             network: currentNetworkName,
             amount: Number(amount),
@@ -628,7 +636,7 @@ export function TransferPanel() {
       }
 
       if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
           accountType: 'EOA',
           network: currentNetworkName,
           amount: Number(amount),
@@ -642,19 +650,19 @@ export function TransferPanel() {
         assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: dayjs().valueOf(),
-        direction: isDeposit ? 'deposit' : 'withdraw',
-        isWithdrawal: !isDeposit,
+        direction: isDepositMode ? 'deposit' : 'withdraw',
+        isWithdrawal: !isDepositMode,
         resolvedAt: null,
         status: 'pending',
         uniqueId: null,
         value: amount,
         depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
-        destination: recipient,
+        destination: destinationAddress ?? walletAddress,
         sender: walletAddress,
         isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
         cctpData: {
-          sourceChainId,
+          sourceChainId: sourceChain.id,
           attestationHash: null,
           messageBytes: null,
           receiveMessageTransactionHash: null,
@@ -664,23 +672,12 @@ export function TransferPanel() {
         childChainId: childChain.id
       }
 
+      addPendingTransaction(newTransfer)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
-
-      const depositTxReceipt = await depositForBurnTx.wait()
-      const { messageBytes, attestationHash } =
-        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-      if (depositTxReceipt.status === 0) {
-        errorToast('USDC deposit transaction failed')
-        return
-      }
-
-      if (messageBytes && attestationHash) {
-        addPendingTransaction(newTransfer)
-      }
     } catch (e) {
+      //
     } finally {
       setTransferring(false)
       setIsCctp(false)
@@ -1217,7 +1214,7 @@ export function TransferPanel() {
                     isTokenSepoliaUSDC(selectedToken.address)) &&
                   !isArbitrumNova
                 ) {
-                  transferCctp('deposits')
+                  transferCctp()
                 } else if (selectedToken) {
                   depositToken()
                 } else {
@@ -1251,7 +1248,7 @@ export function TransferPanel() {
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
                 ) {
-                  transferCctp('withdrawals')
+                  transferCctp()
                 } else {
                   transfer()
                 }
