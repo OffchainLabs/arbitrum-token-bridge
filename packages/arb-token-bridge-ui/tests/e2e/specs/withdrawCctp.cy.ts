@@ -11,7 +11,7 @@ import {
 } from '../../support/common'
 
 describe('Withdraw USDC through CCTP', () => {
-  const USDCAmountToSend = 0.0001
+  const USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
   // Happy Path
   context('User is on L2 and imports USDC', () => {
@@ -166,6 +166,7 @@ describe('Withdraw USDC through CCTP', () => {
               // eslint-disable-next-line
               cy.wait(40_000)
               cy.confirmMetamaskTransaction().then(() => {
+                cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
                 cy.findByText(
                   `${formatAmount(USDCAmountToSend, {
                     symbol: 'USDC'
