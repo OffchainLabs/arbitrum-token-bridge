@@ -5,7 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
 import { useInterval } from 'react-use'
 
-import { useCCTP } from '../hooks/CCTP/useCCTP'
+import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import {
   ChainId,
   getBlockTime,
@@ -506,7 +506,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { address } = useAccount()
   const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
-  const { waitForAttestation, receiveMessage } = useCCTP({
+  const { waitForAttestation, receiveMessage } = getCctpUtils({
     sourceChainId: tx.cctpData?.sourceChainId
   })
   const { isSmartContractWallet } = useAccountType()
