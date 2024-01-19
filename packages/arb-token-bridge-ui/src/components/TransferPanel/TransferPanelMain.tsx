@@ -345,6 +345,7 @@ export function TransferPanelMain({
   setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
+  const { isConnected } = useAccount()
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const {
@@ -985,39 +986,41 @@ export function TransferPanelMain({
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
-            <>
-              <TokenBalance
-                on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                balance={
-                  isDepositMode
-                    ? selectedTokenBalances.l1
-                    : selectedTokenBalances.l2
-                }
-                forToken={selectedToken}
-                prefix={selectedToken ? 'BALANCE: ' : ''}
-              />
-              {nativeCurrency.isCustom ? (
-                <>
-                  <TokenBalance
-                    on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                    balance={
-                      isDepositMode
-                        ? customFeeTokenBalances.l1
-                        : customFeeTokenBalances.l2
-                    }
-                    forToken={nativeCurrency}
+            {isConnected && (
+              <>
+                <TokenBalance
+                  on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                  balance={
+                    isDepositMode
+                      ? selectedTokenBalances.l1
+                      : selectedTokenBalances.l2
+                  }
+                  forToken={selectedToken}
+                  prefix={selectedToken ? 'BALANCE: ' : ''}
+                />
+                {nativeCurrency.isCustom ? (
+                  <>
+                    <TokenBalance
+                      on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                      balance={
+                        isDepositMode
+                          ? customFeeTokenBalances.l1
+                          : customFeeTokenBalances.l2
+                      }
+                      forToken={nativeCurrency}
+                      prefix={selectedToken ? '' : 'BALANCE: '}
+                    />
+                    {/* Only show ETH balance on L1 */}
+                    {isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                  </>
+                ) : (
+                  <ETHBalance
+                    balance={isDepositMode ? ethL1Balance : ethL2Balance}
                     prefix={selectedToken ? '' : 'BALANCE: '}
                   />
-                  {/* Only show ETH balance on L1 */}
-                  {isDepositMode && <ETHBalance balance={ethL1Balance} />}
-                </>
-              ) : (
-                <ETHBalance
-                  balance={isDepositMode ? ethL1Balance : ethL2Balance}
-                  prefix={selectedToken ? '' : 'BALANCE: '}
-                />
-              )}
-            </>
+                )}
+              </>
+            )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
@@ -1079,63 +1082,67 @@ export function TransferPanelMain({
       >
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
-          <BalancesContainer>
-            {destinationAddressOrWalletAddress &&
-              utils.isAddress(destinationAddressOrWalletAddress) && (
-                <>
-                  <TokenBalance
-                    balance={
-                      isDepositMode
-                        ? selectedTokenBalances.l2
-                        : selectedTokenBalances.l1
-                    }
-                    on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                    forToken={selectedToken}
-                    prefix={selectedToken ? 'BALANCE: ' : ''}
-                  />
-                  {/* In deposit mode, when user selected USDC on mainnet,
-                  the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {isDepositMode && showUSDCSpecificInfo && (
+          {isConnected && (
+            <BalancesContainer>
+              {destinationAddressOrWalletAddress &&
+                utils.isAddress(destinationAddressOrWalletAddress) && (
+                  <>
                     <TokenBalance
                       balance={
-                        (isArbitrumOne
-                          ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
-                          : erc20L2Balances?.[
-                              CommonAddress.ArbitrumSepolia.USDC
-                            ]) ?? constants.Zero
+                        isDepositMode
+                          ? selectedTokenBalances.l2
+                          : selectedTokenBalances.l1
                       }
-                      on={NetworkType.l2}
-                      forToken={
-                        selectedToken
-                          ? { ...selectedToken, symbol: 'USDC' }
-                          : null
-                      }
-                      tokenSymbolOverride="USDC"
+                      on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                      forToken={selectedToken}
+                      prefix={selectedToken ? 'BALANCE: ' : ''}
                     />
-                  )}
-                  {nativeCurrency.isCustom ? (
-                    <>
+                    {/* In deposit mode, when user selected USDC on mainnet,
+                  the UI shows the Arb One balance of both USDC.e and native USDC */}
+                    {isDepositMode && showUSDCSpecificInfo && (
                       <TokenBalance
-                        on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                         balance={
-                          isDepositMode
-                            ? customFeeTokenBalances.l2
-                            : customFeeTokenBalances.l1
+                          (isArbitrumOne
+                            ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
+                            : erc20L2Balances?.[
+                                CommonAddress.ArbitrumSepolia.USDC
+                              ]) ?? constants.Zero
                         }
-                        forToken={nativeCurrency}
+                        on={NetworkType.l2}
+                        forToken={
+                          selectedToken
+                            ? { ...selectedToken, symbol: 'USDC' }
+                            : null
+                        }
+                        tokenSymbolOverride="USDC"
+                      />
+                    )}
+                    {nativeCurrency.isCustom ? (
+                      <>
+                        <TokenBalance
+                          on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                          balance={
+                            isDepositMode
+                              ? customFeeTokenBalances.l2
+                              : customFeeTokenBalances.l1
+                          }
+                          forToken={nativeCurrency}
+                          prefix={selectedToken ? '' : 'BALANCE: '}
+                        />
+                        {!isDepositMode && (
+                          <ETHBalance balance={ethL1Balance} />
+                        )}
+                      </>
+                    ) : (
+                      <ETHBalance
+                        balance={isDepositMode ? ethL2Balance : ethL1Balance}
                         prefix={selectedToken ? '' : 'BALANCE: '}
                       />
-                      {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
-                    </>
-                  ) : (
-                    <ETHBalance
-                      balance={isDepositMode ? ethL2Balance : ethL1Balance}
-                      prefix={selectedToken ? '' : 'BALANCE: '}
-                    />
-                  )}
-                </>
-              )}
-          </BalancesContainer>
+                    )}
+                  </>
+                )}
+            </BalancesContainer>
+          )}
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>
 

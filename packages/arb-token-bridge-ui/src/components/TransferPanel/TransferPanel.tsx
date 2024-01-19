@@ -70,6 +70,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -175,6 +176,7 @@ export function TransferPanel() {
     [setQueryParams]
   )
 
+  const { openConnectModal } = useConnectModal()
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
   const [tokenApprovalDialogProps, openTokenApprovalDialog] = useDialog()
@@ -1202,72 +1204,84 @@ export function TransferPanel() {
             )}
           </div>
 
-          {isDepositMode ? (
-            <Button
-              variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.deposit}
-              onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenSepoliaUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
-                ) {
-                  transferCctp()
-                } else if (selectedToken) {
-                  depositToken()
-                } else {
-                  transfer()
-                }
-              }}
-              style={{
-                backgroundColor: transferReady.deposit
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .secondaryColor
-                  : undefined
-              }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
-            >
-              <span className="block w-[360px] truncate">
-                {isSmartContractWallet && isTransferring
-                  ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.destinationChain.id
-                    )}`}
-              </span>
-            </Button>
+          {isConnected ? (
+            <>
+              {isDepositMode ? (
+                <Button
+                  variant="primary"
+                  loading={isTransferring}
+                  disabled={!transferReady.deposit}
+                  onClick={() => {
+                    if (
+                      selectedToken &&
+                      (isTokenMainnetUSDC(selectedToken.address) ||
+                        isTokenSepoliaUSDC(selectedToken.address)) &&
+                      !isArbitrumNova
+                    ) {
+                      transferCctp()
+                    } else if (selectedToken) {
+                      depositToken()
+                    } else {
+                      transfer()
+                    }
+                  }}
+                  style={{
+                    backgroundColor: transferReady.deposit
+                      ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                          .secondaryColor
+                      : undefined
+                  }}
+                  className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+                >
+                  <span className="block w-[360px] truncate">
+                    {isSmartContractWallet && isTransferring
+                      ? 'Sending request...'
+                      : `Move funds to ${getNetworkName(
+                          networks.destinationChain.id
+                        )}`}
+                  </span>
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  loading={isTransferring}
+                  disabled={!transferReady.withdrawal}
+                  onClick={() => {
+                    if (
+                      selectedToken &&
+                      (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+                        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
+                    ) {
+                      transferCctp()
+                    } else {
+                      transfer()
+                    }
+                  }}
+                  style={{
+                    backgroundColor: transferReady.withdrawal
+                      ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                          .secondaryColor
+                      : undefined
+                  }}
+                  className="w-full py-4 text-lg lg:text-2xl"
+                >
+                  <span className="block w-[360px] truncate">
+                    {isSmartContractWallet && isTransferring
+                      ? 'Sending request...'
+                      : `Move funds to ${getNetworkName(
+                          networks.destinationChain.id
+                        )}`}
+                  </span>
+                </Button>
+              )}
+            </>
           ) : (
             <Button
               variant="primary"
-              loading={isTransferring}
-              disabled={!transferReady.withdrawal}
-              onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
-                ) {
-                  transferCctp()
-                } else {
-                  transfer()
-                }
-              }}
-              style={{
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .secondaryColor
-                  : undefined
-              }}
-              className="w-full py-4 text-lg lg:text-2xl"
+              onClick={openConnectModal}
+              className="w-full bg-lime-dark py-4 text-lg lg:text-2xl"
             >
-              <span className="block w-[360px] truncate">
-                {isSmartContractWallet && isTransferring
-                  ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.destinationChain.id
-                    )}`}
-              </span>
+              <span className="block w-[360px] truncate">Connect Wallet</span>
             </Button>
           )}
         </div>

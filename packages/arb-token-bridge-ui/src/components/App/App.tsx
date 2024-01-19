@@ -64,6 +64,7 @@ const rainbowkitTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
+  const { isConnected } = useAccount()
   const [{ sourceChain }] = useNetworks()
   const {
     app: { connectionState }
@@ -105,9 +106,7 @@ const AppContent = (): JSX.Element => {
     <>
       <HeaderOverrides {...headerOverridesProps} />
 
-      <HeaderContent>
-        <HeaderAccountPopover />
-      </HeaderContent>
+      <HeaderContent>{isConnected && <HeaderAccountPopover />}</HeaderContent>
 
       <TokenListSyncer />
       <BalanceUpdater />
@@ -425,11 +424,9 @@ export default function App() {
           >
             <ConnectedChainSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
+            <AppContextProvider>
+              <Injector>{isTosAccepted && <AppContent />}</Injector>
+            </AppContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>
       </ArbQueryParamProvider>
