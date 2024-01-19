@@ -74,16 +74,22 @@ if (
   })
 }
 
+type Something = {
+  name: string
+  slug: string
+}
+
 function Meta({
   sourceChain,
   destinationChain
 }: {
-  sourceChain: string
-  destinationChain: string
+  sourceChain: Something
+  destinationChain: Something
 }) {
   const siteTitle = `Bridge from ${sourceChain} to ${destinationChain}`
   const siteDescription = `Bridge from ${sourceChain} to ${destinationChain} using the Arbitrum Bridge. Built to scale Ethereum, Arbitrum brings you 10x lower costs while inheriting Ethereum’s security model. Arbitrum is a Layer 2 Optimistic Rollup.`
-  const siteDomain = 'https://bridge.arbitrum.io'
+  const siteDomain =
+    'https://arbitrum-token-bridge-git-feat-dynamic-meta-offchain-labs.vercel.app'
 
   return (
     <>
@@ -95,7 +101,10 @@ function Meta({
       <meta property="og:type" content="website" />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={siteDescription} />
-      <meta property="og:image" content={`${siteDomain}/og-image.jpg`} />
+      <meta
+        property="og:image"
+        content={`${siteDomain}/images/__auto-generated-og/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+      />
 
       {/* <!-- Twitter Meta Tags --> */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -103,7 +112,10 @@ function Meta({
       <meta property="twitter:url" content={siteDomain} />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={siteDescription} />
-      <meta name="twitter:image" content={`${siteDomain}/og-image.jpg`} />
+      <meta
+        name="twitter:image"
+        content={`${siteDomain}/images/__auto-generated-og/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+      />
     </>
   )
 }
@@ -116,10 +128,14 @@ export default function App({ Component, pageProps, router }: AppProps) {
     <>
       <Head>
         <Meta
-          sourceChain={getChainForChainKeyQueryParam(sourceChain as any).name}
-          destinationChain={
-            getChainForChainKeyQueryParam(destinationChain as any).name
-          }
+          sourceChain={{
+            name: getChainForChainKeyQueryParam(sourceChain as any).name,
+            slug: sourceChain as string
+          }}
+          destinationChain={{
+            name: getChainForChainKeyQueryParam(destinationChain as any).name,
+            slug: destinationChain as string
+          }}
         />
       </Head>
       <Layout>
