@@ -26,10 +26,7 @@ import {
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
-import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { AssetType } from '../hooks/arbTokenBridge.types'
-import { useNetworks } from '../hooks/useNetworks'
-import { useNetworksRelationship } from '../hooks/useNetworksRelationship'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
@@ -382,90 +379,6 @@ export function useCctpState() {
   }
 }
 
-export function useUpdateCctpTransactions() {
-  const { pendingIds, transfers, updateTransfer } = useCctpState()
-  const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider } =
-    useNetworksRelationship(networks)
-
-  const getTransactionReceipt = useCallback(
-    async (tx: MergedTransaction) => {
-      const provider =
-        tx.direction === 'deposit' ? parentChainProvider : childChainProvider
-      const receipt = await provider.getTransactionReceipt(tx.txId)
-
-      return {
-        receipt,
-        tx
-      }
-    },
-    [childChainProvider, parentChainProvider]
-  )
-
-  const pendingTransactions = useMemo(() => {
-    return pendingIds
-      .map(pendingId => transfers[pendingId])
-      .filter(transfer => transfer) as unknown as MergedTransaction[]
-  }, [pendingIds, transfers])
-
-  const updateCctpTransactions = useCallback(async () => {
-    const receipts = await Promise.all(
-      pendingTransactions.map(getTransactionReceipt)
-    )
-    const now = dayjs()
-    receipts.forEach(({ receipt, tx }) => {
-      if (!receipt) {
-        return
-      }
-
-      const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
-        tx.parentChainId
-      )
-      const blockTime = getBlockTime(tx.parentChainId)
-
-      if (receipt.status === 0) {
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Failure'
-        })
-      } else if (tx.cctpData?.receiveMessageTransactionHash) {
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Executed'
-        })
-      } else if (receipt.blockNumber && !tx.blockNum) {
-        // If blockNumber was never set (for example, network switch just after the deposit)
-        const { messageBytes, attestationHash } =
-          getAttestationHashAndMessageFromReceipt(receipt)
-        updateTransfer({
-          txId: receipt.transactionHash,
-          blockNum: receipt.blockNumber,
-          cctpData: {
-            messageBytes,
-            attestationHash
-          }
-        })
-      } else if (
-        tx.createdAt &&
-        now.diff(tx.createdAt, 'second') >
-          requiredL1BlocksBeforeConfirmation * blockTime
-      ) {
-        // If transaction claim was set to failure, don't reset to Confirmed
-        if (tx.status === 'Failure') {
-          return
-        }
-
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Confirmed'
-        })
-      }
-    })
-  }, [getTransactionReceipt, pendingTransactions, updateTransfer])
-
-  return { updateCctpTransactions }
-}
-
 type useCctpFetchingParams = {
   l1ChainId: ChainId
   l2ChainId: ChainId
@@ -623,7 +536,7 @@ export function useClaimCctp(tx: MergedTransaction) {
         ...tx,
         resolvedAt,
         depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,
-        status: tx.isWithdrawal ? WithdrawalStatus.EXECUTED : undefined,
+        status: WithdrawalStatus.EXECUTED,
         cctpData: {
           ...tx.cctpData,
           receiveMessageTimestamp: resolvedAt,

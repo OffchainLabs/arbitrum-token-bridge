@@ -38,7 +38,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
     : getWithdrawalClaimParentChainTxDetails(tx)?.txId
 
   const sourceLayer = tx.isWithdrawal ? childLayer : parentLayer
-  const destLayer = tx.isWithdrawal ? parentLayer : childLayer
+  const destinationLayer = tx.isWithdrawal ? parentLayer : childLayer
 
   switch (tx.status) {
     case 'pending':
@@ -55,7 +55,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
           <div className="flex flex-col space-y-1">
             <StatusBadge
               variant="yellow"
-              aria-label={`${destLayer} Transaction Status`}
+              aria-label={`${destinationLayer} Transaction Status`}
             >
               Pending
             </StatusBadge>
@@ -73,7 +73,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${destLayer} Transaction Status`}
+            aria-label={`${destinationLayer} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -90,11 +90,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
             Success
           </StatusBadge>
           <Tooltip
-            content={<span>Funds are ready to be claimed on {destLayer}</span>}
+            content={
+              <span>Funds are ready to be claimed on {destinationLayer}</span>
+            }
           >
             <StatusBadge
               variant="yellow"
-              aria-label={`${destLayer} Transaction Status`}
+              aria-label={`${destinationLayer} Transaction Status`}
             >
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
@@ -115,14 +117,14 @@ function ClaimableRowStatus({ tx }: CommonProps) {
             <Tooltip
               content={
                 <span>
-                  Executed: Funds have been claimed on {destLayer}, but the
-                  corresponding Tx ID was not found
+                  Executed: Funds have been claimed on {destinationLayer}, but
+                  the corresponding Tx ID was not found
                 </span>
               }
             >
               <StatusBadge
                 variant="gray"
-                aria-label={`${destLayer} Transaction Status`}
+                aria-label={`${destinationLayer} Transaction Status`}
               >
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
@@ -141,7 +143,7 @@ function ClaimableRowStatus({ tx }: CommonProps) {
           </StatusBadge>
           <StatusBadge
             variant="green"
-            aria-label={`${destLayer} Transaction Status`}
+            aria-label={`${destinationLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
