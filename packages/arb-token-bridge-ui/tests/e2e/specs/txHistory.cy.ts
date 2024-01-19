@@ -4,7 +4,8 @@ const WITHDRAWAL_ROW_IDENTIFIER = /withdrawal-row-*/i
 describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
-      networkType: 'L1'
+      networkType: 'L1',
+      networkName: 'goerli'
     })
     // open tx history panel
     context('open transactions history panel', () => {
@@ -41,7 +42,8 @@ describe('Transaction History', () => {
 
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
-      networkType: 'L1'
+      networkType: 'L1',
+      networkName: 'goerli'
     })
     // open tx history panel
     context('open transactions history panel', () => {
