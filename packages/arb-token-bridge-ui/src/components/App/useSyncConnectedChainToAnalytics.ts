@@ -73,6 +73,4 @@ export function useSyncConnectedChainToAnalytics() {
       Sentry.setTag('network.child_chain_rpc_url', childChainRpcUrl)
     }
   }, [childChain.id, parentChain.id])
-
-  return null
 }
