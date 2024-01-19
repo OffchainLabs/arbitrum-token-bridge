@@ -1,13 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import * as Sentry from '@sentry/react'
 
 import { useAccount, WagmiConfig } from 'wagmi'
-import {
-  darkTheme,
-  RainbowKitProvider,
-  Theme,
-  useConnectModal
-} from '@rainbow-me/rainbowkit'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -32,7 +26,7 @@ import {
 } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { Notifications } from '../common/Notifications'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
@@ -41,10 +35,8 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
-import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { ConnectedChainQueryParamSyncer } from './ConnectedChainQueryParamSyncer'
+import { ConnectedChainAnalyticsSyncer } from './ConnectedChainAnalyticsSyncer'
 
 declare global {
   interface Window {
@@ -245,92 +237,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   )
 }
 
-// connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
-function getWalletName(connectorName: string): ProviderName {
-  switch (connectorName) {
-    case 'MetaMask':
-    case 'Coinbase Wallet':
-    case 'Trust Wallet':
-    case 'Safe':
-    case 'Injected':
-    case 'Ledger':
-      return connectorName
-
-    case 'WalletConnectLegacy':
-    case 'WalletConnect':
-      return 'WalletConnect'
-
-    default:
-      return 'Other'
-  }
-}
-
-/** given our RPC url, sanitize it before logging to Sentry, to only pass the url and not the keys */
-function getBaseUrl(url: string) {
-  try {
-    const urlObject = new URL(url)
-    return `${urlObject.protocol}//${urlObject.hostname}`
-  } catch {
-    // if invalid url passed
-    return ''
-  }
-}
-
-function NetworkReady({ children }: { children: React.ReactNode }) {
-  const [networks] = useNetworks()
-  const { parentChain, childChain } = useNetworksRelationship(networks)
-  const { isConnected, connector } = useAccount()
-  const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const { openConnectModal } = useConnectModal()
-
-  useEffect(() => {
-    if (tosAccepted !== undefined && !isConnected) {
-      openConnectModal?.()
-    }
-  }, [isConnected, tosAccepted, openConnectModal])
-
-  useEffect(() => {
-    if (isConnected && connector) {
-      const walletName = getWalletName(connector.name)
-      trackEvent('Connect Wallet Click', { walletName })
-    }
-
-    // set a custom tag in sentry to filter issues by connected wallet.name
-    Sentry.setTag('wallet.name', connector?.name ?? '')
-  }, [isConnected, connector])
-
-  useEffect(() => {
-    Sentry.setTag('network.parent_chain_id', parentChain.id)
-    Sentry.setTag(
-      'network.parent_chain_rpc_url',
-      getBaseUrl(rpcURLs[parentChain.id] ?? '')
-    )
-    Sentry.setTag('network.child_chain_id', childChain.id)
-    Sentry.setTag(
-      'network.child_chain_rpc_url',
-      getBaseUrl(rpcURLs[childChain.id] ?? '')
-    )
-  }, [childChain.id, parentChain.id])
-
-  if (!isConnected) {
-    return (
-      <>
-        <HeaderContent>
-          <HeaderConnectWalletButton />
-        </HeaderContent>
-
-        <AppConnectionFallbackContainer>
-          <span className="text-white">
-            Please connect your wallet to use the bridge.
-          </span>
-        </AppConnectionFallbackContainer>
-      </>
-    )
-  }
-
-  return <>{children}</>
-}
-
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
 // https://github.com/orgs/WalletConnect/discussions/2733
@@ -379,6 +285,7 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
+            <ConnectedChainAnalyticsSyncer />
             <ConnectedChainQueryParamSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <AppContextProvider>
