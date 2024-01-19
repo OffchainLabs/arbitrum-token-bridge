@@ -833,7 +833,10 @@ export function TransferPanelMain({
             return
           }
 
-          setNetworks({ destinationChainId: network.id })
+          setNetworks({
+            sourceChainId: networks.sourceChain.id,
+            destinationChainId: network.id
+          })
         }
       }
     }

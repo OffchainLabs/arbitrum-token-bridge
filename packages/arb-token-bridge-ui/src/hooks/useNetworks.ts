@@ -137,15 +137,10 @@ export type UseNetworksState = {
   destinationChainProvider: StaticJsonRpcProvider
 }
 
-export type UseNetworksSetStateParams =
-  | {
-      sourceChainId: ChainId
-      destinationChainId?: ChainId
-    }
-  | {
-      sourceChainId?: ChainId
-      destinationChainId: ChainId
-    }
+export type UseNetworksSetStateParams = {
+  sourceChainId: ChainId
+  destinationChainId?: ChainId
+}
 export type UseNetworksSetState = (params: UseNetworksSetStateParams) => void
 
 /**
