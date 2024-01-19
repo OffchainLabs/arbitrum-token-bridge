@@ -15,6 +15,7 @@
   },
   "compilerOptions": {
     // typescript options here
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "jsx": "react"
   }
 }
