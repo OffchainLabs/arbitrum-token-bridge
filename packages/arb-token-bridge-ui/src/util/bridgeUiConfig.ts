@@ -42,7 +42,7 @@ export function getBridgeUiConfigForChain(
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Ethereum'
+        networkName: 'Ethereum local'
       }
     case ChainId.ArbitrumOne:
       return {
@@ -63,7 +63,7 @@ export function getBridgeUiConfigForChain(
     case ChainId.ArbitrumLocal:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum'
+        networkName: 'Arbitrum local'
       }
     case ChainId.ArbitrumNova:
       return {

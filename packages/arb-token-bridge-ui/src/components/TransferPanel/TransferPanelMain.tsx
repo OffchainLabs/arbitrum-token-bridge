@@ -755,16 +755,13 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    // we hide local networks, these are for dev only and should be accessed from the wallet
-    const chainIdsToHide = [ChainId.Local, ChainId.ArbitrumLocal, 1338]
-
     const chains = getChains()
 
     function getSourceChains() {
       return Object.keys(chains)
         .map(Number)
         .filter(chainId => {
-          if (chainIdsToHide.includes(chainId)) {
+          if (chainId === 1338) {
             return false
           }
           // don't show testnet networks if testnet mode is off

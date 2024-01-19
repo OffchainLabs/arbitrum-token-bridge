@@ -358,6 +358,7 @@ export function isNetwork(chainId: ChainId) {
     isGoerli ||
     isLocal ||
     isArbitrumGoerli ||
+    isArbitrumLocal ||
     isSepolia ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
