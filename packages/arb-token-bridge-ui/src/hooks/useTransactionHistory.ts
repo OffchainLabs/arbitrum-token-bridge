@@ -50,7 +50,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
-import { orbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbitChainsList'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -121,7 +121,7 @@ const multiChainFetchList: ChainPair[] = [
     parentChain: ChainId.ArbitrumSepolia,
     chain: ChainId.StylusTestnet
   },
-  ...Object.values(orbitChains).map(orbitChain => {
+  ...getOrbitChains().map(orbitChain => {
     return {
       parentChain: orbitChain.partnerChainID,
       chain: orbitChain.chainID

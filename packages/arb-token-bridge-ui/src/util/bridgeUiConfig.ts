@@ -1,16 +1,7 @@
 import { constants } from 'ethers'
 
-import { ETHER_TOKEN_LOGO } from '../constants'
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
-import { orbitChains } from './orbitChainsList'
-
-type BridgeConfigUi = {
-  primaryColor: `#${string}`
-  secondaryColor: `#${string}`
-  networkName: string
-  networkLogo: string
-  nativeTokenLogo: string
-}
+import { orbitChains, BridgeConfigUi } from './orbitChainsList'
 
 export function getBridgeUiConfigForChain(
   chainId: number,
@@ -22,22 +13,15 @@ export function getBridgeUiConfigForChain(
     primaryColor: '#454A75',
     secondaryColor: '#1A1C33',
     networkLogo: '/images/EthereumLogo.svg',
-    nativeTokenLogo: ETHER_TOKEN_LOGO
   }
 
   const arbitrumBaseConfig: BaseBridgeConfigUi = {
     primaryColor: '#1B4ADD',
     secondaryColor: '#001A6B',
     networkLogo: '/images/ArbitrumLogo.svg',
-    nativeTokenLogo: ETHER_TOKEN_LOGO
   }
 
   const customChain = getCustomChainFromLocalStorageById(chainId)
-
-  const isCustomOrbitChainWithCustomNativeToken =
-    customChain &&
-    customChain.nativeToken &&
-    customChain.nativeToken !== constants.AddressZero
 
   switch (chainId) {
     case ChainId.Ethereum:
@@ -87,7 +71,6 @@ export function getBridgeUiConfigForChain(
         secondaryColor: '#743600',
         networkName: 'Arbitrum Nova',
         networkLogo: '/images/ArbitrumNovaLogo.svg',
-        nativeTokenLogo: ETHER_TOKEN_LOGO
       }
     case ChainId.StylusTestnet:
       return {
@@ -95,7 +78,6 @@ export function getBridgeUiConfigForChain(
         secondaryColor: '#7E0028',
         networkName: 'Stylus Testnet',
         networkLogo: '/images/StylusLogo.svg',
-        nativeTokenLogo: ETHER_TOKEN_LOGO
       }
     default: {
       // added Orbit chains
@@ -114,9 +96,6 @@ export function getBridgeUiConfigForChain(
           variant === 'light'
             ? '/images/OrbitLogoWhite.svg'
             : '/images/OrbitLogo.svg',
-        nativeTokenLogo: isCustomOrbitChainWithCustomNativeToken
-          ? ''
-          : ETHER_TOKEN_LOGO
       }
     }
   }

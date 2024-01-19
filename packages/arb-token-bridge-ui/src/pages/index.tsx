@@ -6,7 +6,7 @@ import { AppConnectionFallbackContainer } from '../components/App/AppConnectionF
 import { Loader } from '../components/common/atoms/Loader'
 import { getCustomChainsFromLocalStorage } from '../util/networks'
 import { mapCustomChainToNetworkData } from '../util/networks'
-import { orbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbitChainsList'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -21,11 +21,10 @@ const App = dynamic(() => import('../components/App/App'), {
 
 export default function Index() {
   useEffect(() => {
-    const orbitChainsToBeAdded = Object.values(orbitChains)
     const customOrbitChainsToBeAdded = getCustomChainsFromLocalStorage()
 
     const chainsToBeAdded = [
-      ...orbitChainsToBeAdded,
+      ...getOrbitChains(),
       ...customOrbitChainsToBeAdded
     ]
     // user-added custom chains do not persists between sessions

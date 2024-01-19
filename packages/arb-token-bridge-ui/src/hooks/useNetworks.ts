@@ -20,7 +20,7 @@ import {
 
 import { getPartnerChainsIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { orbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbitChainsList'
 
 const getProviderForChainCache: {
   [chainId: number]: StaticJsonRpcProvider
@@ -67,7 +67,7 @@ export function isSupportedChainId(
     stylusTestnet.id,
     arbitrumLocal.id,
     local.id,
-    ...Object.keys(orbitChains).map(Number),
+    ...getOrbitChains().map(chain => chain.chainID),
     ...customChainIds
   ].includes(chainId)
 }

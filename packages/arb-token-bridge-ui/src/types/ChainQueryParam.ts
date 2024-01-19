@@ -7,7 +7,7 @@ import {
   getSupportedNetworks
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
-import { orbitChains } from '../util/orbitChainsList'
+import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
 import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
@@ -31,7 +31,7 @@ export function isValidChainQueryParam(value: string | number): boolean {
     const isValidCoreChain = (chainQueryParams as readonly string[]).includes(
       value
     )
-    const isValidAddedOrbitChain = Object.values(orbitChains).some(
+    const isValidAddedOrbitChain = getOrbitChains().some(
       chain => chain.slug === value
     )
     return isValidCoreChain || isValidAddedOrbitChain
@@ -83,7 +83,7 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       }
 
       if (orbitChain) {
-        return orbitChain.slug
+        return orbitChain.slug ?? orbitChain.chainID
       }
 
       throw new Error(
@@ -127,8 +127,10 @@ export function getChainForChainKeyQueryParam(
       return customChains.localL2Network
 
     default:
-      const orbitChain = Object.values(orbitChains).find(
-        chain => chain.slug === chainKeyQueryParam
+      const orbitChain = getOrbitChains().find(
+        chain =>
+          chain.slug === chainKeyQueryParam ??
+          chain.chainID === Number(chainKeyQueryParam)
       )
 
       if (orbitChain) {

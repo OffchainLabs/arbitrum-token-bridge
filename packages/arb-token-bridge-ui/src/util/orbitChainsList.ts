@@ -1,12 +1,11 @@
-import { ETHER_TOKEN_LOGO } from '../constants'
 import { ChainWithRpcUrl } from './networks'
 
-type BridgeConfigUi = {
+export type BridgeConfigUi = {
   primaryColor: `#${string}`
   secondaryColor: `#${string}`
   networkName: string
   networkLogo: string
-  nativeTokenLogo: string
+  nativeTokenLogo?: string
 }
 
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeConfigUi }
@@ -105,9 +104,12 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       secondaryColor: '#87000E',
       networkName: 'Xai Testnet',
       networkLogo: '/images/XaiLogo.svg',
-      nativeTokenLogo: ETHER_TOKEN_LOGO
     }
   }
 }
 
 export const orbitChains = { ...orbitMainnets, ...orbitTestnets }
+
+export function getOrbitChains() {
+  return Object.values(orbitChains)
+}
