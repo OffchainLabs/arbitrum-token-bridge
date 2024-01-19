@@ -12,13 +12,13 @@ export function getBridgeUiConfigForChain(
   const ethereumBaseConfig: BaseBridgeConfigUi = {
     primaryColor: '#454A75',
     secondaryColor: '#1A1C33',
-    networkLogo: '/images/EthereumLogo.svg',
+    networkLogo: '/images/EthereumLogo.svg'
   }
 
   const arbitrumBaseConfig: BaseBridgeConfigUi = {
     primaryColor: '#1B4ADD',
     secondaryColor: '#001A6B',
-    networkLogo: '/images/ArbitrumLogo.svg',
+    networkLogo: '/images/ArbitrumLogo.svg'
   }
 
   const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -70,14 +70,14 @@ export function getBridgeUiConfigForChain(
         primaryColor: '#E57310',
         secondaryColor: '#743600',
         networkName: 'Arbitrum Nova',
-        networkLogo: '/images/ArbitrumNovaLogo.svg',
+        networkLogo: '/images/ArbitrumNovaLogo.svg'
       }
     case ChainId.StylusTestnet:
       return {
         primaryColor: '#E3066E',
         secondaryColor: '#7E0028',
         networkName: 'Stylus Testnet',
-        networkLogo: '/images/StylusLogo.svg',
+        networkLogo: '/images/StylusLogo.svg'
       }
     default: {
       // added Orbit chains
@@ -95,7 +95,7 @@ export function getBridgeUiConfigForChain(
         networkLogo:
           variant === 'light'
             ? '/images/OrbitLogoWhite.svg'
-            : '/images/OrbitLogo.svg',
+            : '/images/OrbitLogo.svg'
       }
     }
   }

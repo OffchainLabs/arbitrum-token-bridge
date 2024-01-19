@@ -103,7 +103,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       primaryColor: '#F30019',
       secondaryColor: '#87000E',
       networkName: 'Xai Testnet',
-      networkLogo: '/images/XaiLogo.svg',
+      networkLogo: '/images/XaiLogo.svg'
     }
   }
 }

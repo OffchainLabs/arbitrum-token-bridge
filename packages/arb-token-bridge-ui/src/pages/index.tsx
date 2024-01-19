@@ -23,10 +23,7 @@ export default function Index() {
   useEffect(() => {
     const customOrbitChainsToBeAdded = getCustomChainsFromLocalStorage()
 
-    const chainsToBeAdded = [
-      ...getOrbitChains(),
-      ...customOrbitChainsToBeAdded
-    ]
+    const chainsToBeAdded = [...getOrbitChains(), ...customOrbitChainsToBeAdded]
     // user-added custom chains do not persists between sessions
     // we add locally stored custom chains
     chainsToBeAdded.forEach(chain => {
