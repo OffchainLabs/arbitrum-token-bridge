@@ -41,9 +41,9 @@ import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
   isTokenUSDC,
   sanitizeTokenSymbol
@@ -72,6 +72,7 @@ import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
@@ -120,17 +121,21 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+  const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
 
-  const bannerClassName = useMemo(() => {
+  const backgroundColorForL1OrL2Chain = useMemo(() => {
+    if (isOrbitChain) {
+      return ''
+    }
     if (!isArbitrum) {
-      return 'bg-cyan border-eth-dark'
+      return 'bg-cyan'
     }
     if (isArbitrumNova) {
-      return 'bg-orange border-arb-nova-dark'
+      return 'bg-orange'
     }
-    return 'bg-cyan border-arb-one-dark'
-  }, [isArbitrum, isArbitrumNova])
+    return 'bg-cyan'
+  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -138,9 +143,17 @@ function CustomAddressBanner({
 
   return (
     <div
+      style={{
+        backgroundColor: isOrbitChain
+          ? // add opacity to create a lighter shade
+            `${primaryColor}20`
+          : undefined,
+        color: secondaryColor,
+        borderColor: secondaryColor
+      }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        bannerClassName
+        !isOrbitChain && backgroundColorForL1OrL2Chain
       )}
     >
       <span>
@@ -166,56 +179,9 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXai,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(network.id)
+  const { secondaryColor, networkLogo } = getBridgeUiConfigForChain(network.id)
 
-    if (isXaiTestnet || isXai) {
-      return {
-        backgroundImage: `url('/images/XaiLogo.svg')`,
-        backgroundClassName: 'bg-xai-dark'
-      }
-    }
-
-    if (isStylusTestnet) {
-      return {
-        backgroundImage: `url('/images/StylusLogo.svg')`,
-        backgroundClassName: 'bg-stylus-dark'
-      }
-    }
-
-    if (isOrbitChain) {
-      return {
-        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
-        backgroundClassName: 'bg-orbit-dark'
-      }
-    }
-
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
-      }
-    }
-
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
-      }
-    }
-
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+  const backgroundImage = `url(${networkLogo})`
 
   const walletAddressLowercased = address?.toLowerCase()
 
@@ -235,8 +201,9 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
+        style={{ backgroundColor: secondaryColor }}
         className={twMerge(
-          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''
         )}
       >
@@ -388,7 +355,7 @@ export function TransferPanelMain({
     isDepositMode
   } = useNetworksRelationship(networks)
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const { isSmartContractWallet } = useAccountType()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -449,9 +416,9 @@ export function TransferPanelMain({
 
     if (
       isTokenMainnetUSDC(selectedToken.address) ||
-      isTokenGoerliUSDC(selectedToken.address) ||
+      isTokenSepoliaUSDC(selectedToken.address) ||
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
     ) {
       updateUSDCBalances(selectedToken.address)
       return
@@ -514,12 +481,12 @@ export function TransferPanelMain({
       }
     }
     if (
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address) &&
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l1: erc20L1Balances[CommonAddress.Sepolia.USDC] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
@@ -539,7 +506,7 @@ export function TransferPanelMain({
 
   const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
+    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -756,7 +723,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
+    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
       selectedToken?.address
     )
     // If user select native USDC on L2, when switching to deposit mode,
@@ -784,12 +751,12 @@ export function TransferPanelMain({
         address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
-    } else if (isArbGoerliUSDC) {
-      token.updateTokenData(CommonAddress.Goerli.USDC)
+    } else if (isArbSepoliaUSDC) {
+      token.updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
-        address: CommonAddress.Goerli.USDC,
-        l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
+        address: CommonAddress.Sepolia.USDC,
+        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
       })
     }
   }, [actions.app, isDepositMode, selectedToken, token])
@@ -1134,7 +1101,7 @@ export function TransferPanelMain({
                         (isArbitrumOne
                           ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
                           : erc20L2Balances?.[
-                              CommonAddress.ArbitrumGoerli.USDC
+                              CommonAddress.ArbitrumSepolia.USDC
                             ]) ?? constants.Zero
                       }
                       on={NetworkType.l2}

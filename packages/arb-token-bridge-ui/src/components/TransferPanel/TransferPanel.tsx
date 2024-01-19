@@ -3,7 +3,6 @@ import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
@@ -32,9 +31,9 @@ import {
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress,
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
@@ -61,7 +60,6 @@ import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -72,6 +70,7 @@ import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenMod
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -168,9 +167,6 @@ export function TransferPanel() {
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
 
-  const { depositButtonColorClassName, withdrawalButtonColorClassName } =
-    useStyles()
-
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
   const [{ amount }, setQueryParams] = useArbQueryParams()
@@ -265,7 +261,7 @@ export function TransferPanel() {
 
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
     const selectedTokenL2Address = isL2NativeUSDC
       ? selectedToken.address.toLowerCase()
@@ -1218,7 +1214,7 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address)) &&
+                    isTokenSepoliaUSDC(selectedToken.address)) &&
                   !isArbitrumNova
                 ) {
                   transferCctp('deposits')
@@ -1228,10 +1224,13 @@ export function TransferPanel() {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                depositButtonColorClassName
-              )}
+              style={{
+                backgroundColor: transferReady.deposit
+                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                      .secondaryColor
+                  : undefined
+              }}
+              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
@@ -1250,17 +1249,20 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
                 ) {
                   transferCctp('withdrawals')
                 } else {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full py-4 text-lg lg:text-2xl',
-                withdrawalButtonColorClassName
-              )}
+              style={{
+                backgroundColor: transferReady.withdrawal
+                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                      .secondaryColor
+                  : undefined
+              }}
+              className="w-full py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
