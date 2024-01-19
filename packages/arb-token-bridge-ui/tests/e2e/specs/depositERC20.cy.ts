@@ -111,7 +111,7 @@ describe('Deposit ERC20 Token', () => {
 
       context('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum'
+          name: 'Move funds to Arbitrum local'
         })
           .click()
           .then(() => {
