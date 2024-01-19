@@ -9,9 +9,7 @@ beforeAll(() => {
   const xaiTestnet = orbitTestnets[xaiTestnetChainId]
 
   if (!xaiTestnet) {
-    throw new Error(
-      `Could not find Xai Testnet in the Orbit chains list.`
-    )
+    throw new Error(`Could not find Xai Testnet in the Orbit chains list.`)
   }
 
   // add local
