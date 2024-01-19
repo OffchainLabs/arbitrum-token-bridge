@@ -37,18 +37,7 @@ module.exports = {
         dark: '#1A1C1D', // (or default-black)
 
         // BRAND
-        'arb-one-primary': '#1B4ADD',
-        'arb-one-dark': '#001A6B',
-        'arb-nova-primary': '#E57310',
-        'arb-nova-dark': '#743600',
-        'eth-primary': '#454A75',
         'eth-dark': '#1A1C33',
-        'orbit-primary': '#12AAFF',
-        'orbit-dark': '#0C4260',
-        'xai-primary': '#F30019',
-        'xai-dark': '#87000E',
-        'stylus-primary': '#E3066E',
-        'stylus-dark': '#7E0028',
         'ocl-blue': '#243145'
       },
       fontFamily: {

@@ -28,7 +28,7 @@ export function USDCWithdrawalConfirmationDialog(
   const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-  const { isArbitrumGoerli } = isNetwork(childChain.id)
+  const { isArbitrumSepolia } = isNetwork(childChain.id)
   const destinationNetworkName = getNetworkName(parentChain.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
 
@@ -42,11 +42,11 @@ export function USDCWithdrawalConfirmationDialog(
     href: USDCFastBridge.getHref({
       from: childChain.id,
       to: parentChain.id,
-      fromTokenAddress: isArbitrumGoerli
-        ? CommonAddress.ArbitrumGoerli.USDC
+      fromTokenAddress: isArbitrumSepolia
+        ? CommonAddress.ArbitrumSepolia.USDC
         : CommonAddress.ArbitrumOne.USDC,
-      toTokenAddress: isArbitrumGoerli
-        ? CommonAddress.Goerli.USDC
+      toTokenAddress: isArbitrumSepolia
+        ? CommonAddress.Sepolia.USDC
         : CommonAddress.Ethereum.USDC,
       amount: props.amount,
       transferMode: 'withdraw'

@@ -4,7 +4,8 @@ import useSWRImmutable from 'swr/immutable'
 
 import { ether } from '../constants'
 import { ChainId, rpcURLs } from '../util/networks'
-import { fetchErc20Data, getNativeTokenLogo } from '../util/TokenUtils'
+import { fetchErc20Data } from '../util/TokenUtils'
+import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 
 type NativeCurrencyBase = {
   name: string
@@ -29,7 +30,7 @@ export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
 const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
-  logoUrl: getNativeTokenLogo(ChainId.Ethereum),
+  logoUrl: getBridgeUiConfigForChain(ChainId.Ethereum).nativeTokenLogo,
   isCustom: false
 }
 
@@ -83,7 +84,7 @@ export async function fetchNativeCurrency({
 
   return {
     name,
-    logoUrl: getNativeTokenLogo(chain.chainID),
+    logoUrl: getBridgeUiConfigForChain(chain.chainID).nativeTokenLogo,
     symbol,
     decimals,
     address,
