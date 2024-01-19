@@ -31,9 +31,9 @@ import {
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress,
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
@@ -1067,7 +1067,7 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address)) &&
+                    isTokenSepoliaUSDC(selectedToken.address)) &&
                   !isArbitrumNova
                 ) {
                   transferCctp('deposits')
@@ -1100,7 +1100,7 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
                 ) {
                   transferCctp('withdrawals')
                 } else {

@@ -7,7 +7,7 @@ import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
@@ -154,7 +154,7 @@ export function useTransferReadiness({
 
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
     const selectedTokenL2Address = isL2NativeUSDC
       ? selectedToken.address.toLowerCase()

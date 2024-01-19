@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
+import { isTokenSepoliaUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
-    case CommonAddress.Goerli.USDC:
-    case CommonAddress.ArbitrumGoerli.USDC:
-    case CommonAddress.ArbitrumGoerli['USDC.e']:
-      return CommonAddress.Goerli.USDC
+    case CommonAddress.Sepolia.USDC:
+    case CommonAddress.ArbitrumSepolia.USDC:
+    case CommonAddress.ArbitrumSepolia['USDC.e']:
+      return CommonAddress.Sepolia.USDC
 
     case CommonAddress.Ethereum.USDC:
     case CommonAddress.ArbitrumOne.USDC:
@@ -53,10 +53,10 @@ export function useUpdateUSDCBalances({
           CommonAddress.ArbitrumOne.USDC,
           CommonAddress.ArbitrumOne['USDC.e']
         ])
-      } else if (isTokenGoerliUSDC(l1Address)) {
+      } else if (isTokenSepoliaUSDC(l1Address)) {
         updateErc20L2Balance([
-          CommonAddress.ArbitrumGoerli.USDC,
-          CommonAddress.ArbitrumGoerli['USDC.e']
+          CommonAddress.ArbitrumSepolia.USDC,
+          CommonAddress.ArbitrumSepolia['USDC.e']
         ])
       }
     },

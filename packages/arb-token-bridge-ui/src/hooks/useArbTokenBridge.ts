@@ -709,8 +709,8 @@ export const useArbTokenBridge = (
       if (isNetwork(l2ChainID).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumGoerli) {
-        l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isNetwork(l2ChainID).isArbitrumSepolia) {
+        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {
