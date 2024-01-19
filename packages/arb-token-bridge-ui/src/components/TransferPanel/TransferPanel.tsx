@@ -55,7 +55,6 @@ import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { formatAmount } from '../../util/NumberUtils'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -597,23 +596,12 @@ export function TransferPanel() {
         childChainId: childChain.id
       }
 
+      addPendingTransaction(newTransfer)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
-
-      const depositTxReceipt = await depositForBurnTx.wait()
-      const { messageBytes, attestationHash } =
-        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-      if (depositTxReceipt.status === 0) {
-        errorToast('USDC deposit transaction failed')
-        return
-      }
-
-      if (messageBytes && attestationHash) {
-        addPendingTransaction(newTransfer)
-      }
     } catch (e) {
+      //
     } finally {
       setTransferring(false)
       setIsCctp(false)
