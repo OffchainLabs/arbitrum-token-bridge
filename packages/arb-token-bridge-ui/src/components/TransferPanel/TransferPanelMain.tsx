@@ -338,11 +338,9 @@ function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain({
   amount,
-  setAmount,
   errorMessage
 }: {
   amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
@@ -547,89 +545,92 @@ export function TransferPanelMain({
     [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
   )
 
-  const setMaxAmount = useCallback(async () => {
-    if (selectedToken) {
-      const tokenBalance = isDepositMode
-        ? selectedTokenBalances.l1
-        : selectedTokenBalances.l2
+  // const setMaxAmount = useCallback(async () => {
+  //   if (selectedToken) {
+  //     const tokenBalance = isDepositMode
+  //       ? selectedTokenBalances.l1
+  //       : selectedTokenBalances.l2
 
-      if (tokenBalance) {
-        // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
-        setAmount(
-          utils.formatUnits(
-            tokenBalance,
-            selectedToken?.decimals ?? defaultErc20Decimals
-          )
-        )
-      }
+  //     if (tokenBalance) {
+  //       // For token deposits and withdrawals, we can set the max amount, as gas fees are paid in ETH / custom fee token
+  //       setAmount(
+  //         utils.formatUnits(
+  //           tokenBalance,
+  //           selectedToken?.decimals ?? defaultErc20Decimals
+  //         )
+  //       )
+  //     }
 
-      return
-    }
+  //     return
+  //   }
 
-    const customFeeTokenL1Balance = customFeeTokenBalances.l1
-    // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
-    if (nativeCurrency.isCustom && isDepositMode && customFeeTokenL1Balance) {
-      setAmount(
-        utils.formatUnits(customFeeTokenL1Balance, nativeCurrency.decimals)
-      )
-      return
-    }
+  //   const customFeeTokenL1Balance = customFeeTokenBalances.l1
+  //   // For custom fee token deposits, we can set the max amount, as the fees will be paid in ETH
+  //   if (nativeCurrency.isCustom && isDepositMode && customFeeTokenL1Balance) {
+  //     setAmount(
+  //       utils.formatUnits(customFeeTokenL1Balance, nativeCurrency.decimals)
+  //     )
+  //     return
+  //   }
 
-    // We have already handled token deposits and deposits of the custom fee token
-    // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
-    const nativeCurrencyBalance = isDepositMode ? ethL1Balance : ethL2Balance
+  //   // We have already handled token deposits and deposits of the custom fee token
+  //   // The remaining cases are ETH deposits, and ETH/custom fee token withdrawals (which can be handled in the same case)
+  //   const nativeCurrencyBalance = isDepositMode ? ethL1Balance : ethL2Balance
 
-    if (!nativeCurrencyBalance) {
-      return
-    }
+  //   if (!nativeCurrencyBalance) {
+  //     return
+  //   }
 
-    try {
-      setLoadingMaxAmount(true)
-      const result = await estimateGas(nativeCurrencyBalance)
+  //   try {
+  //     setLoadingMaxAmount(true)
+  //     const result = await estimateGas(nativeCurrencyBalance)
 
-      /**
-       * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
-       *
-       * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
-       * @see
-       * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
-       */
-      const estimatedL1GasFees = calculateEstimatedL1GasFees(
-        result.estimatedL1Gas,
-        l1GasPrice
-      )
-      const estimatedL2GasFees = calculateEstimatedL2GasFees(
-        result.estimatedL2Gas,
-        l2GasPrice,
-        result.estimatedL2SubmissionCost
-      )
+  //     /**
+  //      * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
+  //      *
+  //      * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
+  //      * @see
+  //      * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
+  //      */
+  //     const estimatedL1GasFees = calculateEstimatedL1GasFees(
+  //       result.estimatedL1Gas,
+  //       l1GasPrice
+  //     )
+  //     const estimatedL2GasFees = calculateEstimatedL2GasFees(
+  //       result.estimatedL2Gas,
+  //       l2GasPrice,
+  //       result.estimatedL2SubmissionCost
+  //     )
 
-      const nativeCurrencyBalanceFloat = parseFloat(
-        utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
-      )
-      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
-      const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
-      // make sure it's always a positive number
-      // if it's negative, set it to user's balance to show insufficient for gas error
-      setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoadingMaxAmount(false)
-    }
-  }, [
-    nativeCurrency,
-    estimateGas,
-    ethL1Balance,
-    ethL2Balance,
-    isDepositMode,
-    l1GasPrice,
-    l2GasPrice,
-    selectedToken,
-    setAmount,
-    selectedTokenBalances,
-    customFeeTokenBalances
-  ])
+  //     const nativeCurrencyBalanceFloat = parseFloat(
+  //       utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
+  //     )
+  //     const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
+  //     const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
+  //     // make sure it's always a positive number
+  //     // if it's negative, set it to user's balance to show insufficient for gas error
+  //     setAmount(String(maxAmount > 0 ? maxAmount : nativeCurrencyBalanceFloat))
+  //   } catch (error) {
+  //     console.error(error)
+  //   } finally {
+  //     setLoadingMaxAmount(false)
+  //   }
+  // }, [
+  //   nativeCurrency,
+  //   estimateGas,
+  //   ethL1Balance,
+  //   ethL2Balance,
+  //   isDepositMode,
+  //   l1GasPrice,
+  //   l2GasPrice,
+  //   selectedToken,
+  //   setAmount,
+  //   selectedTokenBalances,
+  //   customFeeTokenBalances
+  // ])
+  const setMaxAmount = useCallback(() => {
+    console.log('set max')
+  }, [])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
@@ -639,6 +640,72 @@ export function TransferPanelMain({
       setMaxAmount()
     }
   }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+
+  useEffect(() => {
+    console.log('======================')
+  }, [setQueryParams])
+
+  // useEffect(() => {
+  //   console.log('nativeCurrency changed')
+  // }, [nativeCurrency])
+
+  // useEffect(() => {
+  //   console.log('estimateGas changed')
+  // }, [estimateGas])
+
+  // useEffect(() => {
+  //   console.log('ethL1Balance changed')
+  // }, [ethL1Balance])
+
+  // useEffect(() => {
+  //   console.log('ethL2Balance changed')
+  // }, [ethL2Balance])
+
+  // useEffect(() => {
+  //   console.log('isDepositMode changed')
+  // }, [isDepositMode])
+
+  // useEffect(() => {
+  //   console.log('ethL2Balance changed')
+  // }, [ethL2Balance])
+
+  // useEffect(() => {
+  //   console.log('l1GasPrice changed')
+  // }, [l1GasPrice])
+
+  // useEffect(() => {
+  //   console.log('l2GasPrice changed')
+  // }, [l2GasPrice])
+
+  // useEffect(() => {
+  //   console.log('selectedToken changed')
+  // }, [selectedToken])
+
+  // useEffect(() => {
+  //   console.log('customFeeTokenBalances changed')
+  // }, [customFeeTokenBalances])
+
+  // useEffect(() => {
+  //   console.log('selectedTokenBalances changed')
+  // }, [selectedTokenBalances])
+
+  // useEffect(() => {
+  //   console.log('l1GasPrice changed')
+  // }, [l1GasPrice])
+
+  // nativeCurrency, ethL1Balance, ethL2Balance, erc20L1Balances
+  // useEffect(() => {
+  //   console.log('native currency changed', nativeCurrency)
+  // }, [nativeCurrency])
+  // useEffect(() => {
+  //   console.log('ethL1Balance changed', ethL1Balance)
+  // }, [ethL1Balance])
+  // useEffect(() => {
+  //   console.log('ethL2Balance changed', ethL2Balance)
+  // }, [ethL2Balance])
+  // useEffect(() => {
+  //   console.log('erc20L1Balances changed', erc20L1Balances)
+  // }, [erc20L1Balances])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -979,6 +1046,25 @@ export function TransferPanelMain({
     switchNetworksOnTransferPanel
   ])
 
+  const maxButtonProps = useMemo(() => {
+    return {
+      visible: maxButtonVisible,
+      loading: isMaxAmount || loadingMaxAmount,
+      onClick: setMaxAmount
+    }
+  }, [maxButtonVisible, isMaxAmount, loadingMaxAmount, setMaxAmount])
+
+  const aaa = useCallback(
+    e => {
+      setQueryParams({ amount: e.target.value })
+    },
+    [setQueryParams]
+  )
+
+  useEffect(() => {
+    console.log('maxButtonProps')
+  }, [maxButtonProps])
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={networks.sourceChain}>
@@ -1023,16 +1109,10 @@ export function TransferPanelMain({
 
         <div className="flex flex-col space-y-1 pb-2.5">
           <TransferPanelMainInput
-            maxButtonProps={{
-              visible: maxButtonVisible,
-              loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
-            }}
+            maxButtonProps={maxButtonProps}
             errorMessage={errorMessageElement}
             value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
+            onChange={aaa}
           />
 
           {showUSDCSpecificInfo && (

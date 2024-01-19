@@ -90,17 +90,20 @@ export const useAppContextActions = (dispatchOverride?: Dispatch<Action>) => {
   const [, dispatchContext] = useContext(AppContext)
   const dispatch = dispatchOverride ?? dispatchContext
 
-  const setTransferring = (payload: boolean) => {
-    dispatch({ type: 'layout.set_is_transferring', payload })
-  }
+  const setTransferring = useCallback(
+    (payload: boolean) => {
+      dispatch({ type: 'layout.set_is_transferring', payload })
+    },
+    [dispatch]
+  )
 
-  const openTransactionHistoryPanel = () => {
+  const openTransactionHistoryPanel = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: true })
-  }
+  }, [dispatch])
 
-  const closeTransactionHistoryPanel = () => {
+  const closeTransactionHistoryPanel = useCallback(() => {
     dispatch({ type: 'layout.set_txhistory_panel_visible', payload: false })
-  }
+  }, [dispatch])
 
   return {
     setTransferring,

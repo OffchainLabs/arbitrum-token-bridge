@@ -238,6 +238,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     )
   }
 
+  console.log('azeazeazeaze')
   return (
     <>
       {tokenBridgeParams && (
@@ -417,22 +418,20 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <ConnectedChainSyncer />
-            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-            <NetworkReady>
-              <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
-              </AppContextProvider>
-            </NetworkReady>
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ArbQueryParamProvider>
+      <WagmiConfig {...wagmiConfigProps}>
+        <RainbowKitProvider
+          theme={rainbowkitTheme}
+          {...rainbowKitProviderProps}
+        >
+          <ConnectedChainSyncer />
+          <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+          <NetworkReady>
+            <AppContextProvider>
+              <Injector>{isTosAccepted && <AppContent />}</Injector>
+            </AppContextProvider>
+          </NetworkReady>
+        </RainbowKitProvider>
+      </WagmiConfig>
     </Provider>
   )
 }

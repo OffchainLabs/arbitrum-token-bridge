@@ -62,7 +62,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             inputMode="decimal"
             placeholder="Enter amount"
             className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={value}
+            // value={value}
             {...rest}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}

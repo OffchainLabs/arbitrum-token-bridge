@@ -56,6 +56,60 @@ export function MainContent() {
     return () => clearInterval(interval)
   }, [pendingTransactions, updatePendingTransaction])
 
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.addPendingTransaction',
+      transactionHistoryProps.addPendingTransaction
+    )
+  }, [transactionHistoryProps.addPendingTransaction])
+
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.completed',
+      transactionHistoryProps.completed
+    )
+  }, [transactionHistoryProps.completed])
+
+  useEffect(() => {
+    console.log('transactionHistoryProps.error', transactionHistoryProps.error)
+  }, [transactionHistoryProps.error])
+
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.failedChainPairs',
+      transactionHistoryProps.failedChainPairs
+    )
+  }, [transactionHistoryProps.failedChainPairs])
+
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.loading',
+      transactionHistoryProps.loading
+    )
+  }, [transactionHistoryProps.loading])
+
+  useEffect(() => {
+    console.log('transactionHistoryProps.pause', transactionHistoryProps.pause)
+  }, [transactionHistoryProps.pause])
+
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.transactions',
+      transactionHistoryProps.transactions
+    )
+  }, [transactionHistoryProps.transactions])
+  useEffect(() => {
+    console.log(
+      'transactionHistoryProps.updatePendingTransaction',
+      transactionHistoryProps.updatePendingTransaction
+    )
+  }, [transactionHistoryProps.updatePendingTransaction])
+
+  useEffect(() => {
+    console.log('transactionHistoryProps.pause', transactionHistoryProps.pause)
+  }, [transactionHistoryProps.pause])
+
+  console.log('OOOOOOOOO')
   return (
     <div className="flex w-full justify-center">
       <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">

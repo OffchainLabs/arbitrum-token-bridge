@@ -101,7 +101,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
     queryKey('eth'),
     ([_walletAddress]) => provider.getBalance(_walletAddress),
     {
-      refreshInterval: 15_000,
+      refreshInterval: 6_035_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000

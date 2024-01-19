@@ -13,7 +13,7 @@
     `setQueryParams(newAmount)`
 
 */
-import React from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
 import {
@@ -25,6 +25,8 @@ import {
   useQueryParams,
   withDefault
 } from 'use-query-params'
+import { useRouter } from 'next/router'
+import { useSearchParams } from 'next/navigation'
 
 import {
   ChainKeyQueryParam,
@@ -33,25 +35,155 @@ import {
   isValidChainQueryParam
 } from '../types/ChainQueryParam'
 import { ChainId } from '../util/networks'
+import { initial } from 'lodash-es'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
 }
 
+type QueryParams = {
+  sourceChain: ChainId | number | undefined
+  destinationChain: ChainId | number | undefined
+  amount: string | undefined
+  token: string | undefined
+  settingsOpen: boolean | undefined
+}
+type QueryParamsArgs = Partial<QueryParams>
+
+type SetQueryParamsFn = (queryParams: QueryParamsArgs) => void
+function useEventCallback(fn: SetQueryParamsFn, dependencies: any) {
+  const ref = useRef<SetQueryParamsFn>()
+
+  useEffect(() => {
+    ref.current = fn
+  }, [fn, ...dependencies])
+
+  return useCallback(
+    (queryParams: QueryParamsArgs) => {
+      const fn = ref.current
+      console.log('CALLLBACK', queryParams)
+      return fn?.(queryParams)
+    },
+    [ref]
+  )
+}
+
+const ChainQueryParam = {
+  encode: (chainId: ChainId | undefined) => encodeChainQueryParam(chainId),
+  decode: (chainQueryParam: string | (string | null)[] | null | undefined) =>
+    decodeChainQueryParam(chainQueryParam)
+}
+const AmountQueryParam = {
+  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
+  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
+  decode: (amount: string | (string | null)[] | null | undefined) => {
+    if (Array.isArray(amount)) {
+      return null
+    }
+    return sanitizeAmountQueryParam(amount)
+  }
+}
+
+let initialQuery = new URLSearchParams(window.location.search)
 export const useArbQueryParams = () => {
-  /*
-    returns [
-      queryParams (getter for all query state variables),
-      setQueryParams (setter for all query state variables)
-    ]
-  */
-  return useQueryParams({
-    sourceChain: ChainParam,
-    destinationChain: ChainParam,
-    amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    token: StringParam, // import a new token using a Dialog Box
-    settingsOpen: withDefault(BooleanParam, false)
-  })
+  const { replace, query } = useRouter()
+
+  // const setQueryParams = useEventCallback(
+  //   (newQueryParams: QueryParamsArgs) => {
+  //     // const queryParams = { ...query }
+  //     const queryParams = new URLSearchParams(initialQuery)
+
+  //     if ('amount' in newQueryParams) {
+  //       const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
+  //       if (sanitizedAmount) {
+  //         // queryParams.amount = sanitizedAmount
+  //         queryParams.set('amount', sanitizedAmount)
+  //       } else {
+  //         // delete queryParams.amount
+  //         queryParams.delete('amount')
+  //       }
+  //     }
+
+  //     // if ('sourceChain' in newQueryParams) {
+  //     //   const sanitizedSourceChain = ChainQueryParam.encode(
+  //     //     newQueryParams.sourceChain
+  //     //   )
+  //     //   if (sanitizedSourceChain) {
+  //     //     queryParams.sourceChain = sanitizedSourceChain
+  //     //   } else {
+  //     //     delete queryParams.sourceChain
+  //     //   }
+  //     // }
+
+  //     // if ('destinationChain' in newQueryParams) {
+  //     //   const sanitizedDestinationChain = ChainQueryParam.encode(
+  //     //     newQueryParams.destinationChain
+  //     //   )
+  //     //   if (sanitizedDestinationChain) {
+  //     //     queryParams.destinationChain = sanitizedDestinationChain
+  //     //   } else {
+  //     //     delete queryParams.destinationChain
+  //     //   }
+  //     // }
+
+  //     // if ('settingsOpen' in newQueryParams) {
+  //     //   if (newQueryParams.settingsOpen) {
+  //     //     queryParams.settingsOpen = 'true'
+  //     //   } else {
+  //     //     delete queryParams.settingsOpen
+  //     //   }
+  //     // }
+
+  //     initialQuery = queryParams
+  //     replace({
+  //       query: {
+  //         ...Object.fromEntries(queryParams)
+  //       }
+  //     })
+  //   },
+  //   [query]
+  // )
+  const setQueryParams = useCallback((newQueryParams: any) => {
+    const queryParams = new URLSearchParams(initialQuery)
+
+    if ('amount' in newQueryParams) {
+      const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
+      if (sanitizedAmount) {
+        // queryParams.amount = sanitizedAmount
+        queryParams.set('amount', sanitizedAmount)
+      } else {
+        // delete queryParams.amount
+        queryParams.delete('amount')
+      }
+    }
+
+    console.log('new query:', queryParams.toString())
+    initialQuery = queryParams
+    replace({
+      query: {
+        ...Object.fromEntries(queryParams)
+      }
+    })
+  }, [])
+
+  return [
+    {
+      sourceChain: ChainQueryParam.decode(query.sourceChain),
+      destinationChain: ChainQueryParam.decode(query.destinationChain),
+      amount: AmountQueryParam.decode(query.amount),
+      token: query.token as string,
+      settingsOpen: query.settingsOpen === 'true'
+    },
+    setQueryParams
+  ] as const
+
+  //  return useQueryParams({
+  //   sourceChain: ChainParam,
+  //   destinationChain: ChainParam,
+  //   amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
+  //   token: StringParam, // import a new token using a Dialog Box
+  //   settingsOpen: withDefault(BooleanParam, false)
+  // })
 }
 
 const isMax = (amount: string | undefined) =>
@@ -62,10 +194,12 @@ const isMax = (amount: string | undefined) =>
  * @param amount - transfer amount value from the input field or from the URL
  * @returns sanitised value
  */
-const sanitizeAmountQueryParam = (amount: string) => {
+const sanitizeAmountQueryParam = (
+  amount: string | null | undefined
+): string => {
   // no need to process empty string
-  if (amount.length === 0) {
-    return amount
+  if (!amount || amount.length === 0) {
+    return ''
   }
 
   const parsedAmount = amount.replace(/[,]/g, '.').toLowerCase()
@@ -94,23 +228,10 @@ const sanitizeAmountQueryParam = (amount: string) => {
   return parsedAmount.replace(/^0+(?=\d)/, '')
 }
 
-// Our custom query param type for Amount field - will be parsed and returned as a string,
-// but we need to make sure that only valid numeric-string values are considered, else return '0'
-// Defined here so that components can directly rely on this for clean amount values and not rewrite parsing logic everywhere it gets used
-export const AmountQueryParam = {
-  // type of amount is always string | undefined coming from the input element onChange event `e.target.value`
-  encode: (amount: string | undefined = '') => sanitizeAmountQueryParam(amount),
-  decode: (amount: string | (string | null)[] | null | undefined) => {
-    // toString() casts the potential string array into a string
-    const amountStr = amount?.toString() ?? ''
-    return sanitizeAmountQueryParam(amountStr)
-  }
-}
-
 // Parse chainId to ChainQueryParam or ChainId for orbit chain
 function encodeChainQueryParam(
-  chainId: number | null | undefined
-): string | undefined {
+  chainId: ChainId | undefined
+): ChainKeyQueryParam | string | undefined {
   if (!chainId) {
     return undefined
   }
@@ -157,27 +278,11 @@ function decodeChainQueryParam(
   return undefined
 }
 
-export const ChainParam = {
-  encode: encodeChainQueryParam,
-  decode: decodeChainQueryParam
-}
-
+// TODO: delete
 export function ArbQueryParamProvider({
   children
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <QueryParamProvider
-      adapter={NextAdapterPages}
-      options={{
-        searchStringToObject: queryString.parse,
-        objectToSearchString: queryString.stringify,
-        updateType: 'replaceIn', // replace just a single parameter when updating query-state, leaving the rest as is
-        removeDefaultsFromUrl: true
-      }}
-    >
-      {children}
-    </QueryParamProvider>
-  )
+  return children
 }
