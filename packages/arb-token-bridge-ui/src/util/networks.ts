@@ -33,7 +33,7 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
   nativeTokenData?: Erc20Data
-  slug: string
+  slug?: string
 }
 
 export function getBaseChainIdByChainId({
