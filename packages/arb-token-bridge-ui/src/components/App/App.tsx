@@ -35,8 +35,8 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { ConnectedChainQueryParamSyncer } from './ConnectedChainQueryParamSyncer'
 import { ConnectedChainAnalyticsSyncer } from './ConnectedChainAnalyticsSyncer'
+import { ConnectedChainQueryParamsSyncer } from './ConnectedChainQueryParamSyncer'
 
 declare global {
   interface Window {
@@ -286,7 +286,7 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <ConnectedChainAnalyticsSyncer />
-            <ConnectedChainQueryParamSyncer />
+            <ConnectedChainQueryParamsSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <AppContextProvider>
               <Injector>{isTosAccepted && <AppContent />}</Injector>

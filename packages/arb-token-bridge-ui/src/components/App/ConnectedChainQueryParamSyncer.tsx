@@ -4,7 +4,7 @@ import { useNetwork } from 'wagmi'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { sanitizeQueryParams } from '../../hooks/useNetworks'
 
-export function ConnectedChainQueryParamSyncer() {
+export function ConnectedChainQueryParamsSyncer() {
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
 
