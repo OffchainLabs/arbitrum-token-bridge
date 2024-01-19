@@ -17,9 +17,11 @@ import {
   chainToWagmiChain
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../networks'
-import { TargetChainKey } from '../WalletConnectUtils'
+import { ChainId, getCustomChainsFromLocalStorage } from '../networks'
+import {
+  TargetChainKey,
+  chainIdToWalletConnectKey
+} from '../WalletConnectUtils'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   chainToWagmiChain(chain)
@@ -87,28 +89,13 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 }
 
 function getChainId(targetChainKey: TargetChainKey): number {
-  switch (targetChainKey) {
-    case TargetChainKey['Ethereum']:
-      return ChainId.Ethereum
-
-    case TargetChainKey['Arbitrum One']:
-      return ChainId.ArbitrumOne
-
-    case TargetChainKey['Arbitrum Nova']:
-      return ChainId.ArbitrumNova
-
-    case TargetChainKey['Goerli']:
-      return ChainId.Goerli
-
-    case TargetChainKey['Arbitrum Goerli']:
-      return ChainId.ArbitrumGoerli
-
-    case TargetChainKey['Sepolia']:
-      return ChainId.Sepolia
-
-    case TargetChainKey['Arbitrum Sepolia']:
-      return ChainId.ArbitrumSepolia
-  }
+  return Number(
+    Object.keys(chainIdToWalletConnectKey).find(
+      chainId =>
+        chainIdToWalletConnectKey[chainId as unknown as ChainId] ===
+        targetChainKey
+    ) ?? 0
+  )
 }
 
 function getChains(targetChainKey: TargetChainKey) {

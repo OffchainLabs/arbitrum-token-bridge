@@ -27,13 +27,7 @@ export default function WalletConnectChainDropdown() {
 
   const walletConnectChain = searchParams?.get('walletConnectChain')
 
-  const chain = (() => {
-    try {
-      return options.find(chain => chain.network === walletConnectChain)
-    } catch (error) {
-      return undefined
-    }
-  })()
+  const chain = options.find(chain => chain.network === walletConnectChain)
 
   function onChange(value: Chain) {
     searchParams?.set('walletConnectChain', String(value.network))
