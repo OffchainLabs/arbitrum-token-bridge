@@ -35,8 +35,8 @@ import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useSyncConnectedChainToAnalytics } from './ConnectedChainAnalyticsSyncer'
-import { useSyncConnectedChainToQueryParams } from './ConnectedChainQueryParamSyncer'
+import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 
 declare global {
   interface Window {
