@@ -53,7 +53,6 @@ import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawa
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -672,25 +671,13 @@ export function TransferPanel() {
         parentChainId: parentChain.id,
         childChainId: childChain.id
       }
+
+      addPendingTransaction(newTransfer)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
-
-      const depositTxReceipt = await depositForBurnTx.wait()
-      const { messageBytes, attestationHash } =
-        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-      if (depositTxReceipt.status === 0) {
-        errorToast(
-          `USDC ${isDepositMode ? 'deposit' : 'withdrawal'} transaction failed`
-        )
-        return
-      }
-
-      if (messageBytes && attestationHash) {
-        addPendingTransaction(newTransfer)
-      }
-    } catch (error) {
+    } catch (e) {
+      //
     } finally {
       setTransferring(false)
       setIsCctp(false)
