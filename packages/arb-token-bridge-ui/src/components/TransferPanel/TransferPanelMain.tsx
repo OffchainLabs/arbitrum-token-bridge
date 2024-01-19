@@ -632,15 +632,6 @@ export function TransferPanelMain({
     console.log('set max')
   }, [])
 
-  // whenever the user changes the `amount` input, it should update the amount in browser query params as well
-  useEffect(() => {
-    setQueryParams({ amount })
-
-    if (isMaxAmount) {
-      setMaxAmount()
-    }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
-
   useEffect(() => {
     console.log('======================')
   }, [setQueryParams])

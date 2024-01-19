@@ -88,83 +88,90 @@ let initialQuery = new URLSearchParams(window.location.search)
 export const useArbQueryParams = () => {
   const { replace, query } = useRouter()
 
-  // const setQueryParams = useEventCallback(
-  //   (newQueryParams: QueryParamsArgs) => {
-  //     // const queryParams = { ...query }
-  //     const queryParams = new URLSearchParams(initialQuery)
+  const setQueryParams = useEventCallback(
+    (newQueryParams: QueryParamsArgs) => {
+      // const queryParams = { ...query }
+      const queryParams = new URLSearchParams(initialQuery)
 
-  //     if ('amount' in newQueryParams) {
-  //       const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
-  //       if (sanitizedAmount) {
-  //         // queryParams.amount = sanitizedAmount
-  //         queryParams.set('amount', sanitizedAmount)
-  //       } else {
-  //         // delete queryParams.amount
-  //         queryParams.delete('amount')
-  //       }
+      if ('amount' in newQueryParams) {
+        const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
+        if (sanitizedAmount) {
+          // queryParams.amount = sanitizedAmount
+          queryParams.set('amount', sanitizedAmount)
+        } else {
+          // delete queryParams.amount
+          queryParams.delete('amount')
+        }
+      }
+
+      if ('sourceChain' in newQueryParams) {
+        const sanitizedSourceChain = ChainQueryParam.encode(
+          newQueryParams.sourceChain
+        )
+        if (sanitizedSourceChain) {
+          // queryParams.sourceChain = sanitizedSourceChain
+          queryParams.set('sourceChain', sanitizedSourceChain)
+        } else {
+          // delete queryParams.sourceChain
+          queryParams.delete('sourceChain')
+        }
+      }
+
+      if ('destinationChain' in newQueryParams) {
+        const sanitizedDestinationChain = ChainQueryParam.encode(
+          newQueryParams.destinationChain
+        )
+        if (sanitizedDestinationChain) {
+          // queryParams.destinationChain = sanitizedDestinationChain
+          queryParams.set('destinationChain', sanitizedDestinationChain)
+        } else {
+          // delete queryParams.destinationChain
+          queryParams.delete('destinationChain')
+        }
+      }
+
+      if ('settingsOpen' in newQueryParams) {
+        if (newQueryParams.settingsOpen) {
+          // queryParams.settingsOpen = 'true'
+          queryParams.set('settingsOpen', 'true')
+        } else {
+          // delete queryParams.settingsOpen
+          queryParams.delete('settingsOpen')
+        }
+      }
+
+      initialQuery = queryParams
+      replace({
+        query: {
+          ...Object.fromEntries(queryParams)
+          // ...queryParams
+        }
+      })
+    },
+    [query]
+  )
+  // const setQueryParams = useCallback((newQueryParams: any) => {
+  //   const queryParams = new URLSearchParams(initialQuery)
+
+  //   if ('amount' in newQueryParams) {
+  //     const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
+  //     if (sanitizedAmount) {
+  //       // queryParams.amount = sanitizedAmount
+  //       queryParams.set('amount', sanitizedAmount)
+  //     } else {
+  //       // delete queryParams.amount
+  //       queryParams.delete('amount')
   //     }
+  //   }
 
-  //     // if ('sourceChain' in newQueryParams) {
-  //     //   const sanitizedSourceChain = ChainQueryParam.encode(
-  //     //     newQueryParams.sourceChain
-  //     //   )
-  //     //   if (sanitizedSourceChain) {
-  //     //     queryParams.sourceChain = sanitizedSourceChain
-  //     //   } else {
-  //     //     delete queryParams.sourceChain
-  //     //   }
-  //     // }
-
-  //     // if ('destinationChain' in newQueryParams) {
-  //     //   const sanitizedDestinationChain = ChainQueryParam.encode(
-  //     //     newQueryParams.destinationChain
-  //     //   )
-  //     //   if (sanitizedDestinationChain) {
-  //     //     queryParams.destinationChain = sanitizedDestinationChain
-  //     //   } else {
-  //     //     delete queryParams.destinationChain
-  //     //   }
-  //     // }
-
-  //     // if ('settingsOpen' in newQueryParams) {
-  //     //   if (newQueryParams.settingsOpen) {
-  //     //     queryParams.settingsOpen = 'true'
-  //     //   } else {
-  //     //     delete queryParams.settingsOpen
-  //     //   }
-  //     // }
-
-  //     initialQuery = queryParams
-  //     replace({
-  //       query: {
-  //         ...Object.fromEntries(queryParams)
-  //       }
-  //     })
-  //   },
-  //   [query]
-  // )
-  const setQueryParams = useCallback((newQueryParams: any) => {
-    const queryParams = new URLSearchParams(initialQuery)
-
-    if ('amount' in newQueryParams) {
-      const sanitizedAmount = AmountQueryParam.encode(newQueryParams.amount)
-      if (sanitizedAmount) {
-        // queryParams.amount = sanitizedAmount
-        queryParams.set('amount', sanitizedAmount)
-      } else {
-        // delete queryParams.amount
-        queryParams.delete('amount')
-      }
-    }
-
-    console.log('new query:', queryParams.toString())
-    initialQuery = queryParams
-    replace({
-      query: {
-        ...Object.fromEntries(queryParams)
-      }
-    })
-  }, [])
+  //   console.log('new query:', queryParams.toString())
+  //   initialQuery = queryParams
+  //   replace({
+  //     query: {
+  //       ...Object.fromEntries(queryParams)
+  //     }
+  //   })
+  // }, [])
 
   return [
     {

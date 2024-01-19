@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
@@ -238,7 +238,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     )
   }
 
-  console.log('azeazeazeaze')
+  console.log('render injector')
   return (
     <>
       {tokenBridgeParams && (
@@ -408,14 +408,18 @@ export default function App() {
     }
   }, [isTosAccepted, openWelcomeDialog])
 
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
+  const onClose = useCallback(
+    (confirmed: boolean) => {
+      // Only close after confirming (agreeing to terms)
+      if (confirmed) {
+        setTosAccepted('true')
+        welcomeDialogProps.onClose(confirmed)
+      }
+    },
+    [setTosAccepted, welcomeDialogProps]
+  )
 
+  console.log('main')
   return (
     <Provider value={overmind}>
       <WagmiConfig {...wagmiConfigProps}>
