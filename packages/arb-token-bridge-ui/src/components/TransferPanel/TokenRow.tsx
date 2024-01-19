@@ -18,7 +18,7 @@ import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import {
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   sanitizeTokenName,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
@@ -128,8 +128,8 @@ export function TokenRow({
     () => isTokenArbitrumOneNativeUSDC(token?.address),
     [token]
   )
-  const tokenIsArbGoerliNativeUSDC = useMemo(
-    () => isTokenArbitrumGoerliNativeUSDC(token?.address),
+  const tokenIsArbSepoliaNativeUSDC = useMemo(
+    () => isTokenArbitrumSepoliaNativeUSDC(token?.address),
     [token]
   )
 
@@ -214,8 +214,8 @@ export function TokenRow({
       return 'Native USDC on Arbitrum One'
     }
 
-    if (tokenIsArbGoerliNativeUSDC) {
-      return 'Native USDC on Arbitrum Goerli'
+    if (tokenIsArbSepoliaNativeUSDC) {
+      return 'Native USDC on Arbitrum Sepolia'
     }
 
     const listIds: Set<number> = token.listIds
@@ -236,7 +236,7 @@ export function TokenRow({
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token, tokenIsArbGoerliNativeUSDC, tokenIsArbOneNativeUSDC])
+  }, [token, tokenIsArbSepoliaNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -248,12 +248,17 @@ export function TokenRow({
       return true
     }
 
-    if (tokenIsArbOneNativeUSDC || tokenIsArbGoerliNativeUSDC) {
+    if (tokenIsArbOneNativeUSDC || tokenIsArbSepoliaNativeUSDC) {
       return true
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [bridgeTokens, token, tokenIsArbOneNativeUSDC, tokenIsArbGoerliNativeUSDC])
+  }, [
+    bridgeTokens,
+    token,
+    tokenIsArbOneNativeUSDC,
+    tokenIsArbSepoliaNativeUSDC
+  ])
 
   const tokenHasL2Address = useMemo(() => {
     if (!token) {
@@ -298,7 +303,7 @@ export function TokenRow({
     // We don't want users to be able to click on USDC before we know whether or not they are SCW users
     if (
       isLoadingAccountType &&
-      (tokenIsArbGoerliNativeUSDC || tokenIsArbOneNativeUSDC)
+      (tokenIsArbSepoliaNativeUSDC || tokenIsArbOneNativeUSDC)
     ) {
       return (
         <div className="mr-2">
@@ -326,7 +331,7 @@ export function TokenRow({
     token?.decimals,
     tokenBalance,
     tokenIsAddedToTheBridge,
-    tokenIsArbGoerliNativeUSDC,
+    tokenIsArbSepoliaNativeUSDC,
     tokenIsArbOneNativeUSDC,
     tokenSymbol
   ])

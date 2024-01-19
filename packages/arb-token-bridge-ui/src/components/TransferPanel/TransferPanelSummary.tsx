@@ -15,7 +15,7 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
 import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
@@ -166,7 +166,7 @@ export function useGasSummary(
 
             if (
               isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumGoerliNativeUSDC(token.address)
+              isTokenArbitrumSepoliaNativeUSDC(token.address)
             ) {
               estimateGasResult = {
                 estimatedL1Gas: constants.Zero,
