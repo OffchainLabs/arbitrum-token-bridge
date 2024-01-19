@@ -1,8 +1,8 @@
 import { Chain } from 'wagmi'
 import { useMemo } from 'react'
 
-import { TargetChainKey } from '../../util/WalletConnectUtils'
-import { getSupportedNetworks } from '../../util/networks'
+import { chainIdToWalletConnectKey } from '../../util/WalletConnectUtils'
+import { ChainId, getSupportedNetworks } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkListbox } from '../TransferPanel/NetworkListbox'
 
@@ -10,13 +10,12 @@ export default function WalletConnectChainDropdown() {
   const options = getSupportedNetworks(undefined, true)
     .map(chainId => {
       const wagmiChain = getWagmiChain(chainId)
-      const targetChainKey =
-        TargetChainKey[wagmiChain.name as keyof typeof TargetChainKey]
+      const network = chainIdToWalletConnectKey[chainId as ChainId] as string
 
-      if (!targetChainKey) {
+      if (!network) {
         return undefined
       }
-      return { ...wagmiChain, network: targetChainKey as string }
+      return { ...wagmiChain, network }
     })
     .filter((chain): chain is Chain => chain !== undefined)
 
