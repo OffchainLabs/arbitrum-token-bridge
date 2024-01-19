@@ -118,7 +118,7 @@ function CustomAddressBanner({
   customAddress: string | undefined
 }) {
   const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
-  const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
+  const { color } = getBridgeUiConfigForChain(network.id)
 
   const backgroundColorForL1OrL2Chain = useMemo(() => {
     if (isOrbitChain) {
@@ -142,10 +142,10 @@ function CustomAddressBanner({
       style={{
         backgroundColor: isOrbitChain
           ? // add opacity to create a lighter shade
-            `${primaryColor}20`
+            `${color.primary}20`
           : undefined,
-        color: secondaryColor,
-        borderColor: secondaryColor
+        color: color.secondary,
+        borderColor: color.secondary
       }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
@@ -175,7 +175,10 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { secondaryColor, networkLogo } = getBridgeUiConfigForChain(network.id)
+  const {
+    color,
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(network.id)
 
   const backgroundImage = `url(${networkLogo})`
 
@@ -197,7 +200,7 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
-        style={{ backgroundColor: secondaryColor }}
+        style={{ backgroundColor: color.secondary }}
         className={twMerge(
           'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''

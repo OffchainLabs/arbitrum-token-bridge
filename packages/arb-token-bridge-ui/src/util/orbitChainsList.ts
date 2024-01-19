@@ -1,14 +1,19 @@
+import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
-export type BridgeConfigUi = {
-  primaryColor: `#${string}`
-  secondaryColor: `#${string}`
-  networkName: string
-  networkLogo: string
-  nativeTokenLogo?: string
+export type BridgeUiConfig = {
+  color: {
+    primary: `#${string}`
+    secondary: `#${string}`
+  }
+  network: {
+    name: string
+    logo: string
+  }
+  nativeTokenData?: NativeCurrencyBase
 }
 
-type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeConfigUi }
+type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
 
 export const orbitMainnets: {
   [key in number]: OrbitChainConfig
@@ -52,11 +57,20 @@ export const orbitMainnets: {
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
     bridgeUiConfig: {
-      primaryColor: '#F30019',
-      secondaryColor: '#87000E',
-      networkName: 'Xai',
-      networkLogo: '/images/XaiLogo.svg',
-      nativeTokenLogo: '/images/XaiLogo.svg'
+      color: {
+        primary: '#F30019',
+        secondary: '#87000E'
+      },
+      network: {
+        name: 'Xai',
+        logo: '/images/XaiLogo.svg'
+      },
+      nativeTokenData: {
+        name: 'Xai',
+        symbol: 'XAI',
+        decimals: 18,
+        logoUrl: '/images/XaiLogo.svg'
+      }
     }
   }
 }
@@ -100,10 +114,14 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
     bridgeUiConfig: {
-      primaryColor: '#F30019',
-      secondaryColor: '#87000E',
-      networkName: 'Xai Testnet',
-      networkLogo: '/images/XaiLogo.svg'
+      color: {
+        primary: '#F30019',
+        secondary: '#87000E'
+      },
+      network: {
+        name: 'Xai Testnet',
+        logo: '/images/XaiLogo.svg'
+      }
     }
   }
 }

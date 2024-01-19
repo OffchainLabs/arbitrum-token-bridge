@@ -7,7 +7,7 @@ import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 
-type NativeCurrencyBase = {
+export type NativeCurrencyBase = {
   name: string
   symbol: string
   decimals: number
@@ -84,7 +84,7 @@ export async function fetchNativeCurrency({
 
   return {
     name,
-    logoUrl: getBridgeUiConfigForChain(chain.chainID).nativeTokenLogo,
+    logoUrl: getBridgeUiConfigForChain(chain.chainID).nativeTokenData?.logoUrl,
     symbol,
     decimals,
     address,

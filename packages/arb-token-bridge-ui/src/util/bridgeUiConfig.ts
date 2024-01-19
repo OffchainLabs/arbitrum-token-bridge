@@ -1,24 +1,32 @@
-import { constants } from 'ethers'
-
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
-import { orbitChains, BridgeConfigUi } from './orbitChainsList'
+import { orbitChains, BridgeUiConfig } from './orbitChainsList'
 
 export function getBridgeUiConfigForChain(
   chainId: number,
   { variant }: { variant?: 'light' | 'dark' } = {}
-): BridgeConfigUi {
-  type BaseBridgeConfigUi = Omit<BridgeConfigUi, 'networkName'>
-
-  const ethereumBaseConfig: BaseBridgeConfigUi = {
-    primaryColor: '#454A75',
-    secondaryColor: '#1A1C33',
-    networkLogo: '/images/EthereumLogo.svg'
+): BridgeUiConfig {
+  type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {
+    network: Omit<BridgeUiConfig['network'], 'name'>
   }
 
-  const arbitrumBaseConfig: BaseBridgeConfigUi = {
-    primaryColor: '#1B4ADD',
-    secondaryColor: '#001A6B',
-    networkLogo: '/images/ArbitrumLogo.svg'
+  const ethereumBaseConfig: BaseBridgeUiConfig = {
+    color: {
+      primary: '#454A75',
+      secondary: '#1A1C33'
+    },
+    network: {
+      logo: '/images/EthereumLogo.svg'
+    }
+  }
+
+  const arbitrumBaseConfig: BaseBridgeUiConfig = {
+    color: {
+      primary: '#1B4ADD',
+      secondary: '#001A6B'
+    },
+    network: {
+      logo: '/images/ArbitrumLogo.svg'
+    }
   }
 
   const customChain = getCustomChainFromLocalStorageById(chainId)
@@ -27,57 +35,88 @@ export function getBridgeUiConfigForChain(
     case ChainId.Ethereum:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Ethereum'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Ethereum'
+        }
       }
     case ChainId.Goerli:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Goerli'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Goerli'
+        }
       }
     case ChainId.Sepolia:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Sepolia'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Sepolia'
+        }
       }
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Ethereum local'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Ethereum local'
+        }
       }
     case ChainId.ArbitrumOne:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum One',
-        networkLogo: '/images/ArbitrumOneLogo.svg'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum One'
+        }
       }
     case ChainId.ArbitrumGoerli:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Goerli'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum Goerli'
+        }
       }
     case ChainId.ArbitrumSepolia:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Sepolia'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum Sepolia'
+        }
       }
     case ChainId.ArbitrumLocal:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum local'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum local'
+        }
       }
     case ChainId.ArbitrumNova:
       return {
-        primaryColor: '#E57310',
-        secondaryColor: '#743600',
-        networkName: 'Arbitrum Nova',
-        networkLogo: '/images/ArbitrumNovaLogo.svg'
+        color: {
+          primary: '#E57310',
+          secondary: '#743600'
+        },
+        network: {
+          name: 'Arbitrum Nova',
+          logo: '/images/ArbitrumNovaLogo.svg'
+        }
       }
     case ChainId.StylusTestnet:
       return {
-        primaryColor: '#E3066E',
-        secondaryColor: '#7E0028',
-        networkName: 'Stylus Testnet',
-        networkLogo: '/images/StylusLogo.svg'
+        color: {
+          primary: '#E3066E',
+          secondary: '#7E0028'
+        },
+        network: {
+          name: 'Stylus Testnet',
+          logo: '/images/StylusLogo.svg'
+        }
       }
     default: {
       // added Orbit chains
@@ -87,15 +126,18 @@ export function getBridgeUiConfigForChain(
         return orbitChain.bridgeUiConfig
       }
 
-      // custom Orbit chains
       return {
-        primaryColor: '#12AAFF',
-        secondaryColor: '#0C4260',
-        networkName: customChain ? customChain.name : 'Unknown',
-        networkLogo:
-          variant === 'light'
-            ? '/images/OrbitLogoWhite.svg'
-            : '/images/OrbitLogo.svg'
+        color: {
+          primary: '#12AAFF',
+          secondary: '#0C4260'
+        },
+        network: {
+          name: customChain ? customChain.name : 'Unknown',
+          logo:
+            variant === 'light'
+              ? '/images/OrbitLogoWhite.svg'
+              : '/images/OrbitLogo.svg'
+        }
       }
     }
   }

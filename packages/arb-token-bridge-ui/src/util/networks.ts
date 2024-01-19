@@ -9,7 +9,6 @@ import {
 } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
-import { Erc20Data } from './TokenUtils'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
@@ -36,7 +35,6 @@ const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = Chain & {
   rpcUrl: string
-  nativeTokenData?: Erc20Data
   slug?: string
 }
 
@@ -407,7 +405,7 @@ export function isNetwork(chainId: ChainId) {
 }
 
 export function getNetworkName(chainId: number) {
-  return getBridgeUiConfigForChain(chainId).networkName
+  return getBridgeUiConfigForChain(chainId).network.name
 }
 
 export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
@@ -442,17 +440,16 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainID] = chain.explorerUrl
 }
 
-function isChildChain(
-  chain: L2Network | ParentChain | undefined
-): chain is L2Network {
-  if (!chain) {
-    return false
-  }
+function isChildChain(chain: L2Network | ParentChain): chain is L2Network {
   return typeof (chain as L2Network).partnerChainID !== 'undefined'
 }
 
 export function getPartnerChainsIds(chainId: ChainId): ChainId[] {
   const arbitrumSdkChain = getChains().find(chain => chain.chainID === chainId)
+
+  if (!arbitrumSdkChain) {
+    return []
+  }
 
   const parentChainId = isChildChain(arbitrumSdkChain)
     ? arbitrumSdkChain.partnerChainID

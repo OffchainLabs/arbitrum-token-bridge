@@ -2,13 +2,16 @@ import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+
   return {
     id: chain.chainID,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: chain.nativeTokenData ?? ether,
+    nativeCurrency: nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]

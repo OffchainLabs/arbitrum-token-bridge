@@ -28,13 +28,13 @@ export type ChainQueryParam = ChainKeyQueryParam | ChainId | number | string
 
 export function isValidChainQueryParam(value: string | number): boolean {
   if (typeof value === 'string') {
-    const isValidCoreChain = (chainQueryParams as readonly string[]).includes(
-      value
-    )
-    const isValidAddedOrbitChain = getOrbitChains().some(
+    const isValidCoreChainSlug = (
+      chainQueryParams as readonly string[]
+    ).includes(value)
+    const isValidAddedOrbitChainSlug = getOrbitChains().some(
       chain => chain.slug === value
     )
-    return isValidCoreChain || isValidAddedOrbitChain
+    return isValidCoreChainSlug || isValidAddedOrbitChainSlug
   }
 
   const supportedNetworkIds = getSupportedNetworks(value, true)
