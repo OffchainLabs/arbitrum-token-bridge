@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { useAccount, WagmiConfig } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -33,20 +33,18 @@ import {
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { Notifications } from '../common/Notifications'
 import { isNetwork, rpcURLs } from '../../util/networks'
-import {
-  ArbQueryParamProvider,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
+import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
+import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { ConnectedChainQueryParamSyncer } from './ConnectedChainQueryParamSyncer'
 
 declare global {
   interface Window {
@@ -351,47 +349,6 @@ Object.keys(localStorage).forEach(key => {
   }
 })
 
-function ConnectedChainSyncer() {
-  const [shouldSync, setShouldSync] = useState(false)
-  const [didSync, setDidSync] = useState(false)
-
-  const [{ sourceChain, destinationChain }, setQueryParams] =
-    useArbQueryParams()
-  const { chain } = useNetwork()
-
-  useEffect(() => {
-    if (shouldSync) {
-      return
-    }
-
-    // Only sync connected chain to query params if the query params were not initially provided
-    if (
-      typeof sourceChain === 'undefined' &&
-      typeof destinationChain === 'undefined'
-    ) {
-      setShouldSync(true)
-    }
-  }, [shouldSync, sourceChain, destinationChain])
-
-  useEffect(() => {
-    // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
-    if (chain && shouldSync && !didSync) {
-      const {
-        sourceChainId: sourceChain,
-        destinationChainId: destinationChain
-      } = sanitizeQueryParams({
-        sourceChainId: chain.id,
-        destinationChainId: undefined
-      })
-
-      setQueryParams({ sourceChain, destinationChain })
-      setDidSync(true)
-    }
-  }, [chain, shouldSync, didSync, setQueryParams])
-
-  return null
-}
-
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
   const [tosAccepted, setTosAccepted] =
@@ -422,7 +379,7 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <ConnectedChainSyncer />
+            <ConnectedChainQueryParamSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <AppContextProvider>
               <Injector>{isTosAccepted && <AppContent />}</Injector>
