@@ -103,7 +103,7 @@ function Meta({
       <meta property="og:description" content={siteDescription} />
       <meta
         property="og:image"
-        content={`${siteDomain}/images/__auto-generated-og/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
       />
 
       {/* <!-- Twitter Meta Tags --> */}
@@ -114,7 +114,7 @@ function Meta({
       <meta name="twitter:description" content={siteDescription} />
       <meta
         name="twitter:image"
-        content={`${siteDomain}/images/__auto-generated-og/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
+        content={`${siteDomain}/images/__auto-generated/open-graph/${sourceChain.slug}-to-${destinationChain.slug}.jpg`}
       />
     </>
   )

@@ -52,7 +52,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "yarn generateDenylist",
+    "prebuild": "yarn generateDenylist && yarn generateOpenGraphImages",
     "postinstall": "patch-package",
     "build": "next build",
     "start": "next start",

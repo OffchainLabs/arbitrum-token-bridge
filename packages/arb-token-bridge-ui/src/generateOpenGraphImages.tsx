@@ -68,9 +68,6 @@ const configs: ChainCombination[] = [
 
 async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
   const font = await getFont()
-  const imageName = `${from.slug}-to-${to.slug}.jpg`
-
-  console.log(`Generating ${imageName}`)
 
   const svg = await satori(
     //
@@ -93,11 +90,20 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
         }}
       >
         <div />
-        <img
-          src="https://arbitrum.foundation/logo.png"
-          width={64}
-          height={64}
-        />
+        <div
+          style={{
+            display: 'flex',
+            background: 'white',
+            borderRadius: '50%',
+            padding: '0.5rem'
+          }}
+        >
+          <img
+            src="https://arbitrum.foundation/logo.png"
+            width={64}
+            height={64}
+          />
+        </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <span style={{ color: 'white', fontSize: '6rem' }}>ARBITRUM</span>
@@ -114,9 +120,27 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
         <span style={{ color: 'white', fontSize: '2rem' }}>
           Bridge from {from.name} to {to.name}
         </span>
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <img src={from.logo} width={128} height={128} />
-          <img src={to.logo} width={128} height={128} />
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              background: 'white',
+              borderRadius: '50%',
+              padding: '1rem'
+            }}
+          >
+            <img src={from.logo} width={128} height={128} />
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              background: 'white',
+              borderRadius: '50%',
+              padding: '1rem'
+            }}
+          >
+            <img src={to.logo} width={128} height={128} />
+          </div>
         </div>
       </div>
     </div>,
@@ -126,9 +150,14 @@ async function generateSvg({ from, to }: { from: Chain; to: Chain }) {
     }
   )
 
+  const file = `${from.slug}-to-${to.slug}.jpg`
+  const filePath = `./public/images/__auto-generated/open-graph/${file}`
+
   await sharp(Buffer.from(svg))
-    .jpeg({ mozjpeg: true })
-    .toFile(`./public/images/__auto-generated-og/${imageName}`)
+    .jpeg({ quality: 90, mozjpeg: true })
+    .toFile(filePath)
+
+  console.log(`Generated ${filePath}`)
 }
 
 async function main() {
