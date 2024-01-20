@@ -59,6 +59,13 @@ export default async function handler(
       })
     }
 
+    // if invalid pageSize, send empty data instead of error
+    if (!Number(pageSize)) {
+      res.status(200).json({
+        data: []
+      })
+    }
+
     const additionalFilters = `${
       typeof fromBlock !== 'undefined'
         ? `blockCreatedAt_gte: ${Number(fromBlock)},`

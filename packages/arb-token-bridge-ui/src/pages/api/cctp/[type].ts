@@ -138,6 +138,17 @@ export default async function handler(
       return
     }
 
+    // if invalid pageSize, send empty data instead of error
+    if (!Number(pageSize)) {
+      res.status(200).json({
+        data: {
+          pending: [],
+          completed: []
+        },
+        error: null
+      })
+    }
+
     const l1Subgraph = getSubgraphClient(
       l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-sepolia'
     )
