@@ -47,16 +47,16 @@ describe('Approve token and deposit afterwards', () => {
       cy.waitUntil(
         () =>
           cy
-            .findByRole('button', { name: /Move funds to Arbitrum/i })
+            .findByRole('button', { name: /Move funds to Arbitrum Local/i })
             .should('not.be.disabled'),
         {
-          errorMsg: '/Move funds to Arbitrum/ button is disabled',
+          errorMsg: '/Move funds to Arbitrum Local/ button is disabled',
           timeout: 50000,
           interval: 500
         }
       ).then(() => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum'
+          name: 'Move funds to Arbitrum Local'
         })
           .scrollIntoView()
           .click()
