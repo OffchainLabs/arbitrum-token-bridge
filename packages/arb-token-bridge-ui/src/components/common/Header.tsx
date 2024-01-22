@@ -307,7 +307,7 @@ function MobileExternalLink({
 
 const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
   return (
-    <span className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#8d8e8e]">
+    <span className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-gray-header-menu">
       <Image src={src} alt={alt} width={22} height={22} />
     </span>
   )

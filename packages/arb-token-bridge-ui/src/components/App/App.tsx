@@ -37,6 +37,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
+import { SettingsToggle } from '../common/atoms/SettingsToggle'
 
 declare global {
   interface Window {
@@ -96,7 +97,9 @@ const AppContent = (): JSX.Element => {
     <>
       <HeaderOverrides {...headerOverridesProps} />
 
-      <HeaderContent>{isConnected && <HeaderAccountPopover />}</HeaderContent>
+      <HeaderContent>
+        {isConnected ? <HeaderAccountPopover /> : <SettingsToggle />}
+      </HeaderContent>
 
       <TokenListSyncer />
       <BalanceUpdater />
