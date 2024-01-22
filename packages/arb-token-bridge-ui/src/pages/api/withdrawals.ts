@@ -57,6 +57,7 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
+      return
     }
 
     // if invalid pageSize, send empty data instead of error
@@ -64,6 +65,7 @@ export default async function handler(
       res.status(200).json({
         data: []
       })
+      return
     }
 
     const additionalFilters = `${

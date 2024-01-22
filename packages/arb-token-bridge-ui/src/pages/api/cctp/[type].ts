@@ -147,6 +147,7 @@ export default async function handler(
         },
         error: null
       })
+      return
     }
 
     const l1Subgraph = getSubgraphClient(
