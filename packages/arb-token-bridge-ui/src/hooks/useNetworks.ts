@@ -18,7 +18,7 @@ import {
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
 
-import { getPartnerChainsIds } from '../util/networks'
+import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
 
@@ -99,7 +99,7 @@ export function sanitizeQueryParams({
     !isSupportedChainId(sourceChainId) &&
     isSupportedChainId(destinationChainId)
   ) {
-    const [defaultSourceChainId] = getPartnerChainsIds(destinationChainId)
+    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
     return { sourceChainId: defaultSourceChainId!, destinationChainId }
   }
 
@@ -108,7 +108,7 @@ export function sanitizeQueryParams({
     isSupportedChainId(sourceChainId) &&
     !isSupportedChainId(destinationChainId)
   ) {
-    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId)
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId)
     return {
       sourceChainId: sourceChainId,
       destinationChainId: defaultDestinationChainId!
@@ -116,8 +116,8 @@ export function sanitizeQueryParams({
   }
 
   // destinationChainId is not a partner of sourceChainId
-  if (!getPartnerChainsIds(sourceChainId!).includes(destinationChainId!)) {
-    const [defaultDestinationChainId] = getPartnerChainsIds(sourceChainId!)
+  if (!getDestinationChainIds(sourceChainId!).includes(destinationChainId!)) {
+    const [defaultDestinationChainId] = getDestinationChainIds(sourceChainId!)
     return {
       sourceChainId: sourceChainId!,
       destinationChainId: defaultDestinationChainId!

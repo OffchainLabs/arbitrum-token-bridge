@@ -12,7 +12,7 @@ import {
   getChains,
   getExplorerUrl,
   getNetworkName,
-  getPartnerChainsIds,
+  getDestinationChainIds,
   isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
@@ -778,20 +778,22 @@ export function TransferPanelMain({
     }
 
     function getDestinationChains() {
-      const partnerChainIds = getPartnerChainsIds(networks.sourceChain.id)
+      const destinationChainIds = getDestinationChainIds(
+        networks.sourceChain.id
+      )
 
       // if source chain is Arbitrum One, add Arbitrum Nova to destination
       if (networks.sourceChain.id === ChainId.ArbitrumOne) {
-        partnerChainIds.push(ChainId.ArbitrumNova)
+        destinationChainIds.push(ChainId.ArbitrumNova)
       }
 
       // if source chain is Arbitrum Nova, add Arbitrum One to destination
       if (networks.sourceChain.id === ChainId.ArbitrumNova) {
-        partnerChainIds.push(ChainId.ArbitrumOne)
+        destinationChainIds.push(ChainId.ArbitrumOne)
       }
 
       return (
-        partnerChainIds
+        destinationChainIds
           // remove self
           .filter(chainId => chainId !== networks.destinationChain.id)
           .map(getWagmiChain)

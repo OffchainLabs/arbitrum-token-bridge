@@ -231,13 +231,6 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
 }
 
-export function getValidDestinationChainIds(sourceChainId: ChainId) {
-  return (
-    getChains().find(chain => chain.chainID === sourceChainId)
-      ?.partnerChainIDs || []
-  )
-}
-
 const defaultL1Network: L1Network = {
   blockTime: 10,
   chainID: 1337,
@@ -444,8 +437,9 @@ function isChildChain(chain: L2Network | ParentChain): chain is L2Network {
   return typeof (chain as L2Network).partnerChainID !== 'undefined'
 }
 
-export function getPartnerChainsIds(chainId: ChainId): ChainId[] {
-  const arbitrumSdkChain = getChains().find(chain => chain.chainID === chainId)
+export function getDestinationChainIds(chainId: ChainId): ChainId[] {
+  const chains = getChains()
+  const arbitrumSdkChain = chains.find(chain => chain.chainID === chainId)
 
   if (!arbitrumSdkChain) {
     return []
@@ -455,9 +449,11 @@ export function getPartnerChainsIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  const validDestinationChainIds = getValidDestinationChainIds(chainId)
+  const validDestinationChainIds =
+    chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
   if (parentChainId) {
+    // always make parent chain the first element
     return [parentChainId, ...validDestinationChainIds]
   }
 
