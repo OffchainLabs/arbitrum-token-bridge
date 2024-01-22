@@ -1,12 +1,13 @@
 import dayjs, { Dayjs } from 'dayjs'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import {
   getBaseChainIdByChainId,
   getBlockTime,
   getConfirmPeriodBlocks
 } from '../../util/networks'
 import { MergedTransaction } from '../../state/app/state'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 /**
  * Buffer for after a node is confirmable but isn't yet confirmed.
@@ -39,15 +40,14 @@ export function WithdrawalCountdown({
 }: {
   tx: MergedTransaction
 }): JSX.Element | null {
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   // For new txs createdAt won't be defined yet, we default to the current time in that case
   const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
-    withdrawalFromChainId: l2Network.id
+    withdrawalFromChainId: childChain.id
   })
 
   const minutesLeft = Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)

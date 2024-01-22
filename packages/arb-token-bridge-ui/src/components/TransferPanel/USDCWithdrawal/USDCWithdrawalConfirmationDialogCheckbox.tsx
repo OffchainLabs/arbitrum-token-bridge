@@ -1,8 +1,8 @@
-import { useChainId } from 'wagmi'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
 import { useChainLayers } from '../../../hooks/useChainLayers'
+import { useNetwork } from 'wagmi'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange,
@@ -12,9 +12,9 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   onAllCheckboxesCheched?: () => void
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
-  const chainId = useChainId()
+  const { chain } = useNetwork()
   const { parentLayer } = useChainLayers()
-  const { isTestnet } = isNetwork(chainId)
+  const { isTestnet } = isNetwork(chain?.id ?? 0)
 
   useEffect(() => {
     if (checkboxesChecked.every(checked => checked)) {
@@ -51,7 +51,7 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
             <span className="font-medium">
               {isTestnet ? '~1 minute' : '~15 minutes'}
             </span>{' '}
-            before I can claim my USDC on {isTestnet ? 'Goerli' : 'Ethereum'}.
+            before I can claim my USDC on {isTestnet ? 'Sepolia' : 'Ethereum'}.
           </span>
         }
         checked={checkboxesChecked[1] ?? false}

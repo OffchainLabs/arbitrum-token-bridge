@@ -50,6 +50,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { getOrbitChains } from '../util/orbitChainsList'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -117,17 +118,15 @@ const multiChainFetchList: ChainPair[] = [
   },
   // Orbit
   {
-    parentChain: ChainId.ArbitrumOne,
-    chain: ChainId.Xai
-  },
-  {
-    parentChain: ChainId.ArbitrumGoerli,
-    chain: ChainId.XaiTestnet
-  },
-  {
     parentChain: ChainId.ArbitrumSepolia,
     chain: ChainId.StylusTestnet
   },
+  ...getOrbitChains().map(orbitChain => {
+    return {
+      parentChain: orbitChain.partnerChainID,
+      chain: orbitChain.chainID
+    }
+  }),
   ...getCustomChainsFromLocalStorage().map(chain => {
     return {
       parentChain: chain.partnerChainID,
@@ -272,19 +271,19 @@ const useTransactionHistoryWithoutStatuses = (
 
   const cctpTransfersTestnet = useCctpFetching({
     walletAddress: address,
-    l1ChainId: ChainId.Goerli,
-    l2ChainId: ChainId.ArbitrumGoerli,
+    l1ChainId: ChainId.Sepolia,
+    l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
     pageSize: cctpTypeToFetch({
-      parentChain: ChainId.Goerli,
-      chain: ChainId.ArbitrumGoerli
+      parentChain: ChainId.Sepolia,
+      chain: ChainId.ArbitrumSepolia
     })
       ? 1000
       : 0,
     type:
       cctpTypeToFetch({
-        parentChain: ChainId.Goerli,
-        chain: ChainId.ArbitrumGoerli
+        parentChain: ChainId.Sepolia,
+        chain: ChainId.ArbitrumSepolia
       }) ?? 'all'
   })
 
@@ -479,11 +478,25 @@ export const useTransactionHistory = (
         isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
       )
       .filter(tx => {
+        const chainPairExists = multiChainFetchList.some(chainPair => {
+          return (
+            chainPair.parentChain === tx.parentChainId &&
+            chainPair.chain === tx.childChainId
+          )
+        })
+
+        if (!chainPairExists) {
+          // chain pair doesn't exist in the fetch list but exists in cached transactions
+          // this could happen if user made a transfer with a custom Orbit chain and then removed the network
+          // we don't want to include these txs as it would cause tx history errors
+          return false
+        }
+
         if (isSmartContractWallet) {
           // only include txs for the connected network
           return tx.parentChainId === chain.id
         }
-        return tx
+        return true
       })
   }, [
     address,
@@ -609,47 +622,49 @@ export const useTransactionHistory = (
 
       // tx not found in the new user initiated transaction list
       // look in the paginated historical data
-      if (!txPages) {
-        return
-      }
-
-      let pageNumberToUpdate = 0
-
-      // search cache for the tx to update
-      while (
-        !txPages[pageNumberToUpdate]?.find(oldTx =>
-          isSameTransaction(oldTx, newTx)
-        )
-      ) {
-        pageNumberToUpdate++
-
-        if (pageNumberToUpdate > txPages.length) {
-          // tx not found
+      mutateTxPages(prevTxPages => {
+        if (!prevTxPages) {
           return
         }
-      }
 
-      const oldPageToUpdate = txPages[pageNumberToUpdate]
+        let pageNumberToUpdate = 0
 
-      if (!oldPageToUpdate) {
-        return
-      }
+        // search cache for the tx to update
+        while (
+          !prevTxPages[pageNumberToUpdate]?.find(oldTx =>
+            isSameTransaction(oldTx, newTx)
+          )
+        ) {
+          pageNumberToUpdate++
 
-      // replace the old tx with the new tx
-      const updatedPage = oldPageToUpdate.map(oldTx => {
-        return isSameTransaction(oldTx, newTx) ? newTx : oldTx
-      })
+          if (pageNumberToUpdate > prevTxPages.length) {
+            // tx not found
+            return prevTxPages
+          }
+        }
 
-      // all old pages including the new updated page
-      const newTxPages = [
-        ...txPages.slice(0, pageNumberToUpdate),
-        updatedPage,
-        ...txPages.slice(pageNumberToUpdate + 1)
-      ]
+        const oldPageToUpdate = prevTxPages[pageNumberToUpdate]
 
-      mutateTxPages(newTxPages, false)
+        if (!oldPageToUpdate) {
+          return prevTxPages
+        }
+
+        // replace the old tx with the new tx
+        const updatedPage = oldPageToUpdate.map(oldTx => {
+          return isSameTransaction(oldTx, newTx) ? newTx : oldTx
+        })
+
+        // all old pages including the new updated page
+        const newTxPages = [
+          ...prevTxPages.slice(0, pageNumberToUpdate),
+          updatedPage,
+          ...prevTxPages.slice(pageNumberToUpdate + 1)
+        ]
+
+        return newTxPages
+      }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData, txPages]
+    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
   )
 
   const updatePendingTransaction = useCallback(

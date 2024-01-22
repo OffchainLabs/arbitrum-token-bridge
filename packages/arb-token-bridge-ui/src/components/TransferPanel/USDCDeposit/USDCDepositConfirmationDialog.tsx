@@ -13,14 +13,18 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useAppState } from '../../../state'
-import { useNetworksAndSigners } from '../../../hooks/useNetworksAndSigners'
 import { getNetworkName, isNetwork } from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
-import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
+import {
+  isTokenSepoliaUSDC,
+  isTokenMainnetUSDC
+} from '../../../util/TokenUtils'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
+import { useNetworks } from '../../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 
 type Props = UseDialogProps & {
   amount: string
@@ -29,14 +33,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const {
     app: { selectedToken }
   } = useAppState()
-  const { l1, l2 } = useNetworksAndSigners()
-  const networkName = getNetworkName(l2.network.id)
-  const { isArbitrumGoerli } = isNetwork(l2.network.id)
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const { isArbitrumSepolia } = isNetwork(childChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
-
-  const from = l1.network
-  const to = l2.network
-  const toNetworkName = getNetworkName(to.id)
+  const destinationNetworkName = getNetworkName(childChain.id)
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -48,7 +49,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
   if (
     !isTokenMainnetUSDC(selectedToken.address) &&
-    !isTokenGoerliUSDC(selectedToken.address)
+    !isTokenSepoliaUSDC(selectedToken.address)
   ) {
     return null
   }
@@ -59,13 +60,13 @@ export function USDCDepositConfirmationDialog(props: Props) {
     name: USDCFastBridge.name,
     imageSrc: USDCFastBridge.imageSrc,
     href: USDCFastBridge.getHref({
-      from: from.id,
-      to: to.id,
-      fromTokenAddress: isArbitrumGoerli
-        ? CommonAddress.Goerli.USDC
+      from: parentChain.id,
+      to: childChain.id,
+      fromTokenAddress: isArbitrumSepolia
+        ? CommonAddress.Sepolia.USDC
         : CommonAddress.Ethereum.USDC,
-      toTokenAddress: isArbitrumGoerli
-        ? CommonAddress.ArbitrumGoerli.USDC
+      toTokenAddress: isArbitrumSepolia
+        ? CommonAddress.ArbitrumSepolia.USDC
         : CommonAddress.ArbitrumOne.USDC,
       amount: props.amount,
       transferMode: 'deposit'
@@ -82,7 +83,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
         >
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {destinationNetworkName}
             </HeadlessUIDialog.Title>
             <button
               className="arb-hover"
@@ -108,7 +109,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
               <p className="font-light">
                 Receive{' '}
                 <span className="font-medium">Bridged USDC (USDC.e)</span> on{' '}
-                {toNetworkName} using Arbitrum&apos;s native bridge.
+                {destinationNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
               <div className="flex flex-col space-y-3">
@@ -168,7 +169,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
           <Tab.Panel className="flex flex-col space-y-3 px-8 py-4">
             <div className="flex flex-col space-y-6">
-              <CctpTabContent toNetworkName={toNetworkName}>
+              <CctpTabContent toNetworkName={destinationNetworkName}>
                 <div className="flex flex-col space-y-3">
                   <USDCDepositConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {

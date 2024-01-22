@@ -2,7 +2,6 @@ import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
 import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
@@ -28,12 +27,10 @@ export function TransactionsTableRowAction({
   isError: boolean
   type: 'deposits' | 'withdrawals'
 }) {
-  const { switchNetwork } = useSwitchNetworkWithConfig()
-  const networkName = getNetworkName(
-    type === 'deposits' ? tx.parentChainId : tx.childChainId
-  )
-
   const { chain } = useNetwork()
+  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const networkName = getNetworkName(chain?.id ?? 0)
+
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
@@ -151,6 +148,7 @@ export function TransactionsTableRowAction({
                   tx.isWithdrawal ? tx.parentChainId : tx.childChainId
                 )
               }
+
               if (tx.isCctp) {
                 return await claimCctp()
               } else {

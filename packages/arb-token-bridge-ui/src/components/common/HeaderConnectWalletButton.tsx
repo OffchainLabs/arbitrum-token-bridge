@@ -1,8 +1,6 @@
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { HeaderAccountPopover } from './HeaderAccountPopover'
-import { HeaderNetworkInformation } from './HeaderNetworkInformation'
-import { NetworkSelectionContainer } from './NetworkSelectionContainer'
 
 function NetworkButtonAndConnectButton({
   connected,
@@ -42,9 +40,6 @@ function NetworkButtonAndConnectButton({
 
   return (
     <div className="flex gap-3">
-      <NetworkSelectionContainer>
-        <HeaderNetworkInformation />
-      </NetworkSelectionContainer>
       <HeaderAccountPopover />
     </div>
   )

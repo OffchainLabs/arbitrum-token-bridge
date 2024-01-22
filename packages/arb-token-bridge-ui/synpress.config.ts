@@ -50,6 +50,7 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
 
       if (!ethRpcUrl) {
@@ -61,6 +62,11 @@ export default defineConfig({
       if (!goerliRpcUrl) {
         throw new Error(
           'process.env.NEXT_PUBLIC_GOERLI_RPC_URL variable missing.'
+        )
+      }
+      if (!sepoliaRpcUrl) {
+        throw new Error(
+          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
         )
       }
 
@@ -97,6 +103,8 @@ export default defineConfig({
       config.env.ARB_RPC_URL = arbRpcUrl
       config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
       config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
+      config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
+      config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
@@ -126,13 +134,31 @@ if (typeof INFURA_KEY === 'undefined') {
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
 const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
+const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
-const ethRpcUrl =
-  process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL ?? MAINNET_INFURA_RPC_URL
+const ethRpcUrl = (() => {
+  // MetaMask comes with a default http://localhost:8545 network with 'localhost' as network name
+  // On CI, the rpc is http://geth:8545 so we cannot reuse the 'localhost' network
+  // However, Synpress does not allow editing network name on the MetaMask extension
+  // For consistency purpose, we would be using 'custom-localhost'
+  // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
+  // so we have to add a / to the end of the rpc url
+  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+    return MAINNET_INFURA_RPC_URL
+  }
+  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  }
+  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+})()
+
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
 const goerliRpcUrl =
   process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL
+const sepoliaRpcUrl =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
 const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
+const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)

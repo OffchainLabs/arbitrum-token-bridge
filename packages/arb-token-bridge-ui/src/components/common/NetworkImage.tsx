@@ -1,5 +1,6 @@
 import Image from 'next/image'
-import { getNetworkLogo, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export const NetworkImage = ({
   chainId,
@@ -13,7 +14,9 @@ export const NetworkImage = ({
   return (
     <div className="flex w-4 justify-center">
       <Image
-        src={getNetworkLogo(chainId, theme)}
+        src={
+          getBridgeUiConfigForChain(chainId, { variant: theme }).network.logo
+        }
         alt={`${getNetworkName(chainId)} logo`}
         width={size}
         height={size}
