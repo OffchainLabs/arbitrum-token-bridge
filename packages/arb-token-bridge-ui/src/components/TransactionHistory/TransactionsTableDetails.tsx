@@ -130,7 +130,7 @@ export const TransactionsTableDetails = () => {
                       <span>{dayjs(tx.createdAt).format('h:mma')}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <TransactionsTableTokenImage tokenSymbol={tx.asset} />
+                      <TransactionsTableTokenImage tx={tx} />
                       <span>
                         {formatAmount(Number(tx.value), {
                           symbol: tx.asset

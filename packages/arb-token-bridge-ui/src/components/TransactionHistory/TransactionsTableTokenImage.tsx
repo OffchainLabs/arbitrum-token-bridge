@@ -4,12 +4,14 @@ import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { ChainId } from '../../util/networks'
-import { ether } from '../../constants'
+import { MergedTransaction } from '../../state/app/state'
+import { orbitChains } from '../../util/orbitChainsList'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 export const TransactionsTableTokenImage = ({
-  tokenSymbol
+  tx
 }: {
-  tokenSymbol: string
+  tx: MergedTransaction
 }) => {
   // we need to take token image from mainnet by symbol, some token images don't exists on other networks
   const tokenLists = useTokenLists(ChainId.ArbitrumOne)
@@ -20,18 +22,20 @@ export const TransactionsTableTokenImage = ({
 
   const token = useMemo(() => {
     return allTokens.find(
-      t => t.symbol.toLowerCase() === tokenSymbol.toLowerCase()
+      t => t.symbol.toLowerCase() === tx.asset.toLowerCase()
     )
-  }, [allTokens, tokenSymbol])
+  }, [allTokens, tx.asset])
 
-  if (tokenSymbol.toLowerCase() === ether.symbol.toLowerCase()) {
+  if (tx.assetType === AssetType.ETH) {
+    const orbitChain = orbitChains[tx.childChainId]
+
+    const logoSrc =
+      orbitChain && orbitChain.bridgeUiConfig.nativeTokenData?.logoUrl
+        ? orbitChain.bridgeUiConfig.nativeTokenData.logoUrl
+        : EthereumLogoRoundLight
+
     return (
-      <Image
-        height={20}
-        width={20}
-        alt="ETH logo"
-        src={EthereumLogoRoundLight}
-      />
+      <Image height={20} width={20} alt="Native token logo" src={logoSrc} />
     )
   }
 
