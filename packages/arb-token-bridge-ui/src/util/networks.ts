@@ -10,7 +10,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { getOrbitChains, orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 // TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead
 export const getChains = () => {
@@ -408,7 +408,9 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Sepolia,
     ChainId.ArbitrumSepolia,
     ChainId.StylusTestnet,
-    ...Object.keys(orbitTestnets).map(Number),
+    ...getOrbitChains({ mainnet: false, testnet: true }).map(
+      chain => chain.chainID
+    ),
     ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
   ]
 
@@ -416,7 +418,9 @@ export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
     ChainId.Ethereum,
     ChainId.ArbitrumOne,
     ChainId.ArbitrumNova,
-    ...Object.keys(orbitMainnets).map(Number)
+    ...getOrbitChains({ mainnet: true, testnet: false }).map(
+      chain => chain.chainID
+    )
   ]
 
   return isNetwork(chainId).isTestnet

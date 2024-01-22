@@ -31,10 +31,10 @@ export function isValidChainQueryParam(value: string | number): boolean {
     const isValidCoreChainSlug = (
       chainQueryParams as readonly string[]
     ).includes(value)
-    const isValidAddedOrbitChainSlug = getOrbitChains().some(
+    const isValidOrbitChainSlug = getOrbitChains().some(
       chain => chain.slug === value
     )
-    return isValidCoreChainSlug || isValidAddedOrbitChainSlug
+    return isValidCoreChainSlug || isValidOrbitChainSlug
   }
 
   const supportedNetworkIds = getSupportedNetworks(value, true)

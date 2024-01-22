@@ -128,6 +128,17 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
 
 export const orbitChains = { ...orbitMainnets, ...orbitTestnets }
 
-export function getOrbitChains() {
-  return Object.values(orbitChains)
+export function getOrbitChains(
+  {
+    mainnet,
+    testnet
+  }: {
+    mainnet: boolean
+    testnet: boolean
+  } = { mainnet: true, testnet: true }
+): OrbitChainConfig[] {
+  const mainnetChains = mainnet ? Object.values(orbitMainnets) : []
+  const testnetChains = testnet ? Object.values(orbitTestnets) : []
+
+  return [...mainnetChains, ...testnetChains]
 }
