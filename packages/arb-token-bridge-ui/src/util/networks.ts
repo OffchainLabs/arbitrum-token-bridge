@@ -10,7 +10,7 @@ import {
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { getOrbitChains, orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 // TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead
 export const getChains = () => {
@@ -401,31 +401,21 @@ export function getNetworkName(chainId: number) {
   return getBridgeUiConfigForChain(chainId).network.name
 }
 
-export function getSupportedNetworks(chainId = 0, includeTestnets = false) {
-  const testnetNetworks = [
-    ChainId.Goerli,
-    ChainId.ArbitrumGoerli,
-    ChainId.Sepolia,
-    ChainId.ArbitrumSepolia,
-    ChainId.StylusTestnet,
-    ...getOrbitChains({ mainnet: false, testnet: true }).map(
-      chain => chain.chainID
-    ),
-    ...getCustomChainsFromLocalStorage().map(chain => chain.chainID)
-  ]
-
-  const mainnetNetworks = [
-    ChainId.Ethereum,
-    ChainId.ArbitrumOne,
-    ChainId.ArbitrumNova,
-    ...getOrbitChains({ mainnet: true, testnet: false }).map(
-      chain => chain.chainID
-    )
-  ]
-
-  return isNetwork(chainId).isTestnet
-    ? [...mainnetNetworks, ...testnetNetworks]
-    : [...mainnetNetworks, ...(includeTestnets ? testnetNetworks : [])]
+export function getSupportedChainIds(
+  {
+    includeTestnets
+  }: {
+    includeTestnets: boolean
+  } = { includeTestnets: false }
+) {
+  return getChains()
+    .map(chain => chain.chainID)
+    .filter(chainId => {
+      if (!includeTestnets) {
+        return !isNetwork(chainId).isTestnet
+      }
+      return true
+    })
 }
 
 export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
