@@ -123,7 +123,7 @@ export function TransactionsTableRowAction({
     }
 
     return isClaiming || isClaimingCctp ? (
-      <span className="animate-pulse text-xs">Claiming...</span>
+      <span className="my-2 animate-pulse text-xs">Claiming...</span>
     ) : (
       <Button
         variant="primary"
