@@ -70,6 +70,8 @@ export async function fetchWithdrawalsFromSubgraph({
     })
   )
 
+  if (!pageSize) return [] // don't query subgraph if nothing requested
+
   const response = await fetch(
     `${getAPIBaseUrl()}/api/withdrawals?${urlParams}`,
     {

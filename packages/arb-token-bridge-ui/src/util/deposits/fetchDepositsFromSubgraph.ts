@@ -72,6 +72,8 @@ export const fetchDepositsFromSubgraph = async ({
     })
   )
 
+  if (!pageSize) return [] // don't query subgraph if nothing requested
+
   const response = await fetch(`${getAPIBaseUrl()}/api/deposits?${urlParams}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
