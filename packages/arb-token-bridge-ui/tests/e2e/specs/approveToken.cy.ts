@@ -47,7 +47,7 @@ describe('Approve token and deposit afterwards', () => {
             .should('be.visible')
         })
       cy.findByRole('button', {
-        name: 'Move funds to Arbitrum'
+        name: 'Move funds to Arbitrum Local'
       }).click()
       cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
