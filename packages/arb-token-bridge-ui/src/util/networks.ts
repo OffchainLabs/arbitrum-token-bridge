@@ -407,7 +407,7 @@ export function getSupportedChainIds(
   }: {
     includeTestnets: boolean
   } = { includeTestnets: false }
-) {
+): ChainId[] {
   return getChains()
     .map(chain => chain.chainID)
     .filter(chainId => {
