@@ -97,10 +97,10 @@ export function TransactionsTableRowAction({
   }
 
   if (
+    tx.status === 'pending' ||
     tx.status === 'Unconfirmed' ||
     tx.depositStatus === DepositStatus.L1_PENDING ||
-    tx.depositStatus === DepositStatus.L2_PENDING ||
-    typeof cctpRemainingTime !== 'undefined'
+    tx.depositStatus === DepositStatus.L2_PENDING
   ) {
     return (
       <div className="flex flex-col text-center text-xs">

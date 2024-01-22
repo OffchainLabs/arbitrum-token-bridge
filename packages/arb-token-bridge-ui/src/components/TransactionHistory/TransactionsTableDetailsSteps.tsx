@@ -70,20 +70,24 @@ const Step = ({
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
   let iconColorClassName = 'text-white/50'
+  let textColorClassName = 'text-white/50'
 
   if (done || claimable) {
     borderColorClassName = 'border-green-400'
     iconColorClassName = 'text-green-400'
+    textColorClassName = 'text-white'
   }
 
   if (pending) {
     borderColorClassName = 'border-yellow-400'
     iconColorClassName = 'text-yellow-400'
+    textColorClassName = 'text-white'
   }
 
   if (failure) {
     borderColorClassName = 'border-red-400'
     iconColorClassName = 'text-red-400'
+    textColorClassName = 'text-white'
   }
 
   return (
@@ -105,7 +109,7 @@ const Step = ({
             )}
           />
         )}
-        <span>{text}</span>
+        <span className={textColorClassName}>{text}</span>
       </div>
       {endItem}
     </div>
@@ -123,7 +127,7 @@ export const TransactionsTableDetailsSteps = ({
   const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
 
   const sourceNetworkName = getNetworkName(sourceChainId)
-  const destNetworkName = getNetworkName(destChainId)
+  const destinationNetworkName = getNetworkName(destChainId)
 
   const destNetworkTxId = getDestNetworkTxId(tx)
 
@@ -133,7 +137,8 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isDestChainFailure = !isSourceChainDepositFailure && isTxFailed(tx)
+  const isDestinationChainFailure =
+    !isSourceChainDepositFailure && isTxFailed(tx)
 
   return (
     <div className="flex flex-col text-xs">
@@ -156,7 +161,7 @@ export const TransactionsTableDetailsSteps = ({
       {/* Pending transfer showing the remaining time */}
       <Step
         pending={isTxPending(tx)}
-        done={!isTxPending(tx)}
+        done={!isTxPending(tx) && !isSourceChainDepositFailure}
         text={`Wait ~${getTransferDurationText(tx)}`}
         endItem={
           isTxPending(tx) && (
@@ -192,23 +197,16 @@ export const TransactionsTableDetailsSteps = ({
         />
       )}
 
-      {isDestChainFailure && (
-        <Step
-          failure={true}
-          text={`Transaction failed on ${destNetworkName}`}
-        />
-      )}
-
       {/* The final step, showing the destination chain */}
       <Step
         done={isTxCompleted(tx)}
-        failure={isTxExpired(tx) || isDestChainFailure}
+        failure={isTxExpired(tx) || isDestinationChainFailure}
         text={
-          isTxExpired(tx) || isDestChainFailure
+          isTxExpired(tx) || isDestinationChainFailure
             ? `Transaction ${
-                isDestChainFailure ? 'failed' : 'expired'
-              } on ${destNetworkName}`
-            : `Funds arrived on ${destNetworkName}`
+                isDestinationChainFailure ? 'failed' : 'expired'
+              } on ${destinationNetworkName}`
+            : `Funds arrived on ${destinationNetworkName}`
         }
         endItem={
           destNetworkTxId && (
