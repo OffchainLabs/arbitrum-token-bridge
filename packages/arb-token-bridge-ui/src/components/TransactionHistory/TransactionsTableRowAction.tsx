@@ -1,4 +1,3 @@
-import { twMerge } from 'tailwind-merge'
 import { useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
@@ -28,10 +27,12 @@ export function TransactionsTableRowAction({
   type: 'deposits' | 'withdrawals'
 }) {
   const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
+    isSwitchingNetworkBeforeTx: true
+  })
   const networkName = getNetworkName(chain?.id ?? 0)
 
-  const { claim, isClaiming } = useClaimWithdrawal()
+  const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
   const isConnectedToArbitrum = useIsConnectedToArbitrum()
@@ -121,55 +122,41 @@ export function TransactionsTableRowAction({
       return null
     }
 
-    return (
-      <Tooltip
-        show={!currentChainIsValid}
-        wrapperClassName=""
-        content={
-          <span>
-            {`Please switch to ${getNetworkName(
-              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-            )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
-          </span>
-        }
-      >
-        <Button
-          variant="primary"
-          loading={isClaiming || isClaimingCctp}
-          disabled={isClaimButtonDisabled}
-          className={twMerge(
-            'w-16 rounded p-2 text-xs text-black',
-            currentChainIsValid ? 'bg-green-400' : 'bg-white'
-          )}
-          onClick={async () => {
-            try {
-              if (!currentChainIsValid) {
-                return switchNetwork?.(
-                  tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-                )
-              }
-
-              if (tx.isCctp) {
-                return await claimCctp()
-              } else {
-                return await claim(tx)
-              }
-            } catch (error: any) {
-              if (isUserRejectedError(error)) {
-                return
-              }
-
-              errorToast(
-                `Can't claim ${
-                  type === 'deposits' ? 'withdrawal' : 'deposit'
-                }: ${error?.message ?? error}`
+    return isClaiming || isClaimingCctp ? (
+      <span className="animate-pulse text-xs">Claiming...</span>
+    ) : (
+      <Button
+        variant="primary"
+        disabled={isClaimButtonDisabled}
+        className="w-16 rounded bg-green-400 p-2 text-xs text-black"
+        onClick={async () => {
+          try {
+            if (!currentChainIsValid) {
+              await switchNetworkAsync?.(
+                tx.isWithdrawal ? tx.parentChainId : tx.childChainId
               )
             }
-          }}
-        >
-          {currentChainIsValid ? 'Claim' : 'Switch'}
-        </Button>
-      </Tooltip>
+
+            if (tx.isCctp) {
+              return await claimCctp()
+            } else {
+              return await claim()
+            }
+          } catch (error: any) {
+            if (isUserRejectedError(error)) {
+              return
+            }
+
+            errorToast(
+              `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+                error?.message ?? error
+              }`
+            )
+          }
+        }}
+      >
+        Claim
+      </Button>
     )
   }
 
