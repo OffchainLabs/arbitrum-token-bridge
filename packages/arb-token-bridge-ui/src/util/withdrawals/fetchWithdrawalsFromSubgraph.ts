@@ -74,8 +74,7 @@ export async function fetchWithdrawalsFromSubgraph({
   try {
     getL2SubgraphClient(Number(l2ChainId))
   } catch (error: any) {
-    console.log(error) // return early if trying to query an unsupported network
-    return []
+    return [] // return early if trying to query an unsupported network
   }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
