@@ -138,11 +138,23 @@ export default async function handler(
       return
     }
 
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: {
+          pending: [],
+          completed: []
+        },
+        error: null
+      })
+      return
+    }
+
     const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-sepolia'
     )
     const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-goerli'
+      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-sepolia'
     )
 
     const messagesSentQuery = gql(`{

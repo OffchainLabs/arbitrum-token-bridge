@@ -50,6 +50,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { getOrbitChains } from '../util/orbitChainsList'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -117,17 +118,15 @@ const multiChainFetchList: ChainPair[] = [
   },
   // Orbit
   {
-    parentChain: ChainId.ArbitrumOne,
-    chain: ChainId.Xai
-  },
-  {
-    parentChain: ChainId.ArbitrumGoerli,
-    chain: ChainId.XaiTestnet
-  },
-  {
     parentChain: ChainId.ArbitrumSepolia,
     chain: ChainId.StylusTestnet
   },
+  ...getOrbitChains().map(orbitChain => {
+    return {
+      parentChain: orbitChain.partnerChainID,
+      chain: orbitChain.chainID
+    }
+  }),
   ...getCustomChainsFromLocalStorage().map(chain => {
     return {
       parentChain: chain.partnerChainID,
@@ -272,19 +271,19 @@ const useTransactionHistoryWithoutStatuses = (
 
   const cctpTransfersTestnet = useCctpFetching({
     walletAddress: address,
-    l1ChainId: ChainId.Goerli,
-    l2ChainId: ChainId.ArbitrumGoerli,
+    l1ChainId: ChainId.Sepolia,
+    l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
     pageSize: cctpTypeToFetch({
-      parentChain: ChainId.Goerli,
-      chain: ChainId.ArbitrumGoerli
+      parentChain: ChainId.Sepolia,
+      chain: ChainId.ArbitrumSepolia
     })
       ? 1000
       : 0,
     type:
       cctpTypeToFetch({
-        parentChain: ChainId.Goerli,
-        chain: ChainId.ArbitrumGoerli
+        parentChain: ChainId.Sepolia,
+        chain: ChainId.ArbitrumSepolia
       }) ?? 'all'
   })
 

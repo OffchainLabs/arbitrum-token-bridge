@@ -17,7 +17,10 @@ import { getNetworkName, isNetwork } from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
-import { isTokenGoerliUSDC, isTokenMainnetUSDC } from '../../../util/TokenUtils'
+import {
+  isTokenSepoliaUSDC,
+  isTokenMainnetUSDC
+} from '../../../util/TokenUtils'
 import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
@@ -32,7 +35,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   } = useAppState()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { isArbitrumGoerli } = isNetwork(childChain.id)
+  const { isArbitrumSepolia } = isNetwork(childChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const destinationNetworkName = getNetworkName(childChain.id)
 
@@ -46,7 +49,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
   if (
     !isTokenMainnetUSDC(selectedToken.address) &&
-    !isTokenGoerliUSDC(selectedToken.address)
+    !isTokenSepoliaUSDC(selectedToken.address)
   ) {
     return null
   }
@@ -59,11 +62,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
     href: USDCFastBridge.getHref({
       from: parentChain.id,
       to: childChain.id,
-      fromTokenAddress: isArbitrumGoerli
-        ? CommonAddress.Goerli.USDC
+      fromTokenAddress: isArbitrumSepolia
+        ? CommonAddress.Sepolia.USDC
         : CommonAddress.Ethereum.USDC,
-      toTokenAddress: isArbitrumGoerli
-        ? CommonAddress.ArbitrumGoerli.USDC
+      toTokenAddress: isArbitrumSepolia
+        ? CommonAddress.ArbitrumSepolia.USDC
         : CommonAddress.ArbitrumOne.USDC,
       amount: props.amount,
       transferMode: 'deposit'
