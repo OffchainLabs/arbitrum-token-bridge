@@ -5,7 +5,11 @@ describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
     // open tx history panel
     context('open transactions history panel', () => {
@@ -43,7 +47,11 @@ describe('Transaction History', () => {
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
     // open tx history panel
     context('open transactions history panel', () => {

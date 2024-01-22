@@ -1,7 +1,7 @@
 import { Popover } from '@headlessui/react'
 import Image from 'next/image'
 import { CSSProperties, useMemo, useState } from 'react'
-import { Chain, useNetwork } from 'wagmi'
+import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -20,6 +20,7 @@ import {
 } from './SearchPanel/SearchPanelUtils'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type NetworkInfo = {
   chainId: number
@@ -243,13 +244,14 @@ export const NetworkSelectionContainer = ({
   buttonStyle?: CSSProperties
   onChange: (value: Chain) => void
 }) => {
-  const { chain } = useNetwork()
+  const [{ sourceChain }] = useNetworks()
   const [isTestnetMode] = useIsTestnetMode()
 
   const supportedNetworks = getSupportedNetworks(
-    chain?.id,
+    sourceChain.id,
     !!isTestnetMode
-  ).filter(chainId => chainId !== chain?.id)
+  ).filter(chainId => chainId !== sourceChain.id)
+
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
