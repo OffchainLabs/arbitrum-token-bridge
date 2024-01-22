@@ -24,7 +24,10 @@ export const QUOTER_CONTRACT_ADDRESS =
 const getEthPrice = async () => {
   const provider = new StaticJsonRpcProvider(rpcURLs[ChainId.Ethereum])
 
-  // get eth price from the wETH/USDC uniswap pool
+  // derive the ETH price from Uniswap pool
+  // https://docs.uniswap.org/sdk/v3/guides/swaps/quoting
+  // https://github.com/Uniswap/examples/blob/main/v3-sdk/quoting/src/libs/quote.ts
+
   const WETH_TOKEN = new Token(
     1,
     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
@@ -46,7 +49,7 @@ const getEthPrice = async () => {
     poolFee: FeeAmount.MEDIUM
   }
 
-  // get ETH/USDC pool contract on uniswap
+  // get the pool contract for mentioned tokens on uniswap
   const currentPoolAddress = computePoolAddress({
     factoryAddress: POOL_FACTORY_CONTRACT_ADDRESS,
     tokenA: quoteConfig.in,
@@ -90,7 +93,7 @@ const getEthPrice = async () => {
 
 export function useETHPrice(): UseETHPriceResult {
   const { data, error, isValidating, mutate } = useSWR<number, Error>(
-    'eth/usdt',
+    'eth/usd',
     () => getEthPrice(),
     {
       refreshInterval: 30_000,
