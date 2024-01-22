@@ -27,9 +27,10 @@ export function NetworkListbox({
   onChange,
   buttonClassName
 }: NetworkListboxProps) {
-  const { primaryColor, networkName } = getBridgeUiConfigForChain(
+  const { color, network } = getBridgeUiConfigForChain(
     value?.id || ChainId.Ethereum
   )
+  const { name: networkName } = network
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -56,7 +57,7 @@ export function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        style={{ backgroundColor: primaryColor }}
+        style={{ backgroundColor: color.primary }}
         className={twMerge(
           'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3',
           buttonClassName
@@ -87,7 +88,7 @@ export function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
-                    src={getBridgeUiConfigForChain(option.id).networkLogo}
+                    src={getBridgeUiConfigForChain(option.id).network.logo}
                     alt={`${getNetworkName(option.id)} logo`}
                     className="max-h-7 w-auto"
                     width={36}

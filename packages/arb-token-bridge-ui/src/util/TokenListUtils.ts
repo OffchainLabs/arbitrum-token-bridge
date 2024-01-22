@@ -148,7 +148,8 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   // Orbit
   {
     id: 14,
-    originChainID: ChainId.Xai,
+    // Xai
+    originChainID: 660279,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/660279_arbed_uniswap_labs.json',
     name: 'Arbed Uniswap List',
     isDefault: true,

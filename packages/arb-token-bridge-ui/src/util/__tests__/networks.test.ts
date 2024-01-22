@@ -1,8 +1,17 @@
 import { addCustomChain } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
-import { ChainId, getBaseChainIdByChainId, xaiTestnet } from '../networks'
+import { ChainId, getBaseChainIdByChainId } from '../networks'
+import { orbitTestnets } from '../orbitChainsList'
+
+const xaiTestnetChainId = 47279324479
 
 beforeAll(() => {
+  const xaiTestnet = orbitTestnets[xaiTestnetChainId]
+
+  if (!xaiTestnet) {
+    throw new Error(`Could not find Xai Testnet in the Orbit chains list.`)
+  }
+
   // add local
   addCustomChain({
     customParentChain: {
@@ -54,7 +63,7 @@ beforeAll(() => {
       }
     }
   })
-  // add xai
+
   addCustomChain({
     customChain: xaiTestnet
   })
@@ -120,7 +129,7 @@ describe('getBaseChainIdByChainId', () => {
     it('should return the correct base chain', () => {
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.XaiTestnet
+          chainId: xaiTestnetChainId
         })
       ).toBe(ChainId.Goerli)
 
