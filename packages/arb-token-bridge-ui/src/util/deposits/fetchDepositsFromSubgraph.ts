@@ -1,3 +1,4 @@
+import { getL1SubgraphClient } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchDepositsFromSubgraphResult = {
@@ -71,6 +72,12 @@ export const fetchDepositsFromSubgraph = async ({
       search: searchString
     })
   )
+
+  try {
+    getL1SubgraphClient(Number(l2ChainId))
+  } catch (error: any) {
+    throw error // throw error if trying to query an unsupported network
+  }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
 
