@@ -25,7 +25,7 @@ const SectionTitle = ({
 )
 
 export const SettingsDialog = () => {
-  const [isTestnetMode] = useIsTestnetMode()
+  const { isTestnetMode } = useIsTestnetMode()
 
   const [{ settingsOpen }, setQueryParams] = useArbQueryParams()
 

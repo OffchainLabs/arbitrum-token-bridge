@@ -103,7 +103,7 @@ function NetworkRow({
 
 function AddCustomOrbitChainButton() {
   const [, setQueryParams] = useArbQueryParams()
-  const [isTestnetMode] = useIsTestnetMode()
+  const { isTestnetMode } = useIsTestnetMode()
 
   if (!isTestnetMode) {
     return null
@@ -245,7 +245,7 @@ export const NetworkSelectionContainer = ({
   onChange: (value: Chain) => void
 }) => {
   const [{ sourceChain }] = useNetworks()
-  const [isTestnetMode] = useIsTestnetMode()
+  const { isTestnetMode } = useIsTestnetMode()
 
   const supportedNetworks = getSupportedNetworks(
     sourceChain.id,

@@ -1,12 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 import { Switch } from './atoms/Switch'
 import { warningToast } from './atoms/Toast'
-import { isNetwork } from '../../util/networks'
 import { twMerge } from 'tailwind-merge'
-import { useNetworks } from '../../hooks/useNetworks'
 
 export const TestnetToggle = ({
   className,
@@ -20,16 +18,15 @@ export const TestnetToggle = ({
   label: string
   description?: string
 }) => {
-  const [{ sourceChain }] = useNetworks()
-  const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
-  const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
+  const { isSourceChainTestnet, isTestnetMode, setIsTestnetMode } =
+    useIsTestnetMode()
 
   const enableTestnetMode = useCallback(() => {
     setIsTestnetMode(true)
   }, [setIsTestnetMode])
 
   const disableTestnetMode = useCallback(() => {
-    // can't turn test mode off if connected to testnet
+    // can't turn test mode off if source chain is testnet
     if (!isSourceChainTestnet) {
       setIsTestnetMode(false)
     } else {
@@ -38,13 +35,6 @@ export const TestnetToggle = ({
       )
     }
   }, [isSourceChainTestnet, setIsTestnetMode])
-
-  useEffect(() => {
-    // force test mode if connected to testnet
-    if (isSourceChainTestnet) {
-      enableTestnetMode()
-    }
-  }, [isSourceChainTestnet, enableTestnetMode])
 
   return (
     <div

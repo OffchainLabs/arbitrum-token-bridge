@@ -352,7 +352,7 @@ export function TransferPanelMain({
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const [isTestnetMode] = useIsTestnetMode()
+  const { isTestnetMode } = useIsTestnetMode()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
