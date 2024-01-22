@@ -32,8 +32,8 @@ module.exports = {
         'gray-3': '#DADADA',
         'gray-4': '#CCCCCC',
         'gray-5': '#AEAEAE',
-        'gray-header-menu': '#8d8e8e',
         'gray-6': '#999999',
+        'gray-header-menu': '#8d8e8e',
         'gray-dark': '#6D6D6D',
         dark: '#1A1C1D', // (or default-black)
 

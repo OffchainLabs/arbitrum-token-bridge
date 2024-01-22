@@ -702,9 +702,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
 
-    if (!isConnected) {
-      return
-    }
     if (!walletAddress) {
       return
     }

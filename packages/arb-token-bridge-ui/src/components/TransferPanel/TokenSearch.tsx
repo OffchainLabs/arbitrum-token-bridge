@@ -538,10 +538,6 @@ export function TokenSearch({ close }: { close: () => void }) {
         return
       }
 
-      if (!walletAddress) {
-        return
-      }
-
       const data = await fetchErc20Data({
         address: _token.address,
         provider: parentChainProvider

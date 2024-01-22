@@ -15,16 +15,11 @@ const TokenListSyncer = (): JSX.Element => {
   const {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
     if (!arbTokenBridgeLoaded) {
-      return
-    }
-
-    if (!walletAddress) {
       return
     }
 
@@ -43,7 +38,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [walletAddress, childChain.id, arbTokenBridgeLoaded])
+  }, [childChain.id, arbTokenBridgeLoaded])
 
   return <></>
 }

@@ -113,7 +113,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const actions = useActions()
   const { app } = useAppState()
   const { selectedToken } = app
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
@@ -155,13 +155,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
-    if (!isConnected) {
-      return
-    }
-
     const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
+      isArbitrum: isSourceChainArbitrum,
+      isOrbitChain: isSourceChainOrbitChain
     } = isNetwork(networks.sourceChain.id)
     const isParentChainEthereum = isNetwork(
       parentChain.id
@@ -174,8 +170,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     })
 
     if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
+      (isParentChainEthereum && isSourceChainArbitrum) ||
+      isSourceChainOrbitChain
     ) {
       console.info('Withdrawal mode detected:')
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
@@ -195,7 +191,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
     })
   }, [
-    isConnected,
     address,
     networks.sourceChain.id,
     parentChain.id,
