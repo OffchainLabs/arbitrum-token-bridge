@@ -44,7 +44,7 @@ async function fetchCCTP({
     })
   )
 
-  if (!pageSize) return { pending: [], completed: [] } // don't query subgraph if nothing requested
+  if (pageSize === 0) return { pending: [], completed: [] } // don't query subgraph if nothing requested
 
   const response = await fetch(
     `${getAPIBaseUrl()}/api/cctp/${type}?${urlParams}`,

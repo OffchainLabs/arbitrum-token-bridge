@@ -139,7 +139,7 @@ export default async function handler(
     }
 
     // if invalid pageSize, send empty data instead of error
-    if (!Number(pageSize)) {
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
       res.status(200).json({
         data: {
           pending: [],
