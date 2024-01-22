@@ -76,7 +76,8 @@ export const fetchDepositsFromSubgraph = async ({
   try {
     getL1SubgraphClient(Number(l2ChainId))
   } catch (error: any) {
-    throw error // throw error if trying to query an unsupported network
+    console.log(error) // return early if trying to query an unsupported network
+    return []
   }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
