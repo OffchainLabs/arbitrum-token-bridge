@@ -14,7 +14,9 @@ export const NetworkImage = ({
   return (
     <div className="flex w-4 justify-center">
       <Image
-        src={getBridgeUiConfigForChain(chainId, { variant: theme }).networkLogo}
+        src={
+          getBridgeUiConfigForChain(chainId, { variant: theme }).network.logo
+        }
         alt={`${getNetworkName(chainId)} logo`}
         width={size}
         height={size}
