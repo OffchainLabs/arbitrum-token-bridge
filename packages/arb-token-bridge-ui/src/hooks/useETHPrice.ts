@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import axios from 'axios'
 import useSWR, { KeyedMutator } from 'swr'
+import { getAPIBaseUrl } from '../util'
 
 export type UseETHPriceResult = {
   ethPrice: number
@@ -12,8 +12,15 @@ export type UseETHPriceResult = {
 
 export function useETHPrice(): UseETHPriceResult {
   const { data, error, isValidating, mutate } = useSWR<number, Error>(
-    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
-    url => axios.get(url).then(res => res.data.ethereum.usd),
+    'eth/usd',
+    async () => {
+      const response = await fetch(`${getAPIBaseUrl()}/api/ethPrice`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const price: number = (await response.json()).data
+      return price
+    },
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
