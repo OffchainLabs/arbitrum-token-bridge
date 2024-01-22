@@ -581,7 +581,7 @@ export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
   return 'less than a minute'
 }
 
-export function getDestNetworkTxId(tx: MergedTransaction) {
+export function getDestinationNetworkTxId(tx: MergedTransaction) {
   if (tx.isCctp) {
     return tx.cctpData?.receiveMessageTransactionHash
   }

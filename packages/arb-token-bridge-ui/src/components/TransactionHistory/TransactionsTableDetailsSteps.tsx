@@ -10,7 +10,7 @@ import {
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
-  getDestNetworkTxId,
+  getDestinationNetworkTxId,
   isTxClaimable,
   isTxCompleted,
   isTxExpired,
@@ -124,12 +124,14 @@ export const TransactionsTableDetailsSteps = ({
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
 
   const sourceNetworkName = getNetworkName(sourceChainId)
-  const destinationNetworkName = getNetworkName(destChainId)
+  const destinationNetworkName = getNetworkName(destinationChainId)
 
-  const destNetworkTxId = getDestNetworkTxId(tx)
+  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
 
   const isSourceChainDepositFailure =
     typeof tx.depositStatus !== 'undefined' &&
@@ -209,11 +211,11 @@ export const TransactionsTableDetailsSteps = ({
             : `Funds arrived on ${destinationNetworkName}`
         }
         endItem={
-          destNetworkTxId && (
+          destinationNetworkTxId && (
             <ExternalLink
-              href={`${getExplorerUrl(destChainId)}/tx/${getDestNetworkTxId(
-                tx
-              )}`}
+              href={`${getExplorerUrl(
+                destinationChainId
+              )}/tx/${getDestinationNetworkTxId(tx)}`}
             >
               <ArrowTopRightOnSquareIcon height={12} />
             </ExternalLink>

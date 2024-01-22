@@ -10,11 +10,10 @@ import {
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import {
-  getDestNetworkTxId,
+  getDestinationNetworkTxId,
   isTxClaimable,
   isTxExpired,
   isTxFailed,
@@ -61,9 +60,7 @@ export function TransactionsTableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
-        )
+        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
       }),
     [
       tx.asset,
@@ -123,16 +120,16 @@ export function TransactionsTableRow({
       )
     }
 
-    const destNetworkTxId = getDestNetworkTxId(tx)
+    const destinationNetworkTxId = getDestinationNetworkTxId(tx)
 
     // Success
     return (
       <div className="flex items-center space-x-1">
         <CheckCircleIcon height={14} className="mr-1" />
         <span>Success</span>
-        {destNetworkTxId && (
+        {destinationNetworkTxId && (
           <ExternalLink
-            href={`${getExplorerUrl(destChainId)}/tx/${destNetworkTxId}`}
+            href={`${getExplorerUrl(destChainId)}/tx/${destinationNetworkTxId}`}
           >
             <ArrowTopRightOnSquareIcon height={10} />
           </ExternalLink>
