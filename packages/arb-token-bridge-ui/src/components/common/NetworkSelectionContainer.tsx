@@ -38,18 +38,18 @@ const chainGroupInfo = {
 }
 
 function NetworkRow({
-  network,
+  networkInfo,
   style,
   onClick,
   close
 }: {
-  network: NetworkInfo
+  networkInfo: NetworkInfo
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
-  const { chainId } = network
-  const { networkLogo, networkName } = getBridgeUiConfigForChain(chainId)
+  const { chainId } = networkInfo
+  const { network } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
 
   const handleClick = () => {
@@ -68,22 +68,22 @@ function NetworkRow({
       key={chainId}
       style={style}
       type="button"
-      aria-label={`Switch to ${networkName}`}
+      aria-label={`Switch to ${network.name}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10'
       )}
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
         <Image
-          src={networkLogo}
-          alt={`${networkName} logo`}
+          src={network.logo}
+          alt={`${network.name} logo`}
           className="h-full w-auto"
           width={24}
           height={24}
         />
       </span>
       <div className={twMerge('flex flex-col items-start gap-1')}>
-        <span className="truncate leading-none">{networkName}</span>
+        <span className="truncate leading-none">{network.name}</span>
         {chainInfo[chainId] && (
           <>
             <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
@@ -146,7 +146,7 @@ function NetworksPanel({
       return networks.filter(network => {
         const networkName = getBridgeUiConfigForChain(
           network.chainId
-        ).networkName.toLowerCase()
+        ).network.name.toLowerCase()
         return networkName.includes(_networkSearched)
       })
     }
@@ -211,7 +211,7 @@ function NetworksPanel({
             <NetworkRow
               key={networkOrChainTypeInfo.chainId}
               style={virtualizedProps.style}
-              network={networkOrChainTypeInfo}
+              networkInfo={networkOrChainTypeInfo}
               onClick={onNetworkRowClick}
               close={close}
             />
