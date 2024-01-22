@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useAccount } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
 import { useAppState } from '../../state'
@@ -10,9 +10,6 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -22,6 +19,7 @@ import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -70,6 +68,8 @@ export function useGasSummary(
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
+
+  const { data: signer } = useSigner()
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
   const l2GasPrice = useGasPrice({ provider: childChainProvider })
@@ -135,77 +135,44 @@ export function useGasSummary(
         return
       }
 
-      if (!walletAddress) {
+      if (!walletAddress || !signer) {
         return
       }
 
       try {
         setStatus('loading')
 
-        if (isDepositMode) {
-          if (token) {
-            const estimateGasResult = await depositTokenEstimateGas({
-              amount,
-              address: walletAddress,
-              erc20L1Address: token.address,
-              l1Provider: parentChainProvider,
-              l2Provider: childChainProvider
-            })
-
-            setResult(estimateGasResult)
-          } else {
-            const estimateGasResult = await depositEthEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l1Provider: parentChainProvider,
-              l2Provider: childChainProvider
-            })
-
-            setResult(estimateGasResult)
-          }
-        } else {
-          if (token) {
-            let estimateGasResult: {
-              estimatedL1Gas: BigNumber
-              estimatedL2Gas: BigNumber
-            }
-
-            if (
-              isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumSepoliaNativeUSDC(token.address)
-            ) {
-              estimateGasResult = {
-                estimatedL1Gas: constants.Zero,
-                estimatedL2Gas: constants.Zero
-              }
-              setStatus('unavailable')
-              return
-            } else {
-              estimateGasResult = await withdrawInitTxEstimateGas({
-                amount: amountDebounced,
-                erc20L1Address: token.address,
-                address: walletAddress,
-                l2Provider: childChainProvider
-              })
-            }
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          } else {
-            const estimateGasResult = await withdrawInitTxEstimateGas({
-              amount: amountDebounced,
-              address: walletAddress,
-              l2Provider: childChainProvider
-            })
-
-            setResult({
-              ...estimateGasResult,
-              estimatedL2SubmissionCost: constants.Zero
-            })
-          }
+        const emptyEstimatedGasResult = {
+          estimatedL1Gas: constants.Zero,
+          estimatedL2Gas: constants.Zero,
+          estimatedL2SubmissionCost: constants.Zero
         }
+
+        // in case of cctp, dont estimate gas
+        if (
+          isTokenArbitrumOneNativeUSDC(token?.address) ||
+          isTokenArbitrumSepoliaNativeUSDC(token?.address)
+        ) {
+          setResult(emptyEstimatedGasResult)
+          setStatus('unavailable')
+          return
+        }
+
+        // for rest of the cases, call their respective gas estimation methods
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+          sourceChainProvider: networks.sourceChainProvider,
+          destinationChainProvider: networks.destinationChainProvider,
+          sourceChainErc20Address: isDepositMode
+            ? token?.address
+            : token?.l2Address
+        })
+
+        const estimatedGasResult =
+          await bridgeTransferStarter.transferEstimateGas({
+            amount,
+            signer
+          })
+        setResult({ ...emptyEstimatedGasResult, ...estimatedGasResult })
 
         setStatus('success')
       } catch (error) {
@@ -237,7 +204,11 @@ export function useGasSummary(
   }
 }
 
-export type TransferPanelSummaryToken = { symbol: string; address: string }
+export type TransferPanelSummaryToken = {
+  symbol: string
+  address: string
+  l2Address?: string
+}
 
 export type TransferPanelSummaryProps = {
   amount: number

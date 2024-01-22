@@ -83,7 +83,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     // for cctp transfers we don't call our native gas estimation methods because we have completely different contracts
     return {
       estimatedL1Gas: constants.Zero,
-      estimatedL2Gas: constants.Zero
+      estimatedL2Gas: constants.Zero,
+      estimatedL2SubmissionCost: constants.Zero
     }
   }
 

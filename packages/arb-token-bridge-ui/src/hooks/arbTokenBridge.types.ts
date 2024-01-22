@@ -138,6 +138,7 @@ export interface AddressToDecimals {
 export type GasEstimates = {
   estimatedL1Gas: BigNumber
   estimatedL2Gas: BigNumber
+  estimatedL2SubmissionCost?: BigNumber
 }
 
 export type DepositGasEstimates = GasEstimates & {

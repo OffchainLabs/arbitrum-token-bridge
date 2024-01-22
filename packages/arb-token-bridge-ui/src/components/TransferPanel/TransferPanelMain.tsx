@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import { Chain, useAccount } from 'wagmi'
+import { Chain, useAccount, useSigner } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -36,8 +36,6 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -74,6 +72,7 @@ import {
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 enum NetworkType {
   l1 = 'l1',
@@ -361,6 +360,7 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
+  const { data: signer } = useSigner()
   const { arbTokenBridge, selectedToken } = app
   const { token } = arbTokenBridge
 
@@ -513,7 +513,7 @@ export function TransferPanelMain({
           estimatedL2SubmissionCost: BigNumber
         }
     > => {
-      if (!walletAddress) {
+      if (!signer) {
         return {
           estimatedL1Gas: constants.Zero,
           estimatedL2Gas: constants.Zero,
@@ -521,25 +521,19 @@ export function TransferPanelMain({
         }
       }
 
-      if (isDepositMode) {
-        const result = await depositEthEstimateGas({
-          amount: weiValue,
-          address: walletAddress,
-          l1Provider: parentChainProvider,
-          l2Provider: childChainProvider
-        })
-        return result
-      }
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+        sourceChainProvider: networks.sourceChainProvider,
+        destinationChainProvider: networks.destinationChainProvider
+      })
 
-      const result = await withdrawInitTxEstimateGas({
+      const result = await bridgeTransferStarter.transferEstimateGas({
         amount: weiValue,
-        address: walletAddress,
-        l2Provider: childChainProvider
+        signer
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
+    [signer, networks.sourceChainProvider, networks.destinationChainProvider]
   )
 
   const setMaxAmount = useCallback(async () => {
