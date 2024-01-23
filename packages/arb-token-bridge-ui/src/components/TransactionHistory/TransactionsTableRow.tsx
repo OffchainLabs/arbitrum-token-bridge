@@ -27,41 +27,6 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 
-type HighlightedTransactionStore = {
-  highlightedTx: {
-    txId: string | null
-    parentChainId: number | null
-    childChainId: number | null
-  }
-  setHighlightedTx: ({
-    txId,
-    parentChainId,
-    childChainId
-  }: {
-    txId: string
-    parentChainId: number
-    childChainId: number
-  }) => void
-  resetHighlightedTx: () => void
-}
-
-export const useHighlightedTransactionsStore =
-  create<HighlightedTransactionStore>(set => ({
-    highlightedTx: {
-      txId: null,
-      parentChainId: null,
-      childChainId: null
-    },
-    setHighlightedTx: ({ txId, parentChainId, childChainId }) => {
-      return set({ highlightedTx: { txId, parentChainId, childChainId } })
-    },
-    resetHighlightedTx: () => {
-      return set({
-        highlightedTx: { txId: null, parentChainId: null, childChainId: null }
-      })
-    }
-  }))
-
 export function TransactionsTableRow({
   tx,
   className = ''
@@ -70,14 +35,8 @@ export function TransactionsTableRow({
   className?: string
 }) {
   const [blinkNewTx, setBlinkNewTx] = useState(true)
+  const [shouldHighlightTx, setShouldHighlightTx] = useState(false)
   const { open: openTxDetails } = useTxDetailsStore()
-
-  const { highlightedTx, resetHighlightedTx } =
-    useHighlightedTransactionsStore()
-  const shouldHighlightTx =
-    highlightedTx.txId === tx.txId &&
-    highlightedTx.parentChainId === tx.parentChainId &&
-    highlightedTx.childChainId === tx.childChainId
 
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
   const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
@@ -98,6 +57,13 @@ export function TransactionsTableRow({
     }, 10_000)
 
     return () => clearInterval(interval)
+  }, [tx])
+
+  useEffect(() => {
+    const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
+    if (secondsPassed <= 10) {
+      setShouldHighlightTx(true)
+    }
   }, [tx])
 
   useEffect(() => {
@@ -211,12 +177,6 @@ export function TransactionsTableRow({
     return tx.status === 'Failure'
   }, [tx])
 
-  const removeRowHighlight = useCallback(() => {
-    if (shouldHighlightTx) {
-      resetHighlightedTx()
-    }
-  }, [shouldHighlightTx, resetHighlightedTx])
-
   return (
     <div
       data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
@@ -234,8 +194,8 @@ export function TransactionsTableRow({
             }
           : {}
       }
-      onClick={removeRowHighlight}
-      onMouseOver={removeRowHighlight}
+      onClick={() => setShouldHighlightTx(false)}
+      onMouseOver={() => setShouldHighlightTx(false)}
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex items-center pr-3 align-middle">

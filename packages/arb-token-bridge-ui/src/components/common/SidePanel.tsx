@@ -3,7 +3,6 @@ import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { Transition } from '@headlessui/react'
-import { useHighlightedTransactionsStore } from '../TransactionHistory/TransactionsTableRow'
 
 type SidePanelProps = {
   heading?: string
@@ -24,15 +23,12 @@ export const SidePanel = ({
 }: SidePanelProps) => {
   const [isClosing, setIsClosing] = useState(false)
 
-  const { resetHighlightedTx } = useHighlightedTransactionsStore()
-
   function handleCloseStart() {
     setIsClosing(true)
   }
 
   function handleCloseEnd() {
     onClose?.()
-    resetHighlightedTx()
 
     // prevent flickering caused by race conditions
     setTimeout(() => {
