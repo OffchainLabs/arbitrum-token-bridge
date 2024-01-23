@@ -79,6 +79,10 @@ export function SearchPanel({
 }>) {
   const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
 
+  function showMainPanel() {
+    setCurrentPanel(Panel.MAIN)
+  }
+
   function bottomRightCtaOnClick() {
     setCurrentPanel(Panel.LISTS)
   }
@@ -112,7 +116,7 @@ export function SearchPanel({
       <div className="flex justify-start pb-6">
         <button
           className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
-          onClick={() => setCurrentPanel(Panel.MAIN)}
+          onClick={showMainPanel}
         >
           <ArrowSmallLeftIcon className="h-6 w-6" />
           <span>Back to {mainPageTitle}</span>
