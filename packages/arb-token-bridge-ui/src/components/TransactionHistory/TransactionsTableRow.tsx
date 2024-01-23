@@ -59,7 +59,7 @@ export function TransactionsTableRow({
 
   useEffect(() => {
     const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
-    if (secondsPassed <= 10) {
+    if (secondsPassed <= 15) {
       setShouldHighlightTx(true)
     }
   }, [tx])
