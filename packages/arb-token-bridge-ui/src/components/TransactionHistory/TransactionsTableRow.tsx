@@ -89,7 +89,7 @@ export function TransactionsTableRow({
         >
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
-          <ArrowTopRightOnSquareIcon height={10} />
+          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
         </ExternalLink>
       )
     }
@@ -102,7 +102,7 @@ export function TransactionsTableRow({
         >
           <XCircleIcon height={14} className="mr-1" />
           <span>Expired</span>
-          <ArrowTopRightOnSquareIcon height={10} />
+          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
         </ExternalLink>
       )
     }
@@ -115,7 +115,7 @@ export function TransactionsTableRow({
         >
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
           <span>Pending</span>
-          <ArrowTopRightOnSquareIcon height={10} />
+          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
         </ExternalLink>
       )
     }
@@ -128,7 +128,7 @@ export function TransactionsTableRow({
         >
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
           <span>Claimable</span>
-          <ArrowTopRightOnSquareIcon height={10} />
+          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
         </ExternalLink>
       )
     }
@@ -149,7 +149,9 @@ export function TransactionsTableRow({
           <CheckCircleIcon height={14} className="mr-1" />
           <span>Success</span>
 
-          <ArrowTopRightOnSquareIcon height={10} />
+          {destinationNetworkTxId && (
+            <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+          )}
         </div>
       </ExternalLink>
     )
