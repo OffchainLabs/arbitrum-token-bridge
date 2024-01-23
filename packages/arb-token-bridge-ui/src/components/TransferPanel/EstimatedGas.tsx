@@ -13,6 +13,7 @@ import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { ETHPrice } from './ETHPrice'
+import { isTokenUSDC } from '../../util/TokenUtils'
 
 const gasFeeTooltip = ({
   parentChainName,
@@ -35,6 +36,20 @@ function StyledLoader() {
     <span className="flex justify-end">
       <Loader size="small" />
     </span>
+  )
+}
+
+function GasFeeForClaimTxMessage({ networkName }: { networkName: string }) {
+  return (
+    <div
+      className={twMerge(
+        'grid items-center',
+        'rounded-md bg-white/25 px-3 py-2',
+        'text-xs font-light text-white'
+      )}
+    >
+      You&apos;ll have to pay {networkName} gas fee upon claiming.
+    </div>
   )
 }
 
@@ -70,6 +85,8 @@ export function EstimatedGas({
 
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
+  const isCCTP = selectedToken && isTokenUSDC(selectedToken.address)
+
   const estimatedGasFee = useMemo(() => {
     if (!isDepositMode && !isParentChain) {
       return estimatedL1GasFees + estimatedL2GasFees
@@ -88,16 +105,12 @@ export function EstimatedGas({
   }
 
   if (isWithdrawalParentChain) {
+    return <GasFeeForClaimTxMessage networkName={parentChainName} />
+  }
+
+  if (isCCTP && !isSourceChain) {
     return (
-      <div
-        className={twMerge(
-          'grid items-center',
-          'rounded-md bg-white/25 px-3 py-2',
-          'text-xs font-light text-white'
-        )}
-      >
-        You&apos;ll have to pay {parentChainName} gas fee upon claiming.
-      </div>
+      <GasFeeForClaimTxMessage networkName={networks.destinationChain.name} />
     )
   }
 

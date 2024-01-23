@@ -86,8 +86,8 @@ export function useGasSummary(): {
     }
   }, [amount, token, nativeCurrency])
 
-  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
-  const l2GasPrice = useGasPrice({ provider: childChainProvider })
+  const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
+  const childChainGasPrice = useGasPrice({ provider: childChainProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amountBigNumber, 1_500)
@@ -154,9 +154,14 @@ export function useGasSummary(): {
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
+    const gasPrice = isDepositMode ? parentChainGasPrice : childChainGasPrice
     return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [isDepositMode, l1GasPrice, l2GasPrice, result.estimatedL1Gas])
+  }, [
+    isDepositMode,
+    parentChainGasPrice,
+    childChainGasPrice,
+    result.estimatedL1Gas
+  ])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -164,11 +169,15 @@ export function useGasSummary(): {
       parseFloat(
         utils.formatEther(
           result.estimatedL2Gas
-            .mul(l2GasPrice)
+            .mul(childChainGasPrice)
             .add(result.estimatedL2SubmissionCost)
         )
       ),
-    [result.estimatedL2Gas, l2GasPrice, result.estimatedL2SubmissionCost]
+    [
+      result.estimatedL2Gas,
+      childChainGasPrice,
+      result.estimatedL2SubmissionCost
+    ]
   )
 
   useEffect(() => {
@@ -228,8 +237,8 @@ export function useGasSummary(): {
   }, [
     result,
     isDepositMode,
-    l1GasPrice,
-    l2GasPrice,
+    parentChainGasPrice,
+    childChainGasPrice,
     gasSummary,
     estimatedL1GasFees,
     estimatedL2GasFees,

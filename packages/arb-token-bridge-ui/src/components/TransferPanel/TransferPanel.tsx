@@ -198,6 +198,13 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
+  const { gasSummary, gasSummaryStatus } = useGasSummary()
+
+  const { transferReady, errorMessage } = useTransferReadiness({
+    amount,
+    gasSummary: { ...gasSummary, status: gasSummaryStatus }
+  })
+
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
@@ -376,8 +383,6 @@ export function TransferPanel() {
       return constants.Zero
     }
   }, [amount, selectedToken, nativeCurrency])
-
-  const { gasSummary, gasSummaryStatus } = useGasSummary()
 
   const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
     const waitForInput = openUSDCDepositConfirmationDialog()
@@ -1006,11 +1011,6 @@ export function TransferPanel() {
       setTransferring(false)
     }
   }
-
-  const { transferReady, errorMessage } = useTransferReadiness({
-    amount,
-    gasSummary: { ...gasSummary, status: gasSummaryStatus }
-  })
 
   return (
     <>

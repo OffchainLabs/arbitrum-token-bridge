@@ -27,6 +27,7 @@ export function ETHPrice({
     [isBridgingEth, childChain.id]
   )
   const { ethToUSD } = useETHPrice()
+  const price = formatUSD(ethToUSD(amountInEth))
 
   if (!showPrice) {
     return null
@@ -35,7 +36,7 @@ export function ETHPrice({
   return (
     <span className="tabular-nums">
       {showBrackets && '('}
-      {formatUSD(ethToUSD(amountInEth))}
+      {price}
       {showBrackets && ')'}
     </span>
   )
