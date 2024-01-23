@@ -12,10 +12,10 @@ export type UseETHPriceResult = {
 
 export function useETHPrice(): UseETHPriceResult {
   const { data, error, isValidating, mutate } = useSWR<number, Error>(
-    'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
-    url => axios.get(url).then(res => res.data.ethereum.usd),
+    'https://api.coinbase.com/v2/prices/ETH-USD/spot',
+    url => axios.get(url).then(res => Number(res.data.data.amount)),
     {
-      refreshInterval: 30_000,
+      refreshInterval: 60_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000
