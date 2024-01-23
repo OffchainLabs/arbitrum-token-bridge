@@ -101,8 +101,8 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     const recipient = destinationAddress ?? address
 
-    console.log('recipient', recipient)
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
+
     // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
     const mintRecipient = utils.hexlify(
       utils.zeroPad(recipient, 32)
