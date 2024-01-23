@@ -1,6 +1,6 @@
 import { Popover } from '@headlessui/react'
 import Image from 'next/image'
-import { CSSProperties, useMemo, useState } from 'react'
+import { CSSProperties, useCallback, useMemo, useState } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -21,6 +21,7 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
+import { ListRowProps } from 'react-virtualized'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -151,6 +152,21 @@ function NetworksPanel({
     [networkSearched]
   )
 
+  function getRowHeight({ index }: { index: number }) {
+    const rowItemOrChainId = networksToShowWithChainTypeInfo[index]
+    if (!rowItemOrChainId) {
+      return 0
+    }
+    if (typeof rowItemOrChainId === 'object') {
+      return 65
+    }
+    const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
+    if (rowItem.description) {
+      return 90
+    }
+    return 52
+  }
+
   const networksToShowWithChainTypeInfo = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
 
@@ -177,6 +193,50 @@ function NetworksPanel({
     ]
   }, [debouncedNetworkSearched, networks])
 
+  const rowRenderer = useCallback(
+    (virtualizedProps: ListRowProps) => {
+      const networkOrChainTypeInfo =
+        networksToShowWithChainTypeInfo[virtualizedProps.index]
+      if (!networkOrChainTypeInfo) {
+        return null
+      }
+
+      // Chain Type Info row
+      if (typeof networkOrChainTypeInfo === 'object') {
+        const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
+        return (
+          <div
+            key={networkOrChainTypeInfo.name}
+            style={virtualizedProps.style}
+            className={twMerge(
+              'px-6 py-3',
+              !isCoreGroup &&
+                'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+            )}
+          >
+            <p className="text-sm text-dark">{networkOrChainTypeInfo.name}</p>
+            {networkOrChainTypeInfo.description && (
+              <p className="mt-2 text-xs">
+                {networkOrChainTypeInfo.description}
+              </p>
+            )}
+          </div>
+        )
+      }
+
+      return (
+        <NetworkRow
+          key={networkOrChainTypeInfo}
+          style={virtualizedProps.style}
+          chainId={networkOrChainTypeInfo}
+          onClick={onNetworkRowClick}
+          close={close}
+        />
+      )
+    },
+    [close, networksToShowWithChainTypeInfo, onNetworkRowClick]
+  )
+
   const onSearchInputChange = function (
     event: React.ChangeEvent<HTMLInputElement>
   ) {
@@ -193,49 +253,8 @@ function NetworksPanel({
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         errorMessage={errorMessage}
         rowCount={networksToShowWithChainTypeInfo.length}
-        rowHeight={90}
-        rowRenderer={virtualizedProps => {
-          const networkOrChainTypeInfo =
-            networksToShowWithChainTypeInfo[virtualizedProps.index]
-          if (!networkOrChainTypeInfo) {
-            return null
-          }
-
-          // Chain Type Info row
-          if (typeof networkOrChainTypeInfo === 'object') {
-            const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
-            return (
-              <div
-                key={networkOrChainTypeInfo.name}
-                style={virtualizedProps.style}
-                className={twMerge(
-                  'px-6 py-6',
-                  !isCoreGroup &&
-                    'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
-                )}
-              >
-                <p className="text-sm text-dark">
-                  {networkOrChainTypeInfo.name}
-                </p>
-                {networkOrChainTypeInfo.description && (
-                  <p className="mt-2 text-xs">
-                    {networkOrChainTypeInfo.description}
-                  </p>
-                )}
-              </div>
-            )
-          }
-
-          return (
-            <NetworkRow
-              key={networkOrChainTypeInfo}
-              style={virtualizedProps.style}
-              chainId={networkOrChainTypeInfo}
-              onClick={onNetworkRowClick}
-              close={close}
-            />
-          )
-        }}
+        rowHeight={getRowHeight}
+        rowRenderer={rowRenderer}
       />
       <div className="flex justify-between pb-2">
         <TestnetToggle

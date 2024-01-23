@@ -22,7 +22,7 @@ export const SearchPanelTable = ({
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   rowCount: number
-  rowHeight: number
+  rowHeight: number | (({ index }: { index: number }) => number)
   rowRenderer: ListRowRenderer
 }) => {
   return (
