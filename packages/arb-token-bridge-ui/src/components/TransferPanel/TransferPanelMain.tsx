@@ -9,11 +9,11 @@ import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
-  getChains,
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork
+  isNetwork,
+  getSupportedChainIds
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
@@ -756,19 +756,10 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    const chains = getChains()
-
     function getSourceChains() {
-      return chains
-        .map(chain => chain.chainID)
-        .filter(chainId => {
-          // don't show testnet networks if testnet mode is off
-          if (!isTestnetMode) {
-            return !isNetwork(chainId).isTestnet
-          }
-          return true
-        })
-        .map(getWagmiChain)
+      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
+        getWagmiChain
+      )
     }
 
     function getDestinationChains() {
