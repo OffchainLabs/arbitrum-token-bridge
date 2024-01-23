@@ -76,6 +76,18 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
+  if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
+    return withdrawalsFromSubgraph.map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'subgraph',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
+    })
+  }
+
   const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
     await Promise.all([
       fetchETHWithdrawalsFromEventLogs({
@@ -93,18 +105,6 @@ export async function fetchWithdrawals({
         l2GatewayAddresses
       })
     ])
-
-  if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
-    return withdrawalsFromSubgraph.map(tx => {
-      return {
-        ...tx,
-        direction: 'withdrawal',
-        source: 'subgraph',
-        parentChainId: l1ChainID,
-        childChainId: l2ChainID
-      }
-    })
-  }
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {
