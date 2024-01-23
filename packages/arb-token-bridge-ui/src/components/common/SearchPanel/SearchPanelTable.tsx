@@ -13,7 +13,8 @@ export const SearchPanelTable = ({
   errorMessage,
   rowCount,
   rowHeight,
-  rowRenderer
+  rowRenderer,
+  listRef
 }: {
   searchInputPlaceholder: string
   searchInputValue: string
@@ -24,6 +25,7 @@ export const SearchPanelTable = ({
   rowCount: number
   rowHeight: number | (({ index }: { index: number }) => number)
   rowRenderer: ListRowRenderer
+  listRef?: React.Ref<List>
 }) => {
   return (
     <div className="flex flex-col gap-3">
@@ -53,6 +55,7 @@ export const SearchPanelTable = ({
         <AutoSizer>
           {({ height, width }) => (
             <List
+              ref={listRef}
               width={width - 2}
               height={height}
               rowCount={rowCount}

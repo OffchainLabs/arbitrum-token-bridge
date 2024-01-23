@@ -29,14 +29,12 @@ export const TestnetToggle = ({
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
       })
-      setTimeout(() => {
-        // this is to ensure it's done after setNetworks
-        // or else it wouldn't work
-        setIsTestnetMode(!isTestnetMode)
-      }, 0)
-    } else {
-      setIsTestnetMode(!isTestnetMode)
     }
+    setTimeout(() => {
+      // this is to ensure it's done after setNetworks
+      // or else it wouldn't work
+      setIsTestnetMode(!isTestnetMode)
+    }, 0)
   }, [isSourceChainTestnet, isTestnetMode, setIsTestnetMode, setNetworks])
 
   return (

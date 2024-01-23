@@ -1,10 +1,18 @@
 import { Popover } from '@headlessui/react'
 import Image from 'next/image'
-import { CSSProperties, useCallback, useMemo, useState } from 'react'
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
+import { List, ListRowProps } from 'react-virtualized'
 
 import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -21,7 +29,6 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
-import { ListRowProps } from 'react-virtualized'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -138,11 +145,17 @@ function NetworksPanel({
   const [errorMessage, setErrorMessage] = useState('')
   const [networkSearched, setNetworkSearched] = useState('')
   const [debouncedNetworkSearched, setDebouncedNetworkSearched] = useState('')
+  const listRef = useRef<List>(null)
+  const { isTestnetMode } = useIsTestnetMode()
 
   const testnetToggleClassNames = {
     switch:
       'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
   }
+
+  useEffect(() => {
+    listRef.current?.recomputeRowHeights()
+  }, [isTestnetMode])
 
   useDebounce(
     () => {
@@ -255,6 +268,7 @@ function NetworksPanel({
         rowCount={networksToShowWithChainTypeInfo.length}
         rowHeight={getRowHeight}
         rowRenderer={rowRenderer}
+        listRef={listRef}
       />
       <div className="flex justify-between pb-2">
         <TestnetToggle
