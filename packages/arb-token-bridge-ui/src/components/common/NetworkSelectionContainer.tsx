@@ -211,7 +211,7 @@ function NetworksPanel({
             className={twMerge(
               'px-6 py-3',
               !isCoreGroup &&
-                'before:-mt-4 before:mb-4 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+                'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
             )}
           >
             <p className="text-sm text-dark">{networkOrChainTypeInfo.name}</p>
