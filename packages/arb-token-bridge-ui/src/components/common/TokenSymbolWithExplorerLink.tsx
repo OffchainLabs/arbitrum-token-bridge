@@ -79,16 +79,16 @@ export function TokenSymbolWithExplorerLink({
   ) {
     return <span>{symbol}</span>
   }
+
+  const href = createBlockExplorerUrlForToken({
+    explorerLink: chain.blockExplorers
+      ? chain.blockExplorers.default.url
+      : undefined,
+    tokenAddress: isParentChain ? token.address : token.l2Address
+  })
+
   return (
-    <ExternalLink
-      className="arb-hover underline"
-      href={createBlockExplorerUrlForToken({
-        explorerLink: chain.blockExplorers
-          ? chain.blockExplorers.default.url
-          : undefined,
-        tokenAddress: isParentChain ? token.address : token.l2Address
-      })}
-    >
+    <ExternalLink className="arb-hover underline" href={href}>
       <span>{symbol}</span>
     </ExternalLink>
   )
