@@ -604,8 +604,7 @@ export function TransferPanel() {
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
-          destinationAddress,
-          isSmartContractWallet
+          destinationAddress
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
