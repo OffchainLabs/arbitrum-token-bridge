@@ -536,7 +536,8 @@ export function TransferPanel() {
         }
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
-          signer
+          signer,
+          destinationAddress
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
