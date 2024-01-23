@@ -6,7 +6,7 @@ import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
-import { getSupportedChainIds, isNetwork } from '../../util/networks'
+import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
@@ -23,11 +23,6 @@ import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
 
 type NetworkType = 'core' | 'orbit'
-
-type NetworkInfo = {
-  chainId: number
-  type: NetworkType
-}
 
 const chainGroupInfo: {
   [key in NetworkType]: {
@@ -46,17 +41,16 @@ const chainGroupInfo: {
 }
 
 function NetworkRow({
-  networkInfo,
+  chainId,
   style,
   onClick,
   close
 }: {
-  networkInfo: NetworkInfo
+  chainId: ChainId
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
-  const { chainId } = networkInfo
   const { network, description, chainType, nativeTokenData } =
     getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
@@ -136,7 +130,7 @@ function NetworksPanel({
   onNetworkRowClick,
   close
 }: {
-  networks: NetworkInfo[]
+  networks: ChainId[]
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -162,15 +156,18 @@ function NetworksPanel({
 
     if (_networkSearched) {
       return networks.filter(network => {
-        const networkName = getBridgeUiConfigForChain(
-          network.chainId
-        ).network.name.toLowerCase()
+        const networkName =
+          getBridgeUiConfigForChain(network).network.name.toLowerCase()
         return networkName.includes(_networkSearched)
       })
     }
 
-    const coreNetworks = networks.filter(network => network.type === 'core')
-    const orbitNetworks = networks.filter(network => network.type === 'orbit')
+    const coreNetworks = networks.filter(
+      chainId => !isNetwork(chainId).isOrbitChain
+    )
+    const orbitNetworks = networks.filter(
+      chainId => isNetwork(chainId).isOrbitChain
+    )
 
     return [
       chainGroupInfo.core,
@@ -205,7 +202,7 @@ function NetworksPanel({
           }
 
           // Chain Type Info row
-          if (!('chainId' in networkOrChainTypeInfo)) {
+          if (typeof networkOrChainTypeInfo === 'object') {
             const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
             return (
               <div
@@ -231,9 +228,9 @@ function NetworksPanel({
 
           return (
             <NetworkRow
-              key={networkOrChainTypeInfo.chainId}
+              key={networkOrChainTypeInfo}
               style={virtualizedProps.style}
-              networkInfo={networkOrChainTypeInfo}
+              chainId={networkOrChainTypeInfo}
               onClick={onNetworkRowClick}
               close={close}
             />
@@ -273,31 +270,19 @@ export const NetworkSelectionContainer = ({
 
   const coreNetworks = useMemo(
     () =>
-      supportedNetworks
-        .filter(
-          network =>
-            isNetwork(network).isEthereumMainnetOrTestnet ||
-            isNetwork(network).isArbitrum
-        )
-        .map(
-          (network): NetworkInfo => ({ chainId: Number(network), type: 'core' })
-        ),
+      supportedNetworks.filter(
+        network =>
+          isNetwork(network).isEthereumMainnetOrTestnet ||
+          isNetwork(network).isArbitrum
+      ),
     [supportedNetworks]
   )
   const orbitNetworks = useMemo(
-    () =>
-      supportedNetworks
-        .filter(network => isNetwork(network).isOrbitChain)
-        .map(
-          (network): NetworkInfo => ({
-            chainId: Number(network),
-            type: 'orbit'
-          })
-        ),
+    () => supportedNetworks.filter(network => isNetwork(network).isOrbitChain),
     [supportedNetworks]
   )
 
-  const finalNetworks: NetworkInfo[] = useMemo(
+  const finalNetworks: ChainId[] = useMemo(
     () => [...coreNetworks, ...orbitNetworks],
     [coreNetworks, orbitNetworks]
   )
