@@ -25,6 +25,7 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
+import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
 
 export function TransactionsTableRow({
   tx,
@@ -82,49 +83,53 @@ export function TransactionsTableRow({
   const StatusLabel = useCallback(() => {
     if (isTxFailed(tx)) {
       return (
-        <div className="flex items-center space-x-1 text-red-400">
+        <ExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+          className="arb-hover flex items-center space-x-1 text-red-400"
+        >
           <XCircleIcon height={14} className="mr-1" />
           <span>Failed</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
+          <ArrowTopRightOnSquareIcon height={10} />
+        </ExternalLink>
       )
     }
 
     if (isTxExpired(tx)) {
       return (
-        <div className="flex items-center space-x-1 text-red-400">
+        <ExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+          className="arb-hover flex items-center space-x-1 text-red-400"
+        >
           <XCircleIcon height={14} className="mr-1" />
           <span>Expired</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
+          <ArrowTopRightOnSquareIcon height={10} />
+        </ExternalLink>
       )
     }
 
     if (isTxPending(tx)) {
       return (
-        <div className="flex items-center space-x-1 text-yellow-400">
+        <ExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+          className="arb-hover flex items-center space-x-1 text-yellow-400"
+        >
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
           <span>Pending</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
+          <ArrowTopRightOnSquareIcon height={10} />
+        </ExternalLink>
       )
     }
 
     if (isTxClaimable(tx)) {
       return (
-        <div className="flex items-center space-x-1 text-green-400">
+        <ExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+          className="arb-hover flex items-center space-x-1 text-green-400"
+        >
           <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
           <span>Claimable</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
+          <ArrowTopRightOnSquareIcon height={10} />
+        </ExternalLink>
       )
     }
 
@@ -132,17 +137,21 @@ export function TransactionsTableRow({
 
     // Success
     return (
-      <div className="flex items-center space-x-1">
-        <CheckCircleIcon height={14} className="mr-1" />
-        <span>Success</span>
-        {destinationNetworkTxId && (
-          <ExternalLink
-            href={`${getExplorerUrl(destChainId)}/tx/${destinationNetworkTxId}`}
-          >
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        )}
-      </div>
+      <ExternalLink
+        href={
+          destinationNetworkTxId
+            ? `${getExplorerUrl(destChainId)}/tx/${destinationNetworkTxId}`
+            : ''
+        }
+        className={destinationNetworkTxId ? 'arb-hover' : 'pointer-events-none'}
+      >
+        <div className="flex items-center space-x-1">
+          <CheckCircleIcon height={14} className="mr-1" />
+          <span>Success</span>
+
+          <ArrowTopRightOnSquareIcon height={10} />
+        </div>
+      </ExternalLink>
     )
   }, [tx, sourceChainId, destChainId])
 
@@ -178,32 +187,55 @@ export function TransactionsTableRow({
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex items-center pr-3 align-middle">
-        <TransactionsTableTokenImage tx={tx} />
-        <span className="ml-2">
-          {formatAmount(Number(tx.value), {
-            symbol: tokenSymbol
-          })}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(
+            tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+          )}/token/${tx.tokenAddress}`}
+          disabled={!tx.tokenAddress}
+        >
+          <TransactionsTableTokenImage tx={tx} />
+          <span className="ml-2">
+            {formatAmount(Number(tx.value), {
+              symbol: tokenSymbol
+            })}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
-          />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.childChainId : tx.parentChainId)}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(
+            tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+          )}/address/${tx.sender}`}
+        >
+          <span>
+            <NetworkImage
+              chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
+            />
+          </span>
+          <span className="inline-block max-w-[55px] break-words">
+            {getNetworkName(
+              tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+            )}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
-          />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.parentChainId : tx.childChainId)}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(
+            tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+          )}/address/${tx.destination ?? tx.sender}`}
+        >
+          <span>
+            <NetworkImage
+              chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
+            />
+          </span>
+          <span className="inline-block max-w-[55px] break-words">
+            {getNetworkName(
+              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+            )}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="pr-3 align-middle">
         <StatusLabel />
