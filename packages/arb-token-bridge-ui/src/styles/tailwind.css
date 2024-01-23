@@ -259,3 +259,18 @@ input:checked + .slider:before {
     display: none;
   }
 }
+
+@keyframes blink-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.blink {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2) 25%, rgba(255, 255, 255, 0.2) 75%, rgba(255, 255, 255, 0));
+  animation: blink-pulse 2s ease-in-out;
+  animation-iteration-count: 3;
+}

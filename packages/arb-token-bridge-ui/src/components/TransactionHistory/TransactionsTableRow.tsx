@@ -6,7 +6,6 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import { create } from 'zustand'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
@@ -34,7 +33,6 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const [blinkNewTx, setBlinkNewTx] = useState(true)
   const [shouldHighlightTx, setShouldHighlightTx] = useState(false)
   const { open: openTxDetails } = useTxDetailsStore()
 
@@ -65,16 +63,6 @@ export function TransactionsTableRow({
       setShouldHighlightTx(true)
     }
   }, [tx])
-
-  useEffect(() => {
-    // stop the blinking effect of the new transactions
-    const timeout = setTimeout(() => {
-      setBlinkNewTx(false)
-      // this value matches 3 iterations of animate-pulse
-    }, 6_100)
-
-    return () => clearTimeout(timeout)
-  }, [])
 
   const tokenSymbol = useMemo(
     () =>
@@ -183,17 +171,8 @@ export function TransactionsTableRow({
       className={twMerge(
         'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
         className,
-        shouldHighlightTx && blinkNewTx && 'animate-pulse'
+        shouldHighlightTx && 'blink'
       )}
-      style={
-        shouldHighlightTx
-          ? {
-              background:
-                // new transactions get highlighted for a brief amount of time with this gradient
-                'linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2) 25%, rgba(255, 255, 255, 0.2) 75%, rgba(255, 255, 255, 0))'
-            }
-          : {}
-      }
       onClick={() => setShouldHighlightTx(false)}
       onMouseOver={() => setShouldHighlightTx(false)}
     >
