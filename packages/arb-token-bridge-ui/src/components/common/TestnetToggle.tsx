@@ -3,8 +3,9 @@ import { useCallback } from 'react'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 import { Switch } from './atoms/Switch'
-import { warningToast } from './atoms/Toast'
 import { twMerge } from 'tailwind-merge'
+import { ChainId } from '../../util/networks'
+import { useNetworks } from '../../hooks/useNetworks'
 
 export const TestnetToggle = ({
   className,
@@ -20,36 +21,34 @@ export const TestnetToggle = ({
 }) => {
   const { isSourceChainTestnet, isTestnetMode, setIsTestnetMode } =
     useIsTestnetMode()
+  const [, setNetworks] = useNetworks()
 
-  const enableTestnetMode = useCallback(() => {
-    setIsTestnetMode(true)
-  }, [setIsTestnetMode])
-
-  const disableTestnetMode = useCallback(() => {
-    // can't turn test mode off if source chain is testnet
-    if (!isSourceChainTestnet) {
-      setIsTestnetMode(false)
+  const onChange = useCallback(() => {
+    if (isSourceChainTestnet) {
+      setNetworks({
+        sourceChainId: ChainId.Ethereum,
+        destinationChainId: ChainId.ArbitrumOne
+      })
+      setTimeout(() => {
+        // this is to ensure it's done after setNetworks
+        // or else it wouldn't work
+        setIsTestnetMode(!isTestnetMode)
+      }, 0)
     } else {
-      warningToast(
-        'Cannot disable Testnet mode while connected to a testnet network'
-      )
+      setIsTestnetMode(!isTestnetMode)
     }
-  }, [isSourceChainTestnet, setIsTestnetMode])
+  }, [isSourceChainTestnet, isTestnetMode, setIsTestnetMode, setNetworks])
 
   return (
     <div
-      className={twMerge(
-        isSourceChainTestnet && 'opacity-40',
-        className?.wrapper
-      )}
+      className={twMerge(!isTestnetMode && 'opacity-40', className?.wrapper)}
     >
       <Switch
         className={className?.switch}
         label={label}
         description={description}
-        checked={!!isTestnetMode}
-        disabled={isSourceChainTestnet}
-        onChange={isTestnetMode ? disableTestnetMode : enableTestnetMode}
+        checked={isTestnetMode}
+        onChange={onChange}
       />
     </div>
   )

@@ -5,16 +5,16 @@ import {
   ChevronLeftIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { twMerge } from 'tailwind-merge'
 import {
   onPopoverClose,
-  PanelWrapperClassnames
+  panelWrapperClassnames
 } from '../common/SearchPanel/SearchPanelUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -94,7 +94,7 @@ export function TokenButton(): JSX.Element {
         </Popover.Button>
         <Popover.Panel
           className={twMerge(
-            PanelWrapperClassnames,
+            panelWrapperClassnames,
             'lg:ml-12 lg:min-w-[466px]'
           )}
         >

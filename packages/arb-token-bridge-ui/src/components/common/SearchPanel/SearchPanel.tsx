@@ -13,8 +13,8 @@ function SearchPanelMainPage({
   mainPageTitle,
   isLoading,
   loadingMessage,
-  bottomRightCTAonClick,
-  bottomRightCTAtext,
+  bottomRightCtaOnClick,
+  bottomRightCtaText,
   children
 }: PropsWithChildren<{
   close?: () => void
@@ -22,8 +22,8 @@ function SearchPanelMainPage({
   mainPageTitle: string
   isLoading?: boolean
   loadingMessage?: string
-  bottomRightCTAonClick?: () => void
-  bottomRightCTAtext?: string
+  bottomRightCtaOnClick?: () => void
+  bottomRightCtaText?: string
 }>) {
   return (
     <>
@@ -36,7 +36,7 @@ function SearchPanelMainPage({
         )}
       </div>
       {children}
-      {bottomRightCTAtext && (
+      {bottomRightCtaText && (
         <div className="flex justify-end pt-6">
           {isLoading ? (
             <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
@@ -46,9 +46,9 @@ function SearchPanelMainPage({
           ) : (
             <button
               className="arb-hover text-gray text-sm font-medium text-blue-link"
-              onClick={bottomRightCTAonClick}
+              onClick={bottomRightCtaOnClick}
             >
-              {bottomRightCTAtext}
+              {bottomRightCtaText}
             </button>
           )}
         </div>
@@ -65,7 +65,7 @@ export function SearchPanel({
   secondPageTitle,
   isLoading,
   loadingMessage,
-  bottomRightCTAtext,
+  bottomRightCtaText,
   children
 }: PropsWithChildren<{
   close?: () => void
@@ -75,9 +75,13 @@ export function SearchPanel({
   secondPageTitle: string
   isLoading?: boolean
   loadingMessage?: string
-  bottomRightCTAtext?: string
+  bottomRightCtaText?: string
 }>) {
   const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
+
+  function bottomRightCtaOnClick() {
+    setCurrentPanel(Panel.LISTS)
+  }
 
   if (currentPanel === Panel.MAIN) {
     return (
@@ -87,8 +91,8 @@ export function SearchPanel({
         mainPageTitle={mainPageTitle}
         isLoading={isLoading}
         loadingMessage={loadingMessage}
-        bottomRightCTAtext={bottomRightCTAtext}
-        bottomRightCTAonClick={() => setCurrentPanel(Panel.LISTS)}
+        bottomRightCtaText={bottomRightCtaText}
+        bottomRightCtaOnClick={bottomRightCtaOnClick}
       >
         {children}
       </SearchPanelMainPage>

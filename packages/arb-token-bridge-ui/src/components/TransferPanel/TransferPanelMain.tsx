@@ -12,8 +12,7 @@ import {
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork,
-  getSupportedChainIds
+  isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
@@ -352,7 +351,6 @@ export function TransferPanelMain({
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const { isTestnetMode } = useIsTestnetMode()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -758,17 +756,11 @@ export function TransferPanelMain({
   }, [actions.app, isDepositMode, selectedToken, token])
 
   type NetworkListboxesProps = {
-    from: Omit<NetworkListboxProps, 'label' | 'options'>
+    from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    function getSourceChains() {
-      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
-        getWagmiChain
-      )
-    }
-
     function getDestinationChains() {
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
@@ -798,14 +790,10 @@ export function TransferPanelMain({
       )
     }
 
-    const sourceChains = getSourceChains()
     const destinationChains = getDestinationChains()
 
     return {
       from: {
-        disabled: isSmartContractWallet || isLoadingAccountType,
-        options: sourceChains,
-        value: networks.sourceChain,
         onChange: async network => {
           if (networks.destinationChain.id === network.id) {
             switchNetworksOnTransferPanel()
@@ -841,7 +829,6 @@ export function TransferPanelMain({
     isLoadingAccountType,
     networks.sourceChain,
     networks.destinationChain,
-    isTestnetMode,
     setNetworks,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog
@@ -849,12 +836,19 @@ export function TransferPanelMain({
 
   const { color } = getBridgeUiConfigForChain(networks.sourceChain.id)
 
+  const buttonStyle = useMemo(
+    () => ({
+      backgroundColor: color.primary
+    }),
+    [color.primary]
+  )
+
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
-            buttonStyle={{ backgroundColor: color.primary }}
+            buttonStyle={buttonStyle}
             buttonClassName={twMerge(
               'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
             )}

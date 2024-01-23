@@ -4,17 +4,17 @@ import { CSSProperties, useMemo, useState } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
-import { chainInfo, getSupportedNetworks, isNetwork } from '../../util/networks'
+import { getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
-import { twMerge } from 'tailwind-merge'
 import { TestnetToggle } from './TestnetToggle'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import {
-  PanelWrapperClassnames,
+  panelWrapperClassnames,
   onPopoverButtonClick,
   onPopoverClose
 } from './SearchPanel/SearchPanelUtils'
@@ -22,19 +22,26 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
 
+type NetworkType = 'core' | 'orbit'
+
 type NetworkInfo = {
   chainId: number
-  type: 'core' | 'orbit'
+  type: NetworkType
 }
 
-const chainGroupInfo = {
+const chainGroupInfo: {
+  [key in NetworkType]: {
+    name: string
+    description: string
+  }
+} = {
   core: {
     name: 'CORE CHAINS',
     description: 'Chains managed directly by Ethereum or Arbitrum'
   },
   orbit: {
     name: 'ORBIT CHAINS',
-    description: 'Independent chains supported by Arbitrum technology'
+    description: 'Independent projects using Arbitrum technology.'
   }
 }
 
@@ -50,28 +57,33 @@ function NetworkRow({
   close: (focusableElement?: HTMLElement) => void
 }) {
   const { chainId } = networkInfo
-  const { network } = getBridgeUiConfigForChain(chainId)
+  const { network, description, chainType, nativeTokenData } =
+    getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
+  const [{ sourceChain }] = useNetworks()
 
-  const handleClick = () => {
+  function handleClick() {
     onClick(chain)
     close() // close the popover after option-click
+  }
+
+  function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === 'Enter') {
+      handleClick()
+    }
   }
 
   return (
     <button
       onClick={handleClick}
-      onKeyDown={e => {
-        if (e.key === 'Enter') {
-          handleClick()
-        }
-      }}
+      onKeyDown={onKeyDown}
       key={chainId}
       style={style}
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10'
+        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10',
+        chainId === sourceChain.id && 'bg-black/10' // selected row
       )}
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
@@ -85,16 +97,16 @@ function NetworkRow({
       </span>
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-none">{network.name}</span>
-        {chainInfo[chainId] && (
-          <>
-            <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
-              {chainInfo[chainId]!.description}
-            </p>
-            <p className="text-[10px] leading-none">
-              {chainInfo[chainId]!.chainType} Chain,{' '}
-              {chainInfo[chainId]!.nativeCurrency} is the native gas token
-            </p>
-          </>
+        {description && (
+          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
+            {description}
+          </p>
+        )}
+        {chainType && (
+          <p className="text-[10px] leading-none">
+            {chainType} Chain, {nativeTokenData?.symbol ?? 'ETH'} is the native
+            gas token
+          </p>
         )}
       </div>
     </button>
@@ -132,6 +144,11 @@ function NetworksPanel({
   const [networkSearched, setNetworkSearched] = useState('')
   const [debouncedNetworkSearched, setDebouncedNetworkSearched] = useState('')
 
+  const testnetToggleClassNames = {
+    switch:
+      'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
+  }
+
   useDebounce(
     () => {
       setDebouncedNetworkSearched(networkSearched)
@@ -163,15 +180,19 @@ function NetworksPanel({
     ]
   }, [debouncedNetworkSearched, networks])
 
+  const onSearchInputChange = function (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    setErrorMessage('')
+    setNetworkSearched(event.target.value)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <SearchPanelTable
         searchInputPlaceholder="Search a network name"
         searchInputValue={networkSearched}
-        onSearchInputChange={event => {
-          setErrorMessage('')
-          setNetworkSearched(event.target.value)
-        }}
+        onSearchInputChange={onSearchInputChange}
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         errorMessage={errorMessage}
         rowCount={networksToShowWithChainTypeInfo.length}
@@ -221,10 +242,7 @@ function NetworksPanel({
       />
       <div className="flex justify-between pb-2">
         <TestnetToggle
-          className={{
-            switch:
-              'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
-          }}
+          className={testnetToggleClassNames}
           label="Testnet mode"
         />
         <AddCustomOrbitChainButton />
@@ -244,51 +262,58 @@ export const NetworkSelectionContainer = ({
   buttonStyle?: CSSProperties
   onChange: (value: Chain) => void
 }) => {
-  const [{ sourceChain }] = useNetworks()
   const { isTestnetMode } = useIsTestnetMode()
 
-  const supportedNetworks = getSupportedNetworks(
-    sourceChain.id,
-    !!isTestnetMode
-  ).filter(chainId => chainId !== sourceChain.id)
+  const supportedNetworks = getSupportedChainIds({
+    includeTestnets: isTestnetMode
+  })
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const coreNetworks = supportedNetworks
-    .filter(
-      network =>
-        isNetwork(network).isEthereumMainnetOrTestnet ||
-        isNetwork(network).isArbitrum
-    )
-    .map((network): NetworkInfo => ({ chainId: Number(network), type: 'core' }))
-  const orbitNetworks = supportedNetworks
-    .filter(network => isNetwork(network).isOrbitChain)
-    .map(
-      (network): NetworkInfo => ({
-        chainId: Number(network),
-        type: 'orbit'
-      })
-    )
+  const coreNetworks = useMemo(
+    () =>
+      supportedNetworks
+        .filter(
+          network =>
+            isNetwork(network).isEthereumMainnetOrTestnet ||
+            isNetwork(network).isArbitrum
+        )
+        .map(
+          (network): NetworkInfo => ({ chainId: Number(network), type: 'core' })
+        ),
+    [supportedNetworks]
+  )
+  const orbitNetworks = useMemo(
+    () =>
+      supportedNetworks
+        .filter(network => isNetwork(network).isOrbitChain)
+        .map(
+          (network): NetworkInfo => ({
+            chainId: Number(network),
+            type: 'orbit'
+          })
+        ),
+    [supportedNetworks]
+  )
 
-  const finalNetworks: NetworkInfo[] = [...coreNetworks, ...orbitNetworks]
+  const finalNetworks: NetworkInfo[] = useMemo(
+    () => [...coreNetworks, ...orbitNetworks],
+    [coreNetworks, orbitNetworks]
+  )
 
   return (
     <Popover className="relative w-full lg:w-max">
       <Popover.Button
         style={buttonStyle}
-        disabled={
-          isSmartContractWallet ||
-          typeof isSmartContractWallet === 'undefined' ||
-          isLoadingAccountType
-        }
+        disabled={isSmartContractWallet || isLoadingAccountType}
         className={buttonClassName}
         onClick={onPopoverButtonClick}
       >
         {children}
       </Popover.Button>
 
-      <Popover.Panel className={twMerge(PanelWrapperClassnames)}>
+      <Popover.Panel className={twMerge(panelWrapperClassnames)}>
         {({ close }) => {
           function onClose() {
             onPopoverClose()
@@ -312,7 +337,7 @@ export const NetworkSelectionContainer = ({
                   secondPageTitle="Networks"
                   isLoading={false}
                   loadingMessage="Fetching Networks..."
-                  bottomRightCTAtext=""
+                  bottomRightCtaText=""
                 >
                   <NetworksPanel
                     networks={finalNetworks}

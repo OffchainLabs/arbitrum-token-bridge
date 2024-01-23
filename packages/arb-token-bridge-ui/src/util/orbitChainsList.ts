@@ -11,12 +11,14 @@ export type BridgeUiConfig = {
     logo: string
   }
   nativeTokenData?: NativeCurrencyBase
+  description?: string
+  chainType?: string
 }
 
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
 
 export const orbitMainnets: {
-  [key in number]: OrbitChainConfig
+  [key: number]: OrbitChainConfig
 } = {
   660279: {
     chainID: 660279,
@@ -70,7 +72,10 @@ export const orbitMainnets: {
         symbol: 'XAI',
         decimals: 18,
         logoUrl: '/images/XaiLogo.svg'
-      }
+      },
+      description:
+        'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
+      chainType: 'AnyTrust'
     }
   }
 }
@@ -121,7 +126,10 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       network: {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg'
-      }
+      },
+      description:
+        'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
+      chainType: 'AnyTrust'
     }
   }
 }

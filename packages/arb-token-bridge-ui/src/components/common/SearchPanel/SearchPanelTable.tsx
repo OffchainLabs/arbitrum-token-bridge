@@ -5,7 +5,7 @@ import React from 'react'
 export const SearchPanelTable = ({
   searchInputPlaceholder,
   searchInputValue,
-  SearchFieldCTA,
+  SearchFieldCta,
   onSearchInputChange,
   onSubmit = event => {
     event.preventDefault()
@@ -17,7 +17,7 @@ export const SearchPanelTable = ({
 }: {
   searchInputPlaceholder: string
   searchInputValue: string
-  SearchFieldCTA?: React.ReactNode
+  SearchFieldCta?: React.JSX.Element
   onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
@@ -40,7 +40,7 @@ export const SearchPanelTable = ({
               className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
             />
           </div>
-          {SearchFieldCTA}
+          {SearchFieldCta}
         </div>
         {!!errorMessage && (
           <p className="text-xs text-red-400">{errorMessage}</p>

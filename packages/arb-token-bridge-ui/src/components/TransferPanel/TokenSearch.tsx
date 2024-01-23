@@ -1,7 +1,14 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  memo
+} from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
+import { ListRowProps } from 'react-virtualized'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -57,7 +64,7 @@ const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
-function TokenListsPanel() {
+const TokenListsPanel = memo(function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -132,7 +139,7 @@ function TokenListsPanel() {
       })}
     </div>
   )
-}
+})
 
 const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 
@@ -373,62 +380,74 @@ function TokensPanel({
     }
   }
 
+  function onSearchInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setErrorMessage('')
+    setNewToken(event.target.value)
+  }
+
+  const rowRenderer = useCallback(
+    (virtualizedProps: ListRowProps) => {
+      const address = tokensToShow[virtualizedProps.index]
+      let token: ERC20BridgeToken | null = null
+
+      if (isTokenArbitrumOneNativeUSDC(address)) {
+        token = ARB_ONE_NATIVE_USDC_TOKEN
+      } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
+        token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+      } else if (address) {
+        token = tokensFromLists[address] || tokensFromUser[address] || null
+      }
+
+      if (address === NATIVE_CURRENCY_IDENTIFIER) {
+        return (
+          <TokenRow
+            key="TokenRowNativeCurrency"
+            onClick={() => onTokenSelected(null)}
+            token={null}
+          />
+        )
+      }
+
+      return (
+        <TokenRow
+          key={address}
+          style={virtualizedProps.style}
+          onClick={() => onTokenSelected(token)}
+          token={token}
+        />
+      )
+    },
+    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected]
+  )
+
+  const AddButton = useMemo(
+    () => (
+      <Button
+        type="submit"
+        variant="secondary"
+        loading={isAddingToken}
+        loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
+        disabled={!isAddress(newToken)}
+        className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
+        aria-label="Add New Token"
+      >
+        Add
+      </Button>
+    ),
+    [isAddingToken, newToken]
+  )
+
   return (
     <SearchPanelTable
       searchInputPlaceholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
       searchInputValue={newToken}
-      onSearchInputChange={e => {
-        setErrorMessage('')
-        setNewToken(e.target.value)
-      }}
+      onSearchInputChange={onSearchInputChange}
       errorMessage={errorMessage}
       onSubmit={addNewToken}
-      SearchFieldCTA={
-        <Button
-          type="submit"
-          variant="secondary"
-          loading={isAddingToken}
-          loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
-          disabled={newToken === '' || !isAddress(newToken)}
-          className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
-          aria-label="Add New Token"
-        >
-          Add
-        </Button>
-      }
+      SearchFieldCta={AddButton}
       rowCount={tokensToShow.length}
       rowHeight={84}
-      rowRenderer={virtualizedProps => {
-        const address = tokensToShow[virtualizedProps.index]
-
-        if (address === NATIVE_CURRENCY_IDENTIFIER) {
-          return (
-            <TokenRow
-              key="TokenRowNativeCurrency"
-              onClick={() => onTokenSelected(null)}
-              token={null}
-            />
-          )
-        }
-
-        let token: ERC20BridgeToken | null = null
-        if (isTokenArbitrumOneNativeUSDC(address)) {
-          token = ARB_ONE_NATIVE_USDC_TOKEN
-        } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
-          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
-        } else if (address) {
-          token = tokensFromLists[address] || tokensFromUser[address] || null
-        }
-
-        return (
-          <TokenRow
-            key={address}
-            style={virtualizedProps.style}
-            onClick={() => onTokenSelected(token)}
-            token={token}
-          />
-        )
-      }}
+      rowRenderer={rowRenderer}
     />
   )
 }
@@ -544,7 +563,7 @@ export function TokenSearch({ close }: { close: () => void }) {
       secondPageTitle="Token Lists"
       isLoading={isFetchingTokenLists}
       loadingMessage="Fetching Tokens..."
-      bottomRightCTAtext="Manage token lists"
+      bottomRightCtaText="Manage token lists"
     >
       <TokensPanel onTokenSelected={selectToken} />
     </SearchPanel>
