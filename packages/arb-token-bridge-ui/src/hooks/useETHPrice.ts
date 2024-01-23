@@ -13,7 +13,7 @@ export type UseETHPriceResult = {
 export function useETHPrice(): UseETHPriceResult {
   const { data, error, isValidating, mutate } = useSWR<number, Error>(
     'https://api.coinbase.com/v2/prices/ETH-USD/spot',
-    url => axios.get(url).then(res => Number(res.data.data.amount)),
+    url => axios.get(url).then(res => res.data.data.amount),
     {
       refreshInterval: 60_000,
       shouldRetryOnError: true,
@@ -24,7 +24,7 @@ export function useETHPrice(): UseETHPriceResult {
 
   const ethToUSD = useCallback(
     (etherValue: number) => {
-      const safeETHPrice = typeof data === 'number' ? data : 0
+      const safeETHPrice = data && !isNaN(data) ? Number(data) : 0
       return etherValue * safeETHPrice
     },
     [data]
