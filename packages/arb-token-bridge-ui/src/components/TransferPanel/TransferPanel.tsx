@@ -892,7 +892,6 @@ export function TransferPanel() {
       const transfer = await bridgeTransferStarter.transfer({
         amount: amountBigNumber,
         signer,
-        isSmartContractWallet,
         destinationAddress
       })
 

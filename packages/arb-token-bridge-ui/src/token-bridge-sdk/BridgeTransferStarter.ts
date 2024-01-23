@@ -39,7 +39,6 @@ export type TransferEstimateGas = {
 export type TransferProps = {
   amount: BigNumber
   signer: Signer
-  isSmartContractWallet?: boolean
   destinationAddress?: string
 }
 
