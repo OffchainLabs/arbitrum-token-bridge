@@ -51,6 +51,7 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 import { getOrbitChains } from '../util/orbitChainsList'
+import { useHighlightedTransactionsStore } from '../components/TransactionHistory/TransactionsTableRow'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -453,6 +454,8 @@ export const useTransactionHistory = (
     failedChainPairs
   } = useTransactionHistoryWithoutStatuses(address)
 
+  const { setHighlightedTx } = useHighlightedTransactionsStore()
+
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs) {
@@ -598,8 +601,10 @@ export const useTransactionHistory = (
 
         return [tx, ...currentNewTransactions]
       })
+
+      setHighlightedTx(tx)
     },
-    [mutateNewTransactionsData]
+    [mutateNewTransactionsData, setHighlightedTx]
   )
 
   const updateCachedTransaction = useCallback(

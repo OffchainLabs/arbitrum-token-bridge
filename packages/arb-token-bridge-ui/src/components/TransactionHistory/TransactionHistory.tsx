@@ -15,6 +15,7 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
+import { useHighlightedTransactionsStore } from './TransactionsTableRow'
 
 const tabClasses =
   'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
@@ -53,6 +54,8 @@ export const TransactionHistory = ({
     failedChainPairs,
     resume
   } = props
+
+  const { resetHighlightedTx } = useHighlightedTransactionsStore()
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -96,7 +99,12 @@ export const TransactionHistory = ({
 
   return (
     <>
-      <Tab.Group key={address} as="div" className="h-full overflow-hidden">
+      <Tab.Group
+        key={address}
+        as="div"
+        className="h-full overflow-hidden"
+        onChange={resetHighlightedTx}
+      >
         <Tab.List className="mb-4 flex border-b border-white/30">
           <TabButton
             aria-label="show pending transactions"
