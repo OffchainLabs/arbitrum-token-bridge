@@ -251,6 +251,13 @@ describe('Import token', () => {
           }
         })
 
+        cy.wait(15_000)
+        cy.visit('/', {
+          qs: {
+            token: invalidTokenAddress
+          }
+        })
+
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
