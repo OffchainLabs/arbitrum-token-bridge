@@ -28,6 +28,22 @@ import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 
+const ContentWrapper = ({
+  children,
+  className = ''
+}: PropsWithChildren & { className?: string }) => {
+  return (
+    <div
+      className={twMerge(
+        'w-full flex-col items-center rounded bg-[#191919] p-4 text-center text-xs text-white',
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
 export const TransactionDateTime = ({
   standardizedDate
 }: {
@@ -153,57 +169,59 @@ export const TransactionHistoryTable = ({
     )
   }, [failedChainPairs])
 
+  const LoadMoreButton = useCallback(() => {
+    return (
+      <button onClick={resume} className="arb-hover text-xs">
+        <div className="flex space-x-1 rounded border border-white px-2 py-1">
+          <span>Load more</span>
+          <ArrowDownOnSquareIcon width={16} />
+        </div>
+      </button>
+    )
+  }, [resume])
+
   if (isTxHistoryEmpty) {
     if (loading) {
       return (
-        <span className="animate-pulse text-xs text-white">
-          Loading transactions...
-        </span>
+        <ContentWrapper>
+          <span className="animate-pulse">Loading transactions...</span>
+        </ContentWrapper>
       )
     }
     if (error) {
       return (
-        <div className="flex space-x-2 bg-white p-4 text-sm text-error">
-          <span>
-            We seem to be having a difficult time loading your data. Please give
-            it a moment and then try refreshing the page. If the problem
-            persists please file a ticket{' '}
-            <ExternalLink
-              className="arb-hover text-blue-link underline"
-              href={GET_HELP_LINK}
-            >
+        <ContentWrapper>
+          <p>
+            We seem to be having a difficult time loading your data, we&apos;re
+            working hard to solve it.
+          </p>
+          <p>Please give it a moment and then try refreshing the page.</p>
+          <p className="mt-4">
+            If the problem persists please file a ticket{' '}
+            <ExternalLink className="arb-hover underline" href={GET_HELP_LINK}>
               here
             </ExternalLink>
             .
-          </span>
-        </div>
+          </p>
+        </ContentWrapper>
       )
     }
     if (paused) {
       return (
-        <div className="flex justify-between bg-white p-4">
-          <span className="text-sm">
+        <ContentWrapper className="space-y-4">
+          <p>
             There are no recent {isPendingTab ? 'pending' : 'settled'}{' '}
             transactions.
-          </span>
-          <button onClick={resume} className="arb-hover text-sm">
-            <div className="flex space-x-1 rounded border border-black px-2 py-1">
-              <span>Load more</span>
-              <ArrowDownOnSquareIcon width={16} />
-            </div>
-          </button>
-        </div>
+          </p>
+          <LoadMoreButton />
+        </ContentWrapper>
       )
     }
-    return (
-      <div className="bg-white p-4 text-sm">
-        Looks like no transactions here yet!
-      </div>
-    )
+    return <ContentWrapper>Looks like no transactions here yet.</ContentWrapper>
   }
 
   return (
-    <div className="h-full flex-col overflow-x-auto rounded bg-[#191919] text-white">
+    <ContentWrapper className="h-full overflow-x-auto p-0 text-left">
       <div
         className={twMerge(
           'w-[960px] rounded-tr-lg px-4 pt-4',
@@ -229,14 +247,7 @@ export const TransactionHistoryTable = ({
               </span>
             </div>
 
-            {!completed && (
-              <button onClick={resume} className="arb-hover text-xs">
-                <div className="flex space-x-1 rounded border border-white px-2 py-1">
-                  <span>Load more</span>
-                  <ArrowDownOnSquareIcon width={16} />
-                </div>
-              </button>
-            )}
+            {!completed && <LoadMoreButton />}
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
@@ -310,6 +321,6 @@ export const TransactionHistoryTable = ({
           </Table>
         )}
       </AutoSizer>
-    </div>
+    </ContentWrapper>
   )
 }
