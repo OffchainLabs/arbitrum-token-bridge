@@ -72,6 +72,54 @@ export const orbitMainnets: {
         logoUrl: '/images/XaiLogo.svg'
       }
     }
+  },
+  1380012617: {
+    chainID: 1380012617,
+    confirmPeriodBlocks: 45818,
+    ethBridge: {
+      bridge: '0x255f80Ef2F09FCE0944faBb292b8510F01316Cf0',
+      inbox: '0x37e60F80d921dc5E7f501a7130F31f6548dBa564',
+      outbox: '0x91591BB66075BCfF94AA128B003134165C3Ab83a',
+      rollup: '0x2e988Ea0873C9d712628F0bf38DAFdE754927C89',
+      sequencerInbox: '0xA436f1867adD490BF1530c636f2FB090758bB6B3'
+    },
+    explorerUrl: 'https://mainnet.explorer.rarichain.org',
+    rpcUrl: 'https://mainnet.rpc.rarichain.org/http',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'RARI Mainnet',
+    slug: 'rari-mainnet',
+    partnerChainID: 42161,
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x8bE956aB42274056ef4471BEb211b33e258b7324',
+      l1ERC20Gateway: '0x46406c88285AD9BE2fB23D9aD96Cb578d824cAb6',
+      l1GatewayRouter: '0x2623C144B4d167f70893f6A8968B98c89a6C5F97',
+      l1MultiCall: '0x842eC2c7D803033Edf55E478F461FC547Bc54EB2',
+      l1ProxyAdmin: '0x003e70b041abb993006c03e56c8515622a02928c',
+      l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      l1WethGateway: '0x8DF47DAe3313663C80f5E94A893190710A719224',
+      l2CustomGateway: '0x90E43f5d772e50B01B3F9596f65AD5653467d010',
+      l2ERC20Gateway: '0x0CA4c24079a191e08F659699292e5C75274EF253',
+      l2GatewayRouter: '0x9a2859B2a83148b8DE25d26643B5407555D219E1',
+      l2Multicall: '0x4c753F58Ee9E83B38170abAbBEa8B47976C7ee1b',
+      l2ProxyAdmin: '0x18AB1fE7CBeB5F40d2eAf8A3906A966d59E79767',
+      l2Weth: '0xf037540e51D71b2D2B1120e8432bA49F29EDFBD0',
+      l2WethGateway: '0xd0C21F7960ea9835E7B2E636548f4deDD9E2309C'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    bridgeUiConfig: {
+      color: {
+        primary: '#B16EFF',
+        secondary: '#1E1E1E'
+      },
+      network: {
+        name: 'RARI Mainnet',
+        logo: '/images/RARIMainnetLogo.svg'
+      }
+    }
   }
 }
 
