@@ -66,8 +66,7 @@ function tokenListsToSearchableTokenStorage(
         const accAddress = acc[address]
 
         if (stringifiedChainId === l1ChainId) {
-          // The address is from an L1 token or
-          // the token is ARB and the child chain is an Orbit chain
+          // The address is from an L1 token
           if (typeof accAddress === 'undefined') {
             // First time encountering the token through its L1 address
             acc[address] = {
