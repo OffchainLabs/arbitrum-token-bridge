@@ -506,9 +506,9 @@ export function TokenSearch({ close }: { close: () => void }) {
       return
     }
 
-    const lowerCasedTokenAddress = _token.address.toLowerCase()
+    const lowercasedTokenAddress = _token.address.toLowerCase()
 
-    if (!lowerCasedTokenAddress) {
+    if (!lowercasedTokenAddress) {
       return
     }
 
@@ -519,20 +519,20 @@ export function TokenSearch({ close }: { close: () => void }) {
     try {
       // Native USDC on L2 won't have a corresponding L1 address
       const isNativeUSDC =
-        isTokenArbitrumOneNativeUSDC(lowerCasedTokenAddress) ||
-        isTokenArbitrumSepoliaNativeUSDC(lowerCasedTokenAddress)
+        isTokenArbitrumOneNativeUSDC(lowercasedTokenAddress) ||
+        isTokenArbitrumSepoliaNativeUSDC(lowercasedTokenAddress)
 
       if (isNativeUSDC) {
         if (isLoadingAccountType) {
           return
         }
 
-        updateUSDCBalances(lowerCasedTokenAddress)
+        updateUSDCBalances(lowercasedTokenAddress)
         setSelectedToken({
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
-          address: lowerCasedTokenAddress,
+          address: lowercasedTokenAddress,
           decimals: 6,
           listIds: new Set()
         })
@@ -542,8 +542,8 @@ export function TokenSearch({ close }: { close: () => void }) {
       console.log('bridgeTokens!!! ', bridgeTokens)
 
       // Token not added to the bridge, so we'll handle importing it
-      if (typeof bridgeTokens[lowerCasedTokenAddress] === 'undefined') {
-        setTokenQueryParam(lowerCasedTokenAddress)
+      if (typeof bridgeTokens[lowercasedTokenAddress] === 'undefined') {
+        setTokenQueryParam(lowercasedTokenAddress)
         return
       }
 
@@ -552,12 +552,12 @@ export function TokenSearch({ close }: { close: () => void }) {
       }
 
       const data = await fetchErc20Data({
-        address: lowerCasedTokenAddress,
+        address: lowercasedTokenAddress,
         provider: parentChainProvider
       })
 
       if (data) {
-        token.updateTokenData(lowerCasedTokenAddress)
+        token.updateTokenData(lowercasedTokenAddress)
         setSelectedToken({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address
@@ -567,13 +567,13 @@ export function TokenSearch({ close }: { close: () => void }) {
       // do not allow import of withdraw-only tokens at deposit mode
       if (
         isDepositMode &&
-        isWithdrawOnlyToken(lowerCasedTokenAddress, childChain.id)
+        isWithdrawOnlyToken(lowercasedTokenAddress, childChain.id)
       ) {
         openTransferDisabledDialog()
         return
       }
 
-      if (isTransferDisabledToken(lowerCasedTokenAddress, childChain.id)) {
+      if (isTransferDisabledToken(lowercasedTokenAddress, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
