@@ -539,8 +539,6 @@ export function TokenSearch({ close }: { close: () => void }) {
         return
       }
 
-      console.log('bridgeTokens!!! ', bridgeTokens)
-
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[lowercasedTokenAddress] === 'undefined') {
         setTokenQueryParam(lowercasedTokenAddress)
