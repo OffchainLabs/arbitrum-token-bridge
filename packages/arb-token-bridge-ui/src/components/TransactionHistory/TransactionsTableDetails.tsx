@@ -213,7 +213,7 @@ export const TransactionsTableDetails = () => {
                 )}
 
                 <DetailsBox>
-                  <TransactionsTableDetailsSteps tx={tx} />
+                  <TransactionsTableDetailsSteps tx={tx} address={address} />
                 </DetailsBox>
 
                 <div className="flex justify-end">

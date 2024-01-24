@@ -1,5 +1,5 @@
 import { twMerge } from 'tailwind-merge'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -13,29 +13,30 @@ import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
+import { isTxExpired } from './helpers'
 
 export function TransactionsTableRowAction({
   tx,
   isError,
-  type
+  type,
+  address
 }: {
   tx: MergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
+  address: `0x${string}` | undefined
 }) {
   const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { switchNetwork, switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const { redeem, isRedeeming } = useRedeemRetryable()
+  const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
   const currentChainIsValid = useMemo(() => {
@@ -52,13 +53,32 @@ export function TransactionsTableRowAction({
     return isClaiming || isClaimingCctp || !isConfirmed
   }, [isClaiming, isClaimingCctp, isConfirmed])
 
-  const isRedeemButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? !isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
+  const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
+    if (!chain) {
+      return false
+    }
+    return chain.id === tx.childChainId
+  }, [chain, tx.childChainId])
+
+  const handleRedeemRetryable = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForRedeem) {
+        await switchNetworkAsync?.(tx.childChainId)
+      }
+      redeem()
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
+    }
+  }, [
+    isConnectedToCorrectNetworkForRedeem,
+    redeem,
+    switchNetworkAsync,
+    tx.childChainId
+  ])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -71,28 +91,16 @@ export function TransactionsTableRowAction({
 
   if (isDepositReadyToRedeem(tx)) {
     // Failed retryable
-    return (
-      <Tooltip
-        show={isRedeemButtonDisabled}
-        wrapperClassName=""
-        content={
-          <span>
-            Please connect to {getNetworkName(tx.childChainId)} to re-execute
-            your deposit. You have 7 days to re-execute a failed tx. After that,
-            the tx is no longer recoverable.
-          </span>
-        }
+    return isRedeeming ? (
+      <span className="animate-pulse">Retrying...</span>
+    ) : (
+      <Button
+        variant="primary"
+        onClick={handleRedeemRetryable}
+        className="w-16 rounded bg-red-400 p-2 text-xs"
       >
-        <Button
-          variant="primary"
-          loading={isRedeeming}
-          disabled={isRedeemButtonDisabled}
-          onClick={() => redeem(tx)}
-          className="w-16 rounded bg-red-400 p-2 text-xs"
-        >
-          Retry
-        </Button>
-      </Tooltip>
+        Retry
+      </Button>
     )
   }
 
@@ -173,7 +181,7 @@ export function TransactionsTableRowAction({
     )
   }
 
-  if (isError) {
+  if (isError && !isTxExpired(tx)) {
     return (
       <Button
         variant="primary"

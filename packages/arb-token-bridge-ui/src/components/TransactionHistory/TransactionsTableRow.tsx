@@ -28,9 +28,11 @@ import { useTxDetailsStore } from './TransactionHistory'
 
 export function TransactionsTableRow({
   tx,
+  address,
   className = ''
 }: {
   tx: MergedTransaction
+  address: `0x${string}` | undefined
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
@@ -202,6 +204,7 @@ export function TransactionsTableRow({
           tx={tx}
           isError={isError}
           type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+          address={address}
         />
       </div>
       <div className="pl-3 align-middle">

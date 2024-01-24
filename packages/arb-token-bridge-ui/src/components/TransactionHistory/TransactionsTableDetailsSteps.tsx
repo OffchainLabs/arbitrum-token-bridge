@@ -25,6 +25,7 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -117,9 +118,11 @@ const Step = ({
 }
 
 export const TransactionsTableDetailsSteps = ({
-  tx
+  tx,
+  address
 }: {
   tx: MergedTransaction
+  address: `0x${string}` | undefined
 }) => {
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
@@ -193,6 +196,7 @@ export const TransactionsTableDetailsSteps = ({
                 type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
                 isError={false}
                 tx={tx}
+                address={address}
               />
             )
           }
@@ -211,15 +215,27 @@ export const TransactionsTableDetailsSteps = ({
             : `Funds arrived on ${destinationNetworkName}`
         }
         endItem={
-          destinationNetworkTxId && (
-            <ExternalLink
-              href={`${getExplorerUrl(
-                destinationChainId
-              )}/tx/${getDestinationNetworkTxId(tx)}`}
-            >
-              <ArrowTopRightOnSquareIcon height={12} />
-            </ExternalLink>
-          )
+          <>
+            {destinationNetworkTxId && (
+              <ExternalLink
+                href={`${getExplorerUrl(
+                  destinationChainId
+                )}/tx/${getDestinationNetworkTxId(tx)}`}
+              >
+                <ArrowTopRightOnSquareIcon height={12} />
+              </ExternalLink>
+            )}
+            {isDepositReadyToRedeem(tx) && (
+              <div className="-mt-3">
+                <TransactionsTableRowAction
+                  type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+                  isError={true}
+                  tx={tx}
+                  address={address}
+                />
+              </div>
+            )}
+          </>
         }
       />
     </div>
