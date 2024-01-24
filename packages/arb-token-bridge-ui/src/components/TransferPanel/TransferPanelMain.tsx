@@ -469,7 +469,7 @@ export function TransferPanelMain({
       result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
     }
 
-    // token not bridge to the child chain, show zero
+    // token not bridged to the child chain, show zero
     if (!selectedToken.l2Address) {
       result.l2 = constants.Zero
     }
