@@ -37,10 +37,10 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Ethereum'
-        },
-        description: 'The OG chain that started it all.',
-        chainType: 'Ethereum'
+          type: 'Ethereum',
+          name: 'Ethereum',
+          description: 'The OG chain that started it all.'
+        }
       }
     case ChainId.Goerli:
       return {
@@ -71,11 +71,11 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum One'
-        },
-        description:
-          'Rollup protocol. Permissionless validation,  secured by operational fraud proofs.',
-        chainType: 'Rollup'
+          type: 'Rollup',
+          name: 'Arbitrum One',
+          description:
+            'Rollup protocol. Permissionless validation,  secured by operational fraud proofs.'
+        }
       }
     case ChainId.ArbitrumGoerli:
       return {
@@ -108,12 +108,12 @@ export function getBridgeUiConfigForChain(
           secondary: '#743600'
         },
         network: {
+          type: 'AnyTrust',
           name: 'Arbitrum Nova',
-          logo: '/images/ArbitrumNovaLogo.svg'
-        },
-        description:
-          'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).',
-        chainType: 'AnyTrust'
+          logo: '/images/ArbitrumNovaLogo.svg',
+          description:
+            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
+        }
       }
     case ChainId.StylusTestnet:
       return {

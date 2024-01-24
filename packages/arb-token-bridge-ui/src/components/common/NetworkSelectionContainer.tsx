@@ -32,18 +32,23 @@ import { useNetworks } from '../../hooks/useNetworks'
 
 type NetworkType = 'core' | 'orbit'
 
+enum ChainGroupName {
+  core = 'CORE CHAINS',
+  orbit = 'ORBIT CHAINS'
+}
+
 const chainGroupInfo: {
   [key in NetworkType]: {
-    name: string
+    name: ChainGroupName
     description: string
   }
 } = {
   core: {
-    name: 'CORE CHAINS',
+    name: ChainGroupName.core,
     description: 'Chains managed directly by Ethereum or Arbitrum'
   },
   orbit: {
-    name: 'ORBIT CHAINS',
+    name: ChainGroupName.orbit,
     description: 'Independent projects using Arbitrum technology.'
   }
 }
@@ -59,8 +64,7 @@ function NetworkRow({
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
-  const { network, description, chainType, nativeTokenData } =
-    getBridgeUiConfigForChain(chainId)
+  const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
   const [{ sourceChain }] = useNetworks()
 
@@ -99,15 +103,15 @@ function NetworkRow({
       </span>
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-none">{network.name}</span>
-        {description && (
+        {network.description && (
           <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
-            {description}
+            {network.description}
           </p>
         )}
-        {chainType && (
+        {network.type && (
           <p className="text-[10px] leading-none">
-            {chainType} Chain, {nativeTokenData?.symbol ?? 'ETH'} is the native
-            gas token
+            {network.type} Chain, {nativeTokenData?.symbol ?? 'ETH'} is the
+            native gas token
           </p>
         )}
       </div>
@@ -134,11 +138,11 @@ function AddCustomOrbitChainButton() {
 }
 
 function NetworksPanel({
-  networks,
+  chainIds,
   onNetworkRowClick,
   close
 }: {
-  networks: ChainId[]
+  chainIds: ChainId[]
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -174,7 +178,7 @@ function NetworksPanel({
       return 65
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
-    if (rowItem.description) {
+    if (rowItem.network.description) {
       return 90
     }
     return 52
@@ -184,17 +188,17 @@ function NetworksPanel({
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
 
     if (_networkSearched) {
-      return networks.filter(network => {
+      return chainIds.filter(chainId => {
         const networkName =
-          getBridgeUiConfigForChain(network).network.name.toLowerCase()
+          getBridgeUiConfigForChain(chainId).network.name.toLowerCase()
         return networkName.includes(_networkSearched)
       })
     }
 
-    const coreNetworks = networks.filter(
+    const coreNetworks = chainIds.filter(
       chainId => !isNetwork(chainId).isOrbitChain
     )
-    const orbitNetworks = networks.filter(
+    const orbitNetworks = chainIds.filter(
       chainId => isNetwork(chainId).isOrbitChain
     )
 
@@ -204,7 +208,7 @@ function NetworksPanel({
       chainGroupInfo.orbit,
       ...orbitNetworks
     ]
-  }, [debouncedNetworkSearched, networks])
+  }, [debouncedNetworkSearched, chainIds])
 
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {
@@ -216,7 +220,7 @@ function NetworksPanel({
 
       // Chain Type Info row
       if (typeof networkOrChainTypeInfo === 'object') {
-        const isCoreGroup = networkOrChainTypeInfo.name === 'CORE CHAINS'
+        const isCoreGroup = networkOrChainTypeInfo.name === ChainGroupName.core
         return (
           <div
             key={networkOrChainTypeInfo.name}
@@ -315,7 +319,7 @@ export const NetworkSelectionContainer = ({
     [supportedNetworks]
   )
 
-  const finalNetworks: ChainId[] = useMemo(
+  const finalChainIds: ChainId[] = useMemo(
     () => [...coreNetworks, ...orbitNetworks],
     [coreNetworks, orbitNetworks]
   )
@@ -358,7 +362,7 @@ export const NetworkSelectionContainer = ({
                   bottomRightCtaText=""
                 >
                   <NetworksPanel
-                    networks={finalNetworks}
+                    chainIds={finalChainIds}
                     close={onClose}
                     onNetworkRowClick={onChange}
                   />

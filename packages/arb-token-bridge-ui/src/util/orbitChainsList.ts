@@ -1,18 +1,20 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
+export type NetworkType = 'Ethereum' | 'Rollup' | 'AnyTrust'
+
 export type BridgeUiConfig = {
   color: {
     primary: `#${string}`
     secondary: `#${string}`
   }
   network: {
+    type?: NetworkType
     name: string
     logo: string
+    description?: string
   }
   nativeTokenData?: NativeCurrencyBase
-  description?: string
-  chainType?: string
 }
 
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
@@ -64,18 +66,18 @@ export const orbitMainnets: {
         secondary: '#87000E'
       },
       network: {
+        type: 'AnyTrust',
         name: 'Xai',
-        logo: '/images/XaiLogo.svg'
+        logo: '/images/XaiLogo.svg',
+        description:
+          'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.'
       },
       nativeTokenData: {
         name: 'Xai',
         symbol: 'XAI',
         decimals: 18,
         logoUrl: '/images/XaiLogo.svg'
-      },
-      description:
-        'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
-      chainType: 'AnyTrust'
+      }
     }
   }
 }
@@ -124,12 +126,12 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         secondary: '#87000E'
       },
       network: {
+        type: 'AnyTrust',
         name: 'Xai Testnet',
-        logo: '/images/XaiLogo.svg'
-      },
-      description:
-        'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.',
-      chainType: 'AnyTrust'
+        logo: '/images/XaiLogo.svg',
+        description:
+          'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.'
+      }
     }
   }
 }
