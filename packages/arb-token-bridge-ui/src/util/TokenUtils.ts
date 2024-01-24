@@ -1,12 +1,11 @@
 import { constants } from 'ethers'
-import { Chain } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
-import { isNetwork } from './networks'
+import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 
@@ -269,32 +268,32 @@ export async function l1TokenIsDisabled({
 
 type SanitizeTokenOptions = {
   erc20L1Address?: string | null // token address on L1
-  chain: Chain // chain for which we want to retrieve the token name / symbol
+  chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
-export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
+export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
 
 export const isTokenArbitrumOneNativeUSDC = (
   tokenAddress: string | undefined
 ) =>
   tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
 
-export const isTokenArbitrumGoerliNativeUSDC = (
+export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress: string | undefined
 ) =>
   tokenAddress?.toLowerCase() ===
-  CommonAddress.ArbitrumGoerli.USDC.toLowerCase()
+  CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
 
 export const isTokenUSDC = (tokenAddress: string | undefined) => {
   return (
     isTokenMainnetUSDC(tokenAddress) ||
-    isTokenGoerliUSDC(tokenAddress) ||
+    isTokenSepoliaUSDC(tokenAddress) ||
     isTokenArbitrumOneNativeUSDC(tokenAddress) ||
-    isTokenArbitrumGoerliNativeUSDC(tokenAddress)
+    isTokenArbitrumSepoliaNativeUSDC(tokenAddress)
   )
 }
 
@@ -307,14 +306,14 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenGoerliUSDC(options.erc20L1Address)
+    isTokenSepoliaUSDC(options.erc20L1Address)
   ) {
-    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Goerli
-    if (isArbitrumOne || isArbitrumGoerli) return 'USDC.e'
+    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
+    if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
     return 'USDC'
   }
 
@@ -330,14 +329,14 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenGoerliUSDC(options.erc20L1Address)
+    isTokenSepoliaUSDC(options.erc20L1Address)
   ) {
-    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Goerli
-    if (isArbitrumOne || isArbitrumGoerli) return 'Bridged USDC'
+    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
+    if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
     return 'USD Coin'
   }
 

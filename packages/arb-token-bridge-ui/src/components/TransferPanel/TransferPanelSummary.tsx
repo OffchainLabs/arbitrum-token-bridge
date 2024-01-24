@@ -9,19 +9,19 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawTokenEstimateGas } from '../../util/TokenWithdrawalUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -64,14 +64,15 @@ export function useGasSummary(
   shouldRunGasEstimation: boolean
 ): UseGasSummaryResult {
   const {
-    app: { arbTokenBridge, isDepositMode }
+    app: { arbTokenBridge }
   } = useAppState()
-  const networksAndSigners = useNetworksAndSigners()
-  const { l1, l2 } = networksAndSigners
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
 
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
-  const l2GasPrice = useGasPrice({ provider: l2.provider })
+  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
+  const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amount, 1500)
@@ -86,11 +87,18 @@ export function useGasSummary(
     estimatedL2SubmissionCost: constants.Zero
   })
 
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+  /**
+   * Estimated L1 gas fees, denominated in Ether, represented as a floating point number
+   *
+   * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
+   *
+   * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
+   * @see
+   * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
+   */
   const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? l1GasPrice : l2GasPrice
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [result.estimatedL1Gas, isDepositMode, l1GasPrice, l2GasPrice])
+    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(l1GasPrice)))
+  }, [result.estimatedL1Gas, l1GasPrice])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(
@@ -140,8 +148,8 @@ export function useGasSummary(
               amount,
               address: walletAddress,
               erc20L1Address: token.address,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
+              l1Provider: parentChainProvider,
+              l2Provider: childChainProvider
             })
 
             setResult(estimateGasResult)
@@ -149,8 +157,8 @@ export function useGasSummary(
             const estimateGasResult = await depositEthEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l1Provider: l1.provider,
-              l2Provider: l2.provider
+              l1Provider: parentChainProvider,
+              l2Provider: childChainProvider
             })
 
             setResult(estimateGasResult)
@@ -164,7 +172,7 @@ export function useGasSummary(
 
             if (
               isTokenArbitrumOneNativeUSDC(token.address) ||
-              isTokenArbitrumGoerliNativeUSDC(token.address)
+              isTokenArbitrumSepoliaNativeUSDC(token.address)
             ) {
               estimateGasResult = {
                 estimatedL1Gas: constants.Zero,
@@ -173,11 +181,11 @@ export function useGasSummary(
               setStatus('unavailable')
               return
             } else {
-              estimateGasResult = await withdrawTokenEstimateGas({
+              estimateGasResult = await withdrawInitTxEstimateGas({
                 amount: amountDebounced,
                 erc20L1Address: token.address,
                 address: walletAddress,
-                l2Provider: l2.provider
+                l2Provider: childChainProvider
               })
             }
 
@@ -186,10 +194,10 @@ export function useGasSummary(
               estimatedL2SubmissionCost: constants.Zero
             })
           } else {
-            const estimateGasResult = await withdrawEthEstimateGas({
+            const estimateGasResult = await withdrawInitTxEstimateGas({
               amount: amountDebounced,
               address: walletAddress,
-              l2Provider: l2.provider
+              l2Provider: childChainProvider
             })
 
             setResult({
@@ -217,8 +225,8 @@ export function useGasSummary(
     amountDebounced,
     token, // when the token changes
     shouldRunGasEstimation, // passed externally - estimate gas only if user balance crosses a threshold
-    l1.network.id, // when L1 and L2 network id changes
-    l2.network.id,
+    parentChainProvider,
+    childChainProvider,
     walletAddress // when user switches account or if user is not connected
   ])
 
@@ -269,44 +277,56 @@ export function TransferPanelSummary({
 }: TransferPanelSummaryProps) {
   const { status, estimatedL1GasFees, estimatedL2GasFees } = gasSummary
 
-  const {
-    app: { isDepositMode }
-  } = useAppState()
   const { ethToUSD } = useETHPrice()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-  const parentChainNativeCurrency = useNativeCurrency({ provider: l1.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
 
   const layerGasFeeTooltipContent = (layer: ChainLayer) => {
     if (!isDepositMode) {
       return null
     }
 
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(l2.network.id)
+    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(childChain.id)
 
     return depositGasFeeTooltip({
-      l1NetworkName: getNetworkName(l1.network.id),
-      l2NetworkName: getNetworkName(l2.network.id),
+      l1NetworkName: getNetworkName(parentChain.id),
+      l2NetworkName: getNetworkName(childChain.id),
       depositToOrbit: isDepositToOrbitChain
     })[layer]
   }
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
-  const showPrice = isBridgingETH && !isNetwork(l1.network.id).isTestnet
+  const showPrice = isBridgingETH && !isNetwork(parentChain.id).isTestnet
   const showBreakdown = !nativeCurrency.isCustom && isDepositMode
 
   const tokenSymbol = useMemo(() => {
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
-        chain: isDepositMode ? l1.network : l2.network
+        chainId: isDepositMode ? parentChain.id : childChain.id
       })
     }
 
     return nativeCurrency.symbol
-  }, [token, nativeCurrency, isDepositMode, l1.network, l2.network])
+  }, [
+    token,
+    nativeCurrency.symbol,
+    isDepositMode,
+    parentChain.id,
+    childChain.id
+  ])
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -475,11 +495,11 @@ export function TransferPanelSummary({
           </div>
           <div className="flex flex-col gap-3 text-sm font-light text-gray-dark lg:text-base">
             <p>
-              This transaction will initiate the withdrawal on {l2.network.name}
+              This transaction will initiate the withdrawal on {childChain.name}
               .
             </p>
             <p>
-              When the withdrawal is ready for claiming on {l1.network.name},
+              When the withdrawal is ready for claiming on {parentChain.name},
               you will have to pay gas fees for the claim transaction.
             </p>
           </div>

@@ -1,21 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
-import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import * as Sentry from '@sentry/react'
 import { Chain, useAccount } from 'wagmi'
 
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
-  getCustomChainFromLocalStorageById,
   getExplorerUrl,
-  getL2ChainIds,
   getNetworkName,
-  isNetwork
+  getDestinationChainIds,
+  isNetwork,
+  getSupportedChainIds
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
@@ -32,25 +30,20 @@ import {
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import {
   calculateEstimatedL1GasFees,
-  calculateEstimatedL2GasFees,
-  useIsSwitchingL2Chain
+  calculateEstimatedL2GasFees
 } from './TransferPanelMainUtils'
-import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
-import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawEthEstimateGas } from '../../util/EthWithdrawalUtils'
+import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
   isTokenUSDC,
   sanitizeTokenSymbol
@@ -67,17 +60,20 @@ import {
 } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import {
   useNativeCurrency,
   NativeCurrencyErc20
 } from '../../hooks/useNativeCurrency'
 import { defaultErc20Decimals } from '../../defaults'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import {
   TransferDisabledDialog,
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -114,10 +110,6 @@ export function SwitchNetworksButton(
   )
 }
 
-function getListboxOptionsFromL1Network(network: Chain) {
-  return getL2ChainIds(network.id).map(chainId => getWagmiChain(chainId))
-}
-
 function CustomAddressBanner({
   network,
   customAddress
@@ -125,17 +117,21 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova } = isNetwork(network.id)
+  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
+  const { color } = getBridgeUiConfigForChain(network.id)
 
-  const bannerClassName = useMemo(() => {
+  const backgroundColorForL1OrL2Chain = useMemo(() => {
+    if (isOrbitChain) {
+      return ''
+    }
     if (!isArbitrum) {
-      return 'bg-cyan border-eth-dark'
+      return 'bg-cyan'
     }
     if (isArbitrumNova) {
-      return 'bg-orange border-arb-nova-dark'
+      return 'bg-orange'
     }
-    return 'bg-cyan border-arb-one-dark'
-  }, [isArbitrum, isArbitrumNova])
+    return 'bg-cyan'
+  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -143,9 +139,17 @@ function CustomAddressBanner({
 
   return (
     <div
+      style={{
+        backgroundColor: isOrbitChain
+          ? // add opacity to create a lighter shade
+            `${color.primary}20`
+          : undefined,
+        color: color.secondary,
+        borderColor: color.secondary
+      }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        bannerClassName
+        !isOrbitChain && backgroundColorForL1OrL2Chain
       )}
     >
       <span>
@@ -171,56 +175,12 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { backgroundImage, backgroundClassName } = useMemo(() => {
-    const {
-      isArbitrum,
-      isArbitrumNova,
-      isOrbitChain,
-      isXai,
-      isXaiTestnet,
-      isStylusTestnet
-    } = isNetwork(network.id)
+  const {
+    color,
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(network.id)
 
-    if (isXaiTestnet || isXai) {
-      return {
-        backgroundImage: `url('/images/XaiLogo.svg')`,
-        backgroundClassName: 'bg-xai-dark'
-      }
-    }
-
-    if (isStylusTestnet) {
-      return {
-        backgroundImage: `url('/images/StylusLogo.svg')`,
-        backgroundClassName: 'bg-stylus-dark'
-      }
-    }
-
-    if (isOrbitChain) {
-      return {
-        backgroundImage: `url('/images/OrbitLogoWhite.svg')`,
-        backgroundClassName: 'bg-orbit-dark'
-      }
-    }
-
-    if (!isArbitrum) {
-      return {
-        backgroundImage: `url('/images/TransparentEthereumLogo.webp')`,
-        backgroundClassName: 'bg-eth-dark'
-      }
-    }
-
-    if (isArbitrumNova) {
-      return {
-        backgroundImage: `url('/images/ArbitrumNovaLogo.svg')`,
-        backgroundClassName: 'bg-arb-nova-dark'
-      }
-    }
-
-    return {
-      backgroundImage: `url('/images/ArbitrumOneLogo.svg')`,
-      backgroundClassName: 'bg-arb-one-dark'
-    }
-  }, [network])
+  const backgroundImage = `url(${networkLogo})`
 
   const walletAddressLowercased = address?.toLowerCase()
 
@@ -240,8 +200,9 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
+        style={{ backgroundColor: color.secondary }}
         className={twMerge(
-          `relative rounded-xl p-1 transition-colors ${backgroundClassName}`,
+          'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''
         )}
       >
@@ -295,14 +256,14 @@ function TokenBalance({
   prefix?: string
   tokenSymbolOverride?: string
 }) {
-  const { l1, l2 } = useNetworksAndSigners()
-  const isParentChain = on === NetworkType.l1
-  const chain = isParentChain ? l1.network : l2.network
-
   const isERC20BridgeToken = (
     token: ERC20BridgeToken | NativeCurrencyErc20 | null
   ): token is ERC20BridgeToken =>
     token !== null && !token.hasOwnProperty('isCustom')
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
+  const isParentChain = on === NetworkType.l1
+  const chain = isParentChain ? parentChain : childChain
 
   const symbol = useMemo(() => {
     if (!forToken) {
@@ -313,10 +274,10 @@ function TokenBalance({
       tokenSymbolOverride ??
       sanitizeTokenSymbol(forToken.symbol, {
         erc20L1Address: forToken.address,
-        chain
+        chainId: chain.id
       })
     )
-  }, [forToken, tokenSymbolOverride, chain])
+  }, [forToken, tokenSymbolOverride, chain.id])
 
   if (!forToken) {
     return null
@@ -384,25 +345,23 @@ export function TransferPanelMain({
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
+  const [networks, setNetworks] = useNetworks()
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
 
-  const { l1, l2 } = useNetworksAndSigners()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const isConnectedToOrbitChain = useIsConnectedToOrbitChain()
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(l2.network.id)
-  const { isSmartContractWallet } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+  const [isTestnetMode] = useIsTestnetMode()
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
-    isSwitchingNetworkBeforeTx: true
-  })
-
-  const l1GasPrice = useGasPrice({ provider: l1.provider })
-  const l2GasPrice = useGasPrice({ provider: l2.provider })
+  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
+  const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, isDepositMode, selectedToken } = app
+  const { arbTokenBridge, selectedToken } = app
   const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
@@ -421,14 +380,14 @@ export function TransferPanelMain({
     eth: [ethL1Balance],
     erc20: [erc20L1Balances, updateErc20L1Balances]
   } = useBalance({
-    provider: l1.provider,
+    provider: parentChainProvider,
     walletAddress: l1WalletAddress
   })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances, updateErc20L2Balances]
   } = useBalance({
-    provider: l2.provider,
+    provider: childChainProvider,
     walletAddress: l2WalletAddress
   })
   const { updateUSDCBalances } = useUpdateUSDCBalances({
@@ -452,9 +411,9 @@ export function TransferPanelMain({
 
     if (
       isTokenMainnetUSDC(selectedToken.address) ||
-      isTokenGoerliUSDC(selectedToken.address) ||
+      isTokenSepoliaUSDC(selectedToken.address) ||
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
     ) {
       updateUSDCBalances(selectedToken.address)
       return
@@ -471,8 +430,6 @@ export function TransferPanelMain({
     destinationAddressOrWalletAddress,
     updateUSDCBalances
   ])
-
-  const isSwitchingL2Chain = useIsSwitchingL2Chain()
 
   type Balances = {
     l1: BigNumber | null
@@ -528,36 +485,18 @@ export function TransferPanelMain({
       }
     }
     if (
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address) &&
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
       return {
-        l1: erc20L1Balances[CommonAddress.Goerli.USDC] ?? null,
+        l1: erc20L1Balances[CommonAddress.Sepolia.USDC] ?? null,
         l2: erc20L2Balances[selectedToken.address] ?? null
       }
     }
 
     return result
   }, [erc20L1Balances, erc20L2Balances, selectedToken])
-
-  const [externalFrom, externalTo] = useMemo(() => {
-    const isParentChainArbitrum = isNetwork(l1.network.id).isArbitrum
-
-    if (isParentChainArbitrum) {
-      return isConnectedToArbitrum
-        ? [l1.network, l2.network]
-        : [l2.network, l1.network]
-    }
-
-    // Parent chain is Ethereum.
-    return isConnectedToArbitrum
-      ? [l2.network, l1.network]
-      : [l1.network, l2.network]
-  }, [l1, l2, isConnectedToArbitrum])
-
-  const [from, setFrom] = useState<Chain>(externalFrom)
-  const [to, setTo] = useState<Chain>(externalTo)
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
@@ -571,14 +510,9 @@ export function TransferPanelMain({
 
   const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenGoerliUSDC(selectedToken?.address) && isArbitrumGoerli)
+    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
   const [, setQueryParams] = useArbQueryParams()
-
-  useEffect(() => {
-    setFrom(externalFrom)
-    setTo(externalTo)
-  }, [externalFrom, externalTo])
 
   const estimateGas = useCallback(
     async (
@@ -600,21 +534,21 @@ export function TransferPanelMain({
         const result = await depositEthEstimateGas({
           amount: weiValue,
           address: walletAddress,
-          l1Provider: l1.provider,
-          l2Provider: l2.provider
+          l1Provider: parentChainProvider,
+          l2Provider: childChainProvider
         })
         return result
       }
 
-      const result = await withdrawEthEstimateGas({
+      const result = await withdrawInitTxEstimateGas({
         amount: weiValue,
         address: walletAddress,
-        l2Provider: l2.provider
+        l2Provider: childChainProvider
       })
 
       return { ...result, estimatedL2SubmissionCost: constants.Zero }
     },
-    [walletAddress, isDepositMode, l2.provider, l1.provider]
+    [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
   )
 
   const setMaxAmount = useCallback(async () => {
@@ -657,12 +591,16 @@ export function TransferPanelMain({
       setLoadingMaxAmount(true)
       const result = await estimateGas(nativeCurrencyBalance)
 
-      // for a withdrawal init tx, this is the batch posting fee needed for the tx
+      /**
+       * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
+       *
+       * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
+       * @see
+       * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
+       */
       const estimatedL1GasFees = calculateEstimatedL1GasFees(
         result.estimatedL1Gas,
-        // node interface returns l1 gas based on l2 gas price for withdrawals
-        // https://github.com/OffchainLabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125
-        isDepositMode ? l1GasPrice : l2GasPrice
+        l1GasPrice
       )
       const estimatedL2GasFees = calculateEstimatedL2GasFees(
         result.estimatedL2Gas,
@@ -781,18 +719,15 @@ export function TransferPanelMain({
   }, [errorMessage, openTransferDisabledDialog])
 
   const switchNetworksOnTransferPanel = useCallback(() => {
-    const newFrom = to
-    const newTo = from
-
-    setFrom(newFrom)
-    setTo(newTo)
-
-    actions.app.setIsDepositMode(!app.isDepositMode)
-  }, [actions.app, app.isDepositMode, from, to])
+    setNetworks({
+      sourceChainId: networks.destinationChain.id,
+      destinationChainId: networks.sourceChain.id
+    })
+  }, [networks.destinationChain.id, networks.sourceChain.id, setNetworks])
 
   useEffect(() => {
     const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbGoerliUSDC = isTokenArbitrumGoerliNativeUSDC(
+    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
       selectedToken?.address
     )
     // If user select native USDC on L2, when switching to deposit mode,
@@ -820,12 +755,12 @@ export function TransferPanelMain({
         address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
-    } else if (isArbGoerliUSDC) {
-      token.updateTokenData(CommonAddress.Goerli.USDC)
+    } else if (isArbSepoliaUSDC) {
+      token.updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
-        address: CommonAddress.Goerli.USDC,
-        l2Address: CommonAddress.ArbitrumGoerli['USDC.e']
+        address: CommonAddress.Sepolia.USDC,
+        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
       })
     }
   }, [actions.app, isDepositMode, selectedToken, token])
@@ -836,130 +771,34 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    const options = getListboxOptionsFromL1Network(l1.network)
+    function getSourceChains() {
+      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
+        getWagmiChain
+      )
+    }
 
-    // used for switching to a specific network if L1 <> Orbit chain is selected in the UI
-    // we can have a more dynamic solution in the future with more Orbit chains
-    function mapChainToDefaultPartnerChain(chainId: ChainId) {
-      const customOrbitChain = getCustomChainFromLocalStorageById(chainId)
+    function getDestinationChains() {
+      const destinationChainIds = getDestinationChainIds(
+        networks.sourceChain.id
+      )
 
-      if (customOrbitChain) {
-        return customOrbitChain.partnerChainID
+      // if source chain is Arbitrum One, add Arbitrum Nova to destination
+      if (networks.sourceChain.id === ChainId.ArbitrumOne) {
+        destinationChainIds.push(ChainId.ArbitrumNova)
       }
 
-      switch (chainId) {
-        case ChainId.Sepolia:
-        case ChainId.StylusTestnet:
-          return ChainId.ArbitrumSepolia
-        case ChainId.Xai:
-          return ChainId.ArbitrumOne
-        default:
-          return ChainId.ArbitrumGoerli
+      // if source chain is Arbitrum Nova, add Arbitrum One to destination
+      if (networks.sourceChain.id === ChainId.ArbitrumNova) {
+        destinationChainIds.push(ChainId.ArbitrumOne)
       }
+
+      return (
+        destinationChainIds
+          // remove self
+          .filter(chainId => chainId !== networks.destinationChain.id)
+          .map(getWagmiChain)
+      )
     }
-
-    function updatePreferredL2Chain(l2ChainId: number) {
-      setQueryParams({ l2ChainId })
-    }
-
-    function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
-      const isFromOrbitChain = isNetwork(from.id).isOrbitChain
-      const isToOrbitChain = isNetwork(to.id).isOrbitChain
-      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
-
-      // Add L1 network to the list
-      return [l1.network, ...options].filter(option => {
-        const isSourceChainList = direction === 'from'
-        const isDestinationChainList = direction === 'to'
-        const isSameAsSourceChain = option.id === from.id
-        const isSameAsDestinationChain = option.id === to.id
-        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-          option.id
-        )
-        // Remove the origin network from the destination list for contract wallets
-        // It's done so that the origin network is not changed
-        if (
-          isSmartContractWallet &&
-          isDestinationChainList &&
-          isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // Do not display Orbit chains for Nova
-        if (
-          isOrbitChain &&
-          isSourceChainList &&
-          isNetwork(to.id).isArbitrumNova
-        ) {
-          return false
-        }
-
-        if (
-          isOrbitChain &&
-          isDestinationChainList &&
-          isNetwork(from.id).isArbitrumNova
-        ) {
-          return false
-        }
-
-        // If this is the Source network list options
-        // and the selected source is an Arbitrum Base chain
-        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isSourceChainList &&
-          isOrbitChain &&
-          !isSameAsDestinationChain
-        ) {
-          return false
-        }
-
-        // If this is the Destination network list options
-        // and the selected destination is an Arbitrum chain
-        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isDestinationChainList &&
-          isOrbitChain &&
-          !isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // If the source chain is an Orbit Chain,
-        // and this is the Destination network list options
-        if (isFromOrbitChain && isDestinationChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsSourceChain) {
-            return false
-          }
-        }
-
-        // If the destination chain is an Orbit Chain,
-        // and this is the Source network list options
-        if (isToOrbitChain && isSourceChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsDestinationChain) {
-            return false
-          }
-        }
-
-        // Remove selected network from the list
-        return option.id !== selectedChainId
-      })
-    }
-
-    const fromOptions = modifyOptions(from.id, 'from')
-    const toOptions = modifyOptions(to.id, 'to')
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
@@ -967,264 +806,100 @@ export function TransferPanelMain({
       )
     }
 
-    if (isDepositMode) {
-      return {
-        from: {
-          disabled:
-            !fromOptions.length ||
-            isSmartContractWallet ||
-            typeof isSmartContractWallet === 'undefined',
-          options: fromOptions,
-          value: from,
-          onChange: async network => {
-            const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
-
-            if (shouldOpenOneNovaDialog([network.id, to.id])) {
-              setOneNovaTransferDestinationNetworkId(to.id)
-              openOneNovaTransferDialog()
-              return
-            }
-
-            try {
-              await switchNetworkAsync?.(network.id)
-              actions.app.setSelectedToken(null)
-
-              const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
-              // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-              // Otherwise we want to keep the current chain, in case it's Nova.
-              if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
-                updatePreferredL2Chain(
-                  mapChainToDefaultPartnerChain(network.id)
-                )
-                return
-              }
-              updatePreferredL2Chain(network.id)
-            } catch (error: any) {
-              if (!isUserRejectedError(error)) {
-                Sentry.captureException(error)
-              }
-            }
-          }
-        },
-        to: {
-          disabled: !toOptions.length,
-          options: toOptions,
-          value: to,
-          onChange: async network => {
-            const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-              network.id
-            )
-            const defaultPartnerChain = mapChainToDefaultPartnerChain(
-              network.id
-            )
-
-            if (network.id === from.id) {
-              switchNetworksOnTransferPanel()
-              return
-            }
-
-            if (shouldOpenOneNovaDialog([network.id, from.id])) {
-              setOneNovaTransferDestinationNetworkId(network.id)
-              openOneNovaTransferDialog()
-              return
-            }
-
-            actions.app.setSelectedToken(null)
-
-            const isOrbitChainCurrentlySelected = isNetwork(
-              l2.network.id
-            ).isOrbitChain
-            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-            // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereumMainnetOrTestnet && isOrbitChainCurrentlySelected) {
-              updatePreferredL2Chain(defaultPartnerChain)
-              return
-            }
-
-            // If Orbit chain is selected, we want to change network to Arbitrum One or Arbitrum Goerli.
-            if (isOrbitChain) {
-              try {
-                if (!isConnectedToArbitrum) {
-                  await switchNetworkAsync?.(defaultPartnerChain)
-                }
-              } catch (error: any) {
-                if (!isUserRejectedError(error)) {
-                  Sentry.captureException(error)
-                }
-                return
-              }
-            }
-
-            updatePreferredL2Chain(network.id)
-            setTo(network)
-          }
-        }
-      }
-    }
+    const sourceChains = getSourceChains()
+    const destinationChains = getDestinationChains()
 
     return {
       from: {
-        disabled:
-          !fromOptions.length ||
-          isSmartContractWallet ||
-          typeof isSmartContractWallet === 'undefined',
-        options: fromOptions,
-        value: from,
+        disabled: isSmartContractWallet || isLoadingAccountType,
+        options: sourceChains,
+        value: networks.sourceChain,
         onChange: async network => {
-          const { isEthereumMainnetOrTestnet } = isNetwork(network.id)
-
-          if (shouldOpenOneNovaDialog([network.id, to.id])) {
-            setOneNovaTransferDestinationNetworkId(to.id)
-            openOneNovaTransferDialog()
-            return
-          }
-
-          try {
-            // In withdraw mode we always switch to the L2 network.
-            await switchNetworkAsync?.(network.id)
-            actions.app.setSelectedToken(null)
-
-            const isOrbitChainSelected = isNetwork(l2.network.id).isOrbitChain
-            // Pair Ethereum with an Arbitrum chain if an Orbit chain is currently selected.
-            // Otherwise we want to keep the current chain, in case it's Nova.
-            if (isEthereumMainnetOrTestnet && isOrbitChainSelected) {
-              updatePreferredL2Chain(mapChainToDefaultPartnerChain(network.id))
-              return
-            }
-            updatePreferredL2Chain(network.id)
-          } catch (error: any) {
-            if (!isUserRejectedError(error)) {
-              Sentry.captureException(error)
-            }
-          }
-        }
-      },
-      to: {
-        disabled: !toOptions.length,
-        options: toOptions,
-        value: to,
-        onChange: async network => {
-          const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-            network.id
-          )
-          const defaultPartnerChain = mapChainToDefaultPartnerChain(network.id)
-
-          if (network.id === from.id) {
+          if (networks.destinationChain.id === network.id) {
             switchNetworksOnTransferPanel()
             return
           }
 
-          if (shouldOpenOneNovaDialog([network.id, from.id])) {
+          setNetworks({ sourceChainId: network.id })
+          actions.app.setSelectedToken(null)
+          setAmount('')
+        }
+      },
+      to: {
+        disabled:
+          isSmartContractWallet ||
+          isLoadingAccountType ||
+          destinationChains.length === 0,
+        options: destinationChains,
+        value: networks.destinationChain,
+        onChange: async network => {
+          if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
             setOneNovaTransferDestinationNetworkId(network.id)
             openOneNovaTransferDialog()
             return
           }
 
+          setNetworks({
+            sourceChainId: networks.sourceChain.id,
+            destinationChainId: network.id
+          })
           actions.app.setSelectedToken(null)
-
-          if (isEthereumMainnetOrTestnet) {
-            if (isConnectedToOrbitChain) {
-              try {
-                // If connected to an Orbit chain, we need to change network to Arbitrum.
-                // We can't withdraw from an Orbit chain to Ethereum.
-                await switchNetworkAsync?.(defaultPartnerChain)
-                updatePreferredL2Chain(defaultPartnerChain)
-                return
-              } catch (error: any) {
-                if (!isUserRejectedError(error)) {
-                  Sentry.captureException(error)
-                }
-                return
-              }
-            }
-            // Connected to Arbitrum.
-            updatePreferredL2Chain(defaultPartnerChain)
-          }
-
-          if (isOrbitChain) {
-            const isConnectedToEthereum =
-              !isConnectedToArbitrum && !isConnectedToOrbitChain
-
-            if (isConnectedToEthereum) {
-              // If connected to Ethereum, we need to change network to Arbitrum.
-              // We can't deposit from Ethereum to an Orbit chain.
-              await switchNetworkAsync?.(defaultPartnerChain)
-            }
-
-            const isOrbitChainCurrentlySelected = isNetwork(
-              l2.network.id
-            ).isOrbitChain
-            if (isOrbitChainCurrentlySelected) {
-              // long-term we will have to change to Orbit chain's parent network
-              // right now only Arbitrum Goerli is support so it's fine
-              await switchNetworkAsync?.(defaultPartnerChain)
-            }
-
-            updatePreferredL2Chain(network.id)
-          }
-
-          setTo(network)
+          setAmount('')
         }
       }
     }
   }, [
-    l1.network,
-    l2.network,
-    from,
-    to,
     isSmartContractWallet,
-    isDepositMode,
-    setQueryParams,
-    switchNetworkAsync,
+    isLoadingAccountType,
+    networks.sourceChain,
+    networks.destinationChain,
+    isTestnetMode,
+    setNetworks,
+    actions.app,
+    setAmount,
     switchNetworksOnTransferPanel,
-    openOneNovaTransferDialog,
-    isConnectedToArbitrum,
-    isConnectedToOrbitChain
+    openOneNovaTransferDialog
   ])
 
   return (
     <div className="flex flex-col px-6 py-6 lg:min-w-[540px] lg:px-0 lg:pl-6">
-      <NetworkContainer network={from}>
+      <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="From:" {...networkListboxProps.from} />
           <BalancesContainer>
-            {isSwitchingL2Chain ? (
-              <StyledLoader />
-            ) : (
-              <>
-                <TokenBalance
-                  on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                  balance={
-                    app.isDepositMode
-                      ? selectedTokenBalances.l1
-                      : selectedTokenBalances.l2
-                  }
-                  forToken={selectedToken}
-                  prefix={selectedToken ? 'BALANCE: ' : ''}
-                />
-                {nativeCurrency.isCustom ? (
-                  <>
-                    <TokenBalance
-                      on={app.isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                      balance={
-                        app.isDepositMode
-                          ? customFeeTokenBalances.l1
-                          : customFeeTokenBalances.l2
-                      }
-                      forToken={nativeCurrency}
-                      prefix={selectedToken ? '' : 'BALANCE: '}
-                    />
-                    {/* Only show ETH balance on L1 */}
-                    {app.isDepositMode && <ETHBalance balance={ethL1Balance} />}
-                  </>
-                ) : (
-                  <ETHBalance
-                    balance={app.isDepositMode ? ethL1Balance : ethL2Balance}
+            <>
+              <TokenBalance
+                on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                balance={
+                  isDepositMode
+                    ? selectedTokenBalances.l1
+                    : selectedTokenBalances.l2
+                }
+                forToken={selectedToken}
+                prefix={selectedToken ? 'BALANCE: ' : ''}
+              />
+              {nativeCurrency.isCustom ? (
+                <>
+                  <TokenBalance
+                    on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
+                    balance={
+                      isDepositMode
+                        ? customFeeTokenBalances.l1
+                        : customFeeTokenBalances.l2
+                    }
+                    forToken={nativeCurrency}
                     prefix={selectedToken ? '' : 'BALANCE: '}
                   />
-                )}
-              </>
-            )}
+                  {/* Only show ETH balance on L1 */}
+                  {isDepositMode && <ETHBalance balance={ethL1Balance} />}
+                </>
+              ) : (
+                <ETHBalance
+                  balance={isDepositMode ? ethL1Balance : ethL2Balance}
+                  prefix={selectedToken ? '' : 'BALANCE: '}
+                />
+              )}
+            </>
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
@@ -1236,7 +911,6 @@ export function TransferPanelMain({
               onClick: setMaxAmount
             }}
             errorMessage={errorMessageElement}
-            disabled={isSwitchingL2Chain}
             value={isMaxAmount ? '' : amount}
             onChange={e => {
               setAmount(e.target.value)
@@ -1259,7 +933,7 @@ export function TransferPanelMain({
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(l2.network.id)} account, as you’ll need it to
+              {getNetworkName(childChain.id)} account, as you’ll need it to
               power transactions.
               <br />
               <ExternalLink
@@ -1281,35 +955,35 @@ export function TransferPanelMain({
         />
       </div>
 
-      <NetworkContainer network={to} customAddress={destinationAddress}>
+      <NetworkContainer
+        network={networks.destinationChain}
+        customAddress={destinationAddress}
+      >
         <NetworkListboxPlusBalancesContainer>
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
-            {isSwitchingL2Chain ? (
-              <StyledLoader />
-            ) : (
-              destinationAddressOrWalletAddress &&
+            {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
                 <>
                   <TokenBalance
                     balance={
-                      app.isDepositMode
+                      isDepositMode
                         ? selectedTokenBalances.l2
                         : selectedTokenBalances.l1
                     }
-                    on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                    on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                     forToken={selectedToken}
                     prefix={selectedToken ? 'BALANCE: ' : ''}
                   />
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
-                  {app.isDepositMode && showUSDCSpecificInfo && (
+                  {isDepositMode && showUSDCSpecificInfo && (
                     <TokenBalance
                       balance={
                         (isArbitrumOne
                           ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
                           : erc20L2Balances?.[
-                              CommonAddress.ArbitrumGoerli.USDC
+                              CommonAddress.ArbitrumSepolia.USDC
                             ]) ?? constants.Zero
                       }
                       on={NetworkType.l2}
@@ -1324,28 +998,25 @@ export function TransferPanelMain({
                   {nativeCurrency.isCustom ? (
                     <>
                       <TokenBalance
-                        on={app.isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                        on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                         balance={
-                          app.isDepositMode
+                          isDepositMode
                             ? customFeeTokenBalances.l2
                             : customFeeTokenBalances.l1
                         }
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'BALANCE: '}
                       />
-                      {!app.isDepositMode && (
-                        <ETHBalance balance={ethL1Balance} />
-                      )}
+                      {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
                     </>
                   ) : (
                     <ETHBalance
-                      balance={app.isDepositMode ? ethL2Balance : ethL1Balance}
+                      balance={isDepositMode ? ethL2Balance : ethL1Balance}
                       prefix={selectedToken ? '' : 'BALANCE: '}
                     />
                   )}
                 </>
-              )
-            )}
+              )}
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
       </NetworkContainer>

@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
 import { MergedTransaction } from '../../state/app/state'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { isCustomDestinationAddressTx } from '../../state/app/utils'
 import { ExternalLink } from '../common/ExternalLink'
 import { getExplorerUrl } from '../../util/networks'
 import { shortenAddress } from '../../util/CommonUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 export const CustomAddressTxExplorer = ({
   tx,
@@ -16,7 +17,8 @@ export const CustomAddressTxExplorer = ({
   explorerClassName?: string
 }) => {
   const { address } = useAccount()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChain } = useNetworksRelationship(networks)
 
   const isFromDifferentSender = useMemo(() => {
     if (!tx.sender || !address) {
@@ -44,14 +46,20 @@ export const CustomAddressTxExplorer = ({
       // this is a withdrawal, so
       // if it's a different sender, show their L2 address (where the withdrawal originated)
       // otherwise it's a custom destination, show their L1 address (where the funds will land)
-      return isFromDifferentSender ? l2.network.id : l1.network.id
+      return isFromDifferentSender ? childChain.id : parentChain.id
     }
 
     // this is a deposit, so
     // if it's a different sender, show their L1 address (where the deposit originated)
     // otherwise it's a custom destination, show their L2 address (where the funds will land)
-    return isFromDifferentSender ? l1.network.id : l2.network.id
-  }, [isFromDifferentSender, isToDifferentRecipient, l1, l2, tx])
+    return isFromDifferentSender ? parentChain.id : childChain.id
+  }, [
+    isFromDifferentSender,
+    isToDifferentRecipient,
+    childChain,
+    parentChain,
+    tx
+  ])
 
   if (!explorerChainId || !isCustomDestinationAddressTx(tx)) {
     return null

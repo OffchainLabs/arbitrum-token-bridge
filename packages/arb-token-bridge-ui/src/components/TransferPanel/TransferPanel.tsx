@@ -3,9 +3,8 @@ import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
-import { twMerge } from 'tailwind-merge'
 import * as Sentry from '@sentry/react'
-import { useAccount, useProvider, useSigner } from 'wagmi'
+import { useAccount, useChainId, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
@@ -18,7 +17,6 @@ import {
   TokenDepositCheckDialogType
 } from './TokenDepositCheckDialog'
 import { TokenImportDialog } from './TokenImportDialog'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
@@ -33,9 +31,9 @@ import {
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress,
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
-  isTokenGoerliUSDC,
+  isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
 import { useBalance } from '../../hooks/useBalance'
@@ -53,16 +51,11 @@ import {
 import { USDCDepositConfirmationDialog } from './USDCDeposit/USDCDepositConfirmationDialog'
 import { USDCWithdrawalConfirmationDialog } from './USDCWithdrawal/USDCWithdrawalConfirmationDialog'
 import { CustomFeeTokenApprovalDialog } from './CustomFeeTokenApprovalDialog'
-import { fetchPerMessageBurnLimit } from '../../hooks/CCTP/fetchCCTPLimits'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
-import { formatAmount } from '../../util/NumberUtils'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
-import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
-import { getContracts, useCCTP } from '../../hooks/CCTP/useCCTP'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { useStyles } from '../../hooks/TransferPanel/useStyles'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -73,6 +66,10 @@ import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenMod
 import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -124,7 +121,6 @@ export function TransferPanel() {
     app: {
       connectionState,
       selectedToken,
-      isDepositMode,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
       warningTokens
@@ -133,42 +129,40 @@ export function TransferPanel() {
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
-  const provider = useProvider()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
-  const latestConnectedProvider = useLatest(provider)
-
-  const networksAndSigners = useNetworksAndSigners()
-  const latestNetworksAndSigners = useLatest(networksAndSigners)
+  const chainId = useChainId()
+  const [networks] = useNetworks()
   const {
-    l1: { network: l1Network, provider: l1Provider },
-    l2: { network: l2Network, provider: l2Provider }
-  } = networksAndSigners
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
+  const latestNetworks = useLatest(networks)
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
-    chainId: l1Network.id
+    chainId: parentChain.id
   })
   const { data: l2Signer } = useSigner({
-    chainId: l2Network.id
+    chainId: childChain.id
   })
 
   const { openTransactionHistoryPanel, setTransferring } =
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumNova } = isNetwork(l2Network.id)
+  const { isArbitrumNova } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)
   const latestToken = useLatest(token)
 
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
-
-  const { depositButtonColorClassName, withdrawalButtonColorClassName } =
-    useStyles()
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
@@ -180,12 +174,6 @@ export function TransferPanel() {
     },
     [setQueryParams]
   )
-
-  const { approveForBurn, depositForBurn } = useCCTP({
-    sourceChainId: isDepositMode
-      ? latestNetworksAndSigners.current.l1.network.id
-      : latestNetworksAndSigners.current.l2.network.id
-  })
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -206,13 +194,13 @@ export function TransferPanel() {
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
 
-  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
@@ -266,7 +254,7 @@ export function TransferPanel() {
 
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
     const selectedTokenL2Address = isL2NativeUSDC
       ? selectedToken.address.toLowerCase()
@@ -296,12 +284,11 @@ export function TransferPanel() {
   }, [nativeCurrency, erc20L1Balances])
 
   const isBridgingANewStandardToken = useMemo(() => {
-    const isConnected = typeof l1Network !== 'undefined'
     const isUnbridgedToken =
       selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
 
-    return isConnected && isDepositMode && isUnbridgedToken
-  }, [l1Network, isDepositMode, selectedToken])
+    return isDepositMode && isUnbridgedToken
+  }, [isDepositMode, selectedToken])
 
   async function depositToken() {
     if (!selectedToken) {
@@ -353,7 +340,7 @@ export function TransferPanel() {
       throw new Error('failed to find signer')
     }
 
-    const ethBridger = await EthBridger.fromProvider(l2Provider)
+    const ethBridger = await EthBridger.fromProvider(childChainProvider)
     const { l2Network } = ethBridger
 
     if (typeof l2Network.nativeToken === 'undefined') {
@@ -362,7 +349,7 @@ export function TransferPanel() {
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
       address: l2Network.nativeToken,
-      provider: l1Provider,
+      provider: parentChainProvider,
       owner: walletAddress,
       spender: l2Network.ethBridge.inbox
     })
@@ -400,7 +387,7 @@ export function TransferPanel() {
       throw new Error('no selected token')
     }
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+    const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
     const l2Network = erc20Bridger.l2Network
 
     if (typeof l2Network.nativeToken === 'undefined') {
@@ -409,13 +396,13 @@ export function TransferPanel() {
 
     const l1Gateway = await fetchErc20L1GatewayAddress({
       erc20L1Address: selectedToken.address,
-      l1Provider,
-      l2Provider
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider
     })
 
     const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
       address: l2Network.nativeToken,
-      provider: l1Provider,
+      provider: parentChainProvider,
       owner: walletAddress,
       spender: l1Gateway
     })
@@ -459,6 +446,37 @@ export function TransferPanel() {
     }
   }, [amount, selectedToken, nativeCurrency])
 
+  const confirmUsdcDepositFromNormalOrCctpBridge = async () => {
+    const waitForInput = openUSDCDepositConfirmationDialog()
+    const [confirmed, primaryButtonClicked] = await waitForInput()
+
+    // user declined to transfer altogether
+    if (!confirmed) {
+      return false
+    }
+
+    // user has selected normal bridge (USDC.e)
+    if (primaryButtonClicked === 'bridged') {
+      return 'bridge-normal-usdce'
+    }
+
+    // user wants to bridge to native usdc using Circle's CCTP on destination chain
+    return 'bridge-cctp-usd'
+  }
+
+  const confirmUsdcWithdrawalForCctp = async () => {
+    const waitForInput = openUSDCWithdrawalConfirmationDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
+  const tokenAllowanceApprovalCctp = async () => {
+    setIsCctp(true)
+    const waitForInput = openTokenApprovalDialog()
+    const [confirmed] = await waitForInput()
+    return confirmed
+  }
+
   // SC wallet transfer requests are sent immediately, delay it to give user an impression of a tx sent
   const showDelayedSCTxRequest = () =>
     setTimeout(() => {
@@ -466,33 +484,31 @@ export function TransferPanel() {
       setShowSCWalletTooltip(true)
     }, 3000)
 
-  const transferCctp = async (type: 'deposits' | 'withdrawals') => {
+  const transferCctp = async () => {
     if (!selectedToken) {
       return
     }
     if (!walletAddress) {
       return
     }
-    const isDeposit = type === 'deposits'
-    const signer = isDeposit ? l1Signer : l2Signer
+
+    const signer = isDepositMode ? l1Signer : l2Signer
+
     if (!signer) {
       throw 'Signer is undefined'
     }
 
     setTransferring(true)
-    let currentNetwork = isDeposit
-      ? latestNetworksAndSigners.current.l1.network
-      : latestNetworksAndSigners.current.l2.network
-
-    const currentNetworkName = getNetworkName(currentNetwork.id)
+    const currentChain = latestNetworks.current.sourceChain
+    const currentNetworkName = getNetworkName(currentChain.id)
     const isConnectedToTheWrongChain =
-      (isDeposit && isConnectedToArbitrum.current) ||
-      (type === 'withdrawals' && !isConnectedToArbitrum.current)
+      (isDepositMode && isConnectedToArbitrum.current) ||
+      (!isDepositMode && !isConnectedToArbitrum.current)
 
     if (isConnectedToTheWrongChain) {
       if (shouldTrackAnalytics(currentNetworkName)) {
         trackEvent('Switch Network and Transfer', {
-          type: isDeposit ? 'Deposit' : 'Withdrawal',
+          type: isDepositMode ? 'Deposit' : 'Withdrawal',
           tokenSymbol: 'USDC',
           assetType: 'ERC-20',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -500,14 +516,9 @@ export function TransferPanel() {
           amount: Number(amount)
         })
       }
-      const switchTargetChainId = isDeposit
-        ? latestNetworksAndSigners.current.l1.network.id
-        : latestNetworksAndSigners.current.l2.network.id
+      const switchTargetChainId = latestNetworks.current.sourceChain.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-        currentNetwork = isDeposit
-          ? latestNetworksAndSigners.current.l1.network
-          : latestNetworksAndSigners.current.l2.network
       } catch (e) {
         if (isUserRejectedError(e)) {
           return
@@ -516,66 +527,59 @@ export function TransferPanel() {
     }
 
     try {
-      const l1ChainID = latestNetworksAndSigners.current.l1.network.id
-      const l2ChainID = latestNetworksAndSigners.current.l2.network.id
-      const sourceChainId = isDeposit ? l1ChainID : l2ChainID
+      const { sourceChainProvider, destinationChainProvider, sourceChain } =
+        networks
 
-      const waitForInput = isDeposit
-        ? openUSDCDepositConfirmationDialog()
-        : openUSDCWithdrawalConfirmationDialog()
-      const [confirmed, primaryButtonClicked] = await waitForInput()
+      // show confirmation popup before cctp transfer
+      if (isDepositMode) {
+        const depositConfirmation =
+          await confirmUsdcDepositFromNormalOrCctpBridge()
 
-      if (!confirmed) {
-        return
-      }
-      if (isDeposit && primaryButtonClicked === 'bridged') {
-        // User has selected normal bridge (USDC.e)
-        depositToken()
-        return
-      }
+        if (!depositConfirmation) return false
 
-      // CCTP has an upper limit for transfer
-      const burnLimit = await fetchPerMessageBurnLimit({
-        sourceChainId
-      })
-
-      if (burnLimit.lte(amountBigNumber)) {
-        const formatedLimit = formatAmount(burnLimit, {
-          decimals: selectedToken.decimals,
-          symbol: 'USDC'
-        })
-        errorToast(
-          `The limit for transfers using CCTP is ${formatedLimit}. Please lower your amount and try again.`
-        )
-        return
-      }
-
-      const recipient = destinationAddress || walletAddress
-      const { usdcContractAddress, tokenMessengerContractAddress } =
-        getContracts(sourceChainId)
-
-      const allowance = await fetchErc20Allowance({
-        address: usdcContractAddress,
-        provider: type === 'deposits' ? l1Provider : l2Provider,
-        owner: walletAddress,
-        spender: tokenMessengerContractAddress
-      })
-
-      if (allowance.lt(amountBigNumber)) {
-        setAllowance(allowance)
-        setIsCctp(true)
-        const waitForInput = openTokenApprovalDialog()
-        const [confirmed] = await waitForInput()
-
-        if (!confirmed) {
+        // if user selects usdc.e, redirect to our canonical transfer function
+        if (depositConfirmation === 'bridge-normal-usdce') {
+          await depositToken()
           return
         }
+      } else {
+        const withdrawalConfirmation = await confirmUsdcWithdrawalForCctp()
+        if (!withdrawalConfirmation) return
+      }
 
+      const destinationAddressError = await getDestinationAddressError({
+        destinationAddress,
+        isSmartContractWallet
+      })
+      if (destinationAddressError) {
+        console.error(destinationAddressError)
+        return
+      }
+
+      const cctpTransferStarter = new CctpTransferStarter({
+        sourceChainProvider,
+        destinationChainProvider
+      })
+
+      const isTokenApprovalRequired =
+        await cctpTransferStarter.requiresTokenApproval({
+          amount: amountBigNumber,
+          signer
+        })
+
+      if (isTokenApprovalRequired) {
+        const userConfirmation = await tokenAllowanceApprovalCctp()
+        if (!userConfirmation) return false
+
+        if (isSmartContractWallet) {
+          showDelayedSCTxRequest()
+        }
         try {
-          if (isSmartContractWallet) {
-            showDelayedSCTxRequest()
-          }
-          const tx = await approveForBurn(amountBigNumber, signer)
+          const tx = await cctpTransferStarter.approveToken({
+            signer,
+            amount: amountBigNumber
+          })
+
           await tx.wait()
         } catch (error) {
           if (isUserRejectedError(error)) {
@@ -592,31 +596,33 @@ export function TransferPanel() {
       }
 
       let depositForBurnTx
+
       try {
         if (isSmartContractWallet) {
           showDelayedSCTxRequest()
         }
-        depositForBurnTx = await depositForBurn({
+        const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
           signer,
-          recipient: destinationAddress || walletAddress
+          destinationAddress
         })
+        depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
         if (isUserRejectedError(error)) {
           return
         }
         Sentry.captureException(error)
         errorToast(
-          `USDC deposit transaction failed: ${
-            (error as Error)?.message ?? error
-          }`
+          `USDC ${
+            isDepositMode ? 'Deposit' : 'Withdrawal'
+          } transaction failed: ${(error as Error)?.message ?? error}`
         )
       }
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
         if (shouldTrackAnalytics(currentNetworkName)) {
-          trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
             accountType: 'Smart Contract',
             network: currentNetworkName,
             amount: Number(amount),
@@ -631,7 +637,7 @@ export function TransferPanel() {
       }
 
       if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isDeposit ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
           accountType: 'EOA',
           network: currentNetworkName,
           amount: Number(amount),
@@ -645,45 +651,34 @@ export function TransferPanel() {
         assetType: AssetType.ERC20,
         blockNum: null,
         createdAt: dayjs().valueOf(),
-        direction: isDeposit ? 'deposit' : 'withdraw',
-        isWithdrawal: !isDeposit,
+        direction: isDepositMode ? 'deposit' : 'withdraw',
+        isWithdrawal: !isDepositMode,
         resolvedAt: null,
         status: 'pending',
         uniqueId: null,
         value: amount,
         depositStatus: DepositStatus.CCTP_DEFAULT_STATE,
-        destination: recipient,
+        destination: destinationAddress ?? walletAddress,
         sender: walletAddress,
         isCctp: true,
-        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChainId),
+        tokenAddress: getUsdcTokenAddressFromSourceChainId(sourceChain.id),
         cctpData: {
-          sourceChainId,
+          sourceChainId: sourceChain.id,
           attestationHash: null,
           messageBytes: null,
           receiveMessageTransactionHash: null,
           receiveMessageTimestamp: null
         },
-        parentChainId: l1Network.id,
-        childChainId: l2Network.id
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
       }
 
+      addPendingTransaction(newTransfer)
       openTransactionHistoryPanel()
       setTransferring(false)
       clearAmountInput()
-
-      const depositTxReceipt = await depositForBurnTx.wait()
-      const { messageBytes, attestationHash } =
-        getAttestationHashAndMessageFromReceipt(depositTxReceipt)
-
-      if (depositTxReceipt.status === 0) {
-        errorToast('USDC deposit transaction failed')
-        return
-      }
-
-      if (messageBytes && attestationHash) {
-        addPendingTransaction(newTransfer)
-      }
     } catch (e) {
+      //
     } finally {
       setTransferring(false)
       setIsCctp(false)
@@ -692,6 +687,19 @@ export function TransferPanel() {
 
   const transfer = async () => {
     const signerUndefinedError = 'Signer is undefined'
+
+    try {
+      setTransferring(true)
+      if (chainId !== networks.sourceChain.id) {
+        await switchNetworkAsync?.(networks.sourceChain.id)
+      }
+    } catch (e) {
+      if (isUserRejectedError(e)) {
+        return
+      }
+    } finally {
+      setTransferring(false)
+    }
 
     if (!isConnected) {
       return
@@ -720,19 +728,7 @@ export function TransferPanel() {
       return
     }
 
-    // Make sure Ethereum and/or Orbit chains are not selected as a pair.
-    const ethereumOrOrbitPairsSelected = [l1Network.id, l2Network.id].every(
-      id => {
-        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(id)
-        return isEthereumMainnetOrTestnet || isOrbitChain
-      }
-    )
-    if (ethereumOrOrbitPairsSelected) {
-      console.error('Cannot transfer funds between L1 and/or Orbit chains.')
-      return
-    }
-
-    const l2NetworkName = getNetworkName(l2Network.id)
+    const l2NetworkName = getNetworkName(childChain.id)
 
     setTransferring(true)
 
@@ -752,7 +748,7 @@ export function TransferPanel() {
         }
 
         const isParentChainEthereum = isNetwork(
-          l1Network.id
+          parentChain.id
         ).isEthereumMainnetOrTestnet
         // Only switch to L1 if the selected L1 network is Ethereum.
         // Or if connected to an Orbit chain as it can't make deposits.
@@ -770,9 +766,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l1.network.id
-          )
+          await switchNetworkAsync?.(latestNetworks.current.sourceChain.id)
 
           while (
             (isConnectedToArbitrum.current && isParentChainEthereum) ||
@@ -786,11 +780,9 @@ export function TransferPanel() {
           await new Promise(r => setTimeout(r, 3000))
         }
 
-        const l1ChainID = latestNetworksAndSigners.current.l1.network.id
-        const connectedChainID =
-          latestConnectedProvider.current?.network?.chainId
-        const l1ChainEqualsConnectedChain =
-          l1ChainID && connectedChainID && l1ChainID === connectedChainID
+        const l1ChainId = latestNetworks.current.sourceChain.id
+        const connectedChainId = networks.sourceChain.id
+        const l1ChainEqualsConnectedChain = l1ChainId === connectedChainId
 
         if (!l1ChainEqualsConnectedChain || isConnectedToOrbitChain.current) {
           // Deposit is invalid if the connected chain doesn't match L1...
@@ -804,8 +796,8 @@ export function TransferPanel() {
           // check that a registration is not currently in progress
           const l2RoutedAddress = await getL2ERC20Address({
             erc20L1Address: selectedToken.address,
-            l1Provider,
-            l2Provider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
 
           if (
@@ -829,13 +821,13 @@ export function TransferPanel() {
 
           const l1GatewayAddress = await fetchErc20L1GatewayAddress({
             erc20L1Address: selectedToken.address,
-            l1Provider,
-            l2Provider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
 
           const allowanceForL1Gateway = await fetchErc20Allowance({
             address: selectedToken.address,
-            provider: l1Provider,
+            provider: parentChainProvider,
             owner: walletAddress,
             spender: l1GatewayAddress
           })
@@ -934,7 +926,7 @@ export function TransferPanel() {
 
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-        const { isOrbitChain } = isNetwork(l2Network.id)
+        const { isOrbitChain } = isNetwork(childChain.id)
 
         if (
           isConnectedToEthereum ||
@@ -950,9 +942,7 @@ export function TransferPanel() {
               amount: Number(amount)
             })
           }
-          await switchNetworkAsync?.(
-            latestNetworksAndSigners.current.l2.network.id
-          )
+          await switchNetworkAsync?.(latestNetworks.current.sourceChain.id)
 
           while (
             (!isConnectedToArbitrum.current &&
@@ -976,11 +966,10 @@ export function TransferPanel() {
           }
         }
 
-        const l2ChainID = latestNetworksAndSigners.current.l2.network.id
-        const connectedChainID =
-          latestConnectedProvider.current?.network?.chainId
+        const l2ChainId = latestNetworks.current.sourceChain.id
+        const connectedChainId = networks.sourceChain.id
         if (
-          !(l2ChainID && connectedChainID && +l2ChainID === connectedChainID)
+          !(l2ChainId && connectedChainId && +l2ChainId === connectedChainId)
         ) {
           return networkConnectionWarningToast()
         }
@@ -990,7 +979,7 @@ export function TransferPanel() {
           const amountRaw = utils.parseUnits(amount, decimals)
 
           if (
-            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainID) &&
+            tokenRequiresApprovalOnL2(selectedToken.address, l2ChainId) &&
             selectedToken.l2Address
           ) {
             const allowed = await isAllowedL2({
@@ -998,7 +987,7 @@ export function TransferPanel() {
               l2TokenAddress: selectedToken.l2Address,
               walletAddress,
               amountNeeded: amountRaw,
-              l2Provider: latestNetworksAndSigners.current.l2.provider
+              l2Provider: latestNetworks.current.sourceChainProvider
             })
             if (!allowed) {
               if (isSmartContractWallet) {
@@ -1223,25 +1212,30 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenGoerliUSDC(selectedToken.address)) &&
+                    isTokenSepoliaUSDC(selectedToken.address)) &&
                   !isArbitrumNova
                 ) {
-                  transferCctp('deposits')
+                  transferCctp()
                 } else if (selectedToken) {
                   depositToken()
                 } else {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full bg-eth-dark py-4 text-lg lg:text-2xl',
-                depositButtonColorClassName
-              )}
+              style={{
+                backgroundColor: transferReady.deposit
+                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                      .color.secondary
+                  : undefined
+              }}
+              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(l2Network.id)}`}
+                  : `Move funds to ${getNetworkName(
+                      networks.destinationChain.id
+                    )}`}
               </span>
             </Button>
           ) : (
@@ -1253,22 +1247,27 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumGoerliNativeUSDC(selectedToken.address))
+                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
                 ) {
-                  transferCctp('withdrawals')
+                  transferCctp()
                 } else {
                   transfer()
                 }
               }}
-              className={twMerge(
-                'w-full py-4 text-lg lg:text-2xl',
-                withdrawalButtonColorClassName
-              )}
+              style={{
+                backgroundColor: transferReady.withdrawal
+                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
+                      .color.secondary
+                  : undefined
+              }}
+              className="w-full py-4 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">
                 {isSmartContractWallet && isTransferring
                   ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(l1Network.id)}`}
+                  : `Move funds to ${getNetworkName(
+                      networks.destinationChain.id
+                    )}`}
               </span>
             </Button>
           )}

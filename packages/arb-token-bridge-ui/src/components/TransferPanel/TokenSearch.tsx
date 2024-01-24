@@ -22,11 +22,10 @@ import {
   fetchErc20Data,
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumGoerliNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -39,6 +38,8 @@ import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
@@ -59,28 +60,23 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-const ARB_GOERLI_NATIVE_USDC_TOKEN = {
+const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
-  address: CommonAddress.ArbitrumGoerli.USDC,
-  l2Address: CommonAddress.ArbitrumGoerli.USDC
+  address: CommonAddress.ArbitrumSepolia.USDC,
+  l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
 function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
-    if (typeof l2Network === 'undefined') {
-      return []
-    }
-
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
       if (!tokenList.isValid) {
         return false
@@ -91,9 +87,9 @@ function TokenListsPanel() {
         return false
       }
 
-      return tokenList.originChainID === l2Network.id
+      return tokenList.originChainID === childChain.id
     })
-  }, [l2Network])
+  }, [childChain.id])
 
   const toggleTokenList = (
     bridgeTokenList: BridgeTokenList,
@@ -159,31 +155,28 @@ function TokensPanel({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
-  const {
-    l1: { provider: L1Provider },
-    l2: { provider: L2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { parentLayer, layer } = useChainLayers()
   const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: L1Provider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: L2Provider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
 
-  const nativeCurrency = useNativeCurrency({ provider: L2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const { isArbitrumOne, isArbitrumGoerli, isOrbitChain } = isNetwork(
-    l2Network.id
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
+    childChain.id
   )
-
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
 
@@ -215,7 +208,7 @@ function TokensPanel({
 
       if (
         isTokenArbitrumOneNativeUSDC(address) ||
-        isTokenArbitrumGoerliNativeUSDC(address)
+        isTokenArbitrumSepoliaNativeUSDC(address)
       ) {
         return erc20L2Balances?.[address.toLowerCase()]
       }
@@ -244,8 +237,8 @@ function TokensPanel({
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isArbitrumGoerli) {
-        tokenAddresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
     }
     const tokens = [
@@ -263,9 +256,9 @@ function TokensPanel({
           token = ARB_ONE_NATIVE_USDC_TOKEN
         }
 
-        if (isTokenArbitrumGoerliNativeUSDC(address)) {
+        if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
-          token = ARB_GOERLI_NATIVE_USDC_TOKEN
+          token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
@@ -337,7 +330,7 @@ function TokensPanel({
     tokensFromLists,
     isDepositMode,
     isArbitrumOne,
-    isArbitrumGoerli,
+    isArbitrumSepolia,
     isOrbitChain,
     getBalance,
     nativeCurrency
@@ -402,7 +395,6 @@ function TokensPanel({
             <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
 
             <input
-              id="newTokenAddress"
               value={newToken}
               onChange={e => {
                 setErrorMessage('')
@@ -454,8 +446,8 @@ function TokensPanel({
                 let token: ERC20BridgeToken | null = null
                 if (isTokenArbitrumOneNativeUSDC(address)) {
                   token = ARB_ONE_NATIVE_USDC_TOKEN
-                } else if (isTokenArbitrumGoerliNativeUSDC(address)) {
-                  token = ARB_GOERLI_NATIVE_USDC_TOKEN
+                } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
+                  token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
                 } else if (address) {
                   token =
                     tokensFromLists[address] || tokensFromUser[address] || null
@@ -482,21 +474,22 @@ export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens },
-      isDepositMode
+      arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
   const {
     app: { setSelectedToken }
   } = useActions()
-  const { l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { setTokenQueryParam } = useTokenFromSearchParams()
 
-  const { isValidating: isFetchingTokenLists } = useTokenLists(l2.network.id) // to show a small loader while token-lists are loading when search panel opens
+  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
@@ -520,7 +513,7 @@ export function TokenSearch({ close }: { close: () => void }) {
       // Native USDC on L2 won't have a corresponding L1 address
       const isNativeUSDC =
         isTokenArbitrumOneNativeUSDC(_token.address) ||
-        isTokenArbitrumGoerliNativeUSDC(_token.address)
+        isTokenArbitrumSepoliaNativeUSDC(_token.address)
 
       if (isNativeUSDC) {
         if (isLoadingAccountType) {
@@ -551,7 +544,7 @@ export function TokenSearch({ close }: { close: () => void }) {
 
       const data = await fetchErc20Data({
         address: _token.address,
-        provider: l1.provider
+        provider: parentChainProvider
       })
 
       if (data) {
@@ -563,12 +556,12 @@ export function TokenSearch({ close }: { close: () => void }) {
       }
 
       // do not allow import of withdraw-only tokens at deposit mode
-      if (isDepositMode && isWithdrawOnlyToken(_token.address, l2.network.id)) {
+      if (isDepositMode && isWithdrawOnlyToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }
 
-      if (isTransferDisabledToken(_token.address, l2.network.id)) {
+      if (isTransferDisabledToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
       }

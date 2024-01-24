@@ -23,7 +23,6 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { useRemainingTime } from '../../state/cctpState'
 import { useChainLayers } from '../../hooks/useChainLayers'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { NetworkImage } from '../common/NetworkImage'
 import { getWithdrawalClaimParentChainTxDetails } from './helpers'
 
@@ -33,21 +32,34 @@ type CommonProps = {
 }
 
 function ClaimableRowStatus({ tx }: CommonProps) {
-  const { parentLayer, layer } = useChainLayers()
+  const { parentLayer, layer: childLayer } = useChainLayers()
   const matchingL1TxId = tx.isCctp
     ? tx.cctpData?.receiveMessageTransactionHash
     : getWithdrawalClaimParentChainTxDetails(tx)?.txId
+
+  const sourceLayer = tx.isWithdrawal ? childLayer : parentLayer
+  const destinationLayer = tx.isWithdrawal ? parentLayer : childLayer
 
   switch (tx.status) {
     case 'pending':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge
-            variant="yellow"
-            aria-label={`${layer} Transaction Status`}
-          >
-            Pending
-          </StatusBadge>
+          <div className="flex flex-col space-y-1">
+            <StatusBadge
+              variant="yellow"
+              aria-label={`${sourceLayer} Transaction Status`}
+            >
+              Pending
+            </StatusBadge>
+          </div>
+          <div className="flex flex-col space-y-1">
+            <StatusBadge
+              variant="yellow"
+              aria-label={`${destinationLayer} Transaction Status`}
+            >
+              Pending
+            </StatusBadge>
+          </div>
         </div>
       )
     case 'Unconfirmed':
@@ -55,13 +67,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${destinationLayer} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -73,18 +85,18 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <Tooltip
             content={
-              <span>Funds are ready to be claimed on {parentLayer}</span>
+              <span>Funds are ready to be claimed on {destinationLayer}</span>
             }
           >
             <StatusBadge
               variant="yellow"
-              aria-label={`${parentLayer} Transaction Status`}
+              aria-label={`${destinationLayer} Transaction Status`}
             >
               <InformationCircleIcon className="h-4 w-4" /> Confirmed
             </StatusBadge>
@@ -98,21 +110,21 @@ function ClaimableRowStatus({ tx }: CommonProps) {
           <div className="flex flex-col space-y-1">
             <StatusBadge
               variant="green"
-              aria-label={`${layer} Transaction Status`}
+              aria-label={`${sourceLayer} Transaction Status`}
             >
               Success
             </StatusBadge>
             <Tooltip
               content={
                 <span>
-                  Executed: Funds have been claimed on {parentLayer}, but the
-                  corresponding Tx ID was not found
+                  Executed: Funds have been claimed on {destinationLayer}, but
+                  the corresponding Tx ID was not found
                 </span>
               }
             >
               <StatusBadge
                 variant="gray"
-                aria-label={`${parentLayer} Transaction Status`}
+                aria-label={`${destinationLayer} Transaction Status`}
               >
                 <InformationCircleIcon className="h-4 w-4" /> n/a
               </StatusBadge>
@@ -125,13 +137,13 @@ function ClaimableRowStatus({ tx }: CommonProps) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${sourceLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${destinationLayer} Transaction Status`}
           >
             Success
           </StatusBadge>
@@ -142,7 +154,10 @@ function ClaimableRowStatus({ tx }: CommonProps) {
     case 'Failure':
       return (
         <div className="flex flex-col space-y-1">
-          <StatusBadge variant="red" aria-label={`${layer} Transaction Status`}>
+          <StatusBadge
+            variant="red"
+            aria-label={`${sourceLayer} Transaction Status`}
+          >
             Failed
           </StatusBadge>
         </div>
@@ -155,16 +170,26 @@ function ClaimableRowStatus({ tx }: CommonProps) {
 
 function ClaimableRowTime({ tx }: CommonProps) {
   const { parentLayer, layer } = useChainLayers()
+  const sourceLayer = tx.isWithdrawal ? layer : parentLayer
+  const destinationLayer = tx.isWithdrawal ? parentLayer : layer
   const { remainingTime } = useRemainingTime(tx)
+
+  if (tx.status === 'pending') {
+    return tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />
+  }
 
   if (tx.status === 'Unconfirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
 
-        {tx.isCctp ? <>{remainingTime}</> : <WithdrawalCountdown tx={tx} />}
+        {tx.isCctp ? (
+          <span>{remainingTime}</span>
+        ) : (
+          <WithdrawalCountdown tx={tx} />
+        )}
       </div>
     )
   }
@@ -172,11 +197,11 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (tx.status === 'Confirmed') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
+          <Tooltip content={<span>{destinationLayer} Transaction Time</span>}>
             <span className="whitespace-nowrap">Ready</span>
           </Tooltip>
         )}
@@ -191,11 +216,13 @@ function ClaimableRowTime({ tx }: CommonProps) {
   if (typeof claimedTxTimestamp === 'undefined') {
     return (
       <div className="flex flex-col space-y-3">
-        <Tooltip content={<span>{layer} Transaction time</span>}>
+        <Tooltip content={<span>{sourceLayer} Transaction time</span>}>
           <TransactionDateTime standardizedDate={tx.createdAt} />
         </Tooltip>
         {tx.resolvedAt && (
-          <Tooltip content={<span>Ready to claim funds on {parentLayer}</span>}>
+          <Tooltip
+            content={<span>Ready to claim funds on {destinationLayer}</span>}
+          >
             <span className="whitespace-nowrap">n/a</span>
           </Tooltip>
         )}
@@ -205,7 +232,7 @@ function ClaimableRowTime({ tx }: CommonProps) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>{layer} Transaction Time</span>}>
+      <Tooltip content={<span>{sourceLayer} Transaction Time</span>}>
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {claimedTxTimestamp && (
@@ -313,9 +340,7 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
-        )
+        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
       }),
     [
       tx.asset,

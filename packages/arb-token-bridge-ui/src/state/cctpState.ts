@@ -5,7 +5,7 @@ import useSWRImmutable from 'swr/immutable'
 import * as Sentry from '@sentry/react'
 import { useInterval } from 'react-use'
 
-import { useCCTP } from '../hooks/CCTP/useCCTP'
+import { getCctpUtils } from '@/token-bridge-sdk/cctp'
 import {
   ChainId,
   getBlockTime,
@@ -26,8 +26,6 @@ import {
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
-import { useNetworksAndSigners } from '../hooks/useNetworksAndSigners'
-import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 
@@ -41,9 +39,9 @@ export function getBlockBeforeConfirmation(chainId: ChainId) {
 
 export type CCTPSupportedChainId =
   | ChainId.Ethereum
-  | ChainId.Goerli
+  | ChainId.Sepolia
   | ChainId.ArbitrumOne
-  | ChainId.ArbitrumGoerli
+  | ChainId.ArbitrumSepolia
 
 function getSourceChainIdFromSourceDomain(
   sourceDomain: ChainDomain,
@@ -53,11 +51,11 @@ function getSourceChainIdFromSourceDomain(
 
   // Deposits
   if (sourceDomain === ChainDomain.Ethereum) {
-    return isTestnet ? ChainId.Goerli : ChainId.Ethereum
+    return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
   }
 
   // Withdrawals
-  return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+  return isTestnet ? ChainId.ArbitrumSepolia : ChainId.ArbitrumOne
 }
 
 function getDestinationChainIdFromSourceDomain(
@@ -68,19 +66,19 @@ function getDestinationChainIdFromSourceDomain(
 
   // Deposits
   if (sourceDomain === ChainDomain.Ethereum) {
-    return isTestnet ? ChainId.ArbitrumGoerli : ChainId.ArbitrumOne
+    return isTestnet ? ChainId.ArbitrumSepolia : ChainId.ArbitrumOne
   }
 
   // Withdrawals
-  return isTestnet ? ChainId.Goerli : ChainId.Ethereum
+  return isTestnet ? ChainId.Sepolia : ChainId.Ethereum
 }
 
 export function getUSDCAddresses(chainId: CCTPSupportedChainId) {
   return {
     [ChainId.Ethereum]: CommonAddress.Ethereum,
     [ChainId.ArbitrumOne]: CommonAddress.ArbitrumOne,
-    [ChainId.Goerli]: CommonAddress.Goerli,
-    [ChainId.ArbitrumGoerli]: CommonAddress.ArbitrumGoerli
+    [ChainId.Sepolia]: CommonAddress.Sepolia,
+    [ChainId.ArbitrumSepolia]: CommonAddress.ArbitrumSepolia
   }[chainId]
 }
 
@@ -381,89 +379,6 @@ export function useCctpState() {
   }
 }
 
-export function useUpdateCctpTransactions() {
-  const { pendingIds, transfers, updateTransfer } = useCctpState()
-  const {
-    l1: { provider: l1Provider },
-    l2: { provider: l2Provider }
-  } = useNetworksAndSigners()
-  const getTransactionReceipt = useCallback(
-    async (tx: MergedTransaction) => {
-      const provider = tx.direction === 'deposit' ? l1Provider : l2Provider
-      const receipt = await provider.getTransactionReceipt(tx.txId)
-
-      return {
-        receipt,
-        tx
-      }
-    },
-    [l1Provider, l2Provider]
-  )
-
-  const pendingTransactions = useMemo(() => {
-    return pendingIds
-      .map(pendingId => transfers[pendingId])
-      .filter(transfer => transfer) as unknown as MergedTransaction[]
-  }, [pendingIds, transfers])
-
-  const updateCctpTransactions = useCallback(async () => {
-    const receipts = await Promise.all(
-      pendingTransactions.map(getTransactionReceipt)
-    )
-    const now = dayjs()
-    receipts.forEach(({ receipt, tx }) => {
-      if (!receipt) {
-        return
-      }
-
-      const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
-        tx.parentChainId
-      )
-      const blockTime = getBlockTime(tx.parentChainId)
-
-      if (receipt.status === 0) {
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Failure'
-        })
-      } else if (tx.cctpData?.receiveMessageTransactionHash) {
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Executed'
-        })
-      } else if (receipt.blockNumber && !tx.blockNum) {
-        // If blockNumber was never set (for example, network switch just after the deposit)
-        const { messageBytes, attestationHash } =
-          getAttestationHashAndMessageFromReceipt(receipt)
-        updateTransfer({
-          txId: receipt.transactionHash,
-          blockNum: receipt.blockNumber,
-          cctpData: {
-            messageBytes,
-            attestationHash
-          }
-        })
-      } else if (
-        tx.createdAt &&
-        now.diff(tx.createdAt, 'second') >
-          requiredL1BlocksBeforeConfirmation * blockTime
-      ) {
-        // If transaction claim was set to failure, don't reset to Confirmed
-        if (tx.status === 'Failure') {
-          return
-        }
-
-        updateTransfer({
-          txId: receipt.transactionHash,
-          status: 'Confirmed'
-        })
-      }
-    })
-  }, [getTransactionReceipt, pendingTransactions, updateTransfer])
-
-  return { updateCctpTransactions }
-}
-
 type useCctpFetchingParams = {
   l1ChainId: ChainId
   l2ChainId: ChainId
@@ -480,14 +395,14 @@ export function useCctpFetching({
   pageNumber,
   type
 }: useCctpFetchingParams) {
-  const { isEthereumMainnet: isL1Ethereum, isGoerli: isL1Goerli } =
+  const { isEthereumMainnet: isL1Ethereum, isSepolia: isL1Sepolia } =
     isNetwork(l1ChainId)
   const {
     isArbitrumOne: isL2ArbitrumOne,
-    isArbitrumGoerli: isL2ArbitrumGoerli
+    isArbitrumSepolia: isL2ArbitrumSepolia
   } = isNetwork(l2ChainId)
   const isValidChainPair =
-    (isL1Ethereum && isL2ArbitrumOne) || (isL1Goerli && isL2ArbitrumGoerli)
+    (isL1Ethereum && isL2ArbitrumOne) || (isL1Sepolia && isL2ArbitrumSepolia)
 
   const {
     data: deposits,
@@ -591,7 +506,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { address } = useAccount()
   const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
-  const { waitForAttestation, receiveMessage } = useCCTP({
+  const { waitForAttestation, receiveMessage } = getCctpUtils({
     sourceChainId: tx.cctpData?.sourceChainId
   })
   const { isSmartContractWallet } = useAccountType()
@@ -621,7 +536,7 @@ export function useClaimCctp(tx: MergedTransaction) {
         ...tx,
         resolvedAt,
         depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,
-        status: tx.isWithdrawal ? WithdrawalStatus.EXECUTED : undefined,
+        status: WithdrawalStatus.EXECUTED,
         cctpData: {
           ...tx.cctpData,
           receiveMessageTimestamp: resolvedAt,
@@ -679,9 +594,9 @@ export function getTargetChainIdFromSourceChain(tx: MergedTransaction) {
 
   return {
     [ChainId.Ethereum]: ChainId.ArbitrumOne,
-    [ChainId.Goerli]: ChainId.ArbitrumGoerli,
+    [ChainId.Sepolia]: ChainId.ArbitrumSepolia,
     [ChainId.ArbitrumOne]: ChainId.Ethereum,
-    [ChainId.ArbitrumGoerli]: ChainId.Goerli
+    [ChainId.ArbitrumSepolia]: ChainId.Sepolia
   }[tx.cctpData.sourceChainId]
 }
 
@@ -702,7 +617,7 @@ export function isTransferConfirmed(tx: MergedTransaction) {
 }
 
 export function useRemainingTime(tx: MergedTransaction) {
-  const [remainingTime, setRemainingTime] = useState<string>()
+  const [remainingTime, setRemainingTime] = useState<string>('Calculating...')
   const [canBeClaimedDate, setCanBeClaimedDate] = useState<dayjs.Dayjs>()
   const [isConfirmed, setIsConfirmed] = useState(
     tx.status === 'Confirmed' || tx.status === 'Executed'
@@ -730,7 +645,7 @@ export function useRemainingTime(tx: MergedTransaction) {
     if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
     } else {
-      setRemainingTime(canBeClaimedDate.fromNow().toString())
+      setRemainingTime(canBeClaimedDate.fromNow(true).toString() + ' remaining')
     }
   }, 2000)
 

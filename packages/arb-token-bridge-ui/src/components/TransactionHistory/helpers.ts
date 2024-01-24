@@ -54,7 +54,10 @@ export function isTxCompleted(tx: MergedTransaction) {
 }
 
 export function isTxPending(tx: MergedTransaction) {
-  if (tx.isCctp && tx.status === 'pending') {
+  if (
+    tx.isCctp &&
+    (tx.status === WithdrawalStatus.UNCONFIRMED || tx.status === 'pending')
+  ) {
     return true
   }
   if (isDeposit(tx)) {
@@ -403,6 +406,11 @@ export async function getUpdatedCctpTransfer(
   }
 
   const receipt = await getTxReceipt(tx)
+
+  if (!receipt) {
+    return tx
+  }
+
   const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
@@ -413,13 +421,13 @@ export async function getUpdatedCctpTransfer(
   if (receipt.status === 0) {
     return {
       ...txWithTxId,
-      status: 'Failure'
+      status: WithdrawalStatus.FAILURE
     }
   }
   if (tx.cctpData?.receiveMessageTransactionHash) {
     return {
       ...txWithTxId,
-      status: 'Executed'
+      status: WithdrawalStatus.EXECUTED
     }
   }
   if (receipt.blockNumber && !tx.blockNum) {
@@ -442,16 +450,16 @@ export async function getUpdatedCctpTransfer(
       requiredL1BlocksBeforeConfirmation * blockTime
   if (
     // If transaction claim was set to failure, don't reset to Confirmed
-    tx.status !== 'Failure' &&
+    tx.status !== WithdrawalStatus.FAILURE &&
     isConfirmed
   ) {
     return {
       ...txWithTxId,
-      status: 'Confirmed'
+      status: WithdrawalStatus.CONFIRMED
     }
   }
 
-  return tx
+  return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {

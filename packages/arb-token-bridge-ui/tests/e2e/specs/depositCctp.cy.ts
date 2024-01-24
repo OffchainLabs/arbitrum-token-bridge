@@ -12,7 +12,7 @@ import {
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 
 describe('Deposit USDC through CCTP', () => {
-  const USDCAmountToSend = 0.0001
+  const USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
   // Happy Path
   context('User has some USDC and is on L1', () => {
@@ -28,9 +28,9 @@ describe('Deposit USDC through CCTP', () => {
 
       const address = Cypress.env('ADDRESS')
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.Goerli.USDC,
+        tokenAddress: CommonAddress.Sepolia.USDC,
         multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ETH_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ETH_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -40,9 +40,9 @@ describe('Deposit USDC through CCTP', () => {
           }))
       )
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumGoerli.USDC,
+        tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -52,9 +52,9 @@ describe('Deposit USDC through CCTP', () => {
           }))
       )
       getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumGoerli['USDC.e'],
+        tokenAddress: CommonAddress.ArbitrumSepolia['USDC.e'],
         multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_GOERLI_RPC_URL'),
+        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
         address
       }).then(
         val =>
@@ -74,12 +74,12 @@ describe('Deposit USDC through CCTP', () => {
         }
       },
       () => {
-        cy.login({ networkType: 'L1', networkName: 'goerli' })
+        cy.login({ networkType: 'L1', networkName: 'sepolia' })
         context('should show L1 and L2 chains, and USD correctly', () => {
-          cy.findByRole('button', { name: /From: Goerli/i }).should(
+          cy.findByRole('button', { name: /From: Sepolia/i }).should(
             'be.visible'
           )
-          cy.findByRole('button', { name: /To: Arbitrum Goerli/i }).should(
+          cy.findByRole('button', { name: /To: Arbitrum Sepolia/i }).should(
             'be.visible'
           )
           cy.findByRole('button', { name: 'Select Token' })
@@ -95,7 +95,7 @@ describe('Deposit USDC through CCTP', () => {
 
           // open the Select Token popup
           cy.findByPlaceholderText(/Search by token name/i)
-            .typeRecursively(CommonAddress.Goerli.USDC)
+            .typeRecursively(CommonAddress.Sepolia.USDC)
             .should('be.visible')
             .then(() => {
               // Click on the Add new token button
@@ -156,7 +156,7 @@ describe('Deposit USDC through CCTP', () => {
 
         context('should show clickable deposit button', () => {
           cy.findByRole('button', {
-            name: /Move funds to Arbitrum Goerli/i
+            name: /Move funds to Arbitrum Sepolia/i
           })
             .should('be.visible')
             .should('be.enabled')
@@ -222,6 +222,7 @@ describe('Deposit USDC through CCTP', () => {
               // eslint-disable-next-line
               cy.wait(40_000)
               cy.confirmMetamaskTransaction().then(() => {
+                cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
                 cy.findByText(
                   `${formatAmount(USDCAmountToSend, {
                     symbol: 'USDC'

@@ -2,11 +2,12 @@ import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
-import { ether } from '../constants'
+import { ETHER_TOKEN_LOGO, ether } from '../constants'
 import { rpcURLs } from '../util/networks'
 import { fetchErc20Data } from '../util/TokenUtils'
+import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 
-type NativeCurrencyBase = {
+export type NativeCurrencyBase = {
   name: string
   symbol: string
   decimals: number
@@ -29,8 +30,7 @@ export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
 const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
-  logoUrl:
-    'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png',
+  logoUrl: ETHER_TOKEN_LOGO,
   isCustom: false
 }
 
@@ -82,5 +82,12 @@ export async function fetchNativeCurrency({
     provider: parentChainProvider
   })
 
-  return { name, symbol, decimals, address, isCustom: true }
+  return {
+    name,
+    logoUrl: getBridgeUiConfigForChain(chain.chainID).nativeTokenData?.logoUrl,
+    symbol,
+    decimals,
+    address,
+    isCustom: true
+  }
 }
