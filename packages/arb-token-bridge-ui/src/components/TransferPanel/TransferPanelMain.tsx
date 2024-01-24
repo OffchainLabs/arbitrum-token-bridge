@@ -853,7 +853,6 @@ export function TransferPanelMain({
     networks.destinationChain,
     isTestnetMode,
     setNetworks,
-    actions.app,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog
   ])
