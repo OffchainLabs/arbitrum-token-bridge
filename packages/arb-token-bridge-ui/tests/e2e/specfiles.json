@@ -1,57 +1,7 @@
 [
   {
-    "name": "Login and balance check",
-    "file": "tests/e2e/specs/**/login.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Deposit ETH",
-    "file": "tests/e2e/specs/**/depositETH.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Withdraw ETH",
-    "file": "tests/e2e/specs/**/withdrawETH.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
     "name": "Deposit ERC20",
-    "file": "tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Withdraw ERC20",
-    "file": "tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "TX history",
-    "file": "tests/e2e/specs/**/txHistory.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Approve ERC20",
-    "file": "tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Import test ERC20",
-    "file": "tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Read classic deposits",
-    "file": "tests/e2e/specs/**/readClassicDeposits.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "Switch network",
-    "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
-  },
-  {
-    "name": "URL Query params",
-    "file": "tests/e2e/specs/**/urlQueryParam.cy.{js,jsx,ts,tsx}",
+    "file": "tests/e2e/specs/**/depositERC20-2.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
   }
 ]

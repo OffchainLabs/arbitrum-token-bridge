@@ -69,6 +69,10 @@ export const CustomAddressTxExplorer = ({
     return null
   }
 
+  const shortenedAddress = shortenAddress(
+    isFromDifferentSender ? tx.sender : tx.destination
+  )
+
   return (
     <>
       {isFromDifferentSender ? (
@@ -81,8 +85,9 @@ export const CustomAddressTxExplorer = ({
         href={`${getExplorerUrl(explorerChainId)}/address/${
           isFromDifferentSender ? tx.sender : tx.destination
         }`}
+        aria-label={`custom address: ${shortenedAddress}`}
       >
-        {shortenAddress(isFromDifferentSender ? tx.sender : tx.destination)}
+        {shortenedAddress}
       </ExternalLink>
     </>
   )

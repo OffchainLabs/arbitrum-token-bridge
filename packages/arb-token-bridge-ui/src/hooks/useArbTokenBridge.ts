@@ -48,6 +48,7 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
+import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -113,19 +114,21 @@ export const useArbTokenBridge = (
 
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
+  const { destinationAddress } = useDestinationAddressStore()
+
   const {
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress
+    walletAddress: destinationAddress || walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress
+    walletAddress: destinationAddress || walletAddress
   })
 
   interface ExecutedMessagesCache {

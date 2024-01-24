@@ -43,7 +43,11 @@ export const SidePanel = ({
           >
             <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between border-b-[1px] border-gray-6 bg-black py-4 text-white">
               <span className="text-xl">{heading}</span>
-              <button className="arb-hover" onClick={onClose}>
+              <button
+                className="arb-hover"
+                onClick={onClose}
+                aria-label="close side panel"
+              >
                 <XMarkIcon className="h-6 w-6 text-white" />
               </button>
             </Dialog.Title>
