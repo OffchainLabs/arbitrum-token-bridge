@@ -64,7 +64,7 @@ export function NetworkListbox({
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <Listbox.Options className="absolute z-20 ml-2 mt-2 max-h-[400px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+        <Listbox.Options className="absolute z-20 ml-2 mt-2 max-h-[365px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
           {options.map((option, index) => {
             return (
               <Listbox.Option
