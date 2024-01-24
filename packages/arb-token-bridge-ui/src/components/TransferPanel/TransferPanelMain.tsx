@@ -756,6 +756,26 @@ export function TransferPanelMain({
     }
   }, [actions.app, isDepositMode, selectedToken, token])
 
+  useEffect(() => {
+    // update the background colors of header and layout
+    setTimeout(() => {
+      const colors = getBridgeUiConfigForChain(childChain.id).color
+
+      const layoutBackgroundEl = document.getElementById('layout-container')
+      const layoutBg = `linear-gradient(180deg, ${colors.secondary}, transparent)`
+
+      const headerEl = document.getElementById('header')
+      const headerBg = colors.secondary
+
+      if (layoutBackgroundEl) {
+        layoutBackgroundEl.style.background = layoutBg
+      }
+      if (headerEl) {
+        headerEl.style.background = headerBg
+      }
+    }, 0)
+  }, [childChain.id])
+
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>
     to: Omit<NetworkListboxProps, 'label'>

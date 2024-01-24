@@ -50,7 +50,10 @@ export function Layout(props: LayoutProps) {
       </SiteBanner>
       <Header />
 
-      <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
+      <div
+        className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col"
+        id="layout-container"
+      >
         <main>{props.children}</main>
       </div>
 
