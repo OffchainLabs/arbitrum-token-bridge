@@ -73,7 +73,7 @@ function TokenListsPanel() {
     app: { arbTokenBridge }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
+  const { childChain, parentChain } = useNetworksRelationship(networks)
   const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
@@ -98,7 +98,12 @@ function TokenListsPanel() {
     if (isActive) {
       token.removeTokensFromList(bridgeTokenList.id)
     } else {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      addBridgeTokenListToBridge({
+        bridgeTokenList,
+        arbTokenBridge,
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
+      })
     }
   }
 
@@ -493,91 +498,109 @@ export function TokenSearch({ close }: { close: () => void }) {
 
   const [currentPanel, setCurrentPanel] = useState(Panel.TOKENS)
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
-    close()
+  const selectToken = useCallback(
+    async function selectToken(_token: ERC20BridgeToken | null) {
+      close()
 
-    if (_token === null) {
-      setSelectedToken(null)
-      return
-    }
+      if (_token === null) {
+        setSelectedToken(null)
+        return
+      }
 
-    const lowerCasedTokenAddress = _token.address.toLowerCase()
+      const lowerCasedTokenAddress = _token.address.toLowerCase()
 
-    if (!lowerCasedTokenAddress) {
-      return
-    }
+      if (!lowerCasedTokenAddress) {
+        return
+      }
 
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
 
-    try {
-      // Native USDC on L2 won't have a corresponding L1 address
-      const isNativeUSDC =
-        isTokenArbitrumOneNativeUSDC(lowerCasedTokenAddress) ||
-        isTokenArbitrumSepoliaNativeUSDC(lowerCasedTokenAddress)
+      try {
+        // Native USDC on L2 won't have a corresponding L1 address
+        const isNativeUSDC =
+          isTokenArbitrumOneNativeUSDC(lowerCasedTokenAddress) ||
+          isTokenArbitrumSepoliaNativeUSDC(lowerCasedTokenAddress)
 
-      if (isNativeUSDC) {
-        if (isLoadingAccountType) {
+        if (isNativeUSDC) {
+          if (isLoadingAccountType) {
+            return
+          }
+
+          updateUSDCBalances(lowerCasedTokenAddress)
+          setSelectedToken({
+            name: 'USD Coin',
+            type: TokenType.ERC20,
+            symbol: 'USDC',
+            address: lowerCasedTokenAddress,
+            decimals: 6,
+            listIds: new Set()
+          })
           return
         }
 
-        updateUSDCBalances(lowerCasedTokenAddress)
-        setSelectedToken({
-          name: 'USD Coin',
-          type: TokenType.ERC20,
-          symbol: 'USDC',
+        console.log('bridgeTokens!!! ', bridgeTokens)
+
+        // Token not added to the bridge, so we'll handle importing it
+        if (typeof bridgeTokens[lowerCasedTokenAddress] === 'undefined') {
+          setTokenQueryParam(lowerCasedTokenAddress)
+          return
+        }
+
+        if (!walletAddress) {
+          return
+        }
+
+        const data = await fetchErc20Data({
           address: lowerCasedTokenAddress,
-          decimals: 6,
-          listIds: new Set()
+          provider: parentChainProvider
         })
-        return
-      }
 
-      // Token not added to the bridge, so we'll handle importing it
-      if (typeof bridgeTokens[lowerCasedTokenAddress] === 'undefined') {
-        setTokenQueryParam(lowerCasedTokenAddress)
-        return
-      }
+        if (data) {
+          token.updateTokenData(lowerCasedTokenAddress)
+          setSelectedToken({
+            ...erc20DataToErc20BridgeToken(data),
+            l2Address: _token.l2Address
+          })
+        }
 
-      if (!walletAddress) {
-        return
-      }
+        // do not allow import of withdraw-only tokens at deposit mode
+        if (
+          isDepositMode &&
+          isWithdrawOnlyToken(lowerCasedTokenAddress, childChain.id)
+        ) {
+          openTransferDisabledDialog()
+          return
+        }
 
-      const data = await fetchErc20Data({
-        address: lowerCasedTokenAddress,
-        provider: parentChainProvider
-      })
+        if (isTransferDisabledToken(lowerCasedTokenAddress, childChain.id)) {
+          openTransferDisabledDialog()
+          return
+        }
+      } catch (error: any) {
+        console.warn(error)
 
-      if (data) {
-        token.updateTokenData(lowerCasedTokenAddress)
-        setSelectedToken({
-          ...erc20DataToErc20BridgeToken(data),
-          l2Address: _token.l2Address
-        })
+        if (error.name === 'TokenDisabledError') {
+          warningToast('This token is currently paused in the bridge')
+        }
       }
-
-      // do not allow import of withdraw-only tokens at deposit mode
-      if (
-        isDepositMode &&
-        isWithdrawOnlyToken(lowerCasedTokenAddress, childChain.id)
-      ) {
-        openTransferDisabledDialog()
-        return
-      }
-
-      if (isTransferDisabledToken(lowerCasedTokenAddress, childChain.id)) {
-        openTransferDisabledDialog()
-        return
-      }
-    } catch (error: any) {
-      console.warn(error)
-
-      if (error.name === 'TokenDisabledError') {
-        warningToast('This token is currently paused in the bridge')
-      }
-    }
-  }
+    },
+    [
+      bridgeTokens,
+      token,
+      setSelectedToken,
+      walletAddress,
+      isDepositMode,
+      childChain.id,
+      parentChainProvider,
+      isLoadingAccountType,
+      updateUSDCBalances,
+      openTransferDisabledDialog,
+      setTokenQueryParam,
+      close
+    ]
+  )
 
   if (currentPanel === Panel.TOKENS) {
     return (

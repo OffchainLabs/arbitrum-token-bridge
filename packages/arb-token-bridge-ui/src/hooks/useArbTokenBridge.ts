@@ -26,7 +26,8 @@ import {
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
   ArbTokenBridgeEth,
-  ArbTokenBridgeToken
+  ArbTokenBridgeToken,
+  AddTokensFromListArgs
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
 import {
@@ -39,7 +40,7 @@ import {
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { isNetwork } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
@@ -627,10 +628,13 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
-    const isChildChainOrbit = isNetwork(l2ChainID).isOrbitChain
+  const addTokensFromList = async ({
+    arbTokenList,
+    listId,
+    parentChainId,
+    childChainId
+  }: AddTokensFromListArgs) => {
+    const isChildChainOrbit = isNetwork(childChainId).isOrbitChain
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -640,7 +644,7 @@ export const useArbTokenBridge = (
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
+      if (![parentChainId, childChainId].includes(chainId)) {
         continue
       }
 
@@ -680,7 +684,7 @@ export const useArbTokenBridge = (
           isArbitrumTokenList(listId) && isChildChainOrbit
         const parentChainTokenAddress = isArbitrumTokenAndIsChildChainOrbit
           ? tokenData.address.toLowerCase()
-          : bridgeInfo[l1ChainID]?.tokenAddress.toLowerCase()
+          : bridgeInfo[parentChainId]?.tokenAddress.toLowerCase()
 
         if (!parentChainTokenAddress) {
           return
@@ -732,10 +736,10 @@ export const useArbTokenBridge = (
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
+      if (isNetwork(childChainId).isArbitrumOne) {
         childChainTokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumSepolia) {
+      if (isNetwork(childChainId).isArbitrumSepolia) {
         childChainTokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
