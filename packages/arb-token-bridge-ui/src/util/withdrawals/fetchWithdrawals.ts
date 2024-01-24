@@ -76,7 +76,7 @@ export async function fetchWithdrawals({
     console.log('Error fetching withdrawals from subgraph', error)
   }
 
-  withdrawalsFromSubgraph.map(tx => {
+  withdrawalsFromSubgraph = withdrawalsFromSubgraph.map(tx => {
     return {
       ...tx,
       direction: 'withdrawal',
