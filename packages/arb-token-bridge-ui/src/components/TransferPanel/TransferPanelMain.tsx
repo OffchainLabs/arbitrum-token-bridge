@@ -1,19 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
-import { Loader } from '../common/atoms/Loader'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 
+import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
   getExplorerUrl,
-  getL2ChainIds,
   getNetworkName,
-  getSupportedNetworks,
-  isNetwork
+  getDestinationChainIds,
+  isNetwork,
+  getSupportedChainIds
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
@@ -110,10 +110,6 @@ export function SwitchNetworksButton(
   )
 }
 
-function getListboxOptionsFromL1Network(chainId: ChainId) {
-  return getL2ChainIds(chainId).map(l2ChainId => getWagmiChain(l2ChainId))
-}
-
 function CustomAddressBanner({
   network,
   customAddress
@@ -122,7 +118,7 @@ function CustomAddressBanner({
   customAddress: string | undefined
 }) {
   const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
-  const { primaryColor, secondaryColor } = getBridgeUiConfigForChain(network.id)
+  const { color } = getBridgeUiConfigForChain(network.id)
 
   const backgroundColorForL1OrL2Chain = useMemo(() => {
     if (isOrbitChain) {
@@ -146,10 +142,10 @@ function CustomAddressBanner({
       style={{
         backgroundColor: isOrbitChain
           ? // add opacity to create a lighter shade
-            `${primaryColor}20`
+            `${color.primary}20`
           : undefined,
-        color: secondaryColor,
-        borderColor: secondaryColor
+        color: color.secondary,
+        borderColor: color.secondary
       }}
       className={twMerge(
         'w-full rounded-t-lg border-4 p-1 text-center text-sm',
@@ -179,7 +175,10 @@ function NetworkContainer({
   children: React.ReactNode
 }) {
   const { address } = useAccount()
-  const { secondaryColor, networkLogo } = getBridgeUiConfigForChain(network.id)
+  const {
+    color,
+    network: { logo: networkLogo }
+  } = getBridgeUiConfigForChain(network.id)
 
   const backgroundImage = `url(${networkLogo})`
 
@@ -201,7 +200,7 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
-        style={{ backgroundColor: secondaryColor }}
+        style={{ backgroundColor: color.secondary }}
         className={twMerge(
           'relative rounded-xl p-1 transition-colors',
           showCustomAddressBanner ? 'rounded-t-none' : ''
@@ -343,13 +342,6 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
   const [{ amount }, setQueryParams] = useArbQueryParams()
   const setAmount = useCallback(
     (amount: string) => {
@@ -357,9 +349,13 @@ export function TransferPanelMain({
     },
     [setQueryParams]
   )
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
 
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+  const [isTestnetMode] = useIsTestnetMode()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-  const { isSmartContractWallet } = useAccountType()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -400,7 +396,6 @@ export function TransferPanelMain({
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
-  const [isTestnetMode] = useIsTestnetMode()
 
   useEffect(() => {
     if (nativeCurrency.isCustom) {
@@ -469,8 +464,17 @@ export function TransferPanelMain({
       result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
-    if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    if (
+      erc20L2Balances &&
+      selectedToken.l2Address &&
+      selectedToken.l2Address in erc20L2Balances
+    ) {
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    }
+
+    // token not bridged to the child chain, show zero
+    if (!selectedToken.l2Address) {
+      result.l2 = constants.Zero
     }
 
     if (
@@ -766,109 +770,34 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    function modifyOptions(selectedChainId: ChainId, direction: 'from' | 'to') {
-      const {
-        isOrbitChain: isSourceOrbitChain,
-        isArbitrumNova: isSourceArbitrumNova
-      } = isNetwork(networks.sourceChain.id)
-      const {
-        isOrbitChain: isDestinationOrbitChain,
-        isArbitrumNova: isDestinationArbitrumNova
-      } = isNetwork(networks.destinationChain.id)
-      const { isArbitrum: isSelectedArbitrumChain } = isNetwork(selectedChainId)
-      const options = getListboxOptionsFromL1Network(parentChain.id)
-
-      // Add parent network to the list
-      return [parentChain, ...options].filter(option => {
-        const isSourceChainList = direction === 'from'
-        const isDestinationChainList = direction === 'to'
-        const isSameAsSourceChain = option.id === networks.sourceChain.id
-        const isSameAsDestinationChain =
-          option.id === networks.destinationChain.id
-        const { isEthereumMainnetOrTestnet, isOrbitChain } = isNetwork(
-          option.id
-        )
-        // Remove the origin network from the destination list for contract wallets
-        // It's done so that the origin network is not changed
-        if (
-          isSmartContractWallet &&
-          isDestinationChainList &&
-          isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // Do not display Orbit chains for Nova
-        if (isOrbitChain && isSourceChainList && isDestinationArbitrumNova) {
-          return false
-        }
-
-        if (isOrbitChain && isDestinationChainList && isSourceArbitrumNova) {
-          return false
-        }
-
-        // If this is the Source network list options
-        // and the selected source is an Arbitrum Base chain
-        // we don't show Orbit chains except for the current Destination Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isSourceChainList &&
-          isOrbitChain &&
-          !isSameAsDestinationChain
-        ) {
-          return false
-        }
-
-        // If this is the Destination network list options
-        // and the selected destination is an Arbitrum chain
-        // we don't show Orbit chains except for the current Source Orbit chain on the same dropdown
-        if (
-          isSelectedArbitrumChain &&
-          isDestinationChainList &&
-          isOrbitChain &&
-          !isSameAsSourceChain
-        ) {
-          return false
-        }
-
-        // If the source chain is an Orbit Chain,
-        // and this is the Destination network list options
-        if (isSourceOrbitChain && isDestinationChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsSourceChain) {
-            return false
-          }
-        }
-
-        // If the destination chain is an Orbit Chain,
-        // and this is the Source network list options
-        if (isDestinationOrbitChain && isSourceChainList) {
-          // we do not show Ethereum Mainnet or Testnet as options
-          if (isEthereumMainnetOrTestnet) {
-            return false
-          }
-          // we do not show other Orbit chains as options
-          if (isOrbitChain && !isSameAsDestinationChain) {
-            return false
-          }
-        }
-
-        // Remove selected network from the list
-        return option.id !== selectedChainId
-      })
+    function getSourceChains() {
+      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
+        getWagmiChain
+      )
     }
 
-    const fromOptions = getSupportedNetworks(
-      networks.sourceChain.id,
-      !!isTestnetMode
-    )
-      .filter(chainId => chainId !== networks.sourceChain.id)
-      .map(chainId => getWagmiChain(chainId))
-    const toOptions = modifyOptions(networks.destinationChain.id, 'to')
+    function getDestinationChains() {
+      const destinationChainIds = getDestinationChainIds(
+        networks.sourceChain.id
+      )
+
+      // if source chain is Arbitrum One, add Arbitrum Nova to destination
+      if (networks.sourceChain.id === ChainId.ArbitrumOne) {
+        destinationChainIds.push(ChainId.ArbitrumNova)
+      }
+
+      // if source chain is Arbitrum Nova, add Arbitrum One to destination
+      if (networks.sourceChain.id === ChainId.ArbitrumNova) {
+        destinationChainIds.push(ChainId.ArbitrumOne)
+      }
+
+      return (
+        destinationChainIds
+          // remove self
+          .filter(chainId => chainId !== networks.destinationChain.id)
+          .map(getWagmiChain)
+      )
+    }
 
     function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
       return [ChainId.ArbitrumOne, ChainId.ArbitrumNova].every(chainId =>
@@ -876,106 +805,55 @@ export function TransferPanelMain({
       )
     }
 
-    if (isDepositMode) {
-      return {
-        from: {
-          disabled:
-            !fromOptions.length ||
-            isSmartContractWallet ||
-            typeof isSmartContractWallet === 'undefined',
-          options: fromOptions,
-          value: networks.sourceChain,
-          onChange: async network => {
-            if (
-              shouldOpenOneNovaDialog([
-                network.id,
-                networks.destinationChain.id
-              ])
-            ) {
-              setOneNovaTransferDestinationNetworkId(
-                networks.destinationChain.id
-              )
-              openOneNovaTransferDialog()
-              return
-            }
-
-            setNetworks({ sourceChainId: network.id })
-          }
-        },
-        to: {
-          disabled: !toOptions.length,
-          options: toOptions,
-          value: networks.destinationChain,
-          onChange: async network => {
-            if (network.id === networks.sourceChain.id) {
-              switchNetworksOnTransferPanel()
-              return
-            }
-
-            if (
-              shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])
-            ) {
-              setOneNovaTransferDestinationNetworkId(network.id)
-              openOneNovaTransferDialog()
-              return
-            }
-
-            setNetworks({ destinationChainId: network.id })
-          }
-        }
-      }
-    }
+    const sourceChains = getSourceChains()
+    const destinationChains = getDestinationChains()
 
     return {
       from: {
-        disabled:
-          !fromOptions.length ||
-          isSmartContractWallet ||
-          typeof isSmartContractWallet === 'undefined',
-        options: fromOptions,
+        disabled: isSmartContractWallet || isLoadingAccountType,
+        options: sourceChains,
         value: networks.sourceChain,
         onChange: async network => {
-          if (
-            shouldOpenOneNovaDialog([network.id, networks.destinationChain.id])
-          ) {
-            setOneNovaTransferDestinationNetworkId(networks.destinationChain.id)
-            openOneNovaTransferDialog()
-            return
-          }
-
-          setNetworks({ sourceChainId: network.id })
-        }
-      },
-      to: {
-        disabled: !toOptions.length,
-        options: toOptions,
-        value: networks.destinationChain,
-        onChange: async network => {
-          if (network.id === networks.sourceChain.id) {
+          if (networks.destinationChain.id === network.id) {
             switchNetworksOnTransferPanel()
             return
           }
 
+          setNetworks({ sourceChainId: network.id })
+          actions.app.setSelectedToken(null)
+        }
+      },
+      to: {
+        disabled:
+          isSmartContractWallet ||
+          isLoadingAccountType ||
+          destinationChains.length === 0,
+        options: destinationChains,
+        value: networks.destinationChain,
+        onChange: async network => {
           if (shouldOpenOneNovaDialog([network.id, networks.sourceChain.id])) {
             setOneNovaTransferDestinationNetworkId(network.id)
             openOneNovaTransferDialog()
             return
           }
 
-          setNetworks({ destinationChainId: network.id })
+          setNetworks({
+            sourceChainId: networks.sourceChain.id,
+            destinationChainId: network.id
+          })
+          actions.app.setSelectedToken(null)
         }
       }
     }
   }, [
+    isSmartContractWallet,
+    isLoadingAccountType,
     networks.sourceChain,
     networks.destinationChain,
     isTestnetMode,
-    isDepositMode,
-    isSmartContractWallet,
-    parentChain,
     setNetworks,
-    openOneNovaTransferDialog,
-    switchNetworksOnTransferPanel
+    switchNetworksOnTransferPanel,
+    openOneNovaTransferDialog
   ])
 
   const maxButtonProps = useMemo(() => {

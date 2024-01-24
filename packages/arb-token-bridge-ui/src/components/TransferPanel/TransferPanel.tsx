@@ -603,7 +603,8 @@ export function TransferPanel() {
         }
         const transfer = await cctpTransferStarter.transfer({
           amount: amountBigNumber,
-          signer
+          signer,
+          destinationAddress
         })
         depositForBurnTx = transfer.sourceChainTransaction
       } catch (error) {
@@ -1220,7 +1221,7 @@ export function TransferPanel() {
               style={{
                 backgroundColor: transferReady.deposit
                   ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .secondaryColor
+                      .color.secondary
                   : undefined
               }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
@@ -1252,7 +1253,7 @@ export function TransferPanel() {
               style={{
                 backgroundColor: transferReady.withdrawal
                   ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .secondaryColor
+                      .color.secondary
                   : undefined
               }}
               className="w-full py-4 text-lg lg:text-2xl"

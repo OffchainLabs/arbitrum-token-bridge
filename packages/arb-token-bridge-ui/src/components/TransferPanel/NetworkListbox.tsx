@@ -23,7 +23,7 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  const { primaryColor } = getBridgeUiConfigForChain(value.id)
+  const { color } = getBridgeUiConfigForChain(value.id)
 
   const getOptionClassName = useCallback(
     (index: number) => {
@@ -49,7 +49,7 @@ export function NetworkListbox({
       onChange={onChange}
     >
       <Listbox.Button
-        style={{ backgroundColor: primaryColor }}
+        style={{ backgroundColor: color.primary }}
         className="arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white md:text-2xl lg:px-4 lg:py-3"
       >
         <span className="max-w-[220px] truncate md:max-w-[250px]">
@@ -64,7 +64,7 @@ export function NetworkListbox({
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <Listbox.Options className="absolute z-20 ml-2 mt-2 overflow-hidden rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+        <Listbox.Options className="absolute z-20 ml-2 mt-2 max-h-[365px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
           {options.map((option, index) => {
             return (
               <Listbox.Option
@@ -77,7 +77,7 @@ export function NetworkListbox({
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Image
-                    src={getBridgeUiConfigForChain(option.id).networkLogo}
+                    src={getBridgeUiConfigForChain(option.id).network.logo}
                     alt={`${getNetworkName(option.id)} logo`}
                     className="max-h-7 w-auto"
                     width={36}

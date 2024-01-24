@@ -1,42 +1,49 @@
 /**
  * @jest-environment jsdom
  */
+import { addCustomChain } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
+import { createMockOrbitChain } from './helpers'
 
 describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
 
   beforeAll(() => {
+    const mockedOrbitChain_1 = createMockOrbitChain({
+      chainId: 1111,
+      parentChainId: ChainId.ArbitrumGoerli
+    })
+    const mockedOrbitChain_2 = createMockOrbitChain({
+      chainId: 2222,
+      parentChainId: ChainId.ArbitrumSepolia
+    })
+    const mockedOrbitChain_3 = createMockOrbitChain({
+      chainId: 3333,
+      parentChainId: ChainId.ArbitrumOne
+    })
+    const mockedOrbitChain_4 = createMockOrbitChain({
+      chainId: 4444,
+      parentChainId: ChainId.ArbitrumNova
+    })
+
     localStorageGetItemMock = global.Storage.prototype.getItem = jest.fn(
       key => {
         if (key === customChainLocalStorageKey) {
           return JSON.stringify([
-            {
-              chainID: '1111',
-              partnerChainID: ChainId.ArbitrumGoerli,
-              name: 'custom 1111 chain'
-            },
-            {
-              chainID: '2222',
-              partnerChainID: ChainId.ArbitrumSepolia,
-              name: 'custom 2222 chain'
-            },
-            {
-              chainID: '3333',
-              partnerChainID: ChainId.ArbitrumOne,
-              name: 'custom 3333 chain'
-            },
-            {
-              chainID: '4444',
-              partnerChainID: ChainId.ArbitrumNova,
-              name: 'custom 4444 chain'
-            }
+            mockedOrbitChain_1,
+            mockedOrbitChain_2,
+            mockedOrbitChain_3,
+            mockedOrbitChain_4
           ])
         }
         return null
       }
     )
+    addCustomChain({ customChain: mockedOrbitChain_1 })
+    addCustomChain({ customChain: mockedOrbitChain_2 })
+    addCustomChain({ customChain: mockedOrbitChain_3 })
+    addCustomChain({ customChain: mockedOrbitChain_4 })
   })
 
   afterAll(() => {

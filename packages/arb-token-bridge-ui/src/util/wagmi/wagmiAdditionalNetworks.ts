@@ -2,13 +2,16 @@ import { Chain, sepolia as sepoliaDefault } from 'wagmi'
 
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+
   return {
     id: chain.chainID,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: chain.nativeTokenData ?? ether,
+    nativeCurrency: nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
@@ -70,52 +73,6 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
-  }
-}
-
-export const xaiTestnet: Chain = {
-  id: ChainId.XaiTestnet,
-  name: 'Xai Orbit Testnet',
-  network: 'xai-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://testnet-explorer.xai-chain.net'
-    }
-  }
-}
-
-export const xai: Chain = {
-  id: ChainId.Xai,
-  name: 'Xai',
-  network: 'xai',
-  nativeCurrency: {
-    name: 'Xai',
-    symbol: 'XAI',
-    decimals: 18
-  },
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.Xai]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.Xai]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://explorer.xai-chain.net'
-    }
   }
 }
 

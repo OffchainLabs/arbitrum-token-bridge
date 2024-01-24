@@ -57,6 +57,15 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
+      return
+    }
+
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: []
+      })
+      return
     }
 
     const additionalFilters = `${
@@ -72,7 +81,19 @@ export default async function handler(
     ${search ? `transactionHash_contains: "${search}"` : ''}
     `
 
-    const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
+    let subgraphClient
+    try {
+      subgraphClient = getL1SubgraphClient(Number(l2ChainId))
+    } catch (error: any) {
+      // catch attempt to query unsupported networks and throw a 400
+      res.status(400).json({
+        message: error?.message ?? 'Something went wrong',
+        data: []
+      })
+      return
+    }
+
+    const subgraphResult = await subgraphClient.query({
       query: gql(`{
         deposits(
           where: {            
