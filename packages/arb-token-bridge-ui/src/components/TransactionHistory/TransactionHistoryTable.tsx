@@ -263,7 +263,6 @@ export const TransactionHistoryTable = ({
                 return null
               }
 
-              const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
               const isLastRow = index + 1 === transactions.length
 
               const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
