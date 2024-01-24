@@ -10,13 +10,11 @@ import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
-import {
-  listIdsToNames,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
-} from '../../util/TokenListUtils'
+import { listIdsToNames } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import {
+  isArbitrumToken as isArbitrumTokenCheck,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   sanitizeTokenName,
@@ -123,7 +121,10 @@ export function TokenRow({
     return nativeCurrency.symbol
   }, [token, nativeCurrency.symbol, chainId])
 
-  const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  const isChildChainNativeToken = useMemo(
+    () => token?.isL2Native ?? false,
+    [token]
+  )
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
     [token]
@@ -186,13 +187,7 @@ export function TokenRow({
     token
   ])
 
-  const isArbitrumToken = useMemo(() => {
-    if (!token) {
-      return false
-    }
-
-    return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
-  }, [token])
+  const isArbitrumToken = useMemo(() => isArbitrumTokenCheck(token), [token])
 
   const isPotentialFakeArbitrumToken = useMemo(() => {
     if (!token || isArbitrumToken) {
@@ -252,15 +247,20 @@ export function TokenRow({
       return true
     }
 
-    return typeof bridgeTokens[token.address] !== 'undefined'
+    if (isArbitrumToken) {
+      return true
+    }
+
+    return typeof bridgeTokens[token.address.toLowerCase()] !== 'undefined'
   }, [
     bridgeTokens,
+    isArbitrumToken,
     token,
     tokenIsArbOneNativeUSDC,
     tokenIsArbSepoliaNativeUSDC
   ])
 
-  const tokenHasL2Address = useMemo(() => {
+  const tokenHasChildChainAddress = useMemo(() => {
     if (!token) {
       return true
     }
@@ -269,7 +269,7 @@ export function TokenRow({
   }, [token])
 
   const tokenIsBridgeable = useMemo(() => {
-    if (isL2NativeToken) {
+    if (isChildChainNativeToken) {
       return false
     }
 
@@ -277,8 +277,8 @@ export function TokenRow({
       return true
     }
 
-    return tokenHasL2Address
-  }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
+    return tokenHasChildChainAddress
+  }, [isDepositMode, tokenHasChildChainAddress, isChildChainNativeToken])
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
@@ -391,7 +391,7 @@ export function TokenRow({
               <div className="flex w-full justify-between">
                 {isDepositMode ? (
                   <>
-                    {isL2NativeToken ? (
+                    {isChildChainNativeToken ? (
                       <BlockExplorerTokenLink
                         chain={childChain}
                         address={token.address}
@@ -405,7 +405,7 @@ export function TokenRow({
                   </>
                 ) : (
                   <>
-                    {tokenHasL2Address ? (
+                    {tokenHasChildChainAddress ? (
                       <BlockExplorerTokenLink
                         chain={childChain}
                         address={token.l2Address}
@@ -420,7 +420,7 @@ export function TokenRow({
                 )}
                 {tokenIsBridgeable && tokenBalanceContent}
               </div>
-              {isL2NativeToken ? (
+              {isChildChainNativeToken ? (
                 <span className="flex gap-1 text-xs font-normal">
                   {`This token is native to ${getNetworkName(
                     childChain.id

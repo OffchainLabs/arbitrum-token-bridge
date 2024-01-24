@@ -48,6 +48,7 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
+import { isArbitrumTokenList } from '../util/TokenListUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -629,6 +630,7 @@ export const useArbTokenBridge = (
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
     const l1ChainID = l1.network.id
     const l2ChainID = l2.network.id
+    const isChildChainOrbit = isNetwork(l2ChainID).isOrbitChain
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
@@ -674,17 +676,21 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        const isArbitrumTokenAndIsChildChainOrbit =
+          isArbitrumTokenList(listId) && isChildChainOrbit
+        const parentChainTokenAddress = isArbitrumTokenAndIsChildChainOrbit
+          ? tokenData.address.toLowerCase()
+          : bridgeInfo[l1ChainID]?.tokenAddress.toLowerCase()
 
-        if (!l1Address) {
+        if (!parentChainTokenAddress) {
           return
         }
 
-        bridgeTokensToAdd[l1Address] = {
+        bridgeTokensToAdd[parentChainTokenAddress] = {
           name,
           type: TokenType.ERC20,
           symbol,
-          address: l1Address,
+          address: parentChainTokenAddress,
           l2Address: address.toLowerCase(),
           decimals,
           logoURI,
@@ -721,16 +727,16 @@ export const useArbTokenBridge = (
 
     // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
     setBridgeTokens(oldBridgeTokens => {
-      const l1Addresses: string[] = []
-      const l2Addresses: string[] = []
+      const parentChainTokenAddresses: string[] = []
+      const childChainTokenAddresses: string[] = []
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
       if (isNetwork(l2ChainID).isArbitrumOne) {
-        l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
+        childChainTokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
       if (isNetwork(l2ChainID).isArbitrumSepolia) {
-        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
+        childChainTokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {
@@ -739,11 +745,12 @@ export const useArbTokenBridge = (
           return
         }
         const { address, l2Address } = tokenToAdd
+
         if (address) {
-          l1Addresses.push(address)
+          parentChainTokenAddresses.push(address)
         }
         if (l2Address) {
-          l2Addresses.push(l2Address)
+          childChainTokenAddresses.push(l2Address)
         }
 
         // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
@@ -753,8 +760,8 @@ export const useArbTokenBridge = (
         tokenToAdd.listIds = new Set([...oldListIds, listId])
       }
 
-      updateErc20L1Balance(l1Addresses)
-      updateErc20L2Balance(l2Addresses)
+      updateErc20L1Balance(parentChainTokenAddresses)
+      updateErc20L2Balance(childChainTokenAddresses)
 
       return {
         ...oldBridgeTokens,

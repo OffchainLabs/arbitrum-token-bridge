@@ -14,6 +14,9 @@ import { ChainId } from './networks'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
 
+export const isArbitrumTokenList = (listId: number) =>
+  listId === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+
 export interface BridgeTokenList {
   id: number
   originChainID: number

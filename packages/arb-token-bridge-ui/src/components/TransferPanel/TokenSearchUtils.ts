@@ -6,9 +6,10 @@ import {
   TokenType
 } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { TokenListWithId } from '../../util/TokenListUtils'
+import { TokenListWithId, isArbitrumTokenList } from '../../util/TokenListUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
+import { ChainId, isNetwork } from '../../util/networks'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const [networks] = useNetworks()
@@ -63,9 +64,18 @@ function tokenListsToSearchableTokenStorage(
         const address = token.address.toLowerCase()
         const stringifiedChainId = String(token.chainId)
         const accAddress = acc[address]
+        const isChildChainOrbit = isNetwork(
+          Number(l2ChainId) as ChainId
+        ).isOrbitChain
 
-        if (stringifiedChainId === l1ChainId) {
-          // The address is from an L1 token
+        if (
+          stringifiedChainId === l1ChainId ||
+          (stringifiedChainId === l2ChainId &&
+            isChildChainOrbit &&
+            isArbitrumTokenList(tokenList.bridgeTokenListId))
+        ) {
+          // The address is from an L1 token or
+          // the token is ARB and the child chain is an Orbit chain
           if (typeof accAddress === 'undefined') {
             // First time encountering the token through its L1 address
             acc[address] = {
