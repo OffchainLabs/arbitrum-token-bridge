@@ -4687,9 +4687,9 @@ cypress-recurse@^1.27.0:
     humanize-duration "^3.27.3"
 
 cypress-terminal-report@^5.3.10:
-  version "5.3.11"
-  resolved "https://registry.yarnpkg.com/cypress-terminal-report/-/cypress-terminal-report-5.3.11.tgz#aec06d3c1f4226e97ce0fa2264d8a88ad48789f9"
-  integrity sha512-MYQm+7vxdX21YsW97/NmW9ciq82FkRigPJrZ7qV9YsehcjKjcp0bQ8MzNtUVw2uQQDsjFLobzomLhHEyHZKgpg==
+  version "5.3.10"
+  resolved "https://registry.yarnpkg.com/cypress-terminal-report/-/cypress-terminal-report-5.3.10.tgz#62d59cf9ecc9a9a9befe629d73824eb65240738a"
+  integrity sha512-qaRgTPSFAiBu6PC8ODCN9PV/cxJPDIHyRunWknBhnFQfynYIdjSHOs1Lekkd78zHk9FtBISTvU+CRa9Bjmft7g==
   dependencies:
     chalk "^4.0.0"
     fs-extra "^10.1.0"
