@@ -460,8 +460,17 @@ export function TransferPanelMain({
       result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
-    if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    if (
+      erc20L2Balances &&
+      selectedToken.l2Address &&
+      selectedToken.l2Address in erc20L2Balances
+    ) {
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    }
+
+    // token not bridged to the child chain, show zero
+    if (!selectedToken.l2Address) {
+      result.l2 = constants.Zero
     }
 
     if (
@@ -801,6 +810,7 @@ export function TransferPanelMain({
           }
 
           setNetworks({ sourceChainId: network.id })
+          actions.app.setSelectedToken(null)
         }
       },
       to: {
@@ -821,6 +831,7 @@ export function TransferPanelMain({
             sourceChainId: networks.sourceChain.id,
             destinationChainId: network.id
           })
+          actions.app.setSelectedToken(null)
         }
       }
     }
