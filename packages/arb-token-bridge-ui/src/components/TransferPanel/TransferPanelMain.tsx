@@ -822,7 +822,6 @@ export function TransferPanelMain({
 
           setNetworks({ sourceChainId: network.id })
           actions.app.setSelectedToken(null)
-          setAmount('')
         }
       },
       to: {
@@ -844,7 +843,6 @@ export function TransferPanelMain({
             destinationChainId: network.id
           })
           actions.app.setSelectedToken(null)
-          setAmount('')
         }
       }
     }
@@ -856,7 +854,6 @@ export function TransferPanelMain({
     isTestnetMode,
     setNetworks,
     actions.app,
-    setAmount,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog
   ])
