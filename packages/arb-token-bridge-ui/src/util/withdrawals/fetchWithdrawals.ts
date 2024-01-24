@@ -62,29 +62,29 @@ export async function fetchWithdrawals({
 
   let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
   try {
-    withdrawalsFromSubgraph = await fetchWithdrawalsFromSubgraph({
-      sender,
-      receiver,
-      fromBlock,
-      toBlock,
-      l2ChainId: l2ChainID,
-      pageNumber,
-      pageSize,
-      searchString
+    withdrawalsFromSubgraph = (
+      await fetchWithdrawalsFromSubgraph({
+        sender,
+        receiver,
+        fromBlock,
+        toBlock,
+        l2ChainId: l2ChainID,
+        pageNumber,
+        pageSize,
+        searchString
+      })
+    ).map(tx => {
+      return {
+        ...tx,
+        direction: 'withdrawal',
+        source: 'subgraph',
+        parentChainId: l1ChainID,
+        childChainId: l2ChainID
+      }
     })
   } catch (error) {
     console.log('Error fetching withdrawals from subgraph', error)
   }
-
-  withdrawalsFromSubgraph = withdrawalsFromSubgraph.map(tx => {
-    return {
-      ...tx,
-      direction: 'withdrawal',
-      source: 'subgraph',
-      parentChainId: l1ChainID,
-      childChainId: l2ChainID
-    }
-  })
 
   const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
     await Promise.all([
