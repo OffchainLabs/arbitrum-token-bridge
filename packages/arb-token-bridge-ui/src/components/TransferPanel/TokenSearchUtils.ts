@@ -64,16 +64,8 @@ function tokenListsToSearchableTokenStorage(
         const address = token.address.toLowerCase()
         const stringifiedChainId = String(token.chainId)
         const accAddress = acc[address]
-        const isChildChainOrbit = isNetwork(
-          Number(l2ChainId) as ChainId
-        ).isOrbitChain
 
-        if (
-          stringifiedChainId === l1ChainId ||
-          (stringifiedChainId === l2ChainId &&
-            isChildChainOrbit &&
-            isArbitrumTokenList(tokenList.bridgeTokenListId))
-        ) {
+        if (stringifiedChainId === l1ChainId) {
           // The address is from an L1 token or
           // the token is ARB and the child chain is an Orbit chain
           if (typeof accAddress === 'undefined') {
