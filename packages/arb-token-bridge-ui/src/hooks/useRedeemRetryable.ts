@@ -88,10 +88,7 @@ export function useRedeemRetryable(
           fetchingUpdate: false
         },
         resolvedAt: isSuccess ? dayjs().valueOf() : null,
-        depositStatus:
-          status === L1ToL2MessageStatus.REDEEMED
-            ? DepositStatus.L2_SUCCESS
-            : tx.depositStatus
+        depositStatus: isSuccess ? DepositStatus.L2_SUCCESS : tx.depositStatus
       })
 
       setIsRedeeming(false)
