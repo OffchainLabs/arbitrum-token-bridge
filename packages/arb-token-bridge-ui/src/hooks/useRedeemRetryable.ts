@@ -5,6 +5,7 @@ import {
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
+import { TransactionReceipt } from '@ethersproject/providers'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
@@ -73,10 +74,15 @@ export function useRedeemRetryable(
       const status = await retryableTicket.status()
       const isSuccess = status === L1ToL2MessageStatus.REDEEMED
 
+      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
+        status: L1ToL2MessageStatus.REDEEMED
+        l2TxReceipt: TransactionReceipt
+      }
+
       updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          ...tx.l1ToL2MsgData,
+          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false
