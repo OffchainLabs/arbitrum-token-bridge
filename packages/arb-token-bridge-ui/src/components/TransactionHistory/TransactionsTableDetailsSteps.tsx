@@ -116,6 +116,44 @@ const Step = ({
   )
 }
 
+const LastStepEndItem = ({
+  tx,
+  address
+}: {
+  tx: MergedTransaction
+  address: `0x${string}` | undefined
+}) => {
+  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
+
+  if (destinationNetworkTxId) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(
+          destinationChainId
+        )}/tx/${getDestinationNetworkTxId(tx)}`}
+      >
+        <ArrowTopRightOnSquareIcon height={12} />
+      </ExternalLink>
+    )
+  }
+
+  if (isDepositReadyToRedeem(tx)) {
+    return (
+      <TransactionsTableRowAction
+        type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        isError={true}
+        tx={tx}
+        address={address}
+      />
+    )
+  }
+
+  return null
+}
+
 export const TransactionsTableDetailsSteps = ({
   tx,
   address
@@ -132,8 +170,6 @@ export const TransactionsTableDetailsSteps = ({
 
   const sourceNetworkName = getNetworkName(sourceChainId)
   const destinationNetworkName = getNetworkName(destinationChainId)
-
-  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
 
   const isSourceChainDepositFailure =
     typeof tx.depositStatus !== 'undefined' &&
@@ -213,27 +249,7 @@ export const TransactionsTableDetailsSteps = ({
               } on ${destinationNetworkName}`
             : `Funds arrived on ${destinationNetworkName}`
         }
-        endItem={
-          <>
-            {destinationNetworkTxId && (
-              <ExternalLink
-                href={`${getExplorerUrl(
-                  destinationChainId
-                )}/tx/${getDestinationNetworkTxId(tx)}`}
-              >
-                <ArrowTopRightOnSquareIcon height={12} />
-              </ExternalLink>
-            )}
-            {isDepositReadyToRedeem(tx) && (
-              <TransactionsTableRowAction
-                type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-                isError={true}
-                tx={tx}
-                address={address}
-              />
-            )}
-          </>
-        }
+        endItem={<LastStepEndItem tx={tx} address={address} />}
       />
     </div>
   )
