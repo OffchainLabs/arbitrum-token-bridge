@@ -327,8 +327,6 @@ const useTransactionHistoryWithoutStatuses = (
 
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
-      console.log('Fetch list', multiChainFetchList)
-
       return Promise.all(
         multiChainFetchList
           .filter(chainPair => {
