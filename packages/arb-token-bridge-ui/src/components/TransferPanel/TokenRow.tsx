@@ -14,12 +14,12 @@ import { listIdsToNames } from '../../util/TokenListUtils'
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import {
-  isArbitrumToken as isArbitrumTokenCheck,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   sanitizeTokenName,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
+import { isArbitrumToken as isArbitrumTokenCheck } from '../../util/ArbTokenUtils'
 import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
