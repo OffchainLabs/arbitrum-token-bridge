@@ -183,7 +183,7 @@ export function TokenImportDialog({
 
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
-      await token.updateTokenData(_token.address)
+      await token.updateTokenData(_token.address.toLowerCase())
       actions.app.setSelectedToken(_token)
     },
     [token, actions]

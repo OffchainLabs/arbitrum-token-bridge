@@ -4,7 +4,6 @@ import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
 import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
@@ -40,7 +39,7 @@ import {
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { ChainId, isNetwork } from '../util/networks'
+import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
@@ -50,6 +49,8 @@ import {
   getProvider
 } from '../components/TransactionHistory/helpers'
 import { isArbitrumTokenList } from '../util/TokenListUtils'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -112,6 +113,9 @@ export const useArbTokenBridge = (
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
   >(undefined)
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider } =
+    useNetworksRelationship(networks)
 
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
@@ -119,14 +123,14 @@ export const useArbTokenBridge = (
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    provider: parentChainProvider,
     walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    provider: childChainProvider,
     walletAddress
   })
 
@@ -685,6 +689,9 @@ export const useArbTokenBridge = (
         const parentChainTokenAddress = isArbitrumTokenAndIsChildChainOrbit
           ? tokenData.address.toLowerCase()
           : bridgeInfo[parentChainId]?.tokenAddress.toLowerCase()
+        const childChainAddress = isArbitrumTokenAndIsChildChainOrbit
+          ? undefined
+          : address.toLowerCase()
 
         if (!parentChainTokenAddress) {
           return
@@ -695,7 +702,7 @@ export const useArbTokenBridge = (
           type: TokenType.ERC20,
           symbol,
           address: parentChainTokenAddress,
-          l2Address: address.toLowerCase(),
+          l2Address: childChainAddress,
           decimals,
           logoURI,
           listIds: new Set([listId])
@@ -866,7 +873,13 @@ export const useArbTokenBridge = (
         updateErc20L2Balance([l2Address])
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      setBridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances
+    ]
   )
 
   const updateEthBalances = async () => {

@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
