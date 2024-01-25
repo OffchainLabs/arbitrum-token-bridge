@@ -93,22 +93,24 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: ChainPair[] = getChains().flatMap(chain => {
-  // We only grab deposit destinations because we don't want duplicates and we need the parent chain
-  const depositDestinationChainIds = chain.partnerChainIDs ?? []
-  const isParentChain = depositDestinationChainIds.length > 0
+function getMultiChainFetchList(): ChainPair[] {
+  return getChains().flatMap(chain => {
+    // We only grab deposit destinations because we don't want duplicates and we need the parent chain
+    const depositDestinationChainIds = chain.partnerChainIDs ?? []
+    const isParentChain = depositDestinationChainIds.length > 0
 
-  if (!isParentChain) {
-    // Skip non-parent chains
-    return []
-  }
+    if (!isParentChain) {
+      // Skip non-parent chains
+      return []
+    }
 
-  // For each parent chain, map to an array of ChainPair objects
-  return depositDestinationChainIds.map(childChainId => ({
-    parentChainId: chain.chainID,
-    childChainId: childChainId
-  }))
-})
+    // For each parent chain, map to an array of ChainPair objects
+    return depositDestinationChainIds.map(childChainId => ({
+      parentChainId: chain.chainID,
+      childChainId: childChainId
+    }))
+  })
+}
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
@@ -294,7 +296,7 @@ const useTransactionHistoryWithoutStatuses = (
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
-        multiChainFetchList
+        getMultiChainFetchList()
           .filter(chainPair => {
             if (isSmartContractWallet) {
               // only fetch txs from the connected network
@@ -456,7 +458,7 @@ export const useTransactionHistory = (
         isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
       )
       .filter(tx => {
-        const chainPairExists = multiChainFetchList.some(chainPair => {
+        const chainPairExists = getMultiChainFetchList().some(chainPair => {
           return (
             chainPair.parentChainId === tx.parentChainId &&
             chainPair.childChainId === tx.childChainId
