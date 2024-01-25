@@ -51,6 +51,7 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 import { getOrbitChains } from '../util/orbitChainsList'
+import { isTestingEnvironment } from '../util/CommonUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -134,6 +135,14 @@ const multiChainFetchList: ChainPair[] = [
     }
   })
 ]
+
+// for testing environment, add local chains as well
+if (isTestingEnvironment) {
+  multiChainFetchList.push({
+    parentChain: ChainId.Local,
+    chain: ChainId.ArbitrumLocal
+  })
+}
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
@@ -317,6 +326,8 @@ const useTransactionHistoryWithoutStatuses = (
       }
 
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
+
+      console.log('Fetch list', multiChainFetchList)
 
       return Promise.all(
         multiChainFetchList
