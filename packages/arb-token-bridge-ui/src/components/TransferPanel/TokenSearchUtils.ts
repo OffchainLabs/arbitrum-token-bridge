@@ -6,10 +6,9 @@ import {
   TokenType
 } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { TokenListWithId, isArbitrumTokenList } from '../../util/TokenListUtils'
+import { TokenListWithId } from '../../util/TokenListUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
-import { ChainId, isNetwork } from '../../util/networks'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const [networks] = useNetworks()
