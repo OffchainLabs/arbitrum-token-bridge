@@ -94,9 +94,8 @@ const Step = ({
   return (
     <div
       className={twMerge(
-        'my-3 flex items-center justify-between',
-        pending && 'animate-pulse',
-        claimable && 'my-2'
+        'my-3 flex h-5 items-center justify-between',
+        pending && 'animate-pulse'
       )}
     >
       <div className="flex items-center space-x-3">
@@ -226,14 +225,12 @@ export const TransactionsTableDetailsSteps = ({
               </ExternalLink>
             )}
             {isDepositReadyToRedeem(tx) && (
-              <div className="-mt-3">
-                <TransactionsTableRowAction
-                  type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
-                  isError={true}
-                  tx={tx}
-                  address={address}
-                />
-              </div>
+              <TransactionsTableRowAction
+                type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+                isError={true}
+                tx={tx}
+                address={address}
+              />
             )}
           </>
         }
