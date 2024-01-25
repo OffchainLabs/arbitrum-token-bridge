@@ -146,10 +146,10 @@ export const TransactionHistoryTable = ({
             </span>
             <ul className="flex list-disc flex-col pl-4">
               {failedChainPairs.map(pair => (
-                <li key={`${pair.parentChain}-${pair.chain}`}>
-                  <b>{getNetworkName(pair.parentChain)}</b>
+                <li key={`${pair.parentChainId}-${pair.childChainId}`}>
+                  <b>{getNetworkName(pair.parentChainId)}</b>
                   {' <> '}
-                  <b>{getNetworkName(pair.chain)}</b>
+                  <b>{getNetworkName(pair.childChainId)}</b>
                 </li>
               ))}
             </ul>
