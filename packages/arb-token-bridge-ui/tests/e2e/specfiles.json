@@ -1,7 +1,7 @@
 [
   {
     "name": "Deposit ERC20",
-    "file": "tests/e2e/specs/**/depositERC20-2.cy.{js,jsx,ts,tsx}",
+    "file": "tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
   }
 ]
