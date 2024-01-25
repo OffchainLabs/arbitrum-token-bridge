@@ -114,7 +114,7 @@ export const TransactionsTableDetails = () => {
                   as="h3"
                 >
                   Transaction details
-                  <button onClick={close}>
+                  <button onClick={close} className="arb-hover">
                     <XMarkIcon height={20} />
                   </button>
                 </Dialog.Title>
