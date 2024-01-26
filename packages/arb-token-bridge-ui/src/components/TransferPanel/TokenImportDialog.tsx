@@ -101,11 +101,13 @@ export function TokenImportDialog({
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
-  const { data: tokenAddressOnParentChain, isLoading: isL1AddressLoading } =
-    useERC20L1Address({
-      eitherL1OrL2Address: tokenAddress,
-      l2Provider: childChainProvider
-    })
+  const {
+    data: tokenAddressOnParentChain,
+    isLoading: isParentChainAddressLoading
+  } = useERC20L1Address({
+    eitherL1OrL2Address: tokenAddress,
+    l2Provider: childChainProvider
+  })
 
   const modalTitle = useMemo(() => {
     switch (status) {
@@ -198,7 +200,7 @@ export function TokenImportDialog({
       return
     }
 
-    if (!isL1AddressLoading && !tokenAddressOnParentChain) {
+    if (!isParentChainAddressLoading && !tokenAddressOnParentChain) {
       setStatus(ImportStatus.ERROR)
       return
     }
@@ -232,7 +234,7 @@ export function TokenImportDialog({
     tokenAddress,
     bridgeTokens,
     getL1TokenDataFromL1Address,
-    isL1AddressLoading,
+    isParentChainAddressLoading,
     isOpen,
     tokenAddressOnParentChain,
     searchForTokenInLists
@@ -243,7 +245,7 @@ export function TokenImportDialog({
       return
     }
 
-    if (isL1AddressLoading && !tokenAddressOnParentChain) {
+    if (isParentChainAddressLoading && !tokenAddressOnParentChain) {
       return
     }
 
@@ -259,7 +261,7 @@ export function TokenImportDialog({
       selectToken(foundToken)
     }
   }, [
-    isL1AddressLoading,
+    isParentChainAddressLoading,
     tokenAddress,
     isOpen,
     tokenAddressOnParentChain,
