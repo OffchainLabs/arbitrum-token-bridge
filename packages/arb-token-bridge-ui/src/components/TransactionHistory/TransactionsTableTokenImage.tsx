@@ -48,7 +48,7 @@ export const TransactionsTableTokenImage = ({
       <Image
         height={20}
         width={20}
-        alt="Native token logo"
+        alt="ETH logo"
         src={EthereumLogoRoundLight}
       />
     )
