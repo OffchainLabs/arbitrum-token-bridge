@@ -28,6 +28,7 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
+import { BridgeTokenList } from '../util/TokenListUtils'
 
 export { OutgoingMessageState }
 
@@ -165,6 +166,7 @@ export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
   addTokensFromList: (tokenList: TokenList, listID: number) => void
+  addBridgeTokenListToBridge: (tokenList: BridgeTokenList) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {
