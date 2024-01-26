@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 import dynamic from 'next/dynamic'
 import { addCustomChain, addCustomNetwork } from '@arbitrum/sdk'
 
@@ -9,6 +10,11 @@ import {
   mapCustomChainToNetworkData
 } from '../util/networks'
 import { getOrbitChains } from '../util/orbitChainsList'
+import { sanitizeQueryParams } from '../hooks/useNetworks'
+import {
+  decodeChainQueryParam,
+  encodeChainQueryParam
+} from '../hooks/useArbQueryParams'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
@@ -20,6 +26,43 @@ const App = dynamic(() => import('../components/App/App'), {
     </AppConnectionFallbackContainer>
   )
 })
+
+function getDestinationWithSanitizedQueryParams(sanitized: {
+  sourceChainId: number
+  destinationChainId: number
+}) {
+  const sourceChain = encodeChainQueryParam(sanitized.sourceChainId)!
+  const destinationChain = encodeChainQueryParam(sanitized.destinationChainId)!
+
+  return `/?sourceChain=${sourceChain}&destinationChain=${destinationChain}`
+}
+
+export function getServerSideProps({
+  query
+}: GetServerSidePropsContext): GetServerSidePropsResult<{}> {
+  const sourceChainId = decodeChainQueryParam(query.sourceChain)
+  const destinationChainId = decodeChainQueryParam(query.destinationChain)
+
+  // sanitize the query params
+  const sanitized = sanitizeQueryParams({ sourceChainId, destinationChainId })
+
+  // if the sanitized query params are different from the initial values, redirect to the url with sanitized query params
+  if (
+    sourceChainId !== sanitized.sourceChainId ||
+    destinationChainId !== sanitized.destinationChainId
+  ) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: getDestinationWithSanitizedQueryParams(sanitized)
+      }
+    }
+  }
+
+  return {
+    props: {}
+  }
+}
 
 export default function Index() {
   useEffect(() => {
