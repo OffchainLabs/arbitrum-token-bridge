@@ -9,11 +9,11 @@ import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
-  getChains,
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork
+  isNetwork,
+  getSupportedChainIds
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
@@ -461,8 +461,17 @@ export function TransferPanelMain({
       result.l1 = erc20L1Balances[selectedToken.address] ?? null
     }
 
-    if (erc20L2Balances && selectedToken.l2Address) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? null
+    if (
+      erc20L2Balances &&
+      selectedToken.l2Address &&
+      selectedToken.l2Address in erc20L2Balances
+    ) {
+      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    }
+
+    // token not bridged to the child chain, show zero
+    if (!selectedToken.l2Address) {
+      result.l2 = constants.Zero
     }
 
     if (
@@ -762,19 +771,10 @@ export function TransferPanelMain({
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    const chains = getChains()
-
     function getSourceChains() {
-      return chains
-        .map(chain => chain.chainID)
-        .filter(chainId => {
-          // don't show testnet networks if testnet mode is off
-          if (!isTestnetMode) {
-            return !isNetwork(chainId).isTestnet
-          }
-          return true
-        })
-        .map(getWagmiChain)
+      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
+        getWagmiChain
+      )
     }
 
     function getDestinationChains() {
@@ -821,6 +821,7 @@ export function TransferPanelMain({
           }
 
           setNetworks({ sourceChainId: network.id })
+          actions.app.setSelectedToken(null)
         }
       },
       to: {
@@ -841,6 +842,7 @@ export function TransferPanelMain({
             sourceChainId: networks.sourceChain.id,
             destinationChainId: network.id
           })
+          actions.app.setSelectedToken(null)
         }
       }
     }
