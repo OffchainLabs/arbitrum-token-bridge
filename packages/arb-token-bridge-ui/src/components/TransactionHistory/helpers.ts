@@ -104,7 +104,7 @@ export function getSourceChainId(tx: MergedTransaction) {
   return isDeposit(tx) ? tx.parentChainId : tx.childChainId
 }
 
-export function getDestChainId(tx: MergedTransaction) {
+export function getDestinationChainId(tx: MergedTransaction) {
   return isDeposit(tx) ? tx.childChainId : tx.parentChainId
 }
 

@@ -8,7 +8,7 @@ export const TransactionsTableExternalLink = ({
   children,
   href,
   disabled = false
-}: PropsWithChildren & { href: string; disabled?: boolean }) => {
+}: PropsWithChildren<{ href: string; disabled?: boolean }>) => {
   const [show, setShow] = useState(false)
 
   if (disabled) {

@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -23,18 +23,18 @@ export const SidePanel = ({
 }: SidePanelProps) => {
   const [isClosing, setIsClosing] = useState(false)
 
-  function handleCloseStart() {
+  const handleCloseStart = useCallback(() => {
     setIsClosing(true)
-  }
+  }, [setIsClosing])
 
-  function handleCloseEnd() {
+  const handleCloseEnd = useCallback(() => {
     onClose?.()
 
     // prevent flickering caused by race conditions
     setTimeout(() => {
       setIsClosing(false)
     }, 0)
-  }
+  }, [onClose, setIsClosing])
 
   return (
     <Transition show={isOpen && !isClosing} as={Fragment}>
@@ -45,28 +45,25 @@ export const SidePanel = ({
       >
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-150"
+          enter="ease-out duration-[400ms]"
           enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-150"
-          leaveFrom="opacity-100"
+          enterTo="opacity-80"
+          leave="ease-in duration-300"
+          leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
           {/* The backdrop, rendered as a fixed sibling to the panel container */}
-          <div
-            className="fixed inset-0 bg-dark opacity-80"
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 bg-dark" aria-hidden="true" />
         </Transition.Child>
 
         {/* Full-screen container to center the panel */}
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-150"
+            enter="ease-out duration-[400ms]"
             enterFrom="translate-x-full"
             enterTo="translate-x-0"
-            leave="ease-in duration-150"
+            leave="ease-in duration-300"
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
             afterLeave={handleCloseEnd}
