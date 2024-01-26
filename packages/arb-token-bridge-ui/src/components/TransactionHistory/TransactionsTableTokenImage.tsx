@@ -1,15 +1,17 @@
 import { useMemo } from 'react'
-import Image from 'next/image'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { ChainId } from '../../util/networks'
-import { ether } from '../../constants'
+import { MergedTransaction } from '../../state/app/state'
+import { orbitChains } from '../../util/orbitChainsList'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 export const TransactionsTableTokenImage = ({
-  tokenSymbol
+  tx
 }: {
-  tokenSymbol: string
+  tx: MergedTransaction
 }) => {
   // we need to take token image from mainnet by symbol, some token images don't exists on other networks
   const tokenLists = useTokenLists(ChainId.ArbitrumOne)
@@ -20,11 +22,28 @@ export const TransactionsTableTokenImage = ({
 
   const token = useMemo(() => {
     return allTokens.find(
-      t => t.symbol.toLowerCase() === tokenSymbol.toLowerCase()
+      t => t.symbol.toLowerCase() === tx.asset.toLowerCase()
     )
-  }, [allTokens, tokenSymbol])
+  }, [allTokens, tx.asset])
 
-  if (tokenSymbol.toLowerCase() === ether.symbol.toLowerCase()) {
+  if (tx.assetType === AssetType.ETH) {
+    const orbitChain = orbitChains[tx.childChainId]
+
+    const nativeTokenLogoSrc =
+      orbitChain?.bridgeUiConfig.nativeTokenData?.logoUrl
+
+    if (nativeTokenLogoSrc) {
+      return (
+        // we use img in case native token logos are imported from an external source
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="w-[20px]"
+          alt="Native token logo"
+          src={nativeTokenLogoSrc}
+        />
+      )
+    }
+
     return (
       <Image
         height={20}
@@ -40,11 +59,9 @@ export const TransactionsTableTokenImage = ({
   }
 
   return (
-    // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-    // It would throw error if it's loaded from external domains
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      className="h-[20px]"
+      className="w-[20px]"
       alt={token.symbol + ' logo'}
       src={token.logoURI}
     />

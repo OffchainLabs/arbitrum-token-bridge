@@ -175,7 +175,7 @@ export function TransactionsTableRow({
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex items-center pr-3 align-middle">
-        <TransactionsTableTokenImage tokenSymbol={tx.asset} />
+        <TransactionsTableTokenImage tx={tx} />
         <span className="ml-2">
           {formatAmount(Number(tx.value), {
             symbol: tokenSymbol
