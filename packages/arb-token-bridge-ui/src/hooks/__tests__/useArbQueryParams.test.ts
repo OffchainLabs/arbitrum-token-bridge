@@ -1,8 +1,10 @@
 /**
  * @jest-environment jsdom
  */
+import { addCustomChain } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
+import { createMockOrbitChain } from './helpers'
 
 describe('AmountQueryParam custom encoder and decoder', () => {
   describe('encode input field value to query param', () => {
@@ -218,12 +220,12 @@ describe('ChainParam custom encoder and decoder', () => {
         ChainId.ArbitrumGoerli
       )
       expect(ChainParam.decode('1234567890')).toBeUndefined()
-      localStorage.setItem(
-        customChainLocalStorageKey,
-        JSON.stringify([{ chainID: '222222', name: 'custom 222222 chain' }])
-      )
+      const customChain = createMockOrbitChain({
+        chainId: 222222,
+        parentChainId: 1
+      })
+      addCustomChain({ customChain })
       expect(ChainParam.decode('222222')).toEqual(222222)
-      localStorage.clear()
     })
   })
 })
