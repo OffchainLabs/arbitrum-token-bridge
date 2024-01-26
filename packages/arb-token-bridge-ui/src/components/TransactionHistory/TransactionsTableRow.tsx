@@ -33,7 +33,6 @@ export function TransactionsTableRow({
   tx: MergedTransaction
   className?: string
 }) {
-  const [shouldHighlightTx, setShouldHighlightTx] = useState(false)
   const { open: openTxDetails } = useTxDetailsStore()
 
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
@@ -55,13 +54,6 @@ export function TransactionsTableRow({
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [tx])
-
-  useEffect(() => {
-    const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
-    if (secondsPassed <= 20) {
-      setShouldHighlightTx(true)
-    }
   }, [tx])
 
   const tokenSymbol = useMemo(
@@ -170,11 +162,8 @@ export function TransactionsTableRow({
       data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
       className={twMerge(
         'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
-        className,
-        shouldHighlightTx && 'blink'
+        className
       )}
-      onClick={() => setShouldHighlightTx(false)}
-      onMouseOver={() => setShouldHighlightTx(false)}
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex items-center pr-3 align-middle">

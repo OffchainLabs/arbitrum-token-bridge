@@ -12,6 +12,7 @@ import {
   ArrowDownOnSquareIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -275,14 +276,17 @@ export const TransactionHistoryTable = ({
               }
 
               const isLastRow = index + 1 === transactions.length
-
               const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+              const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
 
               return (
                 <div key={key} style={style}>
                   <TransactionsTableRow
                     tx={tx}
-                    className={isLastRow ? 'border-b-0' : ''}
+                    className={twMerge(
+                      isLastRow && 'border-b-0',
+                      secondsPassed <= 20 && 'animate-blink bg-highlight'
+                    )}
                   />
                 </div>
               )
