@@ -3,10 +3,7 @@ import { useAccount } from 'wagmi'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
-import {
-  addBridgeTokenListToBridge,
-  BRIDGE_TOKEN_LISTS
-} from '../../util/TokenListUtils'
+import { BRIDGE_TOKEN_LISTS } from '../../util/TokenListUtils'
 import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 // Adds whitelisted tokens to the bridge data on app load
@@ -14,7 +11,9 @@ import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 const TokenListSyncer = (): JSX.Element => {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { token } = useArbTokenBridge()
+  const {
+    token: { addBridgeTokenListToBridge }
+  } = useArbTokenBridge()
   const { childChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
@@ -35,9 +34,9 @@ const TokenListSyncer = (): JSX.Element => {
     })
 
     tokenListsToSet.forEach(bridgeTokenList => {
-      addBridgeTokenListToBridge(bridgeTokenList, token)
+      addBridgeTokenListToBridge(bridgeTokenList)
     })
-  }, [walletAddress, childChain.id, token])
+  }, [walletAddress, childChain.id, addBridgeTokenListToBridge])
 
   return <></>
 }

@@ -1,4 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
+import { ConnectorData, useAccount, useNetwork } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -702,18 +702,32 @@ export const useTransactionHistory = (
     [updateCachedTransaction]
   )
 
+  const pause = useCallback(() => {
+    setFetching(false)
+  }, [setFetching])
+
+  const resume = useCallback(() => {
+    setFetching(true)
+    setPage(prevPage => prevPage + 1)
+  }, [setFetching, setPage])
+
   useEffect(() => {
     if (!runFetcher || !connector) {
       return
     }
-    connector.on('change', e => {
+    const handler = (e: ConnectorData<any>) => {
       // reset state on account change
       if (e.account) {
         setPage(1)
         setPauseCount(0)
         setFetching(true)
       }
-    })
+    }
+    connector.on('change', handler)
+
+    return () => {
+      connector.off('change', handler)
+    }
   }, [connector, runFetcher, setPage])
 
   useEffect(() => {
@@ -758,40 +772,57 @@ export const useTransactionHistory = (
     if (page === txPages.length) {
       setPage(prevPage => prevPage + 1)
     }
-  }, [txPages, setPage, page, pauseCount, fetching, runFetcher, isValidating])
+  }, [
+    txPages,
+    setPage,
+    page,
+    pauseCount,
+    fetching,
+    runFetcher,
+    isValidating,
+    pause
+  ])
 
-  function pause() {
-    setFetching(false)
-  }
+  const emptyState = useMemo(() => [], [])
+  return useMemo(() => {
+    if (isLoadingTxsWithoutStatus || error) {
+      return {
+        transactions: emptyState,
+        loading: isLoadingTxsWithoutStatus,
+        error,
+        failedChainPairs: emptyState,
+        completed: true,
+        pause,
+        resume,
+        addPendingTransaction,
+        updatePendingTransaction
+      }
+    }
 
-  function resume() {
-    setFetching(true)
-    setPage(prevPage => prevPage + 1)
-  }
-
-  if (isLoadingTxsWithoutStatus || error) {
     return {
-      transactions: [],
-      loading: isLoadingTxsWithoutStatus,
-      error,
-      failedChainPairs: [],
-      completed: true,
+      transactions,
+      loading: isLoadingFirstPage || isLoadingMore,
+      completed,
+      error: txPagesError ?? error,
+      failedChainPairs,
       pause,
       resume,
       addPendingTransaction,
       updatePendingTransaction
     }
-  }
-
-  return {
-    transactions,
-    loading: isLoadingFirstPage || isLoadingMore,
+  }, [
+    addPendingTransaction,
     completed,
-    error: txPagesError ?? error,
+    emptyState,
+    error,
     failedChainPairs,
+    isLoadingFirstPage,
+    isLoadingMore,
+    isLoadingTxsWithoutStatus,
     pause,
     resume,
-    addPendingTransaction,
+    transactions,
+    txPagesError,
     updatePendingTransaction
-  }
+  ])
 }
