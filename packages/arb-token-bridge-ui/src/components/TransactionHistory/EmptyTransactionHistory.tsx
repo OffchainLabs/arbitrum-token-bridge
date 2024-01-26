@@ -31,7 +31,7 @@ export const EmptyTransactionHistory = ({
       <ContentWrapper>
         <p>
           We seem to be having a difficult time loading your data, we&apos;re
-          working hard to solve it.
+          working hard to resolve it.
         </p>
         <p>Please give it a moment and then try refreshing the page.</p>
         <p className="mt-4">
