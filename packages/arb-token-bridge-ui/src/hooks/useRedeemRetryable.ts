@@ -1,8 +1,5 @@
 import { useCallback, useState } from 'react'
-import {
-  L1ToL2MessageWriter as IL1ToL2MessageWriter,
-  L1ToL2MessageStatus
-} from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
@@ -36,9 +33,6 @@ export function useRedeemRetryable(
     if (isRedeeming) {
       return
     }
-
-    let retryableTicket: IL1ToL2MessageWriter
-
     try {
       setIsRedeeming(true)
 
@@ -46,31 +40,16 @@ export function useRedeemRetryable(
         throw 'Signer is undefined'
       }
 
-      retryableTicket = await getRetryableTicket({
+      const retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
         l1Provider: getProviderForChainId(tx.parentChainId),
         l2Signer: signer
       })
-    } catch (error: any) {
-      setIsRedeeming(false)
-      return errorToast(
-        `There was an error, here is more information: ${error.message}`
-      )
-    }
 
-    try {
-      const tx = await retryableTicket.redeem()
-      await tx.wait()
-    } catch (error: any) {
-      if (isUserRejectedError(error)) {
-        return
-      }
+      const reedemTx = await retryableTicket.redeem()
+      await reedemTx.wait()
 
-      return errorToast(
-        `There was an error, here is more information: ${error.message}`
-      )
-    } finally {
       const status = await retryableTicket.status()
       const isSuccess = status === L1ToL2MessageStatus.REDEEMED
 
@@ -97,6 +76,15 @@ export function useRedeemRetryable(
       if (shouldTrackAnalytics(l2NetworkName)) {
         trackEvent('Redeem Retryable', { network: l2NetworkName })
       }
+    } catch (error: any) {
+      setIsRedeeming(false)
+
+      if (isUserRejectedError(error)) {
+        return
+      }
+      return errorToast(
+        `There was an error, here is more information: ${error.message}`
+      )
     }
   }, [isRedeeming, l2NetworkName, signer, tx, updatePendingTransaction])
 

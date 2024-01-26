@@ -39,7 +39,7 @@ export function TransactionsTableRowAction({
   const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const currentChainIsValid = useMemo(() => {
+  const isConnectedToCorrectNetworkForClaim = useMemo(() => {
     if (!chain) {
       return false
     }
@@ -131,7 +131,7 @@ export function TransactionsTableRowAction({
 
     return (
       <Tooltip
-        show={!currentChainIsValid}
+        show={!isConnectedToCorrectNetworkForClaim}
         wrapperClassName=""
         content={
           <span>
@@ -147,11 +147,11 @@ export function TransactionsTableRowAction({
           disabled={isClaimButtonDisabled}
           className={twMerge(
             'w-16 rounded p-2 text-xs text-black',
-            currentChainIsValid ? 'bg-green-400' : 'bg-white'
+            isConnectedToCorrectNetworkForClaim ? 'bg-green-400' : 'bg-white'
           )}
           onClick={async () => {
             try {
-              if (!currentChainIsValid) {
+              if (!isConnectedToCorrectNetworkForClaim) {
                 return switchNetwork?.(
                   tx.isWithdrawal ? tx.parentChainId : tx.childChainId
                 )
@@ -175,7 +175,7 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          {currentChainIsValid ? 'Claim' : 'Switch'}
+          {isConnectedToCorrectNetworkForClaim ? 'Claim' : 'Switch'}
         </Button>
       </Tooltip>
     )
