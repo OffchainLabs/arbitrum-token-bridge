@@ -39,7 +39,7 @@ function getDestinationWithSanitizedQueryParams(sanitized: {
 
 export function getServerSideProps({
   query
-}: GetServerSidePropsContext): GetServerSidePropsResult<{}> {
+}: GetServerSidePropsContext): GetServerSidePropsResult<Record<string, never>> {
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
 
