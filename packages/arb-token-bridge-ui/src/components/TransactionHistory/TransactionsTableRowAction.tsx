@@ -1,4 +1,3 @@
-import { twMerge } from 'tailwind-merge'
 import { useCallback, useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
@@ -9,14 +8,12 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
-import { isTxExpired } from './helpers'
 
 export function TransactionsTableRowAction({
   tx,
@@ -30,12 +27,11 @@ export function TransactionsTableRowAction({
   address: `0x${string}` | undefined
 }) {
   const { chain } = useNetwork()
-  const { switchNetwork, switchNetworkAsync } = useSwitchNetworkWithConfig()
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 
-  const { claim, isClaiming } = useClaimWithdrawal()
+  const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { isConfirmed } = useRemainingTime(tx)
   const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
@@ -48,10 +44,6 @@ export function TransactionsTableRowAction({
     }
     return chain.id === tx.parentChainId
   }, [type, chain, tx.parentChainId, tx.childChainId])
-
-  const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !isConfirmed
-  }, [isClaiming, isClaimingCctp, isConfirmed])
 
   const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
     if (!chain) {
@@ -78,6 +70,39 @@ export function TransactionsTableRowAction({
     redeem,
     switchNetworkAsync,
     tx.childChainId
+  ])
+
+  const handleClaim = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForClaim) {
+        await switchNetworkAsync?.(
+          tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+        )
+      }
+
+      if (tx.isCctp) {
+        return await claimCctp()
+      } else {
+        return await claim()
+      }
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(
+        `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+          error?.message ?? error
+        }`
+      )
+    }
+  }, [
+    claim,
+    claimCctp,
+    isConnectedToCorrectNetworkForClaim,
+    switchNetworkAsync,
+    tx,
+    type
   ])
 
   const getHelpOnError = () => {
@@ -129,59 +154,20 @@ export function TransactionsTableRowAction({
       return null
     }
 
-    return (
-      <Tooltip
-        show={!isConnectedToCorrectNetworkForClaim}
-        wrapperClassName=""
-        content={
-          <span>
-            {`Please switch to ${getNetworkName(
-              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-            )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
-          </span>
-        }
+    return isClaiming || isClaimingCctp ? (
+      <span className="my-2 animate-pulse text-xs">Claiming...</span>
+    ) : (
+      <Button
+        variant="primary"
+        className="w-16 rounded bg-green-400 p-2 text-xs text-black"
+        onClick={handleClaim}
       >
-        <Button
-          variant="primary"
-          loading={isClaiming || isClaimingCctp}
-          disabled={isClaimButtonDisabled}
-          className={twMerge(
-            'w-16 rounded p-2 text-xs text-black',
-            isConnectedToCorrectNetworkForClaim ? 'bg-green-400' : 'bg-white'
-          )}
-          onClick={async () => {
-            try {
-              if (!isConnectedToCorrectNetworkForClaim) {
-                return switchNetwork?.(
-                  tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-                )
-              }
-
-              if (tx.isCctp) {
-                return await claimCctp()
-              } else {
-                return await claim(tx)
-              }
-            } catch (error: any) {
-              if (isUserRejectedError(error)) {
-                return
-              }
-
-              errorToast(
-                `Can't claim ${
-                  type === 'deposits' ? 'withdrawal' : 'deposit'
-                }: ${error?.message ?? error}`
-              )
-            }
-          }}
-        >
-          {isConnectedToCorrectNetworkForClaim ? 'Claim' : 'Switch'}
-        </Button>
-      </Tooltip>
+        Claim
+      </Button>
     )
   }
 
-  if (isError && !isTxExpired(tx)) {
+  if (isError) {
     return (
       <Button
         variant="primary"
