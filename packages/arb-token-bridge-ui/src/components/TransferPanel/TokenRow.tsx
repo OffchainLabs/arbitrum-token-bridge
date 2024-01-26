@@ -121,10 +121,7 @@ export function TokenRow({
     return nativeCurrency.symbol
   }, [token, nativeCurrency.symbol, chainId])
 
-  const isChildChainNativeToken = useMemo(
-    () => token?.isL2Native ?? false,
-    [token]
-  )
+  const isChildChainNativeToken = token?.isL2Native ?? false
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
     [token]
@@ -187,7 +184,7 @@ export function TokenRow({
     token
   ])
 
-  const isArbitrumToken = useMemo(() => isArbitrumTokenCheck(token), [token])
+  const isArbitrumToken = isArbitrumTokenCheck(token)
 
   const isPotentialFakeArbitrumToken = useMemo(() => {
     if (!token || isArbitrumToken) {
