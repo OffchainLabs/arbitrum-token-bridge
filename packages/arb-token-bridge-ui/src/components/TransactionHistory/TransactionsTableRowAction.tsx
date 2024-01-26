@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -8,11 +8,9 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
-import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
@@ -20,26 +18,24 @@ import { DepositCountdown } from '../common/DepositCountdown'
 export function TransactionsTableRowAction({
   tx,
   isError,
-  type
+  type,
+  address
 }: {
   tx: MergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
+  address: `0x${string}` | undefined
 }) {
   const { chain } = useNetwork()
-  const { switchNetworkAsync } = useSwitchNetworkWithConfig({
-    isSwitchingNetworkBeforeTx: true
-  })
+  const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 
   const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { isConfirmed } = useRemainingTime(tx)
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const { redeem, isRedeeming } = useRedeemRetryable()
+  const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const currentChainIsValid = useMemo(() => {
+  const isConnectedToCorrectNetworkForClaim = useMemo(() => {
     if (!chain) {
       return false
     }
@@ -49,17 +45,65 @@ export function TransactionsTableRowAction({
     return chain.id === tx.parentChainId
   }, [type, chain, tx.parentChainId, tx.childChainId])
 
-  const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !isConfirmed
-  }, [isClaiming, isClaimingCctp, isConfirmed])
+  const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
+    if (!chain) {
+      return false
+    }
+    return chain.id === tx.childChainId
+  }, [chain, tx.childChainId])
 
-  const isRedeemButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? !isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
+  const handleRedeemRetryable = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForRedeem) {
+        await switchNetworkAsync?.(tx.childChainId)
+      }
+      redeem()
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
+    }
+  }, [
+    isConnectedToCorrectNetworkForRedeem,
+    redeem,
+    switchNetworkAsync,
+    tx.childChainId
+  ])
+
+  const handleClaim = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForClaim) {
+        await switchNetworkAsync?.(
+          tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+        )
+      }
+
+      if (tx.isCctp) {
+        return await claimCctp()
+      } else {
+        return await claim()
+      }
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(
+        `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+          error?.message ?? error
+        }`
+      )
+    }
+  }, [
+    claim,
+    claimCctp,
+    isConnectedToCorrectNetworkForClaim,
+    switchNetworkAsync,
+    tx,
+    type
+  ])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -72,28 +116,16 @@ export function TransactionsTableRowAction({
 
   if (isDepositReadyToRedeem(tx)) {
     // Failed retryable
-    return (
-      <Tooltip
-        show={isRedeemButtonDisabled}
-        wrapperClassName=""
-        content={
-          <span>
-            Please connect to {getNetworkName(tx.childChainId)} to re-execute
-            your deposit. You have 7 days to re-execute a failed tx. After that,
-            the tx is no longer recoverable.
-          </span>
-        }
+    return isRedeeming ? (
+      <span className="animate-pulse">Retrying...</span>
+    ) : (
+      <Button
+        variant="primary"
+        onClick={handleRedeemRetryable}
+        className="w-16 rounded bg-red-400 p-2 text-xs"
       >
-        <Button
-          variant="primary"
-          loading={isRedeeming}
-          disabled={isRedeemButtonDisabled}
-          onClick={() => redeem(tx)}
-          className="w-16 rounded bg-red-400 p-2 text-xs"
-        >
-          Retry
-        </Button>
-      </Tooltip>
+        Retry
+      </Button>
     )
   }
 
@@ -127,33 +159,8 @@ export function TransactionsTableRowAction({
     ) : (
       <Button
         variant="primary"
-        disabled={isClaimButtonDisabled}
         className="w-16 rounded bg-green-400 p-2 text-xs text-black"
-        onClick={async () => {
-          try {
-            if (!currentChainIsValid) {
-              await switchNetworkAsync?.(
-                tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-              )
-            }
-
-            if (tx.isCctp) {
-              return await claimCctp()
-            } else {
-              return await claim()
-            }
-          } catch (error: any) {
-            if (isUserRejectedError(error)) {
-              return
-            }
-
-            errorToast(
-              `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
-                error?.message ?? error
-              }`
-            )
-          }
-        }}
+        onClick={handleClaim}
       >
         Claim
       </Button>

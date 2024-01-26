@@ -128,6 +128,7 @@ const FailedChainPairsTooltip = ({
 }
 
 export const TransactionHistoryTable = ({
+  address,
   transactions,
   loading,
   completed,
@@ -137,6 +138,7 @@ export const TransactionHistoryTable = ({
   selectedTabIndex,
   oldestTxTimeAgoString
 }: {
+  address: `0x${string}` | undefined
   transactions: MergedTransaction[]
   loading: boolean
   completed: boolean
@@ -263,6 +265,7 @@ export const TransactionHistoryTable = ({
                 <div key={key} style={style}>
                   <TransactionsTableRow
                     tx={tx}
+                    address={address}
                     className={isLastRow ? 'border-b-0' : ''}
                   />
                 </div>
