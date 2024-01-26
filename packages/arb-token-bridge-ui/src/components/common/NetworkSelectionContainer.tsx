@@ -183,10 +183,6 @@ function NetworksPanel({
       'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
   }
 
-  useEffect(() => {
-    listRef.current?.recomputeRowHeights()
-  }, [isTestnetMode])
-
   useDebounce(
     () => {
       setDebouncedNetworkSearched(networkSearched)
@@ -194,21 +190,6 @@ function NetworksPanel({
     200,
     [networkSearched]
   )
-
-  function getRowHeight({ index }: { index: number }) {
-    const rowItemOrChainId = networkRowsWithChainInfoRows[index]
-    if (!rowItemOrChainId) {
-      return 0
-    }
-    if (typeof rowItemOrChainId === 'string') {
-      return 65
-    }
-    const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
-    if (rowItem.network.description) {
-      return 90
-    }
-    return 52
-  }
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -247,6 +228,25 @@ function NetworksPanel({
       ...networksToShow.orbit
     ]
   }, [isNetworkSearchResult, networksToShow])
+
+  function getRowHeight({ index }: { index: number }) {
+    const rowItemOrChainId = networkRowsWithChainInfoRows[index]
+    if (!rowItemOrChainId) {
+      return 0
+    }
+    if (typeof rowItemOrChainId === 'string') {
+      return 65
+    }
+    const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
+    if (rowItem.network.description) {
+      return 90
+    }
+    return 52
+  }
+
+  useEffect(() => {
+    listRef.current?.recomputeRowHeights()
+  }, [isTestnetMode, networkRowsWithChainInfoRows])
 
   const rowRenderer = useCallback(
     ({ index, style }: ListRowProps) => {
