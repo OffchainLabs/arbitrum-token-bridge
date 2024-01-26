@@ -1,6 +1,14 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { AutoSizer, List, ListRowRenderer } from 'react-virtualized'
-import React from 'react'
+import React, { PropsWithChildren } from 'react'
+
+type SearchPanelTableProps = {
+  searchInputPlaceholder: string
+  searchInputValue: string
+  SearchFieldCta?: React.JSX.Element
+  onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
+  onSubmit?: React.FormEventHandler<HTMLFormElement>
+  errorMessage: string
+}
 
 export const SearchPanelTable = ({
   searchInputPlaceholder,
@@ -11,22 +19,8 @@ export const SearchPanelTable = ({
     event.preventDefault()
   },
   errorMessage,
-  rowCount,
-  rowHeight,
-  rowRenderer,
-  listRef
-}: {
-  searchInputPlaceholder: string
-  searchInputValue: string
-  SearchFieldCta?: React.JSX.Element
-  onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
-  onSubmit?: React.FormEventHandler<HTMLFormElement>
-  errorMessage: string
-  rowCount: number
-  rowHeight: number | (({ index }: { index: number }) => number)
-  rowRenderer: ListRowRenderer
-  listRef?: React.Ref<List>
-}) => {
+  children
+}: PropsWithChildren<SearchPanelTableProps>) => {
   return (
     <div className="flex flex-col gap-3">
       <form onSubmit={onSubmit} className="flex flex-col">
@@ -52,18 +46,7 @@ export const SearchPanelTable = ({
         className="h-[calc(100vh_-_230px)] rounded-md border border-gray-2 bg-white lg:h-[400px] lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
         data-cy="tokenSearchList"
       >
-        <AutoSizer>
-          {({ height, width }) => (
-            <List
-              ref={listRef}
-              width={width - 2}
-              height={height}
-              rowCount={rowCount}
-              rowHeight={rowHeight}
-              rowRenderer={rowRenderer}
-            />
-          )}
-        </AutoSizer>
+        {children}
       </div>
     </div>
   )

@@ -12,7 +12,7 @@ import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
 import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { List, ListRowProps } from 'react-virtualized'
+import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
 import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -37,12 +37,12 @@ enum ChainGroupName {
   orbit = 'ORBIT CHAINS'
 }
 
-const chainGroupInfo: {
-  [key in NetworkType]: {
-    name: ChainGroupName
-    description: string
-  }
-} = {
+type ChainGroupInfo = {
+  name: ChainGroupName
+  description: string
+}
+
+const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
     name: ChainGroupName.core,
     description: 'Chains managed directly by Ethereum or Arbitrum'
@@ -51,6 +51,32 @@ const chainGroupInfo: {
     name: ChainGroupName.orbit,
     description: 'Independent projects using Arbitrum technology.'
   }
+}
+
+function ChainTypeInfoRow({
+  chainGroup,
+  style
+}: {
+  chainGroup: ChainGroupInfo
+  style: CSSProperties
+}) {
+  const { name, description } = chainGroup
+  const isCoreGroup = chainGroup.name === ChainGroupName.core
+
+  return (
+    <div
+      key={name}
+      style={style}
+      className={twMerge(
+        'px-6 py-3',
+        !isCoreGroup &&
+          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+      )}
+    >
+      <p className="text-sm text-dark">{name}</p>
+      {description && <p className="mt-2 text-xs">{description}</p>}
+    </div>
+  )
 }
 
 function NetworkRow({
@@ -170,11 +196,11 @@ function NetworksPanel({
   )
 
   function getRowHeight({ index }: { index: number }) {
-    const rowItemOrChainId = networksToShowWithChainTypeInfo[index]
+    const rowItemOrChainId = networkRowsWithChainInfoRows[index]
     if (!rowItemOrChainId) {
       return 0
     }
-    if (typeof rowItemOrChainId === 'object') {
+    if (typeof rowItemOrChainId === 'string') {
       return 65
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
@@ -184,7 +210,7 @@ function NetworksPanel({
     return 52
   }
 
-  const networksToShowWithChainTypeInfo = useMemo(() => {
+  const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
 
     if (_networkSearched) {
@@ -202,56 +228,57 @@ function NetworksPanel({
       chainId => isNetwork(chainId).isOrbitChain
     )
 
-    return [
-      chainGroupInfo.core,
-      ...coreNetworks,
-      chainGroupInfo.orbit,
-      ...orbitNetworks
-    ]
+    return {
+      core: coreNetworks,
+      orbit: orbitNetworks
+    }
   }, [debouncedNetworkSearched, chainIds])
 
+  const isNetworkSearchResult = Array.isArray(networksToShow)
+
+  const networkRowsWithChainInfoRows = useMemo(() => {
+    if (isNetworkSearchResult) {
+      return networksToShow
+    }
+    return [
+      ChainGroupName.core,
+      ...networksToShow.core,
+      ChainGroupName.orbit,
+      ...networksToShow.orbit
+    ]
+  }, [isNetworkSearchResult, networksToShow])
+
   const rowRenderer = useCallback(
-    (virtualizedProps: ListRowProps) => {
-      const networkOrChainTypeInfo =
-        networksToShowWithChainTypeInfo[virtualizedProps.index]
-      if (!networkOrChainTypeInfo) {
+    ({ index, style }: ListRowProps) => {
+      const networkOrChainTypeName = networkRowsWithChainInfoRows[index]
+
+      if (!networkOrChainTypeName) {
         return null
       }
 
-      // Chain Type Info row
-      if (typeof networkOrChainTypeInfo === 'object') {
-        const isCoreGroup = networkOrChainTypeInfo.name === ChainGroupName.core
+      if (networkOrChainTypeName === ChainGroupName.core) {
         return (
-          <div
-            key={networkOrChainTypeInfo.name}
-            style={virtualizedProps.style}
-            className={twMerge(
-              'px-6 py-3',
-              !isCoreGroup &&
-                'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
-            )}
-          >
-            <p className="text-sm text-dark">{networkOrChainTypeInfo.name}</p>
-            {networkOrChainTypeInfo.description && (
-              <p className="mt-2 text-xs">
-                {networkOrChainTypeInfo.description}
-              </p>
-            )}
-          </div>
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.core} style={style} />
+        )
+      }
+
+      if (networkOrChainTypeName === ChainGroupName.orbit) {
+        return (
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.orbit} style={style} />
         )
       }
 
       return (
         <NetworkRow
-          key={networkOrChainTypeInfo}
-          style={virtualizedProps.style}
-          chainId={networkOrChainTypeInfo}
+          key={networkOrChainTypeName}
+          style={style}
+          chainId={networkOrChainTypeName}
           onClick={onNetworkRowClick}
           close={close}
         />
       )
     },
-    [close, networksToShowWithChainTypeInfo, onNetworkRowClick]
+    [close, networkRowsWithChainInfoRows, onNetworkRowClick]
   )
 
   const onSearchInputChange = function (
@@ -269,11 +296,21 @@ function NetworksPanel({
         onSearchInputChange={onSearchInputChange}
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         errorMessage={errorMessage}
-        rowCount={networksToShowWithChainTypeInfo.length}
-        rowHeight={getRowHeight}
-        rowRenderer={rowRenderer}
-        listRef={listRef}
-      />
+      >
+        <AutoSizer>
+          {({ height, width }) => (
+            <List
+              ref={listRef}
+              width={width - 2}
+              height={height}
+              rowCount={networkRowsWithChainInfoRows.length}
+              rowHeight={getRowHeight}
+              rowRenderer={rowRenderer}
+              listRef={listRef}
+            />
+          )}
+        </AutoSizer>
+      </SearchPanelTable>
       <div className="flex justify-between pb-2">
         <TestnetToggle
           className={testnetToggleClassNames}
@@ -306,12 +343,7 @@ export const NetworkSelectionContainer = ({
     useAccountType()
 
   const coreNetworks = useMemo(
-    () =>
-      supportedNetworks.filter(
-        network =>
-          isNetwork(network).isEthereumMainnetOrTestnet ||
-          isNetwork(network).isArbitrum
-      ),
+    () => supportedNetworks.filter(network => isNetwork(network).isCoreChain),
     [supportedNetworks]
   )
   const orbitNetworks = useMemo(

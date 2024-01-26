@@ -8,7 +8,7 @@ import React, {
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
-import { ListRowProps } from 'react-virtualized'
+import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -445,10 +445,19 @@ function TokensPanel({
       errorMessage={errorMessage}
       onSubmit={addNewToken}
       SearchFieldCta={AddButton}
-      rowCount={tokensToShow.length}
-      rowHeight={84}
-      rowRenderer={rowRenderer}
-    />
+    >
+      <AutoSizer>
+        {({ height, width }) => (
+          <List
+            width={width - 2}
+            height={height}
+            rowCount={tokensToShow.length}
+            rowHeight={84}
+            rowRenderer={rowRenderer}
+          />
+        )}
+      </AutoSizer>
+    </SearchPanelTable>
   )
 }
 

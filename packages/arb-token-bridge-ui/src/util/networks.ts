@@ -352,6 +352,10 @@ export function isNetwork(chainId: ChainId) {
   const customChainIds = customChains.map(chain => chain.chainID)
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
+  const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
+
+  const isOrbitChain = !isEthereumMainnetOrTestnet && !isArbitrum
+
   const isTestnet =
     isGoerli ||
     isLocal ||
@@ -390,10 +394,12 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
-    isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
+    isOrbitChain,
     isTestnet,
     // General
-    isSupported
+    isSupported,
+    // Core Chain is a chain category for the UI
+    isCoreChain
   }
 }
 
