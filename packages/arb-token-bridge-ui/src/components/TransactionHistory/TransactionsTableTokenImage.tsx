@@ -34,8 +34,7 @@ export const TransactionsTableTokenImage = ({
 
     if (nativeTokenLogoSrc) {
       return (
-        // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-        // It would throw error if it's loaded from external domains
+        // we use img in case native token logos are imported from an external source
         // eslint-disable-next-line @next/next/no-img-element
         <img
           className="w-[20px]"
