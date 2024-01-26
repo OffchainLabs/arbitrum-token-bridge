@@ -3,15 +3,18 @@ import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 
-import { MergedTransaction } from '../../state/app/state'
+import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
-  getDestNetworkTxId,
+  getDestinationNetworkTxId,
   isTxClaimable,
   isTxCompleted,
+  isTxExpired,
+  isTxFailed,
   isTxPending
 } from './helpers'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -22,6 +25,7 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -53,41 +57,51 @@ const Step = ({
   done = false,
   claimable = false,
   pending = false,
+  failure = false,
   text,
   endItem = null
 }: {
   done?: boolean
   claimable?: boolean
   pending?: boolean
+  failure?: boolean
   text: string
   endItem?: ReactNode
 }) => {
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
   let iconColorClassName = 'text-white/50'
+  let textColorClassName = 'text-white/50'
 
   if (done || claimable) {
     borderColorClassName = 'border-green-400'
     iconColorClassName = 'text-green-400'
+    textColorClassName = 'text-white'
   }
 
   if (pending) {
     borderColorClassName = 'border-yellow-400'
     iconColorClassName = 'text-yellow-400'
+    textColorClassName = 'text-white'
+  }
+
+  if (failure) {
+    borderColorClassName = 'border-red-400'
+    iconColorClassName = 'text-red-400'
+    textColorClassName = 'text-white'
   }
 
   return (
     <div
       className={twMerge(
-        'my-3 flex items-center justify-between',
-        pending && 'animate-pulse',
-        claimable && 'my-2'
+        'my-3 flex h-5 items-center justify-between',
+        pending && 'animate-pulse'
       )}
     >
       <div className="flex items-center space-x-3">
-        {done ? (
-          <CheckCircleIcon className={iconColorClassName} height={18} />
-        ) : (
+        {done && <CheckCircleIcon className={iconColorClassName} height={18} />}
+        {failure && <XCircleIcon className={iconColorClassName} height={18} />}
+        {!done && !failure && (
           <div
             className={twMerge(
               'ml-[2px] h-[15px] w-[15px] rounded-full border',
@@ -95,34 +109,88 @@ const Step = ({
             )}
           />
         )}
-        <span>{text}</span>
+        <span className={textColorClassName}>{text}</span>
       </div>
       {endItem}
     </div>
   )
 }
 
-export const TransactionsTableDetailsSteps = ({
-  tx
+const LastStepEndItem = ({
+  tx,
+  address
 }: {
   tx: MergedTransaction
+  address: `0x${string}` | undefined
+}) => {
+  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
+
+  if (destinationNetworkTxId) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(
+          destinationChainId
+        )}/tx/${getDestinationNetworkTxId(tx)}`}
+      >
+        <ArrowTopRightOnSquareIcon height={12} />
+      </ExternalLink>
+    )
+  }
+
+  if (isDepositReadyToRedeem(tx)) {
+    return (
+      <TransactionsTableRowAction
+        type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        isError={true}
+        tx={tx}
+        address={address}
+      />
+    )
+  }
+
+  return null
+}
+
+export const TransactionsTableDetailsSteps = ({
+  tx,
+  address
+}: {
+  tx: MergedTransaction
+  address: `0x${string}` | undefined
 }) => {
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
 
   const sourceNetworkName = getNetworkName(sourceChainId)
-  const destNetworkName = getNetworkName(destChainId)
+  const destinationNetworkName = getNetworkName(destinationChainId)
 
-  const destNetworkTxId = getDestNetworkTxId(tx)
+  const isSourceChainDepositFailure =
+    typeof tx.depositStatus !== 'undefined' &&
+    [DepositStatus.CREATION_FAILED, DepositStatus.L1_FAILURE].includes(
+      tx.depositStatus
+    )
+
+  const isDestinationChainFailure =
+    !isSourceChainDepositFailure && isTxFailed(tx)
 
   return (
     <div className="flex flex-col text-xs">
       {/* First step when transfer is initiated */}
       <Step
-        done
-        text={`Transaction initiated on ${sourceNetworkName}`}
+        done={!isSourceChainDepositFailure}
+        failure={isSourceChainDepositFailure}
+        text={
+          isSourceChainDepositFailure
+            ? `Transaction failed on ${sourceNetworkName}`
+            : `Transaction initiated on ${sourceNetworkName}`
+        }
         endItem={
           <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
             <ArrowTopRightOnSquareIcon height={12} />
@@ -133,7 +201,7 @@ export const TransactionsTableDetailsSteps = ({
       {/* Pending transfer showing the remaining time */}
       <Step
         pending={isTxPending(tx)}
-        done={!isTxPending(tx)}
+        done={!isTxPending(tx) && !isSourceChainDepositFailure}
         text={`Wait ~${getTransferDurationText(tx)}`}
         endItem={
           isTxPending(tx) && (
@@ -151,8 +219,6 @@ export const TransactionsTableDetailsSteps = ({
         }
       />
 
-      {/* TODO next PR: Failed transactions */}
-
       {/* If claiming is required we show this step */}
       {needsToClaimTransfer(tx) && (
         <Step
@@ -165,6 +231,7 @@ export const TransactionsTableDetailsSteps = ({
                 type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
                 isError={false}
                 tx={tx}
+                address={address}
               />
             )
           }
@@ -174,18 +241,15 @@ export const TransactionsTableDetailsSteps = ({
       {/* The final step, showing the destination chain */}
       <Step
         done={isTxCompleted(tx)}
-        text={`Funds arrived on ${destNetworkName}`}
-        endItem={
-          destNetworkTxId && (
-            <ExternalLink
-              href={`${getExplorerUrl(destChainId)}/tx/${getDestNetworkTxId(
-                tx
-              )}`}
-            >
-              <ArrowTopRightOnSquareIcon height={12} />
-            </ExternalLink>
-          )
+        failure={isTxExpired(tx) || isDestinationChainFailure}
+        text={
+          isTxExpired(tx) || isDestinationChainFailure
+            ? `Transaction ${
+                isDestinationChainFailure ? 'failed' : 'expired'
+              } on ${destinationNetworkName}`
+            : `Funds arrived on ${destinationNetworkName}`
         }
+        endItem={<LastStepEndItem tx={tx} address={address} />}
       />
     </div>
   )

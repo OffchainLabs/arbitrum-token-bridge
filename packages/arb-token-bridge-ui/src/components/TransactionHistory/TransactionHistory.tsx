@@ -115,6 +115,7 @@ export const TransactionHistory = ({
         <Tab.Panels className="h-full overflow-hidden">
           <Tab.Panel className="h-full">
             <TransactionHistoryTable
+              address={address}
               transactions={pendingTransactions}
               loading={loading}
               completed={completed}
@@ -127,6 +128,7 @@ export const TransactionHistory = ({
           </Tab.Panel>
           <Tab.Panel className="h-full">
             <TransactionHistoryTable
+              address={address}
               transactions={settledTransactions}
               loading={loading}
               completed={completed}

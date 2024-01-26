@@ -1,8 +1,5 @@
-import { Popover } from '@headlessui/react'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -16,53 +13,33 @@ import { Tooltip } from '../common/Tooltip'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useNetwork } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
-
-const GetHelpButton = ({
-  variant,
-  onClick
-}: {
-  variant: 'primary' | 'secondary'
-  onClick: () => void
-}) => {
-  return (
-    <Button
-      variant={variant}
-      onClick={onClick}
-      className={twMerge(
-        'w-16 rounded',
-        variant === 'secondary' && 'bg-white px-4 py-3'
-      )}
-    >
-      Get Help
-    </Button>
-  )
-}
+import { isTxExpired } from './helpers'
 
 export function TransactionsTableRowAction({
   tx,
   isError,
-  type
+  type,
+  address
 }: {
   tx: MergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
+  address: `0x${string}` | undefined
 }) {
   const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
+  const { switchNetwork, switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 
   const { claim, isClaiming } = useClaimWithdrawal()
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
   const { isConfirmed } = useRemainingTime(tx)
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
-  const { redeem, isRedeeming } = useRedeemRetryable()
+  const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const currentChainIsValid = useMemo(() => {
+  const isConnectedToCorrectNetworkForClaim = useMemo(() => {
     if (!chain) {
       return false
     }
@@ -76,13 +53,32 @@ export function TransactionsTableRowAction({
     return isClaiming || isClaimingCctp || !isConfirmed
   }, [isClaiming, isClaimingCctp, isConfirmed])
 
-  const isRedeemButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? !isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
+  const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
+    if (!chain) {
+      return false
+    }
+    return chain.id === tx.childChainId
+  }, [chain, tx.childChainId])
+
+  const handleRedeemRetryable = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForRedeem) {
+        await switchNetworkAsync?.(tx.childChainId)
+      }
+      redeem()
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
+    }
+  }, [
+    isConnectedToCorrectNetworkForRedeem,
+    redeem,
+    switchNetworkAsync,
+    tx.childChainId
+  ])
 
   const getHelpOnError = () => {
     window.open(GET_HELP_LINK, '_blank')
@@ -95,36 +91,24 @@ export function TransactionsTableRowAction({
 
   if (isDepositReadyToRedeem(tx)) {
     // Failed retryable
-    return (
-      <Tooltip
-        show={isRedeemButtonDisabled}
-        wrapperClassName=""
-        content={
-          <span>
-            Please connect to {getNetworkName(tx.childChainId)} to re-execute
-            your deposit. You have 7 days to re-execute a failed tx. After that,
-            the tx is no longer recoverable.
-          </span>
-        }
+    return isRedeeming ? (
+      <span className="animate-pulse">Retrying...</span>
+    ) : (
+      <Button
+        variant="primary"
+        onClick={handleRedeemRetryable}
+        className="w-16 rounded bg-red-400 p-2 text-xs"
       >
-        <Button
-          variant="primary"
-          loading={isRedeeming}
-          disabled={isRedeemButtonDisabled}
-          onClick={() => redeem(tx)}
-          className="w-16 rounded bg-red-400 p-2 text-xs"
-        >
-          Retry
-        </Button>
-      </Tooltip>
+        Retry
+      </Button>
     )
   }
 
   if (
+    tx.status === 'pending' ||
     tx.status === 'Unconfirmed' ||
     tx.depositStatus === DepositStatus.L1_PENDING ||
-    tx.depositStatus === DepositStatus.L2_PENDING ||
-    typeof cctpRemainingTime !== 'undefined'
+    tx.depositStatus === DepositStatus.L2_PENDING
   ) {
     return (
       <div className="flex flex-col text-center text-xs">
@@ -147,7 +131,7 @@ export function TransactionsTableRowAction({
 
     return (
       <Tooltip
-        show={!currentChainIsValid}
+        show={!isConnectedToCorrectNetworkForClaim}
         wrapperClassName=""
         content={
           <span>
@@ -163,11 +147,11 @@ export function TransactionsTableRowAction({
           disabled={isClaimButtonDisabled}
           className={twMerge(
             'w-16 rounded p-2 text-xs text-black',
-            currentChainIsValid ? 'bg-green-400' : 'bg-white'
+            isConnectedToCorrectNetworkForClaim ? 'bg-green-400' : 'bg-white'
           )}
           onClick={async () => {
             try {
-              if (!currentChainIsValid) {
+              if (!isConnectedToCorrectNetworkForClaim) {
                 return switchNetwork?.(
                   tx.isWithdrawal ? tx.parentChainId : tx.childChainId
                 )
@@ -191,34 +175,21 @@ export function TransactionsTableRowAction({
             }
           }}
         >
-          {currentChainIsValid ? 'Claim' : 'Switch'}
+          {isConnectedToCorrectNetworkForClaim ? 'Claim' : 'Switch'}
         </Button>
       </Tooltip>
     )
   }
 
-  if (isError) {
-    const isTxOlderThan7Days = dayjs().diff(dayjs(tx.createdAt), 'days') > 7
-
+  if (isError && !isTxExpired(tx)) {
     return (
-      <>
-        {isTxOlderThan7Days ? (
-          // show a dropdown menu with the button
-          <Popover>
-            <Popover.Button>
-              <EllipsisVerticalIcon className="h-6 w-6 cursor-pointer p-1 text-dark" />
-            </Popover.Button>
-            <Popover.Panel
-              className={'absolute top-4 z-50 rounded-md bg-white shadow-lg'}
-            >
-              <GetHelpButton variant="secondary" onClick={getHelpOnError} />
-            </Popover.Panel>
-          </Popover>
-        ) : (
-          // show a normal button outside
-          <GetHelpButton variant="primary" onClick={getHelpOnError} />
-        )}
-      </>
+      <Button
+        variant="primary"
+        className="rounded bg-white p-2 text-xs text-black"
+        onClick={getHelpOnError}
+      >
+        Get help
+      </Button>
     )
   }
 
