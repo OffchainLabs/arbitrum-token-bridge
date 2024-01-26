@@ -12,7 +12,7 @@ import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { useLocalStorage } from 'react-use'
+import { useInterval, useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
@@ -44,6 +44,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 declare global {
   interface Window {
@@ -63,8 +64,17 @@ const rainbowkitTheme = merge(darkTheme(), {
 const AppContent = (): JSX.Element => {
   const [{ sourceChain }] = useNetworks()
   const {
-    app: { connectionState }
+    app: { connectionState, selectedToken }
   } = useAppState()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
+
+  useInterval(() => {
+    if (selectedToken) {
+      updateTokenData(selectedToken.address)
+    }
+  }, 10_000)
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isTestnet, isGoerli } = isNetwork(sourceChain.id ?? 0)

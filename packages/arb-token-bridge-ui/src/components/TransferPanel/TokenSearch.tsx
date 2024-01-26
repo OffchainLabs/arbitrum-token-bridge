@@ -11,11 +11,10 @@ import Image from 'next/image'
 import { useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
-import { useActions, useAppState } from '../../state'
+import { useActions } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import {
@@ -44,7 +43,10 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
-import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import {
+  useArbTokenBridge,
+  useBridgeTokensStore
+} from '../../hooks/useArbTokenBridge'
 
 enum Panel {
   TOKENS,
@@ -70,7 +72,10 @@ const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
 }
 
 function TokenListsPanel() {
-  const { bridgeTokens, token } = useArbTokenBridge()
+  const {
+    token: { removeTokensFromList, addBridgeTokenListToBridge }
+  } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
@@ -94,9 +99,9 @@ function TokenListsPanel() {
     isActive: boolean
   ) => {
     if (isActive) {
-      token.removeTokensFromList(bridgeTokenList.id)
+      removeTokensFromList(bridgeTokenList.id)
     } else {
-      addBridgeTokenListToBridge(bridgeTokenList, token)
+      addBridgeTokenListToBridge(bridgeTokenList)
     }
   }
 

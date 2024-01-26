@@ -9,7 +9,6 @@ import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
 import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
-import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
@@ -177,19 +176,6 @@ export const validateTokenList = (tokenList: TokenList) => {
   const validate = ajv.compile(schema)
 
   return validate(tokenList)
-}
-
-export const addBridgeTokenListToBridge = (
-  bridgeTokenList: BridgeTokenList,
-  token: ArbTokenBridge['token']
-) => {
-  fetchTokenListFromURL(bridgeTokenList.url).then(
-    ({ isValid, data: tokenList }) => {
-      if (!isValid) return
-
-      token.addTokensFromList(tokenList!, bridgeTokenList.id)
-    }
-  )
 }
 
 export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
