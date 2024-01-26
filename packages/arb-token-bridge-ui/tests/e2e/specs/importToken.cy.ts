@@ -3,7 +3,8 @@ import {
   invalidTokenAddress,
   ERC20TokenName,
   ERC20TokenSymbol,
-  importTokenThroughUI
+  importTokenThroughUI,
+  visitAfterSomeDelay
 } from '../../support/common'
 
 const ERC20TokenAddressL1: string = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
@@ -247,6 +248,12 @@ describe('Import token', () => {
           networkType: 'L1',
           url: '/',
           query: {
+            token: invalidTokenAddress
+          }
+        })
+
+        visitAfterSomeDelay('/', {
+          qs: {
             token: invalidTokenAddress
           }
         })

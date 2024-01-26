@@ -81,7 +81,19 @@ export default async function handler(
     ${search ? `l2TxHash_contains: "${search}"` : ''}
     `
 
-    const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
+    let subgraphClient
+    try {
+      subgraphClient = getL2SubgraphClient(Number(l2ChainId))
+    } catch (error: any) {
+      // catch attempt to query unsupported networks and throw a 400
+      res.status(400).json({
+        message: error?.message ?? 'Something went wrong',
+        data: []
+      })
+      return
+    }
+
+    const subgraphResult = await subgraphClient.query({
       query: gql`{
         withdrawals(
           where: {            
