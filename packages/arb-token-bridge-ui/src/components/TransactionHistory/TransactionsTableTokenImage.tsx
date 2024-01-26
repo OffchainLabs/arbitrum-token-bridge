@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import Image from 'next/image'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
+import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { ChainId } from '../../util/networks'
@@ -29,13 +29,29 @@ export const TransactionsTableTokenImage = ({
   if (tx.assetType === AssetType.ETH) {
     const orbitChain = orbitChains[tx.childChainId]
 
-    const logoSrc =
-      orbitChain && orbitChain.bridgeUiConfig.nativeTokenData?.logoUrl
-        ? orbitChain.bridgeUiConfig.nativeTokenData.logoUrl
-        : EthereumLogoRoundLight
+    const nativeTokenLogoSrc =
+      orbitChain?.bridgeUiConfig.nativeTokenData?.logoUrl
+
+    if (nativeTokenLogoSrc) {
+      return (
+        // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
+        // It would throw error if it's loaded from external domains
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="w-[20px]"
+          alt="Native token logo"
+          src={nativeTokenLogoSrc}
+        />
+      )
+    }
 
     return (
-      <Image height={20} width={20} alt="Native token logo" src={logoSrc} />
+      <Image
+        height={20}
+        width={20}
+        alt="ETH logo"
+        src={EthereumLogoRoundLight}
+      />
     )
   }
 
@@ -44,11 +60,9 @@ export const TransactionsTableTokenImage = ({
   }
 
   return (
-    // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-    // It would throw error if it's loaded from external domains
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      className="h-[20px]"
+      className="w-[20px]"
       alt={token.symbol + ' logo'}
       src={token.logoURI}
     />
