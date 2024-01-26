@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -23,18 +23,18 @@ export const SidePanel = ({
 }: SidePanelProps) => {
   const [isClosing, setIsClosing] = useState(false)
 
-  function handleCloseStart() {
+  const handleCloseStart = useCallback(() => {
     setIsClosing(true)
-  }
+  }, [setIsClosing])
 
-  function handleCloseEnd() {
+  const handleCloseEnd = useCallback(() => {
     onClose?.()
 
     // prevent flickering caused by race conditions
     setTimeout(() => {
       setIsClosing(false)
     }, 0)
-  }
+  }, [onClose, setIsClosing])
 
   return (
     <Transition show={isOpen && !isClosing} as={Fragment}>
