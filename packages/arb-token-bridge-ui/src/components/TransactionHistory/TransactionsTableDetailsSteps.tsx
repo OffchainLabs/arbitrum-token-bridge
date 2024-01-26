@@ -25,6 +25,7 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -93,9 +94,8 @@ const Step = ({
   return (
     <div
       className={twMerge(
-        'my-3 flex items-center justify-between',
-        pending && 'animate-pulse',
-        claimable && 'my-2'
+        'my-3 flex h-5 items-center justify-between',
+        pending && 'animate-pulse'
       )}
     >
       <div className="flex items-center space-x-3">
@@ -116,10 +116,50 @@ const Step = ({
   )
 }
 
-export const TransactionsTableDetailsSteps = ({
-  tx
+const LastStepEndItem = ({
+  tx,
+  address
 }: {
   tx: MergedTransaction
+  address: `0x${string}` | undefined
+}) => {
+  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
+
+  if (destinationNetworkTxId) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(
+          destinationChainId
+        )}/tx/${getDestinationNetworkTxId(tx)}`}
+      >
+        <ArrowTopRightOnSquareIcon height={12} />
+      </ExternalLink>
+    )
+  }
+
+  if (isDepositReadyToRedeem(tx)) {
+    return (
+      <TransactionsTableRowAction
+        type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        isError={true}
+        tx={tx}
+        address={address}
+      />
+    )
+  }
+
+  return null
+}
+
+export const TransactionsTableDetailsSteps = ({
+  tx,
+  address
+}: {
+  tx: MergedTransaction
+  address: `0x${string}` | undefined
 }) => {
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
@@ -130,8 +170,6 @@ export const TransactionsTableDetailsSteps = ({
 
   const sourceNetworkName = getNetworkName(sourceChainId)
   const destinationNetworkName = getNetworkName(destinationChainId)
-
-  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
 
   const isSourceChainDepositFailure =
     typeof tx.depositStatus !== 'undefined' &&
@@ -193,6 +231,7 @@ export const TransactionsTableDetailsSteps = ({
                 type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
                 isError={false}
                 tx={tx}
+                address={address}
               />
             )
           }
@@ -210,17 +249,7 @@ export const TransactionsTableDetailsSteps = ({
               } on ${destinationNetworkName}`
             : `Funds arrived on ${destinationNetworkName}`
         }
-        endItem={
-          destinationNetworkTxId && (
-            <ExternalLink
-              href={`${getExplorerUrl(
-                destinationChainId
-              )}/tx/${getDestinationNetworkTxId(tx)}`}
-            >
-              <ArrowTopRightOnSquareIcon height={12} />
-            </ExternalLink>
-          )
-        }
+        endItem={<LastStepEndItem tx={tx} address={address} />}
       />
     </div>
   )

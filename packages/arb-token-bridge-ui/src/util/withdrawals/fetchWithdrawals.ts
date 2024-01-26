@@ -2,7 +2,10 @@ import { Provider } from '@ethersproject/providers'
 
 import { fetchETHWithdrawalsFromEventLogs } from './fetchETHWithdrawalsFromEventLogs'
 
-import { fetchWithdrawalsFromSubgraph } from './fetchWithdrawalsFromSubgraph'
+import {
+  FetchWithdrawalsFromSubgraphResult,
+  fetchWithdrawalsFromSubgraph
+} from './fetchWithdrawalsFromSubgraph'
 import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
@@ -57,12 +60,9 @@ export async function fetchWithdrawals({
     toBlock = latestSubgraphBlockNumber
   }
 
-  const [
-    withdrawalsFromSubgraph,
-    ethWithdrawalsFromEventLogs,
-    tokenWithdrawalsFromEventLogs
-  ] = await Promise.all([
-    fetchWithdrawalsFromSubgraph({
+  let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
+  try {
+    withdrawalsFromSubgraph = await fetchWithdrawalsFromSubgraph({
       sender,
       receiver,
       fromBlock,
@@ -71,22 +71,10 @@ export async function fetchWithdrawals({
       pageNumber,
       pageSize,
       searchString
-    }),
-    fetchETHWithdrawalsFromEventLogs({
-      receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider
-    }),
-    fetchTokenWithdrawalsFromEventLogs({
-      sender,
-      receiver,
-      fromBlock: toBlock + 1,
-      toBlock: 'latest',
-      l2Provider: l2Provider,
-      l2GatewayAddresses
     })
-  ])
+  } catch (error) {
+    console.log('Error fetching withdrawals from subgraph', error)
+  }
 
   if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
     return withdrawalsFromSubgraph.map(tx => {
@@ -99,6 +87,24 @@ export async function fetchWithdrawals({
       }
     })
   }
+
+  const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
+    await Promise.all([
+      fetchETHWithdrawalsFromEventLogs({
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        l2Provider: l2Provider
+      }),
+      fetchTokenWithdrawalsFromEventLogs({
+        sender,
+        receiver,
+        fromBlock: toBlock + 1,
+        toBlock: 'latest',
+        l2Provider: l2Provider,
+        l2GatewayAddresses
+      })
+    ])
 
   const mappedEthWithdrawalsFromEventLogs: Withdrawal[] =
     ethWithdrawalsFromEventLogs.map(tx => {
