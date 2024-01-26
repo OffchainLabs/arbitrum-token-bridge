@@ -9,7 +9,6 @@ import { constants } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
-import { useAppState } from '../../state'
 import {
   listIdsToNames,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
@@ -33,6 +32,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -82,11 +82,7 @@ export function TokenRow({
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
+  const { bridgeTokens } = useArbTokenBridge()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {

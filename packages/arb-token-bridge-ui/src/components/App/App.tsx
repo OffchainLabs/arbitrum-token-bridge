@@ -14,15 +14,12 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
 import { ConnectionState } from '../../util'
-import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
 import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
-import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
-import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { useDialog } from '../common/Dialog'
 import {
@@ -110,7 +107,6 @@ const AppContent = (): JSX.Element => {
       </HeaderContent>
 
       <TokenListSyncer />
-      <BalanceUpdater />
       <Notifications />
       <MainContent />
     </>
@@ -131,9 +127,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
 
-  const [tokenBridgeParams, setTokenBridgeParams] =
-    useState<TokenBridgeParams | null>(null)
-
   useEffect(() => {
     if (!nativeCurrency.isCustom) {
       return
@@ -152,12 +145,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     ) {
       actions.app.setSelectedToken(null)
     }
-  }, [selectedToken, nativeCurrency])
+  }, [selectedToken, nativeCurrency, actions.app])
 
   // Listen for account and network changes
   useEffect(() => {
     // Any time one of those changes
-    setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
     if (!isConnected) {
@@ -173,10 +165,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     ).isEthereumMainnetOrTestnet
 
     actions.app.reset(networks.sourceChain.id)
-    actions.app.setChainIds({
-      l1NetworkChainId: parentChain.id,
-      l2NetworkChainId: childChain.id
-    })
 
     if (
       (isParentChainEthereum && isConnectedToArbitrum) ||
@@ -188,17 +176,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       console.info('Deposit mode detected:')
       actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
     }
-
-    setTokenBridgeParams({
-      l1: {
-        network: parentChain,
-        provider: parentChainProvider
-      },
-      l2: {
-        network: childChain,
-        provider: childChainProvider
-      }
-    })
   }, [
     isConnected,
     address,
@@ -208,7 +185,8 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     parentChain,
     childChain,
     parentChainProvider,
-    childChainProvider
+    childChainProvider,
+    actions.app
   ])
 
   useEffect(() => {
@@ -222,7 +200,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       .catch(err => {
         console.warn('Failed to fetch warning tokens:', err)
       })
-  }, [])
+  }, [actions.app])
 
   if (address && isBlocked) {
     return (
@@ -238,14 +216,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     )
   }
 
-  return (
-    <>
-      {tokenBridgeParams && (
-        <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
-      )}
-      {children}
-    </>
-  )
+  return <>{children}</>
 }
 
 // connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4

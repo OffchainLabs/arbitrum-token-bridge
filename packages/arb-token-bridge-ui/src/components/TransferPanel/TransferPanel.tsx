@@ -70,6 +70,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -118,14 +119,9 @@ export function TransferPanel() {
   const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
 
   const {
-    app: {
-      connectionState,
-      selectedToken,
-      arbTokenBridgeLoaded,
-      arbTokenBridge: { eth, token },
-      warningTokens
-    }
+    app: { connectionState, selectedToken, warningTokens }
   } = useAppState()
+  const { eth, token } = useArbTokenBridge()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()

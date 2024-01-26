@@ -15,6 +15,7 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType } from './arbTokenBridge.types'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
+import { useArbTokenBridge } from './useArbTokenBridge'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -22,9 +23,7 @@ export type UseRedeemRetryableResult = {
 }
 
 export function useRedeemRetryable(): UseRedeemRetryableResult {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
   const { data: signer } = useSigner()

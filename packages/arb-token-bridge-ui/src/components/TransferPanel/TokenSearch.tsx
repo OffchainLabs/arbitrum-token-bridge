@@ -44,6 +44,7 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 enum Panel {
   TOKENS,
@@ -69,12 +70,9 @@ const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
 }
 
 function TokenListsPanel() {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const { bridgeTokens, token } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
-  const { bridgeTokens, token } = arbTokenBridge
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
@@ -98,7 +96,7 @@ function TokenListsPanel() {
     if (isActive) {
       token.removeTokensFromList(bridgeTokenList.id)
     } else {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+      addBridgeTokenListToBridge(bridgeTokenList, token)
     }
   }
 
@@ -153,11 +151,7 @@ function TokensPanel({
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+  const { token, bridgeTokens } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -472,11 +466,7 @@ function TokensPanel({
 
 export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { token, bridgeTokens }
-    }
-  } = useAppState()
+  const { token, bridgeTokens } = useArbTokenBridge()
   const {
     app: { setSelectedToken }
   } = useActions()

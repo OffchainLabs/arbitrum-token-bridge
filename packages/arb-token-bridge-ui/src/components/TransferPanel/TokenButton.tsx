@@ -9,16 +9,14 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 export function TokenButton(): JSX.Element {
   const {
-    app: {
-      selectedToken,
-      arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
-    }
+    app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
+  const { bridgeTokens } = useArbTokenBridge()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
 
@@ -29,9 +27,7 @@ export function TokenButton(): JSX.Element {
     if (!selectedAddress) {
       return nativeCurrency.logoUrl
     }
-    if (!arbTokenBridgeLoaded) {
-      return undefined
-    }
+
     if (typeof bridgeTokens === 'undefined') {
       return undefined
     }
@@ -40,12 +36,7 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [
-    nativeCurrency,
-    bridgeTokens,
-    selectedToken?.address,
-    arbTokenBridgeLoaded
-  ])
+  }, [nativeCurrency, bridgeTokens, selectedToken?.address])
   const chainId = isDepositMode ? parentChain.id : childChain.id
 
   const tokenSymbol = useMemo(() => {

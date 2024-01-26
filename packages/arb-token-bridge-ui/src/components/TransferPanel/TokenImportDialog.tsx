@@ -29,6 +29,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 enum ImportStatus {
   LOADING,
@@ -72,11 +73,9 @@ export function TokenImportDialog({
 }: TokenImportDialogProps): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
-    app: {
-      arbTokenBridge: { bridgeTokens, token },
-      selectedToken
-    }
+    app: { selectedToken }
   } = useAppState()
+  const { bridgeTokens, token } = useArbTokenBridge()
   const [networks] = useNetworks()
   const {
     childChain,

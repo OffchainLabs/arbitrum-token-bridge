@@ -17,6 +17,7 @@ import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
 import { fetchErc20Data } from '../util/TokenUtils'
 import { fetchNativeCurrency } from './useNativeCurrency'
+import { useArbTokenBridge } from './useArbTokenBridge'
 
 export type UseClaimWithdrawalResult = {
   claim: (tx: MergedTransaction) => Promise<void>
@@ -24,9 +25,7 @@ export type UseClaimWithdrawalResult = {
 }
 
 export function useClaimWithdrawal(): UseClaimWithdrawalResult {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const { address } = useAccount()
   const { data: signer } = useSigner()
   const { updatePendingTransaction } = useTransactionHistory(address)

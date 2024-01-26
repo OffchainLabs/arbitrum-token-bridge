@@ -22,6 +22,7 @@ import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -63,9 +64,7 @@ export function useGasSummary(
   token: TransferPanelSummaryToken | null,
   shouldRunGasEstimation: boolean
 ): UseGasSummaryResult {
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
+  const arbTokenBridge = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)

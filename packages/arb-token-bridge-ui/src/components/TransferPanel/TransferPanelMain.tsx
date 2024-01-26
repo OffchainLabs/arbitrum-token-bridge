@@ -74,6 +74,7 @@ import {
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 enum NetworkType {
   l1 = 'l1',
@@ -361,8 +362,8 @@ export function TransferPanelMain({
 
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, selectedToken } = app
-  const { token } = arbTokenBridge
+  const { selectedToken } = app
+  const { token } = useArbTokenBridge()
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()

@@ -1,6 +1,5 @@
 import { BigNumber } from 'ethers'
 import {
-  ArbTokenBridge,
   AssetType,
   ERC20BridgeToken,
   NodeBlockDeadlineStatus
@@ -79,25 +78,21 @@ export interface WarningTokens {
 }
 
 export type AppState = {
-  arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
   selectedToken: ERC20BridgeToken | null
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
-  arbTokenBridgeLoaded: boolean
 }
 
 export const defaultState: AppState = {
-  arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
   l1NetworkChainId: null,
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
-  selectedToken: null,
-  arbTokenBridgeLoaded: false
+  selectedToken: null
 }
 export const state: AppState = {
   ...defaultState

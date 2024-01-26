@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
@@ -48,6 +48,8 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
+import { useNetworksRelationship } from './useNetworksRelationship'
+import { useNetworks } from './useNetworks'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -102,10 +104,10 @@ export interface TokenBridgeParams {
   l2: { provider: JsonRpcProvider; network: Chain }
 }
 
-export const useArbTokenBridge = (
-  params: TokenBridgeParams
-): ArbTokenBridge => {
-  const { l1, l2 } = params
+export const useArbTokenBridge = (): ArbTokenBridge => {
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
+    useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [bridgeTokens, setBridgeTokens] = useState<
     ContractStorage<ERC20BridgeToken> | undefined
@@ -117,14 +119,14 @@ export const useArbTokenBridge = (
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    provider: parentChainProvider,
     walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    provider: childChainProvider,
     walletAddress
   })
 
@@ -132,7 +134,7 @@ export const useArbTokenBridge = (
     [id: string]: boolean
   }
 
-  const nativeCurrency = useNativeCurrency({ provider: l2.provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress
@@ -147,9 +149,6 @@ export const useArbTokenBridge = (
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
     ]
-
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
-  const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
   const [
     transactions,
@@ -169,9 +168,10 @@ export const useArbTokenBridge = (
       return
     }
 
-    const ethBridger = await EthBridger.fromProvider(l2.provider)
-    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
-      .timestamp
+    const ethBridger = await EthBridger.fromProvider(childChainProvider)
+    const parentChainBlockTimestamp = (
+      await parentChainProvider.getBlock('latest')
+    ).timestamp
 
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
@@ -181,7 +181,9 @@ export const useArbTokenBridge = (
     let tx: L1EthDepositTransaction
 
     try {
-      const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
+      const gasLimit = await parentChainProvider.estimateGas(
+        depositRequest.txRequest
+      )
 
       tx = await ethBridger.deposit({
         amount,
@@ -215,8 +217,8 @@ export const useArbTokenBridge = (
       blockNum: null,
       tokenAddress: null,
       depositStatus: DepositStatus.L1_PENDING,
-      parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID)
+      parentChainId: parentChain.id,
+      childChainId: childChain.id
     })
 
     addDepositToCache({
@@ -226,11 +228,11 @@ export const useArbTokenBridge = (
       txID: tx.hash,
       assetName: nativeCurrency.symbol,
       assetType: AssetType.ETH,
-      l1NetworkID,
-      l2NetworkID,
+      l1NetworkID: parentChain.id.toString(),
+      l2NetworkID: childChain.id.toString(),
       value: utils.formatUnits(amount, nativeCurrency.decimals),
-      parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID),
+      parentChainId: parentChain.id,
+      childChainId: childChain.id,
       direction: 'deposit',
       type: 'deposit-l1',
       source: 'local_storage_cache',
@@ -261,7 +263,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const ethBridger = await EthBridger.fromProvider(l2.provider)
+      const ethBridger = await EthBridger.fromProvider(childChainProvider)
 
       const withdrawalRequest = await ethBridger.getWithdrawalRequest({
         from: walletAddress,
@@ -269,7 +271,7 @@ export const useArbTokenBridge = (
         amount
       })
 
-      const gasLimit = await l2.provider.estimateGas(
+      const gasLimit = await childChainProvider.estimateGas(
         withdrawalRequest.txRequest
       )
 
@@ -298,8 +300,8 @@ export const useArbTokenBridge = (
         isWithdrawal: true,
         blockNum: null,
         tokenAddress: null,
-        parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
       })
 
       const receipt = await tx.wait()
@@ -330,7 +332,7 @@ export const useArbTokenBridge = (
       return
     }
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+    const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
 
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
@@ -339,7 +341,7 @@ export const useArbTokenBridge = (
 
     const { symbol } = await fetchErc20Data({
       address: erc20L1Address,
-      provider: l1.provider
+      provider: parentChainProvider
     })
 
     addTransaction({
@@ -350,7 +352,7 @@ export const useArbTokenBridge = (
       assetName: symbol,
       assetType: AssetType.ERC20,
       sender: walletAddress,
-      l1NetworkID
+      l1NetworkID: parentChain.id.toString()
     })
 
     const receipt = await tx.wait()
@@ -375,13 +377,13 @@ export const useArbTokenBridge = (
     if (!l2Address) throw new Error('L2 address not found')
     const gatewayAddress = await fetchErc20L2GatewayAddress({
       erc20L1Address,
-      l2Provider: l2.provider
+      l2Provider: childChainProvider
     })
     const contract = await ERC20__factory.connect(l2Address, l2Signer)
     const tx = await contract.functions.approve(gatewayAddress, MaxUint256)
     const { symbol } = await fetchErc20Data({
       address: erc20L1Address,
-      provider: l1.provider
+      provider: parentChainProvider
     })
 
     addTransaction({
@@ -393,8 +395,8 @@ export const useArbTokenBridge = (
       assetType: AssetType.ERC20,
       sender: walletAddress,
       blockNumber: tx.blockNumber,
-      l1NetworkID,
-      l2NetworkID
+      l1NetworkID: parentChain.id.toString(),
+      l2NetworkID: childChain.id.toString()
     })
 
     const receipt = await tx.wait()
@@ -418,19 +420,20 @@ export const useArbTokenBridge = (
     if (!walletAddress) {
       return
     }
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
-    const parentChainBlockTimestamp = (await l1.provider.getBlock('latest'))
-      .timestamp
+    const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+    const parentChainBlockTimestamp = (
+      await parentChainProvider.getBlock('latest')
+    ).timestamp
 
     try {
       const { symbol, decimals } = await fetchErc20Data({
         address: erc20L1Address,
-        provider: l1.provider
+        provider: parentChainProvider
       })
 
       const depositRequest = await erc20Bridger.getDepositRequest({
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider,
         from: walletAddress,
         erc20L1Address,
         destinationAddress,
@@ -442,7 +445,9 @@ export const useArbTokenBridge = (
         }
       })
 
-      const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
+      const gasLimit = await parentChainProvider.estimateGas(
+        depositRequest.txRequest
+      )
 
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
@@ -470,8 +475,8 @@ export const useArbTokenBridge = (
         isWithdrawal: false,
         blockNum: null,
         tokenAddress: erc20L1Address,
-        parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
       })
 
       addDepositToCache({
@@ -481,11 +486,11 @@ export const useArbTokenBridge = (
         txID: tx.hash,
         assetName: symbol,
         assetType: AssetType.ERC20,
-        l1NetworkID,
-        l2NetworkID,
+        l1NetworkID: parentChain.id.toString(),
+        l2NetworkID: childChain.id.toString(),
         value: utils.formatUnits(amount, decimals),
-        parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID),
+        parentChainId: parentChain.id,
+        childChainId: childChain.id,
         direction: 'deposit',
         type: 'deposit-l1',
         source: 'local_storage_cache',
@@ -526,7 +531,7 @@ export const useArbTokenBridge = (
     }
 
     try {
-      const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+      const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
       const provider = l2Signer.provider
       const isSmartContractAddress =
         provider && (await provider.getCode(String(erc20L1Address))).length < 2
@@ -546,7 +551,7 @@ export const useArbTokenBridge = (
         }
         const { symbol, decimals } = await fetchErc20Data({
           address: erc20L1Address,
-          provider: l1.provider
+          provider: parentChainProvider
         })
 
         addToken(erc20L1Address)
@@ -560,7 +565,7 @@ export const useArbTokenBridge = (
         amount
       })
 
-      const gasLimit = await l2.provider.estimateGas(
+      const gasLimit = await childChainProvider.estimateGas(
         withdrawalRequest.txRequest
       )
 
@@ -589,8 +594,8 @@ export const useArbTokenBridge = (
         isWithdrawal: true,
         blockNum: null,
         tokenAddress: erc20L1Address,
-        parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        parentChainId: parentChain.id,
+        childChainId: childChain.id
       })
 
       const receipt = await tx.wait()
@@ -627,9 +632,6 @@ export const useArbTokenBridge = (
   }
 
   const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
-
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
     const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
@@ -638,7 +640,7 @@ export const useArbTokenBridge = (
       const { address, name, symbol, extensions, decimals, logoURI, chainId } =
         tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
+      if (![parentChain.id, childChain.id].includes(chainId)) {
         continue
       }
 
@@ -674,7 +676,7 @@ export const useArbTokenBridge = (
       })()
 
       if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        const l1Address = bridgeInfo[parentChain.id]?.tokenAddress.toLowerCase()
 
         if (!l1Address) {
           return
@@ -726,10 +728,10 @@ export const useArbTokenBridge = (
 
       // USDC is not on any token list as it's unbridgeable
       // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
+      if (isNetwork(childChain.id).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumSepolia) {
+      if (isNetwork(childChain.id).isArbitrumSepolia) {
         l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
@@ -774,7 +776,7 @@ export const useArbTokenBridge = (
     const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
     const maybeL1Address = await getL1ERC20Address({
       erc20L2Address: lowercasedErc20L1orL2Address,
-      l2Provider: l2.provider
+      l2Provider: childChainProvider
     })
 
     if (maybeL1Address) {
@@ -786,13 +788,13 @@ export const useArbTokenBridge = (
       l1Address = lowercasedErc20L1orL2Address
       l2Address = await getL2ERC20Address({
         erc20L1Address: l1Address,
-        l1Provider: l1.provider,
-        l2Provider: l2.provider
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
       })
     }
 
     const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const erc20Params = { address: l1Address, provider: l1.provider }
+    const erc20Params = { address: l1Address, provider: parentChainProvider }
 
     if (!(await isValidErc20(erc20Params))) {
       throw new Error(`${l1Address} is not a valid ERC-20 token`)
@@ -802,8 +804,8 @@ export const useArbTokenBridge = (
 
     const isDisabled = await l1TokenIsDisabled({
       erc20L1Address: l1Address,
-      l1Provider: l1.provider,
-      l2Provider: l2.provider
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider
     })
 
     if (isDisabled) {
@@ -855,7 +857,12 @@ export const useArbTokenBridge = (
         updateErc20L2Balance([l2Address])
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances
+    ]
   )
 
   const updateEthBalances = async () => {
@@ -898,7 +905,7 @@ export const useArbTokenBridge = (
   }
 
   function addL2NativeToken(erc20L2Address: string) {
-    const token = getL2NativeToken(erc20L2Address, l2.network.id)
+    const token = getL2NativeToken(erc20L2Address, childChain.id)
 
     setBridgeTokens(oldBridgeTokens => {
       return {
@@ -960,7 +967,7 @@ export const useArbTokenBridge = (
     events.forEach((event: L2ToL1EventResult) => {
       const cacheKey = getExecutedMessagesCacheKey({
         event,
-        l2ChainId: l2.network.id
+        l2ChainId: childChain.id
       })
 
       added[cacheKey] = true
