@@ -687,7 +687,7 @@ export const useArbTokenBridge = (
         const isArbitrumTokenAndIsChildChainOrbit =
           isArbitrumTokenList(listId) && isChildChainOrbit
         const parentChainTokenAddress = isArbitrumTokenAndIsChildChainOrbit
-          ? tokenData.address.toLowerCase()
+          ? address.toLowerCase()
           : bridgeInfo[parentChainId]?.tokenAddress.toLowerCase()
         const childChainAddress = isArbitrumTokenAndIsChildChainOrbit
           ? undefined
