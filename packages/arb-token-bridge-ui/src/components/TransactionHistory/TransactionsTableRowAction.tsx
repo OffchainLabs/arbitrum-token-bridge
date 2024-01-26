@@ -32,7 +32,6 @@ export function TransactionsTableRowAction({
 
   const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { isConfirmed } = useRemainingTime(tx)
   const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
@@ -45,10 +44,6 @@ export function TransactionsTableRowAction({
     }
     return chain.id === tx.parentChainId
   }, [type, chain, tx.parentChainId, tx.childChainId])
-
-  const isClaimButtonDisabled = useMemo(() => {
-    return isClaiming || isClaimingCctp || !isConfirmed
-  }, [isClaiming, isClaimingCctp, isConfirmed])
 
   const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
     if (!chain) {
@@ -75,6 +70,39 @@ export function TransactionsTableRowAction({
     redeem,
     switchNetworkAsync,
     tx.childChainId
+  ])
+
+  const handleClaim = useCallback(async () => {
+    try {
+      if (!isConnectedToCorrectNetworkForClaim) {
+        await switchNetworkAsync?.(
+          tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+        )
+      }
+
+      if (tx.isCctp) {
+        return await claimCctp()
+      } else {
+        return await claim()
+      }
+    } catch (error: any) {
+      if (isUserRejectedError(error)) {
+        return
+      }
+
+      errorToast(
+        `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+          error?.message ?? error
+        }`
+      )
+    }
+  }, [
+    claim,
+    claimCctp,
+    isConnectedToCorrectNetworkForClaim,
+    switchNetworkAsync,
+    tx,
+    type
   ])
 
   const getHelpOnError = () => {
@@ -131,33 +159,8 @@ export function TransactionsTableRowAction({
     ) : (
       <Button
         variant="primary"
-        disabled={isClaimButtonDisabled}
         className="w-16 rounded bg-green-400 p-2 text-xs text-black"
-        onClick={async () => {
-          try {
-            if (!isConnectedToCorrectNetworkForClaim) {
-              await switchNetworkAsync?.(
-                tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-              )
-            }
-
-            if (tx.isCctp) {
-              return await claimCctp()
-            } else {
-              return await claim()
-            }
-          } catch (error: any) {
-            if (isUserRejectedError(error)) {
-              return
-            }
-
-            errorToast(
-              `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
-                error?.message ?? error
-              }`
-            )
-          }
-        }}
+        onClick={handleClaim}
       >
         Claim
       </Button>
