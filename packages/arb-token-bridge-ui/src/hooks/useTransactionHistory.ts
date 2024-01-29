@@ -257,10 +257,9 @@ function isTxMatchingFilter({
   filters: FiltersStorage
   tx: Transfer
 }) {
-  if (!filters.hidden_source_chains.includes(getSourceChainIdFromRawTx(tx))) {
-    return true
-  }
   if (
+    // filter chains
+    !filters.hidden_source_chains.includes(getSourceChainIdFromRawTx(tx)) &&
     !filters.hidden_destination_chains.includes(
       getDestinationChainIdFromRawTx(tx)
     )
@@ -639,7 +638,7 @@ export const useTransactionHistory = (
     isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page, _data, _filters]) => {
+    ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
 
