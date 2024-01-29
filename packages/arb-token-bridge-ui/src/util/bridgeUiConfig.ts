@@ -69,7 +69,8 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum One'
+          name: 'Arbitrum One',
+          logo: '/images/ArbitrumOneLogo.svg'
         }
       }
     case ChainId.ArbitrumGoerli:
