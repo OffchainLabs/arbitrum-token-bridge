@@ -12,7 +12,7 @@ import dayjs from 'dayjs'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { ETHPrice } from './ETHPrice'
+import { NativeCurrencyPrice } from './NativeCurrencyPrice'
 import { isTokenUSDC } from '../../util/TokenUtils'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
@@ -135,7 +135,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
               symbol: nativeCurrency.symbol
             }
           )}{' '}
-          <ETHPrice amountInEth={estimatedTotalGasFees} showBrackets />
+          <NativeCurrencyPrice
+            amountInEth={estimatedTotalGasFees}
+            showBrackets
+          />
         </span>
       </div>
 
@@ -155,7 +158,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             isParentChain={!isDepositMode}
           />{' '}
           {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
-          <ETHPrice amountInEth={Number(amount)} showBrackets />
+          <NativeCurrencyPrice amountInEth={Number(amount)} showBrackets />
         </span>
       </div>
 

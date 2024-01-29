@@ -12,7 +12,7 @@ import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { ETHPrice } from './ETHPrice'
+import { NativeCurrencyPrice } from './NativeCurrencyPrice'
 import { isTokenUSDC } from '../../util/TokenUtils'
 
 const gasFeeTooltip = ({
@@ -151,7 +151,7 @@ export function EstimatedGas({
             })}
           </span>
 
-          <ETHPrice amountInEth={estimatedGasFee} />
+          <NativeCurrencyPrice amountInEth={estimatedGasFee} />
         </div>
       )}
     </div>

@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -8,7 +6,7 @@ import { isNetwork } from '../../util/networks'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatUSD } from '../../util/NumberUtils'
 
-export function ETHPrice({
+export function NativeCurrencyPrice({
   amountInEth,
   showBrackets = false
 }: {
@@ -20,23 +18,22 @@ export function ETHPrice({
   } = useAppState()
   const [networks] = useNetworks()
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
-  const showPrice = useMemo(
-    () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
-    [isBridgingEth, childChain.id]
-  )
-  const { ethToUSD } = useETHPrice()
-  const price = formatUSD(ethToUSD(amountInEth))
+  const { isTestnet } = isNetwork(childChain.id)
 
-  if (!showPrice) {
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  // currently only ETH price is supported
+  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
+  const { ethToUSD } = useETHPrice()
+
+  if (isTestnet || !isBridgingEth) {
     return null
   }
 
   return (
     <span className="tabular-nums">
       {showBrackets && '('}
-      {price}
+      {formatUSD(ethToUSD(amountInEth))}
       {showBrackets && ')'}
     </span>
   )
