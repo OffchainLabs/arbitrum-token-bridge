@@ -7,7 +7,7 @@ import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { MergedTransaction } from '../../state/app/state'
 import { useClaimCctp, useRemainingTime } from '../../state/cctpState'
-import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
@@ -69,9 +69,7 @@ export function TransactionsTableRowAction({
     window.open(GET_HELP_LINK, '_blank')
 
     // track the button click
-    if (shouldTrackAnalytics(networkName)) {
-      trackEvent('Tx Error: Get Help Click', { network: networkName })
-    }
+    trackEvent('Tx Error: Get Help Click', { network: networkName })
   }
 
   if (tx.status === 'Unconfirmed') {
