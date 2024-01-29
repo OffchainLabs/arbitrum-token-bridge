@@ -28,6 +28,8 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { FilterType } from '../../hooks/useTransactionHistoryFilters'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
   const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
@@ -121,6 +123,7 @@ export function TransactionsTableRow({
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
+  const { isFilterApplied } = useTransactionHistory(address)
 
   const sourceChainId = getSourceChainId(tx)
   const destinationChainId = getDestinationChainId(tx)
@@ -185,8 +188,10 @@ export function TransactionsTableRow({
         className
       )}
     >
-      <div className="pr-3 align-middle">{txRelativeTime}</div>
-      <div className="flex items-center pr-3 align-middle">
+      <div className="flex h-full items-center pl-2 pr-3 align-middle">
+        {txRelativeTime}
+      </div>
+      <div className="flex h-full items-center pl-2 pr-3 align-middle">
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(sourceChainId)}/token/${tx.tokenAddress}`}
           disabled={!tx.tokenAddress}
@@ -199,7 +204,12 @@ export function TransactionsTableRow({
           </span>
         </TransactionsTableExternalLink>
       </div>
-      <div className="flex items-center space-x-2">
+      <div
+        className={twMerge(
+          'flex h-full items-center space-x-2 pl-2',
+          isFilterApplied[FilterType.HiddenSourceChains] && 'bg-white/10'
+        )}
+      >
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(sourceChainId)}/address/${tx.sender}`}
         >
@@ -211,7 +221,12 @@ export function TransactionsTableRow({
           </span>
         </TransactionsTableExternalLink>
       </div>
-      <div className="flex items-center space-x-2">
+      <div
+        className={twMerge(
+          'flex h-full items-center space-x-2 pl-2',
+          isFilterApplied[FilterType.HiddenDestinationChains] && 'bg-white/10'
+        )}
+      >
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(destinationChainId)}/address/${
             tx.destination ?? tx.sender

@@ -35,7 +35,9 @@ import { updateAdditionalDepositData } from '../util/deposits/helpers'
 import { useCctpFetching } from '../state/cctpState'
 import {
   getDepositsWithoutStatusesFromCache,
+  getDestinationChainId,
   getProvider,
+  getSourceChainId,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
   getUpdatedTokenDeposit,
@@ -50,6 +52,10 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import {
+  FilterType,
+  useTransactionHistoryFilters
+} from './useTransactionHistoryFilters'
 import { getOrbitChains } from '../util/orbitChainsList'
 
 export type UseTransactionHistoryResult = {
@@ -58,8 +64,14 @@ export type UseTransactionHistoryResult = {
   completed: boolean
   error: unknown
   failedChainPairs: ChainPair[]
+  chainIdsWithAtLeastOneTx: {
+    source: ChainId[]
+    destination: ChainId[]
+  }
+  isFilterApplied: { [key in FilterType]: boolean }
   pause: () => void
   resume: () => void
+  restart: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
@@ -75,6 +87,30 @@ export type Withdrawal =
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 export type Transfer = DepositOrWithdrawal | MergedTransaction
+
+function getSourceChainIdFromRawTx(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return getSourceChainId(tx)
+  }
+
+  if (isDeposit(tx)) {
+    return tx.parentChainId
+  }
+
+  return tx.childChainId
+}
+
+function getDestinationChainIdFromRawTx(tx: Transfer) {
+  if (isCctpTransfer(tx)) {
+    return getDestinationChainId(tx)
+  }
+
+  if (isDeposit(tx)) {
+    return tx.childChainId
+  }
+
+  return tx.parentChainId
+}
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -433,6 +469,7 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
+  const [filters] = useTransactionHistoryFilters(address)
   const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -453,6 +490,18 @@ export const useTransactionHistory = (
     failedChainPairs
   } = useTransactionHistoryWithoutStatuses(address)
 
+  const filteredTxsWithoutStatuses = useMemo(() => {
+    // TODO: filter util instead of repeating it all the time
+    return data.filter(tx => {
+      return (
+        !filters.hidden_source_chains.includes(getSourceChainIdFromRawTx(tx)) ||
+        !filters.hidden_destination_chains.includes(
+          getDestinationChainIdFromRawTx(tx)
+        )
+      )
+    })
+  }, [data, filters])
+
   const getCacheKey = useCallback(
     (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
       if (prevPageTxs) {
@@ -462,11 +511,26 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
-        ? (['complete_tx_list', address, pageNumber, data] as const)
+      return address &&
+        !isLoadingTxsWithoutStatus &&
+        !isLoadingAccountType &&
+        filters
+        ? ([
+            'complete_tx_list',
+            address,
+            pageNumber,
+            filteredTxsWithoutStatuses,
+            filters
+          ] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
+    [
+      address,
+      isLoadingTxsWithoutStatus,
+      filteredTxsWithoutStatuses,
+      isLoadingAccountType,
+      filters
+    ]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -506,6 +570,50 @@ export const useTransactionHistory = (
     chain
   ])
 
+  const chainIdsWithAtLeastOneTx = useMemo(() => {
+    if (isLoadingTxsWithoutStatus) {
+      return {
+        source: [],
+        destination: []
+      }
+    }
+
+    const dataWithCache = [...data, ...depositsFromCache]
+
+    return dataWithCache.reduce(
+      (acc, tx) => {
+        const sourceChainId = getSourceChainIdFromRawTx(tx)
+        const destinationChainId = getDestinationChainIdFromRawTx(tx)
+
+        if (!acc.source.includes(sourceChainId)) {
+          acc.source.push(sourceChainId)
+        }
+
+        if (!acc.destination.includes(destinationChainId)) {
+          acc.destination.push(destinationChainId)
+        }
+
+        return acc
+      },
+      {
+        source: [] as ChainId[],
+        destination: [] as ChainId[]
+      }
+    )
+  }, [data, isLoadingTxsWithoutStatus, depositsFromCache])
+
+  const isFilterApplied: { [key in FilterType]: boolean } = useMemo(() => {
+    return {
+      [FilterType.HiddenSourceChains]: filters.hidden_source_chains.some(
+        chainId => chainIdsWithAtLeastOneTx.source.includes(chainId)
+      ),
+      [FilterType.HiddenDestinationChains]:
+        filters.hidden_destination_chains.some(chainId =>
+          chainIdsWithAtLeastOneTx.destination.includes(chainId)
+        )
+    }
+  }, [filters, chainIdsWithAtLeastOneTx])
+
   const {
     data: txPages,
     error: txPagesError,
@@ -516,10 +624,20 @@ export const useTransactionHistory = (
     isLoading: isLoadingFirstPage
   } = useSWRInfinite(
     getCacheKey,
-    ([, , _page, _data]) => {
+    ([, , _page, _data, _filters]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
-      const dataWithCache = [..._data, ...depositsFromCache]
+      const filteredDepositsFromCache = depositsFromCache.filter(
+        tx =>
+          !_filters.hidden_source_chains.includes(
+            getSourceChainIdFromRawTx(tx)
+          ) ||
+          !_filters.hidden_destination_chains.includes(
+            getDestinationChainIdFromRawTx(tx)
+          )
+      )
+
+      const dataWithCache = [..._data, ...filteredDepositsFromCache]
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
@@ -702,6 +820,16 @@ export const useTransactionHistory = (
     [updateCachedTransaction]
   )
 
+  const restart = useCallback(() => {
+    setFetching(false)
+    setPage(1)
+    setPauseCount(0)
+
+    setTimeout(() => {
+      setFetching(true)
+    }, 0)
+  }, [setPage])
+
   useEffect(() => {
     if (!runFetcher || !connector) {
       return
@@ -709,12 +837,10 @@ export const useTransactionHistory = (
     connector.on('change', e => {
       // reset state on account change
       if (e.account) {
-        setPage(1)
-        setPauseCount(0)
-        setFetching(true)
+        restart()
       }
     })
-  }, [connector, runFetcher, setPage])
+  }, [connector, runFetcher, restart])
 
   useEffect(() => {
     if (!txPages || !fetching || !runFetcher || isValidating) {
@@ -775,22 +901,30 @@ export const useTransactionHistory = (
       loading: isLoadingTxsWithoutStatus,
       error,
       failedChainPairs: [],
+      chainIdsWithAtLeastOneTx,
+      isFilterApplied,
       completed: true,
       pause,
       resume,
+      restart,
       addPendingTransaction,
       updatePendingTransaction
     }
   }
 
   return {
-    transactions,
+    // show no transactions if the first page is loading
+    // this is useful when filters change and we want to show empty table as we fetch new results
+    transactions: isLoadingFirstPage ? [] : transactions,
     loading: isLoadingFirstPage || isLoadingMore,
     completed,
     error: txPagesError ?? error,
     failedChainPairs,
+    chainIdsWithAtLeastOneTx,
+    isFilterApplied,
     pause,
     resume,
+    restart,
     addPendingTransaction,
     updatePendingTransaction
   }

@@ -14,19 +14,23 @@ import {
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 
-import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
   isTokenDeposit
 } from '../../state/app/utils'
-import { ChainPair } from '../../hooks/useTransactionHistory'
+import {
+  ChainPair,
+  UseTransactionHistoryResult
+} from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
+import { FilterType } from '../../hooks/useTransactionHistoryFilters'
+import { TransactionHistoryTableHeader } from './TransactionHistoryTableHeader'
 
 export const ContentWrapper = ({
   children,
@@ -63,20 +67,6 @@ export const TransactionDateTime = ({
     </div>
   )
 }
-
-const TableHeader = ({
-  children,
-  className
-}: PropsWithChildren<{ className?: string }>) => (
-  <div
-    className={twMerge(
-      'h-full w-full py-4 text-left text-sm font-normal',
-      className
-    )}
-  >
-    {children}
-  </div>
-)
 
 export const LoadMoreButton = (
   props: ButtonHTMLAttributes<HTMLButtonElement>
@@ -128,27 +118,28 @@ const FailedChainPairsTooltip = ({
   )
 }
 
-export const TransactionHistoryTable = ({
-  address,
-  transactions,
-  loading,
-  completed,
-  error,
-  failedChainPairs,
-  resume,
-  selectedTabIndex,
-  oldestTxTimeAgoString
-}: {
-  address: `0x${string}` | undefined
-  transactions: MergedTransaction[]
-  loading: boolean
-  completed: boolean
-  error: unknown
-  failedChainPairs: ChainPair[]
-  resume: () => void
-  selectedTabIndex: number
-  oldestTxTimeAgoString: string
-}) => {
+export const TransactionHistoryTable = (
+  props: UseTransactionHistoryResult & {
+    address: `0x${string}` | undefined
+    selectedTabIndex: number
+    oldestTxTimeAgoString: string
+  }
+) => {
+  const {
+    address,
+    transactions,
+    loading,
+    completed,
+    error,
+    failedChainPairs,
+    chainIdsWithAtLeastOneTx,
+    isFilterApplied,
+    resume,
+    restart,
+    selectedTabIndex,
+    oldestTxTimeAgoString
+  } = props
+
   const contentAboveTable = useRef<HTMLDivElement>(null)
 
   const isTxHistoryEmpty = transactions.length === 0
@@ -168,6 +159,11 @@ export const TransactionHistoryTable = ({
     // Calculate table height to be passed to the React Virtualized Table
     const currentRef = contentAboveTable.current
     const SIDE_PANEL_HEADER_HEIGHT = 125
+
+    if (transactions.length === 0) {
+      setTableHeight(0)
+      return
+    }
 
     // Adjust the table size whenever the content above it is resized
     const observer = new ResizeObserver(entries => {
@@ -193,48 +189,40 @@ export const TransactionHistoryTable = ({
     }
   }, [transactions.length])
 
-  if (isTxHistoryEmpty) {
-    return (
-      <EmptyTransactionHistory
-        loading={loading}
-        error={typeof error !== 'undefined'}
-        paused={paused}
-        resume={resume}
-        tab={isPendingTab ? 'pending' : 'settled'}
-      />
-    )
-  }
-
   return (
     <ContentWrapper className="h-full overflow-x-auto p-0 text-left">
-      <div
-        className={twMerge(
-          'w-[960px] rounded-tr-lg px-4 pt-4',
-          isPendingTab ? '' : 'rounded-tl-lg'
-        )}
-        ref={contentAboveTable}
-      >
-        {loading ? (
-          <div className="flex items-center space-x-2">
-            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
-            <HistoryLoader />
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center justify-start space-x-1">
+      {!isTxHistoryEmpty && (
+        <div
+          className={twMerge(
+            'w-[960px] rounded-tr-lg px-4 pt-4',
+            isPendingTab ? '' : 'rounded-tl-lg'
+          )}
+          ref={contentAboveTable}
+        >
+          {loading ? (
+            <div className="flex items-center space-x-2">
               <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
-              <span className="text-xs">
-                Showing {transactions.length}{' '}
-                {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
-                {oldestTxTimeAgoString}.
-              </span>
+              <HistoryLoader />
             </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-start space-x-1">
+                <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+                <span className="text-xs">
+                  Showing {transactions.length}{' '}
+                  {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
+                  {oldestTxTimeAgoString}.
+                </span>
+              </div>
 
-            {!completed && <LoadMoreButton onClick={resume} />}
+              {!completed && <LoadMoreButton onClick={resume} />}
+            </div>
+          )}
+          <div>
+            {pendingTokenDepositsCount > 0 && <PendingDepositWarning />}
           </div>
-        )}
-        <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
-      </div>
+        </div>
+      )}
 
       <AutoSizer disableHeight>
         {() => (
@@ -243,7 +231,7 @@ export const TransactionHistoryTable = ({
             height={tableHeight}
             rowHeight={60}
             rowCount={transactions.length}
-            headerHeight={52}
+            headerHeight={transactions.length === 0 ? 0 : 52}
             headerRowRenderer={props => (
               <div className="mx-4 flex w-[928px] border-b border-white/30 text-white">
                 {props.columns}
@@ -286,35 +274,91 @@ export const TransactionHistoryTable = ({
               label="time"
               dataKey="time"
               width={139}
-              headerRenderer={() => <TableHeader>TIME</TableHeader>}
+              headerRenderer={() => (
+                <TransactionHistoryTableHeader
+                  address={address}
+                  restart={restart}
+                >
+                  TIME
+                </TransactionHistoryTableHeader>
+              )}
             />
             <Column
               label="token"
               dataKey="token"
               width={141}
-              headerRenderer={() => <TableHeader>TOKEN</TableHeader>}
+              headerRenderer={() => (
+                <TransactionHistoryTableHeader
+                  address={address}
+                  restart={restart}
+                >
+                  TOKEN
+                </TransactionHistoryTableHeader>
+              )}
             />
             <Column
               label="from"
               dataKey="from"
               width={142}
-              headerRenderer={() => <TableHeader>FROM</TableHeader>}
+              headerRenderer={() => (
+                <TransactionHistoryTableHeader
+                  address={address}
+                  restart={restart}
+                  filter={
+                    chainIdsWithAtLeastOneTx.source.length > 0
+                      ? FilterType.HiddenSourceChains
+                      : undefined
+                  }
+                >
+                  FROM
+                </TransactionHistoryTableHeader>
+              )}
             />
             <Column
               label="to"
               dataKey="to"
               width={137}
-              headerRenderer={() => <TableHeader>TO</TableHeader>}
+              headerRenderer={() => (
+                <TransactionHistoryTableHeader
+                  address={address}
+                  restart={restart}
+                  filter={
+                    chainIdsWithAtLeastOneTx.destination.length > 0
+                      ? FilterType.HiddenDestinationChains
+                      : undefined
+                  }
+                >
+                  TO
+                </TransactionHistoryTableHeader>
+              )}
             />
             <Column
               label="status"
               dataKey="status"
               width={100}
-              headerRenderer={() => <TableHeader>STATUS</TableHeader>}
+              headerRenderer={() => (
+                <TransactionHistoryTableHeader
+                  address={address}
+                  restart={restart}
+                >
+                  STATUS
+                </TransactionHistoryTableHeader>
+              )}
             />
           </Table>
         )}
       </AutoSizer>
+      {isTxHistoryEmpty && (
+        <EmptyTransactionHistory
+          loading={loading}
+          isError={typeof error !== 'undefined'}
+          paused={paused}
+          resume={resume}
+          tab={isPendingTab ? 'pending' : 'settled'}
+          // true if any filter is applied
+          filtered={Object.values(isFilterApplied).some(Boolean)}
+        />
+      )}
     </ContentWrapper>
   )
 }

@@ -8,14 +8,16 @@ import {
 
 export const EmptyTransactionHistory = ({
   loading,
-  error,
+  isError,
   paused,
+  filtered,
   resume,
   tab
 }: {
   loading: boolean
-  error: boolean
+  isError: boolean
   paused: boolean
+  filtered: boolean
   resume: () => void
   tab: 'pending' | 'settled'
 }) => {
@@ -26,7 +28,7 @@ export const EmptyTransactionHistory = ({
       </ContentWrapper>
     )
   }
-  if (error) {
+  if (isError) {
     return (
       <ContentWrapper>
         <p>
@@ -57,5 +59,15 @@ export const EmptyTransactionHistory = ({
       </ContentWrapper>
     )
   }
+
+  if (filtered) {
+    return (
+      <ContentWrapper>
+        No transactions matched your search criteria. Please adjust the filters
+        and try again.
+      </ContentWrapper>
+    )
+  }
+
   return <ContentWrapper>Looks like no transactions here yet.</ContentWrapper>
 }
