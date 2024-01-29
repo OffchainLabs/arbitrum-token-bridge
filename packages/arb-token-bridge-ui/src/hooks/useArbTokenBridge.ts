@@ -143,6 +143,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     provider: childChainProvider,
     walletAddress
   })
+  const updateEthBalances = async () => {
+    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+  }
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
@@ -890,8 +893,19 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     )
   }
 
-  const updateEthBalances = async () => {
-    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
+    const added: { [cacheKey: string]: boolean } = {}
+
+    events.forEach((event: L2ToL1EventResult) => {
+      const cacheKey = getExecutedMessagesCacheKey({
+        event,
+        l2ChainId: childChain.id
+      })
+
+      added[cacheKey] = true
+    })
+
+    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
   async function triggerOutboxToken({
@@ -984,21 +998,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     }
 
     return rec
-  }
-
-  function addToExecutedMessagesCache(events: L2ToL1EventResult[]) {
-    const added: { [cacheKey: string]: boolean } = {}
-
-    events.forEach((event: L2ToL1EventResult) => {
-      const cacheKey = getExecutedMessagesCacheKey({
-        event,
-        l2ChainId: childChain.id
-      })
-
-      added[cacheKey] = true
-    })
-
-    setExecutedMessagesCache({ ...executedMessagesCache, ...added })
   }
 
   return {
