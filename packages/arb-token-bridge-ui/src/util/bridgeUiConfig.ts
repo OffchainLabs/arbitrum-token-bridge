@@ -73,6 +73,7 @@ export function getBridgeUiConfigForChain(
           ...arbitrumBaseConfig.network,
           type: 'Rollup',
           name: 'Arbitrum One',
+          logo: '/images/ArbitrumOneLogo.svg',
           description:
             'Rollup protocol. Permissionless validation,  secured by operational fraud proofs.'
         }
