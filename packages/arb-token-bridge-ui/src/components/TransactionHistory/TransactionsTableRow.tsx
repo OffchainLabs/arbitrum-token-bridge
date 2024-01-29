@@ -185,8 +185,10 @@ export function TransactionsTableRow({
         className
       )}
     >
-      <div className="pr-3 align-middle">{txRelativeTime}</div>
-      <div className="flex items-center pr-3 align-middle">
+      <div className="flex h-full items-center pl-2 pr-3 align-middle">
+        {txRelativeTime}
+      </div>
+      <div className="flex h-full items-center pl-2 pr-3 align-middle">
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(sourceChainId)}/token/${tx.tokenAddress}`}
           disabled={!tx.tokenAddress}
@@ -199,7 +201,7 @@ export function TransactionsTableRow({
           </span>
         </TransactionsTableExternalLink>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex h-full items-center space-x-2 pl-2">
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(sourceChainId)}/address/${tx.sender}`}
         >
@@ -211,7 +213,7 @@ export function TransactionsTableRow({
           </span>
         </TransactionsTableExternalLink>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex h-full items-center space-x-2 pl-2">
         <TransactionsTableExternalLink
           href={`${getExplorerUrl(destinationChainId)}/address/${
             tx.destination ?? tx.sender
