@@ -335,6 +335,39 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     }
   }
 
+  const updateTokenData = useCallback(
+    async (l1Address: string) => {
+      updateUSDCBalances(l1Address)
+
+      if (typeof bridgeTokens === 'undefined') {
+        return
+      }
+      const l1AddressLowerCased = l1Address.toLowerCase()
+      const bridgeToken = bridgeTokens[l1AddressLowerCased]
+
+      if (!bridgeToken) {
+        return
+      }
+
+      const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
+      setBridgeTokens(oldBridgeTokens => {
+        return { ...oldBridgeTokens, ...newBridgeTokens }
+      })
+      const { l2Address } = bridgeToken
+      updateErc20L1Balance([l1AddressLowerCased])
+      if (l2Address) {
+        updateErc20L2Balance([l2Address])
+      }
+    },
+    [
+      bridgeTokens,
+      setBridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances
+    ]
+  )
+
   const approveToken = async ({
     erc20L1Address,
     l1Signer
@@ -856,39 +889,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       updateErc20L2Balance([l2Address])
     }
   }
-
-  const updateTokenData = useCallback(
-    async (l1Address: string) => {
-      updateUSDCBalances(l1Address)
-
-      if (typeof bridgeTokens === 'undefined') {
-        return
-      }
-      const l1AddressLowerCased = l1Address.toLowerCase()
-      const bridgeToken = bridgeTokens[l1AddressLowerCased]
-
-      if (!bridgeToken) {
-        return
-      }
-
-      const newBridgeTokens = { [l1AddressLowerCased]: bridgeToken }
-      setBridgeTokens(oldBridgeTokens => {
-        return { ...oldBridgeTokens, ...newBridgeTokens }
-      })
-      const { l2Address } = bridgeToken
-      updateErc20L1Balance([l1AddressLowerCased])
-      if (l2Address) {
-        updateErc20L2Balance([l2Address])
-      }
-    },
-    [
-      bridgeTokens,
-      setBridgeTokens,
-      updateErc20L1Balance,
-      updateErc20L2Balance,
-      updateUSDCBalances
-    ]
-  )
 
   const updateEthBalances = async () => {
     Promise.all([updateEthL1Balance(), updateEthL2Balance()])
