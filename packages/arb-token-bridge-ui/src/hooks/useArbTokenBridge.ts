@@ -143,9 +143,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     provider: childChainProvider,
     walletAddress
   })
-  const updateEthBalances = async () => {
+  const updateEthBalances = useCallback(async () => {
     Promise.all([updateEthL1Balance(), updateEthL2Balance()])
-  }
+  }, [updateEthL1Balance, updateEthL2Balance])
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
