@@ -566,6 +566,74 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     }
   }
 
+  async function addToken(erc20L1orL2Address: string) {
+    let l1Address: string
+    let l2Address: string | undefined
+
+    if (!walletAddress) {
+      return
+    }
+
+    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
+    const maybeL1Address = await getL1ERC20Address({
+      erc20L2Address: lowercasedErc20L1orL2Address,
+      l2Provider: childChainProvider
+    })
+
+    if (maybeL1Address) {
+      // looks like l2 address was provided
+      l1Address = maybeL1Address
+      l2Address = lowercasedErc20L1orL2Address
+    } else {
+      // looks like l1 address was provided
+      l1Address = lowercasedErc20L1orL2Address
+      l2Address = await getL2ERC20Address({
+        erc20L1Address: l1Address,
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
+      })
+    }
+
+    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+    const erc20Params = { address: l1Address, provider: parentChainProvider }
+
+    if (!(await isValidErc20(erc20Params))) {
+      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+    }
+
+    const { name, symbol, decimals } = await fetchErc20Data(erc20Params)
+
+    const isDisabled = await l1TokenIsDisabled({
+      erc20L1Address: l1Address,
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider
+    })
+
+    if (isDisabled) {
+      throw new TokenDisabledError('Token currently disabled')
+    }
+
+    const l1AddressLowerCased = l1Address.toLowerCase()
+    bridgeTokensToAdd[l1AddressLowerCased] = {
+      name,
+      type: TokenType.ERC20,
+      symbol,
+      address: l1AddressLowerCased,
+      l2Address: l2Address?.toLowerCase(),
+      decimals,
+      listIds: new Set()
+    }
+
+    setBridgeTokens(oldBridgeTokens => {
+      return { ...oldBridgeTokens, ...bridgeTokensToAdd }
+    })
+
+    updateErc20L1Balance([l1AddressLowerCased])
+    if (l2Address) {
+      updateErc20L2Balance([l2Address])
+    }
+  }
+
   const withdrawToken: ArbTokenBridgeToken['withdraw'] = async ({
     erc20L1Address,
     amount,
@@ -820,74 +888,6 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         addTokensFromList(tokenList!, bridgeTokenList.id)
       }
     )
-  }
-
-  async function addToken(erc20L1orL2Address: string) {
-    let l1Address: string
-    let l2Address: string | undefined
-
-    if (!walletAddress) {
-      return
-    }
-
-    const lowercasedErc20L1orL2Address = erc20L1orL2Address.toLowerCase()
-    const maybeL1Address = await getL1ERC20Address({
-      erc20L2Address: lowercasedErc20L1orL2Address,
-      l2Provider: childChainProvider
-    })
-
-    if (maybeL1Address) {
-      // looks like l2 address was provided
-      l1Address = maybeL1Address
-      l2Address = lowercasedErc20L1orL2Address
-    } else {
-      // looks like l1 address was provided
-      l1Address = lowercasedErc20L1orL2Address
-      l2Address = await getL2ERC20Address({
-        erc20L1Address: l1Address,
-        l1Provider: parentChainProvider,
-        l2Provider: childChainProvider
-      })
-    }
-
-    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    const erc20Params = { address: l1Address, provider: parentChainProvider }
-
-    if (!(await isValidErc20(erc20Params))) {
-      throw new Error(`${l1Address} is not a valid ERC-20 token`)
-    }
-
-    const { name, symbol, decimals } = await fetchErc20Data(erc20Params)
-
-    const isDisabled = await l1TokenIsDisabled({
-      erc20L1Address: l1Address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
-    })
-
-    if (isDisabled) {
-      throw new TokenDisabledError('Token currently disabled')
-    }
-
-    const l1AddressLowerCased = l1Address.toLowerCase()
-    bridgeTokensToAdd[l1AddressLowerCased] = {
-      name,
-      type: TokenType.ERC20,
-      symbol,
-      address: l1AddressLowerCased,
-      l2Address: l2Address?.toLowerCase(),
-      decimals,
-      listIds: new Set()
-    }
-
-    setBridgeTokens(oldBridgeTokens => {
-      return { ...oldBridgeTokens, ...bridgeTokensToAdd }
-    })
-
-    updateErc20L1Balance([l1AddressLowerCased])
-    if (l2Address) {
-      updateErc20L2Balance([l2Address])
-    }
   }
 
   const updateEthBalances = async () => {
