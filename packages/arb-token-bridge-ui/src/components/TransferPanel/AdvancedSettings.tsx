@@ -208,7 +208,7 @@ export const AdvancedSettings = () => {
       <button
         onClick={handleVisibility}
         className={twMerge(
-          'arb-hover flex flex-row items-center text-sm text-gray-dark',
+          'arb-hover flex flex-row items-center text-sm text-white',
           collapsible ? '' : 'pointer-events-none'
         )}
       >

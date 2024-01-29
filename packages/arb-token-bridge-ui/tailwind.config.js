@@ -27,13 +27,14 @@ module.exports = {
         'lime-dark': '#31572A',
 
         // NEUTRAL (GRAYS)
-        'gray-1': '#F4F4F4',
+        'gray-1': '#191919',
         'gray-2': '#E5E5E5',
         'gray-3': '#DADADA',
         'gray-5': '#AEAEAE',
         'gray-4': '#CCCCCC',
         'gray-6': '#999999',
         'gray-dark': '#6D6D6D',
+        'line-gray': '#F4F4F4',
         dark: '#1A1C1D', // (or default-black)
 
         // BRAND
@@ -41,7 +42,13 @@ module.exports = {
         'ocl-blue': '#243145'
       },
       fontFamily: {
-        serif: "'Space Grotesk', sans-serif"
+        unica77: ['var(--font-unica77)']
+      },
+      fontSize: {
+        xl: '1.375rem'
+      },
+      lineHeight: {
+        'extra-tight': '1.15'
       },
       maxWidth: {
         2: '0.5rem',
@@ -49,10 +56,14 @@ module.exports = {
         6: '1.5rem',
         8: '2rem'
       },
+      borderRadius: {
+        DEFAULT: '5px'
+      },
       boxShadow: {
         // shadow used for input fields across the app
         input:
-          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)'
+          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)',
+        2: '0px 0px 1px 0px rgba(33, 37, 41, 0.08), 0px 2px 2px 0px rgba(33, 37, 41, 0.06)'
       }
     }
   }
