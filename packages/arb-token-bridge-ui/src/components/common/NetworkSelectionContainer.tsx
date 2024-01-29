@@ -281,12 +281,13 @@ function NetworksPanel({
     [close, networkRowsWithChainInfoRows, onNetworkRowClick]
   )
 
-  const onSearchInputChange = function (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
-    setErrorMessage('')
-    setNetworkSearched(event.target.value)
-  }
+  const onSearchInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setErrorMessage('')
+      setNetworkSearched(event.target.value)
+    },
+    []
+  )
 
   return (
     <div className="flex flex-col gap-4">
@@ -391,7 +392,6 @@ export const NetworkSelectionContainer = ({
                   secondPageTitle="Networks"
                   isLoading={false}
                   loadingMessage="Fetching Networks..."
-                  bottomRightCtaText=""
                 >
                   <NetworksPanel
                     chainIds={finalChainIds}

@@ -380,10 +380,13 @@ function TokensPanel({
     }
   }
 
-  function onSearchInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setErrorMessage('')
-    setNewToken(event.target.value)
-  }
+  const onSearchInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setErrorMessage('')
+      setNewToken(event.target.value)
+    },
+    []
+  )
 
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {

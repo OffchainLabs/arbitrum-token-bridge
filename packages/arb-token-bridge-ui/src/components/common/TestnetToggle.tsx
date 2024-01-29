@@ -33,13 +33,13 @@ export const TestnetToggle = ({
     setTimeout(() => {
       // this is to ensure it's done after setNetworks
       // or else it wouldn't work
-      setIsTestnetMode(!isTestnetMode)
+      setIsTestnetMode(prevIsTestnetMode => !prevIsTestnetMode)
     }, 0)
-  }, [isSourceChainTestnet, isTestnetMode, setIsTestnetMode, setNetworks])
+  }, [isSourceChainTestnet, setIsTestnetMode, setNetworks])
 
   return (
     <div
-      className={twMerge(!isTestnetMode && 'opacity-40', className?.wrapper)}
+      className={twMerge(!isTestnetMode && 'opacity-60', className?.wrapper)}
     >
       <Switch
         className={className?.switch}

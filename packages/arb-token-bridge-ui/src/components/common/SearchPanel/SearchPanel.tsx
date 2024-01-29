@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren, useCallback, useState } from 'react'
 import { ArrowSmallLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Loader } from '../atoms/Loader'
 
@@ -79,13 +79,13 @@ export function SearchPanel({
 }>) {
   const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
 
-  function showMainPanel() {
+  const showMainPanel = useCallback(() => {
     setCurrentPanel(Panel.MAIN)
-  }
+  }, [])
 
-  function bottomRightCtaOnClick() {
+  const bottomRightCtaOnClick = useCallback(() => {
     setCurrentPanel(Panel.LISTS)
-  }
+  }, [])
 
   if (currentPanel === Panel.MAIN) {
     return (
