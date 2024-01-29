@@ -121,7 +121,15 @@ export function TransferPanel() {
   const {
     app: { connectionState, selectedToken, warningTokens }
   } = useAppState()
-  const { eth, token } = useArbTokenBridge()
+  const {
+    eth: { withdraw: ethWithdraw, deposit: ethDeposit },
+    token: {
+      withdraw: erc20Withdraw,
+      deposit: erc20Deposit,
+      approve: erc20Approve,
+      approveL2: erc20ApproveL2
+    }
+  } = useArbTokenBridge()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
@@ -154,8 +162,16 @@ export function TransferPanel() {
 
   const { isArbitrumNova } = isNetwork(childChain.id)
 
-  const latestEth = useLatest(eth)
-  const latestToken = useLatest(token)
+  const latestEth = useLatest({
+    withdraw: ethWithdraw,
+    deposit: ethDeposit
+  })
+  const latestToken = useLatest({
+    withdraw: erc20Withdraw,
+    deposit: erc20Deposit,
+    approve: erc20Approve,
+    approveL2: erc20ApproveL2
+  })
 
   const isConnectedToArbitrum = useLatest(useIsConnectedToArbitrum())
   const isConnectedToOrbitChain = useLatest(useIsConnectedToOrbitChain())
@@ -767,8 +783,7 @@ export function TransferPanel() {
           while (
             (isConnectedToArbitrum.current && isParentChainEthereum) ||
             isConnectedToOrbitChain.current ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
+            !latestEth.current
           ) {
             await new Promise(r => setTimeout(r, 100))
           }
@@ -944,8 +959,7 @@ export function TransferPanel() {
             (!isConnectedToArbitrum.current &&
               !isConnectedToOrbitChain.current) ||
             (isConnectedToArbitrum.current && isOrbitChain) ||
-            !latestEth.current ||
-            !arbTokenBridgeLoaded
+            !latestEth.current
           ) {
             await new Promise(r => setTimeout(r, 100))
           }

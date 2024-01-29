@@ -9,14 +9,14 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useBridgeTokensStore } from '../../hooks/useArbTokenBridge'
 
 export function TokenButton(): JSX.Element {
   const {
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { bridgeTokens } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
 

@@ -8,7 +8,7 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { TokenListWithId } from '../../util/TokenListUtils'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useNetworks } from '../../hooks/useNetworks'
-import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useBridgeTokensStore } from '../../hooks/useArbTokenBridge'
 
 export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
   const [networks] = useNetworks()
@@ -25,7 +25,7 @@ export function useTokensFromLists(): ContractStorage<ERC20BridgeToken> {
 }
 
 export function useTokensFromUser(): ContractStorage<ERC20BridgeToken> {
-  const { bridgeTokens } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
 
   return useMemo(() => {
     const storage: ContractStorage<ERC20BridgeToken> = {}

@@ -32,7 +32,7 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useBridgeTokensStore } from '../../hooks/useArbTokenBridge'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -82,7 +82,7 @@ export function TokenRow({
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const { bridgeTokens } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {

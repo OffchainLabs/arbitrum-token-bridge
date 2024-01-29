@@ -156,7 +156,10 @@ function TokensPanel({
   onTokenSelected: (token: ERC20BridgeToken | null) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const { token, bridgeTokens } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
+  const {
+    token: { addL2NativeToken, add: addToken }
+  } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -345,7 +348,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as an L2-native token
-      token.addL2NativeToken(newToken)
+      addL2NativeToken(newToken)
       isSuccessful = true
     } catch (error) {
       //
@@ -353,7 +356,7 @@ function TokensPanel({
 
     try {
       // Try to add the token as a regular bridged token
-      await token.add(newToken)
+      await addToken(newToken)
       isSuccessful = true
     } catch (ex: any) {
       if (ex.name === 'TokenDisabledError') {
@@ -471,7 +474,10 @@ function TokensPanel({
 
 export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
-  const { token, bridgeTokens } = useArbTokenBridge()
+  const { bridgeTokens } = useBridgeTokensStore()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
   const {
     app: { setSelectedToken }
   } = useActions()
@@ -543,7 +549,7 @@ export function TokenSearch({ close }: { close: () => void }) {
       })
 
       if (data) {
-        token.updateTokenData(_token.address)
+        updateTokenData(_token.address)
         setSelectedToken({
           ...erc20DataToErc20BridgeToken(data),
           l2Address: _token.l2Address

@@ -5,7 +5,6 @@ import {
 } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 
-import { useAppState } from '../state'
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
 import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
@@ -15,7 +14,7 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { AssetType } from './arbTokenBridge.types'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
-import { useArbTokenBridge } from './useArbTokenBridge'
+import useTransactions from './useTransactions'
 
 export type UseRedeemRetryableResult = {
   redeem: (tx: MergedTransaction) => void
@@ -23,7 +22,7 @@ export type UseRedeemRetryableResult = {
 }
 
 export function useRedeemRetryable(): UseRedeemRetryableResult {
-  const arbTokenBridge = useArbTokenBridge()
+  const [, { fetchAndUpdateL1ToL2MsgStatus }] = useTransactions()
   const [networks] = useNetworks()
   const { childChain, parentChainProvider } = useNetworksRelationship(networks)
   const { data: signer } = useSigner()
@@ -79,7 +78,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
     }
 
     // update in store
-    arbTokenBridge.transactions.fetchAndUpdateL1ToL2MsgStatus(
+    fetchAndUpdateL1ToL2MsgStatus(
       tx.txId,
       retryableTicket,
       tx.assetType === AssetType.ETH,

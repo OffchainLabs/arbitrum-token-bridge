@@ -2,7 +2,6 @@ import { useState } from 'react'
 import * as Sentry from '@sentry/react'
 import { useAccount, useSigner } from 'wagmi'
 
-import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -25,7 +24,10 @@ export type UseClaimWithdrawalResult = {
 }
 
 export function useClaimWithdrawal(): UseClaimWithdrawalResult {
-  const arbTokenBridge = useArbTokenBridge()
+  const {
+    eth: { triggerOutbox: ethTriggerOutbox },
+    token: { triggerOutbox: erc20TriggerOutbox }
+  } = useArbTokenBridge()
   const { address } = useAccount()
   const { data: signer } = useSigner()
   const { updatePendingTransaction } = useTransactionHistory(address)
@@ -84,12 +86,12 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
         throw 'Signer is undefined'
       }
       if (tx.assetType === AssetType.ETH) {
-        res = await arbTokenBridge.eth.triggerOutbox({
+        res = await ethTriggerOutbox({
           event: extendedEvent,
           l1Signer: signer
         })
       } else {
-        res = await arbTokenBridge.token.triggerOutbox({
+        res = await erc20TriggerOutbox({
           event: extendedEvent,
           l1Signer: signer
         })

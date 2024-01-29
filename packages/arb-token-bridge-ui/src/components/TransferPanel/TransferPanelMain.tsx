@@ -363,7 +363,9 @@ export function TransferPanelMain({
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
   const { selectedToken } = app
-  const { token } = useArbTokenBridge()
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -737,11 +739,6 @@ export function TransferPanelMain({
       return
     }
 
-    // When switching network, token might be undefined
-    if (!token) {
-      return
-    }
-
     const commonUSDC = {
       name: 'USD Coin',
       type: TokenType.ERC20,
@@ -750,21 +747,21 @@ export function TransferPanelMain({
       listIds: new Set<number>()
     }
     if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Ethereum.USDC)
+      updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
         address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
     } else if (isArbSepoliaUSDC) {
-      token.updateTokenData(CommonAddress.Sepolia.USDC)
+      updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
         ...commonUSDC,
         address: CommonAddress.Sepolia.USDC,
         l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
       })
     }
-  }, [actions.app, isDepositMode, selectedToken, token])
+  }, [actions.app, isDepositMode, selectedToken, updateTokenData])
 
   type NetworkListboxesProps = {
     from: Omit<NetworkListboxProps, 'label'>

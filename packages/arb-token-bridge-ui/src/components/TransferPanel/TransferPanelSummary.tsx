@@ -4,7 +4,6 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
 
 import { Tooltip } from '../common/Tooltip'
-import { useAppState } from '../../state'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
@@ -22,7 +21,6 @@ import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 export type GasEstimationStatus =
   | 'idle'
@@ -64,7 +62,6 @@ export function useGasSummary(
   token: TransferPanelSummaryToken | null,
   shouldRunGasEstimation: boolean
 ): UseGasSummaryResult {
-  const arbTokenBridge = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -213,9 +210,7 @@ export function useGasSummary(
       }
     }
 
-    if (arbTokenBridge && arbTokenBridge.eth && arbTokenBridge.token) {
-      estimateGas()
-    }
+    estimateGas()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     // Re-run gas estimation when:
