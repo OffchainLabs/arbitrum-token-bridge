@@ -86,6 +86,7 @@ describe('Withdraw ERC20 Token', () => {
         cy.findByRole('button', {
           name: /Move funds to Ethereum/i
         })
+          .scrollIntoView()
           .should('be.visible')
           .should('be.enabled')
           .click()
