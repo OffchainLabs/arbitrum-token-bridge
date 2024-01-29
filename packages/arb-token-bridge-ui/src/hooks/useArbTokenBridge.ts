@@ -13,6 +13,7 @@ import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 import dayjs from 'dayjs'
+import { create } from 'zustand'
 
 import useTransactions from './useTransactions'
 import {
@@ -101,6 +102,20 @@ export interface TokenBridgeParams {
   l1: { provider: JsonRpcProvider; network: Chain }
   l2: { provider: JsonRpcProvider; network: Chain }
 }
+
+type BridgeTokens = ContractStorage<ERC20BridgeToken> | undefined
+type BridgeTokensStore = {
+  bridgeTokens: BridgeTokens
+  setBridgeTokens: (
+    fn: (prevBridgeTokens: BridgeTokens) => BridgeTokens
+  ) => void
+}
+export const useBridgeTokensStore = create<BridgeTokensStore>(set => ({
+  bridgeTokens: undefined,
+  setBridgeTokens: fn => {
+    set(state => ({ bridgeTokens: fn(state.bridgeTokens) }))
+  }
+}))
 
 export const useArbTokenBridge = (
   params: TokenBridgeParams
