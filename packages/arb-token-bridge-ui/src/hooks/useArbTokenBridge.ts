@@ -51,6 +51,7 @@ import {
 } from '../components/TransactionHistory/helpers'
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
+import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -778,6 +779,16 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     })
   }
 
+  const addBridgeTokenListToBridge = (bridgeTokenList: BridgeTokenList) => {
+    fetchTokenListFromURL(bridgeTokenList.url).then(
+      ({ isValid, data: tokenList }) => {
+        if (!isValid) return
+
+        addTokensFromList(tokenList!, bridgeTokenList.id)
+      }
+    )
+  }
+
   async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
     let l2Address: string | undefined
@@ -1001,6 +1012,7 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       add: addToken,
       addL2NativeToken,
       addTokensFromList,
+      addBridgeTokenListToBridge,
       removeTokensFromList,
       updateTokenData,
       approve: approveToken,
