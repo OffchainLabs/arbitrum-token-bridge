@@ -1120,31 +1120,62 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     [addToExecutedMessagesCache, walletAddress]
   )
 
-  return {
-    bridgeTokens,
-    eth: {
+  const ethFunctions = useMemo(
+    () => ({
       deposit: depositEth,
       withdraw: withdrawEth,
       triggerOutbox: triggerOutboxEth
-    },
-    token: {
+    }),
+    [depositEth, triggerOutboxEth, withdrawEth]
+  )
+  const tokenFunctions = useMemo(
+    () => ({
       add: addToken,
       addL2NativeToken,
       addTokensFromList,
-      addBridgeTokenListToBridge,
       removeTokensFromList,
+      addBridgeTokenListToBridge,
       updateTokenData,
       approve: approveToken,
       approveL2: approveTokenL2,
       deposit: depositToken,
       withdraw: withdrawToken,
       triggerOutbox: triggerOutboxToken
-    },
-    transactions: {
+    }),
+    [
+      addBridgeTokenListToBridge,
+      addL2NativeToken,
+      addToken,
+      addTokensFromList,
+      approveToken,
+      approveTokenL2,
+      depositToken,
+      removeTokensFromList,
+      triggerOutboxToken,
+      updateTokenData,
+      withdrawToken
+    ]
+  )
+
+  const transactionsFunctions = useMemo(
+    () => ({
       transactions,
       updateTransaction,
       addTransaction,
       fetchAndUpdateL1ToL2MsgStatus
-    }
+    }),
+    [
+      addTransaction,
+      fetchAndUpdateL1ToL2MsgStatus,
+      transactions,
+      updateTransaction
+    ]
+  )
+
+  return {
+    bridgeTokens,
+    eth: ethFunctions,
+    token: tokenFunctions,
+    transactions: transactionsFunctions
   }
 }
