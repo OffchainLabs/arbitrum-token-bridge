@@ -54,6 +54,7 @@ import {
 } from '../util/SubgraphUtils'
 import {
   FilterType,
+  FiltersStorage,
   useTransactionHistoryFilters
 } from './useTransactionHistoryFilters'
 import { getOrbitChains } from '../util/orbitChainsList'
@@ -247,6 +248,27 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.txHash
   }
   return tx.l2TxHash ?? tx.transactionHash
+}
+
+function isTxMatchingFilter({
+  filters,
+  tx
+}: {
+  filters: FiltersStorage
+  tx: Transfer
+}) {
+  if (!filters.hidden_source_chains.includes(getSourceChainIdFromRawTx(tx))) {
+    return true
+  }
+  if (
+    !filters.hidden_destination_chains.includes(
+      getDestinationChainIdFromRawTx(tx)
+    )
+  ) {
+    return true
+  }
+
+  return false
 }
 
 /**
@@ -490,52 +512,9 @@ export const useTransactionHistory = (
     failedChainPairs
   } = useTransactionHistoryWithoutStatuses(address)
 
-  const filteredTxsWithoutStatuses = useMemo(() => {
-    // TODO: filter util instead of repeating it all the time
-    return data.filter(tx => {
-      return (
-        !filters.hidden_source_chains.includes(getSourceChainIdFromRawTx(tx)) ||
-        !filters.hidden_destination_chains.includes(
-          getDestinationChainIdFromRawTx(tx)
-        )
-      )
-    })
-  }, [data, filters])
-
-  const getCacheKey = useCallback(
-    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
-      if (prevPageTxs) {
-        if (prevPageTxs.length === 0) {
-          // THIS is the last page
-          return null
-        }
-      }
-
-      return address &&
-        !isLoadingTxsWithoutStatus &&
-        !isLoadingAccountType &&
-        filters
-        ? ([
-            'complete_tx_list',
-            address,
-            pageNumber,
-            filteredTxsWithoutStatuses,
-            filters
-          ] as const)
-        : null
-    },
-    [
-      address,
-      isLoadingTxsWithoutStatus,
-      filteredTxsWithoutStatuses,
-      isLoadingAccountType,
-      filters
-    ]
-  )
-
   const depositsFromCache = useMemo(() => {
     if (isLoadingAccountType || !chain) {
-      return []
+      return undefined
     }
     return getDepositsWithoutStatusesFromCache(address)
       .filter(tx =>
@@ -570,17 +549,20 @@ export const useTransactionHistory = (
     chain
   ])
 
+  const filteredTxsWithoutStatuses = useMemo(() => {
+    const dataWithCache = [...data, ...(depositsFromCache || [])]
+    return dataWithCache.filter(tx => isTxMatchingFilter({ filters, tx }))
+  }, [data, depositsFromCache, filters])
+
   const chainIdsWithAtLeastOneTx = useMemo(() => {
-    if (isLoadingTxsWithoutStatus) {
+    if (isLoadingTxsWithoutStatus || typeof depositsFromCache === 'undefined') {
       return {
         source: [],
         destination: []
       }
     }
 
-    const dataWithCache = [...data, ...depositsFromCache]
-
-    return dataWithCache.reduce(
+    return [...data, ...depositsFromCache].reduce(
       (acc, tx) => {
         const sourceChainId = getSourceChainIdFromRawTx(tx)
         const destinationChainId = getDestinationChainIdFromRawTx(tx)
@@ -600,7 +582,40 @@ export const useTransactionHistory = (
         destination: [] as ChainId[]
       }
     )
-  }, [data, isLoadingTxsWithoutStatus, depositsFromCache])
+  }, [isLoadingTxsWithoutStatus, data, depositsFromCache])
+
+  const getCacheKey = useCallback(
+    (pageNumber: number, prevPageTxs: MergedTransaction[]) => {
+      if (prevPageTxs) {
+        if (prevPageTxs.length === 0) {
+          // THIS is the last page
+          return null
+        }
+      }
+
+      return address &&
+        !isLoadingTxsWithoutStatus &&
+        !isLoadingAccountType &&
+        typeof depositsFromCache !== 'undefined' &&
+        filters
+        ? ([
+            'complete_tx_list',
+            address,
+            pageNumber,
+            filteredTxsWithoutStatuses,
+            filters
+          ] as const)
+        : null
+    },
+    [
+      address,
+      isLoadingTxsWithoutStatus,
+      filteredTxsWithoutStatuses,
+      isLoadingAccountType,
+      depositsFromCache,
+      filters
+    ]
+  )
 
   const isFilterApplied: { [key in FilterType]: boolean } = useMemo(() => {
     return {
@@ -627,23 +642,12 @@ export const useTransactionHistory = (
     ([, , _page, _data, _filters]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
-      const filteredDepositsFromCache = depositsFromCache.filter(
-        tx =>
-          !_filters.hidden_source_chains.includes(
-            getSourceChainIdFromRawTx(tx)
-          ) ||
-          !_filters.hidden_destination_chains.includes(
-            getDestinationChainIdFromRawTx(tx)
-          )
-      )
-
-      const dataWithCache = [..._data, ...filteredDepositsFromCache]
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
       const dedupedTransactions = Array.from(
         new Map(
-          dataWithCache.map(tx => [
+          _data.map(tx => [
             `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
               tx
             )?.toLowerCase()}}`,
@@ -895,7 +899,11 @@ export const useTransactionHistory = (
     setPage(prevPage => prevPage + 1)
   }
 
-  if (isLoadingTxsWithoutStatus || error) {
+  if (
+    filteredTxsWithoutStatuses.length === 0 ||
+    isLoadingTxsWithoutStatus ||
+    error
+  ) {
     return {
       transactions: [],
       loading: isLoadingTxsWithoutStatus,
