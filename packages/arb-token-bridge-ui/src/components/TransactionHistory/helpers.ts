@@ -14,7 +14,13 @@ import {
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  ChainId,
+  getBlockTime,
+  getNetworkName,
+  isNetwork,
+  rpcURLs
+} from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
@@ -131,6 +137,34 @@ export function isSameTransaction(
     txDetails_1.parentChainId === txDetails_2.parentChainId &&
     txDetails_1.childChainId === txDetails_2.childChainId
   )
+}
+
+/**
+ * Sorts an array of chain IDs, prioritizing layer (from L1 to Orbit), and then testnet/mainnet.
+ */
+export function sortChainIds(aChainId: number, bChainId: number): number {
+  function getPriority(chainId: ChainId): number {
+    const { isEthereumMainnetOrTestnet, isArbitrum, isOrbitChain, isTestnet } =
+      isNetwork(chainId)
+
+    if (chainId === ChainId.Ethereum) return 1
+    if (chainId === ChainId.ArbitrumOne) return 2
+    if (chainId === ChainId.ArbitrumNova) return 3
+    if (isOrbitChain && !isTestnet) return 4
+    if (isEthereumMainnetOrTestnet) return 5
+    if (isArbitrum) return 6
+    return 7
+  }
+
+  const priorityDifference = getPriority(aChainId) - getPriority(bChainId)
+
+  // If priorities are different, return the difference
+  if (priorityDifference !== 0) {
+    return priorityDifference
+  }
+
+  // If priorities are the same, sort alphabetically
+  return getNetworkName(aChainId).localeCompare(getNetworkName(bChainId))
 }
 
 export function getTxReceipt(tx: MergedTransaction) {

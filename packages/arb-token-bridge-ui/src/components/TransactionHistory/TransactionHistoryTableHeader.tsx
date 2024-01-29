@@ -32,7 +32,7 @@ export const TransactionHistoryTableHeader = ({
   return (
     <Popover>
       {({ close }) => (
-        <div className="pt-4">
+        <div className="mb-[1px] pt-4">
           <Popover.Button
             disabled={!filterable}
             className={twMerge(

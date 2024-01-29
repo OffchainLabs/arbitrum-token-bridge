@@ -10,6 +10,7 @@ import {
   useTransactionHistoryFilters
 } from '../../hooks/useTransactionHistoryFilters'
 import { Button } from '../common/Button'
+import { sortChainIds } from './helpers'
 
 export const TransactionHistoryChainFilter = ({
   type,
@@ -73,7 +74,7 @@ export const TransactionHistoryChainFilter = ({
   return (
     <div className="mt-1 rounded border border-white/20 bg-dark shadow shadow-white">
       <div className="max-h-[285px] overflow-y-auto">
-        {filterableChainIds.map(chainId => (
+        {filterableChainIds.sort(sortChainIds).map(chainId => (
           <div className="flex items-center p-4" key={chainId}>
             <Checkbox
               label={
@@ -88,7 +89,7 @@ export const TransactionHistoryChainFilter = ({
           </div>
         ))}
       </div>
-      <div className="p-2">
+      <div className="p-2 pt-1">
         <Button
           variant="secondary"
           className="w-full rounded border border-white p-2 text-xs text-white"
