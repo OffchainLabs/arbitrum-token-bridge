@@ -66,16 +66,21 @@ export const fetchDeposits = async ({
     toBlock = latestL1BlockNumber
   }
 
-  const depositsFromSubgraph = await fetchDepositsFromSubgraph({
-    sender,
-    receiver,
-    fromBlock,
-    toBlock,
-    l2ChainId,
-    pageSize,
-    pageNumber,
-    searchString
-  })
+  let depositsFromSubgraph: FetchDepositsFromSubgraphResult[] = []
+  try {
+    depositsFromSubgraph = await fetchDepositsFromSubgraph({
+      sender,
+      receiver,
+      fromBlock,
+      toBlock,
+      l2ChainId,
+      pageSize,
+      pageNumber,
+      searchString
+    })
+  } catch (error: any) {
+    console.log('Error fetching deposits from subgraph', error)
+  }
 
   const mappedDepositsFromSubgraph: Transaction[] = depositsFromSubgraph.map(
     (tx: FetchDepositsFromSubgraphResult) => {
