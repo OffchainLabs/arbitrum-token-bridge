@@ -204,7 +204,7 @@ function NetworkContainer({
         )}
       >
         <div
-          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          className="absolute left-0 top-0 z-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
           style={{ backgroundImage }}
         />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
