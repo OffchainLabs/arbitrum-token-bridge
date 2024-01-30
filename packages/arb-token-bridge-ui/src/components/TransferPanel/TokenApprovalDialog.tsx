@@ -178,19 +178,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }
 
   const displayAllowanceWarning = allowance && !allowance.isZero()
-  const noteMessage = (() => {
-    const sourceNetworkName = getNetworkName(networks.sourceChain.id)
-    const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
-    if (isDepositMode) {
-      return isCctp
-        ? `the CCTP ${destinationNetworkName} deposit fee.`
-        : `the standard ${destinationNetworkName} deposit fee.`
-    }
-    return isCctp
-      ? `the CCTP ${sourceNetworkName} deposit fee.`
-      : `the standard ${sourceNetworkName} deposit fee.`
-  })()
+  const sourceNetworkName = getNetworkName(networks.sourceChain.id)
+  const destinationNetworkName = getNetworkName(networks.destinationChain.id)
+
+  const noteMessage = isCctp
+    ? `the CCTP ${destinationNetworkName} deposit fee.`
+    : `the standard ${destinationNetworkName} deposit fee.`
 
   return (
     <Dialog
