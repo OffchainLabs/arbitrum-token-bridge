@@ -7,7 +7,7 @@ import { useSigner } from 'wagmi'
 
 import { MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
-import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
+import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
@@ -72,9 +72,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       setIsRedeeming(false)
 
       // track in analytics
-      if (shouldTrackAnalytics(l2NetworkName)) {
-        trackEvent('Redeem Retryable', { network: l2NetworkName })
-      }
+      trackEvent('Redeem Retryable', { network: l2NetworkName })
     }
 
     // update in store

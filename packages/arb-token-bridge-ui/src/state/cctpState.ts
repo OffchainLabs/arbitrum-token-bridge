@@ -24,7 +24,7 @@ import {
   Response
 } from '../pages/api/cctp/[type]'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
+import { trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
@@ -551,17 +551,15 @@ export function useClaimCctp(tx: MergedTransaction) {
       const currentNetworkName = getNetworkName(targetChainId)
       const { isEthereumMainnetOrTestnet } = isNetwork(targetChainId)
 
-      if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(
-          isEthereumMainnetOrTestnet ? 'CCTP Withdrawal' : 'CCTP Deposit',
-          {
-            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-            network: currentNetworkName,
-            amount: Number(tx.value),
-            complete: true
-          }
-        )
-      }
+      trackEvent(
+        isEthereumMainnetOrTestnet ? 'CCTP Withdrawal' : 'CCTP Deposit',
+        {
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(tx.value),
+          complete: true
+        }
+      )
 
       if (receiveReceiptTx.status === 0) {
         throw new Error('Transaction failed')
