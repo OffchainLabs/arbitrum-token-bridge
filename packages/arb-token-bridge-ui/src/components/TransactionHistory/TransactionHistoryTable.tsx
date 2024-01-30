@@ -12,6 +12,7 @@ import {
   ArrowDownOnSquareIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
 
 import { MergedTransaction } from '../../state/app/state'
 import {
@@ -258,15 +259,24 @@ export const TransactionHistoryTable = ({
               }
 
               const isLastRow = index + 1 === transactions.length
-
               const key = `${tx.parentChainId}-${tx.childChainId}-${tx.txId}`
+              const secondsPassed = dayjs().diff(dayjs(tx.createdAt), 'second')
+
+              // only blink the topmost tx, in case many txs are queued in a short amount of time
+              const isTopmostPendingTx =
+                transactions.filter(isTxPending)[0]?.txId === tx.txId
 
               return (
                 <div key={key} style={style}>
                   <TransactionsTableRow
                     tx={tx}
+                    className={twMerge(
+                      isLastRow && 'border-b-0',
+                      isTopmostPendingTx &&
+                        secondsPassed <= 30 &&
+                        'animate-blink bg-highlight'
+                    )}
                     address={address}
-                    className={isLastRow ? 'border-b-0' : ''}
                   />
                 </div>
               )
