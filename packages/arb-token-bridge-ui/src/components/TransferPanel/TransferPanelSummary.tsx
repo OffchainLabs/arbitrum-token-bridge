@@ -424,11 +424,9 @@ export function TransferPanelSummary({
           <div className="flex flex-row justify-between">
             <div className="flex flex-row items-center space-x-2">
               <span className="pl-4 font-light">
-                {getNetworkName(networks.sourceChain.id)} gas
+                {getNetworkName(parentChain.id)} gas
               </span>
-              <Tooltip
-                content={getDepositGasFeeTooltip(networks.sourceChain.id)}
-              >
+              <Tooltip content={getDepositGasFeeTooltip(parentChain.id)}>
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
@@ -449,11 +447,9 @@ export function TransferPanelSummary({
           <div className="flex flex-row justify-between text-gray-dark">
             <div className="flex flex-row items-center space-x-2">
               <span className="pl-4 font-light ">
-                {getNetworkName(networks.destinationChain.id)} gas
+                {getNetworkName(childChain.id)} gas
               </span>
-              <Tooltip
-                content={getDepositGasFeeTooltip(networks.destinationChain.id)}
-              >
+              <Tooltip content={getDepositGasFeeTooltip(childChain.id)}>
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>
