@@ -62,7 +62,7 @@ describe('Redeem ERC20 Deposit', () => {
                   .click()
 
                 cy.confirmMetamaskTransaction().then(() => {
-                  cy.wait(30_000).then(() => {
+                  cy.wait(15_000).then(() => {
                     // switch to settled transactions
                     cy.findByLabelText('show settled transactions')
                       .should('be.visible')
