@@ -439,6 +439,7 @@ function TokensPanel({
                   return (
                     <TokenRow
                       key="TokenRowNativeCurrency"
+                      style={virtualizedProps.style}
                       onClick={() => onTokenSelected(null)}
                       token={null}
                     />
