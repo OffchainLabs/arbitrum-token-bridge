@@ -180,10 +180,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const displayAllowanceWarning = allowance && !allowance.isZero()
   const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
-  const noteMessage = isCctp
-    ? `the CCTP ${destinationNetworkName} deposit fee.`
-    : `the standard ${destinationNetworkName} deposit fee.`
-
   return (
     <Dialog
       {...props}
@@ -269,7 +265,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
             <span className="text-sm font-light text-cyan-dark">
               After approval, you&apos;ll see a second prompt in your wallet for{' '}
-              {noteMessage}{' '}
+              the {isCctp ? 'cctp' : 'standard'} {destinationNetworkName}{' '}
+              {isDepositMode ? 'deposit' : 'withdrawal'} fee.
               <ExternalLink
                 href={TOKEN_APPROVAL_ARTICLE_LINK}
                 className="underline"
