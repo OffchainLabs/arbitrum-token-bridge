@@ -70,6 +70,8 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { RetryableFailer } from '../../util/RetryableFailer'
+import { isCypressEnvironment } from '../../util/CommonUtils'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -1313,6 +1315,8 @@ export function TransferPanel() {
           </Tippy>
         )}
       </div>
+
+      {isCypressEnvironment && <RetryableFailer />}
     </>
   )
 }

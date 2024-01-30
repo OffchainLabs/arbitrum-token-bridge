@@ -7,7 +7,8 @@ import {
   getInitialERC20Balance,
   getL1NetworkConfig,
   zeroToLessThanOneETH,
-  wethTokenAddressL1
+  wethTokenAddressL1,
+  getL2NetworkConfig
 } from '../../support/common'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
@@ -266,6 +267,57 @@ describe('Deposit ERC20 Token', () => {
           .contains('BALANCE: ')
           .siblings()
           .contains('WETH')
+      })
+    })
+
+    it('should redeem failed retryable successfully', () => {
+      cy.login({ networkType: 'L1' })
+      cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
+      cy.findByRole('button', { name: /Fail Retryable/i })
+        .should('be.visible')
+        .click()
+
+      cy.confirmMetamaskTransaction().then(() => {
+        // open transaction history and wait for deposit to fail
+        cy.openTransactionsPanel()
+        cy.wait(30_000).then(() => {
+          // change metamask network so that the retry button activates
+          cy.changeMetamaskNetwork(getL2NetworkConfig().networkName).then(
+            () => {
+              // find the Retry button and the amount in the row
+              cy.findByText(
+                `${formatAmount(0.00001, {
+                  symbol: 'WETH'
+                })}`
+              )
+                .should('be.visible')
+                .parent()
+                .parent()
+                .siblings()
+                .last()
+                .contains(/Retry/i)
+                .should('be.visible')
+                .should('not.be.disabled')
+                .click()
+
+              cy.confirmMetamaskTransaction().then(() => {
+                cy.wait(30_000).then(() => {
+                  // switch to settled transactions
+                  cy.findByLabelText('show settled transactions')
+                    .should('be.visible')
+                    .click()
+
+                  // find the same transaction there redeemed successfully
+                  cy.findByText(
+                    `${formatAmount(0.00001, {
+                      symbol: 'WETH'
+                    })}`
+                  )
+                })
+              })
+            }
+          )
+        })
       })
     })
 
