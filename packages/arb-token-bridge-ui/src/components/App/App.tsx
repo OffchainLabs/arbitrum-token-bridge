@@ -175,6 +175,10 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     ).isEthereumMainnetOrTestnet
 
     actions.app.reset(networks.sourceChain.id)
+    actions.app.setChainIds({
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id
+    })
 
     if (
       (isParentChainEthereum && isConnectedToArbitrum) ||
@@ -190,13 +194,9 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     isConnected,
     address,
     networks.sourceChain.id,
-    parentChain.id,
-    childChain.id,
-    parentChain,
-    childChain,
-    parentChainProvider,
-    childChainProvider,
-    actions.app
+    networks.destinationChain.id,
+    actions.app,
+    parentChain.id
   ])
 
   useEffect(() => {

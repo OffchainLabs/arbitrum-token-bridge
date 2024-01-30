@@ -82,15 +82,15 @@ export type AppState = {
   connectionState: number
   selectedToken: ERC20BridgeToken | null
   verifying: WhiteListState
-  l1NetworkChainId: number | null
-  l2NetworkChainId: number | null
+  sourceChainId: number | null
+  destinationChainId: number | null
 }
 
-export const defaultState: AppState = {
+const defaultState: AppState = {
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  l1NetworkChainId: null,
-  l2NetworkChainId: null,
+  sourceChainId: null,
+  destinationChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null
 }

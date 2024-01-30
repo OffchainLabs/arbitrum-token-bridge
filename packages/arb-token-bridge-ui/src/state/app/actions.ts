@@ -12,10 +12,10 @@ export const setConnectionState = (
 
 export const setChainIds = (
   { state }: Context,
-  payload: { l1NetworkChainId: number; l2NetworkChainId: number }
+  payload: { sourceChainId: number; destinationChainId: number }
 ) => {
-  state.app.l1NetworkChainId = payload.l1NetworkChainId
-  state.app.l2NetworkChainId = payload.l2NetworkChainId
+  state.app.sourceChainId = payload.sourceChainId
+  state.app.destinationChainId = payload.destinationChainId
 }
 
 export const setSelectedToken = (
@@ -27,8 +27,8 @@ export const setSelectedToken = (
 
 export const reset = ({ state }: Context, newChainId: number) => {
   if (
-    state.app.l1NetworkChainId !== newChainId &&
-    state.app.l2NetworkChainId !== newChainId
+    state.app.sourceChainId !== newChainId &&
+    state.app.destinationChainId !== newChainId
   ) {
     // only reset the selected token if we are not switching between the pair of l1-l2 networks.
     // we dont want to reset the token if we are switching from Goerli to Arbitrum Goerli for example
