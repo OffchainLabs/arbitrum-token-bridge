@@ -35,7 +35,7 @@ describe('Deposit ERC20 Token', () => {
       )
     })
 
-    it.skip('should show L1 and L2 chains, and ETH correctly', () => {
+    it('should show L1 and L2 chains, and ETH correctly', () => {
       cy.login({ networkType: 'L1' })
       cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
       cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
@@ -44,7 +44,7 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it.skip('should bridge ERC-20 successfully', () => {
+    it('should bridge ERC-20 successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'L1' })
