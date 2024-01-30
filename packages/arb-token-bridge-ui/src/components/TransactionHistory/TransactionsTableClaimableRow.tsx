@@ -9,12 +9,7 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { ExternalLink } from '../common/ExternalLink'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { Tooltip } from '../common/Tooltip'
-import {
-  ChainId,
-  getExplorerUrl,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
 import { TransactionDateTime } from './TransactionHistoryTable'
@@ -246,9 +241,9 @@ function ClaimableRowTime({ tx }: CommonProps) {
   )
 }
 
-function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
+function ClaimedTxInfo({ tx }: CommonProps) {
   const { parentLayer } = useChainLayers()
-  const toNetworkId = isSourceChainArbitrum ? tx.parentChainId : tx.childChainId
+  const { destinationChainId } = tx
 
   const isExecuted = tx.status === 'Executed'
   const isBeingClaimed = tx.status === 'Confirmed' && tx.resolvedAt
@@ -261,8 +256,8 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
     return (
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-        <NetworkImage chainId={toNetworkId} />
-        <span className="pl-1">{getNetworkName(toNetworkId)}: </span>
+        <NetworkImage chainId={destinationChainId} />
+        <span className="pl-1">{getNetworkName(destinationChainId)}: </span>
         {!isExecuted && !isBeingClaimed ? 'Pending' : 'Not available'}
       </span>
     )
@@ -274,10 +269,10 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
       aria-label={`${parentLayer} Transaction Link`}
     >
       <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-      <NetworkImage chainId={toNetworkId} />
-      {getNetworkName(toNetworkId)}:{' '}
+      <NetworkImage chainId={destinationChainId} />
+      {getNetworkName(destinationChainId)}:{' '}
       <ExternalLink
-        href={`${getExplorerUrl(toNetworkId)}/tx/${claimedTxId}`}
+        href={`${getExplorerUrl(destinationChainId)}/tx/${claimedTxId}`}
         className="arb-hover text-blue-link"
       >
         {shortenTxHash(claimedTxId)}
@@ -286,11 +281,9 @@ function ClaimedTxInfo({ tx, isSourceChainArbitrum }: CommonProps) {
   )
 }
 
-function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
+function ClaimableRowTxID({ tx }: CommonProps) {
   const { layer } = useChainLayers()
-  const fromNetworkId = isSourceChainArbitrum
-    ? tx.childChainId
-    : tx.parentChainId
+  const { txId, sourceChainId } = tx
 
   return (
     <div className="flex flex-col space-y-3">
@@ -299,17 +292,17 @@ function ClaimableRowTxID({ tx, isSourceChainArbitrum }: CommonProps) {
         aria-label={`${layer} Transaction Link`}
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
-        <NetworkImage chainId={fromNetworkId} />
-        <span className="pl-1">{getNetworkName(fromNetworkId)}: </span>
+        <NetworkImage chainId={sourceChainId} />
+        <span className="pl-1">{getNetworkName(sourceChainId)}: </span>
         <ExternalLink
-          href={`${getExplorerUrl(fromNetworkId)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(sourceChainId)}/tx/${txId}`}
           className="arb-hover text-blue-link"
         >
-          {shortenTxHash(tx.txId)}
+          {shortenTxHash(txId)}
         </ExternalLink>
       </span>
 
-      <ClaimedTxInfo tx={tx} isSourceChainArbitrum={isSourceChainArbitrum} />
+      <ClaimedTxInfo tx={tx} />
     </div>
   )
 }
@@ -323,11 +316,6 @@ export function TransactionsTableClaimableRow({
   className?: string
 }) {
   const isError = tx.status === 'Failure'
-  const sourceChainId = tx.cctpData?.sourceChainId ?? ChainId.ArbitrumOne
-  const {
-    isEthereumMainnetOrTestnet: isSourceChainIdEthereum,
-    isArbitrum: isSourceChainIdArbitrum
-  } = isNetwork(sourceChainId)
   const { address } = useAccount()
 
   const bgClassName = useMemo(() => {
@@ -340,15 +328,9 @@ export function TransactionsTableClaimableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
+        chainId: tx.sourceChainId
       }),
-    [
-      tx.asset,
-      tx.tokenAddress,
-      tx.parentChainId,
-      tx.childChainId,
-      isSourceChainIdEthereum
-    ]
+    [tx.asset, tx.tokenAddress, tx.sourceChainId]
   )
 
   const customAddressTxPadding = useMemo(
@@ -375,10 +357,7 @@ export function TransactionsTableClaimableRow({
           customAddressTxPadding
         )}
       >
-        <ClaimableRowStatus
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
+        <ClaimableRowStatus tx={tx} />
       </div>
 
       <div
@@ -387,10 +366,7 @@ export function TransactionsTableClaimableRow({
           customAddressTxPadding
         )}
       >
-        <ClaimableRowTime
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
+        <ClaimableRowTime tx={tx} />
       </div>
 
       <div
@@ -409,10 +385,7 @@ export function TransactionsTableClaimableRow({
       <div
         className={twMerge('px-3 py-5 align-middle', customAddressTxPadding)}
       >
-        <ClaimableRowTxID
-          tx={tx}
-          isSourceChainArbitrum={isSourceChainIdArbitrum}
-        />
+        <ClaimableRowTxID tx={tx} />
       </div>
 
       <div
