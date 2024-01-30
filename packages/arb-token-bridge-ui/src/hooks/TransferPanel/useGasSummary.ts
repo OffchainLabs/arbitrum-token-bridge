@@ -133,8 +133,6 @@ export function useGasSummary(): UseGasSummaryResult {
         }
       }
 
-      console.log('estimateGasResult: ', estimateGasResult)
-
       setGasSummary({
         status: 'success',
         estimatedParentChainGasFees: calculateEstimatedParentChainGasFees(
