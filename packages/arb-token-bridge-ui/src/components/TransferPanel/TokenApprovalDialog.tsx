@@ -178,8 +178,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }
 
   const displayAllowanceWarning = allowance && !allowance.isZero()
-
-  const sourceNetworkName = getNetworkName(networks.sourceChain.id)
   const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
   const noteMessage = isCctp
