@@ -346,7 +346,7 @@ export function TransferPanel() {
     })
 
     const estimatedL2GasFees = utils.parseUnits(
-      String(gasSummary.estimatedL2GasFees),
+      String(gasSummary.estimatedChildChainGasFees),
       nativeCurrency.decimals
     )
 

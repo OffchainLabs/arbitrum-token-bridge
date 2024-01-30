@@ -1,20 +1,24 @@
 import { BigNumber, utils } from 'ethers'
 
-export function calculateEstimatedL1GasFees(
-  estimatedL1Gas: BigNumber,
-  l1GasPrice: BigNumber
+export function calculateEstimatedParentChainGasFees(
+  estimatedParentChainGas: BigNumber,
+  parentChainGasPrice: BigNumber
 ) {
-  return parseFloat(utils.formatEther(estimatedL1Gas.mul(l1GasPrice)))
+  return parseFloat(
+    utils.formatEther(estimatedParentChainGas.mul(parentChainGasPrice))
+  )
 }
 
-export function calculateEstimatedL2GasFees(
-  estimatedL2Gas: BigNumber,
-  l2GasPrice: BigNumber,
-  estimatedL2SubmissionCost: BigNumber
+export function calculateEstimatedChildChainGasFees(
+  estimatedChildChainGas: BigNumber,
+  childChainGasPrice: BigNumber,
+  estimatedChildChainSubmissionCost: BigNumber
 ) {
   return parseFloat(
     utils.formatEther(
-      estimatedL2Gas.mul(l2GasPrice).add(estimatedL2SubmissionCost)
+      estimatedChildChainGas
+        .mul(childChainGasPrice)
+        .add(estimatedChildChainSubmissionCost)
     )
   )
 }

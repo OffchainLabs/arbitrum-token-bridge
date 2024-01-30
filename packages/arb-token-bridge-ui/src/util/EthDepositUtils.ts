@@ -10,9 +10,9 @@ async function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): Promi
     // todo(spsjvc): properly estimate these values
     //
     // this hardcoding is only necessary for Orbit chains that have a custom fee token (where estimation may fail due to low allowance)
-    estimatedL1Gas: BigNumber.from(100_000),
-    estimatedL2Gas: BigNumber.from(0),
-    estimatedL2SubmissionCost: BigNumber.from(0)
+    estimatedParentChainGas: BigNumber.from(100_000),
+    estimatedChildChainGas: BigNumber.from(0),
+    estimatedChildChainSubmissionCost: BigNumber.from(0)
   }
 }
 
@@ -63,11 +63,13 @@ export async function depositEthEstimateGas(
     from: address
   })
 
-  const estimatedL1Gas = await l1Provider.estimateGas(depositRequest.txRequest)
+  const estimatedParentChainGas = await l1Provider.estimateGas(
+    depositRequest.txRequest
+  )
 
   return {
-    estimatedL1Gas,
-    estimatedL2Gas: constants.Zero,
-    estimatedL2SubmissionCost: constants.Zero
+    estimatedParentChainGas,
+    estimatedChildChainGas: constants.Zero,
+    estimatedChildChainSubmissionCost: constants.Zero
   }
 }

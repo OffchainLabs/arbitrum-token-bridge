@@ -6,6 +6,20 @@ import { isNetwork } from '../../util/networks'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatUSD } from '../../util/NumberUtils'
 
+export function useIsBridgingEth() {
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+  const isBridgingEth =
+    selectedToken === null && !childChainNativeCurrency.isCustom
+  return isBridgingEth
+}
+
 export function NativeCurrencyPrice({
   amount,
   showBrackets = false
@@ -13,20 +27,14 @@ export function NativeCurrencyPrice({
   amount: number
   showBrackets?: boolean
 }) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { childChain } = useNetworksRelationship(networks)
   const { isTestnet } = isNetwork(childChain.id)
 
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
   // currently only ETH price is supported
-  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
   const { ethToUSD } = useETHPrice()
 
-  if (isTestnet || !isBridgingEth) {
+  if (isTestnet) {
     return null
   }
 

@@ -39,22 +39,22 @@ export async function withdrawInitTxEstimateGas({
   // unless we break down part of the L2 gas fee into L2 tx fee + L1 batch posting fee for that tx
   // but as that does not fit into the context of the transfer. and
   // would lead to user confusion, we instead present all the gas fee as L2 gas fee
-  const estimatedL1Gas = BigNumber.from(0)
+  const estimatedParentChainGas = BigNumber.from(0)
 
   try {
     // add 30% to the estimated total gas as buffer
-    const estimatedL2Gas = BigNumber.from(
+    const estimatedChildChainGas = BigNumber.from(
       Math.ceil(
         Number(await l2Provider.estimateGas(withdrawalRequest.txRequest)) * 1.3
       )
     )
 
-    return { estimatedL1Gas, estimatedL2Gas }
+    return { estimatedParentChainGas, estimatedChildChainGas }
   } catch (error) {
     Sentry.captureException(error)
 
     return {
-      estimatedL1Gas,
+      estimatedParentChainGas,
       // L2 gas estimation from recent txs
       //
       // ETH withdrawals @ ArbSys, average 482,462:
@@ -78,7 +78,7 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0x81427c5815f058905b4ed876ea6d3496392b15292daf510db08c94c16eff2703
       // WETH withdrawal 1,381,140
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
-      estimatedL2Gas: isToken
+      estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
         : BigNumber.from(800_000)
     }

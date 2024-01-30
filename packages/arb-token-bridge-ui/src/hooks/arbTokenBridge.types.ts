@@ -136,12 +136,12 @@ export interface AddressToDecimals {
 }
 
 export type GasEstimates = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
+  estimatedParentChainGas: BigNumber
+  estimatedChildChainGas: BigNumber
 }
 
 export type DepositGasEstimates = GasEstimates & {
-  estimatedL2SubmissionCost: BigNumber
+  estimatedChildChainSubmissionCost: BigNumber
 }
 
 export interface ArbTokenBridgeEth {

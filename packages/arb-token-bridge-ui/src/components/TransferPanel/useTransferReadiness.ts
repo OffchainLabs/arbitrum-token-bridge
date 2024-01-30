@@ -38,7 +38,7 @@ function sanitizeEstimatedGasFees(
       // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
       return {
         estimatedL1GasFees: 0,
-        estimatedL2GasFees: gasSummary.estimatedL2GasFees
+        estimatedL2GasFees: gasSummary.estimatedChildChainGasFees
       }
     }
 
@@ -49,8 +49,8 @@ function sanitizeEstimatedGasFees(
   }
 
   return {
-    estimatedL1GasFees: gasSummary.estimatedL1GasFees,
-    estimatedL2GasFees: gasSummary.estimatedL2GasFees
+    estimatedL1GasFees: gasSummary.estimatedParentChainGasFees,
+    estimatedL2GasFees: gasSummary.estimatedChildChainGasFees
   }
 }
 
@@ -98,7 +98,7 @@ export function useTransferReadiness({
   gasSummary
 }: {
   amount: string
-  gasSummary: UseGasSummaryResult & { status: GasEstimationStatus }
+  gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
   const {
     app: { selectedToken }

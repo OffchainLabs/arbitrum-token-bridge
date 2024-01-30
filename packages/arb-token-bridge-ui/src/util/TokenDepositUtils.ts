@@ -16,20 +16,21 @@ async function fetchFallbackGasEstimates({
   const l1BaseFee = await l1Provider.getGasPrice()
   const inbox = Inbox__factory.connect(inboxAddress, l1Provider)
 
-  const estimatedL2SubmissionCost = await inbox.calculateRetryableSubmissionFee(
-    // Values set by looking at a couple of L1 gateways
-    //
-    // L1 LPT Gateway: 324
-    // L1 DAI Gateway: 324
-    // L1 Standard Gateway (APE): 740
-    // L1 Custom Gateway (USDT): 324
-    // L1 WETH Gateway: 324
-    BigNumber.from(1_000),
-    // We do the same percent increase in the SDK
-    //
-    // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
-    l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-  )
+  const estimatedChildChainSubmissionCost =
+    await inbox.calculateRetryableSubmissionFee(
+      // Values set by looking at a couple of L1 gateways
+      //
+      // L1 LPT Gateway: 324
+      // L1 DAI Gateway: 324
+      // L1 Standard Gateway (APE): 740
+      // L1 Custom Gateway (USDT): 324
+      // L1 WETH Gateway: 324
+      BigNumber.from(1_000),
+      // We do the same percent increase in the SDK
+      //
+      // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
+      l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
+    )
 
   return {
     // Values set by looking at a couple of different ERC-20 deposits
@@ -39,7 +40,7 @@ async function fetchFallbackGasEstimates({
     // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
     // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
     // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
-    estimatedL1Gas: BigNumber.from(240_000),
+    estimatedParentChainGas: BigNumber.from(240_000),
     // Values set by looking at a couple of different ERC-20 deposits
     //
     // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
@@ -47,8 +48,8 @@ async function fetchFallbackGasEstimates({
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedL2Gas: BigNumber.from(100_000),
-    estimatedL2SubmissionCost
+    estimatedChildChainGas: BigNumber.from(100_000),
+    estimatedChildChainSubmissionCost
   }
 }
 
@@ -110,8 +111,8 @@ export async function depositTokenEstimateGas(
   })
 
   return {
-    estimatedL1Gas: await l1Provider.estimateGas(txRequest),
-    estimatedL2Gas: retryableData.gasLimit,
-    estimatedL2SubmissionCost: retryableData.maxSubmissionCost
+    estimatedParentChainGas: await l1Provider.estimateGas(txRequest),
+    estimatedChildChainGas: retryableData.gasLimit,
+    estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
   }
 }

@@ -17,23 +17,23 @@ import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
 import {
-  calculateEstimatedL2GasFees,
-  calculateEstimatedL1GasFees
+  calculateEstimatedChildChainGasFees,
+  calculateEstimatedParentChainGasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
-  estimatedL1Gas: constants.Zero,
+  estimatedParentChainGas: constants.Zero,
   // Estimated Child Chain gas, denominated in Wei, represented as a BigNumber
-  estimatedL2Gas: constants.Zero,
+  estimatedChildChainGas: constants.Zero,
   // Estimated Child Chain submission cost is precalculated and includes gas price
-  estimatedL2SubmissionCost: constants.Zero
+  estimatedChildChainSubmissionCost: constants.Zero
 }
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
-  estimatedL1GasFees: 0,
-  estimatedL2GasFees: 0
+  estimatedParentChainGasFees: 0,
+  estimatedChildChainGasFees: 0
 }
 
 export type GasEstimationStatus =
@@ -43,15 +43,15 @@ export type GasEstimationStatus =
   | 'unavailable'
 
 export type GasEstimationResult = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
-  estimatedL2SubmissionCost: BigNumber
+  estimatedParentChainGas: BigNumber
+  estimatedChildChainGas: BigNumber
+  estimatedChildChainSubmissionCost: BigNumber
 }
 
 export type UseGasSummaryResult = {
   status: GasEstimationStatus
-  estimatedL1GasFees: number
-  estimatedL2GasFees: number
+  estimatedParentChainGasFees: number
+  estimatedChildChainGasFees: number
 }
 
 export function useGasSummary(): UseGasSummaryResult {
@@ -129,20 +129,22 @@ export function useGasSummary(): UseGasSummaryResult {
 
         estimateGasResult = {
           ...partialEstimateGasResult,
-          estimatedL2SubmissionCost: constants.Zero
+          estimatedChildChainSubmissionCost: constants.Zero
         }
       }
 
+      console.log('estimateGasResult: ', estimateGasResult)
+
       setGasSummary({
         status: 'success',
-        estimatedL1GasFees: calculateEstimatedL1GasFees(
-          estimateGasResult.estimatedL1Gas,
+        estimatedParentChainGasFees: calculateEstimatedParentChainGasFees(
+          estimateGasResult.estimatedParentChainGas,
           parentChainGasPrice
         ),
-        estimatedL2GasFees: calculateEstimatedL2GasFees(
-          estimateGasResult.estimatedL2Gas,
+        estimatedChildChainGasFees: calculateEstimatedChildChainGasFees(
+          estimateGasResult.estimatedChildChainGas,
           childChainGasPrice,
-          estimateGasResult.estimatedL2SubmissionCost
+          estimateGasResult.estimatedChildChainSubmissionCost
         )
       })
     } catch (error) {

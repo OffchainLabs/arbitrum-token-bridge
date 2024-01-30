@@ -12,8 +12,9 @@ import dayjs from 'dayjs'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { NativeCurrencyPrice } from './NativeCurrencyPrice'
+import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenUSDC } from '../../util/TokenUtils'
+import { useAppState } from '../../state'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
@@ -42,11 +43,43 @@ function TransferPanelSummaryContainer({
   )
 }
 
+function TransferPanelSummaryLoader({
+  isDepositMode
+}: {
+  isDepositMode: boolean
+}) {
+  const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
+
+  return (
+    <TransferPanelSummaryContainer className="animate-pulse">
+      <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
+      <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
+      {!isDepositMode && (
+        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
+      )}
+    </TransferPanelSummaryContainer>
+  )
+}
+
+function TransferPanelSummaryUnavailable() {
+  return (
+    <TransferPanelSummaryContainer>
+      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+        Gas estimates are not available for this action.
+      </div>
+    </TransferPanelSummaryContainer>
+  )
+}
+
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
+    app: { selectedToken }
+  } = useAppState()
+
+  const {
     status: gasSummaryStatus,
-    estimatedL1GasFees,
-    estimatedL2GasFees
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
   } = useGasSummary()
 
   const [networks] = useNetworks()
@@ -58,10 +91,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isDepositMode
   } = useNetworksRelationship(networks)
 
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
+
+  const isBridgingEth = useIsBridgingEth()
 
   const [{ amount }] = useArbQueryParams()
 
@@ -79,23 +116,18 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
-    () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
-    [nativeCurrency, parentChainNativeCurrency]
+    () =>
+      childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [childChainNativeCurrency, parentChainNativeCurrency]
   )
 
   const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
+    () => estimatedParentChainGasFees + estimatedChildChainGasFees,
+    [estimatedParentChainGasFees, estimatedChildChainGasFees]
   )
 
   if (gasSummaryStatus === 'unavailable') {
-    return (
-      <TransferPanelSummaryContainer>
-        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
-          Gas estimates are not available for this action.
-        </div>
-      </TransferPanelSummaryContainer>
-    )
+    return <TransferPanelSummaryUnavailable />
   }
 
   return (
@@ -110,19 +142,32 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="font-medium">
           {!sameNativeCurrency && isDepositMode && (
             <>
-              {formatAmount(estimatedL1GasFees, {
+              {formatAmount(estimatedParentChainGasFees, {
                 symbol: parentChainNativeCurrency.symbol
-              })}
-              {' + '}
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+              {selectedToken && ' and '}
             </>
           )}
-          {formatAmount(
-            sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
-            {
-              symbol: nativeCurrency.symbol
-            }
+          {!sameNativeCurrency &&
+            (selectedToken || !isDepositMode) &&
+            formatAmount(estimatedChildChainGasFees, {
+              symbol: childChainNativeCurrency.symbol
+            })}
+          {sameNativeCurrency && (
+            <>
+              {formatAmount(estimatedTotalGasFees, {
+                symbol: childChainNativeCurrency.symbol
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+            </>
           )}{' '}
-          <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
         </span>
       </div>
 
@@ -142,7 +187,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             isParentChain={!isDepositMode}
           />{' '}
           {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
-          <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          {isBridgingEth && (
+            <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          )}
         </span>
       </div>
 
