@@ -1,16 +1,16 @@
 // button shown in E2E test that submits a failed retryable txn
 
 import { useAccount, useSigner } from 'wagmi'
-import { useNetworks } from '../hooks/useNetworks'
+import { useNetworks } from '../../hooks/useNetworks'
 import { BigNumber, utils } from 'ethers'
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { AssetType } from '../hooks/arbTokenBridge.types'
-import { addDepositToCache } from '../components/TransactionHistory/helpers'
-import { Button } from '../components/common/Button'
-import { useTransactionHistory } from '../hooks/useTransactionHistory'
-import { DepositStatus } from '../state/app/state'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { addDepositToCache } from '../TransactionHistory/helpers'
+import { Button } from '../common/Button'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { DepositStatus } from '../../state/app/state'
 
-export const RetryableFailer = () => {
+export const RetryableFailerButton = () => {
   const [
     {
       sourceChainProvider,
@@ -107,7 +107,7 @@ export const RetryableFailer = () => {
   }
 
   return (
-    <Button variant="primary" onClick={failRetryable}>
+    <Button variant="secondary" onClick={failRetryable}>
       Fail Retryable
     </Button>
   )
