@@ -2,6 +2,8 @@ import { Provider } from '@ethersproject/providers'
 
 import { getAPIBaseUrl } from '.'
 
+export type Address = `0x${string}`
+
 export async function addressIsSmartContract(
   address: string,
   provider: Provider

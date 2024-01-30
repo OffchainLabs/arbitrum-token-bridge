@@ -12,6 +12,7 @@ import {
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
+import { Address } from '../../util/AddressUtils'
 
 export enum WhiteListState {
   VERIFYING,
@@ -64,9 +65,9 @@ export interface MergedTransaction {
   parentChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
-    attestationHash?: `0x${string}` | null
+    attestationHash?: Address | null
     messageBytes?: string | null
-    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
 }
