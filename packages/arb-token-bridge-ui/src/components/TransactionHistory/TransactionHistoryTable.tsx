@@ -1,6 +1,6 @@
 import {
+  ButtonHTMLAttributes,
   PropsWithChildren,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -19,14 +19,29 @@ import {
   getStandardizedTime,
   isTokenDeposit
 } from '../../state/app/utils'
-import { ExternalLink } from '../common/ExternalLink'
-import { GET_HELP_LINK } from '../../constants'
 import { ChainPair } from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
+import { EmptyTransactionHistory } from './EmptyTransactionHistory'
+
+export const ContentWrapper = ({
+  children,
+  className = ''
+}: PropsWithChildren<{ className?: string }>) => {
+  return (
+    <div
+      className={twMerge(
+        'w-full flex-col items-center rounded bg-[#191919] p-4 text-center text-xs text-white',
+        className
+      )}
+    >
+      {children}
+    </div>
+  )
+}
 
 export const TransactionDateTime = ({
   standardizedDate
@@ -61,6 +76,56 @@ const TableHeader = ({
     {children}
   </div>
 )
+
+export const LoadMoreButton = (
+  props: ButtonHTMLAttributes<HTMLButtonElement>
+) => {
+  return (
+    <button {...props} className="arb-hover text-xs">
+      <div className="flex space-x-1 rounded border border-white px-2 py-1">
+        <span>Load more</span>
+        <ArrowDownOnSquareIcon width={16} />
+      </div>
+    </button>
+  )
+}
+
+export const HistoryLoader = () => {
+  return <span className="animate-pulse">Loading transactions...</span>
+}
+
+const FailedChainPairsTooltip = ({
+  failedChainPairs
+}: {
+  failedChainPairs: ChainPair[]
+}) => {
+  if (failedChainPairs.length === 0) {
+    return null
+  }
+
+  return (
+    <Tooltip
+      content={
+        <div className="flex flex-col space-y-1 text-xs">
+          <span>
+            We were unable to fetch data for the following chain pairs:
+          </span>
+          <ul className="flex list-disc flex-col pl-4">
+            {failedChainPairs.map(pair => (
+              <li key={`${pair.parentChain}-${pair.chain}`}>
+                <b>{getNetworkName(pair.parentChain)}</b>
+                {' <> '}
+                <b>{getNetworkName(pair.chain)}</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+      }
+    >
+      <ExclamationCircleIcon height={20} className="text-error" />
+    </Tooltip>
+  )
+}
 
 export const TransactionHistoryTable = ({
   address,
@@ -127,85 +192,20 @@ export const TransactionHistoryTable = ({
     }
   }, [transactions.length])
 
-  const FailedChainPairsTooltip = useCallback(() => {
-    if (failedChainPairs.length === 0) {
-      return null
-    }
-    return (
-      <Tooltip
-        content={
-          <div className="flex flex-col space-y-1 text-xs">
-            <span>
-              We were unable to fetch data for the following chain pairs:
-            </span>
-            <ul className="flex list-disc flex-col pl-4">
-              {failedChainPairs.map(pair => (
-                <li key={`${pair.parentChain}-${pair.chain}`}>
-                  <b>{getNetworkName(pair.parentChain)}</b>
-                  {' <> '}
-                  <b>{getNetworkName(pair.chain)}</b>
-                </li>
-              ))}
-            </ul>
-          </div>
-        }
-      >
-        <ExclamationCircleIcon height={20} className="text-error" />
-      </Tooltip>
-    )
-  }, [failedChainPairs])
-
   if (isTxHistoryEmpty) {
-    if (loading) {
-      return (
-        <span className="animate-pulse text-xs text-white">
-          Loading transactions...
-        </span>
-      )
-    }
-    if (error) {
-      return (
-        <div className="flex space-x-2 bg-white p-4 text-sm text-error">
-          <span>
-            We seem to be having a difficult time loading your data. Please give
-            it a moment and then try refreshing the page. If the problem
-            persists please file a ticket{' '}
-            <ExternalLink
-              className="arb-hover text-blue-link underline"
-              href={GET_HELP_LINK}
-            >
-              here
-            </ExternalLink>
-            .
-          </span>
-        </div>
-      )
-    }
-    if (paused) {
-      return (
-        <div className="flex justify-between bg-white p-4">
-          <span className="text-sm">
-            There are no recent {isPendingTab ? 'pending' : 'settled'}{' '}
-            transactions.
-          </span>
-          <button onClick={resume} className="arb-hover text-sm">
-            <div className="flex space-x-1 rounded border border-black px-2 py-1">
-              <span>Load more</span>
-              <ArrowDownOnSquareIcon width={16} />
-            </div>
-          </button>
-        </div>
-      )
-    }
     return (
-      <div className="bg-white p-4 text-sm">
-        Looks like no transactions here yet!
-      </div>
+      <EmptyTransactionHistory
+        loading={loading}
+        error={typeof error !== 'undefined'}
+        paused={paused}
+        resume={resume}
+        tab={isPendingTab ? 'pending' : 'settled'}
+      />
     )
   }
 
   return (
-    <div className="h-full flex-col overflow-x-auto rounded bg-[#191919] text-white">
+    <ContentWrapper className="h-full overflow-x-auto p-0 text-left">
       <div
         className={twMerge(
           'w-[960px] rounded-tr-lg px-4 pt-4',
@@ -215,15 +215,13 @@ export const TransactionHistoryTable = ({
       >
         {loading ? (
           <div className="flex items-center space-x-2">
-            <FailedChainPairsTooltip />
-            <span className="animate-pulse text-xs">
-              Loading transactions...
-            </span>
+            <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
+            <HistoryLoader />
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center justify-start space-x-1">
-              <FailedChainPairsTooltip />
+              <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
               <span className="text-xs">
                 Showing {transactions.length}{' '}
                 {isPendingTab ? 'pending' : 'settled'} transactions made in{' '}
@@ -231,18 +229,12 @@ export const TransactionHistoryTable = ({
               </span>
             </div>
 
-            {!completed && (
-              <button onClick={resume} className="arb-hover text-xs">
-                <div className="flex space-x-1 rounded border border-white px-2 py-1">
-                  <span>Load more</span>
-                  <ArrowDownOnSquareIcon width={16} />
-                </div>
-              </button>
-            )}
+            {!completed && <LoadMoreButton onClick={resume} />}
           </div>
         )}
         <div>{pendingTokenDepositsCount > 0 && <PendingDepositWarning />}</div>
       </div>
+
       <AutoSizer disableHeight>
         {() => (
           <Table
@@ -313,6 +305,6 @@ export const TransactionHistoryTable = ({
           </Table>
         )}
       </AutoSizer>
-    </div>
+    </ContentWrapper>
   )
 }
