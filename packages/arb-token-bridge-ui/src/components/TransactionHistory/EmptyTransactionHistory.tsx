@@ -8,13 +8,13 @@ import {
 
 export const EmptyTransactionHistory = ({
   loading,
-  error,
+  isError,
   paused,
   resume,
   tab
 }: {
   loading: boolean
-  error: boolean
+  isError: boolean
   paused: boolean
   resume: () => void
   tab: 'pending' | 'settled'
@@ -26,7 +26,7 @@ export const EmptyTransactionHistory = ({
       </ContentWrapper>
     )
   }
-  if (error) {
+  if (isError) {
     return (
       <ContentWrapper>
         <p>
