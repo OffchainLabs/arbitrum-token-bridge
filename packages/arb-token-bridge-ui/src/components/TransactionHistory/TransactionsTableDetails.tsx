@@ -43,11 +43,6 @@ export const TransactionsTableDetails = () => {
   const { ethToUSD } = useETHPrice()
   const { transactions } = useTransactionHistory(address)
 
-  function closeWithReset() {
-    close()
-    setTimeout(reset, 200)
-  }
-
   const tx = useMemo(() => {
     if (!txFromStore) {
       return null
@@ -88,29 +83,30 @@ export const TransactionsTableDetails = () => {
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-40" onClose={closeWithReset}>
+      <Dialog as="div" className="relative z-40" onClose={close}>
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
+          enter="ease-out"
           enterFrom="opacity-0"
-          enterTo="opacity-100"
+          enterTo="opacity-70"
           leave="ease-in duration-200"
-          leaveFrom="opacity-100"
+          leaveFrom="opacity-70"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/70" />
+          <div className="fixed inset-0 bg-black" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
+              enter="ease-out"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
+              afterLeave={reset}
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded border border-white/10 bg-dark p-6 text-left align-middle shadow shadow-white/10 transition-all">
                 <Dialog.Title
@@ -118,7 +114,7 @@ export const TransactionsTableDetails = () => {
                   as="h3"
                 >
                   Transaction details
-                  <button onClick={closeWithReset}>
+                  <button onClick={close} className="arb-hover">
                     <XMarkIcon height={20} />
                   </button>
                 </Dialog.Title>
