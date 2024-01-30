@@ -14,13 +14,15 @@ import {
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 
-import { MergedTransaction } from '../../state/app/state'
 import {
   getStandardizedDate,
   getStandardizedTime,
   isTokenDeposit
 } from '../../state/app/utils'
-import { ChainPair } from '../../hooks/useTransactionHistory'
+import {
+  ChainPair,
+  UseTransactionHistoryResult
+} from '../../hooks/useTransactionHistory'
 import { Tooltip } from '../common/Tooltip'
 import { getNetworkName } from '../../util/networks'
 import { isTxPending } from './helpers'
@@ -128,27 +130,27 @@ const FailedChainPairsTooltip = ({
   )
 }
 
-export const TransactionHistoryTable = ({
-  address,
-  transactions,
-  loading,
-  completed,
-  error,
-  failedChainPairs,
-  resume,
-  selectedTabIndex,
-  oldestTxTimeAgoString
-}: {
+type TransactionHistoryTableProps = UseTransactionHistoryResult & {
   address: `0x${string}` | undefined
-  transactions: MergedTransaction[]
-  loading: boolean
-  completed: boolean
-  error: unknown
-  failedChainPairs: ChainPair[]
-  resume: () => void
   selectedTabIndex: number
   oldestTxTimeAgoString: string
-}) => {
+}
+
+export const TransactionHistoryTable = (
+  props: TransactionHistoryTableProps
+) => {
+  const {
+    transactions,
+    address,
+    loading,
+    completed,
+    error,
+    failedChainPairs,
+    resume,
+    selectedTabIndex,
+    oldestTxTimeAgoString
+  } = props
+
   const contentAboveTable = useRef<HTMLDivElement>(null)
 
   const isTxHistoryEmpty = transactions.length === 0

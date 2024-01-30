@@ -44,15 +44,7 @@ export const TransactionHistory = ({
 }: {
   props: UseTransactionHistoryResult & { address: `0x${string}` | undefined }
 }) => {
-  const {
-    transactions,
-    address,
-    loading,
-    completed,
-    error,
-    failedChainPairs,
-    resume
-  } = props
+  const { transactions, address } = props
 
   const oldestTxTimeAgoString = useMemo(() => {
     return dayjs(transactions[transactions.length - 1]?.createdAt).toNow(true)
@@ -115,26 +107,18 @@ export const TransactionHistory = ({
         <Tab.Panels className="h-full overflow-hidden">
           <Tab.Panel className="h-full">
             <TransactionHistoryTable
+              {...props}
               address={address}
               transactions={pendingTransactions}
-              loading={loading}
-              completed={completed}
-              error={error}
-              failedChainPairs={failedChainPairs}
-              resume={resume}
               selectedTabIndex={0}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
           </Tab.Panel>
           <Tab.Panel className="h-full">
             <TransactionHistoryTable
+              {...props}
               address={address}
               transactions={settledTransactions}
-              loading={loading}
-              completed={completed}
-              error={error}
-              failedChainPairs={failedChainPairs}
-              resume={resume}
               selectedTabIndex={1}
               oldestTxTimeAgoString={oldestTxTimeAgoString}
             />
