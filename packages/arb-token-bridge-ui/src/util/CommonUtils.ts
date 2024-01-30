@@ -18,10 +18,8 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
-export const isCypressEnvironment = !!window.Cypress
-
 export const isTestingEnvironment =
-  isCypressEnvironment || process.env.NODE_ENV !== 'production'
+  !!window.Cypress || process.env.NODE_ENV !== 'production'
 
 export const createBlockExplorerUrlForToken = ({
   explorerLink,
