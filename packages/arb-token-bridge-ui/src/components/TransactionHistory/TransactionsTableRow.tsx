@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 import {
@@ -10,12 +10,14 @@ import {
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import {
-  getDestNetworkTxId,
+  getDestinationChainId,
+  getDestinationNetworkTxId,
+  getSourceChainId,
   isTxClaimable,
+  isTxExpired,
   isTxFailed,
   isTxPending
 } from './helpers'
@@ -25,18 +27,103 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
+import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
+
+const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
+  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
+  const destinationChainId = tx.isWithdrawal
+    ? tx.parentChainId
+    : tx.childChainId
+
+  if (isTxFailed(tx)) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        className="arb-hover flex items-center space-x-1 text-red-400"
+      >
+        <XCircleIcon height={14} className="mr-1" />
+        <span>Failed</span>
+        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+      </ExternalLink>
+    )
+  }
+
+  if (isTxExpired(tx)) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        className="arb-hover flex items-center space-x-1 text-red-400"
+      >
+        <XCircleIcon height={14} className="mr-1" />
+        <span>Expired</span>
+        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+      </ExternalLink>
+    )
+  }
+
+  if (isTxPending(tx)) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        className="arb-hover flex items-center space-x-1 text-yellow-400"
+      >
+        <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
+        <span>Pending</span>
+        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+      </ExternalLink>
+    )
+  }
+
+  if (isTxClaimable(tx)) {
+    return (
+      <ExternalLink
+        href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        className="arb-hover flex items-center space-x-1 text-green-400"
+      >
+        <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
+        <span>Claimable</span>
+        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+      </ExternalLink>
+    )
+  }
+
+  const destinationNetworkTxId = getDestinationNetworkTxId(tx)
+
+  // Success
+  return (
+    <ExternalLink
+      href={
+        destinationNetworkTxId
+          ? `${getExplorerUrl(destinationChainId)}/tx/${destinationNetworkTxId}`
+          : ''
+      }
+      className={destinationNetworkTxId ? 'arb-hover' : 'pointer-events-none'}
+    >
+      <div className="flex items-center space-x-1">
+        <CheckCircleIcon height={14} className="mr-1" />
+        <span>Success</span>
+
+        {destinationNetworkTxId && (
+          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+        )}
+      </div>
+    </ExternalLink>
+  )
+}
 
 export function TransactionsTableRow({
   tx,
+  address,
   className = ''
 }: {
   tx: MergedTransaction
+  address: `0x${string}` | undefined
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
 
-  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  const sourceChainId = getSourceChainId(tx)
+  const destinationChainId = getDestinationChainId(tx)
 
   const [txRelativeTime, setTxRelativeTime] = useState(
     dayjs(tx.createdAt).fromNow()
@@ -60,9 +147,7 @@ export function TransactionsTableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chain: getWagmiChain(
-          isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
-        )
+        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
       }),
     [
       tx.asset,
@@ -72,61 +157,6 @@ export function TransactionsTableRow({
       isSourceChainIdEthereum
     ]
   )
-
-  const StatusLabel = useCallback(() => {
-    if (isTxFailed(tx)) {
-      return (
-        <div className="flex items-center space-x-1 text-red-400">
-          <XCircleIcon height={14} className="mr-1" />
-          <span>Failed</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
-      )
-    }
-
-    if (isTxPending(tx)) {
-      return (
-        <div className="flex items-center space-x-1 text-yellow-400">
-          <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
-          <span>Pending</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
-      )
-    }
-
-    if (isTxClaimable(tx)) {
-      return (
-        <div className="flex items-center space-x-1 text-green-400">
-          <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
-          <span>Claimable</span>
-          <ExternalLink href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}>
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        </div>
-      )
-    }
-
-    const destNetworkTxId = getDestNetworkTxId(tx)
-
-    // Success
-    return (
-      <div className="flex items-center space-x-1">
-        <CheckCircleIcon height={14} className="mr-1" />
-        <span>Success</span>
-        {destNetworkTxId && (
-          <ExternalLink
-            href={`${getExplorerUrl(destChainId)}/tx/${destNetworkTxId}`}
-          >
-            <ArrowTopRightOnSquareIcon height={10} />
-          </ExternalLink>
-        )}
-      </div>
-    )
-  }, [tx, sourceChainId, destChainId])
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {
@@ -157,41 +187,53 @@ export function TransactionsTableRow({
     >
       <div className="pr-3 align-middle">{txRelativeTime}</div>
       <div className="flex items-center pr-3 align-middle">
-        <TransactionsTableTokenImage tokenSymbol={tx.asset} />
-        <span className="ml-2">
-          {formatAmount(Number(tx.value), {
-            symbol: tokenSymbol
-          })}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/token/${tx.tokenAddress}`}
+          disabled={!tx.tokenAddress}
+        >
+          <TransactionsTableTokenImage tx={tx} />
+          <span className="ml-2">
+            {formatAmount(Number(tx.value), {
+              symbol: tokenSymbol
+            })}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.childChainId : tx.parentChainId}
-          />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.childChainId : tx.parentChainId)}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(sourceChainId)}/address/${tx.sender}`}
+        >
+          <span>
+            <NetworkImage chainId={sourceChainId} />
+          </span>
+          <span className="inline-block max-w-[55px] break-words">
+            {getNetworkName(sourceChainId)}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="flex items-center space-x-2">
-        <span>
-          <NetworkImage
-            chainId={tx.isWithdrawal ? tx.parentChainId : tx.childChainId}
-          />
-        </span>
-        <span className="inline-block w-[55px] break-words">
-          {getNetworkName(tx.isWithdrawal ? tx.parentChainId : tx.childChainId)}
-        </span>
+        <TransactionsTableExternalLink
+          href={`${getExplorerUrl(destinationChainId)}/address/${
+            tx.destination ?? tx.sender
+          }`}
+        >
+          <span>
+            <NetworkImage chainId={destinationChainId} />
+          </span>
+          <span className="inline-block max-w-[55px] break-words">
+            {getNetworkName(destinationChainId)}
+          </span>
+        </TransactionsTableExternalLink>
       </div>
       <div className="pr-3 align-middle">
-        <StatusLabel />
+        <StatusLabel tx={tx} />
       </div>
       <div className="flex justify-center px-3 align-middle">
         <TransactionsTableRowAction
           tx={tx}
           isError={isError}
           type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+          address={address}
         />
       </div>
       <div className="pl-3 align-middle">
