@@ -217,7 +217,7 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
         <NetworkImage chainId={tx.destinationChainId} />
-        <span className="pl-1">{}: </span>
+        <span className="pl-1">{getNetworkName(tx.destinationChainId)}: </span>
         {l2TxHash ? (
           <ExternalLink
             href={`${getExplorerUrl(tx.destinationChainId)}/tx/${l2TxHash}`}

@@ -52,7 +52,6 @@ export function WithdrawalConfirmationDialog(
     useNetworksRelationship(networks)
 
   const destinationNetworkName = getNetworkName(parentChain.id)
-  const { isEthereumMainnetOrTestnet } = isNetwork(parentChain.id)
 
   const {
     app: { selectedToken }
@@ -144,14 +143,12 @@ export function WithdrawalConfirmationDialog(
                   </ExternalLink>
                 </p>
 
-                {isEthereumMainnetOrTestnet && (
-                  <div className="flex flex-row items-center space-x-1">
-                    <CheckIcon className="h-6 w-6 text-lime-dark" />
-                    <span className="font-medium text-lime-dark">
-                      Security guaranteed by Ethereum
-                    </span>
-                  </div>
-                )}
+                <div className="flex flex-row items-center space-x-1">
+                  <CheckIcon className="h-6 w-6 text-lime-dark" />
+                  <span className="font-medium text-lime-dark">
+                    Security guaranteed by Ethereum
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col space-y-6">

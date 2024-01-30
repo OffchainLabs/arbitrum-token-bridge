@@ -264,9 +264,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           >
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
             <span className="text-sm font-light text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet for{' '}
-              the {isCctp ? 'CCTP' : 'standard'} {destinationNetworkName}{' '}
-              {isDepositMode ? 'deposit' : 'withdrawal'} fee.
+              After approval, you&apos;ll see a second prompt in your wallet for
+              the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
               <ExternalLink
                 href={TOKEN_APPROVAL_ARTICLE_LINK}
                 className="underline"

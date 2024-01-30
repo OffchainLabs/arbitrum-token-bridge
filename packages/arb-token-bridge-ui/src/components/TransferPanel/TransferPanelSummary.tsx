@@ -50,7 +50,7 @@ function getDepositGasFeeTooltip(chainId: ChainId) {
   }
 
   // Arbitrum and Orbit chains
-  return `${networkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
+  return `${networkName} fees are collected by the chain to cover costs of execution. This is an estimated fee. If the true fee is lower, you'll be refunded.`
 }
 
 export function useGasSummary(
