@@ -10,24 +10,18 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 import {
   isDepositReadyToRedeem,
   isWithdrawalReadyToClaim
 } from '../../state/app/utils'
-import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName } from '../../util/networks'
+import { trackEvent } from '../../util/AnalyticsUtils'
 import { useAppContextActions } from '../App/AppContext'
 import { ExternalLink } from '../common/ExternalLink'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
-  const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
-  const l2NetworkName = getNetworkName(childChain.id)
   const { openTransactionHistoryPanel } = useAppContextActions()
   const { transactions } = useTransactionHistory(address)
 
@@ -62,11 +56,10 @@ export const TransactionStatusInfo = () => {
       )}
       onClick={() => {
         openTransactionHistoryPanel()
-        if (shouldTrackAnalytics(l2NetworkName)) {
-          trackEvent('Open Transaction History Click', {
-            pageElement: 'Tx Info Banner'
-          })
-        }
+
+        trackEvent('Open Transaction History Click', {
+          pageElement: 'Tx Info Banner'
+        })
       }}
     >
       <div className="flex items-start gap-2">

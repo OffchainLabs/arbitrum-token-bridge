@@ -23,7 +23,7 @@ import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
 import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { trackEvent, shouldTrackAnalytics } from '../../util/AnalyticsUtils'
+import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
@@ -444,16 +444,15 @@ export function TransferPanel() {
       (!isDepositMode && !isConnectedToArbitrum.current)
 
     if (isConnectedToTheWrongChain) {
-      if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent('Switch Network and Transfer', {
-          type: isDepositMode ? 'Deposit' : 'Withdrawal',
-          tokenSymbol: 'USDC',
-          assetType: 'ERC-20',
-          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: currentNetworkName,
-          amount: Number(amount)
-        })
-      }
+      trackEvent('Switch Network and Transfer', {
+        type: isDepositMode ? 'Deposit' : 'Withdrawal',
+        tokenSymbol: 'USDC',
+        assetType: 'ERC-20',
+        accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+        network: currentNetworkName,
+        amount: Number(amount)
+      })
+
       const switchTargetChainId = latestNetworks.current.sourceChain.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
@@ -559,14 +558,13 @@ export function TransferPanel() {
 
       if (isSmartContractWallet) {
         // For SCW, we assume that the transaction went through
-        if (shouldTrackAnalytics(currentNetworkName)) {
-          trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-            accountType: 'Smart Contract',
-            network: currentNetworkName,
-            amount: Number(amount),
-            complete: false
-          })
-        }
+        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+          accountType: 'Smart Contract',
+          network: currentNetworkName,
+          amount: Number(amount),
+          complete: false
+        })
+
         return
       }
 
@@ -574,14 +572,12 @@ export function TransferPanel() {
         return
       }
 
-      if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
-          accountType: 'EOA',
-          network: currentNetworkName,
-          amount: Number(amount),
-          complete: false
-        })
-      }
+      trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
+        accountType: 'EOA',
+        network: currentNetworkName,
+        amount: Number(amount),
+        complete: false
+      })
 
       const newTransfer: MergedTransaction = {
         txId: depositForBurnTx.hash,
@@ -694,16 +690,15 @@ export function TransferPanel() {
           (isConnectedToArbitrum.current && isParentChainEthereum) ||
           isConnectedToOrbitChain.current
         ) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Deposit',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
+          trackEvent('Switch Network and Transfer', {
+            type: 'Deposit',
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : 'ETH',
+            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
+
           await switchNetworkAsync?.(latestNetworks.current.sourceChain.id)
 
           while (
@@ -787,15 +782,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the deposit method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Deposit', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
+            trackEvent('Deposit', {
+              tokenSymbol: selectedToken.symbol,
+              assetType: 'ERC-20',
+              accountType: 'Smart Contract',
+              network: l2NetworkName,
+              amount: Number(amount)
+            })
           }
 
           await latestToken.current.deposit({
@@ -808,10 +801,7 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
+                if (!isSmartContractWallet) {
                   trackEvent('Deposit', {
                     tokenSymbol: selectedToken.symbol,
                     assetType: 'ERC-20',
@@ -841,10 +831,7 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
+                if (!isSmartContractWallet) {
                   trackEvent('Deposit', {
                     assetType: 'ETH',
                     accountType: 'EOA',
@@ -870,16 +857,15 @@ export function TransferPanel() {
           isConnectedToEthereum ||
           (isConnectedToArbitrum.current && isOrbitChain)
         ) {
-          if (shouldTrackAnalytics(l2NetworkName)) {
-            trackEvent('Switch Network and Transfer', {
-              type: 'Withdrawal',
-              tokenSymbol: selectedToken?.symbol,
-              assetType: selectedToken ? 'ERC-20' : 'ETH',
-              accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-              network: l2NetworkName,
-              amount: Number(amount)
-            })
-          }
+          trackEvent('Switch Network and Transfer', {
+            type: 'Withdrawal',
+            tokenSymbol: selectedToken?.symbol,
+            assetType: selectedToken ? 'ERC-20' : 'ETH',
+            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+            network: l2NetworkName,
+            amount: Number(amount)
+          })
+
           await switchNetworkAsync?.(latestNetworks.current.sourceChain.id)
 
           while (
@@ -942,15 +928,13 @@ export function TransferPanel() {
           if (isSmartContractWallet) {
             showDelayedSCTxRequest()
             // we can't call this inside the withdraw method because tx is executed in an external app
-            if (shouldTrackAnalytics(l2NetworkName)) {
-              trackEvent('Withdraw', {
-                tokenSymbol: selectedToken.symbol,
-                assetType: 'ERC-20',
-                accountType: 'Smart Contract',
-                network: l2NetworkName,
-                amount: Number(amount)
-              })
-            }
+            trackEvent('Withdraw', {
+              tokenSymbol: selectedToken.symbol,
+              assetType: 'ERC-20',
+              accountType: 'Smart Contract',
+              network: l2NetworkName,
+              amount: Number(amount)
+            })
           }
 
           await latestToken.current.withdraw({
@@ -963,10 +947,7 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
+                if (!isSmartContractWallet) {
                   trackEvent('Withdraw', {
                     tokenSymbol: selectedToken.symbol,
                     assetType: 'ERC-20',
@@ -988,10 +969,7 @@ export function TransferPanel() {
                 openTransactionHistoryPanel()
                 setTransferring(false)
                 clearAmountInput()
-                if (
-                  !isSmartContractWallet &&
-                  shouldTrackAnalytics(l2NetworkName)
-                ) {
+                if (!isSmartContractWallet) {
                   trackEvent('Withdraw', {
                     assetType: 'ETH',
                     accountType: 'EOA',
