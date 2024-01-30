@@ -24,13 +24,13 @@ import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { NetworkImage } from '../common/NetworkImage'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { isTxCompleted } from './helpers'
 
 function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
-  const { parentLayer, layer } = useChainLayers()
+  const sourceNetworkName = getNetworkName(tx.sourceChainId)
+  const destinationNetworkName = getNetworkName(tx.destinationChainId)
 
   switch (tx.depositStatus) {
     case DepositStatus.L1_PENDING:
@@ -38,13 +38,13 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="yellow"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Pending
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${destinationNetworkName} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -55,7 +55,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
       return (
         <StatusBadge
           variant="red"
-          aria-label={`${parentLayer} Transaction Status`}
+          aria-label={`${sourceNetworkName} Transaction Status`}
         >
           Failed
         </StatusBadge>
@@ -66,13 +66,13 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="yellow"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${destinationNetworkName} Transaction Status`}
           >
             Pending
           </StatusBadge>
@@ -84,11 +84,14 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
-          <StatusBadge variant="red" aria-label={`${layer} Transaction Status`}>
+          <StatusBadge
+            variant="red"
+            aria-label={`${destinationNetworkName} Transaction Status`}
+          >
             Failed
           </StatusBadge>
         </div>
@@ -99,11 +102,14 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
-          <StatusBadge variant="red" aria-label={`${layer} Transaction Status`}>
+          <StatusBadge
+            variant="red"
+            aria-label={`${destinationNetworkName} Transaction Status`}
+          >
             Failed
           </StatusBadge>
         </div>
@@ -114,13 +120,13 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="green"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
           <StatusBadge
             variant="green"
-            aria-label={`${layer} Transaction Status`}
+            aria-label={`${destinationNetworkName} Transaction Status`}
           >
             Success
           </StatusBadge>
@@ -132,7 +138,7 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
         <div className="flex flex-col space-y-1">
           <StatusBadge
             variant="red"
-            aria-label={`${parentLayer} Transaction Status`}
+            aria-label={`${sourceNetworkName} Transaction Status`}
           >
             Failed
           </StatusBadge>
@@ -145,8 +151,6 @@ function DepositRowStatus({ tx }: { tx: MergedTransaction }) {
 }
 
 function DepositRowTime({ tx }: { tx: MergedTransaction }) {
-  const { parentLayer, layer } = useChainLayers()
-
   if (
     tx.depositStatus === DepositStatus.L1_PENDING ||
     tx.depositStatus === DepositStatus.L2_PENDING
@@ -156,11 +160,21 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 
   return (
     <div className="flex flex-col space-y-3">
-      <Tooltip content={<span>{parentLayer} Transaction Time</span>}>
+      <Tooltip
+        content={
+          <span>{getNetworkName(tx.sourceChainId)} Transaction Time</span>
+        }
+      >
         <TransactionDateTime standardizedDate={tx.createdAt} />
       </Tooltip>
       {tx.resolvedAt && (
-        <Tooltip content={<span>{layer} Transaction Time</span>}>
+        <Tooltip
+          content={
+            <span>
+              {getNetworkName(tx.destinationChainId)} Transaction Time
+            </span>
+          }
+        >
           <TransactionDateTime standardizedDate={tx.resolvedAt} />
         </Tooltip>
       )}
@@ -169,7 +183,9 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
-  const { parentLayer, layer } = useChainLayers()
+  const sourceNetworkName = getNetworkName(tx.sourceChainId)
+  const destinationNetworkName = getNetworkName(tx.destinationChainId)
+
   const l2TxHash = (() => {
     if (tx.l1ToL2MsgData?.l2TxID) {
       return tx.l1ToL2MsgData?.l2TxID
@@ -182,13 +198,13 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
     <div className="flex flex-col space-y-3">
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label={`${parentLayer} Transaction Link`}
+        aria-label={`${sourceNetworkName} Transaction Link`}
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">From</span>
-        <NetworkImage chainId={tx.parentChainId} />
-        <span className="pl-1">{getNetworkName(tx.parentChainId)}: </span>
+        <NetworkImage chainId={tx.sourceChainId} />
+        <span className="pl-1">{sourceNetworkName}: </span>
         <ExternalLink
-          href={`${getExplorerUrl(tx.parentChainId)}/tx/${tx.txId}`}
+          href={`${getExplorerUrl(tx.sourceChainId)}/tx/${tx.txId}`}
           className="arb-hover text-blue-link"
         >
           {shortenTxHash(tx.txId)}
@@ -197,14 +213,14 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
 
       <span
         className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-        aria-label={`${layer} Transaction Link`}
+        aria-label={`${destinationNetworkName} Transaction Link`}
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
-        <NetworkImage chainId={tx.childChainId} />
-        <span className="pl-1">{getNetworkName(tx.childChainId)}: </span>
+        <NetworkImage chainId={tx.destinationChainId} />
+        <span className="pl-1">{}: </span>
         {l2TxHash ? (
           <ExternalLink
-            href={`${getExplorerUrl(tx.childChainId)}/tx/${l2TxHash}`}
+            href={`${getExplorerUrl(tx.destinationChainId)}/tx/${l2TxHash}`}
             className="arb-hover text-blue-link"
           >
             {shortenTxHash(l2TxHash)}

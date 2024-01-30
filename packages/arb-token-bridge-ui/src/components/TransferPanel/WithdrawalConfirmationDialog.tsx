@@ -23,7 +23,6 @@ import {
 } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -52,8 +51,8 @@ export function WithdrawalConfirmationDialog(
   const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
 
-  const { parentLayer } = useChainLayers()
-  const networkName = getNetworkName(parentChain.id)
+  const destinationNetworkName = getNetworkName(parentChain.id)
+  const { isEthereumMainnetOrTestnet } = isNetwork(parentChain.id)
 
   const {
     app: { selectedToken }
@@ -100,7 +99,7 @@ export function WithdrawalConfirmationDialog(
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
             <HeadlessUIDialog.Title className="text-2xl font-medium text-white">
-              Move funds to {networkName}
+              Move funds to {destinationNetworkName}
             </HeadlessUIDialog.Title>
             <button className="arb-hover" onClick={() => closeWithReset(false)}>
               <XMarkIcon className="h-6 w-6 text-white" />
@@ -145,7 +144,7 @@ export function WithdrawalConfirmationDialog(
                   </ExternalLink>
                 </p>
 
-                {parentLayer === 'L1' && (
+                {isEthereumMainnetOrTestnet && (
                   <div className="flex flex-row items-center space-x-1">
                     <CheckIcon className="h-6 w-6 text-lime-dark" />
                     <span className="font-medium text-lime-dark">
@@ -160,9 +159,7 @@ export function WithdrawalConfirmationDialog(
                   label={
                     <span className="font-light">
                       I understand that it will take ~{confirmationPeriod}{' '}
-                      before I can claim my funds on{' '}
-                      {parentLayer === 'L1' ? 'Ethereum ' : ''}
-                      {networkName}
+                      before I can claim my funds on {destinationNetworkName}
                     </span>
                   }
                   checked={checkbox1Checked}
@@ -175,9 +172,9 @@ export function WithdrawalConfirmationDialog(
                       I understand that after claiming my funds, I’ll have to
                       send{' '}
                       <span className="font-medium">
-                        another transaction on {parentLayer}
+                        another transaction on {destinationNetworkName}
                       </span>{' '}
-                      and pay another {parentLayer} fee
+                      and pay another {destinationNetworkName} fee
                     </span>
                   }
                   checked={checkbox2Checked}

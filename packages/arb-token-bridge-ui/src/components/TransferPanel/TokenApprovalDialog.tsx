@@ -13,11 +13,10 @@ import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
@@ -53,8 +52,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
-
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
@@ -182,14 +179,17 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
   const displayAllowanceWarning = allowance && !allowance.isZero()
   const noteMessage = (() => {
+    const sourceNetworkName = getNetworkName(networks.sourceChain.id)
+    const destinationNetworkName = getNetworkName(networks.destinationChain.id)
+
     if (isDepositMode) {
       return isCctp
-        ? `the CCTP ${layer} deposit fee.`
-        : `the standard ${layer} deposit fee.`
+        ? `the CCTP ${destinationNetworkName} deposit fee.`
+        : `the standard ${destinationNetworkName} deposit fee.`
     }
     return isCctp
-      ? `the CCTP ${parentLayer} deposit fee.`
-      : `the standard ${parentLayer} deposit fee.`
+      ? `the CCTP ${sourceNetworkName} deposit fee.`
+      : `the standard ${sourceNetworkName} deposit fee.`
   })()
 
   return (
