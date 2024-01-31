@@ -97,7 +97,7 @@ export function TransactionsTableRowAction({
         content={
           <span>
             {`Please switch to ${getNetworkName(
-              tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+              tx.destinationChainId
             )} to claim your ${tx.isWithdrawal ? 'withdrawal' : 'deposit'}.`}
           </span>
         }
@@ -110,9 +110,7 @@ export function TransactionsTableRowAction({
           onClick={async () => {
             try {
               if (!currentChainIsValid) {
-                return switchNetwork?.(
-                  tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-                )
+                return switchNetwork?.(tx.destinationChainId)
               }
 
               if (tx.isCctp) {
