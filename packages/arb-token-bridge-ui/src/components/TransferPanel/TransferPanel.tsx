@@ -198,11 +198,11 @@ export function TransferPanel() {
 
   const { destinationAddress } = useDestinationAddressStore()
 
-  const { gasSummary, gasSummaryStatus } = useGasSummary()
+  const gasSummary = useGasSummary()
 
   const { transferReady, errorMessage } = useTransferReadiness({
     amount,
-    gasSummary: { ...gasSummary, status: gasSummaryStatus }
+    gasSummary: { ...gasSummary }
   })
 
   function closeWithResetTokenImportDialog() {

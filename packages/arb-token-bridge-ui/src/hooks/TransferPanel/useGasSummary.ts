@@ -16,17 +16,22 @@ import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
+import {
+  calculateEstimatedL2GasFees,
+  calculateEstimatedL1GasFees
+} from '../../components/TransferPanel/TransferPanelMainUtils'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
-  // Estimated L1 gas, denominated in Wei, represented as a BigNumber
+  // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
   estimatedL1Gas: constants.Zero,
-  // Estimated L2 gas, denominated in Wei, represented as a BigNumber
+  // Estimated Child Chain gas, denominated in Wei, represented as a BigNumber
   estimatedL2Gas: constants.Zero,
-  // Estimated L2 submission cost is precalculated and includes gas price
+  // Estimated Child Chain submission cost is precalculated and includes gas price
   estimatedL2SubmissionCost: constants.Zero
 }
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
+  status: 'loading',
   estimatedL1GasFees: 0,
   estimatedL2GasFees: 0
 }
@@ -44,30 +49,21 @@ export type GasEstimationResult = {
 }
 
 export type UseGasSummaryResult = {
+  status: GasEstimationStatus
   estimatedL1GasFees: number
   estimatedL2GasFees: number
 }
 
-export function useGasSummary(): {
-  gasSummary: UseGasSummaryResult
-  gasSummaryStatus: GasEstimationStatus
-} {
+export function useGasSummary(): UseGasSummaryResult {
   const {
-    app: { arbTokenBridge, arbTokenBridgeLoaded, selectedToken: token }
+    app: { selectedToken: token }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const [gasSummaryStatus, setGasSummaryStatus] =
-    useState<GasEstimationStatus>('loading')
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
@@ -75,12 +71,9 @@ export function useGasSummary(): {
   const amountBigNumber = useMemo(() => {
     try {
       const amountSafe = amount || '0'
+      const decimals = token ? token.decimals : nativeCurrency.decimals
 
-      if (token) {
-        return utils.parseUnits(amountSafe, token.decimals)
-      }
-
-      return utils.parseUnits(amountSafe, nativeCurrency.decimals)
+      return utils.parseUnits(amountSafe, decimals)
     } catch (error) {
       return constants.Zero
     }
@@ -92,8 +85,13 @@ export function useGasSummary(): {
   // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
   const amountDebounced = useDebouncedValue(amountBigNumber, 1_500)
 
-  const [result, setResult] = useState<GasEstimationResult>(
-    INITIAL_GAS_ESTIMATION_RESULT
+  const setGasSummaryStatus = useCallback(
+    (status: GasEstimationStatus) =>
+      setGasSummary(previousGasSummary => ({
+        ...previousGasSummary,
+        status
+      })),
+    []
   )
 
   const estimateGas = useCallback(async () => {
@@ -135,55 +133,35 @@ export function useGasSummary(): {
         }
       }
 
-      setResult(estimateGasResult)
-      setGasSummaryStatus('success')
+      setGasSummary({
+        status: 'success',
+        estimatedL1GasFees: calculateEstimatedL1GasFees(
+          estimateGasResult.estimatedL1Gas,
+          parentChainGasPrice
+        ),
+        estimatedL2GasFees: calculateEstimatedL2GasFees(
+          estimateGasResult.estimatedL2Gas,
+          childChainGasPrice,
+          estimateGasResult.estimatedL2SubmissionCost
+        )
+      })
     } catch (error) {
       console.error(error)
       setGasSummaryStatus('error')
     }
   }, [
-    // Re-run gas estimation when:
-    isDepositMode, // when user switches deposit/withdraw mode
+    walletAddress,
     amountDebounced,
-    token, // when the token changes
-    walletAddress, // when user switches account or if user is not connected
+    childChainProvider,
     setGasSummaryStatus,
-    parentChainProvider,
-    childChainProvider
+    isDepositMode,
+    parentChainGasPrice,
+    childChainGasPrice,
+    token,
+    parentChainProvider
   ])
 
-  // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL1GasFees = useMemo(() => {
-    return parseFloat(
-      utils.formatEther(result.estimatedL1Gas.mul(parentChainGasPrice))
-    )
-  }, [parentChainGasPrice, result.estimatedL1Gas])
-
-  // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
-  const estimatedL2GasFees = useMemo(
-    () =>
-      parseFloat(
-        utils.formatEther(
-          result.estimatedL2Gas
-            .mul(childChainGasPrice)
-            .add(result.estimatedL2SubmissionCost)
-        )
-      ),
-    [
-      result.estimatedL2Gas,
-      childChainGasPrice,
-      result.estimatedL2SubmissionCost
-    ]
-  )
-
   useEffect(() => {
-    // Since we are using a debounced value, it's possible for the value to be outdated
-    // Wait for it to sync before running the gas estimation
-    if (!amountDebounced.eq(amountBigNumber)) {
-      setGasSummaryStatus('loading')
-      return
-    }
-
     if (!isDepositMode) {
       if (
         isTokenArbitrumOneNativeUSDC(token?.address) ||
@@ -194,55 +172,15 @@ export function useGasSummary(): {
       }
     }
 
-    if (
-      arbTokenBridgeLoaded &&
-      arbTokenBridge &&
-      arbTokenBridge.eth &&
-      arbTokenBridge.token
-    ) {
-      estimateGas()
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    estimateGas()
   }, [
     // Re-run gas estimation when:
     estimateGas,
     isDepositMode, // when user switches deposit/withdraw mode
-    amountBigNumber, // when user changes the amount (check against the debounced value)
     amountDebounced,
     token, // when the token changes
-    parentChain.id, // when L1 and L2 network id changes
-    childChain.id,
-    arbTokenBridgeLoaded,
-    walletAddress, // when user switches account or if user is not connected
     setGasSummaryStatus
   ])
 
-  useEffect(() => {
-    // rather than a deep equal, we are checking all the properties to see if they are sync
-
-    if (
-      gasSummary?.estimatedL1GasFees !== estimatedL1GasFees ||
-      gasSummary?.estimatedL2GasFees !== estimatedL2GasFees
-    ) {
-      setGasSummary({
-        estimatedL1GasFees,
-        estimatedL2GasFees
-      })
-    }
-  }, [
-    result,
-    isDepositMode,
-    parentChainGasPrice,
-    childChainGasPrice,
-    gasSummary,
-    estimatedL1GasFees,
-    estimatedL2GasFees,
-    setGasSummary
-  ])
-
-  return {
-    gasSummary,
-    gasSummaryStatus
-  }
+  return gasSummary
 }

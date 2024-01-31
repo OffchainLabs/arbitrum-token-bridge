@@ -44,8 +44,9 @@ function TransferPanelSummaryContainer({
 
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
-    gasSummaryStatus,
-    gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
+    status: gasSummaryStatus,
+    estimatedL1GasFees,
+    estimatedL2GasFees
   } = useGasSummary()
 
   const [networks] = useNetworks()

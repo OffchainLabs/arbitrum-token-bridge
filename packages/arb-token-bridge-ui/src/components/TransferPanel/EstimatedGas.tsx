@@ -65,8 +65,9 @@ export function EstimatedGas({
     ? networks.sourceChain.id === parentChain.id
     : networks.destinationChain.id === parentChain.id
   const {
-    gasSummaryStatus,
-    gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
+    status: gasSummaryStatus,
+    estimatedL1GasFees,
+    estimatedL2GasFees
   } = useGasSummary()
   const parentChainName = getNetworkName(parentChain.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
