@@ -202,7 +202,7 @@ export function TransferPanel() {
 
   const { transferReady, errorMessage } = useTransferReadiness({
     amount,
-    gasSummary: { ...gasSummary }
+    gasSummary
   })
 
   function closeWithResetTokenImportDialog() {
