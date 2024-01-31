@@ -31,11 +31,17 @@ type TxDetailsStore = {
 export const useTxDetailsStore = create<TxDetailsStore>(set => ({
   tx: null,
   isOpen: false,
-  open: (tx: MergedTransaction) =>
+  open: (tx: MergedTransaction) => {
     set(() => ({
-      tx,
-      isOpen: true
-    })),
+      tx
+    }))
+    // this is so that we can trigger transition when opening the panel
+    setTimeout(() => {
+      set(() => ({
+        isOpen: true
+      }))
+    }, 0)
+  },
   close: () => set({ isOpen: false }),
   reset: () => set({ tx: null })
 }))

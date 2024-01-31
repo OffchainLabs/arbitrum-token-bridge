@@ -85,25 +85,30 @@ export const TransactionsTableDetails = ({
   const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-40" onClose={close}>
+    <Transition show={isOpen} as={Fragment}>
+      <Dialog
+        as="div"
+        open={typeof tx !== 'undefined'}
+        className="relative z-40"
+        onClose={close}
+      >
         <Transition.Child
           as={Fragment}
-          enter="ease-out"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-70"
           leave="ease-in duration-200"
           leaveFrom="opacity-70"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black" />
+          <div className="fixed inset-0 bg-black" aria-hidden="true" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
-              enter="ease-out"
+              enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
