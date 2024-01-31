@@ -5,8 +5,9 @@ import useSWRImmutable from 'swr/immutable'
 import { ApiResponseSuccess } from '../pages/api/screenings'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { isNetwork } from '../util/networks'
+import { Address } from '../util/AddressUtils'
 
-async function isBlocked(address: `0x${string}`): Promise<boolean> {
+async function isBlocked(address: Address): Promise<boolean> {
   if (
     process.env.NODE_ENV !== 'production' ||
     process.env.NEXT_PUBLIC_IS_E2E_TEST
@@ -27,7 +28,7 @@ async function isBlocked(address: `0x${string}`): Promise<boolean> {
   return ((await response.json()) as ApiResponseSuccess).blocked
 }
 
-async function fetcher(address: `0x${string}`): Promise<boolean> {
+async function fetcher(address: Address): Promise<boolean> {
   const accountIsBlocked = await isBlocked(address)
 
   if (accountIsBlocked) {
