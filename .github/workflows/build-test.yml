@@ -205,7 +205,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           start: yarn start
-          command: yarn test:e2e
+          command: yarn test:ci:e2e
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           browser: chrome
@@ -214,7 +214,6 @@ jobs:
           PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
           SKIP_METAMASK_SETUP: true
-          DISPLAY: :0.0
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4
