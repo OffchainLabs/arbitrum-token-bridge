@@ -138,6 +138,8 @@ function parseTransferToMergedTransaction(
     isCctp: true,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     childChainId: isDeposit ? destinationChainId : sourceChainId,
+    sourceChainId,
+    destinationChainId,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,
