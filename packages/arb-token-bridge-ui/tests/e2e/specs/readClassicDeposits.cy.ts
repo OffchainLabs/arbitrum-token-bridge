@@ -73,8 +73,14 @@ describe('Read classic deposit messages', () => {
       const l2TxHash =
         '0xd3ff2a70a115411e1ae4917351dca49281368684394d0dcac136fa08d9d9b436'
 
-      cy.findByLabelText(/Ethereum transaction status/i).should('contain', 'Success')
-      cy.findByLabelText(/Arbitrum One transaction status/i).should('contain', 'Success')
+      cy.findByLabelText(/Ethereum transaction status/i).should(
+        'contain',
+        'Success'
+      )
+      cy.findByLabelText(/Arbitrum One transaction status/i).should(
+        'contain',
+        'Success'
+      )
 
       cy.findByLabelText(/Ethereum transaction link/i).should(
         'contain',
@@ -122,8 +128,14 @@ describe('Read classic deposit messages', () => {
       const l2TxHash =
         '0x6cecd3bfc3ec73181c4ac0253d3f51e5aa8d26157ca7439ff9ab465de14a436f'
 
-      cy.findByLabelText(/Ethereum transaction status/i).should('contain', 'Success')
-      cy.findByLabelText(/Arbitrum One transaction status/i).should('contain', 'Success')
+      cy.findByLabelText(/Ethereum transaction status/i).should(
+        'contain',
+        'Success'
+      )
+      cy.findByLabelText(/Arbitrum One transaction status/i).should(
+        'contain',
+        'Success'
+      )
 
       cy.findByLabelText(/Ethereum transaction link/i).should(
         'contain',
