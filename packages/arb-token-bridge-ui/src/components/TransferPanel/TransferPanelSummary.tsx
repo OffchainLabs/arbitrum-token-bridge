@@ -41,7 +41,7 @@ export type UseGasSummaryResult = {
   estimatedL2GasFees: number
 }
 
-function getDepositGasFeeTooltip(chainId: ChainId) {
+function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
   const networkName = getNetworkName(chainId)
 
@@ -426,7 +426,7 @@ export function TransferPanelSummary({
               <span className="pl-4 font-light">
                 {getNetworkName(parentChain.id)} gas
               </span>
-              <Tooltip content={getDepositGasFeeTooltip(parentChain.id)}>
+              <Tooltip content={getGasFeeTooltip(parentChain.id)}>
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
@@ -449,7 +449,7 @@ export function TransferPanelSummary({
               <span className="pl-4 font-light ">
                 {getNetworkName(childChain.id)} gas
               </span>
-              <Tooltip content={getDepositGasFeeTooltip(childChain.id)}>
+              <Tooltip content={getGasFeeTooltip(childChain.id)}>
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>
