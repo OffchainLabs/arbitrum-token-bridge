@@ -15,6 +15,7 @@ import {
 import { MergedTransaction } from '../../state/app/state'
 import { TabButton } from '../common/Tab'
 import { TransactionsTableDetails } from './TransactionsTableDetails'
+import { Address } from '../../util/AddressUtils'
 
 const tabClasses =
   'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80'
@@ -42,7 +43,7 @@ export const useTxDetailsStore = create<TxDetailsStore>(set => ({
 export const TransactionHistory = ({
   props
 }: {
-  props: UseTransactionHistoryResult & { address: `0x${string}` | undefined }
+  props: UseTransactionHistoryResult & { address: Address | undefined }
 }) => {
   const { transactions, address } = props
 
