@@ -141,7 +141,7 @@ export function EstimatedGas({
             })}
           </span>
 
-          <NativeCurrencyPrice amountInEth={estimatedGasFee} />
+          <NativeCurrencyPrice amount={estimatedGasFee} />
         </div>
       )}
     </div>

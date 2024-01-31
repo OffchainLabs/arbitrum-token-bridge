@@ -7,10 +7,10 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatUSD } from '../../util/NumberUtils'
 
 export function NativeCurrencyPrice({
-  amountInEth,
+  amount,
   showBrackets = false
 }: {
-  amountInEth: number
+  amount: number
   showBrackets?: boolean
 }) {
   const {
@@ -33,7 +33,7 @@ export function NativeCurrencyPrice({
   return (
     <span className="tabular-nums">
       {showBrackets && '('}
-      {formatUSD(ethToUSD(amountInEth))}
+      {formatUSD(ethToUSD(amount))}
       {showBrackets && ')'}
     </span>
   )

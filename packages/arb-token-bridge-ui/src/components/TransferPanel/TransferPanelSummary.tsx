@@ -135,10 +135,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
               symbol: nativeCurrency.symbol
             }
           )}{' '}
-          <NativeCurrencyPrice
-            amountInEth={estimatedTotalGasFees}
-            showBrackets
-          />
+          <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
         </span>
       </div>
 
@@ -158,7 +155,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             isParentChain={!isDepositMode}
           />{' '}
           {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
-          <NativeCurrencyPrice amountInEth={Number(amount)} showBrackets />
+          <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>
 
