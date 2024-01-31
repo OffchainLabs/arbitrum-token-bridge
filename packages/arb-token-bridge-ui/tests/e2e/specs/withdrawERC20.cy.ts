@@ -67,7 +67,7 @@ describe('Withdraw ERC20 Token', () => {
               .siblings()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findAllByText(/gas$/)
+            cy.findAllByText(/gas fee$/)
               .first()
               .parent()
               .siblings()

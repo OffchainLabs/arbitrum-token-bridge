@@ -39,7 +39,7 @@ describe('Withdraw ETH', () => {
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findAllByText(/gas$/)
+            cy.findAllByText(/gas fee$/)
               .first()
               .parent()
               .siblings()

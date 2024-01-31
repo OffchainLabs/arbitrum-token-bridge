@@ -154,14 +154,10 @@ export function useGasSummary(): {
 
   // Estimated L1 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL1GasFees = useMemo(() => {
-    const gasPrice = isDepositMode ? parentChainGasPrice : childChainGasPrice
-    return parseFloat(utils.formatEther(result.estimatedL1Gas.mul(gasPrice)))
-  }, [
-    isDepositMode,
-    parentChainGasPrice,
-    childChainGasPrice,
-    result.estimatedL1Gas
-  ])
+    return parseFloat(
+      utils.formatEther(result.estimatedL1Gas.mul(parentChainGasPrice))
+    )
+  }, [parentChainGasPrice, result.estimatedL1Gas])
 
   // Estimated L2 gas fees, denominated in Ether, represented as a floating point number
   const estimatedL2GasFees = useMemo(

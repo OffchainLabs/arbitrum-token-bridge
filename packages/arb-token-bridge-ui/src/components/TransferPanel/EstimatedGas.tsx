@@ -117,7 +117,7 @@ export function EstimatedGas({
           {isSourceChain
             ? networks.sourceChain.name
             : networks.destinationChain.name}{' '}
-          gas
+          gas fee
         </span>
         <Tooltip content={layerGasFeeTooltipContent}>
           <InformationCircleIcon className="h-4 w-4" />
