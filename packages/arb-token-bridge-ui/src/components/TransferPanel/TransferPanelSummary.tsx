@@ -7,7 +7,7 @@ import { Tooltip } from '../common/Tooltip'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
@@ -17,7 +17,6 @@ import {
   isTokenArbitrumOneNativeUSDC,
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
-import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -41,21 +40,17 @@ export type UseGasSummaryResult = {
   estimatedL2GasFees: number
 }
 
-const depositGasFeeTooltip = ({
-  l1NetworkName,
-  l2NetworkName,
-  depositToOrbit = false
-}: {
-  l1NetworkName: string
-  l2NetworkName: string
-  depositToOrbit?: boolean
-}) => ({
-  L1: `${l1NetworkName} fees go to Ethereum Validators.`,
-  L2: `${
-    depositToOrbit ? l1NetworkName : l2NetworkName
-  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${l2NetworkName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
-})
+function getGasFeeTooltip(chainId: ChainId) {
+  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const networkName = getNetworkName(chainId)
+
+  if (isEthereumMainnetOrTestnet) {
+    return `${networkName} fees go to ${networkName} Validators.`
+  }
+
+  // Arbitrum and Orbit chains
+  return `${networkName} fees are collected by the chain to cover costs of execution. This is an estimated fee. If the true fee is lower, you'll be refunded.`
+}
 
 export function useGasSummary(
   amount: BigNumber,
@@ -280,26 +275,11 @@ export function TransferPanelSummary({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
-
-  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    if (!isDepositMode) {
-      return null
-    }
-
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(childChain.id)
-
-    return depositGasFeeTooltip({
-      l1NetworkName: getNetworkName(parentChain.id),
-      l2NetworkName: getNetworkName(childChain.id),
-      depositToOrbit: isDepositToOrbitChain
-    })[layer]
-  }
 
   const isBridgingETH = token === null && !nativeCurrency.isCustom
   const showPrice = isBridgingETH && !isNetwork(parentChain.id).isTestnet
@@ -437,8 +417,10 @@ export function TransferPanelSummary({
         <div className="flex flex-col space-y-2 text-sm text-gray-dark lg:text-base">
           <div className="flex flex-row justify-between">
             <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light">{parentLayer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(parentLayer)}>
+              <span className="pl-4 font-light">
+                {getNetworkName(parentChain.id)} gas
+              </span>
+              <Tooltip content={getGasFeeTooltip(parentChain.id)}>
                 <InformationCircleIcon className="h-4 w-4" />
               </Tooltip>
             </div>
@@ -458,8 +440,10 @@ export function TransferPanelSummary({
           </div>
           <div className="flex flex-row justify-between text-gray-dark">
             <div className="flex flex-row items-center space-x-2">
-              <span className="pl-4 font-light ">{layer} gas</span>
-              <Tooltip content={layerGasFeeTooltipContent(layer)}>
+              <span className="pl-4 font-light ">
+                {getNetworkName(childChain.id)} gas
+              </span>
+              <Tooltip content={getGasFeeTooltip(childChain.id)}>
                 <InformationCircleIcon className="h-4 w-4 " />
               </Tooltip>
             </div>

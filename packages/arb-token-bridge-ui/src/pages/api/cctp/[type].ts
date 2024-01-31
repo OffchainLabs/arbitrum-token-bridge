@@ -1,6 +1,7 @@
 import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
+import { Address } from '../../../util/AddressUtils'
 
 const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
 if (!subgraphUrl) {
@@ -20,7 +21,7 @@ export function getSubgraphClient(subgraph: string) {
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
-    walletAddress: `0x${string}`
+    walletAddress: Address
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
@@ -35,26 +36,26 @@ export enum ChainDomain {
 export type MessageReceived = {
   blockNumber: string
   blockTimestamp: string
-  caller: `0x${string}`
+  caller: Address
   id: string
   messageBody: string
   nonce: string
-  sender: `0x${string}`
+  sender: Address
   sourceDomain: `${ChainDomain}`
-  transactionHash: `0x${string}`
+  transactionHash: Address
 }
 
 export type MessageSent = {
-  attestationHash: `0x${string}`
+  attestationHash: Address
   blockNumber: string
   blockTimestamp: string
   id: string
   message: string
   nonce: string
-  sender: `0x${string}`
-  recipient: `0x${string}`
+  sender: Address
+  recipient: Address
   sourceDomain: `${ChainDomain}`
-  transactionHash: `0x${string}`
+  transactionHash: Address
   amount: string
 }
 

@@ -236,7 +236,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
         tokenAddress: null,
         depositStatus: DepositStatus.L1_PENDING,
         parentChainId: parentChain.id,
-        childChainId: childChain.id
+        childChainId: childChain.id,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       })
 
       addDepositToCache({
@@ -275,6 +277,8 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       childChain.id,
       childChainProvider,
       nativeCurrency,
+      networks.destinationChain.id,
+      networks.sourceChain.id,
       parentChain.id,
       parentChainProvider,
       updateErc20L1Balance,
@@ -328,7 +332,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
           blockNum: null,
           tokenAddress: null,
           parentChainId: parentChain.id,
-          childChainId: childChain.id
+          childChainId: childChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id
         })
 
         const receipt = await tx.wait()
@@ -355,7 +361,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       nativeCurrency.symbol,
       parentChain.id,
       updateEthBalances,
-      walletAddress
+      walletAddress,
+      networks.sourceChain.id,
+      networks.destinationChain.id
     ]
   )
 
@@ -572,7 +580,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
           blockNum: null,
           tokenAddress: erc20L1Address,
           parentChainId: parentChain.id,
-          childChainId: childChain.id
+          childChainId: childChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id
         })
 
         addDepositToCache({
@@ -624,7 +634,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       updateErc20L1Balance,
       updateEthBalances,
       updateTokenData,
-      walletAddress
+      walletAddress,
+      networks.sourceChain.id,
+      networks.destinationChain.id
     ]
   )
 
@@ -784,7 +796,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
           blockNum: null,
           tokenAddress: erc20L1Address,
           parentChainId: parentChain.id,
-          childChainId: childChain.id
+          childChainId: childChain.id,
+          sourceChainId: networks.sourceChain.id,
+          destinationChainId: networks.destinationChain.id
         })
 
         const receipt = await tx.wait()
@@ -811,7 +825,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       parentChain.id,
       parentChainProvider,
       updateTokenData,
-      walletAddress
+      walletAddress,
+      networks.sourceChain.id,
+      networks.destinationChain.id
     ]
   )
 
