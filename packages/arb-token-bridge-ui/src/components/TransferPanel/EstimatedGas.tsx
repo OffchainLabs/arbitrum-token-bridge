@@ -2,9 +2,8 @@ import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-import { ChainLayer, useChainLayers } from '../../hooks/useChainLayers'
 import { useAppState } from '../../state'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { formatAmount } from '../../util/NumberUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -15,21 +14,17 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
 import { isTokenUSDC } from '../../util/TokenUtils'
 
-const gasFeeTooltip = ({
-  parentChainName,
-  childChainName,
-  depositToOrbit = false
-}: {
-  parentChainName: string
-  childChainName: string
-  depositToOrbit?: boolean
-}) => ({
-  L1: `${parentChainName} fees go to ${parentChainName} Validators.`,
-  L2: `${
-    depositToOrbit ? parentChainName : childChainName
-  } fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`,
-  Orbit: `${childChainName} fees are collected by the chain to cover costs of execution. This is an estimated fee, if the true fee is lower, you'll be refunded.`
-})
+function getGasFeeTooltip(chainId: ChainId) {
+  const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
+  const networkName = getNetworkName(chainId)
+
+  if (isEthereumMainnetOrTestnet) {
+    return `${networkName} fees go to ${networkName} Validators.`
+  }
+
+  // Arbitrum and Orbit chains
+  return `${networkName} fees are collected by the chain to cover costs of execution. This is an estimated fee. If the true fee is lower, you'll be refunded.`
+}
 
 function StyledLoader() {
   return (
@@ -64,7 +59,6 @@ export function EstimatedGas({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
-  const { parentLayer, layer: childLayer } = useChainLayers()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const isSourceChain = chainType === 'source'
   const isParentChain = isSourceChain
@@ -75,13 +69,11 @@ export function EstimatedGas({
     gasSummary: { estimatedL1GasFees, estimatedL2GasFees }
   } = useGasSummary()
   const parentChainName = getNetworkName(parentChain.id)
-  const childChainName = getNetworkName(childChain.id)
   const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = useMemo(
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
   )
-  const layer = isParentChain ? parentLayer : childLayer
 
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
@@ -94,15 +86,13 @@ export function EstimatedGas({
     return isParentChain ? estimatedL1GasFees : estimatedL2GasFees
   }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentChain])
 
-  const layerGasFeeTooltipContent = (layer: ChainLayer) => {
-    const { isOrbitChain: isDepositToOrbitChain } = isNetwork(childChain.id)
-
-    return gasFeeTooltip({
-      parentChainName,
-      childChainName,
-      depositToOrbit: isDepositToOrbitChain
-    })[layer]
-  }
+  const layerGasFeeTooltipContent = useMemo(
+    () =>
+      getGasFeeTooltip(
+        isSourceChain ? networks.sourceChain.id : networks.destinationChain.id
+      ),
+    [isSourceChain, networks.sourceChain.id, networks.destinationChain.id]
+  )
 
   if (isWithdrawalParentChain) {
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
@@ -129,7 +119,7 @@ export function EstimatedGas({
             : networks.destinationChain.name}{' '}
           gas
         </span>
-        <Tooltip content={layerGasFeeTooltipContent(layer)}>
+        <Tooltip content={layerGasFeeTooltipContent}>
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>
       </div>
