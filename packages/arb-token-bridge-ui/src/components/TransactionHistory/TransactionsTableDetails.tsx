@@ -27,7 +27,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 const DetailsBox = ({
   children,
   header
-}: PropsWithChildren & { header?: string }) => {
+}: PropsWithChildren<{ header?: string }>) => {
   return (
     <div className="my-2 flex w-full flex-col rounded border border-white/20 bg-black px-4 py-3 font-light text-white">
       {header && (
