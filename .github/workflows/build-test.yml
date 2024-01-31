@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
@@ -88,7 +88,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -106,7 +106,7 @@ jobs:
     if: needs.check-files.outputs.run_tests == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -123,7 +123,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -137,7 +137,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -157,7 +157,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.e2eFiles }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - id: set-matrix
         run: |
@@ -177,122 +177,58 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Chown workspace
-        run: chown -R $(whoami) .
-
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
-
-      - name: Cache Docker layers
-        uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
-
-      - name: Make .e2e.env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          envkey_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
-          envkey_SKIP_METAMASK_SETUP: true
-          envkey_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
-          envkey_NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          envkey_TEST_FILE: ${{ matrix.tests.file }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .e2e.env
-
-      - name: Make .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_NEXT_PUBLIC_IS_E2E_TEST: true
-          envkey_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          envkey_NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-          envkey_NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
-          directory: ./packages/arb-token-bridge-ui/
-          file_name: .env
-
-      - name: Make synpress .env
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_CYPRESS_GROUP: medium-resolution
-          envkey_DISPLAY_HEIGHT: 768
-          envkey_DISPLAY_WIDTH: 1366
-          envkey_SE_SCREEN_HEIGHT: 768
-          envkey_SE_SCREEN_WIDTH: 1366
-          file_name: medium-res.env
-
-      - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+        uses: actions/checkout@v4
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name: Run e2e tests
-        id: e2e-run
+      - name: Install linux deps
         run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
-          exitcode=$(docker wait synpress-test)
-          if [[ $exitcode -eq 0 ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
       
-      - name: Create screenshots directory
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
-
-      - name: Copy screenshots from docker container volumes
-        if: steps.e2e-run.outputs.status == 'failed'
+      - name: Run xvfb and fluxbox
         run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+          Xvfb :0 -screen 0 1024x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
 
-      - name: Upload screenshots results
-        if: steps.e2e-run.outputs.status == 'failed'
-        uses: actions/upload-artifact@v4
+      - name: Set up the local node
+        uses: OffchainLabs/actions/run-nitro-test-node@main
+
+      - name: Run e2e tests (cypress-action)
+        uses: cypress-io/github-action@v6
         with:
-          name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+          start: yarn start
+          command: yarn test:ci:e2e
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          spec: ${{ matrix.tests.file }}
+        env:
+          NEXT_PUBLIC_IS_E2E_TEST: true
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+          NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL: ${{ secrets.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL }}
+          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          CYPRESS_RECORD_VIDEO: ${{ matrix.tests.recordVideo }}
+          SKIP_METAMASK_SETUP: true
+          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
+          DISPLAY: :0.0
 
-      - name: Create videos directory
-        if: matrix.tests.recordVideo == 'true'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Copy videos from docker container volumes
-        if: matrix.tests.recordVideo == 'true'
-        run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/videos packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Upload videos results
-        if: matrix.tests.recordVideo == 'true'
+      - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: e2e-videos-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-          compression-level: 0
-          retention-days: 3
-            
-      - name: Throw error if tests failed
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: exit 1
+          name: e2e-artifacts
+          path: |
+            tests/e2e/videos
+            tests/e2e/screenshots
+        continue-on-error: true
 
   test-e2e-success:
     name: "Test E2E Success"
@@ -315,7 +251,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install gh-actions-cache
         run: gh extension install actions/gh-actions-cache
