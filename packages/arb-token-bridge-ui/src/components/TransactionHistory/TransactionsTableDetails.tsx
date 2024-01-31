@@ -1,4 +1,3 @@
-import { useAccount } from 'wagmi'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Fragment, PropsWithChildren, useMemo } from 'react'
@@ -23,6 +22,7 @@ import { shortenAddress } from '../../util/CommonUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getProvider } from './helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { Address } from '../../util/AddressUtils'
 
 const DetailsBox = ({
   children,
@@ -38,8 +38,11 @@ const DetailsBox = ({
   )
 }
 
-export const TransactionsTableDetails = () => {
-  const { address } = useAccount()
+export const TransactionsTableDetails = ({
+  address
+}: {
+  address: Address | undefined
+}) => {
   const { tx: txFromStore, isOpen, close, reset } = useTxDetailsStore()
   const { ethToUSD } = useETHPrice()
   const { transactions } = useTransactionHistory(address)

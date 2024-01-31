@@ -126,7 +126,7 @@ export const TransactionHistory = ({
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
-      <TransactionsTableDetails />
+      <TransactionsTableDetails address={address} />
     </>
   )
 }
