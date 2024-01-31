@@ -1,5 +1,6 @@
 import { TransactionReceipt } from '@ethersproject/providers'
 import { utils } from 'ethers'
+import { Address } from '../AddressUtils'
 
 export function getAttestationHashAndMessageFromReceipt(
   txReceipt: TransactionReceipt
@@ -16,10 +17,10 @@ export function getAttestationHashAndMessageFromReceipt(
   const messageBytes = utils.defaultAbiCoder.decode(
     ['bytes'],
     log.data
-  )[0] as `0x${string}`
+  )[0] as Address
 
   return {
     messageBytes,
-    attestationHash: utils.keccak256(messageBytes) as `0x${string}`
+    attestationHash: utils.keccak256(messageBytes) as Address
   }
 }
