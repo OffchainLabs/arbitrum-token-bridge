@@ -29,6 +29,7 @@ import { isTxPending } from './helpers'
 import { PendingDepositWarning } from './PendingDepositWarning'
 import { TransactionsTableRow } from './TransactionsTableRow'
 import { EmptyTransactionHistory } from './EmptyTransactionHistory'
+import { Address } from '../../util/AddressUtils'
 
 export const ContentWrapper = ({
   children,
@@ -131,7 +132,7 @@ const FailedChainPairsTooltip = ({
 }
 
 type TransactionHistoryTableProps = UseTransactionHistoryResult & {
-  address: `0x${string}` | undefined
+  address: Address | undefined
   selectedTabIndex: number
   oldestTxTimeAgoString: string
 }
@@ -199,7 +200,7 @@ export const TransactionHistoryTable = (
     return (
       <EmptyTransactionHistory
         loading={loading}
-        error={typeof error !== 'undefined'}
+        isError={typeof error !== 'undefined'}
         paused={paused}
         resume={resume}
         tab={isPendingTab ? 'pending' : 'settled'}

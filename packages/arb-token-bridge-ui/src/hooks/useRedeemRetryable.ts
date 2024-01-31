@@ -12,6 +12,7 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { getProviderForChainId } from './useNetworks'
 import { useTransactionHistory } from './useTransactionHistory'
+import { Address } from '../util/AddressUtils'
 
 export type UseRedeemRetryableResult = {
   redeem: () => void
@@ -20,7 +21,7 @@ export type UseRedeemRetryableResult = {
 
 export function useRedeemRetryable(
   tx: MergedTransaction,
-  address: `0x${string}` | undefined
+  address: Address | undefined
 ): UseRedeemRetryableResult {
   const { data: signer } = useSigner({ chainId: tx.childChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)

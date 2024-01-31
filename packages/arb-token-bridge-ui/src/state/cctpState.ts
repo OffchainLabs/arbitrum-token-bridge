@@ -515,7 +515,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   const { isSmartContractWallet } = useAccountType()
 
   const { data: signer } = useSigner({
-    chainId: tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+    chainId: tx.destinationChainId
   })
 
   const claim = useCallback(async () => {

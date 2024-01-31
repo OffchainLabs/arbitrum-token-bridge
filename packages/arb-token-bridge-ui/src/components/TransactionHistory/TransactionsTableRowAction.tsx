@@ -14,6 +14,7 @@ import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
+import { Address } from '../../util/AddressUtils'
 
 export function TransactionsTableRowAction({
   tx,
@@ -24,7 +25,7 @@ export function TransactionsTableRowAction({
   tx: MergedTransaction
   isError: boolean
   type: 'deposits' | 'withdrawals'
-  address: `0x${string}` | undefined
+  address: Address | undefined
 }) {
   const { chain } = useNetwork()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
@@ -39,11 +40,8 @@ export function TransactionsTableRowAction({
     if (!chain) {
       return false
     }
-    if (type === 'deposits') {
-      return chain.id === tx.childChainId
-    }
-    return chain.id === tx.parentChainId
-  }, [type, chain, tx.parentChainId, tx.childChainId])
+    return chain.id === tx.destinationChainId
+  }, [chain, tx.destinationChainId])
 
   const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
     if (!chain) {
@@ -75,9 +73,7 @@ export function TransactionsTableRowAction({
   const handleClaim = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForClaim) {
-        await switchNetworkAsync?.(
-          tx.isWithdrawal ? tx.parentChainId : tx.childChainId
-        )
+        await switchNetworkAsync?.(tx.destinationChainId)
       }
 
       if (tx.isCctp) {

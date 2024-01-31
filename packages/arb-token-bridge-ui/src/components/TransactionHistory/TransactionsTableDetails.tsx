@@ -22,6 +22,7 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { getProvider } from './helpers'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 
 const DetailsBox = ({
   children,
@@ -67,19 +68,18 @@ export const TransactionsTableDetails = () => {
 
   const showPriceInUsd =
     isNetwork(tx.parentChainId).isEthereumMainnet &&
-    tx.asset === 'ETH' &&
+    tx.assetType === AssetType.ETH &&
     !nativeCurrency.isCustom
 
-  const isDifferentFromAddress =
+  const isDifferentSourceAddress =
     address.toLowerCase() !== tx.sender?.toLowerCase()
-  const isDifferentToAddress =
+  const isDifferentDestinationAddress =
     address.toLowerCase() !== tx.destination?.toLowerCase()
 
-  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destChainId = tx.isWithdrawal ? tx.parentChainId : tx.childChainId
+  const { sourceChainId, destinationChainId } = tx
 
-  const sourceChainName = getNetworkName(sourceChainId)
-  const destChainName = getNetworkName(destChainId)
+  const sourceNetworkName = getNetworkName(sourceChainId)
+  const destinationNetworkName = getNetworkName(destinationChainId)
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -145,12 +145,12 @@ export const TransactionsTableDetails = () => {
                   <div className="flex space-x-4">
                     <div className="flex items-center space-x-2">
                       <NetworkImage chainId={sourceChainId} />
-                      <span>{sourceChainName}</span>
+                      <span>{sourceNetworkName}</span>
                     </div>
                     <ArrowRightIcon width={16} />
                     <div className="flex space-x-2">
-                      <NetworkImage chainId={destChainId} />
-                      <span>{destChainName}</span>
+                      <NetworkImage chainId={destinationChainId} />
+                      <span>{destinationNetworkName}</span>
                     </div>
                   </div>
                 </DetailsBox>
@@ -177,9 +177,10 @@ export const TransactionsTableDetails = () => {
                   </div>
                 </DetailsBox>
 
-                {(isDifferentFromAddress || isDifferentToAddress) && (
+                {(isDifferentSourceAddress ||
+                  isDifferentDestinationAddress) && (
                   <DetailsBox header="Custom Address">
-                    {isDifferentFromAddress && (
+                    {isDifferentSourceAddress && (
                       <span className="text-xs">
                         Funds received from{' '}
                         <ExternalLink
@@ -192,14 +193,14 @@ export const TransactionsTableDetails = () => {
                         </ExternalLink>
                       </span>
                     )}
-                    {isDifferentToAddress && (
+                    {isDifferentDestinationAddress && (
                       <span className="text-xs">
                         Funds sent to{' '}
                         <ExternalLink
                           className="arb-hover underline"
-                          href={`${getExplorerUrl(destChainId)}/address/${
-                            tx.destination
-                          }`}
+                          href={`${getExplorerUrl(
+                            destinationChainId
+                          )}/address/${tx.destination}`}
                         >
                           {shortenAddress(String(tx.destination))}
                         </ExternalLink>

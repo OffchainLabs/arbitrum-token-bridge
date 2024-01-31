@@ -10,12 +10,10 @@ import {
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { formatAmount } from '../../util/NumberUtils'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
-import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { NetworkImage } from '../common/NetworkImage'
 import {
-  getDestinationChainId,
   getDestinationNetworkTxId,
-  getSourceChainId,
   isTxClaimable,
   isTxExpired,
   isTxFailed,
@@ -28,12 +26,10 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TransactionsTableTokenImage } from './TransactionsTableTokenImage'
 import { useTxDetailsStore } from './TransactionHistory'
 import { TransactionsTableExternalLink } from './TransactionsTableExternalLink'
+import { Address } from '../../util/AddressUtils'
 
 const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
-  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destinationChainId = tx.isWithdrawal
-    ? tx.parentChainId
-    : tx.childChainId
+  const { sourceChainId, destinationChainId } = tx
 
   if (isTxFailed(tx)) {
     return (
@@ -117,20 +113,16 @@ export function TransactionsTableRow({
   className = ''
 }: {
   tx: MergedTransaction
-  address: `0x${string}` | undefined
+  address: Address | undefined
   className?: string
 }) {
   const { open: openTxDetails } = useTxDetailsStore()
 
-  const sourceChainId = getSourceChainId(tx)
-  const destinationChainId = getDestinationChainId(tx)
+  const { sourceChainId, destinationChainId } = tx
 
   const [txRelativeTime, setTxRelativeTime] = useState(
     dayjs(tx.createdAt).fromNow()
   )
-
-  const { isEthereumMainnetOrTestnet: isSourceChainIdEthereum } =
-    isNetwork(sourceChainId)
 
   const isClaimableTx = tx.isCctp || tx.isWithdrawal
 
@@ -147,15 +139,9 @@ export function TransactionsTableRow({
     () =>
       sanitizeTokenSymbol(tx.asset, {
         erc20L1Address: tx.tokenAddress,
-        chainId: isSourceChainIdEthereum ? tx.parentChainId : tx.childChainId
+        chainId: tx.sourceChainId
       }),
-    [
-      tx.asset,
-      tx.tokenAddress,
-      tx.parentChainId,
-      tx.childChainId,
-      isSourceChainIdEthereum
-    ]
+    [tx.asset, tx.tokenAddress, tx.sourceChainId]
   )
 
   const isError = useMemo(() => {

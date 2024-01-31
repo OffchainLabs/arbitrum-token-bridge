@@ -26,6 +26,7 @@ import {
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
+import { Address } from '../../util/AddressUtils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -121,7 +122,7 @@ const LastStepEndItem = ({
   address
 }: {
   tx: MergedTransaction
-  address: `0x${string}` | undefined
+  address: Address | undefined
 }) => {
   const destinationNetworkTxId = getDestinationNetworkTxId(tx)
   const destinationChainId = tx.isWithdrawal
@@ -159,14 +160,11 @@ export const TransactionsTableDetailsSteps = ({
   address
 }: {
   tx: MergedTransaction
-  address: `0x${string}` | undefined
+  address: Address | undefined
 }) => {
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const sourceChainId = tx.isWithdrawal ? tx.childChainId : tx.parentChainId
-  const destinationChainId = tx.isWithdrawal
-    ? tx.parentChainId
-    : tx.childChainId
+  const { sourceChainId, destinationChainId } = tx
 
   const sourceNetworkName = getNetworkName(sourceChainId)
   const destinationNetworkName = getNetworkName(destinationChainId)
