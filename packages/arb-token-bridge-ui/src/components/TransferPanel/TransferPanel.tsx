@@ -604,7 +604,9 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         },
         parentChainId: parentChain.id,
-        childChainId: childChain.id
+        childChainId: childChain.id,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       }
 
       addPendingTransaction(newTransfer)
