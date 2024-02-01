@@ -291,6 +291,7 @@ export type RegisterLocalNetworkParams = {
 
 const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
   l1Network: defaultL1Network,
+  // @ts-ignore - this is new in nitro & token bridge setup
   l2Network: defaultL2Network
 }
 
