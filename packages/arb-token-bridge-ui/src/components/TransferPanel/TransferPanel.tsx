@@ -206,6 +206,14 @@ export function TransferPanel() {
     gasSummary
   })
 
+  const { color: sourceChainUIcolor } = getBridgeUiConfigForChain(
+    networks.sourceChain.id
+  )
+
+  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  )
+
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
@@ -1062,12 +1070,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
+                borderColor: transferReady.deposit
+                  ? destinationChainUIcolor.primary
+                  : sourceChainUIcolor.primary,
                 backgroundColor: transferReady.deposit
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
+                  ? destinationChainUIcolor.secondary
                   : undefined
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className="w-full border bg-eth-dark py-4 text-lg disabled:border lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
@@ -1092,12 +1102,15 @@ export function TransferPanel() {
                 }
               }}
               style={{
+                borderColor: transferReady.withdrawal
+                  ? destinationChainUIcolor.primary
+                  : sourceChainUIcolor.primary,
                 backgroundColor: transferReady.withdrawal
                   ? getBridgeUiConfigForChain(networks.destinationChain.id)
                       .color.secondary
                   : undefined
               }}
-              className="w-full py-4 text-lg lg:text-2xl"
+              className="w-full border py-4 text-lg disabled:border lg:text-2xl"
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
