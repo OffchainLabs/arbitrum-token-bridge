@@ -1112,8 +1112,6 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
-        amount={amount}
-        allowance={allowance}
         token={selectedToken}
         isCctp={isCctp}
       />

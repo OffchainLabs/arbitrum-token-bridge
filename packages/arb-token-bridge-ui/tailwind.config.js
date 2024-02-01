@@ -9,6 +9,63 @@ module.exports = {
           'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
         gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)'
       },
+      spacing: {
+        1: '5px',
+        2: '10px',
+        3: '15px',
+        4: '20px',
+        5: '25px',
+        6: '30px',
+        7: '35px',
+        8: '40px',
+        9: '45px',
+        10: '50px',
+        12: '60px',
+        14: '70px',
+        16: '80px',
+        18: '90px',
+        19: '95px',
+        20: '100px',
+        22: '110px',
+        24: '120px',
+        26: '130px',
+        28: '140px',
+        30: '150px',
+        32: '160px',
+        34: '170px',
+        36: '180px',
+        40: '200px',
+        42: '210px',
+        44: '220px',
+        50: '250px',
+        60: '300px',
+        64: '320px',
+        78: '380px',
+        80: '400px',
+      },
+
+      fontSize: {
+        'xxs': '0.625rem' /* 10px */,
+        'xs': '0.75rem' /* 12px */,
+        'sm': '0.875rem' /* 14px */,
+        'base': '1rem' /* 16px */,
+        'lg': '1.125rem' /* 18px */,
+        'xl': '1.375rem' /* 22px */,
+        '2xl': '1.5rem' /* 24px */,
+        '3xl': '1.75rem' /* 28px */,
+        '4xl': '2.25rem' /* 36px */,
+        '5xl': '3rem' /* 48px */,
+        '6xl': '3.75rem' /* 60px */,
+        '7xl': '4.5rem' /* 72px */,
+      },
+      borderRadius: {
+        none: '0',
+        sm: '0.125rem',
+        DEFAULT: '5px',
+        md: '10px',
+        lg: '0.5rem',
+        full: '9999px',
+      },
       colors: {
         // ACTION
         error: '#CD0000',
@@ -27,13 +84,14 @@ module.exports = {
         'lime-dark': '#31572A',
 
         // NEUTRAL (GRAYS)
-        'gray-1': '#F4F4F4',
+        'gray-1': '#191919',
         'gray-2': '#E5E5E5',
         'gray-3': '#DADADA',
         'gray-5': '#AEAEAE',
         'gray-4': '#CCCCCC',
         'gray-6': '#999999',
         'gray-dark': '#6D6D6D',
+        'line-gray': '#F4F4F4',
         dark: '#1A1C1D', // (or default-black)
 
         // BRAND
@@ -41,7 +99,7 @@ module.exports = {
         'ocl-blue': '#243145'
       },
       fontFamily: {
-        serif: "'Space Grotesk', sans-serif"
+        unica77: ['var(--font-unica77)']
       },
       maxWidth: {
         2: '0.5rem',

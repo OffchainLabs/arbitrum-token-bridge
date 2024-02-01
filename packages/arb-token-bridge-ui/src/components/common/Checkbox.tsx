@@ -9,14 +9,16 @@ export type CheckboxProps = {
 
 export function Checkbox(props: CheckboxProps) {
   return (
-    <Switch.Group as="div" className="flex flex-row items-start space-x-3">
+    <Switch.Group as="div" className="flex flex-row items-start space-x-2">
       <Switch
         {...props}
         className={`arb-hover mt-1 h-4 w-4 rounded transition duration-200 ease-in-out ${
-          props.checked ? 'bg-dark' : 'border border-dark bg-white'
+          props.checked
+            ? 'border border-dark bg-white'
+            : 'border border-white bg-dark'
         }`}
       >
-        <CheckIcon className="h-4 w-4 text-white" />
+        <CheckIcon className="ml-[2px] h-3 w-3 stroke-[3] text-dark" />
       </Switch>
       <Switch.Label className="cursor-pointer">{props.label}</Switch.Label>
     </Switch.Group>

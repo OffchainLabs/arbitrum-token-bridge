@@ -98,7 +98,7 @@ export type DialogProps = {
 
 export function Dialog(props: DialogProps) {
   const isCustom = props.isCustom || false
-  const closeable = props.closeable || false
+  const closeable = props.closeable || true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
 
@@ -115,53 +115,75 @@ export function Dialog(props: DialogProps) {
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
         onClose={() => props.onClose(false)}
-        className="fixed inset-0 z-50 flex bg-[rgba(0,0,0,0.6)] md:items-center md:justify-center"
+        className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
       >
-        <div
-          className={twMerge(
-            'z-10 max-h-screen w-full overflow-y-auto bg-white md:max-h-[calc(100vh-80px)] md:w-auto md:rounded-xl md:shadow-[0px_4px_12px_#acacac]',
-            className
-          )}
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-80"
+          leave="ease-in duration-300"
+          leaveFrom="opacity-80"
+          leaveTo="opacity-0"
         >
-          {isCustom ? (
-            props.children
-          ) : (
-            <>
-              <div className="flex items-center justify-between px-8 py-4">
-                <HeadlessUIDialog.Title className="text-2xl font-medium">
-                  {props.title}
-                </HeadlessUIDialog.Title>
-                {closeable && (
-                  <button type="button" onClick={() => props.onClose(false)}>
-                    <XMarkIcon className="arb-hover h-5 w-5" />
-                  </button>
-                )}
-              </div>
+          <div className="fixed inset-0 bg-black" aria-hidden="true" />
+        </Transition.Child>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="ease-in duration-300"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <HeadlessUIDialog.Panel
+            className={twMerge(
+              'z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:max-h-[calc(100vh-80px)] md:w-auto md:rounded',
+              className
+            )}
+          >
+            {isCustom ? (
+              props.children
+            ) : (
+              <>
+                <div className="flex items-center justify-between px-5 py-5 pt-3">
+                  <HeadlessUIDialog.Title className="text-xl">
+                    {props.title}
+                  </HeadlessUIDialog.Title>
+                  {closeable && (
+                    <button type="button" onClick={() => props.onClose(false)}>
+                      <XMarkIcon className="arb-hover h-5 w-5 text-white" />
+                    </button>
+                  )}
+                </div>
 
-              <div className="flex-grow px-8 py-4">{props.children}</div>
+                <div className="mb-4 flex-grow px-5">{props.children}</div>
 
-              <div className="flex flex-row justify-end space-x-2 px-8 py-3 md:rounded-bl-xl md:rounded-br-xl md:bg-gray-2">
-                <Button
-                  ref={cancelButtonRef}
-                  variant="secondary"
-                  onClick={() => props.onClose(false)}
-                  aria-label="Dialog Cancel"
-                  {...(props.cancelButtonProps || {})}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => props.onClose(true)}
-                  {...(props.actionButtonProps || {})}
-                  aria-label={props.actionButtonTitle || 'Dialog Continue'}
-                >
-                  {props.actionButtonTitle || 'Continue'}
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
+                <div className="flex flex-row justify-end space-x-2 bg-white/20 px-5 py-2 md:rounded-bl md:rounded-br">
+                  <Button
+                    ref={cancelButtonRef}
+                    variant="secondary"
+                    onClick={() => props.onClose(false)}
+                    aria-label="Dialog Cancel"
+                    className="text-white"
+                    {...(props.cancelButtonProps || {})}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => props.onClose(true)}
+                    {...(props.actionButtonProps || {})}
+                    aria-label={props.actionButtonTitle || 'Dialog Continue'}
+                  >
+                    {props.actionButtonTitle || 'Continue'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </HeadlessUIDialog.Panel>
+        </Transition.Child>
       </HeadlessUIDialog>
     </Transition>
   )
