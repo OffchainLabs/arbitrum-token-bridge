@@ -139,7 +139,7 @@ export function Dialog(props: DialogProps) {
         >
           <HeadlessUIDialog.Panel
             className={twMerge(
-              'z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:max-h-[calc(100vh-80px)] md:w-auto md:rounded',
+              'z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:rounded',
               className
             )}
           >
