@@ -206,7 +206,7 @@ export function TransferPanel() {
     gasSummary
   })
 
-  const { color: sourceChainUIcolor } = getBridgeUiConfigForChain(
+  const { color: sourceChainUiColor } = getBridgeUiConfigForChain(
     networks.sourceChain.id
   )
 
@@ -1072,7 +1072,7 @@ export function TransferPanel() {
               style={{
                 borderColor: transferReady.deposit
                   ? destinationChainUIcolor.primary
-                  : sourceChainUIcolor.primary,
+                  : sourceChainUiColor.primary,
                 backgroundColor: transferReady.deposit
                   ? destinationChainUIcolor.secondary
                   : undefined
@@ -1104,7 +1104,7 @@ export function TransferPanel() {
               style={{
                 borderColor: transferReady.withdrawal
                   ? destinationChainUIcolor.primary
-                  : sourceChainUIcolor.primary,
+                  : sourceChainUiColor.primary,
                 backgroundColor: transferReady.withdrawal
                   ? getBridgeUiConfigForChain(networks.destinationChain.id)
                       .color.secondary
