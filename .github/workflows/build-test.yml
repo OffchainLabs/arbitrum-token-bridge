@@ -235,7 +235,7 @@ jobs:
           file_name: medium-res.env
 
       - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@test
+        uses: OffchainLabs/actions/run-nitro-test-node@main
         with:
           nitro-testnode-ref: ha/l1-fee-token-and-register-weth
 
