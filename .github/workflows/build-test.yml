@@ -237,7 +237,7 @@ jobs:
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@test
         with:
-          nitro-testnode-ref: test
+          nitro-testnode-ref: ha/l1-fee-token-and-register-weth
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
