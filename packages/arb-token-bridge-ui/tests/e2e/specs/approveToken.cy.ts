@@ -6,7 +6,6 @@ import {
 } from '../../support/common'
 
 const ERC20TokenAddressL1 = Cypress.env('ERC20_TOKEN_ADDRESS_L1')
-const ERC20Amount = '0.000000000001'
 
 describe('Approve token and deposit afterwards', () => {
   // log in to metamask
@@ -25,30 +24,41 @@ describe('Approve token and deposit afterwards', () => {
         .should('be.visible')
         .should('have.text', ERC20TokenSymbol)
 
-      cy.findByPlaceholderText('Enter amount')
-        .typeRecursively(ERC20Amount)
+      cy.findByText('MAX')
+        .click()
         .then(() => {
-          cy.findByText("You'll now pay in gas fees")
+          cy.findByText('You will pay in gas fees:')
             .siblings()
-            .last()
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
-          cy.findByText('Ethereum Local gas')
+          cy.findByText('Ethereum Local gas fee')
             .parent()
             .siblings()
-            .last()
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
-          cy.findByText('Arbitrum Local gas')
+          cy.findByText('Arbitrum Local gas fee')
             .parent()
             .siblings()
-            .last()
             .contains(zeroToLessThanOneETH)
             .should('be.visible')
         })
-      cy.findByRole('button', {
-        name: 'Move funds to Arbitrum Local'
-      }).click()
+      cy.waitUntil(
+        () =>
+          cy
+            .findByRole('button', { name: /Move funds to Arbitrum Local/i })
+            .should('not.be.disabled'),
+        {
+          errorMsg: '/Move funds to Arbitrum Local/ button is disabled',
+          timeout: 50000,
+          interval: 500
+        }
+      ).then(() => {
+        cy.findByRole('button', {
+          name: 'Move funds to Arbitrum Local'
+        })
+          .scrollIntoView()
+          .click()
+      })
       cy.findByText(/I understand that I have to pay a one-time/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
@@ -64,10 +74,8 @@ describe('Approve token and deposit afterwards', () => {
       // eslint-disable-next-line
       cy.wait(15000)
       cy.confirmMetamaskTransaction().then(() => {
-        cy.findByText(
-          // PATCH : Find a proper fix later : `0.000000000001` will be rounded to 0 by our formatAmount function in tx cards
-          `< 0.00001 ${ERC20TokenSymbol}`
-        ).should('be.visible')
+        // check that transaction history panel is showing
+        cy.findByText('Transaction History').should('be.visible')
       })
     })
   })

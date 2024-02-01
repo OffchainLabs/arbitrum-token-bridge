@@ -112,7 +112,7 @@ export const connectToApp = () => {
 export const openTransactionsPanel = () => {
   cy.waitUntil(
     () =>
-      cy.findByText(/Bridging summary will appear here/i).then(() => {
+      cy.findByText(/Summary/i).then(() => {
         // Open tx history panel
         cy.findByRole('button', { name: /account header button/i })
           .should('be.visible')
