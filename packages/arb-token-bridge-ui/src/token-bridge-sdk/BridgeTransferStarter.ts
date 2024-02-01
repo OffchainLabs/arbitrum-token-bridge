@@ -3,27 +3,16 @@ import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from '../util/AddressUtils'
+import { BridgeTransfer } from './BridgeTransfer'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
-type Chain = 'source_chain' | 'destination_chain'
-type TxStatus = 'pending' | 'success' | 'error'
 
-export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type TransferType = `${Asset}_${TxType}` | 'cctp'
 
 export type MergedTransactionCctp = MergedTransaction & {
   messageBytes: Address | null
   attestationHash: Address | null
-}
-
-export type BridgeTransfer = {
-  transferType: TransferType
-  status: string
-  sourceChainProvider: Provider
-  sourceChainTransaction: { hash: string }
-  destinationChainProvider: Provider
-  destinationChainTransaction?: { hash: string }
 }
 
 export type BridgeTransferStarterProps = {

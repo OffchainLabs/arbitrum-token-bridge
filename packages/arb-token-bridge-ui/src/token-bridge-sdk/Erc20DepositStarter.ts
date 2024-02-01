@@ -18,6 +18,7 @@ import {
 } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
+import { Erc20Deposit } from './Erc20Deposit'
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
@@ -224,18 +225,16 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await erc20Bridger.deposit({
+    const sourceChainTx = await erc20Bridger.deposit({
       ...depositRequest,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 
-    return {
-      transferType: this.transferType,
-      status: 'pending',
+    return Erc20Deposit.initializeFromSourceChainTx({
+      sourceChainTx,
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
       destinationChainProvider: this.destinationChainProvider
-    }
+    })
   }
 }

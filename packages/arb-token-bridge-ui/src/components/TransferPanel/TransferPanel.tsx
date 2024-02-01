@@ -63,12 +63,12 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
 import { addDepositToCache } from '../TransactionHistory/helpers'
 import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
+import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransfer'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -900,66 +900,73 @@ export function TransferPanel() {
   }
 
   const onTxSubmit = async (bridgeTransfer: BridgeTransfer) => {
-    const l2NetworkName = getNetworkName(parentChain.id)
-    if (!isSmartContractWallet) {
-      trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
-        tokenSymbol: selectedToken?.symbol,
-        assetType: selectedToken ? 'ERC-20' : 'ETH',
-        accountType: 'EOA',
-        network: l2NetworkName,
-        amount: Number(amount)
-      })
-    }
-
-    const { transferType, sourceChainTransaction } = bridgeTransfer
-    const isDeposit = transferType.includes('deposit')
-
-    const uiCompatibleTransactionObject = convertBridgeSdkToMergedTransaction({
-      bridgeTransfer,
-      parentChainId: parentChain.id,
-      childChainId: childChain.id,
-      selectedToken,
-      walletAddress: walletAddress!,
-      destinationAddress,
-      nativeCurrency,
-      amount: amountBigNumber
+    bridgeTransfer.pollForStatus({
+      intervalMs: 2000,
+      onChange: transfer => {
+        console.log('>>> Transfer status changed: ', transfer.status)
+      }
     })
 
-    // add transaction to the transaction history
-    addPendingTransaction(uiCompatibleTransactionObject)
+    // const l2NetworkName = getNetworkName(parentChain.id)
+    // if (!isSmartContractWallet) {
+    //   trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
+    //     tokenSymbol: selectedToken?.symbol,
+    //     assetType: selectedToken ? 'ERC-20' : 'ETH',
+    //     accountType: 'EOA',
+    //     network: l2NetworkName,
+    //     amount: Number(amount)
+    //   })
+    // }
 
-    // if deposit, add to local cache
-    if (isDeposit) {
-      addDepositToCache(
-        convertBridgeSdkToPendingDepositTransaction({
-          bridgeTransfer,
-          parentChainId: parentChain.id,
-          childChainId: childChain.id,
-          selectedToken,
-          walletAddress: walletAddress!,
-          destinationAddress,
-          nativeCurrency,
-          amount: amountBigNumber
-        })
-      )
-    }
+    // const { transferType, sourceChainTransaction } = bridgeTransfer
+    // const isDeposit = transferType.includes('deposit')
 
-    openTransactionHistoryPanel()
-    setTransferring(false)
-    clearAmountInput()
+    // const uiCompatibleTransactionObject = convertBridgeSdkToMergedTransaction({
+    //   bridgeTransfer,
+    //   parentChainId: parentChain.id,
+    //   childChainId: childChain.id,
+    //   selectedToken,
+    //   walletAddress: walletAddress!,
+    //   destinationAddress,
+    //   nativeCurrency,
+    //   amount: amountBigNumber
+    // })
 
-    await (sourceChainTransaction as TransactionResponse).wait()
+    // // add transaction to the transaction history
+    // addPendingTransaction(uiCompatibleTransactionObject)
 
-    // tx confirmed, update balances
-    await Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+    // // if deposit, add to local cache
+    // if (isDeposit) {
+    //   addDepositToCache(
+    //     convertBridgeSdkToPendingDepositTransaction({
+    //       bridgeTransfer,
+    //       parentChainId: parentChain.id,
+    //       childChainId: childChain.id,
+    //       selectedToken,
+    //       walletAddress: walletAddress!,
+    //       destinationAddress,
+    //       nativeCurrency,
+    //       amount: amountBigNumber
+    //     })
+    //   )
+    // }
 
-    if (selectedToken) {
-      token.updateTokenData(selectedToken.address)
-    }
+    // openTransactionHistoryPanel()
+    // setTransferring(false)
+    // clearAmountInput()
 
-    if (nativeCurrency.isCustom) {
-      await updateErc20L1Balance([nativeCurrency.address])
-    }
+    // await (sourceChainTransaction as TransactionResponse).wait()
+
+    // // tx confirmed, update balances
+    // await Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+
+    // if (selectedToken) {
+    //   token.updateTokenData(selectedToken.address)
+    // }
+
+    // if (nativeCurrency.isCustom) {
+    //   await updateErc20L1Balance([nativeCurrency.address])
+    // }
   }
 
   // Only run gas estimation when it makes sense, i.e. when there is enough funds

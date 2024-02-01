@@ -12,6 +12,7 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
+import { EthDeposit } from './EthDeposit'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -84,10 +85,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
-
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
       from: address
@@ -97,18 +94,16 @@ export class EthDepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await ethBridger.deposit({
+    const sourceChainTx = await ethBridger.deposit({
       amount,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 
-    return {
-      transferType: this.transferType,
-      status: 'pending',
+    return EthDeposit.initializeFromSourceChainTx({
+      sourceChainTx,
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
       destinationChainProvider: this.destinationChainProvider
-    }
+    })
   }
 }

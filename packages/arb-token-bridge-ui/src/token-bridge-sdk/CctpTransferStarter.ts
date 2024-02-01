@@ -136,7 +136,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     return {
       transferType: this.transferType,
-      status: 'pending',
+      status: 'source_chain_tx_pending',
       sourceChainProvider: this.sourceChainProvider,
       sourceChainTransaction: depositForBurnTx,
       destinationChainProvider: this.destinationChainProvider

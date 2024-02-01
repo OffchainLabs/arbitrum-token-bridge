@@ -18,6 +18,7 @@ import {
 import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
+import { EthOrErc20Withdrawal } from './EthorErc20Withdrawal'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
@@ -198,19 +199,17 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const tx = await erc20Bridger.withdraw({
+    const sourceChainTx = await erc20Bridger.withdraw({
       l2Signer: signer,
       erc20l1Address: tokenAddress,
       destinationAddress: destinationAddress ?? address,
       amount
     })
 
-    return {
-      transferType: this.transferType,
-      status: 'pending',
+    return EthOrErc20Withdrawal.initializeFromSourceChainTx({
+      sourceChainTx,
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
       destinationChainProvider: this.destinationChainProvider
-    }
+    })
   }
 }
