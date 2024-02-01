@@ -2,6 +2,7 @@ import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { Address } from '../util/AddressUtils'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal'
@@ -12,8 +13,8 @@ export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type TransferType = `${Asset}_${TxType}` | 'cctp'
 
 export type MergedTransactionCctp = MergedTransaction & {
-  messageBytes: `0x${string}` | null
-  attestationHash: `0x${string}` | null
+  messageBytes: Address | null
+  attestationHash: Address | null
 }
 
 export type BridgeTransfer = {

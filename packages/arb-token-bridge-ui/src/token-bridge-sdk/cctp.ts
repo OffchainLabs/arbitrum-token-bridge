@@ -7,16 +7,17 @@ import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
+import { Address } from '../util/AddressUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-protocol-contract
 type Contracts = {
-  tokenMessengerContractAddress: `0x${string}`
+  tokenMessengerContractAddress: Address
   targetChainDomain: ChainDomain
   targetChainId: CCTPSupportedChainId
-  usdcContractAddress: `0x${string}`
-  messageTransmitterContractAddress: `0x${string}`
+  usdcContractAddress: Address
+  messageTransmitterContractAddress: Address
   attestationApiUrl: string
-  tokenMinterContractAddress: `0x${string}`
+  tokenMinterContractAddress: Address
 }
 
 const contracts: Record<CCTPSupportedChainId, Contracts> = {
@@ -68,7 +69,7 @@ const contracts: Record<CCTPSupportedChainId, Contracts> = {
 
 export type AttestationResponse =
   | {
-      attestation: `0x${string}`
+      attestation: Address
       status: 'complete'
     }
   | {
@@ -115,7 +116,7 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     messageTransmitterContractAddress
   } = getCctpContracts({ sourceChainId })
 
-  const fetchAttestation = async (attestationHash: `0x${string}`) => {
+  const fetchAttestation = async (attestationHash: Address) => {
     const response = await fetch(
       `${attestationApiUrl}/attestations/${attestationHash}`,
       { method: 'GET', headers: { accept: 'application/json' } }
@@ -125,7 +126,7 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     return attestationResponse
   }
 
-  const waitForAttestation = async (attestationHash: `0x${string}`) => {
+  const waitForAttestation = async (attestationHash: Address) => {
     while (true) {
       const attestation = await fetchAttestation(attestationHash)
       if (attestation.status === 'complete') {
@@ -141,8 +142,8 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     attestation,
     signer
   }: {
-    messageBytes: `0x${string}`
-    attestation: `0x${string}`
+    messageBytes: Address
+    attestation: Address
     signer: Signer
   }) => {
     const config = await prepareWriteContract({

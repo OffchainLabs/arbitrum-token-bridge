@@ -15,6 +15,7 @@ import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
+import { Address } from '../util/AddressUtils'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
@@ -113,9 +114,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
 
     // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
-    const mintRecipient = utils.hexlify(
-      utils.zeroPad(recipient, 32)
-    ) as `0x${string}`
+    const mintRecipient = utils.hexlify(utils.zeroPad(recipient, 32)) as Address
 
     const {
       usdcContractAddress,

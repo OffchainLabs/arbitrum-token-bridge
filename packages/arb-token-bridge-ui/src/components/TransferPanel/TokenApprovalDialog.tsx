@@ -13,11 +13,10 @@ import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
@@ -53,8 +52,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
-
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
@@ -183,16 +180,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   }
 
   const displayAllowanceWarning = allowance && !allowance.isZero()
-  const noteMessage = (() => {
-    if (isDepositMode) {
-      return isCctp
-        ? `the CCTP ${layer} deposit fee.`
-        : `the standard ${layer} deposit fee.`
-    }
-    return isCctp
-      ? `the CCTP ${parentLayer} deposit fee.`
-      : `the standard ${parentLayer} deposit fee.`
-  })()
+  const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
   return (
     <Dialog
@@ -278,8 +266,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           >
             <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
             <span className="text-sm font-light text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet for{' '}
-              {noteMessage}{' '}
+              After approval, you&apos;ll see a second prompt in your wallet for
+              the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
               <ExternalLink
                 href={TOKEN_APPROVAL_ARTICLE_LINK}
                 className="underline"
