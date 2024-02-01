@@ -157,10 +157,8 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
-  const [
-    transactions,
-    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
-  ] = useTransactions()
+  const [transactions, { addTransaction, updateTransaction }] =
+    useTransactions()
 
   const depositEth = async ({
     amount,
@@ -1023,8 +1021,7 @@ export const useArbTokenBridge = (
     transactions: {
       transactions,
       updateTransaction,
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      addTransaction
     }
   }
 }

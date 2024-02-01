@@ -215,20 +215,11 @@ export interface TransactionActions {
     tx?: ethers.ContractTransaction,
     l1ToL2MsgData?: L1ToL2MessageData
   ) => void
-  fetchAndUpdateL1ToL2MsgStatus: (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
-    isEthDeposit: boolean,
-    status: L1ToL2MessageStatus
-  ) => void
 }
 
 export type ArbTokenBridgeTransactions = {
   transactions: Transaction[]
-} & Pick<
-  TransactionActions,
-  'addTransaction' | 'updateTransaction' | 'fetchAndUpdateL1ToL2MsgStatus'
->
+} & Pick<TransactionActions, 'addTransaction' | 'updateTransaction'>
 
 export interface ArbTokenBridge {
   bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined

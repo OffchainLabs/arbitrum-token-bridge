@@ -159,6 +159,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
+  },
+  {
+    id: 15,
+    // Rari
+    originChainID: 1380012617,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/1380012617_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
