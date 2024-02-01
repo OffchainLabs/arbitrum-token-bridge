@@ -352,6 +352,8 @@ Object.keys(localStorage).forEach(key => {
   }
 })
 
+// random comment
+
 function ConnectedChainSyncer() {
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
