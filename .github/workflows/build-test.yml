@@ -235,7 +235,7 @@ jobs:
           file_name: medium-res.env
 
       - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@main
+        uses: OffchainLabs/actions/run-nitro-test-node@test
         with:
           nitro-testnode-ref: release
 
