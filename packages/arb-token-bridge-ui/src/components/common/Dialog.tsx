@@ -98,7 +98,7 @@ export type DialogProps = {
 
 export function Dialog(props: DialogProps) {
   const isCustom = props.isCustom || false
-  const closeable = props.closeable || true
+  const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
 
@@ -137,16 +137,11 @@ export function Dialog(props: DialogProps) {
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <HeadlessUIDialog.Panel
-            className={twMerge(
-              'z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:rounded',
-              className
-            )}
-          >
+          <HeadlessUIDialog.Panel className="z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:rounded">
             {isCustom ? (
               props.children
             ) : (
-              <>
+              <div className={twMerge('w-screen md:max-w-[727px]', className)}>
                 <div className="flex items-center justify-between px-5 py-5 pt-3">
                   <HeadlessUIDialog.Title className="text-xl">
                     {props.title}
@@ -161,16 +156,18 @@ export function Dialog(props: DialogProps) {
                 <div className="mb-4 flex-grow px-5">{props.children}</div>
 
                 <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-5 py-2">
-                  <Button
-                    ref={cancelButtonRef}
-                    variant="secondary"
-                    onClick={() => props.onClose(false)}
-                    aria-label="Dialog Cancel"
-                    className="text-white"
-                    {...(props.cancelButtonProps || {})}
-                  >
-                    Cancel
-                  </Button>
+                  {closeable && (
+                    <Button
+                      ref={cancelButtonRef}
+                      variant="secondary"
+                      onClick={() => props.onClose(false)}
+                      aria-label="Dialog Cancel"
+                      className="text-white"
+                      {...(props.cancelButtonProps || {})}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                   <Button
                     variant="primary"
                     onClick={() => props.onClose(true)}
@@ -180,7 +177,7 @@ export function Dialog(props: DialogProps) {
                     {props.actionButtonTitle || 'Continue'}
                   </Button>
                 </div>
-              </>
+              </div>
             )}
           </HeadlessUIDialog.Panel>
         </Transition.Child>

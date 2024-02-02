@@ -91,7 +91,7 @@ export function WithdrawalConfirmationDialog(
 
   return (
     <Dialog {...props} onClose={closeWithReset} isCustom>
-      <div className="flex w-screen max-w-[700px] flex-col">
+      <div className="flex flex-col">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between px-6 py-4">
             <HeadlessUIDialog.Title className="text-xl text-white">
@@ -201,7 +201,7 @@ export function WithdrawalConfirmationDialog(
               </div>
             </div>
 
-            <div className="flex flex-row justify-end space-x-2 bg-white/20 px-6 py-2">
+            <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-6 py-2">
               <Button
                 variant="secondary"
                 className="text-white"

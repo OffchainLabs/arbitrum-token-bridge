@@ -1,71 +1,31 @@
-import { useRef } from 'react'
-import { Dialog as HeadlessUIDialog } from '@headlessui/react'
-import Image from 'next/image'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import * as Sentry from '@sentry/react'
-
-import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { errorToast } from '../common/atoms/Toast'
 
 export function WelcomeDialog(props: UseDialogProps) {
-  const confirmButtonRef = useRef(null)
-  const { openConnectModal } = useConnectModal()
-
-  const closeHandler = () => {
-    props.onClose(true)
-
-    try {
-      openConnectModal?.()
-    } catch (error) {
-      errorToast('Failed to open up RainbowKit Connect Modal')
-      Sentry.captureException(error)
-    }
-  }
-
   return (
     <Dialog
       {...props}
-      initialFocus={confirmButtonRef}
-      isCustom
-      className="mx-auto my-3 flex max-w-[340px] flex-col rounded-lg px-8 py-4 md:max-w-[600px]"
+      title="Welcome"
+      actionButtonTitle="Agree to Terms and Continue"
+      closeable={false}
+      className="w-screen md:w-[350px]"
     >
-      <HeadlessUIDialog.Title className="text-2xl font-medium">
-        Welcome
-      </HeadlessUIDialog.Title>
-
-      <div className="flex grow flex-col items-center gap-8 md:flex-row md:items-stretch">
-        <Image
-          src="/images/arbinaut-flying.webp"
-          alt="An Astronaut in an Arbitrum space suit"
-          width={256}
-          height={383}
-          className="h-[55vh] max-h-[383px] w-auto"
-        />
-        <div className="flex grow flex-col justify-between font-light">
-          <p>We will NEVER ask you for your seed phrase or private keys.</p>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm">
-              By clicking the button below, you agree to our{' '}
-              <ExternalLink
-                href="https://arbitrum.io/tos"
-                className="arb-hover underline"
-              >
-                Terms of Service.
-              </ExternalLink>
-            </p>
-
-            <Button
-              ref={confirmButtonRef}
-              variant="primary"
-              className="w-full"
-              onClick={closeHandler}
-            >
-              Agree to terms
-            </Button>
-          </div>
+      <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-1 rounded bg-white/20 p-2 text-sm">
+          <p className="font-medium">Safety Tip</p>
+          <p>
+            Arbitrum will NEVER ask you for your seed phase or private keys.
+          </p>
         </div>
+        <p className="text-sm">
+          By clicking the below button you agree to our{' '}
+          <ExternalLink
+            href="https://arbitrum.io/tos"
+            className="arb-hover underline"
+          >
+            Terms of Service.
+          </ExternalLink>
+        </p>
       </div>
     </Dialog>
   )

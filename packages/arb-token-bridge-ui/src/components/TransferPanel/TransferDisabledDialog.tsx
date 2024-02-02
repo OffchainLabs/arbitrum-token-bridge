@@ -41,7 +41,6 @@ export function TransferDisabledDialog() {
       actionButtonTitle="Close"
       isOpen={isOpenTransferDisabledDialog}
       onClose={onClose}
-      className="md:max-w-[727px]"
     >
       <div className="flex flex-col space-y-4">
         <p>
