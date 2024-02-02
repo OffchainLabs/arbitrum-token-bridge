@@ -20,7 +20,6 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
     l2Network.tokenBridge
   const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
-
   const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainID]
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
   const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainID]
