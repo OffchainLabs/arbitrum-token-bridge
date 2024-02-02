@@ -18,7 +18,7 @@ export function WelcomeDialog(props: UseDialogProps) {
           </p>
         </div>
         <p className="text-sm">
-          By clicking the below button you agree to our{' '}
+          By clicking the button below, you agree to our{' '}
           <ExternalLink
             href="https://arbitrum.io/tos"
             className="arb-hover underline"
