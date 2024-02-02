@@ -1,6 +1,6 @@
+import localFont from 'next/font/local'
 import React from 'react'
-import { useWindowSize } from 'react-use'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { twMerge } from 'tailwind-merge'
 
 import { Header } from './Header'
 import { Footer } from './Footer'
@@ -10,22 +10,27 @@ import { ExternalLink } from './ExternalLink'
 
 import 'react-toastify/dist/ReactToastify.css'
 
-function Moon() {
-  const { width } = useWindowSize()
-  const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
-
-  const { scrollYProgress } = useScroll()
-  const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
-
-  return (
-    <motion.img
-      src="/images/moon.webp"
-      alt="Moon"
-      className="absolute bottom-[-10%] z-0 lg:bottom-[-65%] lg:right-0 lg:max-w-[75vw]"
-      style={{ scale }}
-    />
-  )
-}
+const unica = localFont({
+  src: [
+    {
+      path: '../../font/Unica77LLWeb-Light.woff2',
+      weight: '300',
+      style: 'normal'
+    },
+    {
+      path: '../../font/Unica77LLWeb-Regular.woff2',
+      weight: '400',
+      style: 'normal'
+    },
+    {
+      path: '../../font/Unica77LLWeb-Medium.woff2',
+      weight: '500',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-unica77',
+  fallback: ['Roboto', 'sans-serif']
+})
 
 export type LayoutProps = {
   children: React.ReactNode
@@ -35,7 +40,10 @@ export function Layout(props: LayoutProps) {
   return (
     <div
       style={{ backgroundImage: 'url(/images/space.webp)' }}
-      className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
+      className={twMerge(
+        'background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat',
+        unica.className
+      )}
     >
       <SiteBanner>
         Arbitrum Orbit is mainnet-ready! Learn more about launching a customized
@@ -57,8 +65,6 @@ export function Layout(props: LayoutProps) {
       <Toast />
 
       <Footer />
-
-      <Moon />
     </div>
   )
 }

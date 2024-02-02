@@ -20,7 +20,7 @@ function MaxButton(props: MaxButtonProps) {
   return (
     <button
       type="button"
-      className={`p-2 text-sm font-light text-gray-dark ${className}`}
+      className={twMerge('p-2 text-sm font-light text-gray-6', className)}
       {...rest}
     >
       MAX
@@ -41,27 +41,27 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const { errorMessage, maxButtonProps, value, ...rest } = props
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
 
-  const borderClassName =
-    typeof errorMessage !== 'undefined'
-      ? 'border border-[#cd0000]'
-      : 'border border-gray-6'
-
   return (
     <>
       <div
         className={twMerge(
-          'flex h-12 flex-row items-center rounded-lg bg-white shadow-input lg:h-16',
-          borderClassName
+          'flex h-12 flex-row items-center rounded border bg-black/40 shadow-2 lg:h-16',
+          errorMessage ? 'border-[#cd0000]' : 'border-white'
         )}
       >
         <TokenButton />
-        <div className="h-full border-r border-gray-2" />
+        <div
+          className={twMerge(
+            'h-full border-r',
+            errorMessage ? 'border-[#cd0000]' : 'border-white'
+          )}
+        />
         <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
           <input
             type="text"
             inputMode="decimal"
             placeholder="Enter amount"
-            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+            className="h-full w-full bg-transparent text-xl font-light text-white placeholder:text-white"
             value={value}
             {...rest}
           />
