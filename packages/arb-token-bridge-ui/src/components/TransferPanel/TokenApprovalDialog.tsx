@@ -207,13 +207,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="md:max-w-screen flex w-[727px] flex-col space-y-4">
+      <div className="flex flex-col space-y-4">
         <div className="flex flex-row items-center space-x-3">
           {tokenLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={tokenLogo} alt="Token logo" className="h-5 w-5" />
+            <img src={tokenLogo} alt="Token logo" className="h-6 w-6" />
           ) : (
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
               ?
             </div>
           )}
