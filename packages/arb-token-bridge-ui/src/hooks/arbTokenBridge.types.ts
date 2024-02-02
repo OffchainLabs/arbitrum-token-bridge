@@ -138,9 +138,6 @@ export interface AddressToDecimals {
 export type GasEstimates = {
   estimatedParentChainGas: BigNumber
   estimatedChildChainGas: BigNumber
-}
-
-export type DepositGasEstimates = GasEstimates & {
   estimatedChildChainSubmissionCost: BigNumber
 }
 

@@ -1,6 +1,6 @@
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import * as Sentry from '@sentry/react'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
@@ -9,18 +9,19 @@ import { Address } from './AddressUtils'
 export async function withdrawInitTxEstimateGas({
   amount,
   address,
-  l2Provider,
+  childChainProvider,
   erc20L1Address
 }: {
   amount: BigNumber
   address: Address
-  l2Provider: Provider
+  childChainProvider: Provider
   erc20L1Address?: string
 }): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
   const bridger = await (isToken ? Erc20Bridger : EthBridger).fromProvider(
-    l2Provider
+    childChainProvider
   )
+  const estimatedChildChainSubmissionCost = constants.Zero
 
   const withdrawalRequest = isToken
     ? await (bridger as Erc20Bridger).getWithdrawalRequest({
@@ -45,11 +46,17 @@ export async function withdrawInitTxEstimateGas({
     // add 30% to the estimated total gas as buffer
     const estimatedChildChainGas = BigNumber.from(
       Math.ceil(
-        Number(await l2Provider.estimateGas(withdrawalRequest.txRequest)) * 1.3
+        Number(
+          await childChainProvider.estimateGas(withdrawalRequest.txRequest)
+        ) * 1.3
       )
     )
 
-    return { estimatedParentChainGas, estimatedChildChainGas }
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas,
+      estimatedChildChainSubmissionCost
+    }
   } catch (error) {
     Sentry.captureException(error)
 
@@ -80,7 +87,8 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
-        : BigNumber.from(800_000)
+        : BigNumber.from(800_000),
+      estimatedChildChainSubmissionCost
     }
   }
 }

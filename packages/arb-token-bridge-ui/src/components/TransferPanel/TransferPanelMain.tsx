@@ -312,9 +312,6 @@ export function TransferPanelMain({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
-  const l2GasPrice = useGasPrice({ provider: childChainProvider })
-
   const { app } = useAppState()
   const { address: walletAddress } = useAccount()
   const { arbTokenBridge, selectedToken } = app

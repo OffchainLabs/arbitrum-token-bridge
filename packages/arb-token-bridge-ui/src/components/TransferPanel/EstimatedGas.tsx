@@ -81,7 +81,12 @@ export function EstimatedGas({
   const isCCTP = selectedToken && isTokenUSDC(selectedToken.address)
 
   const estimatedGasFee = useMemo(() => {
-    if (!isDepositMode && !isParentChain) {
+    if (
+      !isDepositMode &&
+      !isParentChain &&
+      typeof estimatedParentChainGasFees !== 'undefined' &&
+      typeof estimatedChildChainGasFees !== 'undefined'
+    ) {
       return estimatedParentChainGasFees + estimatedChildChainGasFees
     }
     return isParentChain
@@ -131,7 +136,8 @@ export function EstimatedGas({
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>
       </div>
-      {gasSummaryStatus === 'loading' ? (
+      {gasSummaryStatus === 'loading' ||
+      typeof estimatedGasFee === 'undefined' ? (
         <>
           {showPrice && <span />}
           <StyledLoader />
