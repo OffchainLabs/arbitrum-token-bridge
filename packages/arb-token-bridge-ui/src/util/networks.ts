@@ -36,6 +36,18 @@ export type ChainWithRpcUrl = L2Network & {
   slug?: string
 }
 
+function getParentChain(chain: L2Network): L1Network | L2Network {
+  const parentChain = arbitrumSdkChains[chain.partnerChainID]
+
+  if (typeof parentChain === 'undefined') {
+    throw new Error(
+      `[getParentChain] parent chain ${chain.partnerChainID} not found for ${chain.chainID}`
+    )
+  }
+
+  return parentChain
+}
+
 export function getBaseChainIdByChainId({
   chainId
 }: {
@@ -43,23 +55,18 @@ export function getBaseChainIdByChainId({
 }): number {
   const chain = arbitrumSdkChains[chainId]
 
+  // the chain provided is an L1 chain, so we can return early
   if (!chain || isL1Chain(chain)) {
     return chainId
   }
 
-  const parentChain = arbitrumSdkChains[chain.partnerChainID]
-
-  if (!parentChain) {
-    return chainId
+  let currentParentChain: L1Network | L2Network = getParentChain(chain)
+  // keep following the parent chains until we find the L1 chain
+  while (!isL1Chain(currentParentChain)) {
+    currentParentChain = getParentChain(currentParentChain)
   }
 
-  const parentOfParentChain = (parentChain as L2Network).partnerChainID
-
-  if (parentOfParentChain) {
-    return parentOfParentChain
-  }
-
-  return parentChain.chainID ?? chainId
+  return currentParentChain.chainID
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
