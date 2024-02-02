@@ -71,7 +71,6 @@ export function EstimatedGas({
     estimatedParentChainGasFees,
     estimatedChildChainGasFees
   } = useGasSummary()
-  const childChainName = getNetworkName(childChain.id)
   const showPrice = useMemo(
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
@@ -132,7 +131,7 @@ export function EstimatedGas({
           <InformationCircleIcon className="h-4 w-4" />
         </Tooltip>
       </div>
-      {status === 'loading' ? (
+      {gasSummaryStatus === 'loading' ? (
         <>
           {showPrice && <span />}
           <StyledLoader />
