@@ -30,8 +30,8 @@ function TransferPanelSummaryContainer({
   className?: string
 }) {
   return (
-    <div className="flex flex-col">
-      <span className="mb-4 text-xl text-gray-dark">Summary</span>
+    <div className="flex flex-col text-white">
+      <span className="mb-4 text-xl">Summary</span>
 
       <div className={twMerge('flex flex-col space-y-4', className)}>
         {children}
@@ -89,15 +89,13 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   )
 
   if (gasSummaryStatus === 'loading') {
-    const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
+    const bgClassName = 'h-[20px] w-full bg-white/10'
 
     return (
       <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        {!isDepositMode && (
-          <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        )}
+        <div className={bgClassName} />
+        <div className={bgClassName} />
+        {!isDepositMode && <div className={bgClassName} />}
       </TransferPanelSummaryContainer>
     )
   }
@@ -105,7 +103,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   if (gasSummaryStatus === 'unavailable') {
     return (
       <TransferPanelSummaryContainer>
-        <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+        <div className="flex flex-row justify-between text-sm lg:text-base">
           Gas estimates are not available for this action.
         </div>
       </TransferPanelSummaryContainer>
@@ -116,33 +114,33 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     <TransferPanelSummaryContainer>
       <div
         className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
         )}
       >
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
           {!sameNativeCurrency && isDepositMode && (
-            <>
+            <span className="tabular-nums">
               {formatAmount(estimatedL1GasFees, {
                 symbol: parentChainNativeCurrency.symbol
               })}
               {' + '}
-            </>
+            </span>
           )}
-          {formatAmount(
-            sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees,
-            {
-              symbol: nativeCurrency.symbol
-            }
-          )}{' '}
+          <span className="tabular-nums">
+            {formatAmount(
+              sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees
+            )}
+          </span>{' '}
+          <span>{nativeCurrency.symbol}</span>{' '}
           <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
         </span>
       </div>
 
       <div
         className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
         )}
       >
         <span>
@@ -150,7 +148,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           {getNetworkName(isDepositMode ? childChain.id : parentChain.id)}:
         </span>
         <span className="font-medium">
-          {formatAmount(Number(amount))}{' '}
+          <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
           <TokenSymbolWithExplorerLink
             token={token}
             isParentChain={!isDepositMode}
@@ -161,7 +159,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
       </div>
 
       {!isDepositMode && (
-        <p className="flex flex-col gap-3 text-sm font-light text-gray-dark">
+        <p className="flex flex-col gap-3 text-sm font-light">
           You will have to claim the withdrawal on {parentChain.name} in ~
           {confirmationPeriod}.
         </p>

@@ -65,7 +65,7 @@ export function BridgesTable(props: {
 
   return (
     <table className="w-full border border-gray-3">
-      <thead className="bg-gray-1 text-left">
+      <thead className="bg-[#F4F4F4] text-left">
         <tr className="text-gray-6">
           <th className="w-1/6 px-6 py-4 font-normal">Favorite</th>
           <th className="w-4/6 px-6 py-4 font-normal">Exchange</th>
