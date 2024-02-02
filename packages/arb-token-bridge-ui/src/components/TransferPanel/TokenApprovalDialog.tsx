@@ -242,7 +242,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
         <Checkbox
           label={
-            <div className="max-w-[600px]">
+            <div>
               <span className="text-sm font-light">
                 I understand that I have to{' '}
                 <span className="font-medium">pay a one-time approval fee</span>{' '}
