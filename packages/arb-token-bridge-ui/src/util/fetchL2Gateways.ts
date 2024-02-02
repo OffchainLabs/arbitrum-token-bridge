@@ -13,18 +13,13 @@ import {
  *
  * @param l2Provider Provider for the L2 network
  */
-export async function fetchL2Gateways(l2Provider: Provider): Promise<string[]> {
+export async function fetchL2Gateways(l2Provider: Provider) {
   const l2Network = await getL2Network(l2Provider)
 
   /* configure gateway addresses for fetching withdrawals */
   const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
     l2Network.tokenBridge
-
-  const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway]
-
-  if (l2WethGateway) {
-    gatewaysToUse.push(l2WethGateway)
-  }
+  const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
 
   const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainID]
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
