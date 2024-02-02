@@ -43,24 +43,6 @@ function TransferPanelSummaryContainer({
   )
 }
 
-function TransferPanelSummaryLoader({
-  isDepositMode
-}: {
-  isDepositMode: boolean
-}) {
-  const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
-
-  return (
-    <TransferPanelSummaryContainer className="animate-pulse">
-      <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-      <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-      {!isDepositMode && (
-        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-      )}
-    </TransferPanelSummaryContainer>
-  )
-}
-
 function TransferPanelSummaryUnavailable() {
   return (
     <TransferPanelSummaryContainer>
