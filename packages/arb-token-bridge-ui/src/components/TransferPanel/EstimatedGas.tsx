@@ -39,7 +39,7 @@ function GasFeeForClaimTxMessage({ networkName }: { networkName: string }) {
     <div
       className={twMerge(
         'grid items-center',
-        'rounded bg-white/30 p-[10px] opacity-80',
+        'rounded bg-white/30 p-2 opacity-80',
         'text-xs font-light text-white'
       )}
     >
