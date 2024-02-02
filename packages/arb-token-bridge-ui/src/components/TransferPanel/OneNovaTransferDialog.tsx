@@ -44,8 +44,13 @@ export function OneNovaTransferDialog(
   ]
 
   return (
-    <Dialog {...props} onClose={() => props.onClose(false)} isCustom>
-      <div className="flex w-screen max-w-[700px] flex-col">
+    <Dialog
+      {...props}
+      onClose={() => props.onClose(false)}
+      isCustom
+      className="max-w-[700px]"
+    >
+      <div className="flex flex-col">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between px-6 py-4">
             <HeadlessUIDialog.Title className="text-xl text-white">

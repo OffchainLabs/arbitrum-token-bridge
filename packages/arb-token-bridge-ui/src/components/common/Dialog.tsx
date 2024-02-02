@@ -4,7 +4,6 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { Button, ButtonProps } from './Button'
-import { getTransitionProps } from './Transition'
 /**
  * Returns a promise which resolves to an array [boolean, unknown] value,
  * `false` if the action was canceled and `true` if it was confirmed.
@@ -91,38 +90,51 @@ export type DialogProps = {
   cancelButtonProps?: Partial<ButtonProps>
   actionButtonProps?: Partial<ButtonProps>
   actionButtonTitle?: string
+  isFooterHidden?: boolean
   onClose: (confirmed: boolean, onCloseData?: unknown) => void
   className?: string
   children?: React.ReactNode
 }
 
 export function Dialog(props: DialogProps) {
+  const isFooterHidden = props.isFooterHidden || false
   const isCustom = props.isCustom || false
   const closeable = props.closeable ?? true
   const className = props.className || ''
   const cancelButtonRef = useRef(null)
 
+  // separate state to track transition state and have a smooth exit animation
+  const [isClosing, setIsClosing] = useState(false)
+  const [isConfirmed, setIsConfirmed] = useState(false)
+
+  const handleCloseStart = useCallback(
+    (confirmed: boolean) => {
+      setIsConfirmed(confirmed)
+      setIsClosing(true)
+    },
+    [setIsClosing, setIsConfirmed]
+  )
+
+  const handleCloseEnd = useCallback(() => {
+    setIsClosing(false)
+    props.onClose(isConfirmed)
+  }, [props, isConfirmed, setIsClosing])
+
   return (
-    <Transition
-      appear
-      show={props.isOpen}
-      as={Fragment}
-      {...getTransitionProps('normal')}
-    >
+    <Transition show={props.isOpen && !isClosing} as={Fragment}>
       <HeadlessUIDialog
-        static
         as="div"
         open={props.isOpen}
         initialFocus={props.initialFocus || cancelButtonRef}
-        onClose={() => props.onClose(false)}
+        onClose={() => handleCloseStart(false)}
         className="fixed inset-0 z-50 flex text-white md:items-center md:justify-center"
       >
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
+          enter="ease-out duration-[400ms]"
           enterFrom="opacity-0"
           enterTo="opacity-80"
-          leave="ease-in duration-300"
+          leave="ease-in duration-200"
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
@@ -130,56 +142,66 @@ export function Dialog(props: DialogProps) {
         </Transition.Child>
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
+          enter="ease-out duration-[400ms]"
           enterFrom="opacity-0 scale-95"
           enterTo="opacity-100 scale-100"
-          leave="ease-in duration-300"
+          leave="ease-in duration-200"
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
+          afterLeave={handleCloseEnd}
         >
-          <HeadlessUIDialog.Panel className="z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:rounded">
-            {isCustom ? (
-              props.children
-            ) : (
-              <div className={twMerge('w-screen md:max-w-[727px]', className)}>
-                <div className="flex items-center justify-between px-5 py-5 pt-3">
-                  <HeadlessUIDialog.Title className="text-xl">
-                    {props.title}
-                  </HeadlessUIDialog.Title>
-                  {closeable && (
-                    <button type="button" onClick={() => props.onClose(false)}>
-                      <XMarkIcon className="arb-hover h-5 w-5 text-white" />
-                    </button>
-                  )}
-                </div>
+          <div className={twMerge('w-screen md:max-w-[727px]', className)}>
+            <HeadlessUIDialog.Panel className="z-10 max-h-screen w-full overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:rounded">
+              {isCustom ? (
+                props.children
+              ) : (
+                <>
+                  <div className="flex items-center justify-between px-6 py-4">
+                    <HeadlessUIDialog.Title className="text-xl">
+                      {props.title}
+                    </HeadlessUIDialog.Title>
+                    {closeable && (
+                      <button
+                        type="button"
+                        onClick={() => handleCloseStart(false)}
+                      >
+                        <XMarkIcon className="arb-hover h-5 w-5 text-white" />
+                      </button>
+                    )}
+                  </div>
 
-                <div className="mb-4 flex-grow px-5">{props.children}</div>
+                  <div className="flex-grow px-5">{props.children}</div>
 
-                <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-5 py-2">
-                  {closeable && (
-                    <Button
-                      ref={cancelButtonRef}
-                      variant="secondary"
-                      onClick={() => props.onClose(false)}
-                      aria-label="Dialog Cancel"
-                      className="text-white"
-                      {...(props.cancelButtonProps || {})}
-                    >
-                      Cancel
-                    </Button>
+                  {!isFooterHidden && (
+                    <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-5 py-2">
+                      {closeable && (
+                        <Button
+                          ref={cancelButtonRef}
+                          variant="secondary"
+                          onClick={() => handleCloseStart(false)}
+                          aria-label="Dialog Cancel"
+                          className="text-white"
+                          {...(props.cancelButtonProps || {})}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                      <Button
+                        variant="primary"
+                        onClick={() => handleCloseStart(true)}
+                        {...(props.actionButtonProps || {})}
+                        aria-label={
+                          props.actionButtonTitle || 'Dialog Continue'
+                        }
+                      >
+                        {props.actionButtonTitle || 'Continue'}
+                      </Button>
+                    </div>
                   )}
-                  <Button
-                    variant="primary"
-                    onClick={() => props.onClose(true)}
-                    {...(props.actionButtonProps || {})}
-                    aria-label={props.actionButtonTitle || 'Dialog Continue'}
-                  >
-                    {props.actionButtonTitle || 'Continue'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </HeadlessUIDialog.Panel>
+                </>
+              )}
+            </HeadlessUIDialog.Panel>
+          </div>
         </Transition.Child>
       </HeadlessUIDialog>
     </Transition>

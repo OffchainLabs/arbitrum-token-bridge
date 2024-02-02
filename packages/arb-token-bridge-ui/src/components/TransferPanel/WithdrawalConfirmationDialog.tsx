@@ -48,6 +48,8 @@ export function WithdrawalConfirmationDialog(
   const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
 
+  const [isFastBridgesTab, setIsFastBridgesTab] = useState(true)
+
   const destinationNetworkName = getNetworkName(parentChain.id)
 
   const {
@@ -87,30 +89,27 @@ export function WithdrawalConfirmationDialog(
 
     setCheckbox1Checked(false)
     setCheckbox2Checked(false)
+    setIsFastBridgesTab(true)
   }
 
   return (
-    <Dialog {...props} onClose={closeWithReset} isCustom>
+    <Dialog
+      {...props}
+      onClose={closeWithReset}
+      className="max-w-[700px]"
+      title={`Move funds to ${destinationNetworkName}`}
+      isFooterHidden={isFastBridgesTab}
+      actionButtonProps={{ disabled: !bothCheckboxesChecked }}
+    >
       <div className="flex flex-col">
-        <Tab.Group>
-          <div className="flex flex-row items-center justify-between px-6 py-4">
-            <HeadlessUIDialog.Title className="text-xl text-white">
-              Move funds to {destinationNetworkName}
-            </HeadlessUIDialog.Title>
-            <button className="arb-hover" onClick={() => closeWithReset(false)}>
-              <XMarkIcon className="h-5 w-5 text-white" />
-            </button>
-          </div>
-
-          <div className="px-6">
-            <Tab.List className="border-b border-gray-dark">
-              {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
-              <TabButton>Arbitrum’s bridge</TabButton>
-            </Tab.List>
-          </div>
+        <Tab.Group onChange={index => setIsFastBridgesTab(index === 0)}>
+          <Tab.List className="border-b border-gray-dark">
+            {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
+            <TabButton>Arbitrum’s bridge</TabButton>
+          </Tab.List>
 
           {isArbitrumOne && (
-            <Tab.Panel className="flex flex-col space-y-3 px-6 py-4">
+            <Tab.Panel className="flex flex-col space-y-3 py-4">
               <div className="flex flex-col space-y-3">
                 <p className="font-light">
                   Get your funds in under 30 min with a fast exit bridge.
@@ -125,7 +124,7 @@ export function WithdrawalConfirmationDialog(
           )}
 
           <Tab.Panel className="flex flex-col justify-between">
-            <div className="flex flex-col space-y-4 px-6 py-4">
+            <div className="flex flex-col space-y-4 py-4">
               <div className="flex flex-col space-y-4">
                 <p className="font-light">
                   Get your funds in ~{confirmationPeriod} and pay a small fee
@@ -199,26 +198,6 @@ export function WithdrawalConfirmationDialog(
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-6 py-2">
-              <Button
-                variant="secondary"
-                className="text-white"
-                onClick={() => closeWithReset(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={!bothCheckboxesChecked}
-                onClick={() => {
-                  closeWithReset(true)
-                  trackEvent('Slow Bridge Click')
-                }}
-              >
-                Continue
-              </Button>
             </div>
           </Tab.Panel>
         </Tab.Group>

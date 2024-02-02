@@ -8,7 +8,7 @@ export type TabButtonProps = PropsWithChildren<
 export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
   (props, ref) => {
     const tabButtonClassName =
-      'text-white px-3 mr-2 pb-1 ui-selected:border-b-4 ui-selected:border-white ui-not-selected:text-white/80'
+      'text-white px-3 mr-2 pb-1 ui-selected:border-b-4 ui-selected:border-white ui-not-selected:text-white/80 arb-hover'
 
     return (
       <Tab

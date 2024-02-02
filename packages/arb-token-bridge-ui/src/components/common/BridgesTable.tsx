@@ -77,7 +77,7 @@ export function BridgesTable(props: {
           {sortedFastBridges.map(bridge => (
             <tr
               key={bridge.name}
-              className="cursor-pointer rounded border-t border-white bg-black hover:bg-[#152C4E]"
+              className="cursor-pointer rounded border-t border-white bg-black transition duration-300 hover:bg-[#152C4E]"
             >
               <td>
                 <ExternalLink
