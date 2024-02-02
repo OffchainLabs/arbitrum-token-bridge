@@ -1,7 +1,7 @@
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { MaxUint256 } from '@ethersproject/constants'
 import { Provider } from '@ethersproject/providers'
-import { fetchErc20L1GatewayAddress } from './TokenUtils'
+import { fetchErc20ParentChainGatewayAddress } from './TokenUtils'
 
 export const approveTokenEstimateGas = async ({
   erc20L1Address,
@@ -14,10 +14,10 @@ export const approveTokenEstimateGas = async ({
   l1Provider: Provider
   l2Provider: Provider
 }) => {
-  const l1GatewayAddress = await fetchErc20L1GatewayAddress({
+  const l1GatewayAddress = await fetchErc20ParentChainGatewayAddress({
     erc20L1Address,
-    l1Provider,
-    l2Provider
+    parentChainProvider: l1Provider,
+    childChainProvider: l2Provider
   })
 
   const contract = ERC20__factory.connect(erc20L1Address, l1Provider)

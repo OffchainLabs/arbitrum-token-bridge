@@ -20,10 +20,7 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
-import {
-  GasEstimationStatus,
-  UseGasSummaryResult
-} from '../../hooks/TransferPanel/useGasSummary'
+import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -310,6 +307,13 @@ export function useTransferReadiness({
             isSmartContractWallet,
             isDepositMode
           })
+
+        if (
+          typeof estimatedL1GasFees === 'undefined' ||
+          typeof estimatedL2GasFees === 'undefined'
+        ) {
+          return notReady()
+        }
 
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token

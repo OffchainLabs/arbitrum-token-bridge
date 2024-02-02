@@ -24,7 +24,7 @@ export function NativeCurrencyPrice({
   amount,
   showBrackets = false
 }: {
-  amount: number
+  amount: number | undefined
   showBrackets?: boolean
 }) {
   const [networks] = useNetworks()
@@ -35,6 +35,10 @@ export function NativeCurrencyPrice({
   const { ethToUSD } = useETHPrice()
 
   if (isTestnet) {
+    return null
+  }
+
+  if (typeof amount === 'undefined') {
     return null
   }
 

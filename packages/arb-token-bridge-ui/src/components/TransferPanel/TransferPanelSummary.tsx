@@ -15,12 +15,21 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenUSDC } from '../../util/TokenUtils'
 import { useAppState } from '../../state'
+import { Loader } from '../common/atoms/Loader'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
 export type TransferPanelSummaryProps = {
   amount: number
   token: ERC20BridgeToken | null
+}
+
+function StyledLoader() {
+  return (
+    <span className="flex justify-end">
+      <Loader size="small" />
+    </span>
+  )
 }
 
 function TransferPanelSummaryContainer({
@@ -103,10 +112,21 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [childChainNativeCurrency, parentChainNativeCurrency]
   )
 
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedParentChainGasFees + estimatedChildChainGasFees,
-    [estimatedParentChainGasFees, estimatedChildChainGasFees]
-  )
+  const estimatedTotalGasFees = useMemo(() => {
+    if (
+      gasSummaryStatus === 'loading' ||
+      typeof estimatedChildChainGasFees == 'undefined' ||
+      typeof estimatedParentChainGasFees == 'undefined'
+    ) {
+      return undefined
+    }
+
+    return estimatedParentChainGasFees + estimatedChildChainGasFees
+  }, [
+    gasSummaryStatus,
+    estimatedChildChainGasFees,
+    estimatedParentChainGasFees
+  ])
 
   if (gasSummaryStatus === 'unavailable') {
     return <TransferPanelSummaryUnavailable />
@@ -122,34 +142,39 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
-          {!sameNativeCurrency && isDepositMode && (
-            <>
-              {formatAmount(estimatedParentChainGasFees, {
-                symbol: parentChainNativeCurrency.symbol
-              })}{' '}
-              <NativeCurrencyPrice
-                amount={estimatedTotalGasFees}
-                showBrackets
-              />
-              {selectedToken && ' and '}
-            </>
-          )}
+          {gasSummaryStatus === 'loading' && <StyledLoader />}
+          {!sameNativeCurrency &&
+            isDepositMode &&
+            typeof estimatedParentChainGasFees !== 'undefined' && (
+              <>
+                {formatAmount(estimatedParentChainGasFees, {
+                  symbol: parentChainNativeCurrency.symbol
+                })}{' '}
+                <NativeCurrencyPrice
+                  amount={estimatedTotalGasFees}
+                  showBrackets
+                />
+                {selectedToken && ' and '}
+              </>
+            )}
           {!sameNativeCurrency &&
             (selectedToken || !isDepositMode) &&
+            typeof estimatedChildChainGasFees !== 'undefined' &&
             formatAmount(estimatedChildChainGasFees, {
               symbol: childChainNativeCurrency.symbol
             })}
-          {sameNativeCurrency && (
-            <>
-              {formatAmount(estimatedTotalGasFees, {
-                symbol: childChainNativeCurrency.symbol
-              })}{' '}
-              <NativeCurrencyPrice
-                amount={estimatedTotalGasFees}
-                showBrackets
-              />
-            </>
-          )}{' '}
+          {sameNativeCurrency &&
+            typeof estimatedTotalGasFees !== 'undefined' && (
+              <>
+                {formatAmount(estimatedTotalGasFees, {
+                  symbol: childChainNativeCurrency.symbol
+                })}{' '}
+                <NativeCurrencyPrice
+                  amount={estimatedTotalGasFees}
+                  showBrackets
+                />
+              </>
+            )}{' '}
         </span>
       </div>
 
