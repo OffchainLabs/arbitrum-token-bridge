@@ -513,7 +513,7 @@ export function TransferPanelMain({
         utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
       )
       const estimatedTotalGasFees =
-        estimatedParentChainGasFees + estimatedChildChainGasFees
+        (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
       const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
       // make sure it's always a positive number
       // if it's negative, set it to user's balance to show insufficient for gas error
