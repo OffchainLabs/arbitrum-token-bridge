@@ -4,16 +4,12 @@ import {
   addCustomNetwork,
   constants
 } from '@arbitrum/sdk'
-import {
-  networks as arbitrumSdkChains,
-  l2Networks as arbitrumSdkArbitrumChains
-} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
-// TODO: when the main branch of SDK supports Orbit chains, we should be able to fetch it from a single object instead
 export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
   return chains.filter(chain => chain.chainID !== 1338)
@@ -208,8 +204,8 @@ export const getBlockTime = (chainId: ChainId) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = arbitrumSdkArbitrumChains[chainId]
-  if (!network) {
+  const network = arbitrumSdkChains[chainId]
+  if (!network || !isArbitrumChain(network)) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
     )
