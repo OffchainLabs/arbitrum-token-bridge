@@ -60,7 +60,7 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  let currentParentChain: L1Network | L2Network = getParentChain(chain)
+  let currentParentChain = getParentChain(chain)
   // keep following the parent chains until we find the L1 chain
   while (!isL1Chain(currentParentChain)) {
     currentParentChain = getParentChain(currentParentChain)
