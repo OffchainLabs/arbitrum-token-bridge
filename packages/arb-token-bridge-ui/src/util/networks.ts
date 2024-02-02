@@ -236,7 +236,7 @@ const defaultL1Network: L1Network = {
   chainID: 1337,
   explorerUrl: '',
   isCustom: true,
-  name: 'EthLocal',
+  name: 'Ethereum Local',
   partnerChainIDs: [412346],
   isArbitrum: false
 }
@@ -257,7 +257,7 @@ const defaultL2Network: ParentChain = {
   explorerUrl: '',
   isArbitrum: true,
   isCustom: true,
-  name: 'ArbLocal',
+  name: 'Arbitrum Local',
   partnerChainID: 1337,
   retryableLifetimeSeconds: 604800,
   nitroGenesisBlock: 0,

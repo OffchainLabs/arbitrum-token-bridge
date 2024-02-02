@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import useLocalStorage from '@rehooks/local-storage'
 import { useAccount } from 'wagmi'
 
@@ -12,22 +11,6 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
-
-export const motionDivProps = {
-  layout: true,
-  initial: {
-    opacity: 0,
-    scale: 0.9
-  },
-  animate: {
-    opacity: 1,
-    scale: 1
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9
-  }
-}
 
 export function MainContent() {
   const { address } = useAccount()
@@ -58,20 +41,12 @@ export function MainContent() {
 
   return (
     <div className="flex w-full justify-center">
-      <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
+      <div className="main-panel flex w-full max-w-[600px] flex-col gap-2">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
 
         <TransactionStatusInfo />
 
-        <AnimatePresence>
-          <motion.div
-            key="transfer-panel"
-            {...motionDivProps}
-            className="relative"
-          >
-            <TransferPanel />
-          </motion.div>
-        </AnimatePresence>
+        <TransferPanel />
       </div>
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}

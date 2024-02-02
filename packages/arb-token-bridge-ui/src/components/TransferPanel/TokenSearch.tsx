@@ -34,7 +34,6 @@ import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
@@ -157,7 +156,7 @@ function TokensPanel({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
+  const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]

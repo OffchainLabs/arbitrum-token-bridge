@@ -4,6 +4,7 @@ import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { Address } from './AddressUtils'
 
 export async function withdrawInitTxEstimateGas({
   amount,
@@ -12,7 +13,7 @@ export async function withdrawInitTxEstimateGas({
   erc20L1Address
 }: {
   amount: BigNumber
-  address: `0x${string}`
+  address: Address
   l2Provider: Provider
   erc20L1Address?: string
 }): Promise<GasEstimates> {
