@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from 'react-use'
-import { ChevronLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
@@ -376,10 +376,7 @@ export const NetworkSelectionContainer = ({
           }
           return (
             <>
-              <div className="flex items-center justify-between border-b border-b-black px-5 py-4 lg:hidden">
-                <button onClick={onClose}>
-                  <ChevronLeftIcon className="h-8 w-8" />
-                </button>
+              <div className="flex items-center justify-end border-b border-b-black px-5 py-4 lg:hidden">
                 <button onClick={onClose}>
                   <XMarkIcon className="h-8 w-8" />
                 </button>

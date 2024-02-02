@@ -1,10 +1,6 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
@@ -105,10 +101,7 @@ export function TokenButton(): JSX.Element {
             }
             return (
               <>
-                <div className="flex items-center justify-between border-b border-b-black px-5 py-4 lg:hidden">
-                  <button onClick={onClose}>
-                    <ChevronLeftIcon className="h-8 w-8" />
-                  </button>
+                <div className="flex items-center justify-end border-b border-b-black px-5 py-4 lg:hidden">
                   <button onClick={onClose}>
                     <XMarkIcon className="h-8 w-8" />
                   </button>
