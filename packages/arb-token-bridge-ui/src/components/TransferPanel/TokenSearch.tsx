@@ -156,7 +156,6 @@ function TokensPanel({
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const isLarge = useMedia('(min-width: 1024px)')
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -404,7 +403,7 @@ function TokensPanel({
         return (
           <TokenRow
             key="TokenRowNativeCurrency"
-            onClick={() => onTokenSelected(null)}
+            onTokenSelected={onTokenSelected}
             token={null}
           />
         )
@@ -414,7 +413,7 @@ function TokensPanel({
         <TokenRow
           key={address}
           style={virtualizedProps.style}
-          onClick={() => onTokenSelected(token)}
+          onTokenSelected={onTokenSelected}
           token={token}
         />
       )
@@ -441,7 +440,7 @@ function TokensPanel({
 
   return (
     <SearchPanelTable
-      searchInputPlaceholder={`Search by token name, symbol, ${parentLayer} or ${layer} address`}
+      searchInputPlaceholder={`Search by token name, symbol, or address`}
       searchInputValue={newToken}
       onSearchInputChange={onSearchInputChange}
       errorMessage={errorMessage}
