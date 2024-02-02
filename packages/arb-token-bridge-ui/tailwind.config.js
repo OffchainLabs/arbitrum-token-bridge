@@ -9,28 +9,6 @@ module.exports = {
           'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
         gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)'
       },
-      fontSize: {
-        xxs: '0.625rem' /* 10px */,
-        xs: '0.75rem' /* 12px */,
-        sm: '0.875rem' /* 14px */,
-        base: '1rem' /* 16px */,
-        lg: '1.125rem' /* 18px */,
-        xl: '1.375rem' /* 22px */,
-        '2xl': '1.5rem' /* 24px */,
-        '3xl': '1.75rem' /* 28px */,
-        '4xl': '2.25rem' /* 36px */,
-        '5xl': '3rem' /* 48px */,
-        '6xl': '3.75rem' /* 60px */,
-        '7xl': '4.5rem' /* 72px */
-      },
-      borderRadius: {
-        none: '0',
-        sm: '0.125rem',
-        DEFAULT: '5px',
-        md: '10px',
-        lg: '0.5rem',
-        full: '9999px'
-      },
       colors: {
         // ACTION
         error: '#CD0000',
