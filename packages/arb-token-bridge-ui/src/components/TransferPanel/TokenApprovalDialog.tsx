@@ -211,11 +211,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         <div className="flex flex-row items-center space-x-3">
           {tokenLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={tokenLogo}
-              alt="Token logo"
-              className="h-5 w-5 sm:h-8 sm:w-8"
-            />
+            <img src={tokenLogo} alt="Token logo" className="h-5 w-5" />
           ) : (
             <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
               ?
