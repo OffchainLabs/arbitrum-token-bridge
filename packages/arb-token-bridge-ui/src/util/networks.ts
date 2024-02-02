@@ -248,11 +248,11 @@ const defaultL2Network: ParentChain = {
   ],
   confirmPeriodBlocks: 20,
   ethBridge: {
-    bridge: '0x8480f877d33D3a122B1D72F6329D929cfD1ca0B2',
-    inbox: '0x5af5F299BCD15503D18745E8fF0aC7E14bacDcc4',
-    outbox: '0x1077940913c889d92692b81E15a42535Cd3A7BDF',
-    rollup: '0x05e720d41d78ad9e43cd599e2fbf924dac867124',
-    sequencerInbox: '0x2E4c2a6B17669e84ba1b266d032dc97176b7021a'
+    bridge: '0x9B4477cAD544fB092B1Bc551d88465f7F13a443F',
+    inbox: '0xa5d8d368c4Fc06D71724d91561d6F2a880FD4fD9',
+    outbox: '0xbBaAB28Ad701e822148411376975cca7E02323d7',
+    rollup: '0x9c14dfd8e5c262f9652e78f2b0a13389ee41d717',
+    sequencerInbox: '0xD2B20a3B8C1d97A64eFA1120D3339d87841ccAE1'
   },
   explorerUrl: '',
   isArbitrum: true,
@@ -264,24 +264,21 @@ const defaultL2Network: ParentChain = {
   nitroGenesisL1Block: 0,
   depositTimeout: 900000,
   tokenBridge: {
-    l1CustomGateway: '0xfdD885D29c6C23a2FbF5693AEB4BAe944b140da0',
-    l1ERC20Gateway: '0xC0a56AB5c3Ce705cfCD718c644F276189d25ED0e',
-    l1GatewayRouter: '0xBE92b86b08dB49FF844df189e7283FDd2C41d285',
-    l1MultiCall: '0xFb8c3906979fA82ed9E9E18c3Ee21995761a13E7',
-    l1ProxyAdmin: '0xd3a4801D7Ce49146673057A0089A1AA9957e82d3',
-    l1Weth: '0x05EcEffc7CBA4e43a410340E849052AD43815aCA',
-    l1WethGateway: '0xBE73e279B5323dfCF0FFDC4eFbE3F75a5B1886B0',
-    l2CustomGateway: '0x52e94D06E9b8829DF98e128065FC247718c1ae9a',
-    l2ERC20Gateway: '0xd62E90C4Df20Ba942e7aB4D19B140505D809A920',
-    l2GatewayRouter: '0x02b0CC697E2330A58765c5bf042e25198D9646Cc',
-    l2Multicall: '0xdB92dF5b97Eb439878605f5aB815F78319E56C84',
-    l2ProxyAdmin: '0xCd8A2680aBdd183e3540033D08B74EE39eec235a',
-    l2Weth: '0x4DAc86F579C498a009d2b28A6840523695de59E9',
-    l2WethGateway: '0x539c0B373ffBaD99c3a74abD6E6f3bf90c0d3Cc8'
-  },
-  // @ts-ignore - this is new in nitro & token bridge setup
-  l1TokenBridgeCreator: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4',
-  retryableSender: '0x3DF948c956e14175f43670407d5796b95Bb219D8'
+    l1CustomGateway: '0x1c924636933ceDE03245f19756662e92F851293D',
+    l1ERC20Gateway: '0xeBef8abC1DF5853345f319D5ACcba1d01AECCBD8',
+    l1GatewayRouter: '0x932Af0F51E02a8b371d00E7448Eb6e91c013274d',
+    l1MultiCall: '0x4De74F7B2a30a1Ee39b374f6F11859c334234A79',
+    l1ProxyAdmin: '0xFFB9cE193d5FE12360f47a93A97d72da65c35019',
+    l1Weth: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
+    l1WethGateway: '0x1990703B7C717008F34d5088C2838c07B6C6e97b',
+    l2CustomGateway: '0xD53b0E696c16520308186bB7c64E3dE85be45Ab9',
+    l2ERC20Gateway: '0x7e6C3A78da71Ed7d6f9D3f155C5756fB1129E19c',
+    l2GatewayRouter: '0x614234364127E3D5De331A9f2cBeFaE6869168eB',
+    l2Multicall: '0x96D1271Ef847568D22Ba78Af2E48bed6ca5D2539',
+    l2ProxyAdmin: '0x1bd440c4b2361ac11c20b5CB2409e64cB82DDb30',
+    l2Weth: '0x9ffAd12EE17abF43a060760f3d93932a3DE5EB72',
+    l2WethGateway: '0xf2Ec70e05fab34580B26890544dF2fF04dc63521'
+  }
 }
 
 export type RegisterLocalNetworkParams = {
@@ -291,7 +288,6 @@ export type RegisterLocalNetworkParams = {
 
 const registerLocalNetworkDefaultParams: RegisterLocalNetworkParams = {
   l1Network: defaultL1Network,
-  // @ts-ignore - this is new in nitro & token bridge setup
   l2Network: defaultL2Network
 }
 
