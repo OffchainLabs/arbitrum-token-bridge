@@ -1,9 +1,7 @@
-import { Dialog as HeadlessUIDialog, Tab } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Tab } from '@headlessui/react'
 import Hop from '@/images/bridge/hop.png'
 
 import { useAppState } from '../../state'
-import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { SecurityNotGuaranteed } from './SecurityLabels'
@@ -47,33 +45,20 @@ export function OneNovaTransferDialog(
     <Dialog
       {...props}
       onClose={() => props.onClose(false)}
-      isCustom
+      title={`Move funds from ${getNetworkName(
+        sourceChainId
+      )} to ${getNetworkName(destinationChainId ?? 0)}`}
+      actionButtonProps={{ hidden: true }}
+      isFooterHidden={true}
       className="max-w-[700px]"
     >
       <div className="flex flex-col">
         <Tab.Group>
-          <div className="flex flex-row items-center justify-between px-6 py-4">
-            <HeadlessUIDialog.Title className="text-xl text-white">
-              Move funds from {getNetworkName(sourceChainId)} to{' '}
-              {getNetworkName(destinationChainId ?? 0)}
-            </HeadlessUIDialog.Title>
-            <button
-              className="arb-hover"
-              onClick={() => {
-                props.onClose(false)
-              }}
-            >
-              <XMarkIcon className="h-5 w-5 text-white" />
-            </button>
-          </div>
+          <Tab.List className="border-b border-gray-dark">
+            <TabButton>Third party bridge</TabButton>
+          </Tab.List>
 
-          <div className="px-6">
-            <Tab.List className="border-b border-gray-dark">
-              <TabButton>Third party bridge</TabButton>
-            </Tab.List>
-          </div>
-
-          <Tab.Panel className="flex flex-col space-y-3 px-6 py-4">
+          <Tab.Panel className="flex flex-col space-y-3 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Use a third party bridge to transfer funds between Arbitrum One
@@ -82,15 +67,8 @@ export function OneNovaTransferDialog(
             </div>
 
             <BridgesTable bridgeList={fastBridgeList} />
-            <div className="mt-4 flex flex-row justify-between space-x-2">
+            <div className="flex">
               <SecurityNotGuaranteed />
-              <Button
-                className="text-white"
-                variant="secondary"
-                onClick={() => props.onClose(false)}
-              >
-                Cancel
-              </Button>
             </div>
           </Tab.Panel>
         </Tab.Group>
