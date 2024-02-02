@@ -75,6 +75,15 @@ module.exports = {
         78: '380px',
         80: '400px'
       },
+      fontFamily: {
+        unica77: ['var(--font-unica77)']
+      },
+      fontSize: {
+        xl: '1.375rem'
+      },
+      lineHeight: {
+        'extra-tight': '1.15'
+      },
       maxWidth: {
         2: '0.5rem',
         4: '1rem',
@@ -84,7 +93,8 @@ module.exports = {
       boxShadow: {
         // shadow used for input fields across the app
         input:
-          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)'
+          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)',
+        2: '0px 0px 1px 0px rgba(33, 37, 41, 0.08), 0px 2px 2px 0px rgba(33, 37, 41, 0.06)'
       }
     }
   }
