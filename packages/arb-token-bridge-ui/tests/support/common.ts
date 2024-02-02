@@ -6,6 +6,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
+import { defaultL2Network } from '../../src/arbLocalNodeConstants'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
@@ -33,7 +34,7 @@ export const getL1NetworkConfig = (): NetworkConfig => {
     chainId: '1337',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386'
+    multiCall: defaultL2Network.tokenBridge.l1MultiCall
   }
 }
 
@@ -44,7 +45,7 @@ export const getL2NetworkConfig = (): NetworkConfig => {
     chainId: '412346',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    multiCall: defaultL2Network.tokenBridge.l2Multicall
   }
 }
 
@@ -70,9 +71,9 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const l1WethGateway = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
-export const wethTokenAddressL1 = '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
-export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const l1WethGateway = defaultL2Network.tokenBridge.l1WethGateway
+export const wethTokenAddressL1 = defaultL2Network.tokenBridge.l1Weth
+export const wethTokenAddressL2 = defaultL2Network.tokenBridge.l2Weth
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
