@@ -1,5 +1,4 @@
-import { constants } from '@arbitrum/sdk'
-import { addCustomNetwork } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { constants, addCustomNetwork } from '@arbitrum/sdk'
 
 import { ChainId, getBaseChainIdByChainId } from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
