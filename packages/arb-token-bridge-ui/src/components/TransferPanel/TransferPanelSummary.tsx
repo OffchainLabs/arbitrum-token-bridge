@@ -88,20 +88,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [estimatedL1GasFees, estimatedL2GasFees]
   )
 
-  if (gasSummaryStatus === 'loading') {
-    const bgClassName = isDepositMode ? 'bg-ocl-blue' : 'bg-eth-dark'
-
-    return (
-      <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        {!isDepositMode && (
-          <div className={twMerge('h-[20px] w-full opacity-10', bgClassName)} />
-        )}
-      </TransferPanelSummaryContainer>
-    )
-  }
-
   if (gasSummaryStatus === 'unavailable') {
     return (
       <TransferPanelSummaryContainer>
