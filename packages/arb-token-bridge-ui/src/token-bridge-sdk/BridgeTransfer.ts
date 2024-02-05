@@ -58,12 +58,11 @@ export abstract class BridgeTransfer {
    *
    * Internal fetch status function that returns status but also updates internal fetching flag
    */
-  private _fetchStatus(): BridgeTransferFetchStatusFunctionResult {
+  private async _fetchStatus(): BridgeTransferFetchStatusFunctionResult {
     this.isFetchingStatus = true
-    return this.fetchStatus().then(status => {
-      this.isFetchingStatus = false
-      return status
-    })
+    const status = await this.fetchStatus()
+    this.isFetchingStatus = false
+    return status
   }
 
   public pollForStatus(props: {
@@ -73,7 +72,6 @@ export abstract class BridgeTransfer {
     const intervalId = setInterval(async () => {
       console.log(`Fetching status for transfer ${this.sourceChainTx.hash}`)
       const status = await this._fetchStatus()
-      console.log(`>> Fetched status `, status, this)
       const statusChanged = this.status !== status
       this.status = status
 
