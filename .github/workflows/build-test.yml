@@ -235,9 +235,7 @@ jobs:
           file_name: medium-res.env
 
       - name: Set up the local node
-        uses: OffchainLabs/actions/run-nitro-test-node@ha/token-bridge-args
-        with:
-          nitro-testnode-ref: ha/l1-fee-token-and-register-weth
+        uses: OffchainLabs/actions/run-nitro-test-node@main
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
