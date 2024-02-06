@@ -101,10 +101,20 @@ export function TokenImportDialog({
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
+  const [isDialogVisible, setIsDialogVisible] = useState(false)
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
   })
+
+  // we use a different state to handle dialog visiblity to trigger the entry transition,
+  // otherwise if we only used isOpen then the transition would never trigger because
+  // we conditionally render the component and we'd always start with isOpen as true
+  //
+  // for the transition to work we need to start as false and update it to true
+  useEffect(() => {
+    setIsDialogVisible(isOpen)
+  }, [isOpen])
 
   const modalTitle = useMemo(() => {
     switch (status) {
@@ -313,9 +323,14 @@ export function TokenImportDialog({
 
   if (status === ImportStatus.LOADING) {
     return (
-      <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
-        <div className="flex h-48 items-center justify-center md:min-w-[692px]">
-          <Loader color="black" size="medium" />
+      <Dialog
+        isOpen={isDialogVisible}
+        onClose={onClose}
+        title={modalTitle}
+        actionButtonProps={{ hidden: true }}
+      >
+        <div className="flex h-48 items-center justify-center">
+          <Loader color="white" size="medium" />
         </div>
       </Dialog>
     )
@@ -324,24 +339,16 @@ export function TokenImportDialog({
   if (status === ImportStatus.ERROR) {
     return (
       <Dialog
-        isOpen={isOpen}
+        isOpen={isDialogVisible}
         onClose={onClose}
         title={modalTitle}
-        actionButtonProps={{ className: 'hidden' }}
+        actionButtonProps={{ hidden: true }}
       >
-        <div className="flex flex-col space-y-2 md:min-w-[628px]">
-          <div>
-            <div className="flex flex-col">
-              <span>
-                Whoops, looks like this token address is invalid.
-                <br />
-                Try asking the token team to update their link.
-              </span>
-            </div>
-            <div className="flex w-full justify-center py-4">
-              <Image src={GrumpyCat} alt="Grumpy cat" />
-            </div>
-          </div>
+        <div className="flex py-4">
+          <span>
+            Whoops, looks like this token address is invalid. Try asking the
+            token team to update their link.
+          </span>
         </div>
       </Dialog>
     )
@@ -349,7 +356,7 @@ export function TokenImportDialog({
 
   return (
     <Dialog
-      isOpen={isOpen}
+      isOpen={isDialogVisible}
       onClose={onClose}
       title={modalTitle}
       actionButtonProps={{
@@ -358,7 +365,7 @@ export function TokenImportDialog({
       }}
       actionButtonTitle="Import token"
     >
-      <div className="flex flex-col space-y-2 md:min-w-[628px] md:max-w-[628px]">
+      <div className="flex flex-col space-y-4 pt-4">
         {status === ImportStatus.KNOWN && (
           <span>This token is on an imported token list as:</span>
         )}
@@ -371,7 +378,7 @@ export function TokenImportDialog({
         )}
 
         {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
+          <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
             <ExclamationCircleIcon
               style={{ color: '#CD0000' }}
               className="h-6 w-6"
@@ -405,8 +412,7 @@ export function TokenImportDialog({
             }`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: '#1366C1' }}
-            className="break-all underline"
+            className="arb-hover break-all underline"
           >
             {tokenToImport?.address}
           </a>

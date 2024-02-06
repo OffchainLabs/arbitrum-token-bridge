@@ -120,8 +120,11 @@ export function Dialog(props: DialogProps) {
   )
 
   const handleCloseEnd = useCallback(() => {
-    setIsClosing(false)
     props.onClose(isConfirmed)
+    // prevents race conditions that could cause a flicker of the dialog after close
+    setTimeout(() => {
+      setIsClosing(false)
+    }, 0)
   }, [props, isConfirmed, setIsClosing])
 
   return (
