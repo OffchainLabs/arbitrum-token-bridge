@@ -19,7 +19,7 @@ export const TestnetToggle = ({
   label: string
   description?: string
 }) => {
-  const { isTestnetMode, setIsTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
   const [{ sourceChain }, setNetworks] = useNetworks()
 
   const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet

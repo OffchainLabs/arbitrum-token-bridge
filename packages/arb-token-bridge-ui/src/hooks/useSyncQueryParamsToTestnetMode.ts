@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 export const useSyncQueryParamsToTestnetMode = () => {
   const [{ sourceChain }] = useNetworks()
-  const { setIsTestnetMode } = useIsTestnetMode()
+  const [, setIsTestnetMode] = useIsTestnetMode()
 
   const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
 

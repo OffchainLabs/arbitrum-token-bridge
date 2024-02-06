@@ -147,7 +147,7 @@ function NetworkRow({
 
 function AddCustomOrbitChainButton() {
   const [, setQueryParams] = useArbQueryParams()
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
 
   if (!isTestnetMode) {
     return null
@@ -176,7 +176,7 @@ function NetworksPanel({
   const [networkSearched, setNetworkSearched] = useState('')
   const [debouncedNetworkSearched, setDebouncedNetworkSearched] = useState('')
   const listRef = useRef<List>(null)
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const testnetToggleClassNames = {
     switch:
@@ -334,7 +334,7 @@ export const NetworkSelectionContainer = ({
   buttonStyle?: CSSProperties
   onChange: (value: Chain) => void
 }) => {
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
 
   const supportedNetworks = getSupportedChainIds({
     includeTestnets: isTestnetMode

@@ -219,7 +219,7 @@ function getTxIdFromTransaction(tx: Transfer) {
  */
 const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useNetwork()
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
@@ -432,7 +432,7 @@ export const useTransactionHistory = (
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
-  const { isTestnetMode } = useIsTestnetMode()
+  const [isTestnetMode] = useIsTestnetMode()
   const { chain } = useNetwork()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()

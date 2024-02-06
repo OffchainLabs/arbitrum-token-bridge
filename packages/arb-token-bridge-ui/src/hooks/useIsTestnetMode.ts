@@ -8,5 +8,5 @@ export const useIsTestnetMode = () => {
     false
   )
 
-  return { isTestnetMode, setIsTestnetMode } as const
+  return [isTestnetMode, setIsTestnetMode] as const
 }
