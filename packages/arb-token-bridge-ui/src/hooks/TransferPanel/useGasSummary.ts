@@ -85,18 +85,16 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const estimatedParentChainGasFees = useMemo(() => {
     if (!estimateGasResult) {
-      setGasSummaryStatus('loading')
       return
     }
     return calculateEstimatedParentChainGasFees(
       estimateGasResult.estimatedParentChainGas,
       parentChainGasPrice
     )
-  }, [estimateGasResult, parentChainGasPrice, setGasSummaryStatus])
+  }, [estimateGasResult, parentChainGasPrice])
 
   const estimatedChildChainGasFees = useMemo(() => {
     if (!estimateGasResult) {
-      setGasSummaryStatus('loading')
       return
     }
     return calculateEstimatedChildChainGasFees(
@@ -104,7 +102,7 @@ export function useGasSummary(): UseGasSummaryResult {
       childChainGasPrice,
       estimateGasResult.estimatedChildChainSubmissionCost
     )
-  }, [childChainGasPrice, estimateGasResult, setGasSummaryStatus])
+  }, [childChainGasPrice, estimateGasResult])
 
   useEffect(() => {
     if (
@@ -115,7 +113,14 @@ export function useGasSummary(): UseGasSummaryResult {
       setGasSummaryStatus('unavailable')
       return
     }
-    setGasSummaryStatus('loading')
+
+    if (
+      typeof estimatedParentChainGasFees === 'undefined' ||
+      typeof estimatedChildChainGasFees === 'undefined'
+    ) {
+      setGasSummaryStatus('loading')
+      return
+    }
 
     if (gasEstimatesError) {
       setGasSummaryStatus('error')

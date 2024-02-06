@@ -26,7 +26,7 @@ export type TransferPanelSummaryProps = {
 
 function StyledLoader() {
   return (
-    <span className="flex justify-end">
+    <span className="flex">
       <Loader size="small" />
     </span>
   )
