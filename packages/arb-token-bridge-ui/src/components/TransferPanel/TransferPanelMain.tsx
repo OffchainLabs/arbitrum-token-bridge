@@ -808,7 +808,8 @@ export function TransferPanelMain({
 
   const buttonStyle = useMemo(
     () => ({
-      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color.primary
+      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
+        .primary
     }),
     [networks.sourceChain.id]
   )
