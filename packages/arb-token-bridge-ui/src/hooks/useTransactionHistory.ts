@@ -438,7 +438,7 @@ export const useTransactionHistory = (
     useAccountType()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
-  const MAX_BATCH_SIZE = 10
+  const MAX_BATCH_SIZE = 3
   // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 

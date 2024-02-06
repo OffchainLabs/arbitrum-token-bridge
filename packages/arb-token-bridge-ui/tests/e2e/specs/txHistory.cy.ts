@@ -24,6 +24,20 @@ describe('Transaction History', () => {
         .and('equal', 'selected')
     })
 
+    // We load 3 transactions in a batch, and only we load more only if these transactions happened last month
+    // Our 3 most recent transactions are settled transactions.
+    // That means 'Load more' button click is required to fetch our pending transaction.
+    cy.waitUntil(
+      () => cy.findByRole('button', { name: 'Load more' }).should('be.visible'),
+      {
+        errorMsg: 'Did not find Load more button.',
+        timeout: 30_000,
+        interval: 500
+      }
+    ).then(btn => {
+      cy.wrap(btn).click()
+    })
+
     // wait for transactions to fetch
     cy.waitUntil(
       () =>

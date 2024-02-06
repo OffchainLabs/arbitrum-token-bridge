@@ -1,3 +1,4 @@
+import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
@@ -40,6 +41,7 @@ export const orbitMainnets: {
     name: 'Xai',
     slug: 'xai',
     partnerChainID: 42161,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0xb15A0826d65bE4c2fDd961b72636168ee70Af030',
@@ -60,6 +62,7 @@ export const orbitMainnets: {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#F30019',
@@ -97,6 +100,7 @@ export const orbitMainnets: {
     name: 'RARI Mainnet',
     slug: 'rari-mainnet',
     partnerChainID: 42161,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0x8bE956aB42274056ef4471BEb211b33e258b7324',
@@ -117,6 +121,7 @@ export const orbitMainnets: {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#B16EFF',
@@ -148,6 +153,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     name: 'Xai Orbit Testnet',
     slug: 'xai-testnet',
     partnerChainID: 421613,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0xdBbDc3EE848C05792CC93EA140c59731f920c3F2',
@@ -168,6 +174,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#F30019',
