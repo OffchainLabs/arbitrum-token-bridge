@@ -1,4 +1,4 @@
-import { addCustomChain } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { constants, addCustomNetwork } from '@arbitrum/sdk'
 
 import { ChainId, getBaseChainIdByChainId } from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
@@ -13,8 +13,8 @@ beforeAll(() => {
   }
 
   // add local
-  addCustomChain({
-    customParentChain: {
+  addCustomNetwork({
+    customL1Network: {
       blockTime: 10,
       chainID: 1337,
       explorerUrl: '',
@@ -23,7 +23,7 @@ beforeAll(() => {
       partnerChainIDs: [412346],
       isArbitrum: false
     },
-    customChain: {
+    customL2Network: {
       chainID: 412346,
       partnerChainIDs: [
         // Orbit chains will go here
@@ -45,6 +45,7 @@ beforeAll(() => {
       nitroGenesisBlock: 0,
       nitroGenesisL1Block: 0,
       depositTimeout: 900000,
+      blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
       tokenBridge: {
         l1CustomGateway: '0x1c924636933ceDE03245f19756662e92F851293D',
         l1ERC20Gateway: '0xeBef8abC1DF5853345f319D5ACcba1d01AECCBD8',
@@ -64,8 +65,8 @@ beforeAll(() => {
     }
   })
 
-  addCustomChain({
-    customChain: xaiTestnet
+  addCustomNetwork({
+    customL2Network: xaiTestnet
   })
 })
 

@@ -1,4 +1,4 @@
-import { L2Network } from '@arbitrum/sdk'
+import { L2Network, constants } from '@arbitrum/sdk'
 
 export const defaultL2Network: L2Network = {
   chainID: 412346,
@@ -22,6 +22,7 @@ export const defaultL2Network: L2Network = {
   nitroGenesisBlock: 0,
   nitroGenesisL1Block: 0,
   depositTimeout: 900000,
+  blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
   tokenBridge: {
     l1CustomGateway: '0x1c924636933ceDE03245f19756662e92F851293D',
     l1ERC20Gateway: '0xeBef8abC1DF5853345f319D5ACcba1d01AECCBD8',
