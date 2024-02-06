@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
+import { twMerge } from 'tailwind-merge'
 
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 import { Switch } from './atoms/Switch'
-import { twMerge } from 'tailwind-merge'
-import { ChainId } from '../../util/networks'
+import { ChainId, isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 
 export const TestnetToggle = ({
@@ -19,9 +19,10 @@ export const TestnetToggle = ({
   label: string
   description?: string
 }) => {
-  const { isSourceChainTestnet, isTestnetMode, setIsTestnetMode } =
-    useIsTestnetMode()
-  const [, setNetworks] = useNetworks()
+  const { isTestnetMode, setIsTestnetMode } = useIsTestnetMode()
+  const [{ sourceChain }, setNetworks] = useNetworks()
+
+  const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
 
   const onChange = useCallback(() => {
     if (isSourceChainTestnet) {

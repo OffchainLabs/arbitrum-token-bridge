@@ -47,6 +47,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -68,6 +69,8 @@ const AppContent = (): JSX.Element => {
   const {
     app: { connectionState }
   } = useAppState()
+
+  useSyncQueryParamsToTestnetMode()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     const { isTestnet, isGoerli } = isNetwork(sourceChain.id ?? 0)
