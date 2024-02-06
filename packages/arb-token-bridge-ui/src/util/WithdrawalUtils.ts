@@ -18,23 +18,7 @@ export async function withdrawInitTxEstimateGas({
   erc20L1Address?: string
 }): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
-  const bridger = await (isToken ? Erc20Bridger : EthBridger).fromProvider(
-    childChainProvider
-  )
   const estimatedChildChainSubmissionCost = constants.Zero
-
-  const withdrawalRequest = isToken
-    ? await (bridger as Erc20Bridger).getWithdrawalRequest({
-        amount,
-        destinationAddress: address,
-        from: address,
-        erc20l1Address: erc20L1Address
-      })
-    : await (bridger as EthBridger).getWithdrawalRequest({
-        amount,
-        destinationAddress: address,
-        from: address
-      })
 
   // For the withdrawal init tx, there's no gas fee paid on L1 separately
   // unless we break down part of the L2 gas fee into L2 tx fee + L1 batch posting fee for that tx
@@ -43,6 +27,23 @@ export async function withdrawInitTxEstimateGas({
   const estimatedParentChainGas = BigNumber.from(0)
 
   try {
+    const bridger = await (isToken ? Erc20Bridger : EthBridger).fromProvider(
+      childChainProvider
+    )
+
+    const withdrawalRequest = isToken
+      ? await (bridger as Erc20Bridger).getWithdrawalRequest({
+          amount,
+          destinationAddress: address,
+          from: address,
+          erc20l1Address: erc20L1Address
+        })
+      : await (bridger as EthBridger).getWithdrawalRequest({
+          amount,
+          destinationAddress: address,
+          from: address
+        })
+
     // add 30% to the estimated total gas as buffer
     const estimatedChildChainGas = BigNumber.from(
       Math.ceil(

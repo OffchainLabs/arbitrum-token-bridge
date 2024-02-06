@@ -73,16 +73,15 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
-  const estimateGasResult = useGasEstimates({
-    txType: isDepositMode ? 'deposit' : 'withdrawal',
-    walletAddress,
-    childChainProvider,
-    parentChainProvider: isDepositMode ? parentChainProvider : undefined,
-    amount: amountBigNumber,
-    tokenParentChainAddress: token ? token.address : undefined,
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
+  const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
+    useGasEstimates({
+      txType: isDepositMode ? 'deposit' : 'withdrawal',
+      walletAddress,
+      childChainProvider,
+      parentChainProvider: isDepositMode ? parentChainProvider : undefined,
+      amount: amountBigNumber,
+      tokenParentChainAddress: token ? token.address : undefined
+    })
 
   const estimatedParentChainGasFees = useMemo(() => {
     if (!estimateGasResult) {
@@ -118,7 +117,7 @@ export function useGasSummary(): UseGasSummaryResult {
     }
     setGasSummaryStatus('loading')
 
-    if (typeof estimateGasResult === 'undefined') {
+    if (gasEstimatesError) {
       setGasSummaryStatus('error')
       return
     }
@@ -138,7 +137,8 @@ export function useGasSummary(): UseGasSummaryResult {
     parentChainGasPrice,
     estimateGasResult,
     estimatedParentChainGasFees,
-    estimatedChildChainGasFees
+    estimatedChildChainGasFees,
+    gasEstimatesError
   ])
 
   return gasSummary

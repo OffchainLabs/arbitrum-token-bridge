@@ -2,12 +2,12 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
+import * as Sentry from '@sentry/react'
 
 import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress
 } from './TokenUtils'
-import { depositEthEstimateGas } from './EthDepositUtils'
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 
 async function fetchTokenFallbackGasEstimates({
@@ -90,9 +90,9 @@ export type DepositTxEstimateGasParams = {
   childChainProvider: Provider
 }
 
-export type DepositTokenEstimateGasParams = Required<DepositTxEstimateGasParams>
+type DepositTokenEstimateGasParams = Required<DepositTxEstimateGasParams>
 
-async function depositTokenEstimateGas(
+export async function depositTokenEstimateGas(
   params: DepositTokenEstimateGasParams
 ): Promise<GasEstimates> {
   const {
@@ -104,45 +104,42 @@ async function depositTokenEstimateGas(
   } = params
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
 
-  if (await allowanceIsInsufficient(params)) {
-    console.warn(
-      `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
-    )
+  try {
+    if (await allowanceIsInsufficient(params)) {
+      console.warn(
+        `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
+      )
+
+      return fetchTokenFallbackGasEstimates({
+        inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        parentChainProvider
+      })
+    }
+
+    const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
+      amount,
+      erc20L1Address,
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider,
+      from: address,
+      retryableGasOverrides: {
+        // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+        // the 30% gas limit increase should cover the difference
+        gasLimit: { percentIncrease: BigNumber.from(30) }
+      }
+    })
+
+    return {
+      estimatedParentChainGas: await parentChainProvider.estimateGas(txRequest),
+      estimatedChildChainGas: retryableData.gasLimit,
+      estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
+    }
+  } catch (error) {
+    Sentry.captureException(error)
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
       parentChainProvider
     })
   }
-
-  const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
-    amount,
-    erc20L1Address,
-    l1Provider: parentChainProvider,
-    l2Provider: childChainProvider,
-    from: address,
-    retryableGasOverrides: {
-      // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
-      // the 30% gas limit increase should cover the difference
-      gasLimit: { percentIncrease: BigNumber.from(30) }
-    }
-  })
-
-  return {
-    estimatedParentChainGas: await parentChainProvider.estimateGas(txRequest),
-    estimatedChildChainGas: retryableData.gasLimit,
-    estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
-  }
-}
-
-export async function depositTxEstimateGas(
-  params: DepositTxEstimateGasParams
-): Promise<GasEstimates> {
-  const { erc20L1Address } = params
-  const isToken = typeof erc20L1Address === 'string'
-
-  return isToken
-    ? // typescript is dumb and doesn't know erc20L1Address is checked
-      depositTokenEstimateGas({ ...params, erc20L1Address })
-    : depositEthEstimateGas(params)
 }
