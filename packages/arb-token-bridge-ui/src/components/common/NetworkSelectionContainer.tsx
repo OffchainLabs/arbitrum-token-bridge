@@ -9,7 +9,7 @@ import {
   useState
 } from 'react'
 import { Chain } from 'wagmi'
-import { useDebounce } from 'react-use'
+import { useDebounce } from '@uidotdev/usehooks'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
@@ -108,7 +108,6 @@ function NetworkRow({
   return (
     <button
       onClick={handleClick}
-      onKeyDown={onKeyDown}
       key={chainId}
       style={style}
       type="button"
@@ -174,7 +173,7 @@ function NetworksPanel({
 }) {
   const [errorMessage, setErrorMessage] = useState('')
   const [networkSearched, setNetworkSearched] = useState('')
-  const [debouncedNetworkSearched, setDebouncedNetworkSearched] = useState('')
+  const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
 
@@ -182,14 +181,6 @@ function NetworksPanel({
     switch:
       'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
   }
-
-  useDebounce(
-    () => {
-      setDebouncedNetworkSearched(networkSearched)
-    },
-    200,
-    [networkSearched]
-  )
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()

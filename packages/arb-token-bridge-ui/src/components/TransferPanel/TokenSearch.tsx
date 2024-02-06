@@ -445,7 +445,7 @@ function TokensPanel({
       onSearchInputChange={onSearchInputChange}
       errorMessage={errorMessage}
       onSubmit={addNewToken}
-      SearchFieldCta={AddButton}
+      SearchInputButton={AddButton}
     >
       <AutoSizer>
         {({ height, width }) => (

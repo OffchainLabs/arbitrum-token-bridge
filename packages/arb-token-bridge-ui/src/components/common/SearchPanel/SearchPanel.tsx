@@ -4,7 +4,7 @@ import { Loader } from '../atoms/Loader'
 
 enum Panel {
   MAIN,
-  LISTS
+  SECONDARY
 }
 
 function SearchPanelMainPage({
@@ -84,7 +84,7 @@ export function SearchPanel({
   }, [])
 
   const bottomRightCtaOnClick = useCallback(() => {
-    setCurrentPanel(Panel.LISTS)
+    setCurrentPanel(Panel.SECONDARY)
   }, [])
 
   if (currentPanel === Panel.MAIN) {

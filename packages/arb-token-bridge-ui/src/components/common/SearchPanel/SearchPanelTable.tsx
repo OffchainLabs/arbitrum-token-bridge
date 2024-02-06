@@ -4,7 +4,7 @@ import React, { PropsWithChildren } from 'react'
 type SearchPanelTableProps = {
   searchInputPlaceholder: string
   searchInputValue: string
-  SearchFieldCta?: React.JSX.Element
+  SearchInputButton?: React.JSX.Element
   onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
@@ -13,7 +13,7 @@ type SearchPanelTableProps = {
 export const SearchPanelTable = ({
   searchInputPlaceholder,
   searchInputValue,
-  SearchFieldCta,
+  SearchInputButton,
   onSearchInputChange,
   onSubmit = event => {
     event.preventDefault()
@@ -36,7 +36,7 @@ export const SearchPanelTable = ({
               className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
             />
           </div>
-          {SearchFieldCta}
+          {SearchInputButton}
         </div>
         {!!errorMessage && (
           <p className="text-xs text-red-400">{errorMessage}</p>
