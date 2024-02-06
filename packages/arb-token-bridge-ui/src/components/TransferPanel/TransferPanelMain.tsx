@@ -806,13 +806,11 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
-  const { color } = getBridgeUiConfigForChain(networks.sourceChain.id)
-
   const buttonStyle = useMemo(
     () => ({
-      backgroundColor: color.primary
+      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color.primary
     }),
-    [color.primary]
+    [networks.sourceChain.id]
   )
 
   return (
