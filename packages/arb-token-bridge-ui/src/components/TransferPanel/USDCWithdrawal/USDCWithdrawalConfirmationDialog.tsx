@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Tab } from '@headlessui/react'
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
-import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -20,6 +18,7 @@ import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { SecurityNotGuaranteed } from '../SecurityLabels'
 
 enum SelectedTabName {
   ThirdParty = 'third_party',
@@ -107,6 +106,7 @@ export function USDCWithdrawalConfirmationDialog(
               bridgeList={fastBridges}
               selectedNonCanonicalToken={tokenSymbol}
             />
+            <SecurityNotGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
@@ -125,6 +125,7 @@ export function USDCWithdrawalConfirmationDialog(
                   />
                 </div>
               </CctpTabContent>
+              <SecurityNotGuaranteed />
             </div>
           </Tab.Panel>
         </Tab.Group>

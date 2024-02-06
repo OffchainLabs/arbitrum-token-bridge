@@ -115,9 +115,7 @@ export function WithdrawalConfirmationDialog(
               </div>
 
               <BridgesTable bridgeList={fastBridges} />
-              <div className="flex">
-                <SecurityNotGuaranteed />
-              </div>
+              <SecurityNotGuaranteed />
             </Tab.Panel>
           )}
 
