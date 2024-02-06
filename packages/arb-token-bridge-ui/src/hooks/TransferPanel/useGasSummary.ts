@@ -1,6 +1,7 @@
 import { constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
@@ -45,6 +46,7 @@ export function useGasSummary(): UseGasSummaryResult {
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [{ amount }] = useArbQueryParams()
+  const debouncedAmount = useDebounce(amount, 300)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
@@ -52,14 +54,14 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const amountBigNumber = useMemo(() => {
     try {
-      const amountSafe = amount || '0'
+      const amountSafe = debouncedAmount || '0'
       const decimals = token ? token.decimals : nativeCurrency.decimals
 
       return utils.parseUnits(amountSafe, decimals)
     } catch (error) {
       return constants.Zero
     }
-  }, [amount, token, nativeCurrency])
+  }, [debouncedAmount, token, nativeCurrency])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
