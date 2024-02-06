@@ -54,7 +54,7 @@ export function USDCWithdrawalConfirmationDialog(
   }))
 
   return (
-    <Dialog {...props} isCustom>
+    <Dialog {...props}>
       <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group>
           <div className="flex flex-row items-center justify-between bg-ocl-blue px-8 py-4">
