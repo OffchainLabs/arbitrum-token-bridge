@@ -109,10 +109,14 @@ export function Dialog(props: DialogProps) {
 
   const handleCloseStart = useCallback(
     (confirmed: boolean) => {
+      if (!confirmed && !closeable) {
+        return
+      }
+
       setIsConfirmed(confirmed)
       setIsClosing(true)
     },
-    [setIsClosing, setIsConfirmed]
+    [setIsClosing, setIsConfirmed, closeable]
   )
 
   const handleCloseEnd = useCallback(() => {
@@ -156,7 +160,7 @@ export function Dialog(props: DialogProps) {
                 props.children
               ) : (
                 <>
-                  <div className="flex items-center justify-between px-6 py-4">
+                  <div className="flex items-center justify-between px-6 pt-4">
                     <HeadlessUIDialog.Title className="text-xl">
                       {props.title}
                     </HeadlessUIDialog.Title>
@@ -170,10 +174,10 @@ export function Dialog(props: DialogProps) {
                     )}
                   </div>
 
-                  <div className="flex-grow px-5">{props.children}</div>
+                  <div className="flex-grow px-6">{props.children}</div>
 
                   {!isFooterHidden && (
-                    <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-5 py-2">
+                    <div className="flex flex-row justify-end space-x-2 bg-gray-dark px-6 py-2">
                       {closeable && (
                         <Button
                           ref={cancelButtonRef}

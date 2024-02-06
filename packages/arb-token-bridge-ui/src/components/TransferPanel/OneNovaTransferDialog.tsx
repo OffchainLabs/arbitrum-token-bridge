@@ -52,13 +52,13 @@ export function OneNovaTransferDialog(
       isFooterHidden={true}
       className="max-w-[700px]"
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col pt-4">
         <Tab.Group>
           <Tab.List className="border-b border-gray-dark">
             <TabButton>Third party bridge</TabButton>
           </Tab.List>
 
-          <Tab.Panel className="flex flex-col space-y-3 py-4">
+          <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-3">
               <p className="font-light">
                 Use a third party bridge to transfer funds between Arbitrum One

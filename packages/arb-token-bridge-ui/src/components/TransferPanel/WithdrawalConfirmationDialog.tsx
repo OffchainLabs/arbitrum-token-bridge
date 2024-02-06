@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
+import { Tab } from '@headlessui/react'
 import dayjs from 'dayjs'
 import Image from 'next/image'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
-import { Button } from '../common/Button'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
@@ -101,7 +99,7 @@ export function WithdrawalConfirmationDialog(
       isFooterHidden={isFastBridgesTab}
       actionButtonProps={{ disabled: !bothCheckboxesChecked }}
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col pt-4">
         <Tab.Group onChange={index => setIsFastBridgesTab(index === 0)}>
           <Tab.List className="border-b border-gray-dark">
             {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
@@ -109,8 +107,8 @@ export function WithdrawalConfirmationDialog(
           </Tab.List>
 
           {isArbitrumOne && (
-            <Tab.Panel className="flex flex-col space-y-3 py-4">
-              <div className="flex flex-col space-y-3">
+            <Tab.Panel className="flex flex-col space-y-4 py-4">
+              <div className="flex flex-col space-y-4">
                 <p className="font-light">
                   Get your funds in under 30 min with a fast exit bridge.
                 </p>

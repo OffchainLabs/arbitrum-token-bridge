@@ -42,7 +42,7 @@ export function TransferDisabledDialog() {
       isOpen={isOpenTransferDisabledDialog}
       onClose={onClose}
     >
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 py-4">
         <p>
           Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
           has a custom bridge solution that is incompatible with the canonical

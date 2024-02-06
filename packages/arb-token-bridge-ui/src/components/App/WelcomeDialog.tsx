@@ -10,7 +10,7 @@ export function WelcomeDialog(props: UseDialogProps) {
       closeable={false}
       className="w-screen md:w-[350px]"
     >
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 py-4">
         <div className="flex flex-col space-y-1 rounded bg-white/20 p-2 text-sm">
           <p className="font-medium">Safety Tip</p>
           <p>
