@@ -147,7 +147,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       if (isDepositMode) {
         setContractAddress(
           await fetchErc20ParentChainGatewayAddress({
-            erc20L1Address: token.address,
+            erc20ParentChainAddress: token.address,
             parentChainProvider,
             childChainProvider
           })

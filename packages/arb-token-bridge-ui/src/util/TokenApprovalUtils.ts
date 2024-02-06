@@ -15,7 +15,7 @@ export const approveTokenEstimateGas = async ({
   l2Provider: Provider
 }) => {
   const l1GatewayAddress = await fetchErc20ParentChainGatewayAddress({
-    erc20L1Address,
+    erc20ParentChainAddress: erc20L1Address,
     parentChainProvider: l1Provider,
     childChainProvider: l2Provider
   })

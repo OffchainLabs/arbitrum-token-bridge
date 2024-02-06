@@ -67,7 +67,7 @@ async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
   } = params
 
   const l1Gateway = await fetchErc20ParentChainGatewayAddress({
-    erc20L1Address,
+    erc20ParentChainAddress: erc20L1Address,
     parentChainProvider,
     childChainProvider
   })

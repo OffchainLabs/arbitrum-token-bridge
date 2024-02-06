@@ -205,19 +205,22 @@ export async function getL1ERC20Address({
 }
 
 /*
- Retrieves the L1 gateway of an ERC-20 token using its L1 address.
+ Retrieves the parent chain gateway of an ERC-20 token using its parent chain address.
 */
 export async function fetchErc20ParentChainGatewayAddress({
-  erc20L1Address,
+  erc20ParentChainAddress,
   parentChainProvider,
   childChainProvider
 }: {
-  erc20L1Address: string
+  erc20ParentChainAddress: string
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<string> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-  return erc20Bridger.getL1GatewayAddress(erc20L1Address, parentChainProvider)
+  return erc20Bridger.getL1GatewayAddress(
+    erc20ParentChainAddress,
+    parentChainProvider
+  )
 }
 
 /*

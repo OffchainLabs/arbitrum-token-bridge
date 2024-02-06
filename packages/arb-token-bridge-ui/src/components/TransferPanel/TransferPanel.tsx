@@ -333,7 +333,7 @@ export function TransferPanel() {
     }
 
     const l1Gateway = await fetchErc20ParentChainGatewayAddress({
-      erc20L1Address: selectedToken.address,
+      erc20ParentChainAddress: selectedToken.address,
       parentChainProvider,
       childChainProvider
     })
@@ -755,7 +755,7 @@ export function TransferPanel() {
           }
 
           const l1GatewayAddress = await fetchErc20ParentChainGatewayAddress({
-            erc20L1Address: selectedToken.address,
+            erc20ParentChainAddress: selectedToken.address,
             parentChainProvider,
             childChainProvider
           })
