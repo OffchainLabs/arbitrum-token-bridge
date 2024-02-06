@@ -229,6 +229,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       <BlockedDialog
         address={address}
         isOpen={true}
+        closeable={false}
         // ignoring until we use the package
         // https://github.com/OffchainLabs/config-monorepo/pull/11
         //
