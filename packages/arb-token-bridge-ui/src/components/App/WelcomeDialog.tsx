@@ -8,7 +8,7 @@ export function WelcomeDialog(props: UseDialogProps) {
       title="Welcome"
       actionButtonTitle="Agree to Terms and Continue"
       closeable={false}
-      className="w-screen md:w-[350px]"
+      className="w-screen"
     >
       <div className="flex flex-col space-y-4 py-4">
         <div className="flex flex-col space-y-1 rounded bg-white/20 p-2 text-sm">
