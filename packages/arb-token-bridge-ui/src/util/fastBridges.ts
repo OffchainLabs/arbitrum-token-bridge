@@ -6,7 +6,7 @@ import Connext from '@/images/bridge/connext.png'
 import Across from '@/images/bridge/across.png'
 import Stargate from '@/images/bridge/stargate.png'
 import Synapse from '@/images/bridge/synapse.png'
-import Wormhole from '@/images/bridge/wormhole.svg'
+import Wormhole from '@/images/bridge/wormhole.png'
 import LIFI from '@/images/bridge/lifi.webp'
 import Router from '@/images/bridge/router.webp'
 

@@ -17,10 +17,7 @@ export const CctpTabContent = ({
       <p className="font-light">
         Access to Circle&apos;s bridge is restricted in certain jurisdictions.
         For more details, please consult Circle&apos;s{' '}
-        <ExternalLink
-          className="arb-hover text-blue-link underline"
-          href={CCTP_DOCUMENTATION}
-        >
+        <ExternalLink className="arb-hover underline" href={CCTP_DOCUMENTATION}>
           documentation.
         </ExternalLink>{' '}
       </p>
@@ -31,10 +28,7 @@ export const CctpTabContent = ({
     <>
       <p className="font-light">
         Receive Native USDC on {toNetworkName} with Circle&apos;s{' '}
-        <ExternalLink
-          className="arb-hover text-blue-link underline"
-          href={CCTP_DOCUMENTATION}
-        >
+        <ExternalLink className="arb-hover underline" href={CCTP_DOCUMENTATION}>
           Cross-Chain Transfer Protocol
         </ExternalLink>{' '}
         within the Arbitrum Bridge.
