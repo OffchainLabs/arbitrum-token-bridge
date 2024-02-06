@@ -350,8 +350,7 @@ export function isNetwork(chainId: ChainId) {
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
-
-  const isOrbitChain = !isEthereumMainnetOrTestnet && !isArbitrum
+  const isOrbitChain = !isCoreChain
 
   const isTestnet =
     isGoerli ||
