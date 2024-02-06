@@ -196,7 +196,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 onClick={() => {
                   props.onClose(true, 'cctp')
                   setAllCheckboxesChecked(false)
-                  trackEvent('Use Cctp Click', {
+                  trackEvent('Use CCTP Click', {
                     tokenSymbol,
                     type: 'Deposit'
                   })

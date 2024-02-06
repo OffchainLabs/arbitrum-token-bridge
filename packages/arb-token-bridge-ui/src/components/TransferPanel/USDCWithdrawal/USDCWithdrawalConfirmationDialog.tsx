@@ -133,7 +133,7 @@ export function USDCWithdrawalConfirmationDialog(
                 onClick={() => {
                   props.onClose(true)
                   setAllCheckboxesChecked(false)
-                  trackEvent('Use Cctp Click', {
+                  trackEvent('Use CCTP Click', {
                     tokenSymbol,
                     type: 'Withdrawal'
                   })

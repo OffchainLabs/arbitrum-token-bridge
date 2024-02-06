@@ -45,7 +45,7 @@ type AnalyticsEventMap = {
     tokenSymbol?: SpecialTokenSymbol.USDC
   }
   'Use Arbitrum Bridge Click': { tokenSymbol: 'USDC'; type: TransferDirection }
-  'Use Cctp Click': { tokenSymbol: 'USDC'; type: TransferDirection }
+  'Use CCTP Click': { tokenSymbol: 'USDC'; type: TransferDirection }
   'Switch Network and Transfer': {
     type: TransferDirection
     tokenSymbol?: string
