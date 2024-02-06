@@ -1,5 +1,5 @@
 import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { EthBridger, getChain, L2Network } from '@arbitrum/sdk'
+import { EthBridger, L2Network, getL2Network } from '@arbitrum/sdk'
 import useSWRImmutable from 'swr/immutable'
 
 import { ETHER_TOKEN_LOGO, ether } from '../constants'
@@ -60,7 +60,7 @@ export async function fetchNativeCurrency({
   let chain: L2Network
 
   try {
-    chain = await getChain(provider)
+    chain = await getL2Network(provider)
   } catch (error) {
     // This will only throw for L1s, so we can safely assume that the native currency is ETH
     return nativeCurrencyEther
