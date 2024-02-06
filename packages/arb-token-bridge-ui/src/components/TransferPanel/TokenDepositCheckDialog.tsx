@@ -111,7 +111,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
 
   return (
     <Dialog {...props} title={title}>
-      <p>{textContent}</p>
+      <p className="pt-4">{textContent}</p>
     </Dialog>
   )
 }
