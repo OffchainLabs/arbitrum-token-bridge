@@ -29,13 +29,25 @@ function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
   options: { isSmartContractWallet: boolean; isDepositMode: boolean }
 ) {
+  const { estimatedParentChainGasFees, estimatedChildChainGasFees } = gasSummary
+
+  if (
+    typeof estimatedParentChainGasFees === 'undefined' ||
+    typeof estimatedChildChainGasFees === 'undefined'
+  ) {
+    return {
+      estimatedL1GasFees: 0,
+      estimatedL2GasFees: 0
+    }
+  }
+
   // For smart contract wallets, the relayer pays the gas fees
   if (options.isSmartContractWallet) {
     if (options.isDepositMode) {
       // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
       return {
         estimatedL1GasFees: 0,
-        estimatedL2GasFees: gasSummary.estimatedChildChainGasFees
+        estimatedL2GasFees: estimatedChildChainGasFees
       }
     }
 
@@ -46,8 +58,8 @@ function sanitizeEstimatedGasFees(
   }
 
   return {
-    estimatedL1GasFees: gasSummary.estimatedParentChainGasFees,
-    estimatedL2GasFees: gasSummary.estimatedChildChainGasFees
+    estimatedL1GasFees: estimatedParentChainGasFees,
+    estimatedL2GasFees: estimatedChildChainGasFees
   }
 }
 
@@ -307,13 +319,6 @@ export function useTransferReadiness({
             isSmartContractWallet,
             isDepositMode
           })
-
-        if (
-          typeof estimatedL1GasFees === 'undefined' ||
-          typeof estimatedL2GasFees === 'undefined'
-        ) {
-          return notReady()
-        }
 
         if (selectedToken) {
           // If depositing into a custom fee token network, gas is split between ETH and the custom fee token

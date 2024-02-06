@@ -73,6 +73,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     estimatedChildChainGasFees
   } = useGasSummary()
 
+  const gasSummaryLoading = gasSummaryStatus === 'loading'
+
   const [networks] = useNetworks()
   const {
     childChain,
@@ -142,8 +144,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
-          {gasSummaryStatus === 'loading' && <StyledLoader />}
-          {!sameNativeCurrency &&
+          {gasSummaryLoading && <StyledLoader />}
+          {!gasSummaryLoading &&
+            !sameNativeCurrency &&
             isDepositMode &&
             typeof estimatedParentChainGasFees !== 'undefined' && (
               <>
@@ -157,13 +160,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
                 {selectedToken && ' and '}
               </>
             )}
-          {!sameNativeCurrency &&
+          {!gasSummaryLoading &&
+            !sameNativeCurrency &&
             (selectedToken || !isDepositMode) &&
             typeof estimatedChildChainGasFees !== 'undefined' &&
             formatAmount(estimatedChildChainGasFees, {
               symbol: childChainNativeCurrency.symbol
             })}
-          {sameNativeCurrency &&
+          {!gasSummaryLoading &&
+            sameNativeCurrency &&
             typeof estimatedTotalGasFees !== 'undefined' && (
               <>
                 {formatAmount(estimatedTotalGasFees, {
