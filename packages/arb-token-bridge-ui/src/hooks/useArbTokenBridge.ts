@@ -154,10 +154,8 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
-  const [
-    transactions,
-    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
-  ] = useTransactions()
+  const [transactions, { addTransaction, updateTransaction }] =
+    useTransactions()
 
   const depositEth = async ({
     amount,
@@ -219,7 +217,9 @@ export const useArbTokenBridge = (
       tokenAddress: null,
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID)
+      childChainId: Number(l2NetworkID),
+      sourceChainId: Number(l1NetworkID),
+      destinationChainId: Number(l2NetworkID)
     })
 
     addDepositToCache({
@@ -302,7 +302,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: null,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -474,7 +476,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l1NetworkID),
+        destinationChainId: Number(l2NetworkID)
       })
 
       addDepositToCache({
@@ -593,7 +597,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -994,8 +1000,7 @@ export const useArbTokenBridge = (
     transactions: {
       transactions,
       updateTransaction,
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      addTransaction
     }
   }
 }

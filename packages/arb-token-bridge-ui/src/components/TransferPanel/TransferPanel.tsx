@@ -21,7 +21,7 @@ import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useDialog } from '../common/Dialog'
 import { TokenApprovalDialog } from './TokenApprovalDialog'
 import { WithdrawalConfirmationDialog } from './WithdrawalConfirmationDialog'
-import { TransferPanelSummary, useGasSummary } from './TransferPanelSummary'
+import { TransferPanelSummary } from './TransferPanelSummary'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
@@ -36,7 +36,6 @@ import {
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC
 } from '../../util/TokenUtils'
-import { useBalance } from '../../hooks/useBalance'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { useIsConnectedToOrbitChain } from '../../hooks/useIsConnectedToOrbitChain'
@@ -45,6 +44,7 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import {
+  AdvancedSettings,
   getDestinationAddressError,
   useDestinationAddressStore
 } from './AdvancedSettings'
@@ -63,8 +63,8 @@ import {
   useTokenFromSearchParams
 } from './TransferPanelUtils'
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
-import { useSummaryVisibility } from '../../hooks/TransferPanel/useSummaryVisibility'
 import { useTransferReadiness } from './useTransferReadiness'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -191,21 +191,19 @@ export function TransferPanel() {
     openUSDCDepositConfirmationDialog
   ] = useDialog()
 
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
-
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
 
   const { destinationAddress } = useDestinationAddressStore()
+
+  const gasSummary = useGasSummary()
+
+  const { transferReady, errorMessage } = useTransferReadiness({
+    amount,
+    gasSummary
+  })
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -222,66 +220,6 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
-
-  const ethL1BalanceFloat = useMemo(
-    () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
-    [ethL1Balance]
-  )
-
-  const ethL2BalanceFloat = useMemo(
-    () => (ethL2Balance ? parseFloat(utils.formatEther(ethL2Balance)) : null),
-    [ethL2Balance]
-  )
-
-  const selectedTokenL1BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
-      return null
-    }
-
-    const balance = erc20L1Balances?.[selectedToken.address.toLowerCase()]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L1Balances])
-
-  const selectedTokenL2BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
-      return null
-    }
-
-    const isL2NativeUSDC =
-      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
-
-    const selectedTokenL2Address = isL2NativeUSDC
-      ? selectedToken.address.toLowerCase()
-      : (selectedToken.l2Address || '').toLowerCase()
-
-    const balance = erc20L2Balances?.[selectedTokenL2Address]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L2Balances])
-
-  const customFeeTokenL1BalanceFloat = useMemo(() => {
-    if (!nativeCurrency.isCustom) {
-      return null
-    }
-
-    const balance = erc20L1Balances?.[nativeCurrency.address]
-
-    if (!balance) {
-      return null
-    }
-
-    return parseFloat(utils.formatUnits(balance, nativeCurrency.decimals))
-  }, [nativeCurrency, erc20L1Balances])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -666,7 +604,9 @@ export function TransferPanel() {
           receiveMessageTimestamp: null
         },
         parentChainId: parentChain.id,
-        childChainId: childChain.id
+        childChainId: childChain.id,
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
       }
 
       addPendingTransaction(newTransfer)
@@ -1052,60 +992,6 @@ export function TransferPanel() {
     }
   }
 
-  // Only run gas estimation when it makes sense, i.e. when there is enough funds
-  const shouldRunGasEstimation = useMemo(() => {
-    let balanceFloat: number | null
-
-    // Compare ERC-20 balance
-    if (selectedToken) {
-      balanceFloat = isDepositMode
-        ? selectedTokenL1BalanceFloat
-        : selectedTokenL2BalanceFloat
-    }
-    // Compare custom fee token balance
-    else if (nativeCurrency.isCustom) {
-      balanceFloat = isDepositMode
-        ? customFeeTokenL1BalanceFloat
-        : ethL2BalanceFloat
-    }
-    // Compare ETH balance
-    else {
-      balanceFloat = isDepositMode ? ethL1BalanceFloat : ethL2BalanceFloat
-    }
-
-    if (!balanceFloat) {
-      return false
-    }
-
-    return Number(amount) <= balanceFloat
-  }, [
-    amount,
-    selectedToken,
-    isDepositMode,
-    nativeCurrency,
-    ethL1BalanceFloat,
-    ethL2BalanceFloat,
-    selectedTokenL1BalanceFloat,
-    selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat
-  ])
-
-  const gasSummary = useGasSummary(
-    amountBigNumber,
-    selectedToken,
-    shouldRunGasEstimation
-  )
-
-  const { transferReady, errorMessage } = useTransferReadiness({
-    amount,
-    gasSummary
-  })
-
-  const { isSummaryVisible } = useSummaryVisibility({
-    transferReady,
-    gasEstimationStatus: gasSummary.status
-  })
-
   return (
     <>
       <TokenApprovalDialog
@@ -1138,49 +1024,18 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <div className="flex max-w-screen-lg flex-col space-y-6 bg-white shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:flex-row lg:space-x-6 lg:space-y-0 lg:rounded-xl">
+      <div className="flex flex-col bg-white px-6 py-6 shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:rounded">
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
           errorMessage={errorMessage}
         />
-
-        <div className="border-r border-gray-2" />
-
-        <div
-          style={
-            isSummaryVisible
-              ? {}
-              : {
-                  background: `url(/images/ArbitrumFaded.webp)`,
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'center'
-                }
-          }
-          className="transfer-panel-stats flex w-full flex-col justify-between bg-gray-2 px-6 py-6 lg:rounded-br-xl lg:rounded-tr-xl lg:bg-white lg:px-0 lg:pr-6"
-        >
-          <div className="flex flex-col">
-            <div className="hidden lg:block">
-              <span className="text-2xl text-gray-dark">Summary</span>
-              <div className="h-4" />
-            </div>
-
-            {isSummaryVisible ? (
-              <TransferPanelSummary
-                amount={parseFloat(amount)}
-                token={selectedToken}
-                gasSummary={gasSummary}
-              />
-            ) : (
-              <div className="hidden text-lg text-gray-dark lg:block lg:min-h-[297px]">
-                <span className="text-xl">
-                  Bridging summary will appear here.
-                </span>
-              </div>
-            )}
-          </div>
-
+        <AdvancedSettings />
+        <TransferPanelSummary
+          amount={parseFloat(amount)}
+          token={selectedToken}
+        />
+        <div className="transfer-panel-stats">
           {isDepositMode ? (
             <Button
               variant="primary"
@@ -1208,13 +1063,11 @@ export function TransferPanel() {
               }}
               className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
             >
-              <span className="block w-[360px] truncate">
-                {isSmartContractWallet && isTransferring
-                  ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.destinationChain.id
-                    )}`}
-              </span>
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(
+                    networks.destinationChain.id
+                  )}`}
             </Button>
           ) : (
             <Button
@@ -1240,13 +1093,11 @@ export function TransferPanel() {
               }}
               className="w-full py-4 text-lg lg:text-2xl"
             >
-              <span className="block w-[360px] truncate">
-                {isSmartContractWallet && isTransferring
-                  ? 'Sending request...'
-                  : `Move funds to ${getNetworkName(
-                      networks.destinationChain.id
-                    )}`}
-              </span>
+              {isSmartContractWallet && isTransferring
+                ? 'Sending request...'
+                : `Move funds to ${getNetworkName(
+                    networks.destinationChain.id
+                  )}`}
             </Button>
           )}
         </div>
