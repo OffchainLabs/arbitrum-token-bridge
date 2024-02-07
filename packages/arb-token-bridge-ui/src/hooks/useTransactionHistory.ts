@@ -52,6 +52,7 @@ import {
 } from '../util/SubgraphUtils'
 import { getOrbitChains } from '../util/orbitChainsList'
 import { isTestingEnvironment } from '../util/CommonUtils'
+import { Address } from '../util/AddressUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -225,9 +226,7 @@ function getTxIdFromTransaction(tx: Transfer) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (
-  address: `0x${string}` | undefined
-) => {
+const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -438,7 +437,7 @@ const useTransactionHistoryWithoutStatuses = (
  * This is done in small batches to safely meet RPC limits.
  */
 export const useTransactionHistory = (
-  address: `0x${string}` | undefined,
+  address: Address | undefined,
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
@@ -448,7 +447,7 @@ export const useTransactionHistory = (
     useAccountType()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
-  const MAX_BATCH_SIZE = 10
+  const MAX_BATCH_SIZE = 3
   // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 

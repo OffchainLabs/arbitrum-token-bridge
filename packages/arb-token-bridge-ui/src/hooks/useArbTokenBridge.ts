@@ -217,7 +217,9 @@ export const useArbTokenBridge = (
       tokenAddress: null,
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID)
+      childChainId: Number(l2NetworkID),
+      sourceChainId: Number(l1NetworkID),
+      destinationChainId: Number(l2NetworkID)
     })
 
     addDepositToCache({
@@ -300,7 +302,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: null,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -472,7 +476,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l1NetworkID),
+        destinationChainId: Number(l2NetworkID)
       })
 
       addDepositToCache({
@@ -591,7 +597,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()

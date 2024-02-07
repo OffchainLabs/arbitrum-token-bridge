@@ -6,7 +6,6 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworkTPS } from '../../hooks/useNetworkTPS'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -32,7 +31,6 @@ export const ArbitrumStats = () => {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
-  const { parentLayer, layer } = useChainLayers()
 
   const { data: currentL1BlockNumber } = useBlockNumber({
     chainId: parentChain.id,
@@ -69,7 +67,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(parentChain.id)} ({parentLayer})
+          {getNetworkName(parentChain.id)}
         </span>
         <span>
           &gt; Block:{' '}
@@ -89,7 +87,7 @@ export const ArbitrumStats = () => {
           <span className="mr-1 animate-pulse text-lg text-[#008000]">
             &bull;
           </span>{' '}
-          {getNetworkName(childChain.id)} ({layer})
+          {getNetworkName(childChain.id)}
         </span>
         <span>
           &gt; Block:{' '}

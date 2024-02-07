@@ -204,11 +204,11 @@ export const AdvancedSettings = () => {
   }
 
   return (
-    <div className="mt-6">
+    <div className="mb-6 flex flex-col items-end">
       <button
         onClick={handleVisibility}
         className={twMerge(
-          'arb-hover flex flex-row items-center text-gray-dark',
+          'arb-hover flex flex-row items-center text-sm text-gray-dark',
           collapsible ? '' : 'pointer-events-none'
         )}
       >
