@@ -88,18 +88,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [estimatedL1GasFees, estimatedL2GasFees]
   )
 
-  if (gasSummaryStatus === 'loading') {
-    const bgClassName = 'h-[20px] w-full bg-white/10'
-
-    return (
-      <TransferPanelSummaryContainer className="animate-pulse">
-        <div className={bgClassName} />
-        <div className={bgClassName} />
-        {!isDepositMode && <div className={bgClassName} />}
-      </TransferPanelSummaryContainer>
-    )
-  }
-
   if (gasSummaryStatus === 'unavailable') {
     return (
       <TransferPanelSummaryContainer>
