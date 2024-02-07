@@ -53,14 +53,10 @@ export function useGasSummary(): UseGasSummaryResult {
   )
 
   const amountBigNumber = useMemo(() => {
-    try {
-      const amountSafe = debouncedAmount || '0'
-      const decimals = token ? token.decimals : nativeCurrency.decimals
+    const amountSafe = debouncedAmount || '0'
+    const decimals = token ? token.decimals : nativeCurrency.decimals
 
-      return utils.parseUnits(amountSafe, decimals)
-    } catch (error) {
-      return constants.Zero
-    }
+    return utils.parseUnits(amountSafe, decimals)
   }, [debouncedAmount, token, nativeCurrency])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
@@ -86,7 +82,7 @@ export function useGasSummary(): UseGasSummaryResult {
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
-    if (!estimateGasResult) {
+    if (!estimateGasResult?.estimatedParentChainGas) {
       return
     }
     return calculateEstimatedParentChainGasFees(
@@ -96,7 +92,7 @@ export function useGasSummary(): UseGasSummaryResult {
   }, [estimateGasResult, parentChainGasPrice])
 
   const estimatedChildChainGasFees = useMemo(() => {
-    if (!estimateGasResult) {
+    if (!estimateGasResult?.estimatedChildChainGas) {
       return
     }
     return calculateEstimatedChildChainGasFees(
@@ -135,14 +131,9 @@ export function useGasSummary(): UseGasSummaryResult {
       estimatedChildChainGasFees
     })
   }, [
-    // Re-run gas estimation when:
-    isDepositMode, // when user switches deposit/withdraw mode
-    amountBigNumber,
-    token, // when the token changes
+    isDepositMode,
+    token,
     setGasSummaryStatus,
-    childChainGasPrice,
-    parentChainGasPrice,
-    estimateGasResult,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
     gasEstimatesError

@@ -91,7 +91,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     provider: parentChainProvider
   })
 
-  const isBridgingEth = useIsBridgingEth()
+  const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
   const [{ amount }] = useArbQueryParams()
 

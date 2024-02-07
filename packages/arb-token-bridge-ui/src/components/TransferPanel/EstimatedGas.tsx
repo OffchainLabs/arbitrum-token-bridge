@@ -60,7 +60,7 @@ export function EstimatedGas({
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const isBridgingEth = useIsBridgingEth()
+  const isBridgingEth = useIsBridgingEth(nativeCurrency)
   const isSourceChain = chainType === 'source'
   const isParentChain = isSourceChain
     ? networks.sourceChain.id === parentChain.id
