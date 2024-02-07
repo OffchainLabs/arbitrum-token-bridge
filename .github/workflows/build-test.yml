@@ -166,7 +166,7 @@ jobs:
 
   test-e2e:
     name: "Test E2E"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-8
     needs: [install, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     strategy:
