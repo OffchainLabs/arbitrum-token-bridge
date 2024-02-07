@@ -53,6 +53,9 @@ export function useGasSummary(): UseGasSummaryResult {
   )
 
   const amountBigNumber = useMemo(() => {
+    if (isNaN(Number(debouncedAmount))) {
+      return 0
+    }
     const amountSafe = debouncedAmount || '0'
     const decimals = token ? token.decimals : nativeCurrency.decimals
 
