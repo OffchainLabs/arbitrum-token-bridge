@@ -142,26 +142,26 @@ function AddCustomOrbitChainButton() {
   const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useIsTestnetMode()
 
+  const openSettingsPanel = useCallback(
+    () => setQueryParams({ settingsOpen: true }),
+    [setQueryParams]
+  )
+
   if (!isTestnetMode) {
     return null
   }
 
   return (
-    <button
-      className="text-sm underline"
-      onClick={() => setQueryParams({ settingsOpen: true })}
-    >
+    <button className="text-sm underline" onClick={openSettingsPanel}>
       <span>Add Custom Orbit Chain</span>
     </button>
   )
 }
 
 function NetworksPanel({
-  chainIds,
   onNetworkRowClick,
   close
 }: {
-  chainIds: ChainId[]
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -170,6 +170,10 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
+
+  const chainIds = getSupportedChainIds({
+    includeTestnets: isTestnetMode
+  })
 
   const testnetToggleClassNames = {
     switch:
@@ -319,28 +323,8 @@ export const NetworkSelectionContainer = ({
   buttonStyle?: CSSProperties
   onChange: (value: Chain) => void
 }) => {
-  const [isTestnetMode] = useIsTestnetMode()
-
-  const supportedNetworks = getSupportedChainIds({
-    includeTestnets: isTestnetMode
-  })
-
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-
-  const coreNetworks = useMemo(
-    () => supportedNetworks.filter(network => isNetwork(network).isCoreChain),
-    [supportedNetworks]
-  )
-  const orbitNetworks = useMemo(
-    () => supportedNetworks.filter(network => isNetwork(network).isOrbitChain),
-    [supportedNetworks]
-  )
-
-  const finalChainIds: ChainId[] = useMemo(
-    () => [...coreNetworks, ...orbitNetworks],
-    [coreNetworks, orbitNetworks]
-  )
 
   return (
     <Popover className="relative w-full lg:w-max">
@@ -375,11 +359,7 @@ export const NetworkSelectionContainer = ({
                   isLoading={false}
                   loadingMessage="Fetching Networks..."
                 >
-                  <NetworksPanel
-                    chainIds={finalChainIds}
-                    close={onClose}
-                    onNetworkRowClick={onChange}
-                  />
+                  <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
                 </SearchPanel>
               </div>
             </>

@@ -7,12 +7,10 @@ export const useSyncQueryParamsToTestnetMode = () => {
   const [{ sourceChain }] = useNetworks()
   const [, setIsTestnetMode] = useIsTestnetMode()
 
-  const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
-
   useEffect(() => {
     // force test mode if source chain is testnet
-    if (isSourceChainTestnet) {
+    if (isNetwork(sourceChain.id).isTestnet) {
       setIsTestnetMode(true)
     }
-  }, [isSourceChainTestnet, setIsTestnetMode])
+  }, [setIsTestnetMode, sourceChain.id])
 }
