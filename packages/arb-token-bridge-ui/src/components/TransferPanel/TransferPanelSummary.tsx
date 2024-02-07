@@ -114,6 +114,16 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [childChainNativeCurrency, parentChainNativeCurrency]
   )
 
+  const differentNativeCurrencyAndDepositMode = useMemo(
+    () => !sameNativeCurrency && isDepositMode,
+    [isDepositMode, sameNativeCurrency]
+  )
+
+  const showChildChainNativeCurrencyAsGasFee = useMemo(
+    () => !sameNativeCurrency && (selectedToken || !isDepositMode),
+    [selectedToken, isDepositMode, sameNativeCurrency]
+  )
+
   const estimatedTotalGasFees = useMemo(() => {
     if (
       gasSummaryStatus === 'loading' ||
@@ -145,41 +155,34 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
         <span className="font-medium">
           {gasSummaryLoading && <StyledLoader />}
+          {!gasSummaryLoading && differentNativeCurrencyAndDepositMode && (
+            <>
+              {formatAmount(estimatedParentChainGasFees, {
+                symbol: parentChainNativeCurrency.symbol
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+              {selectedToken && ' and '}
+            </>
+          )}
           {!gasSummaryLoading &&
-            !sameNativeCurrency &&
-            isDepositMode &&
-            typeof estimatedParentChainGasFees !== 'undefined' && (
-              <>
-                {formatAmount(estimatedParentChainGasFees, {
-                  symbol: parentChainNativeCurrency.symbol
-                })}{' '}
-                <NativeCurrencyPrice
-                  amount={estimatedTotalGasFees}
-                  showBrackets
-                />
-                {selectedToken && ' and '}
-              </>
-            )}
-          {!gasSummaryLoading &&
-            !sameNativeCurrency &&
-            (selectedToken || !isDepositMode) &&
-            typeof estimatedChildChainGasFees !== 'undefined' &&
+            showChildChainNativeCurrencyAsGasFee &&
             formatAmount(estimatedChildChainGasFees, {
               symbol: childChainNativeCurrency.symbol
             })}
-          {!gasSummaryLoading &&
-            sameNativeCurrency &&
-            typeof estimatedTotalGasFees !== 'undefined' && (
-              <>
-                {formatAmount(estimatedTotalGasFees, {
-                  symbol: childChainNativeCurrency.symbol
-                })}{' '}
-                <NativeCurrencyPrice
-                  amount={estimatedTotalGasFees}
-                  showBrackets
-                />
-              </>
-            )}{' '}
+          {!gasSummaryLoading && sameNativeCurrency && (
+            <>
+              {formatAmount(estimatedTotalGasFees, {
+                symbol: childChainNativeCurrency.symbol
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+            </>
+          )}{' '}
         </span>
       </div>
 
