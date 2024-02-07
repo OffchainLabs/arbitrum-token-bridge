@@ -1,4 +1,4 @@
-import { constants, utils } from 'ethers'
+import { utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDebounce } from '@uidotdev/usehooks'

@@ -2,6 +2,7 @@ import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, constants } from 'ethers'
 import * as Sentry from '@sentry/react'
+import { L2ToL1TransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
@@ -27,22 +28,24 @@ export async function withdrawInitTxEstimateGas({
   const estimatedParentChainGas = BigNumber.from(0)
 
   try {
-    const bridger = await (isToken ? Erc20Bridger : EthBridger).fromProvider(
-      childChainProvider
-    )
+    let withdrawalRequest: L2ToL1TransactionRequest
 
-    const withdrawalRequest = isToken
-      ? await (bridger as Erc20Bridger).getWithdrawalRequest({
-          amount,
-          destinationAddress: address,
-          from: address,
-          erc20l1Address: erc20L1Address
-        })
-      : await (bridger as EthBridger).getWithdrawalRequest({
-          amount,
-          destinationAddress: address,
-          from: address
-        })
+    if (isToken) {
+      const bridger = await Erc20Bridger.fromProvider(childChainProvider)
+      withdrawalRequest = await bridger.getWithdrawalRequest({
+        amount,
+        destinationAddress: address,
+        from: address,
+        erc20l1Address: erc20L1Address
+      })
+    } else {
+      const bridger = await EthBridger.fromProvider(childChainProvider)
+      withdrawalRequest = await bridger.getWithdrawalRequest({
+        amount,
+        destinationAddress: address,
+        from: address
+      })
+    }
 
     // add 30% to the estimated total gas as buffer
     const estimatedChildChainGas = BigNumber.from(

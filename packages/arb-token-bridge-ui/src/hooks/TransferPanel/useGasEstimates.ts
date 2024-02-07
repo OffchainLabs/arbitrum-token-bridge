@@ -11,45 +11,45 @@ import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 type TransferType = 'deposit' | 'withdrawal'
 
 async function fetcher([
-  _walletAddress,
-  _txType,
-  _parentChainProvider,
-  _childChainProvider,
-  _tokenParentChainAddress,
-  _amount
+  walletAddress,
+  txType,
+  parentChainProvider,
+  childChainProvider,
+  tokenParentChainAddress,
+  amount
 ]: [
-  _walletAddress: Address,
-  _txType: TransferType,
-  _parentChainProvider: Provider | undefined,
-  _childChainProvider: Provider,
-  _tokenParentChainAddress: string | undefined,
-  _amount: BigNumber
+  walletAddress: Address,
+  txType: TransferType,
+  parentChainProvider: Provider | undefined,
+  childChainProvider: Provider,
+  tokenParentChainAddress: string | undefined,
+  amount: BigNumber
 ]): Promise<GasEstimates> {
   const isDeposit =
-    _txType === 'deposit' && typeof _parentChainProvider !== 'undefined'
+    txType === 'deposit' && typeof parentChainProvider !== 'undefined'
 
   const estimateGasFunctionParams = {
-    amount: _amount,
-    address: _walletAddress,
-    childChainProvider: _childChainProvider
+    amount,
+    address: walletAddress,
+    childChainProvider
   }
 
   if (isDeposit) {
-    return typeof _tokenParentChainAddress === 'string'
+    return typeof tokenParentChainAddress === 'string'
       ? await depositTokenEstimateGas({
           ...estimateGasFunctionParams,
-          parentChainProvider: _parentChainProvider,
-          erc20L1Address: _tokenParentChainAddress
+          parentChainProvider,
+          erc20L1Address: tokenParentChainAddress
         })
       : await depositEthEstimateGas({
           ...estimateGasFunctionParams,
-          parentChainProvider: _parentChainProvider
+          parentChainProvider
         })
   }
 
   return await withdrawInitTxEstimateGas({
     ...estimateGasFunctionParams,
-    erc20L1Address: _tokenParentChainAddress
+    erc20L1Address: tokenParentChainAddress
   })
 }
 
@@ -77,7 +77,8 @@ export function useGasEstimates({
           parentChainProvider,
           childChainProvider,
           tokenParentChainAddress,
-          amount
+          amount,
+          'gasEstimates'
         ],
     fetcher,
     {

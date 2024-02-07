@@ -114,15 +114,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     [childChainNativeCurrency, parentChainNativeCurrency]
   )
 
-  const differentNativeCurrencyAndDepositMode = useMemo(
-    () => !sameNativeCurrency && isDepositMode,
-    [isDepositMode, sameNativeCurrency]
-  )
+  const differentNativeCurrencyAndDepositMode =
+    !sameNativeCurrency && isDepositMode
 
-  const showChildChainNativeCurrencyAsGasFee = useMemo(
-    () => !sameNativeCurrency && (selectedToken || !isDepositMode),
-    [selectedToken, isDepositMode, sameNativeCurrency]
-  )
+  const showChildChainNativeCurrencyAsGasFee =
+    !sameNativeCurrency && (selectedToken || !isDepositMode)
 
   const estimatedTotalGasFees = useMemo(() => {
     if (
