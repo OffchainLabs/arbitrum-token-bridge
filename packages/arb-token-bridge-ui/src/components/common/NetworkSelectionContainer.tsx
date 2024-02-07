@@ -99,12 +99,6 @@ function NetworkRow({
     close() // close the popover after option-click
   }
 
-  function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
-    if (event.key === 'Enter') {
-      handleClick()
-    }
-  }
-
   return (
     <button
       onClick={handleClick}
