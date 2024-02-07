@@ -117,6 +117,9 @@ export default defineConfig({
         l2Provider: arbProvider
       })
 
+      config.env.REDEEM_RETRYABLE_TEST_TX =
+        await generateTestTxForRedeemRetryable()
+
       synpressPlugins(on, config)
       setupCypressTasks(on)
       return config
@@ -237,6 +240,42 @@ async function approveWeth() {
     constants.MaxInt256
   )
   await tx.wait()
+}
+
+async function generateTestTxForRedeemRetryable() {
+  console.log('Adding a test transaction for redeeming retryable...')
+
+  const walletAddress = await userWallet.getAddress()
+  const l1Provider = ethProvider
+  const l2Provider = arbProvider
+  const erc20Token = {
+    symbol: 'WETH',
+    decimals: 18,
+    address: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+  }
+  const amount = utils.parseUnits('0.00001', erc20Token.decimals)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const depositRequest = await erc20Bridger.getDepositRequest({
+    l1Provider,
+    l2Provider,
+    from: walletAddress,
+    erc20L1Address: erc20Token.address,
+    amount,
+    retryableGasOverrides: {
+      gasLimit: { base: BigNumber.from(0) }
+    }
+  })
+  const tx = await erc20Bridger.deposit({
+    ...depositRequest,
+    l1Signer: userWallet.connect(ethProvider),
+    retryableGasOverrides: {
+      gasLimit: {
+        base: BigNumber.from(0)
+      }
+    }
+  })
+  const receipt = await tx.wait()
+  return receipt.transactionHash
 }
 
 function setupCypressTasks(on: Cypress.PluginEvents) {

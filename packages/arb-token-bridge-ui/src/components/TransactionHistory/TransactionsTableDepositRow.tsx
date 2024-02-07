@@ -383,6 +383,7 @@ export function TransactionsTableDepositRow({
               loading={isRedeeming}
               disabled={isRedeemButtonDisabled}
               onClick={() => redeem(tx)}
+              aria-label="Retry failed deposit"
             >
               Retry
             </Button>

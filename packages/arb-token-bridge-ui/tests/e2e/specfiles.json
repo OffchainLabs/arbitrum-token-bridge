@@ -45,6 +45,11 @@
     "recordVideo": "false"
   },
   {
+    "name": "Redeem Retryable",
+    "file": "tests/e2e/specs/**/redeemRetryable.cy.{js,jsx,ts,tsx}",
+    "recordVideo": "false"
+  },
+  {
     "name": "Switch network",
     "file": "tests/e2e/specs/**/switchNetworks.cy.{js,jsx,ts,tsx}",
     "recordVideo": "false"
