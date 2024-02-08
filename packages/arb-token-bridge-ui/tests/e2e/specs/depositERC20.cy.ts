@@ -107,9 +107,11 @@ describe('Deposit ERC20 Token', () => {
 
       context('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum Local'
+          name: /Move funds to Arbitrum Local/i
         })
           .scrollIntoView()
+          .should('be.visible')
+          .should('be.enabled')
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
@@ -160,12 +162,12 @@ describe('Deposit ERC20 Token', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
-            cy.findByText("You're moving")
+            cy.findByText('Move funds to')
               .siblings()
               .last()
               .contains(formatAmount(ERC20AmountToSend))
               .should('be.visible')
-            cy.findByText("You'll now pay in gas fees")
+            cy.findByText('You will pay in gas fees:')
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
@@ -206,6 +208,9 @@ describe('Deposit ERC20 Token', () => {
         cy.findByRole('button', {
           name: 'Move funds to Arbitrum Local'
         })
+          .scrollIntoView()
+          .should('be.visible')
+          .should('be.enabled')
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
