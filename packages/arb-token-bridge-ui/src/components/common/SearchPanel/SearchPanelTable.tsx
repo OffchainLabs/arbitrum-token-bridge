@@ -35,7 +35,7 @@ export const SearchPanelTable = ({
               value={searchInputValue}
               onChange={onSearchInputChange}
               placeholder={searchInputPlaceholder}
-              className="placeholder:white h-full w-full bg-transparent p-2 text-sm font-light placeholder:text-xs placeholder:text-white"
+              className="h-full w-full bg-transparent p-2 text-sm font-light placeholder:text-xs placeholder:text-white"
             />
           </div>
           {SearchInputButton}
