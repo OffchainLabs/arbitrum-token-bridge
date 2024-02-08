@@ -10,15 +10,15 @@ describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
 
   beforeAll(() => {
-    const mockedOrbitChain_2 = createMockOrbitChain({
+    const mockedOrbitChain_1 = createMockOrbitChain({
       chainId: 2222,
       parentChainId: ChainId.ArbitrumSepolia
     })
-    const mockedOrbitChain_3 = createMockOrbitChain({
+    const mockedOrbitChain_2 = createMockOrbitChain({
       chainId: 3333,
       parentChainId: ChainId.ArbitrumOne
     })
-    const mockedOrbitChain_4 = createMockOrbitChain({
+    const mockedOrbitChain_3 = createMockOrbitChain({
       chainId: 4444,
       parentChainId: ChainId.ArbitrumNova
     })
@@ -29,8 +29,7 @@ describe('sanitizeQueryParams', () => {
           return JSON.stringify([
             mockedOrbitChain_1,
             mockedOrbitChain_2,
-            mockedOrbitChain_3,
-            mockedOrbitChain_4
+            mockedOrbitChain_3
           ])
         }
         return null
@@ -39,7 +38,6 @@ describe('sanitizeQueryParams', () => {
     addCustomNetwork({ customL2Network: mockedOrbitChain_1 })
     addCustomNetwork({ customL2Network: mockedOrbitChain_2 })
     addCustomNetwork({ customL2Network: mockedOrbitChain_3 })
-    addCustomNetwork({ customL2Network: mockedOrbitChain_4 })
   })
 
   afterAll(() => {
