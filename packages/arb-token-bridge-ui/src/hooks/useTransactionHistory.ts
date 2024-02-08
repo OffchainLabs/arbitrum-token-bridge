@@ -97,7 +97,8 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
-    const childChainIds = chain.partnerChainIDs
+    // Although the type is correct here we default to an empty array for custom networks backwards compatibility
+    const childChainIds = chain.partnerChainIDs ?? []
     const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
