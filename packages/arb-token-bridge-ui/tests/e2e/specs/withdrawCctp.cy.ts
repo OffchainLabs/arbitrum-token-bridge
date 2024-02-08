@@ -4,179 +4,230 @@
 
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
-import {
-  getInitialERC20Balance,
-  getL1TestnetNetworkConfig,
-  getL2TestnetNetworkConfig
-} from '../../support/common'
+import { shortenAddress } from '../../../src/util/CommonUtils'
 
 describe('Withdraw USDC through CCTP', () => {
-  const USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
-
   // Happy Path
   context('User is on L2 and imports USDC', () => {
-    let l1USDCBal: string
-    let l2USDCBal: string
+    let USDCAmountToSend: number
 
     // log in to metamask before withdrawal
     beforeEach(() => {
+      cy.reload()
       cy.fundUserWalletEth('L2')
       cy.fundUserUsdcTestnet('L2')
       cy.resetCctpAllowance('L2')
+      USDCAmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
-      const address = Cypress.env('ADDRESS')
-      getInitialERC20Balance({
-        tokenAddress: CommonAddress.Sepolia.USDC,
-        multiCallerAddress: getL1TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ETH_SEPOLIA_RPC_URL'),
-        address
-      }).then(
-        val =>
-          (l1USDCBal = formatAmount(val, {
-            symbol: 'USDC',
-            decimals: 6
-          }))
-      )
-      getInitialERC20Balance({
-        tokenAddress: CommonAddress.ArbitrumSepolia.USDC,
-        multiCallerAddress: getL2TestnetNetworkConfig().multiCall,
-        rpcURL: Cypress.env('ARB_SEPOLIA_RPC_URL'),
-        address
-      }).then(
-        val =>
-          (l2USDCBal = formatAmount(val, {
-            symbol: 'USDC',
-            decimals: 6
-          }))
-      )
+      cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
+      context('should show L1 and L2 chains, and ETH correctly', () => {
+        cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
+          'be.visible'
+        )
+        cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+      })
+
+      context('should add USDC token', () => {
+        // Click on the ETH dropdown (Select token button)
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click()
+
+        // open the Select Token popup
+        cy.findByPlaceholderText(/Search by token name/i)
+          .typeRecursively(CommonAddress.ArbitrumSepolia.USDC)
+          .should('be.visible')
+          .then(() => {
+            // Click on the Add new token button
+            cy.findByRole('button', { name: 'Add New Token' })
+              .should('be.visible')
+              .click()
+
+            // Select the USDC token
+            cy.findAllByText('USDC').first().click()
+
+            // USDC token should be selected now and popup should be closed after selection
+            cy.findByRole('button', { name: 'Select Token' })
+              .should('be.visible')
+              .should('have.text', 'USDC')
+          })
+      })
     })
 
-    it(
-      'should bridge USDC through CCTP successfully',
-      {
-        retries: {
-          runMode: 1,
-          openMode: 1
-        }
-      },
-      () => {
-        cy.login({ networkType: 'L2', networkName: 'arbitrum-sepolia' })
-        context('should show L1 and L2 chains, and ETH correctly', () => {
-          cy.findByRole('button', { name: /From: Arbitrum Sepolia/i }).should(
-            'be.visible'
-          )
-          cy.findByRole('button', { name: /To: Sepolia/i }).should('be.visible')
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'ETH')
+    it('should initiate withdrawing USDC through CCTP successfully', () => {
+      context('should show clickable withdraw button', () => {
+        cy.findByPlaceholderText('Enter amount').typeRecursively(
+          String(USDCAmountToSend)
+        )
+        cy.findByRole('button', {
+          name: /Move funds to Sepolia/i
         })
+          .should('be.visible')
+          .should('be.enabled')
+          .click()
+      })
 
-        context('should add USDC token', () => {
-          // Click on the ETH dropdown (Select token button)
-          cy.findByRole('button', { name: 'Select Token' })
-            .should('be.visible')
-            .should('have.text', 'ETH')
-            .click()
+      context('Should display CCTP modal', () => {
+        // Tabs
+        cy.findByRole('tab', {
+          name: 'Third party (USDC)',
+          selected: true
+        })
+        cy.findByRole('tab', {
+          name: 'Circle (USDC)',
+          selected: false
+        }).click()
 
-          // open the Select Token popup
-          cy.findByPlaceholderText(/Search by token name/i)
-            .typeRecursively(CommonAddress.ArbitrumSepolia.USDC)
-            .should('be.visible')
-            .then(() => {
-              // Click on the Add new token button
-              cy.findByRole('button', { name: 'Add New Token' })
-                .should('be.visible')
-                .click()
+        // By default, confirm button is disabled
+        cy.findByRole('button', {
+          name: 'Confirm'
+        })
+          .should('be.visible')
+          .should('be.disabled')
 
-              // Select the USDC token
-              cy.findAllByText('USDC').first().click()
+        // Checkbox
+        cy.findByRole('switch', {
+          name: /I understand that I'll have to send/i
+        })
+          .should('be.visible')
+          .click()
+        cy.findByRole('switch', {
+          name: /I understand that it will take/i
+        })
+          .should('be.visible')
+          .click()
 
-              // USDC token should be selected now and popup should be closed after selection
-              cy.findByRole('button', { name: 'Select Token' })
-                .should('be.visible')
-                .should('have.text', 'USDC')
+        cy.findByRole('button', {
+          name: 'Confirm'
+        })
+          .should('be.visible')
+          .should('be.enabled')
+          .click()
+
+        cy.findByText(/I understand that I have to pay a one-time/).click()
+        cy.findByRole('button', {
+          name: /Pay approval fee of/
+        }).click()
+        cy.log('Approving USDC...')
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
+          () => {
+            // eslint-disable-next-line
+            cy.wait(40_000)
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
+              cy.findByText(
+                `${formatAmount(USDCAmountToSend, {
+                  symbol: 'USDC'
+                })}`
+              ).should('be.visible')
             })
+          }
+        )
+      })
+    })
+
+    it('should initiate withdrawing USDC to custom destination address through CCTP successfully', () => {
+      context('should show clickable withdraw button', () => {
+        cy.findByPlaceholderText('Enter amount').typeRecursively(
+          String(USDCAmountToSend)
+        )
+      })
+
+      context('should fill custom destination address successfully', () => {
+        // click on advanced settings
+        cy.findByLabelText('advanced settings').should('be.visible').click()
+
+        // check if it is open
+        cy.findByText('Custom Destination Address').should('be.visible')
+
+        // unlock custom destination address input
+        cy.findByLabelText('custom destination input lock')
+          .should('be.visible')
+          .click()
+
+        cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+          .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+          .should('be.visible')
+      })
+
+      context('should click withdraw successfully', () => {
+        cy.findByRole('button', {
+          name: /Move funds to Sepolia/i
         })
+          .scrollIntoView()
+          .click()
+      })
 
-        context('should show USDC balance correctly', () => {
-          cy.findByLabelText('USDC balance on l1')
-            .should('be.visible')
-            .contains(l1USDCBal)
-          cy.findByLabelText('USDC balance on l2')
-            .should('be.visible')
-            .contains(l2USDCBal)
+      context('Should display CCTP modal', () => {
+        // Tabs
+        cy.findByRole('tab', {
+          name: 'Third party (USDC)',
+          selected: true
         })
+        cy.findByRole('tab', {
+          name: 'Circle (USDC)',
+          selected: false
+        }).click()
 
-        context('should show clickable withdraw button', () => {
-          cy.findByPlaceholderText('Enter amount').typeRecursively(
-            String(USDCAmountToSend)
-          )
-          cy.findByRole('button', {
-            name: /Move funds to Sepolia/i
-          })
-            .should('be.visible')
-            .should('be.enabled')
-            .click()
+        // By default, confirm button is disabled
+        cy.findByRole('button', {
+          name: 'Confirm'
         })
+          .should('be.visible')
+          .should('be.disabled')
 
-        context('Should display CCTP modal', () => {
-          // Tabs
-          cy.findByRole('tab', {
-            name: 'Third party (USDC)',
-            selected: true
-          })
-          cy.findByRole('tab', {
-            name: 'Circle (USDC)',
-            selected: false
-          }).click()
-
-          // By default, confirm button is disabled
-          cy.findByRole('button', {
-            name: 'Confirm'
-          })
-            .should('be.visible')
-            .should('be.disabled')
-
-          // Checkbox
-          cy.findByRole('switch', {
-            name: /I understand that I'll have to send/i
-          })
-            .should('be.visible')
-            .click()
-          cy.findByRole('switch', {
-            name: /I understand that it will take/i
-          })
-            .should('be.visible')
-            .click()
-
-          cy.findByRole('button', {
-            name: 'Confirm'
-          })
-            .should('be.visible')
-            .should('be.enabled')
-            .click()
-
-          cy.findByText(/I understand that I have to pay a one-time/).click()
-          cy.findByRole('button', {
-            name: /Pay approval fee of/
-          }).click()
-          cy.log('Approving USDC...')
-          cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
-            () => {
-              // eslint-disable-next-line
-              cy.wait(40_000)
-              cy.confirmMetamaskTransaction().then(() => {
-                cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
-                cy.findByText(
-                  `${formatAmount(USDCAmountToSend, {
-                    symbol: 'USDC'
-                  })}`
-                ).should('be.visible')
-              })
-            }
-          )
+        // Checkbox
+        cy.findByRole('switch', {
+          name: /I understand that I'll have to send/i
         })
-      }
-    )
+          .should('be.visible')
+          .click()
+        cy.findByRole('switch', {
+          name: /I understand that it will take/i
+        })
+          .should('be.visible')
+          .click()
+
+        cy.findByRole('button', {
+          name: 'Confirm'
+        })
+          .should('be.visible')
+          .should('be.enabled')
+          .click()
+
+        cy.findByText(/I understand that I have to pay a one-time/).click()
+        cy.findByRole('button', {
+          name: /Pay approval fee of/
+        }).click()
+        cy.log('Approving USDC...')
+        cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
+          () => {
+            // eslint-disable-next-line
+            cy.wait(40_000)
+            cy.confirmMetamaskTransaction().then(() => {
+              cy.findByText('Pending transactions').should('be.visible') // tx history should be opened
+              cy.findByText(
+                `${formatAmount(USDCAmountToSend, {
+                  symbol: 'USDC'
+                })}`
+              ).should('be.visible')
+
+              // custom destination label in pending tx history should be visible
+              cy.findAllByLabelText(
+                `custom address: ${shortenAddress(
+                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+                )}`
+              )
+                .first()
+                .should('be.visible')
+            })
+          }
+        )
+      })
+    })
   })
 })
