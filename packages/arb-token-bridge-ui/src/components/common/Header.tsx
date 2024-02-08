@@ -55,10 +55,6 @@ const explorersMenuProps = toHeaderMenuProps([
     link: getExplorerUrl(ChainId.ArbitrumNova)
   },
   {
-    title: 'Arbitrum Goerli',
-    link: getExplorerUrl(ChainId.ArbitrumGoerli)
-  },
-  {
     title: 'Arbitrum Sepolia',
     link: getExplorerUrl(ChainId.ArbitrumSepolia)
   }

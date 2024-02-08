@@ -59,11 +59,6 @@ export default defineConfig({
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
-      if (!goerliRpcUrl) {
-        throw new Error(
-          'process.env.NEXT_PUBLIC_GOERLI_RPC_URL variable missing.'
-        )
-      }
       if (!sepoliaRpcUrl) {
         throw new Error(
           'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
@@ -101,8 +96,6 @@ export default defineConfig({
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
-      config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
-      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
       config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
       config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
@@ -133,7 +126,6 @@ if (typeof INFURA_KEY === 'undefined') {
 }
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 const ethRpcUrl = (() => {
@@ -153,11 +145,8 @@ const ethRpcUrl = (() => {
 })()
 
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const goerliRpcUrl =
-  process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL
 const sepoliaRpcUrl =
   process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
-const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)

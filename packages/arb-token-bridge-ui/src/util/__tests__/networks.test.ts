@@ -80,11 +80,6 @@ describe('getBaseChainIdByChainId', () => {
       ).toBe(ChainId.Ethereum)
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.Goerli
-        })
-      ).toBe(ChainId.Goerli)
-      expect(
-        getBaseChainIdByChainId({
           chainId: ChainId.Sepolia
         })
       ).toBe(ChainId.Sepolia)
@@ -110,11 +105,6 @@ describe('getBaseChainIdByChainId', () => {
       ).toBe(ChainId.Ethereum)
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.ArbitrumGoerli
-        })
-      ).toBe(ChainId.Goerli)
-      expect(
-        getBaseChainIdByChainId({
           chainId: ChainId.ArbitrumSepolia
         })
       ).toBe(ChainId.Sepolia)
@@ -128,12 +118,6 @@ describe('getBaseChainIdByChainId', () => {
 
   describe('chainId is the id of an L3 Orbit chain', () => {
     it('should return the correct base chain', () => {
-      expect(
-        getBaseChainIdByChainId({
-          chainId: xaiTestnetChainId
-        })
-      ).toBe(ChainId.Goerli)
-
       expect(
         getBaseChainIdByChainId({
           chainId: ChainId.StylusTestnet

@@ -70,10 +70,10 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isTestnet, isGoerli } = isNetwork(sourceChain.id ?? 0)
+    const { isTestnet } = isNetwork(sourceChain.id ?? 0)
     const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
 
-    if (isGoerli) {
+    if (isTestnet) {
       return { imageSrc: 'images/HeaderArbitrumLogoGoerli.webp', className }
     }
 
@@ -143,7 +143,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
     // This handles a super weird edge case where, for example:
     //
-    // Your setup is: from Arbitrum Goerli to Goerli, and you have $ARB selected as the token you want to bridge over.
+    // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
     // You then switch your destination network to a network that has $ARB as its native currency.
     // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
     if (

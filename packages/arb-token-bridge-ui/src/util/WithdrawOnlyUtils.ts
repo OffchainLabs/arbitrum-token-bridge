@@ -11,15 +11,6 @@ export type WithdrawOnlyToken = {
 }
 
 const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
-  [ChainId.ArbitrumGoerli]: [
-    {
-      // this is purely for testing the UI
-      symbol: 'ZRX',
-      l2CustomAddr: '',
-      l1Address: '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165',
-      l2Address: '0xce7d45e033d5727eee28cba5df1f2a7c24750ca6'
-    }
-  ],
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',

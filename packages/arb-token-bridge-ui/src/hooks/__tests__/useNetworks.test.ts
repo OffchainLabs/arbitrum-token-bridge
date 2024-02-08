@@ -10,10 +10,6 @@ describe('sanitizeQueryParams', () => {
   let localStorageGetItemMock: jest.Mock
 
   beforeAll(() => {
-    const mockedOrbitChain_1 = createMockOrbitChain({
-      chainId: 1111,
-      parentChainId: ChainId.ArbitrumGoerli
-    })
     const mockedOrbitChain_2 = createMockOrbitChain({
       chainId: 2222,
       parentChainId: ChainId.ArbitrumSepolia
@@ -86,15 +82,6 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
       })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is invalid', () => {
@@ -109,15 +96,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 1234,
         destinationChainId: 2222
@@ -157,14 +135,6 @@ describe('sanitizeQueryParams', () => {
         destinationChainId: ChainId.ArbitrumNova
       })
 
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: 2222
@@ -188,15 +158,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: 1234
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
         destinationChainId: 1234
@@ -245,15 +206,6 @@ describe('sanitizeQueryParams', () => {
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
-      })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: undefined
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
       })
     })
   })

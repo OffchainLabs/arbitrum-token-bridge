@@ -128,58 +128,7 @@ export const orbitMainnets: {
   }
 }
 
-export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
-  47279324479: {
-    chainID: 47279324479,
-    confirmPeriodBlocks: 20,
-    ethBridge: {
-      bridge: '0xf958e56d431eA78C7444Cf6A6184Af732Ae6a8A3',
-      inbox: '0x8b842ad88AAffD63d52EC54f6428fb7ff83060a8',
-      outbox: '0xDfe36Bea935F11260b0159dCA255b6668925d743',
-      rollup: '0x082742561295f6e1b43c4f5d1e2d52d7FfE082f1',
-      sequencerInbox: '0x5fD0cCc5D31748A44b43cf8DFBFA0FAA32665464'
-    },
-    explorerUrl: 'https://testnet-explorer.xai-chain.net',
-    rpcUrl: 'https://testnet.xai-chain.net/rpc',
-    isArbitrum: true,
-    isCustom: true,
-    name: 'Xai Orbit Testnet',
-    slug: 'xai-testnet',
-    partnerChainID: 421613,
-    partnerChainIDs: [],
-    retryableLifetimeSeconds: 604800,
-    tokenBridge: {
-      l1CustomGateway: '0xdBbDc3EE848C05792CC93EA140c59731f920c3F2',
-      l1ERC20Gateway: '0xC033fBAFd978440460d943efe6A3bF6A1a990e80',
-      l1GatewayRouter: '0xCb0Fe28c36a60Cf6254f4dd74c13B0fe98FFE5Db',
-      l1MultiCall: '0x21779e0950A87DDD57E341d54fc12Ab10F6eE167',
-      l1ProxyAdmin: '0xc80853e91f8Ac0AaD6ff939F3861600Ab34Dfe12',
-      l1Weth: '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
-      l1WethGateway: '0x58ea20BE21b971Fa282905EdA74bA46540eEd977',
-      l2CustomGateway: '0xc60622D1FbDD63Cf9c173D1b69715Ef2B725D792',
-      l2ERC20Gateway: '0x47ab2DfD627360fC6ac4Ae2fB9fa6f3539aFfeCc',
-      l2GatewayRouter: '0x75c2848D0B2116d6832Ff3758df09D4209b4b7ce',
-      l2Multicall: '0xE2fBe979bD0df59554Fded36f3A3BF5206f287a2',
-      l2ProxyAdmin: '0x81DeEc20158a367f7039ab3a563C1eB63cc2b3D6',
-      l2Weth: '0xea77c06A6703A781f9442EFa083e21F3F75907F8',
-      l2WethGateway: '0x927b59cCde7a92acDa085514FdEA39f0c4D1a2DC'
-    },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
-    bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
-      network: {
-        name: 'Xai Testnet',
-        logo: '/images/XaiLogo.svg'
-      }
-    }
-  }
-}
+export const orbitTestnets: { [key in number]: OrbitChainConfig } = {}
 
 export const orbitChains = { ...orbitMainnets, ...orbitTestnets }
 

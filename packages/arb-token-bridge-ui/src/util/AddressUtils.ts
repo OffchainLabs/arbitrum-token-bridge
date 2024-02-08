@@ -16,7 +16,7 @@ export async function addressIsSmartContract(
 }
 
 export async function addressIsDenylisted(address: string) {
-  // The denylist consists of an array of addresses from Ethereum, Arbitrum One and Goerli.
+  // The denylist consists of an array of addresses from Ethereum, Arbitrum One and Sepolia.
   // We do not separate them as it's unlikely for anyone to have a wallet address matching our contract addresses.
   try {
     const denylistResponse = await fetch(

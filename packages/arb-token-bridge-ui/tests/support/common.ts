@@ -11,10 +11,8 @@ export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'
-  | 'arbitrum-goerli'
   | 'arbitrum-sepolia'
   | 'mainnet'
-  | 'goerli'
   | 'sepolia'
 
 type NetworkConfig = {

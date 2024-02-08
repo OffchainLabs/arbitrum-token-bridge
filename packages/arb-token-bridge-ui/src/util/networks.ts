@@ -12,7 +12,11 @@ import { orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
-  return chains.filter(chain => chain.chainID !== 1338)
+  return chains.filter(
+    chain =>
+      // exclude devnet, goerli, and arb goerli
+      chain.chainID !== 1338 && chain.chainID !== 5 && chain.chainID !== 421613
+  )
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
@@ -24,7 +28,6 @@ if (typeof INFURA_KEY === 'undefined') {
 }
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = L2Network & {
@@ -130,24 +133,19 @@ export enum ChainId {
   // L1
   Ethereum = 1,
   // L1 Testnets
-  Goerli = 5,
   Local = 1337,
   Sepolia = 11155111,
   // L2
   ArbitrumOne = 42161,
   ArbitrumNova = 42170,
   // L2 Testnets
-  ArbitrumGoerli = 421613,
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
   // Orbit
   StylusTestnet = 23011913
 }
 
-export const supportedCustomOrbitParentChains = [
-  ChainId.ArbitrumGoerli,
-  ChainId.ArbitrumSepolia
-]
+export const supportedCustomOrbitParentChains = [ChainId.ArbitrumSepolia]
 
 export const rpcURLs: { [chainId: number]: string } = {
   // L1
@@ -156,10 +154,6 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: MAINNET_INFURA_RPC_URL
   }),
   // L1 Testnets
-  [ChainId.Goerli]: loadEnvironmentVariableWithFallback({
-    env: process.env.NEXT_PUBLIC_GOERLI_RPC_URL,
-    fallback: GOERLI_INFURA_RPC_URL
-  }),
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
     fallback: SEPOLIA_INFURA_RPC_URL
@@ -168,7 +162,6 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli-rollup.arbitrum.io/rpc',
   [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
   // Orbit Testnets
   [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
@@ -178,13 +171,11 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: 'https://etherscan.io',
   // L1 Testnets
-  [ChainId.Goerli]: 'https://goerli.etherscan.io',
   [ChainId.Sepolia]: 'https://sepolia.etherscan.io',
   // L2
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumGoerli]: 'https://goerli.arbiscan.io',
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
   [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
@@ -215,8 +206,7 @@ export const getConfirmPeriodBlocks = (chainId: ChainId) => {
 
 export const l2ArbReverseGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0xCaD7828a19b363A2B44717AFB1786B5196974D8E',
-  [ChainId.ArbitrumNova]: '0xbf544970E6BD77b21C6492C281AB60d0770451F4',
-  [ChainId.ArbitrumGoerli]: '0x584d4D9bED1bEb39f02bb51dE07F493D3A5CdaA0'
+  [ChainId.ArbitrumNova]: '0xbf544970E6BD77b21C6492C281AB60d0770451F4'
 }
 
 export const l2DaiGatewayAddresses: { [chainId: number]: string } = {
@@ -324,35 +314,26 @@ export function isNetwork(chainId: ChainId) {
 
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
-  const isGoerli = chainId === ChainId.Goerli
   const isSepolia = chainId === ChainId.Sepolia
   const isLocal = chainId === ChainId.Local
 
   const isArbitrumOne = chainId === ChainId.ArbitrumOne
   const isArbitrumNova = chainId === ChainId.ArbitrumNova
-  const isArbitrumGoerli = chainId === ChainId.ArbitrumGoerli
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
   const isStylusTestnet = chainId === ChainId.StylusTestnet
 
-  const isEthereumMainnetOrTestnet =
-    isEthereumMainnet || isGoerli || isSepolia || isLocal
+  const isEthereumMainnetOrTestnet = isEthereumMainnet || isSepolia || isLocal
 
   const isArbitrum =
-    isArbitrumOne ||
-    isArbitrumNova ||
-    isArbitrumGoerli ||
-    isArbitrumLocal ||
-    isArbitrumSepolia
+    isArbitrumOne || isArbitrumNova || isArbitrumLocal || isArbitrumSepolia
 
   const customChainIds = customChains.map(chain => chain.chainID)
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
   const isTestnet =
-    isGoerli ||
     isLocal ||
-    isArbitrumGoerli ||
     isArbitrumLocal ||
     isSepolia ||
     isArbitrumSepolia ||
@@ -364,8 +345,6 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumOne ||
     isArbitrumNova ||
     isEthereumMainnet ||
-    isGoerli ||
-    isArbitrumGoerli ||
     isSepolia ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
@@ -377,14 +356,12 @@ export function isNetwork(chainId: ChainId) {
     isEthereumMainnet,
     isEthereumMainnetOrTestnet,
     // L1 Testnets
-    isGoerli,
     isSepolia,
     // L2
     isArbitrum,
     isArbitrumOne,
     isArbitrumNova,
     // L2 Testnets
-    isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
     isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,

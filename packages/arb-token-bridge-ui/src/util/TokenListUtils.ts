@@ -91,14 +91,6 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: GeminiLogo
   },
-  {
-    id: 8,
-    originChainID: ChainId.ArbitrumGoerli,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
-    name: 'Arbed CMC List',
-    isDefault: true,
-    logoURI: CMCLogo
-  },
   // Dummy data required, otherwise useArbTokenBridge will return undefined bridgeTokens
   // This will cause TokenImportDialog to hang and fail E2E
   // TODO: remove list for chain ID 412346 after fix:
@@ -125,14 +117,6 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     id: 11,
     originChainID: ChainId.ArbitrumNova,
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
-    name: 'Arbed CoinGecko List',
-    isDefault: true,
-    logoURI: CoinGeckoLogo
-  },
-  {
-    id: 12,
-    originChainID: ChainId.ArbitrumGoerli,
-    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coingecko.json',
     name: 'Arbed CoinGecko List',
     isDefault: true,
     logoURI: CoinGeckoLogo

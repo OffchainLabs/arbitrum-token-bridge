@@ -110,10 +110,6 @@ const multiChainFetchList: ChainPair[] = [
   },
   // Testnet
   {
-    parentChain: ChainId.Goerli,
-    chain: ChainId.ArbitrumGoerli
-  },
-  {
     parentChain: ChainId.Sepolia,
     chain: ChainId.ArbitrumSepolia
   },

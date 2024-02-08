@@ -12,11 +12,9 @@ import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
   'ethereum',
-  'goerli',
   'sepolia',
   'arbitrum-one',
   'arbitrum-nova',
-  'arbitrum-goerli',
   'arbitrum-sepolia',
   'stylus-testnet',
   'custom-localhost',
@@ -46,17 +44,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.Ethereum:
       return 'ethereum'
 
-    case ChainId.Goerli:
-      return 'goerli'
-
     case ChainId.ArbitrumOne:
       return 'arbitrum-one'
 
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
-
-    case ChainId.ArbitrumGoerli:
-      return 'arbitrum-goerli'
 
     case ChainId.StylusTestnet:
       return 'stylus-testnet'
@@ -99,9 +91,6 @@ export function getChainForChainKeyQueryParam(
     case 'ethereum':
       return chains.mainnet
 
-    case 'goerli':
-      return chains.goerli
-
     case 'sepolia':
       return chains.sepolia
 
@@ -110,9 +99,6 @@ export function getChainForChainKeyQueryParam(
 
     case 'arbitrum-nova':
       return customChains.arbitrumNova
-
-    case 'arbitrum-goerli':
-      return chains.arbitrumGoerli
 
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia

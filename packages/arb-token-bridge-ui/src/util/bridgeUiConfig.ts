@@ -40,14 +40,6 @@ export function getBridgeUiConfigForChain(
           name: 'Ethereum'
         }
       }
-    case ChainId.Goerli:
-      return {
-        ...ethereumBaseConfig,
-        network: {
-          ...ethereumBaseConfig.network,
-          name: 'Goerli'
-        }
-      }
     case ChainId.Sepolia:
       return {
         ...ethereumBaseConfig,
@@ -71,14 +63,6 @@ export function getBridgeUiConfigForChain(
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg'
-        }
-      }
-    case ChainId.ArbitrumGoerli:
-      return {
-        ...arbitrumBaseConfig,
-        network: {
-          ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Goerli'
         }
       }
     case ChainId.ArbitrumSepolia:
