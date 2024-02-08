@@ -277,10 +277,11 @@ function NetworksPanel({
   return (
     <div className="flex flex-col gap-4">
       <SearchPanelTable
-        searchInputPlaceholder="Search a network name"
-        searchInputValue={networkSearched}
-        onSearchInputChange={onSearchInputChange}
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        searchInput={{
+          placeholder: 'Search a network name',
+          value: networkSearched,
+          onChange: onSearchInputChange
+        }}
         errorMessage={errorMessage}
       >
         <AutoSizer>

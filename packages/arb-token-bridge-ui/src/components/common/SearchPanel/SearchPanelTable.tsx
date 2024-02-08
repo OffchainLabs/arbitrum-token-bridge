@@ -2,20 +2,20 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import React, { PropsWithChildren } from 'react'
 
 type SearchPanelTableProps = {
-  searchInputPlaceholder: string
-  searchInputValue: string
+  searchInput: {
+    placeholder: string
+    value: string
+    onChange: React.ChangeEventHandler<HTMLInputElement>
+  }
   SearchInputButton?: React.JSX.Element
-  onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   dataCy?: string
 }
 
 export const SearchPanelTable = ({
-  searchInputPlaceholder,
-  searchInputValue,
+  searchInput,
   SearchInputButton,
-  onSearchInputChange,
   onSubmit = event => {
     event.preventDefault()
   },
@@ -29,12 +29,9 @@ export const SearchPanelTable = ({
         <div className="flex items-stretch gap-2">
           <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-black/30 px-2 text-white shadow-input">
             <MagnifyingGlassIcon className="h-4 w-4 shrink-0" />
-
             <input
               type="search"
-              value={searchInputValue}
-              onChange={onSearchInputChange}
-              placeholder={searchInputPlaceholder}
+              {...searchInput}
               className="h-full w-full bg-transparent p-2 text-sm font-light placeholder:text-xs placeholder:text-white"
             />
           </div>

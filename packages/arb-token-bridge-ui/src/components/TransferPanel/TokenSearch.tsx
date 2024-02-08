@@ -441,9 +441,11 @@ function TokensPanel({
 
   return (
     <SearchPanelTable
-      searchInputPlaceholder={`Search by token name, symbol, or address`}
-      searchInputValue={newToken}
-      onSearchInputChange={onSearchInputChange}
+      searchInput={{
+        placeholder: 'Search by token name, symbol, or address',
+        value: newToken,
+        onChange: onSearchInputChange
+      }}
       errorMessage={errorMessage}
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
