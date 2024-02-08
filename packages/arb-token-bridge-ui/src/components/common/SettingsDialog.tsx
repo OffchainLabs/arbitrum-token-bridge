@@ -2,10 +2,8 @@ import { useCallback, useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
 import useLocalStorage from '@rehooks/local-storage'
 
-import { THEME_CONFIG, useTheme, classicThemeKey } from '../../hooks/useTheme'
 import { statsLocalStorageKey } from '../MainContent/ArbitrumStats'
 import { AddCustomChain } from './AddCustomChain'
-import { Radio } from './atoms/Radio'
 import { Switch } from './atoms/Switch'
 import { SidePanel } from './SidePanel'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -37,10 +35,6 @@ export const SettingsDialog = () => {
   const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
   const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
-
-  const [_selectedTheme, setTheme] = useTheme()
-  const selectedTheme =
-    _selectedTheme === classicThemeKey ? classicThemeKey : 'space'
 
   const openArbitrumStats = () => {
     setIsArbitrumStatsVisible(true)
@@ -81,27 +75,9 @@ export const SettingsDialog = () => {
       isOpen={settingsOpen}
       heading="Settings"
       onClose={closeSettings}
-      panelClassNameOverrides="lg:!w-[600px] !min-w-[350px]" // custom width
+      panelClassNameOverrides="lg:!w-[644px] !min-w-[350px]" // custom width
     >
-      <div className="flex w-full flex-col items-center gap-8 text-white">
-        {/* Theme selection radio */}
-        <div className="w-full">
-          <SectionTitle>Theme</SectionTitle>
-          <div className="flex w-full flex-col gap-2">
-            <Radio
-              orientation="vertical"
-              value={selectedTheme}
-              onChange={setTheme}
-              options={THEME_CONFIG.map(theme => ({
-                label: theme.label,
-                description: theme.description,
-                value: theme.id,
-                id: theme.id
-              }))}
-            />
-          </div>
-        </div>
-
+      <div className="flex w-full flex-col items-center gap-6 text-white">
         {/* Arbitrum stats toggle */}
         <div className="w-full">
           <SectionTitle>Stats</SectionTitle>
@@ -137,17 +113,17 @@ export const SettingsDialog = () => {
         {/* Add custom chain */}
         <div
           className={twMerge(
-            'w-full',
+            'w-full transition-opacity',
             isTestnetMode ? '' : 'pointer-events-none opacity-20'
           )}
         >
           <SectionTitle className="mb-1">Add Testnet Orbit Chain</SectionTitle>
-          <p className="mb-4 text-sm text-gray-3">
+          <p className="mb-4 text-sm">
             Add in your own Orbit Testnet to the bridge. This will only be for
             local testing. Learn more about how to create and add your Orbit
             Testnet to the bridge in{' '}
             <ExternalLink
-              className="arb-hover text-blue-400 underline"
+              className="arb-hover underline"
               href={ORBIT_QUICKSTART_LINK}
             >
               Arbitrum Orbit Quickstart

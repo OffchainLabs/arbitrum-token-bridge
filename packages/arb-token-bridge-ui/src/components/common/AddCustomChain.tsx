@@ -280,16 +280,16 @@ export const AddCustomChain = () => {
       <textarea
         onChange={e => setChainJson(e.target.value)}
         placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
-        className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
+        className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-gray-3"
       />
       {error && (
         <div className="relative">
-          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
+          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded border border-gray-dark bg-dark p-4 text-sm text-error">
             <button
               onClick={() => setError(null)}
               className="arb-hover absolute right-4 top-4 text-white"
             >
-              <XMarkIcon width={24} />
+              <XMarkIcon width={20} />
             </button>
             {error}
           </pre>
@@ -297,12 +297,12 @@ export const AddCustomChain = () => {
       )}
       <div className="flex w-full justify-end">
         {addingChain ? (
-          <Loader size="small" />
+          <Loader size="small" color="white" />
         ) : (
           // Need to replace with an atom
           <button
             onClick={onAddChain}
-            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+            className="arb-hover rounded bg-white p-2 text-sm text-black transition-all disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!chainJson.trim()}
           >
             Add Chain
@@ -315,7 +315,7 @@ export const AddCustomChain = () => {
         <div className="mt-4">
           <div className="heading mb-4 text-lg">Live Orbit Chains</div>
           <table className="w-full text-left">
-            <thead className="border-b border-gray-600">
+            <thead className="border-b border-gray-dark">
               <tr>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN ID</th>
@@ -328,7 +328,7 @@ export const AddCustomChain = () => {
               {customChains.map(customChain => (
                 <tr
                   key={customChain.chainID}
-                  className="border-b border-gray-600"
+                  className="border-b border-gray-dark"
                 >
                   <th className="max-w-[100px] truncate py-3 text-sm font-normal">
                     {customChain.name}
@@ -344,12 +344,12 @@ export const AddCustomChain = () => {
                   </th>
                   <th className="py-3">
                     <Popover className="relative">
-                      <Popover.Button>
+                      <Popover.Button className="arb-hover">
                         <EllipsisHorizontalIcon width={20} />
                       </Popover.Button>
-                      <Popover.Panel className="absolute bottom-6 right-0 flex w-52 flex-col rounded bg-white text-xs font-normal text-black">
+                      <Popover.Panel className="absolute bottom-6 right-0 flex w-[230px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
                         <button
-                          className="rounded p-4 text-left hover:bg-gray-3"
+                          className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
                           onClick={() => {
                             removeCustomChainFromLocalStorage(
                               customChain.chainID
@@ -364,7 +364,7 @@ export const AddCustomChain = () => {
                           Delete this chain
                         </button>
                         <a
-                          className="rounded p-4 text-left hover:bg-gray-3"
+                          className="rounded-b p-4 text-left transition duration-300 hover:bg-[#333333]"
                           href={`data:text/json;charset=utf-8,${encodeURIComponent(
                             JSON.stringify(
                               getOrbitConfigFromLocalStorageById(
