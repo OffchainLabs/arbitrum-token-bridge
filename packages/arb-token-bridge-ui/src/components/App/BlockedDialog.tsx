@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 import { Dialog, DialogProps } from '../common/Dialog'
@@ -6,16 +5,9 @@ import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
 
 export function BlockedDialog(props: DialogProps & { address: string }) {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    setOpen(true)
-  }, [])
-
   return (
     <Dialog
       {...props}
-      isOpen={open}
       title={
         <div className="flex flex-row items-center space-x-2">
           <ExclamationTriangleIcon height={25} width={25} />
