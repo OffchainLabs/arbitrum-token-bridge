@@ -55,19 +55,19 @@ function SearchPanel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function ShowSecondaryPageCTA({ children }: { children: React.ReactNode }) {
-  const { setPanel: showSecondaryPanel } = usePanel(Panel.SECONDARY)
+function MainPageCTA({ children }: { children: React.ReactNode }) {
+  const { setPanel: showSecondaryPage } = usePanel(Panel.SECONDARY)
   return (
     <button
       className="arb-hover text-gray flex items-center gap-2 text-sm"
-      onClick={showSecondaryPanel}
+      onClick={showSecondaryPage}
     >
       <span>{children}</span>
       <ArrowRightIcon className="h-3 w-3 stroke-[3px]" />
     </button>
   )
 }
-SearchPanel.ShowSecondaryPageCTA = ShowSecondaryPageCTA
+SearchPanel.MainPageCTA = MainPageCTA
 
 function CloseButton({ onClick }: React.HTMLAttributes<HTMLButtonElement>) {
   return (
@@ -118,16 +118,16 @@ function SearchPanelSecondaryPage({
 }
 SearchPanel.SecondaryPage = SearchPanelSecondaryPage
 
-function BackToMainPageCTA({
+function SecondaryPageCTA({
   children
 }: React.HTMLAttributes<HTMLButtonElement>) {
-  const { setPanel: showMainPanel } = usePanel(Panel.MAIN)
+  const { setPanel: showMainPage } = usePanel(Panel.MAIN)
 
   return (
     <div className="mt-4 flex justify-start">
       <button
         className="arb-hover flex items-center space-x-2 text-sm"
-        onClick={showMainPanel}
+        onClick={showMainPage}
       >
         <ArrowSmallLeftIcon className="h-3 w-3 stroke-[3px]" />
         <span>{children}</span>
@@ -135,7 +135,7 @@ function BackToMainPageCTA({
     </div>
   )
 }
-SearchPanel.BackToMainPageCTA = BackToMainPageCTA
+SearchPanel.SecondaryPageCTA = SecondaryPageCTA
 
 function LoaderWithMessage({ loadingMessage }: { loadingMessage?: string }) {
   return (

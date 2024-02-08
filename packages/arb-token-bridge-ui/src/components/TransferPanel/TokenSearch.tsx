@@ -577,17 +577,17 @@ export function TokenSearch({ close }: { close: () => void }) {
           {isFetchingTokenLists ? (
             <SearchPanel.LoaderWithMessage loadingMessage="Fetching Tokens..." />
           ) : (
-            <SearchPanel.ShowSecondaryPageCTA>
+            <SearchPanel.MainPageCTA>
               Manage token lists
-            </SearchPanel.ShowSecondaryPageCTA>
+            </SearchPanel.MainPageCTA>
           )}
         </div>
       </SearchPanel.MainPage>
       <SearchPanel.SecondaryPage>
         <TokenListsPanel closePanel={close} />
-        <SearchPanel.BackToMainPageCTA>
+        <SearchPanel.SecondaryPageCTA>
           Back to Select Token
-        </SearchPanel.BackToMainPageCTA>
+        </SearchPanel.SecondaryPageCTA>
       </SearchPanel.SecondaryPage>
     </SearchPanel>
   )
