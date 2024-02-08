@@ -8,6 +8,7 @@ type SearchPanelTableProps = {
   onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
+  dataCy?: string
 }
 
 export const SearchPanelTable = ({
@@ -19,7 +20,8 @@ export const SearchPanelTable = ({
     event.preventDefault()
   },
   errorMessage,
-  children
+  children,
+  dataCy
 }: PropsWithChildren<SearchPanelTableProps>) => {
   return (
     <div className="flex flex-col gap-3">
@@ -44,7 +46,7 @@ export const SearchPanelTable = ({
       </form>
       <div
         className="h-[calc(100vh_-_230px)] rounded-md border border-gray-2 bg-white lg:h-[400px] lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
-        data-cy="tokenSearchList"
+        data-cy={dataCy}
       >
         {children}
       </div>

@@ -446,6 +446,7 @@ function TokensPanel({
       errorMessage={errorMessage}
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
+      dataCy="tokenSearchList"
     >
       <AutoSizer>
         {({ height, width }) => (
