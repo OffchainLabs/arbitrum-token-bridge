@@ -71,7 +71,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               size={loadingProps?.loaderSize || 'small'}
             />
           )}
-          <span>{children}</span>
+          <span className="truncate">{children}</span>
         </div>
       </button>
     )

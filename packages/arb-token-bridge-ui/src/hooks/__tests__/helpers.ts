@@ -1,3 +1,5 @@
+import { constants } from '@arbitrum/sdk'
+
 import { ChainWithRpcUrl } from '../../util/networks'
 
 export function createMockOrbitChain({
@@ -25,6 +27,7 @@ export function createMockOrbitChain({
     name: `Mocked Orbit Chain ${chainId}`,
     slug: `mocked-orbit-chain-${chainId}`,
     partnerChainID: parentChainId,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '',
@@ -44,6 +47,7 @@ export function createMockOrbitChain({
     },
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
-    depositTimeout: 1800000
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS
   }
 }

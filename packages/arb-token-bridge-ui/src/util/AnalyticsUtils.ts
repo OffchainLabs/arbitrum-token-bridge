@@ -5,24 +5,11 @@ import {
   ExploreArbitrumNFTProjectName
 } from '../components/MainContent/ExploreArbitrumContent'
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
-import { getNetworkName } from './networks'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
+type TransferDirection = 'Deposit' | 'Withdrawal'
 type FastBridgeName = `${FastBridgeNames}`
-
-const AnalyticsNetworkNames = ['Arbitrum One', 'Arbitrum Nova'] as const
-type AllNetworkNames = ReturnType<typeof getNetworkName>
-type AnalyticsNetworkName = (typeof AnalyticsNetworkNames)[number]
-export const shouldTrackAnalytics = (
-  networkName: AllNetworkNames
-): networkName is AnalyticsNetworkName => {
-  if (process.env.NODE_ENV === 'development') {
-    // sends events for any network when in dev
-    return true
-  }
-  return AnalyticsNetworkNames.includes(networkName as AnalyticsNetworkName)
-}
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
 export type ProviderName =
@@ -40,14 +27,14 @@ type AnalyticsEventMap = {
     tokenSymbol?: string
     assetType: AssetType
     accountType: AccountType
-    network: AnalyticsNetworkName
+    network: string
     amount: number
   }
   Withdraw: {
     tokenSymbol?: string
     assetType: AssetType
     accountType: AccountType
-    network: AnalyticsNetworkName
+    network: string
     amount: number
   }
   'Connect Wallet Click': { walletName: ProviderName }
@@ -57,19 +44,20 @@ type AnalyticsEventMap = {
     bridge: FastBridgeName
     tokenSymbol?: SpecialTokenSymbol.USDC
   }
-  'Use Arbitrum Bridge Click': { tokenSymbol: 'USDC' }
+  'Use Arbitrum Bridge Click': { tokenSymbol: 'USDC'; type: TransferDirection }
+  'Use CCTP Click': { tokenSymbol: 'USDC'; type: TransferDirection }
   'Switch Network and Transfer': {
-    type: 'Deposit' | 'Withdrawal'
+    type: TransferDirection
     tokenSymbol?: string
     assetType: AssetType
     accountType: AccountType
-    network: AnalyticsNetworkName
+    network: string
     amount: number
   }
-  'Redeem Retryable': { network: AnalyticsNetworkName }
+  'Redeem Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
-  'Tx Error: Get Help Click': { network: AnalyticsNetworkName }
-  'Multiple Tx Error: Get Help Click': { network: AnalyticsNetworkName }
+  'Tx Error: Get Help Click': { network: string }
+  'Multiple Tx Error: Get Help Click': { network: string }
   'Address Block': { address: string }
   'Slow Bridge Click': undefined
   'Move More Funds Click': undefined
@@ -77,13 +65,13 @@ type AnalyticsEventMap = {
   'Add to Google Calendar Click': undefined
   'CCTP Deposit': {
     accountType: AccountType
-    network: AnalyticsNetworkName
+    network: string
     amount: number
     complete: boolean
   }
   'CCTP Withdrawal': {
     accountType: AccountType
-    network: AnalyticsNetworkName
+    network: string
     amount: number
     complete: boolean
   }
