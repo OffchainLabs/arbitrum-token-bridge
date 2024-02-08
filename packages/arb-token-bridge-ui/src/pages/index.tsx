@@ -56,6 +56,13 @@ export function getServerSideProps({
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
 
+  // If both sourceChain and destinationChain are not present, let the client sync with Metamask
+  if (!sourceChainId && !destinationChainId) {
+    return {
+      props: {}
+    }
+  }
+
   addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
