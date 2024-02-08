@@ -1,17 +1,11 @@
-import {
-  ExclamationCircleIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline'
-import Tippy from '@tippyjs/react'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
-import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
 import { useActions, useAppState } from '../../state'
-import { getExplorerUrl } from '../../util/networks'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -19,8 +13,6 @@ import {
 } from '../../util/TokenUtils'
 import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
-import { SafeImage } from '../common/SafeImage'
-import GrumpyCat from '@/images/grumpy-cat.webp'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
@@ -29,6 +21,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { TokenInfo } from './TokenInfo'
 
 enum ImportStatus {
   LOADING,
@@ -78,13 +71,8 @@ export function TokenImportDialog({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -367,85 +355,42 @@ export function TokenImportDialog({
     >
       <div className="flex flex-col space-y-4 pt-4">
         {status === ImportStatus.KNOWN && (
-          <span>This token is on an imported token list as:</span>
+          <span>This token is on an imported token list:</span>
         )}
 
         {status === ImportStatus.KNOWN_UNIMPORTED && (
           <span>
             This token hasn&apos;t been imported yet but appears on a token
-            list. Are you sure you want to import it?
+            list:
           </span>
         )}
 
-        {status === ImportStatus.UNKNOWN && (
-          <div className="flex flex-col items-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-            <ExclamationCircleIcon
-              style={{ color: '#CD0000' }}
-              className="h-6 w-6"
-            />
-            <div className="flex flex-col">
-              <span>
-                This token isn&apos;t found on an active token list.
-                <br />
-                Make sure you trust the source that led you here.
-              </span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-col items-center py-4">
-          {tokenToImport?.logoURI && (
-            <SafeImage
-              style={{ width: '25px', height: '25px' }}
-              className="mb-2 rounded-full"
-              src={tokenToImport?.logoURI}
-              alt={`${tokenToImport?.name} logo`}
-            />
-          )}
-          <span className="text-xl font-bold leading-6">
-            {tokenToImport?.symbol}
-          </span>
-          <span className="mb-3 mt-0">{tokenToImport?.name}</span>
-          <a
-            href={`${getExplorerUrl(parentChain.id)}/token/${
-              tokenToImport?.address
-            }`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="arb-hover break-all underline"
-          >
-            {tokenToImport?.address}
-          </a>
+        <div className="flex flex-col pb-4">
+          <TokenInfo token={tokenToImport} />
 
           {status === ImportStatus.UNKNOWN && (
-            <div className="flex w-full justify-center pt-4">
-              <Tippy
-                theme="light"
-                content={
-                  <div>
-                    This token address doesn&apos;t exist in any of the token
-                    lists we have. This doesn&apos;t mean it&apos;s not good, it
-                    just means{' '}
-                    <span className="font-bold">proceed with caution.</span>
-                    <br />
-                    <br />
-                    It&apos;s easy to impersonate the name of any token,
-                    including ETH. Make sure you trust the source it came from.
-                    If it&apos;s a popular token, there&apos;s a good chance we
-                    have it on our list. If it&apos;s a smaller or newer token,
-                    it&apos;s reasonable to believe we might not have it.
-                  </div>
-                }
-              >
-                <span className="cursor-pointer underline">
-                  I&apos;m confused
-                </span>
-              </Tippy>
+            <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark">
+              <InformationCircleIcon className="h-4 w-4 shrink-0 stroke-orange-dark" />
+              <div className="flex flex-col space-y-2">
+                <p>
+                  This token address doesn&apos;t exist in any of the token
+                  lists we have. This doesn&apos;t mean it&apos;s not good, it
+                  just means{' '}
+                  <span className="font-bold">proceed with caution.</span>
+                </p>
+                <p>
+                  It&apos;s easy to impersonate the name of any token, including
+                  ETH. Make sure you trust the source it came from. If it&apos;s
+                  a popular token, there&apos;s a good chance we have it on our
+                  list. If it&apos;s a smaller or newer token, it&apos;s
+                  reasonable to believe we might not have it.
+                </p>
+              </div>
             </div>
           )}
 
-          <div className="mt-6 flex w-full justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-dark">
-            <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-dark" />
+          <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-cyan-dark">
+            <InformationCircleIcon className="h-4 w-4 shrink-0 stroke-cyan-dark" />
             <p>
               The bridge does not support tokens with non-standard behaviour in
               balance calculation, i.e. the token balance increases or decreases
