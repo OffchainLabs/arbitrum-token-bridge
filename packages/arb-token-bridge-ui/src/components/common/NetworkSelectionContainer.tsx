@@ -17,7 +17,7 @@ import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
-import { SearchPanel } from './SearchPanel/SearchPanel'
+import SearchPanel from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -73,8 +73,10 @@ function ChainTypeInfoRow({
           'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
       )}
     >
-      <p className="text-sm text-dark">{name}</p>
-      {description && <p className="mt-2 text-xs">{description}</p>}
+      <p className="text-sm text-white/70">{name}</p>
+      {description && (
+        <p className="mt-2 text-xs text-white/50">{description}</p>
+      )}
     </div>
   )
 }
@@ -107,8 +109,8 @@ function NetworkRow({
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10',
-        chainId === sourceChain.id && 'bg-black/10' // selected row
+        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-white/10',
+        chainId === sourceChain.id && 'bg-white/10' // selected row
       )}
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
@@ -123,11 +125,11 @@ function NetworkRow({
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
-          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
+          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
             {network.description}
           </p>
         )}
-        <p className="text-[10px] leading-none">
+        <p className="text-[10px] leading-none text-white/50">
           {nativeTokenData?.symbol ?? 'ETH'} is the native gas token
         </p>
       </div>
@@ -173,11 +175,6 @@ function NetworksPanel({
       }),
     [isTestnetMode]
   )
-
-  const testnetToggleClassNames = {
-    switch:
-      'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
-  }
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -301,10 +298,7 @@ function NetworksPanel({
         </AutoSizer>
       </SearchPanelTable>
       <div className="flex justify-between pb-2">
-        <TestnetToggle
-          className={testnetToggleClassNames}
-          label="Testnet mode"
-        />
+        <TestnetToggle label="Testnet mode" />
         <AddCustomOrbitChainButton />
       </div>
     </div>
@@ -344,23 +338,17 @@ export const NetworkSelectionContainer = ({
           }
           return (
             <>
-              <div className="flex items-center justify-end border-b border-b-black px-5 py-4 lg:hidden">
+              <div className="flex items-center justify-end border-b border-b-gray-dark px-5 py-4 lg:hidden">
                 <button onClick={onClose}>
                   <XMarkIcon className="h-8 w-8" />
                 </button>
               </div>
-              <div className="px-5 py-4">
-                <SearchPanel
-                  showCloseButton={false}
-                  SearchPanelSecondaryPage={null}
-                  mainPageTitle="Select Network"
-                  secondPageTitle="Networks"
-                  isLoading={false}
-                  loadingMessage="Fetching Networks..."
-                >
+              <SearchPanel>
+                <SearchPanel.MainPage className="px-5 py-4">
+                  <SearchPanel.PageTitle title="Select Network" />
                   <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
-                </SearchPanel>
-              </div>
+                </SearchPanel.MainPage>
+              </SearchPanel>
             </>
           )
         }}

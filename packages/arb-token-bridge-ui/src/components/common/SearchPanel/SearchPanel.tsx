@@ -1,5 +1,17 @@
-import { PropsWithChildren, useCallback, useState } from 'react'
-import { ArrowSmallLeftIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import React, {
+  PropsWithChildren,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from 'react'
+import {
+  ArrowRightIcon,
+  ArrowSmallLeftIcon,
+  XMarkIcon
+} from '@heroicons/react/24/outline'
+
 import { Loader } from '../atoms/Loader'
 
 enum Panel {
@@ -7,122 +19,132 @@ enum Panel {
   SECONDARY
 }
 
-function SearchPanelMainPage({
-  close,
-  showCloseButton,
-  mainPageTitle,
-  isLoading,
-  loadingMessage,
-  bottomRightCtaOnClick,
-  bottomRightCtaText,
-  children
-}: PropsWithChildren<{
-  close?: () => void
-  showCloseButton: boolean
-  mainPageTitle: string
-  isLoading?: boolean
-  loadingMessage?: string
-  bottomRightCtaOnClick?: () => void
-  bottomRightCtaText?: string
-}>) {
+function usePanel(panel: Panel) {
+  const { currentPanel, setCurrentPanel } = useContext(SearchPanelContext)
+  const setPanel = useCallback(
+    () => setCurrentPanel(panel),
+    [panel, setCurrentPanel]
+  )
+  const isActivePanel = currentPanel === panel
+
+  return {
+    setPanel,
+    isActivePanel
+  }
+}
+
+const SearchPanelContext = createContext<{
+  currentPanel: Panel
+  setCurrentPanel: (panel: Panel) => void
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+}>({ currentPanel: Panel.MAIN, setCurrentPanel: () => {} })
+
+function SearchPanel({ children }: { children: React.ReactNode }) {
+  const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
+  const provided = useMemo(
+    () => ({
+      currentPanel,
+      setCurrentPanel: (panel: Panel) => setCurrentPanel(panel)
+    }),
+    [currentPanel]
+  )
   return (
-    <>
-      <div className="flex flex-row items-center justify-between pb-4">
-        <span className="text-xl font-medium">{mainPageTitle}</span>
-        {showCloseButton && (
-          <button className="arb-hover" onClick={close}>
-            <XMarkIcon className="h-6 w-6 text-gray-5" />
-          </button>
-        )}
-      </div>
+    <SearchPanelContext.Provider value={provided}>
       {children}
-      {bottomRightCtaText && (
-        <div className="flex justify-end pt-6">
-          {isLoading ? (
-            <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
-              <Loader color="#28A0F0" size="small" />
-              {loadingMessage}
-            </span>
-          ) : (
-            <button
-              className="arb-hover text-gray text-sm font-medium text-blue-link"
-              onClick={bottomRightCtaOnClick}
-            >
-              {bottomRightCtaText}
-            </button>
-          )}
-        </div>
-      )}
-    </>
+    </SearchPanelContext.Provider>
   )
 }
 
-export function SearchPanel({
-  close,
-  showCloseButton = true,
-  SearchPanelSecondaryPage,
-  mainPageTitle,
-  secondPageTitle,
-  isLoading,
-  loadingMessage,
-  bottomRightCtaText,
+function ShowSecondaryPageCTA({ children }: { children: React.ReactNode }) {
+  const { setPanel: showSecondaryPanel } = usePanel(Panel.SECONDARY)
+  return (
+    <button
+      className="arb-hover text-gray flex items-center gap-2 text-sm"
+      onClick={showSecondaryPanel}
+    >
+      <span>{children}</span>
+      <ArrowRightIcon className="h-3 w-3 stroke-[3px]" />
+    </button>
+  )
+}
+SearchPanel.ShowSecondaryPageCTA = ShowSecondaryPageCTA
+
+function CloseButton({ onClick }: React.HTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button className="arb-hover" onClick={onClick}>
+      <XMarkIcon className="h-6 w-6 text-gray-7" />
+    </button>
+  )
+}
+SearchPanel.CloseButton = CloseButton
+
+function SearchPanelMainPage({
+  children,
+  className
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { isActivePanel: shouldShowMain } = usePanel(Panel.MAIN)
+
+  if (!shouldShowMain) {
+    return null
+  }
+  return <div className={className}>{children}</div>
+}
+SearchPanel.MainPage = SearchPanelMainPage
+
+function SearchPanelPageTitle({
+  title,
   children
-}: PropsWithChildren<{
-  close?: () => void
-  showCloseButton?: boolean
-  SearchPanelSecondaryPage: React.ReactNode
-  mainPageTitle: string
-  secondPageTitle: string
-  isLoading?: boolean
-  loadingMessage?: string
-  bottomRightCtaText?: string
-}>) {
-  const [currentPanel, setCurrentPanel] = useState(Panel.MAIN)
+}: PropsWithChildren<{ title: string }>) {
+  return (
+    <div className="flex flex-row items-center justify-between pb-4">
+      <span className="text-xl">{title}</span>
+      {children}
+    </div>
+  )
+}
+SearchPanel.PageTitle = SearchPanelPageTitle
 
-  const showMainPanel = useCallback(() => {
-    setCurrentPanel(Panel.MAIN)
-  }, [])
+function SearchPanelSecondaryPage({
+  children,
+  className
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { isActivePanel: shouldShowSecondary } = usePanel(Panel.SECONDARY)
 
-  const bottomRightCtaOnClick = useCallback(() => {
-    setCurrentPanel(Panel.SECONDARY)
-  }, [])
-
-  if (currentPanel === Panel.MAIN) {
-    return (
-      <SearchPanelMainPage
-        close={close}
-        showCloseButton={showCloseButton}
-        mainPageTitle={mainPageTitle}
-        isLoading={isLoading}
-        loadingMessage={loadingMessage}
-        bottomRightCtaText={bottomRightCtaText}
-        bottomRightCtaOnClick={bottomRightCtaOnClick}
-      >
-        {children}
-      </SearchPanelMainPage>
-    )
+  if (!shouldShowSecondary) {
+    return null
   }
 
+  return <div className={className}>{children}</div>
+}
+SearchPanel.SecondaryPage = SearchPanelSecondaryPage
+
+function BackToMainPageCTA({
+  children
+}: React.HTMLAttributes<HTMLButtonElement>) {
+  const { setPanel: showMainPanel } = usePanel(Panel.MAIN)
+
   return (
-    <>
-      <div className="flex flex-row items-center justify-between pb-4">
-        <span className="text-xl font-medium">{secondPageTitle}</span>
-        {showCloseButton && (
-          <button className="arb-hover" onClick={close}>
-            <XMarkIcon className="h-6 w-6 text-gray-5" />
-          </button>
-        )}
-      </div>
-      <div className="flex justify-start pb-6">
-        <button
-          className="arb-hover flex items-center space-x-2 text-sm font-medium text-blue-link"
-          onClick={showMainPanel}
-        >
-          <ArrowSmallLeftIcon className="h-6 w-6" />
-          <span>Back to {mainPageTitle}</span>
-        </button>
-      </div>
-      {SearchPanelSecondaryPage}
-    </>
+    <div className="mt-4 flex justify-start">
+      <button
+        className="arb-hover flex items-center space-x-2 text-sm"
+        onClick={showMainPanel}
+      >
+        <ArrowSmallLeftIcon className="h-3 w-3 stroke-[3px]" />
+        <span>{children}</span>
+      </button>
+    </div>
   )
 }
+SearchPanel.BackToMainPageCTA = BackToMainPageCTA
+
+function LoaderWithMessage({ loadingMessage }: { loadingMessage?: string }) {
+  return (
+    <span className="flex flex-row items-center gap-2 text-sm font-normal text-gray-6">
+      <Loader color="white" size="small" />
+      {loadingMessage}
+    </span>
+  )
+}
+SearchPanel.LoaderWithMessage = LoaderWithMessage
+
+export default SearchPanel
