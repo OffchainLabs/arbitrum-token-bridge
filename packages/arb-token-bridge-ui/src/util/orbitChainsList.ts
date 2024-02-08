@@ -2,7 +2,12 @@ import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
-export type NetworkType = 'Ethereum' | 'Rollup' | 'AnyTrust'
+export type NetworkType =
+  | 'Ethereum'
+  | 'Rollup'
+  | 'AnyTrust'
+  | 'Ethereum Testnet'
+  | 'Arbitrum Testnet'
 
 export type BridgeUiConfig = {
   color: {
