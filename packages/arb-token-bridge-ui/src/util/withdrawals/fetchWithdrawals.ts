@@ -62,22 +62,18 @@ export async function fetchWithdrawals({
 
   let withdrawalsFromSubgraph: FetchWithdrawalsFromSubgraphResult[] = []
   try {
-    withdrawalsFromSubgraph = await fetchWithdrawalsFromSubgraph({
-      sender,
-      receiver,
-      fromBlock,
-      toBlock,
-      l2ChainId: l2ChainID,
-      pageNumber,
-      pageSize,
-      searchString
-    })
-  } catch (error) {
-    console.log('Error fetching withdrawals from subgraph', error)
-  }
-
-  if (withdrawalsFromSubgraph && withdrawalsFromSubgraph.length > 0) {
-    return withdrawalsFromSubgraph.map(tx => {
+    withdrawalsFromSubgraph = (
+      await fetchWithdrawalsFromSubgraph({
+        sender,
+        receiver,
+        fromBlock,
+        toBlock,
+        l2ChainId: l2ChainID,
+        pageNumber,
+        pageSize,
+        searchString
+      })
+    ).map(tx => {
       return {
         ...tx,
         direction: 'withdrawal',
@@ -86,6 +82,8 @@ export async function fetchWithdrawals({
         childChainId: l2ChainID
       }
     })
+  } catch (error) {
+    console.log('Error fetching withdrawals from subgraph', error)
   }
 
   const [ethWithdrawalsFromEventLogs, tokenWithdrawalsFromEventLogs] =
@@ -138,6 +136,7 @@ export async function fetchWithdrawals({
 
   return [
     ...mappedEthWithdrawalsFromEventLogs,
-    ...tokenWithdrawalsFromEventLogsWithTimestamp
+    ...tokenWithdrawalsFromEventLogsWithTimestamp,
+    ...withdrawalsFromSubgraph
   ]
 }

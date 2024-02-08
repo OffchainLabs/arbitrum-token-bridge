@@ -24,10 +24,11 @@ import {
   Response
 } from '../pages/api/cctp/[type]'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { shouldTrackAnalytics, trackEvent } from '../util/AnalyticsUtils'
+import { trackEvent } from '../util/AnalyticsUtils'
 import { useAccountType } from '../hooks/useAccountType'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
+import { Address } from '../util/AddressUtils'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -137,6 +138,8 @@ function parseTransferToMergedTransaction(
     isCctp: true,
     parentChainId: isDeposit ? sourceChainId : destinationChainId,
     childChainId: isDeposit ? destinationChainId : sourceChainId,
+    sourceChainId,
+    destinationChainId,
     cctpData: {
       sourceChainId,
       attestationHash: messageSent.attestationHash,
@@ -382,7 +385,7 @@ export function useCctpState() {
 type useCctpFetchingParams = {
   l1ChainId: ChainId
   l2ChainId: ChainId
-  walletAddress: `0x${string}` | undefined
+  walletAddress: Address | undefined
   pageSize: number
   pageNumber: number
   type: 'deposits' | 'withdrawals' | 'all'
@@ -523,7 +526,7 @@ export function useClaimCctp(tx: MergedTransaction) {
       const attestation = await waitForAttestation(tx.cctpData.attestationHash)
       const receiveTx = await receiveMessage({
         attestation,
-        messageBytes: tx.cctpData.messageBytes as `0x${string}`,
+        messageBytes: tx.cctpData.messageBytes as Address,
         signer
       })
       const receiveReceiptTx = await receiveTx.wait()
@@ -542,7 +545,7 @@ export function useClaimCctp(tx: MergedTransaction) {
           receiveMessageTimestamp: resolvedAt,
           receiveMessageTransactionHash:
             receiveReceiptTx.status === 1
-              ? (receiveReceiptTx.transactionHash as `0x${string}`)
+              ? (receiveReceiptTx.transactionHash as Address)
               : null
         }
       })
@@ -551,17 +554,15 @@ export function useClaimCctp(tx: MergedTransaction) {
       const currentNetworkName = getNetworkName(targetChainId)
       const { isEthereumMainnetOrTestnet } = isNetwork(targetChainId)
 
-      if (shouldTrackAnalytics(currentNetworkName)) {
-        trackEvent(
-          isEthereumMainnetOrTestnet ? 'CCTP Withdrawal' : 'CCTP Deposit',
-          {
-            accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-            network: currentNetworkName,
-            amount: Number(tx.value),
-            complete: true
-          }
-        )
-      }
+      trackEvent(
+        isEthereumMainnetOrTestnet ? 'CCTP Withdrawal' : 'CCTP Deposit',
+        {
+          accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
+          network: currentNetworkName,
+          amount: Number(tx.value),
+          complete: true
+        }
+      )
 
       if (receiveReceiptTx.status === 0) {
         throw new Error('Transaction failed')
