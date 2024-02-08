@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { addCustomChain } from '@arbitrum/sdk'
+import { addCustomNetwork } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
@@ -40,10 +40,10 @@ describe('sanitizeQueryParams', () => {
         return null
       }
     )
-    addCustomChain({ customChain: mockedOrbitChain_1 })
-    addCustomChain({ customChain: mockedOrbitChain_2 })
-    addCustomChain({ customChain: mockedOrbitChain_3 })
-    addCustomChain({ customChain: mockedOrbitChain_4 })
+    addCustomNetwork({ customL2Network: mockedOrbitChain_1 })
+    addCustomNetwork({ customL2Network: mockedOrbitChain_2 })
+    addCustomNetwork({ customL2Network: mockedOrbitChain_3 })
+    addCustomNetwork({ customL2Network: mockedOrbitChain_4 })
   })
 
   afterAll(() => {

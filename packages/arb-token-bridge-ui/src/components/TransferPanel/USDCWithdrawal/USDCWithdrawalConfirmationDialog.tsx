@@ -20,6 +20,7 @@ import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { trackEvent } from '../../../util/AnalyticsUtils'
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -132,6 +133,10 @@ export function USDCWithdrawalConfirmationDialog(
                 onClick={() => {
                   props.onClose(true)
                   setAllCheckboxesChecked(false)
+                  trackEvent('Use CCTP Click', {
+                    tokenSymbol,
+                    type: 'Withdrawal'
+                  })
                 }}
               >
                 Confirm

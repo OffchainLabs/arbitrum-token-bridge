@@ -132,7 +132,8 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   props.onClose(true, 'bridged')
                   setAllCheckboxesChecked(false)
                   trackEvent('Use Arbitrum Bridge Click', {
-                    tokenSymbol
+                    tokenSymbol,
+                    type: 'Deposit'
                   })
                 }}
               >
@@ -195,8 +196,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 onClick={() => {
                   props.onClose(true, 'cctp')
                   setAllCheckboxesChecked(false)
-                  trackEvent('Use Arbitrum Bridge Click', {
-                    tokenSymbol
+                  trackEvent('Use CCTP Click', {
+                    tokenSymbol,
+                    type: 'Deposit'
                   })
                 }}
               >
