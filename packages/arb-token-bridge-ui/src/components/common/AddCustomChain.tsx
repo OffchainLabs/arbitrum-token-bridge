@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import { addCustomChain } from '@arbitrum/sdk'
+import {
+  addCustomNetwork,
+  constants as arbitrumSdkConstants
+} from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
@@ -190,10 +193,12 @@ async function mapOrbitConfigToOrbitChain(
     isCustom: true,
     name: data.chainInfo.chainName,
     partnerChainID: data.chainInfo.parentChainId,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 900000,
+    blockTime: arbitrumSdkConstants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     nativeToken: data.chainInfo.nativeToken,
     isArbitrum: true,
     tokenBridge: {
@@ -264,7 +269,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomChain({ customChain })
+      addCustomNetwork({ customL2Network: customChain })
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes

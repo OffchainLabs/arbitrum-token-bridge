@@ -167,10 +167,8 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       React.Dispatch<void>
     ]
 
-  const [
-    transactions,
-    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
-  ] = useTransactions()
+  const [transactions, { addTransaction, updateTransaction }] =
+    useTransactions()
 
   const depositEth = useCallback(
     async ({
@@ -1177,15 +1175,9 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     () => ({
       transactions,
       updateTransaction,
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      addTransaction
     }),
-    [
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus,
-      transactions,
-      updateTransaction
-    ]
+    [addTransaction, , transactions, updateTransaction]
   )
 
   return {
