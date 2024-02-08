@@ -96,9 +96,9 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 
 function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
-    // We only grab deposit destinations because we don't want duplicates and we need the parent chain
-    const depositDestinationChainIds = chain.partnerChainIDs ?? []
-    const isParentChain = depositDestinationChainIds.length > 0
+    // We only grab child chains because we don't want duplicates and we need the parent chain
+    const childChainIds = chain.partnerChainIDs
+    const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
       // Skip non-parent chains
@@ -106,7 +106,7 @@ function getMultiChainFetchList(): ChainPair[] {
     }
 
     // For each destination chain, map to an array of ChainPair objects
-    return depositDestinationChainIds.map(childChainId => ({
+    return childChainIds.map(childChainId => ({
       parentChainId: chain.chainID,
       childChainId: childChainId
     }))
