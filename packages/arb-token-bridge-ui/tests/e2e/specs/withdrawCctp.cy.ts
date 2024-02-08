@@ -13,7 +13,6 @@ describe('Withdraw USDC through CCTP', () => {
 
     // log in to metamask before withdrawal
     beforeEach(() => {
-      cy.reload()
       cy.fundUserWalletEth('L2')
       cy.fundUserUsdcTestnet('L2')
       cy.resetCctpAllowance('L2')
