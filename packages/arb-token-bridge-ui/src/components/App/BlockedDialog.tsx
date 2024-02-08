@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+
 import { Dialog, DialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
-import { useEffect, useState } from 'react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 export function BlockedDialog(props: DialogProps & { address: string }) {
   const [open, setOpen] = useState(false)
@@ -23,12 +24,15 @@ export function BlockedDialog(props: DialogProps & { address: string }) {
       }
       isFooterHidden={true}
     >
-      <div className="flex flex-col space-y-4 break-words py-4">
+      <div className="flex flex-col space-y-4 break-words py-4 text-gray-3">
         <span>{props.address.toLowerCase()}</span>
         <span>This address is affiliated with a blocked activity.</span>
         <span>
           If you think this was an error, you can request a review by filing a{' '}
-          <ExternalLink href={GET_HELP_LINK} className="arb-hover underline">
+          <ExternalLink
+            href={GET_HELP_LINK}
+            className="arb-hover text-white underline"
+          >
             support ticket
           </ExternalLink>
           .
