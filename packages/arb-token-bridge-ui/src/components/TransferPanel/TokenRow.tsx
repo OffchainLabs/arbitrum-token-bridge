@@ -48,6 +48,14 @@ function TokenLogoFallback() {
   )
 }
 
+function StyledLoader() {
+  return (
+    <div className="mr-2">
+      <Loader color="white" size="small" />
+    </div>
+  )
+}
+
 function BlockExplorerTokenLink({
   chain,
   address
@@ -70,24 +78,68 @@ function BlockExplorerTokenLink({
   )
 }
 
+function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+
+  const tokenListInfo = useMemo(() => {
+    if (!token) {
+      return null
+    }
+
+    if (isTokenArbitrumOneNativeUSDC(token?.address)) {
+      return 'Native USDC on Arbitrum One'
+    }
+
+    if (isTokenArbitrumSepoliaNativeUSDC(token?.address)) {
+      return 'Native USDC on Arbitrum Sepolia'
+    }
+
+    const listIds: Set<number> = token.listIds
+    const listIdsSize = listIds.size
+    if (listIdsSize === 0) {
+      return 'Added by User'
+    }
+
+    const listIdsArray = Array.from(listIds)
+    if (listIdsSize < 2) {
+      return tokenListIdsToNames(listIdsArray)
+    }
+
+    const firstList = listIdsArray.slice(0, 1)
+    const more = listIdsSize - 1
+
+    return (
+      tokenListIdsToNames(firstList) +
+      ` and ${more} more list${more > 1 ? 's' : ''}`
+    )
+  }, [token])
+
+  if (!token) {
+    return null
+  }
+
+  if (token?.isL2Native) {
+    return (
+      <span className="flex text-xs text-white/70">
+        {`This token is native to ${getNetworkName(
+          childChain.id
+        )} and can’t be bridged.`}
+      </span>
+    )
+  }
+
+  return <span className="flex text-xs text-white/70">{tokenListInfo}</span>
+}
+
 interface TokenRowProps {
   style?: React.CSSProperties
   onTokenSelected: (token: ERC20BridgeToken | null) => void
   token: ERC20BridgeToken | null
 }
 
-export function TokenRow({
-  style,
-  onTokenSelected,
-  token
-}: TokenRowProps): JSX.Element {
+function useTokenInfo(token: ERC20BridgeToken | null) {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
-  const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {
     childChain,
@@ -96,12 +148,26 @@ export function TokenRow({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-
   const chainId = isDepositMode ? parentChain.id : childChain.id
-  const isSmallScreen = useMedia('(max-width: 419px)')
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const tokenName = useMemo(() => {
+  const {
+    eth: [ethL1Balance],
+    erc20: [erc20L1Balances]
+  } = useBalance({
+    provider: parentChainProvider,
+    walletAddress
+  })
+
+  const {
+    eth: [ethL2Balance],
+    erc20: [erc20L2Balances]
+  } = useBalance({
+    provider: childChainProvider,
+    walletAddress
+  })
+
+  const name = useMemo(() => {
     if (token) {
       return sanitizeTokenName(token.name, {
         erc20L1Address: token.address,
@@ -112,7 +178,7 @@ export function TokenRow({
     return nativeCurrency.name
   }, [token, nativeCurrency.name, chainId])
 
-  const tokenSymbol = useMemo(() => {
+  const symbol = useMemo(() => {
     if (token) {
       return sanitizeTokenSymbol(token.symbol, {
         erc20L1Address: token.address,
@@ -123,32 +189,7 @@ export function TokenRow({
     return nativeCurrency.symbol
   }, [token, nativeCurrency.symbol, chainId])
 
-  const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
-  const tokenIsArbOneNativeUSDC = useMemo(
-    () => isTokenArbitrumOneNativeUSDC(token?.address),
-    [token]
-  )
-  const tokenIsArbSepoliaNativeUSDC = useMemo(
-    () => isTokenArbitrumSepoliaNativeUSDC(token?.address),
-    [token]
-  )
-
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress
-  })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress
-  })
-
-  const tokenLogoURI = useMemo(() => {
+  const logoURI = useMemo(() => {
     if (!token) {
       return nativeCurrency.logoUrl
     }
@@ -156,7 +197,7 @@ export function TokenRow({
     return token.logoURI
   }, [token, nativeCurrency])
 
-  const tokenBalance = useMemo(() => {
+  const balance = useMemo(() => {
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode
@@ -177,12 +218,12 @@ export function TokenRow({
 
     return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
   }, [
-    erc20L1Balances,
-    erc20L2Balances,
     ethL1Balance,
+    erc20L1Balances,
+    ethL2Balance,
+    erc20L2Balances,
     isDepositMode,
     nativeCurrency,
-    ethL2Balance,
     token
   ])
 
@@ -205,38 +246,67 @@ export function TokenRow({
     )
   }, [token, isArbitrumToken])
 
-  const tokenListInfo = useMemo(() => {
+  const isBridgeable = useMemo(() => {
     if (!token) {
-      return null
+      return true
     }
 
-    if (tokenIsArbOneNativeUSDC) {
-      return 'Native USDC on Arbitrum One'
+    if (token?.isL2Native) {
+      return false
     }
 
-    if (tokenIsArbSepoliaNativeUSDC) {
-      return 'Native USDC on Arbitrum Sepolia'
+    if (isDepositMode) {
+      return true
     }
 
-    const listIds: Set<number> = token.listIds
-    const listIdsSize = listIds.size
-    if (listIdsSize === 0) {
-      return 'Added by User'
+    return typeof token?.l2Address !== 'undefined'
+  }, [isDepositMode, token])
+
+  return {
+    name,
+    symbol,
+    logoURI,
+    balance,
+    isArbitrumToken,
+    isPotentialFakeArbitrumToken,
+    isBridgeable
+  }
+}
+
+function ArbitrumTokenTooltip() {
+  const [networks] = useNetworks()
+  const { childChain, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const networkName = getNetworkName(
+    isDepositMode ? parentChain.id : childChain.id
+  )
+
+  return (
+    <Tooltip
+      content={`This is the official Arbitrum token on ${networkName}. Please beware of fake tokens trying to impersonate it.`}
+    >
+      <StatusBadge variant="green" className="text-xs">
+        <CheckCircleIcon className="h-3 w-3" />
+        <span>Official</span>
+        <span className="hidden lg:inline"> ARB token</span>
+      </StatusBadge>
+    </Tooltip>
+  )
+}
+
+function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
+  const {
+    app: {
+      arbTokenBridge: { bridgeTokens }
     }
+  } = useAppState()
+  const { isLoading: isLoadingAccountType } = useAccountType()
+  const { balance, symbol } = useTokenInfo(token)
 
-    const listIdsArray = Array.from(listIds)
-    if (listIdsSize < 2) {
-      return tokenListIdsToNames(listIdsArray)
-    }
-
-    const firstList = listIdsArray.slice(0, 1)
-    const more = listIdsSize - 1
-
-    return (
-      tokenListIdsToNames(firstList) +
-      ` and ${more} more list${more > 1 ? 's' : ''}`
-    )
-  }, [token, tokenIsArbSepoliaNativeUSDC, tokenIsArbOneNativeUSDC])
+  const isArbitrumNativeUSDC =
+    isTokenArbitrumOneNativeUSDC(token?.address) ||
+    isTokenArbitrumSepoliaNativeUSDC(token?.address)
 
   const tokenIsAddedToTheBridge = useMemo(() => {
     // Can happen when switching networks.
@@ -248,93 +318,91 @@ export function TokenRow({
       return true
     }
 
-    if (tokenIsArbOneNativeUSDC || tokenIsArbSepoliaNativeUSDC) {
+    if (isArbitrumNativeUSDC) {
       return true
     }
 
     return typeof bridgeTokens[token.address] !== 'undefined'
-  }, [
-    bridgeTokens,
-    token,
-    tokenIsArbOneNativeUSDC,
-    tokenIsArbSepoliaNativeUSDC
-  ])
+  }, [bridgeTokens, isArbitrumNativeUSDC, token])
 
-  const tokenHasL2Address = useMemo(() => {
-    if (!token) {
-      return true
-    }
+  if (!tokenIsAddedToTheBridge) {
+    return <span className="arb-hover text-sm">Import</span>
+  }
 
-    return typeof token.l2Address !== 'undefined'
-  }, [token])
+  // We don't want users to be able to click on USDC before we know whether or not they are SCW users
+  if (isLoadingAccountType && isArbitrumNativeUSDC) {
+    return <StyledLoader />
+  }
 
-  const tokenIsBridgeable = useMemo(() => {
-    if (isL2NativeToken) {
-      return false
-    }
+  return (
+    <span className="flex items-center whitespace-nowrap text-sm text-white/70">
+      {balance ? (
+        formatAmount(balance, {
+          decimals: token?.decimals,
+          symbol
+        })
+      ) : (
+        <StyledLoader />
+      )}
+    </span>
+  )
+}
 
-    if (isDepositMode) {
-      return true
-    }
+function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
 
-    return tokenHasL2Address
-  }, [isDepositMode, tokenHasL2Address, isL2NativeToken])
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const isCustomFeeTokenRow = token === null && nativeCurrency.isCustom
 
-  const arbitrumTokenTooltipContent = useMemo(() => {
-    const networkName = getNetworkName(
-      isDepositMode ? parentChain.id : childChain.id
-    )
-
+  if (isCustomFeeTokenRow && isDepositMode) {
     return (
-      <span>
-        This is the official Arbitrum token on {networkName}. Please beware of
-        fake tokens trying to impersonate it.
-      </span>
+      <BlockExplorerTokenLink
+        chain={parentChain}
+        address={nativeCurrency.address}
+      />
     )
-  }, [childChain.id, isDepositMode, parentChain.id])
+  }
 
-  const tokenBalanceContent = useMemo(() => {
-    if (!tokenIsAddedToTheBridge) {
-      return <span className="arb-hover text-sm">Import</span>
-    }
+  if (!token) {
+    return null
+  }
 
-    // We don't want users to be able to click on USDC before we know whether or not they are SCW users
-    if (
-      isLoadingAccountType &&
-      (tokenIsArbSepoliaNativeUSDC || tokenIsArbOneNativeUSDC)
-    ) {
-      return (
-        <div className="mr-2">
-          <Loader color="white" size="small" />
-        </div>
-      )
-    }
+  if (isDepositMode) {
+    return token?.isL2Native ? (
+      <BlockExplorerTokenLink chain={childChain} address={token.address} />
+    ) : (
+      <BlockExplorerTokenLink chain={parentChain} address={token.address} />
+    )
+  }
 
+  if (typeof token.l2Address !== 'undefined') {
     return (
-      <span className="flex items-center whitespace-nowrap text-sm text-white/70">
-        {tokenBalance ? (
-          formatAmount(tokenBalance, {
-            decimals: token?.decimals,
-            symbol: tokenSymbol
-          })
-        ) : (
-          <div className="mr-2">
-            <Loader color="white" size="small" />
-          </div>
-        )}
-      </span>
+      <BlockExplorerTokenLink chain={childChain} address={token.l2Address} />
     )
-  }, [
-    isLoadingAccountType,
-    token?.decimals,
-    tokenBalance,
-    tokenIsAddedToTheBridge,
-    tokenIsArbSepoliaNativeUSDC,
-    tokenIsArbOneNativeUSDC,
-    tokenSymbol
-  ])
+  }
+  return (
+    <span className="text-xs text-white/70">
+      This token hasn&apos;t been bridged to {getNetworkName(childChain.id)}.
+    </span>
+  )
+}
+
+export function TokenRow({
+  style,
+  onTokenSelected,
+  token
+}: TokenRowProps): JSX.Element {
+  const {
+    name: tokenName,
+    symbol: tokenSymbol,
+    logoURI: tokenLogoURI,
+    isArbitrumToken,
+    isPotentialFakeArbitrumToken,
+    isBridgeable: tokenIsBridgeable
+  } = useTokenInfo(token)
 
   const buttonOnClick = () => onTokenSelected(token)
 
@@ -359,94 +427,27 @@ export function TokenRow({
           fallback={<TokenLogoFallback />}
         />
 
-        <div className="flex w-full flex-col items-start truncate">
-          <div className="flex w-full items-center space-x-2">
-            <span className="text-base font-medium">{tokenSymbol}</span>
+        <div className="flex w-full flex-col items-start gap-1 truncate">
+          <div className="flex w-full items-center gap-1">
+            <span className="text-base font-medium leading-none">
+              {tokenSymbol}
+            </span>
             <span className="text-xs text-white/70">{tokenName}</span>
-
-            {isArbitrumToken && (
-              <Tooltip content={arbitrumTokenTooltipContent}>
-                <StatusBadge variant="green">
-                  <CheckCircleIcon className="h-3 w-3" />
-                  <span className="text-xs">
-                    Official{isSmallScreen ? '' : ' ARB token'}
-                  </span>
-                </StatusBadge>
-              </Tooltip>
-            )}
+            {isArbitrumToken && <ArbitrumTokenTooltip />}
 
             {isPotentialFakeArbitrumToken && (
               <Tooltip content="This token is different from the official Arbitrum token (ARB).">
                 <div className="box-border flex w-max flex-nowrap items-center gap-1 rounded-full border-[1px] border-gray-dark px-1 py-[2px] pr-2 text-sm">
-                  <ExclamationCircleIcon className="h-4 w-4 text-gray-dark" />
+                  <ExclamationCircleIcon className="h-3 w-3 text-gray-dark" />
                   <span className="text-xs text-gray-dark">Careful</span>
                 </div>
               </Tooltip>
             )}
           </div>
-
-          {token && (
-            <div className="flex w-full flex-col items-start gap-1">
-              {/* TODO: anchor shouldn't be nested within a button */}
-              <div className="flex w-full justify-between">
-                {isDepositMode ? (
-                  <>
-                    {isL2NativeToken ? (
-                      <BlockExplorerTokenLink
-                        chain={childChain}
-                        address={token.address}
-                      />
-                    ) : (
-                      <BlockExplorerTokenLink
-                        chain={parentChain}
-                        address={token.address}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {tokenHasL2Address ? (
-                      <BlockExplorerTokenLink
-                        chain={childChain}
-                        address={token.l2Address}
-                      />
-                    ) : (
-                      <span className="text-xs text-white/70">
-                        This token hasn&apos;t been bridged to{' '}
-                        {getNetworkName(childChain.id)}.
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              {isL2NativeToken ? (
-                <span className="flex text-xs text-white/70">
-                  {`This token is native to ${getNetworkName(
-                    childChain.id
-                  )} and can’t be bridged.`}
-                </span>
-              ) : (
-                <span className="flex text-xs text-white/70">
-                  {tokenListInfo}
-                </span>
-              )}
-            </div>
-          )}
-
-          {isCustomFeeTokenRow && (
-            <div className="flex w-full flex-col items-start space-y-1">
-              <div className="flex w-full justify-between">
-                {isDepositMode && (
-                  <BlockExplorerTokenLink
-                    chain={parentChain}
-                    address={nativeCurrency.address}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+          <TokenContractLink token={token} />
+          <TokenListInfo token={token} />
         </div>
-        {(tokenIsBridgeable || !token) && tokenBalanceContent}
+        {tokenIsBridgeable && <TokenBalance token={token} />}
       </div>
     </button>
   )
