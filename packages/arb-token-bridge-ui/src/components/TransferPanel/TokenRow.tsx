@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useMedia } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import {
@@ -336,10 +336,7 @@ export function TokenRow({
     tokenSymbol
   ])
 
-  const buttonOnClick = useCallback(
-    () => onTokenSelected(token),
-    [onTokenSelected, token]
-  )
+  const buttonOnClick = () => onTokenSelected(token)
 
   return (
     <button

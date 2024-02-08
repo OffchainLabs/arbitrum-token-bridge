@@ -142,10 +142,7 @@ function AddCustomOrbitChainButton() {
   const [, setQueryParams] = useArbQueryParams()
   const [isTestnetMode] = useIsTestnetMode()
 
-  const openSettingsPanel = useCallback(
-    () => setQueryParams({ settingsOpen: true }),
-    [setQueryParams]
-  )
+  const openSettingsPanel = () => setQueryParams({ settingsOpen: true })
 
   if (!isTestnetMode) {
     return null
@@ -171,9 +168,13 @@ function NetworksPanel({
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
 
-  const chainIds = getSupportedChainIds({
-    includeTestnets: isTestnetMode
-  })
+  const chainIds = useMemo(
+    () =>
+      getSupportedChainIds({
+        includeTestnets: isTestnetMode
+      }),
+    [isTestnetMode]
+  )
 
   const testnetToggleClassNames = {
     switch:
