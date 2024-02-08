@@ -8,7 +8,7 @@ import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntiti
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { getOrbitChains, orbitMainnets, orbitTestnets } from './orbitChainsList'
 
 export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
@@ -438,7 +438,7 @@ function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
-  const chains = getChains()
+  const chains = [...getChains(), ...getOrbitChains()]
   const arbitrumSdkChain = chains.find(chain => chain.chainID === chainId)
 
   if (!arbitrumSdkChain) {

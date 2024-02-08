@@ -37,11 +37,26 @@ function getDestinationWithSanitizedQueryParams(sanitized: {
   return `/?sourceChain=${sourceChain}&destinationChain=${destinationChain}`
 }
 
+function addOrbitChainsToArbitrumSDK() {
+  ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
+    chain => {
+      try {
+        addCustomNetwork({ customL2Network: chain })
+        mapCustomChainToNetworkData(chain)
+      } catch (_) {
+        // already added
+      }
+    }
+  )
+}
+
 export function getServerSideProps({
   query
 }: GetServerSidePropsContext): GetServerSidePropsResult<Record<string, never>> {
   const sourceChainId = decodeChainQueryParam(query.sourceChain)
   const destinationChainId = decodeChainQueryParam(query.destinationChain)
+
+  addOrbitChainsToArbitrumSDK()
 
   // sanitize the query params
   const sanitized = sanitizeQueryParams({ sourceChainId, destinationChainId })
@@ -66,16 +81,7 @@ export function getServerSideProps({
 
 export default function Index() {
   useEffect(() => {
-    ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
-      chain => {
-        try {
-          addCustomNetwork({ customL2Network: chain })
-          mapCustomChainToNetworkData(chain)
-        } catch (_) {
-          // already added
-        }
-      }
-    )
+    addOrbitChainsToArbitrumSDK()
   }, [])
 
   return <App />
