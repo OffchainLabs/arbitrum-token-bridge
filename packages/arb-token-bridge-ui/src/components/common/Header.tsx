@@ -5,7 +5,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { Transition } from './Transition'
 
-const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
+const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center'
 
 const MenuIcon = {
   Open: function () {
