@@ -97,7 +97,6 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          type: 'Arbitrum Testnet',
           name: 'Arbitrum Local'
         }
       }
