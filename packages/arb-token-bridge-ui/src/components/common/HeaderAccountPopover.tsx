@@ -25,7 +25,7 @@ import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -158,8 +158,11 @@ export function HeaderAccountPopover({
         <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
           <div className="flex flex-row justify-between">
-            <Transition show={showCopied}>
-              <span className="absolute left-[90px] top-[2rem] z-10 text-xs font-light text-white">
+            <Transition
+              isOpen={showCopied}
+              className="absolute left-[90px] top-5 z-10"
+            >
+              <span className="text-xs font-light text-white">
                 Copied to clipboard!
               </span>
             </Transition>

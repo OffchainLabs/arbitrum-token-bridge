@@ -9,6 +9,7 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Transition } from '../common/Transition'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -61,7 +62,7 @@ export function TokenButton(): JSX.Element {
 
   return (
     <>
-      <Popover className="h-full">
+      <Popover className="relative h-full">
         <Popover.Button
           className="arb-hover h-full w-max rounded-bl rounded-tl px-3 text-white"
           aria-label="Select Token"
@@ -83,9 +84,16 @@ export function TokenButton(): JSX.Element {
             <ChevronDownIcon className="h-4 w-4 text-gray-6" />
           </div>
         </Popover.Button>
-        <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
-          {({ close }) => <TokenSearch close={close} />}
-        </Popover.Panel>
+
+        <Transition
+          // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+          options={{ unmountOnLeave: false }}
+          className="absolute left-0 top-12 z-50 w-[466px] max-w-[80vw] lg:top-16"
+        >
+          <Popover.Panel className="w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:p-6">
+            {({ close }) => <TokenSearch close={close} />}
+          </Popover.Panel>
+        </Transition>
       </Popover>
     </>
   )

@@ -1,4 +1,4 @@
-import { Disclosure, Transition } from '@headlessui/react'
+import { Disclosure } from '@headlessui/react'
 import {
   InformationCircleIcon,
   ChevronRightIcon
@@ -23,37 +23,26 @@ export function PendingDepositWarning() {
         </div>
         <ChevronRightIcon className="ml-auto h-4 w-4 shrink-0 ui-open:rotate-90 ui-open:transform" />
       </Disclosure.Button>
-      <Transition
-        enter="transition duration-100 ease-out"
-        enterFrom="transform scale-95 opacity-0"
-        enterTo="transform scale-100 opacity-100"
-        leave="transition duration-75 ease-out"
-        leaveFrom="transform scale-100 opacity-100"
-        leaveTo="transform scale-95 opacity-0"
-      >
-        <Disclosure.Panel className="flex flex-col gap-2 pl-5">
-          <p>
-            If you must leave, check back <strong>within a week</strong>. In
-            most cases, your deposits should go through successfully.
-            <br />
-            However, if it failed, re-execute <strong>
-              within a week
-            </strong>{' '}
-            from the time of the initial transaction, or else{' '}
-            <strong>your funds could be lost forever!</strong>
-          </p>
-          <p>
-            Learn more about{' '}
-            <ExternalLink
-              href={`${DOCS_DOMAIN}/arbos/l1-to-l2-messaging`}
-              className="arb-hover text-blue-link underline"
-            >
-              retryable tickets
-            </ExternalLink>
-            , the mechanism behind deposits.
-          </p>
-        </Disclosure.Panel>
-      </Transition>
+      <Disclosure.Panel className="flex flex-col gap-2 pl-5">
+        <p>
+          If you must leave, check back <strong>within a week</strong>. In most
+          cases, your deposits should go through successfully.
+          <br />
+          However, if it failed, re-execute <strong>within a week</strong> from
+          the time of the initial transaction, or else{' '}
+          <strong>your funds could be lost forever!</strong>
+        </p>
+        <p>
+          Learn more about{' '}
+          <ExternalLink
+            href={`${DOCS_DOMAIN}/arbos/l1-to-l2-messaging`}
+            className="arb-hover text-blue-link underline"
+          >
+            retryable tickets
+          </ExternalLink>
+          , the mechanism behind deposits.
+        </p>
+      </Disclosure.Panel>
     </Disclosure>
   )
 }

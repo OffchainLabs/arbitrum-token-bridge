@@ -7,7 +7,6 @@ import Image, { ImageProps } from 'next/image'
 import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
 import Discord from '@/icons/discord.webp'
 import Twitter from '@/icons/twitter.webp'
-import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import {
   HeaderMenuDesktop,
@@ -259,9 +258,7 @@ export function Header() {
                 </Disclosure.Button>
               )}
               <Disclosure.Panel>
-                <Transition>
-                  <HeaderMobile />
-                </Transition>
+                <HeaderMobile />
               </Disclosure.Panel>
             </div>
           )}

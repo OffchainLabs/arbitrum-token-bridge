@@ -31,8 +31,8 @@ export function HeaderMenuDesktop(
         </Popover.Button>
       </div>
 
-      <Transition>
-        <Popover.Panel className="header-menu-panel absolute -left-4 z-50 mt-4 w-80 rounded-md bg-white shadow-lg">
+      <Transition className="absolute z-50">
+        <Popover.Panel className="header-menu-panel mt-4 w-80 rounded-md bg-white shadow-lg">
           <div className="px-6 py-4">
             {props.items.map((item, index) => {
               if (typeof item.anchorProps !== 'undefined') {

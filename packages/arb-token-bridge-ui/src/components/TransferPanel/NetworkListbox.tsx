@@ -7,6 +7,7 @@ import Image from 'next/image'
 
 import { getNetworkName } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { Transition } from '../common/Transition'
 
 export type NetworkListboxProps = {
   disabled?: boolean
@@ -58,33 +59,35 @@ export function NetworkListbox({
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
 
-      <Listbox.Options className="absolute z-20 ml-2 mt-2 max-h-[365px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => {
-          return (
-            <Listbox.Option
-              key={option.id}
-              value={option}
-              className={twMerge(
-                'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer select-none items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
-                getOptionClassName(index)
-              )}
-            >
-              <div className="flex h-8 w-8 items-center justify-center">
-                <Image
-                  src={getBridgeUiConfigForChain(option.id).network.logo}
-                  alt={`${getNetworkName(option.id)} logo`}
-                  className="max-h-7 w-auto"
-                  width={36}
-                  height={36}
-                />
-              </div>
-              <span className="max-w-[140px] truncate">
-                {getNetworkName(option.id)}
-              </span>
-            </Listbox.Option>
-          )
-        })}
-      </Listbox.Options>
+      <Transition className="absolute z-20">
+        <Listbox.Options className="ml-2 mt-2 max-h-[365px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
+          {options.map((option, index) => {
+            return (
+              <Listbox.Option
+                key={option.id}
+                value={option}
+                className={twMerge(
+                  'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer select-none items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
+                  getOptionClassName(index)
+                )}
+              >
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <Image
+                    src={getBridgeUiConfigForChain(option.id).network.logo}
+                    alt={`${getNetworkName(option.id)} logo`}
+                    className="max-h-7 w-auto"
+                    width={36}
+                    height={36}
+                  />
+                </div>
+                <span className="max-w-[140px] truncate">
+                  {getNetworkName(option.id)}
+                </span>
+              </Listbox.Option>
+            )
+          })}
+        </Listbox.Options>
+      </Transition>
     </Listbox>
   )
 }
