@@ -154,7 +154,7 @@ export function Dialog(props: DialogProps) {
         >
           <HeadlessUIDialog.Panel
             className={twMerge(
-              'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:w-auto md:max-w-[727px] md:rounded',
+              'z-10 max-h-screen w-screen overflow-y-auto border border-gray-dark bg-gray-1 md:max-w-[727px] md:rounded',
               className
             )}
           >
