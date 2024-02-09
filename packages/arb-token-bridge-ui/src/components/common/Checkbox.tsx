@@ -25,7 +25,14 @@ export function Checkbox(props: CheckboxProps) {
       >
         <CheckIcon className="ml-[2px] mt-[1px] h-2 w-2 stroke-[5] text-dark" />
       </Switch>
-      <Switch.Label className="cursor-pointer">{props.label}</Switch.Label>
+      <Switch.Label
+        className={twMerge(
+          'cursor-pointer',
+          props.checked ? 'text-white' : 'text-gray-3'
+        )}
+      >
+        {props.label}
+      </Switch.Label>
     </Switch.Group>
   )
 }

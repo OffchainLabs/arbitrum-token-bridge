@@ -98,6 +98,9 @@ module.exports = {
         input:
           '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)',
         2: '0px 0px 1px 0px rgba(33, 37, 41, 0.08), 0px 2px 2px 0px rgba(33, 37, 41, 0.06)'
+      },
+      transitionDuration: {
+        400: '400ms'
       }
     }
   }
