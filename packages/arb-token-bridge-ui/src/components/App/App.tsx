@@ -70,24 +70,18 @@ const AppContent = (): JSX.Element => {
   } = useAppState()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    const { isTestnet, isGoerli } = isNetwork(sourceChain.id ?? 0)
-    const className = isTestnet ? 'lg:bg-ocl-blue' : 'lg:bg-black'
-
-    if (isGoerli) {
-      return { imageSrc: 'images/HeaderArbitrumLogoGoerli.webp', className }
+    if (isNetwork(sourceChain.id).isTestnet) {
+      return {
+        imageSrc: 'images/HeaderArbitrumLogoTestnet.webp',
+        className: 'lg:bg-ocl-blue'
+      }
     }
 
-    return { imageSrc: 'images/HeaderArbitrumLogoMainnet.svg', className }
-  }, [sourceChain])
-
-  if (connectionState === ConnectionState.SEQUENCER_UPDATE) {
-    return (
-      <Alert type="red">
-        Note: The Arbitrum Sequencer Will be offline today 3pm-5pm EST for
-        maintenance. Thanks for your patience!
-      </Alert>
-    )
-  }
+    return {
+      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
+      className: 'lg:bg-black'
+    }
+  }, [sourceChain.id])
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
