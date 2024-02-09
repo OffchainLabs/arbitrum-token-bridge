@@ -2,86 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Disclosure } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
-import Image, { ImageProps } from 'next/image'
 
-import HeaderLogoMainnetSVG from '@/images/HeaderArbitrumLogoMainnet.svg'
-import Discord from '@/icons/discord.webp'
-import Twitter from '@/icons/twitter.webp'
 import { Transition } from './Transition'
-import { ExternalLink } from './ExternalLink'
-import {
-  HeaderMenuDesktop,
-  HeaderMenuMobile,
-  HeaderMenuProps
-} from './HeaderMenu'
-import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
-import { ChainId, getExplorerUrl } from '../../util/networks'
 
 const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
-
-function toHeaderMenuProps(
-  links: { title: string; link: string }[]
-): HeaderMenuProps {
-  return {
-    items: links.map(item => ({
-      title: item.title,
-      anchorProps: { href: item.link }
-    }))
-  }
-}
-
-const learnMenuProps = toHeaderMenuProps([
-  {
-    title: 'Dev docs',
-    link: DOCS_DOMAIN
-  },
-  {
-    title: 'About bridging',
-    link: `${DOCS_DOMAIN}/getting-started-users`
-  },
-  {
-    title: 'About Arbitrum',
-    link: `${DOCS_DOMAIN}/inside-arbitrum-nitro`
-  }
-])
-
-const explorersMenuProps = toHeaderMenuProps([
-  {
-    title: 'Arbitrum One',
-    link: getExplorerUrl(ChainId.ArbitrumOne)
-  },
-  {
-    title: 'Arbitrum Nova',
-    link: getExplorerUrl(ChainId.ArbitrumNova)
-  },
-  {
-    title: 'Arbitrum Goerli',
-    link: getExplorerUrl(ChainId.ArbitrumGoerli)
-  },
-  {
-    title: 'Arbitrum Sepolia',
-    link: getExplorerUrl(ChainId.ArbitrumSepolia)
-  }
-])
-
-const chartsStatsMenuProps = toHeaderMenuProps([
-  {
-    title: 'How much gas am I saving?',
-    link: 'https://gas.arbitrum.io'
-  },
-  {
-    title: 'What’s up with my retryable?',
-    link: 'https://retryable-tx-panel.arbitrum.io'
-  },
-  {
-    title: 'How popular is Arbitrum?',
-    link: 'https://dune.com/Henrystats/arbitrum-metrics'
-  },
-  {
-    title: 'Which L2 do people trust most?',
-    link: 'https://l2beat.com'
-  }
-])
 
 const MenuIcon = {
   Open: function () {
@@ -119,20 +43,6 @@ const MenuIcon = {
   }
 }
 
-function DesktopExternalLink({
-  children,
-  ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return (
-    <ExternalLink
-      className="arb-hover hidden whitespace-nowrap text-base text-white lg:block lg:pr-4"
-      {...props}
-    >
-      {children}
-    </ExternalLink>
-  )
-}
-
 export type HeaderOverridesProps = {
   imageSrc?: string
   className?: string
@@ -156,17 +66,6 @@ export function HeaderOverrides({ imageSrc, className }: HeaderOverridesProps) {
   }
 
   return null
-}
-
-function HeaderImageElement({ ...props }: ImageProps) {
-  return (
-    <Image
-      id="header-image"
-      src={props.src}
-      alt={props.alt || 'Arbitrum logo'}
-      className={twMerge('-ml-2 w-40 lg:ml-0', props.className || '')}
-    />
-  )
 }
 
 export function HeaderContent({ children }: { children: React.ReactNode }) {
@@ -214,39 +113,7 @@ export function Header() {
   return (
     <header id="header" className={defaultHeaderClassName}>
       <div className="flex w-full max-w-[1440px] justify-between px-8">
-        <div className="flex items-center lg:space-x-2 xl:space-x-12">
-          <a href="/" className="arb-hover flex shrink-0 flex-col items-center">
-            <HeaderImageElement
-              src={HeaderLogoMainnetSVG}
-              alt="Arbitrum logo"
-            />
-          </a>
-          <div className="hidden items-center lg:flex lg:space-x-2 xl:space-x-6">
-            <HeaderMenuDesktop {...learnMenuProps}>Learn</HeaderMenuDesktop>
-            <HeaderMenuDesktop
-              items={[
-                {
-                  title: 'Arbitrum Portal',
-                  anchorProps: {
-                    href: 'https://portal.arbitrum.io/projects'
-                  }
-                },
-                {
-                  title: 'Explorers',
-                  items: explorersMenuProps.items
-                }
-              ]}
-            >
-              Ecosystem
-            </HeaderMenuDesktop>
-            <HeaderMenuDesktop {...chartsStatsMenuProps}>
-              Charts & Stats
-            </HeaderMenuDesktop>
-            <DesktopExternalLink href={GET_HELP_LINK}>
-              Get Help
-            </DesktopExternalLink>
-          </div>
-        </div>
+        <div className="flex items-center lg:space-x-2 xl:space-x-12"></div>
         <Disclosure>
           {({ open }) => (
             <div className="flex items-center">
@@ -271,45 +138,9 @@ export function Header() {
             id="header-content-root"
             className="flex space-x-2 xl:space-x-4"
           ></div>
-          <div className="flex flex-row space-x-2 xl:space-x-4">
-            <ExternalLink
-              href="https://discord.com/invite/ZpZuw7p"
-              className="arb-hover h-8 w-8"
-            >
-              <Image src={Discord} alt="Discord" />
-            </ExternalLink>
-            <ExternalLink
-              href="https://twitter.com/OffchainLabs"
-              className="arb-hover h-8 w-8"
-            >
-              <Image src={Twitter} alt="Twitter" />
-            </ExternalLink>
-          </div>
         </div>
       </div>
     </header>
-  )
-}
-
-function MobileExternalLink({
-  children,
-  ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return (
-    <ExternalLink
-      className="arb-hover flex w-full flex-row flex-nowrap items-center space-x-4 px-6 py-3 text-2xl font-medium text-white"
-      {...props}
-    >
-      {children}
-    </ExternalLink>
-  )
-}
-
-const HeaderItemLogo = ({ src, alt }: { src: string; alt: string }) => {
-  return (
-    <span className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#8d8e8e]">
-      <Image src={src} alt={alt} width={22} height={22} />
-    </span>
   )
 }
 
@@ -326,52 +157,6 @@ function HeaderMobile() {
           id="header-content-root"
           className="flex w-full flex-col-reverse items-center pt-4"
         ></div>
-        <HeaderMenuMobile {...learnMenuProps}>
-          <HeaderItemLogo
-            src="/images/header/headerLogo_learn.svg"
-            alt="Learn"
-          />
-          Learn
-        </HeaderMenuMobile>
-        <HeaderMenuMobile
-          items={[
-            {
-              title: 'Arbitrum One Portal',
-              anchorProps: { href: 'https://portal.arbitrum.one' }
-            },
-            {
-              title: 'Arbitrum Nova Portal',
-              anchorProps: { href: 'https://portal-nova.arbitrum.io' }
-            }
-          ]}
-        >
-          <HeaderItemLogo
-            src="/images/header/headerLogo_ecosystem.svg"
-            alt="Ecosystem"
-          />
-          Ecosystem
-        </HeaderMenuMobile>
-        <HeaderMenuMobile {...explorersMenuProps}>
-          <HeaderItemLogo
-            src="/images/header/headerLogo_explorers.svg"
-            alt="Explorers"
-          />
-          Explorers
-        </HeaderMenuMobile>
-        <HeaderMenuMobile {...chartsStatsMenuProps}>
-          <HeaderItemLogo
-            src="/images/header/headerLogo_chartsAndStats.svg"
-            alt="Charts and Stats"
-          />
-          Charts & Stats
-        </HeaderMenuMobile>
-        <MobileExternalLink href={GET_HELP_LINK}>
-          <HeaderItemLogo
-            src="/images/header/headerLogo_help.svg"
-            alt="Get Help"
-          />
-          Get Help
-        </MobileExternalLink>
       </div>
     </div>
   )
