@@ -74,7 +74,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   }))
 
   return (
-    <Dialog {...props} isCustom>
+    <Dialog {...props}>
       <div className="flex max-h-screen w-full flex-col md:w-[750px] lg:w-[925px]">
         <Tab.Group
           onChange={() => {

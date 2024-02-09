@@ -983,7 +983,6 @@ export function TransferPanelMain({
       <TransferDisabledDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
-        onClose={() => setOneNovaTransferDestinationNetworkId(null)}
         destinationChainId={oneNovaTransferDestinationNetworkId}
         amount={amount}
       />
