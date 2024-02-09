@@ -63,7 +63,7 @@ const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
-const TokenListsPanel = memo(function TokenListsPanel() {
+function TokenListsPanel() {
   const {
     app: { arbTokenBridge }
   } = useAppState()
@@ -138,7 +138,7 @@ const TokenListsPanel = memo(function TokenListsPanel() {
       })}
     </div>
   )
-})
+}
 
 const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 
