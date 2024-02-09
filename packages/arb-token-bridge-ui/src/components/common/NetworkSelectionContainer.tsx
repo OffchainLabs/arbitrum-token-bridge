@@ -121,7 +121,7 @@ function NetworkRow({
         />
       </span>
       <div className={twMerge('flex flex-col items-start gap-1')}>
-        <span className="truncate leading-none">{network.name}</span>
+        <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
           <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
             {network.description}
@@ -171,7 +171,7 @@ function NetworksPanel({
   const chainIds = useMemo(
     () =>
       getSupportedChainIds({
-        includeTestnets: isTestnetMode
+        isTestnetMode
       }),
     [isTestnetMode]
   )
