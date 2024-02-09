@@ -57,7 +57,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const handleActionButtonClick = useCallback(
     (confirmed: boolean) => {
       if (confirmed) {
-        trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
+        const eventName =
+          selectedTabName === SelectedTabName.Bridged
+            ? 'Use Arbitrum Bridge Click'
+            : 'Use CCTP Click'
+        trackEvent(eventName, { tokenSymbol, type: 'Deposit' })
       }
       props.onClose(confirmed, selectedTabName)
     },

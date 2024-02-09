@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Tab } from '@headlessui/react'
 
@@ -19,6 +19,7 @@ import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { SecurityNotGuaranteed } from '../SecurityLabels'
+import { trackEvent } from '../../../util/AnalyticsUtils'
 
 enum SelectedTabName {
   ThirdParty = 'third_party',
@@ -38,6 +39,16 @@ export function USDCWithdrawalConfirmationDialog(
   const { isArbitrumSepolia } = isNetwork(childChain.id)
   const destinationNetworkName = getNetworkName(parentChain.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
+
+  const handleActionButtonClick = useCallback(
+    (confirmed: boolean) => {
+      if (confirmed) {
+        trackEvent('Use CCTP Click', { tokenSymbol, type: 'Withdrawal' })
+      }
+      props.onClose(confirmed, selectedTabName)
+    },
+    [props, tokenSymbol, selectedTabName]
+  )
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -68,6 +79,7 @@ export function USDCWithdrawalConfirmationDialog(
         disabled: !allCheckboxesCheched,
         hidden: selectedTabName === SelectedTabName.ThirdParty
       }}
+      onClose={handleActionButtonClick}
     >
       <div className="flex max-h-screen w-full flex-col pt-4">
         <Tab.Group>
