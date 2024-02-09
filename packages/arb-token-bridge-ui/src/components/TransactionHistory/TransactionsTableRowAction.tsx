@@ -103,6 +103,7 @@ export function TransactionsTableRowAction({
         }
       >
         <Button
+          aria-label="Claim Transaction"
           variant="primary"
           loading={isClaiming || isClaimingCctp}
           disabled={isClaimButtonDisabled}

@@ -1,4 +1,4 @@
-import { BigNumber, Wallet, constants, utils } from 'ethers'
+import { BigNumber, Signer, Wallet, constants, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -17,6 +17,7 @@ import {
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
+import { parseEther } from 'ethers/lib/utils'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -97,6 +98,9 @@ export default defineConfig({
 
       // Approve WETH
       await approveWeth()
+
+      // Generate activity on chains so that assertions get posted and claims can be made
+      generateActivityOnChains()
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
@@ -237,6 +241,48 @@ async function approveWeth() {
     constants.MaxInt256
   )
   await tx.wait()
+}
+
+async function generateActivityOnChains() {
+  async function fundWalletEth(walletAddress, networkType: 'L1' | 'L2') {
+    const provider = networkType === 'L1' ? ethProvider : arbProvider
+    const tx = await localWallet.connect(provider).sendTransaction({
+      to: walletAddress,
+      value: parseEther('1')
+    })
+    await tx.wait()
+  }
+  const wait = (ms = 0): Promise<void> => {
+    return new Promise(res => setTimeout(res, ms))
+  }
+  const keepMining = async (miner: Signer, networkType?: 'L1' | 'L2') => {
+    while (true) {
+      await (
+        await miner.sendTransaction({
+          to: await miner.getAddress(),
+          value: 0
+        })
+      ).wait()
+
+      if (networkType) {
+        console.log(`${Date.now()}: mining on ${networkType}...`)
+      }
+      await wait(5000)
+    }
+  }
+  // whilst waiting for status we mine on both l1 and l2
+  console.log('Funding miner 1...')
+  const miner1 = Wallet.createRandom().connect(ethProvider)
+  await fundWalletEth(await miner1.getAddress(), 'L1')
+
+  console.log('Funding miner 2...')
+  const miner2 = Wallet.createRandom().connect(arbProvider)
+  await fundWalletEth(await miner2.getAddress(), 'L2')
+
+  console.log('Starting mining on both chains so that assertions are posted...')
+  await Promise.race([keepMining(miner1, 'L1'), keepMining(miner2, 'L2')])
+
+  console.log('>>> Mining finished')
 }
 
 function setupCypressTasks(on: Cypress.PluginEvents) {
