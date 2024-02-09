@@ -20,7 +20,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
           <>
             You are about to deposit {symbol} to Arbitrum 🎉 <br />
             <br />
-            <span className="text-red-600">Do not bridge</span> if your token
+            <span className="text-red-300">Do not bridge</span> if your token
             does something non-standard like generates passive interest or is a
             rebasing stablecoin. <br />
             <br />
@@ -65,7 +65,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
               </li>
             </ol>
             <br />
-            <span className="text-red-600">Do not bridge</span> if your token
+            <span className="text-red-300">Do not bridge</span> if your token
             does something non-standard like generates passive interest or is a
             rebasing stablecoin. <br />
             <br />
@@ -111,7 +111,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
 
   return (
     <Dialog {...props} title={title}>
-      <p>{textContent}</p>
+      <p className="pt-4">{textContent}</p>
     </Dialog>
   )
 }

@@ -146,10 +146,10 @@ export const TransactionHistoryTable = ({
             </span>
             <ul className="flex list-disc flex-col pl-4">
               {failedChainPairs.map(pair => (
-                <li key={`${pair.parentChain}-${pair.chain}`}>
-                  <b>{getNetworkName(pair.parentChain)}</b>
+                <li key={`${pair.parentChainId}-${pair.childChainId}`}>
+                  <b>{getNetworkName(pair.parentChainId)}</b>
                   {' <> '}
-                  <b>{getNetworkName(pair.chain)}</b>
+                  <b>{getNetworkName(pair.childChainId)}</b>
                 </li>
               ))}
             </ul>
@@ -215,7 +215,11 @@ export const TransactionHistoryTable = ({
             There are no recent {isPendingTab ? 'pending' : 'settled'}{' '}
             transactions.
           </span>
-          <button onClick={resume} className="arb-hover text-sm">
+          <button
+            onClick={resume}
+            className="arb-hover text-sm"
+            aria-label="Load more"
+          >
             <div className="flex space-x-1 rounded border border-black px-2 py-1">
               <span>Load more</span>
               <ArrowDownOnSquareIcon width={16} />
@@ -258,7 +262,11 @@ export const TransactionHistoryTable = ({
             </div>
 
             {!completed && (
-              <button onClick={resume} className="arb-hover text-sm">
+              <button
+                onClick={resume}
+                className="arb-hover text-sm"
+                aria-label="Load more"
+              >
                 <div className="flex space-x-1 rounded border border-black px-2 py-1">
                   <span>Load more</span>
                   <ArrowDownOnSquareIcon width={16} />

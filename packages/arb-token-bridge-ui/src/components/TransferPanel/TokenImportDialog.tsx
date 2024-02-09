@@ -313,7 +313,7 @@ export function TokenImportDialog({
 
   if (status === ImportStatus.LOADING) {
     return (
-      <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle} isCustom>
+      <Dialog isOpen={isOpen} onClose={onClose} title={modalTitle}>
         <div className="flex h-48 items-center justify-center md:min-w-[692px]">
           <Loader color="black" size="medium" />
         </div>

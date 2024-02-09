@@ -59,7 +59,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
       if (confirmed) {
         trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
       }
-      console.log({ selectedTabName })
       props.onClose(confirmed, selectedTabName)
     },
     [props, tokenSymbol, selectedTabName]
