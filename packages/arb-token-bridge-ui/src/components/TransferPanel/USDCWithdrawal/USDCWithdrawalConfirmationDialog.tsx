@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Tab } from '@headlessui/react'
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
-import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -20,6 +18,7 @@ import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { SecurityNotGuaranteed } from '../SecurityLabels'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 
 enum SelectedTabName {
@@ -40,6 +39,16 @@ export function USDCWithdrawalConfirmationDialog(
   const { isArbitrumSepolia } = isNetwork(childChain.id)
   const destinationNetworkName = getNetworkName(parentChain.id)
   const tokenSymbol = SpecialTokenSymbol.USDC
+
+  const handleActionButtonClick = useCallback(
+    (confirmed: boolean) => {
+      if (confirmed) {
+        trackEvent('Use CCTP Click', { tokenSymbol, type: 'Withdrawal' })
+      }
+      props.onClose(confirmed, selectedTabName)
+    },
+    [props, tokenSymbol, selectedTabName]
+  )
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -70,6 +79,7 @@ export function USDCWithdrawalConfirmationDialog(
         disabled: !allCheckboxesCheched,
         hidden: selectedTabName === SelectedTabName.ThirdParty
       }}
+      onClose={handleActionButtonClick}
     >
       <div className="flex max-h-screen w-full flex-col pt-4">
         <Tab.Group>
@@ -108,6 +118,7 @@ export function USDCWithdrawalConfirmationDialog(
               bridgeList={fastBridges}
               selectedNonCanonicalToken={tokenSymbol}
             />
+            <SecurityNotGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
@@ -126,6 +137,7 @@ export function USDCWithdrawalConfirmationDialog(
                   />
                 </div>
               </CctpTabContent>
+              <SecurityNotGuaranteed />
             </div>
           </Tab.Panel>
         </Tab.Group>
