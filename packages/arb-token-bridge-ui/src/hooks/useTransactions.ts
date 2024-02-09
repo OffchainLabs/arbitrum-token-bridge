@@ -328,42 +328,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     })
   }
 
-  const fetchAndUpdateL1ToL2MsgStatus = async (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
-    isEthDeposit: boolean,
-    currentStatus: L1ToL2MessageStatus
-  ) => {
-    // set fetching:
-    updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: true,
-      status: currentStatus,
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId
-    })
-
-    const res = await l1ToL2Msg.getSuccessfulRedeem()
-
-    const l2TxID = (() => {
-      if (res.status === L1ToL2MessageStatus.REDEEMED) {
-        return res.l2TxReceipt.transactionHash
-      } else if (
-        res.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 &&
-        isEthDeposit
-      ) {
-        return l1ToL2Msg.retryableCreationId /** for completed eth deposits, retryableCreationId is the l2txid */
-      } else {
-        return undefined
-      }
-    })()
-
-    updateTxnL1ToL2MsgData(txID, {
-      status: res.status,
-      l2TxID,
-      fetchingUpdate: false,
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId
-    })
-  }
-
   const setTransactionSuccess = (txID: string) => {
     return dispatch({
       type: 'SET_SUCCESS',
@@ -437,8 +401,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     transactions,
     {
       addTransaction,
-      updateTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      updateTransaction
     }
   ]
 }
