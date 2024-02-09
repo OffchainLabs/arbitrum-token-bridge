@@ -267,7 +267,7 @@ async function generateActivityOnChains() {
       if (networkType) {
         console.log(`${Date.now()}: mining on ${networkType}...`)
       }
-      await wait(5000)
+      await wait(10000)
     }
   }
   // whilst waiting for status we mine on both l1 and l2
