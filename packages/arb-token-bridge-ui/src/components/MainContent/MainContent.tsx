@@ -40,7 +40,7 @@ export function MainContent() {
   }, [pendingTransactions, updatePendingTransaction])
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center pt-6">
       <div className="main-panel flex w-full max-w-[600px] flex-col gap-2">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard } from 'react-use'
+import { useCopyToClipboard, useMedia } from 'react-use'
 import { Popover } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -12,6 +12,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
+import { twMerge } from 'tailwind-merge'
 import {
   useAccount,
   useDisconnect,
@@ -25,7 +26,7 @@ import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { getExplorerUrl } from '../../util/networks'
-import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
+import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -80,6 +81,7 @@ export function HeaderAccountPopover({
   const { disconnect } = useDisconnect()
   const { chain } = useNetwork()
   const [, copyToClipboard] = useCopyToClipboard()
+  const isSmallScreen = useMedia('(max-width: 419px)')
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
@@ -129,33 +131,34 @@ export function HeaderAccountPopover({
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-lg lg:text-sm font-light text-white hover:bg-ocl-blue lg:px-4'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm lg:text-sm font-light text-white hover:bg-ocl-blue lg:px-4'
 
   return (
     <Popover className="relative z-50 w-full lg:w-max">
       <Popover.Button
-        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+        className={twMerge(
+          'arb-hover flex w-full flex-row items-center justify-start gap-3 rounded px-6 py-3',
+          'lg:w-max lg:bg-dark lg:p-0 lg:px-3 lg:py-2'
+        )}
         role="button"
-        aria-label={`Account Header Button`}
+        aria-label="Account Header Button"
       >
-        <div>
-          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
-            <SafeImage
-              src={ensAvatar || undefined}
-              className="h-10 w-10 rounded-full"
-              fallback={<CustomBoringAvatar size={40} name={address} />}
-            />
-            <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensName ?? udInfo.name ?? accountShort}
-            </span>
+        <SafeImage
+          src={ensAvatar || undefined}
+          className="h-6 w-6 rounded-full lg:h-8 lg:w-8"
+          fallback={
+            <CustomBoringAvatar size={isSmallScreen ? 30 : 40} name={address} />
+          }
+        />
+        <span className="text-lg font-normal text-white lg:text-base lg:font-normal">
+          {ensName ?? udInfo.name ?? accountShort}
+        </span>
 
-            <ChevronDownIcon className="h-4 w-4 text-white" />
-          </div>
-        </div>
+        <ChevronDownIcon className="ml-auto h-4 w-4 text-white" />
       </Popover.Button>
 
       <Transition>
-        <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+        <Popover.Panel className="relative flex flex-col overflow-hidden rounded bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
           {/* Profile photo with address */}
           <div className="flex flex-row justify-between">
             <Transition show={showCopied}>

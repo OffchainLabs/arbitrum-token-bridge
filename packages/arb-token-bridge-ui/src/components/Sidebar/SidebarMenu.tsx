@@ -57,8 +57,8 @@ const MenuItem = ({
   const { sidebarOpened } = useSidebarStore()
 
   const menuClasses = twMerge(
-    'group flex items-center rounded-md px-[12px] py-[8px] text-base font-light hover:bg-default-black-hover hover:font-normal cursor-pointer hover:opacity-100 hover:text-white',
-    sidebarOpened ? 'gap-x-4 min-w-[200px]' : 'flex-col px-[8px]',
+    'group flex items-center lg:rounded-md px-[12px] py-[8px] text-base font-light hover:bg-default-black-hover hover:font-normal cursor-pointer hover:opacity-100 hover:text-white',
+    sidebarOpened ? 'gap-x-3 min-w-[200px]' : 'flex-col px-[8px]',
     activeMenu === menu.id && 'text-white bg-white/20',
     className
   )
@@ -104,7 +104,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between rounded-md py-1 pl-4 text-gray-600 hover:bg-default-black-hover hover:text-white',
+    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between lg:rounded-md py-1 pl-4 text-gray-600 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 

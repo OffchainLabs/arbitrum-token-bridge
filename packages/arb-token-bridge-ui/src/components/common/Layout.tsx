@@ -4,7 +4,6 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { Header } from './Header'
 import { Sidebar } from '../Sidebar'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
@@ -67,15 +66,10 @@ export function Layout(props: LayoutProps) {
         </SiteBanner>
         <div className="flex flex-row">
           <Sidebar />
-          <div className="grow">
-            <Header />
 
-            <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
-              <main className="pb-8">{props.children}</main>
-            </div>
+          <main className="grow pb-8">{props.children}</main>
 
-            <Toast />
-          </div>
+          <Toast />
         </div>
       </div>
     </div>
