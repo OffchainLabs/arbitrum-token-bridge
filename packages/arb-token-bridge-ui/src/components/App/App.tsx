@@ -78,8 +78,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return {
-      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
-      className: 'lg:bg-black'
+      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg'
     }
   }, [sourceChain.id])
 
