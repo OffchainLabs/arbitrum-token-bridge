@@ -67,9 +67,7 @@ export function OneNovaTransferDialog(
             </div>
 
             <BridgesTable bridgeList={fastBridgeList} />
-            <div className="flex">
-              <SecurityNotGuaranteed />
-            </div>
+            <SecurityNotGuaranteed />
           </Tab.Panel>
         </Tab.Group>
       </div>

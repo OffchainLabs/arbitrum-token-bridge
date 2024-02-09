@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Tab } from '@headlessui/react'
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
-import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -25,6 +23,7 @@ import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { SecurityGuaranteed, SecurityNotGuaranteed } from '../SecurityLabels'
 
 type Props = UseDialogProps & {
   amount: string
@@ -58,7 +57,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const handleActionButtonClick = useCallback(
     (confirmed: boolean) => {
       if (confirmed) {
-        trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
+        const eventName =
+          selectedTabName === SelectedTabName.Bridged
+            ? 'Use Arbitrum Bridge Click'
+            : 'Use CCTP Click'
+        trackEvent(eventName, { tokenSymbol, type: 'Deposit' })
       }
       props.onClose(confirmed, selectedTabName)
     },
@@ -146,6 +149,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 />
               </div>
             </div>
+            <SecurityGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
@@ -167,6 +171,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
               bridgeList={fastBridges}
               selectedNonCanonicalToken={tokenSymbol}
             />
+            <SecurityNotGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
@@ -186,6 +191,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   />
                 </div>
               </CctpTabContent>
+              <SecurityNotGuaranteed />
             </div>
           </Tab.Panel>
         </Tab.Group>
