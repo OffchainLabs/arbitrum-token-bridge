@@ -37,7 +37,6 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          type: 'Ethereum',
           name: 'Ethereum',
           description: 'The OG chain that started it all.'
         }
@@ -47,7 +46,6 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          type: 'Ethereum Testnet',
           name: 'Goerli'
         }
       }
@@ -56,7 +54,6 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          type: 'Ethereum Testnet',
           name: 'Sepolia'
         }
       }
@@ -65,7 +62,6 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          type: 'Ethereum Testnet',
           name: 'Ethereum Local'
         }
       }
@@ -74,7 +70,6 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          type: 'Rollup',
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
           description:
@@ -86,7 +81,6 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          type: 'Arbitrum Testnet',
           name: 'Arbitrum Goerli'
         }
       }
@@ -95,7 +89,6 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          type: 'Arbitrum Testnet',
           name: 'Arbitrum Sepolia'
         }
       }
@@ -115,7 +108,6 @@ export function getBridgeUiConfigForChain(
           secondary: '#743600'
         },
         network: {
-          type: 'AnyTrust',
           name: 'Arbitrum Nova',
           logo: '/images/ArbitrumNovaLogo.svg',
           description:
@@ -129,7 +121,6 @@ export function getBridgeUiConfigForChain(
           secondary: '#7E0028'
         },
         network: {
-          type: 'Arbitrum Testnet',
           name: 'Stylus Testnet',
           logo: '/images/StylusLogo.svg'
         }

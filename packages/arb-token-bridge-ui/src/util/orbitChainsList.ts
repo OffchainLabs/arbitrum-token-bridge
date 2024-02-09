@@ -15,7 +15,6 @@ export type BridgeUiConfig = {
     secondary: `#${string}`
   }
   network: {
-    type?: NetworkType
     name: string
     logo: string
     description?: string
@@ -74,7 +73,6 @@ export const orbitMainnets: {
         secondary: '#87000E'
       },
       network: {
-        type: 'AnyTrust',
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
         description:
@@ -134,6 +132,8 @@ export const orbitMainnets: {
       },
       network: {
         name: 'RARI Mainnet',
+        description:
+          'Rari is a secure and low-cost L3 with royalty enforcement, pushing the boundaries and innovations of NFTs.',
         logo: '/images/RARIMainnetLogo.svg'
       }
     }
@@ -186,7 +186,6 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         secondary: '#87000E'
       },
       network: {
-        type: 'AnyTrust',
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',
         description:

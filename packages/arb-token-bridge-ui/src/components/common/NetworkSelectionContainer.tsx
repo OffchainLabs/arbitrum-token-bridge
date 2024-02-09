@@ -127,12 +127,9 @@ function NetworkRow({
             {network.description}
           </p>
         )}
-        {network.type && (
-          <p className="text-[10px] leading-none">
-            {network.type} Chain, {nativeTokenData?.symbol ?? 'ETH'} is the
-            native gas token
-          </p>
-        )}
+        <p className="text-[10px] leading-none">
+          {nativeTokenData?.symbol ?? 'ETH'} is the native gas token
+        </p>
       </div>
     </button>
   )
