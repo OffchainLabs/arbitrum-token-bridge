@@ -17,7 +17,6 @@ import {
 } from './tests/support/common'
 
 import { registerLocalNetwork } from './src/util/networks'
-import { parseEther } from 'ethers/lib/utils'
 
 let tests: string[]
 if (process.env.TEST_FILE) {
@@ -248,7 +247,7 @@ async function generateActivityOnChains() {
     const provider = networkType === 'L1' ? ethProvider : arbProvider
     const tx = await localWallet.connect(provider).sendTransaction({
       to: walletAddress,
-      value: parseEther('1')
+      value: utils.parseEther('1')
     })
     await tx.wait()
   }
