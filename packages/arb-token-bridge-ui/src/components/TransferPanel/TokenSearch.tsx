@@ -466,7 +466,13 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({ close }: { close: () => void }) {
+export function TokenSearch({
+  className,
+  close
+}: {
+  className?: string
+  close: () => void
+}) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
@@ -570,7 +576,7 @@ export function TokenSearch({ close }: { close: () => void }) {
 
   return (
     <SearchPanel>
-      <SearchPanel.MainPage>
+      <SearchPanel.MainPage className={className}>
         <SearchPanel.PageTitle title="Select Token">
           <SearchPanel.CloseButton onClick={close} />
         </SearchPanel.PageTitle>
@@ -585,7 +591,7 @@ export function TokenSearch({ close }: { close: () => void }) {
           )}
         </div>
       </SearchPanel.MainPage>
-      <SearchPanel.SecondaryPage>
+      <SearchPanel.SecondaryPage className={className}>
         <TokenListsPanel closePanel={close} />
         <SearchPanel.SecondaryPageCTA>
           Back to Select Token

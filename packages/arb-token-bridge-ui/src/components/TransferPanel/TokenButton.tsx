@@ -99,11 +99,7 @@ export function TokenButton(): JSX.Element {
               onPopoverClose()
               close()
             }
-            return (
-              <div className="px-5 py-4">
-                <TokenSearch close={onClose} />
-              </div>
-            )
+            return <TokenSearch className="px-5 py-4" close={onClose} />
           }}
         </Popover.Panel>
       </Popover>
