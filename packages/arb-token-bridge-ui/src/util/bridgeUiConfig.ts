@@ -56,8 +56,7 @@ export function getBridgeUiConfigForChain(
         network: {
           ...ethereumBaseConfig.network,
           name: 'Sepolia',
-          description:
-            'The current recommended Ethereum testnet, designed for ongoing development and supported by the Ethereum community.'
+          description: 'The current recommended Ethereum testnet.'
         }
       }
     case ChainId.Local:
@@ -95,7 +94,7 @@ export function getBridgeUiConfigForChain(
         network: {
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum Sepolia',
-          description: 'The current recommended Arbitrum One testnet.'
+          description: 'The current recommended Arbitrum testnet.'
         }
       }
     case ChainId.ArbitrumLocal:

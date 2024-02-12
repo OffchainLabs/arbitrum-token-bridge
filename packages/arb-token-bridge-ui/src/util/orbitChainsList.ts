@@ -76,7 +76,7 @@ export const orbitMainnets: {
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
         description:
-          'A chain built to allow Web2 gamers to play blockchain games without interacting with crypto wallets.'
+          'A chain for Web2 and Web3 gamers to play blockchain games.'
       },
       nativeTokenData: {
         name: 'Xai',
