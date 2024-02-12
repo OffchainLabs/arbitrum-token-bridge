@@ -2,6 +2,13 @@ import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
+export type NetworkType =
+  | 'Ethereum'
+  | 'Rollup'
+  | 'AnyTrust'
+  | 'Ethereum Testnet'
+  | 'Arbitrum Testnet'
+
 export type BridgeUiConfig = {
   color: {
     primary: `#${string}`
@@ -10,6 +17,7 @@ export type BridgeUiConfig = {
   network: {
     name: string
     logo: string
+    description?: string
   }
   nativeTokenData?: NativeCurrencyBase
 }
@@ -17,7 +25,7 @@ export type BridgeUiConfig = {
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
 
 export const orbitMainnets: {
-  [key in number]: OrbitChainConfig
+  [key: number]: OrbitChainConfig
 } = {
   660279: {
     chainID: 660279,
@@ -66,7 +74,9 @@ export const orbitMainnets: {
       },
       network: {
         name: 'Xai',
-        logo: '/images/XaiLogo.svg'
+        logo: '/images/XaiLogo.svg',
+        description:
+          'A chain for Web2 and Web3 gamers to play blockchain games.'
       },
       nativeTokenData: {
         name: 'Xai',
@@ -122,6 +132,8 @@ export const orbitMainnets: {
       },
       network: {
         name: 'RARI Mainnet',
+        description:
+          'A chain designed specifically for NFT royalties and creator empowerment.',
         logo: '/images/RARIMainnetLogo.svg'
       }
     }
@@ -175,7 +187,8 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       },
       network: {
         name: 'Xai Testnet',
-        logo: '/images/XaiLogo.svg'
+        logo: '/images/XaiLogo.svg',
+        description: 'The testnet for Xai’s gaming chain.'
       }
     }
   }
