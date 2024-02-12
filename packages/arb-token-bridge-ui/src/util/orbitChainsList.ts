@@ -76,7 +76,7 @@ export const orbitMainnets: {
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
         description:
-          'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.'
+          'A chain built to allow Web2 gamers to play blockchain games without interacting with crypto wallets.'
       },
       nativeTokenData: {
         name: 'Xai',
@@ -133,7 +133,7 @@ export const orbitMainnets: {
       network: {
         name: 'RARI Mainnet',
         description:
-          'Rari is a secure and low-cost L3 with royalty enforcement, pushing the boundaries and innovations of NFTs.',
+          'A chain designed specifically for NFT royalties and creator empowerment.',
         logo: '/images/RARIMainnetLogo.svg'
       }
     }
@@ -188,8 +188,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       network: {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',
-        description:
-          'Web2 gamers can own and trade in-game items, without the need to interact with crypto-wallets.'
+        description: 'The testnet for Xai’s gaming chain.'
       }
     }
   }

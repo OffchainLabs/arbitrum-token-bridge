@@ -46,7 +46,8 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Goerli'
+          name: 'Goerli',
+          description: 'A deprecated Ethereum testnet, use Sepolia instead.'
         }
       }
     case ChainId.Sepolia:
@@ -54,7 +55,9 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Sepolia'
+          name: 'Sepolia',
+          description:
+            'The current recommended Ethereum testnet, designed for ongoing development and supported by the Ethereum community.'
         }
       }
     case ChainId.Local:
@@ -81,7 +84,9 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Goerli'
+          name: 'Arbitrum Goerli',
+          description:
+            'A deprecated Arbitrum One testnet, use Arbitrum Sepolia instead.'
         }
       }
     case ChainId.ArbitrumSepolia:
@@ -89,7 +94,8 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Sepolia'
+          name: 'Arbitrum Sepolia',
+          description: 'The current recommended Arbitrum One testnet.'
         }
       }
     case ChainId.ArbitrumLocal:
@@ -121,7 +127,9 @@ export function getBridgeUiConfigForChain(
         },
         network: {
           name: 'Stylus Testnet',
-          logo: '/images/StylusLogo.svg'
+          logo: '/images/StylusLogo.svg',
+          description:
+            'An experimental playground for Arbitrum Stylus smart contracts.'
         }
       }
     default: {
