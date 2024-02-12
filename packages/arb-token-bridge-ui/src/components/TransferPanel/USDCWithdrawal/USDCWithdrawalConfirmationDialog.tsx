@@ -11,7 +11,11 @@ import {
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
-import { getNetworkName, isNetwork } from '../../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork
+} from '../../../util/networks'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCWithdrawalConfirmationDialogCheckbox } from './USDCWithdrawalConfirmationDialogCheckbox'
 import { CctpTabContent } from '../CctpTabContent'
@@ -20,6 +24,7 @@ import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
 import { SecurityNotGuaranteed } from '../SecurityLabels'
 import { trackEvent } from '../../../util/AnalyticsUtils'
+import { getUSDCAddresses } from '../../../state/cctpState'
 
 enum SelectedTabName {
   ThirdParty = 'third_party',
@@ -101,8 +106,16 @@ export function USDCWithdrawalConfirmationDialog(
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4 font-light">
               <p>
-                Receive <span className="font-medium">USDC</span> on{' '}
-                {destinationNetworkName} using a third-party bridge with
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover underline"
+                  href={`${getExplorerUrl(parentChain.id)}/token/${
+                    getUSDCAddresses(parentChain.id).USDC
+                  }`}
+                >
+                  USDC
+                </ExternalLink>{' '}
+                on {destinationNetworkName} using a third-party bridge with
                 Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover underline"
@@ -123,7 +136,7 @@ export function USDCWithdrawalConfirmationDialog(
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4">
-              <CctpTabContent toNetworkName={destinationNetworkName}>
+              <CctpTabContent destinationChainId={parentChain.id}>
                 <div className="flex flex-col space-y-4">
                   <USDCWithdrawalConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {
