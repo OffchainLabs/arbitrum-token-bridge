@@ -168,7 +168,8 @@ function NetworksPanel({
   const chainIds = useMemo(
     () =>
       getSupportedChainIds({
-        isTestnetMode
+        includeMainnets: !isTestnetMode,
+        includeTestnets: isTestnetMode
       }),
     [isTestnetMode]
   )

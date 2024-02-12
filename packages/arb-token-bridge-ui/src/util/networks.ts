@@ -405,17 +405,17 @@ export function getNetworkName(chainId: number) {
 
 export function getSupportedChainIds(
   {
-    isTestnetMode,
+    includeMainnets,
     includeTestnets
   }: {
-    isTestnetMode?: boolean
+    includeMainnets?: boolean
     includeTestnets?: boolean
-  } = { isTestnetMode: false, includeTestnets: false }
+  } = { includeMainnets: true, includeTestnets: false }
 ): ChainId[] {
   return getChains()
     .map(chain => chain.chainID)
     .filter(chainId => {
-      if (isTestnetMode) {
+      if (!includeMainnets) {
         return isNetwork(chainId).isTestnet
       }
       if (!includeTestnets) {
