@@ -174,7 +174,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 <ExternalLink
                   className="arb-hover underline"
                   href={`${getExplorerUrl(childChain.id)}/token/${
-                    getUSDCAddresses(childChain.id).USDC
+                    getUSDCAddresses(childChain.id)?.USDC
                   }`}
                 >
                   Native USDC

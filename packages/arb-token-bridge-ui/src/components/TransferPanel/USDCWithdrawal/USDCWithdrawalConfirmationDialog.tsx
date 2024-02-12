@@ -110,7 +110,7 @@ export function USDCWithdrawalConfirmationDialog(
                 <ExternalLink
                   className="arb-hover underline"
                   href={`${getExplorerUrl(parentChain.id)}/token/${
-                    getUSDCAddresses(parentChain.id).USDC
+                    getUSDCAddresses(parentChain.id)?.USDC
                   }`}
                 >
                   USDC
