@@ -417,12 +417,12 @@ export default function App() {
 
   return (
     <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
+      <WagmiConfig {...wagmiConfigProps}>
+        <RainbowKitProvider
+          theme={rainbowkitTheme}
+          {...rainbowKitProviderProps}
+        >
+          <ArbQueryParamProvider>
             <ConnectedChainSyncer />
             <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <NetworkReady>
@@ -430,9 +430,9 @@ export default function App() {
                 <Injector>{isTosAccepted && <AppContent />}</Injector>
               </AppContextProvider>
             </NetworkReady>
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ArbQueryParamProvider>
+          </ArbQueryParamProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
     </Provider>
   )
 }
