@@ -37,7 +37,8 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Ethereum'
+          name: 'Ethereum',
+          description: 'The OG chain that started it all.'
         }
       }
     case ChainId.Goerli:
@@ -45,7 +46,8 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Goerli'
+          name: 'Goerli',
+          description: 'A deprecated Ethereum testnet, use Sepolia instead.'
         }
       }
     case ChainId.Sepolia:
@@ -53,7 +55,8 @@ export function getBridgeUiConfigForChain(
         ...ethereumBaseConfig,
         network: {
           ...ethereumBaseConfig.network,
-          name: 'Sepolia'
+          name: 'Sepolia',
+          description: 'The current recommended Ethereum testnet.'
         }
       }
     case ChainId.Local:
@@ -70,7 +73,9 @@ export function getBridgeUiConfigForChain(
         network: {
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum One',
-          logo: '/images/ArbitrumOneLogo.svg'
+          logo: '/images/ArbitrumOneLogo.svg',
+          description:
+            'Rollup protocol. Permissionless validation, secured by operational fraud proofs.'
         }
       }
     case ChainId.ArbitrumGoerli:
@@ -78,7 +83,9 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Goerli'
+          name: 'Arbitrum Goerli',
+          description:
+            'A deprecated Arbitrum One testnet, use Arbitrum Sepolia instead.'
         }
       }
     case ChainId.ArbitrumSepolia:
@@ -86,7 +93,8 @@ export function getBridgeUiConfigForChain(
         ...arbitrumBaseConfig,
         network: {
           ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Sepolia'
+          name: 'Arbitrum Sepolia',
+          description: 'The current recommended Arbitrum testnet.'
         }
       }
     case ChainId.ArbitrumLocal:
@@ -105,7 +113,9 @@ export function getBridgeUiConfigForChain(
         },
         network: {
           name: 'Arbitrum Nova',
-          logo: '/images/ArbitrumNovaLogo.svg'
+          logo: '/images/ArbitrumNovaLogo.svg',
+          description:
+            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
     case ChainId.StylusTestnet:
@@ -116,7 +126,9 @@ export function getBridgeUiConfigForChain(
         },
         network: {
           name: 'Stylus Testnet',
-          logo: '/images/StylusLogo.svg'
+          logo: '/images/StylusLogo.svg',
+          description:
+            'An experimental playground for Arbitrum Stylus smart contracts.'
         }
       }
     default: {
