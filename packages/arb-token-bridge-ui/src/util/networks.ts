@@ -403,25 +403,24 @@ export function getNetworkName(chainId: number) {
   return getBridgeUiConfigForChain(chainId).network.name
 }
 
-export function getSupportedChainIds(
-  {
-    includeMainnets,
-    includeTestnets
-  }: {
-    includeMainnets?: boolean
-    includeTestnets?: boolean
-  } = { includeMainnets: true, includeTestnets: false }
-): ChainId[] {
+export function getSupportedChainIds({
+  includeMainnets = true,
+  includeTestnets = false
+}: {
+  includeMainnets?: boolean
+  includeTestnets?: boolean
+}): ChainId[] {
   return getChains()
     .map(chain => chain.chainID)
     .filter(chainId => {
-      if (!includeMainnets) {
-        return isNetwork(chainId).isTestnet
+      const { isTestnet } = isNetwork(chainId)
+      if (includeMainnets && !includeTestnets) {
+        return !isTestnet
       }
-      if (!includeTestnets) {
-        return !isNetwork(chainId).isTestnet
+      if (!includeMainnets && includeTestnets) {
+        return isTestnet
       }
-      return true
+      return includeMainnets || includeTestnets
     })
 }
 
