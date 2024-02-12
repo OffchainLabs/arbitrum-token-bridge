@@ -338,19 +338,14 @@ export const NetworkSelectionContainer = ({
             close()
           }
           return (
-            <>
-              <div className="flex items-center justify-end border-b border-b-gray-dark px-5 py-4 lg:hidden">
-                <button onClick={onClose}>
-                  <XMarkIcon className="h-8 w-8" />
-                </button>
-              </div>
-              <SearchPanel>
-                <SearchPanel.MainPage className="px-5 py-4">
-                  <SearchPanel.PageTitle title="Select Network" />
-                  <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
-                </SearchPanel.MainPage>
-              </SearchPanel>
-            </>
+            <SearchPanel>
+              <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
+                <SearchPanel.PageTitle title="Select Network">
+                  <SearchPanel.CloseButton onClick={onClose} />
+                </SearchPanel.PageTitle>
+                <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
+              </SearchPanel.MainPage>
+            </SearchPanel>
           )
         }}
       </Popover.Panel>

@@ -72,7 +72,7 @@ SearchPanel.MainPageCTA = MainPageCTA
 function CloseButton({ onClick }: React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <button className="arb-hover" onClick={onClick}>
-      <XMarkIcon className="h-6 w-6 text-gray-7" />
+      <XMarkIcon className="h-8 w-8 text-gray-7" />
     </button>
   )
 }
@@ -87,6 +87,11 @@ function SearchPanelMainPage({
   if (!shouldShowMain) {
     return null
   }
+
+  if (!className) {
+    return children
+  }
+
   return <div className={className}>{children}</div>
 }
 SearchPanel.MainPage = SearchPanelMainPage
