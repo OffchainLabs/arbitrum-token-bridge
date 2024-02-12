@@ -176,8 +176,15 @@ async function mapOrbitConfigToOrbitChain(
     data.coreContracts.rollup,
     getProviderForChainId(data.chainInfo.parentChainId)
   )
-  const confirmPeriodBlocks =
-    (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
+
+  let confirmPeriodBlocks = 150
+
+  try {
+    confirmPeriodBlocks = (await rollup.confirmPeriodBlocks()).toNumber()
+  } catch {
+    // use default
+  }
+
   return {
     chainID: data.chainInfo.chainId,
     confirmPeriodBlocks,

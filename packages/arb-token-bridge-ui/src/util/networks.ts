@@ -145,6 +145,7 @@ export enum ChainId {
 }
 
 export const supportedCustomOrbitParentChains = [
+  ChainId.Sepolia,
   ChainId.ArbitrumGoerli,
   ChainId.ArbitrumSepolia
 ]
