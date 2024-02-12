@@ -420,7 +420,10 @@ export function getSupportedChainIds({
       if (!includeMainnets && includeTestnets) {
         return isTestnet
       }
-      return includeMainnets || includeTestnets
+      if (!includeMainnets && !includeTestnets) {
+        return false
+      }
+      return true
     })
 }
 
