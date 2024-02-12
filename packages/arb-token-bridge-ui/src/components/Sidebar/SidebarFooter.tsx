@@ -10,26 +10,26 @@ export const SidebarFooter = ({ className }: { className?: string }) => {
         className
       )}
     >
-      <div className="border-b border-white/30 py-4 text-base">
+      <div className="border-b border-white/30 py-4 text-base text-white/70">
         The Most Decentralized <br /> L2 Technology
       </div>
 
-      <div className="flex flex-nowrap items-center gap-2 text-gray-600">
+      <div className="flex flex-nowrap items-center gap-2 text-white/60">
         <ExternalLink
-          className="cursor-pointer text-xs text-gray-600"
+          className="cursor-pointer text-xs text-white/60"
           href="https://bridge.arbitrum.io/tos"
         >
           ToS
         </ExternalLink>
         &bull;
         <ExternalLink
-          className="cursor-pointer text-xs text-gray-600"
+          className="cursor-pointer text-xs text-white/60"
           href="https://arbitrum.io/privacy"
         >
           Privacy Policy
         </ExternalLink>
       </div>
-      <div className="text-xs text-gray-600">
+      <div className="text-xs text-white/60">
         Built with love by{' '}
         <ExternalLink
           className="hover:underline"

@@ -128,7 +128,10 @@ export const communityMenuItems: MenuItem[] = [
     title: 'Arbitrum Website',
     link: 'https://arbitrum.io/'
   },
-
+  {
+    title: 'Discord',
+    link: 'https://discord.gg/arbitrum'
+  },
   {
     title: 'Twitter',
     link: 'https://twitter.com/arbitrum'

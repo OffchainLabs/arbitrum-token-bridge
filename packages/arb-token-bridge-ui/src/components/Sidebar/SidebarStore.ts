@@ -14,7 +14,7 @@ type SidebarStore = {
 
 export const sidebarStore = create<SidebarStore>(set => ({
   sidebarOpened: false, // keep it false until the component mounts, then calculate if we really want to open it
-  activeMenu: 'home',
+  activeMenu: 'bridge',
   setSidebarOpened: (value: boolean) =>
     set(store => ({ ...store, sidebarOpened: value })),
   setActiveMenu: (value: string) =>
@@ -52,7 +52,7 @@ export const useSidebarStore = () => {
 
   useEffect(() => {
     if (pathname === '/') {
-      setActiveMenu('home')
+      setActiveMenu('bridge')
     }
     if (pathname.includes('/projects')) {
       setActiveMenu('projects')

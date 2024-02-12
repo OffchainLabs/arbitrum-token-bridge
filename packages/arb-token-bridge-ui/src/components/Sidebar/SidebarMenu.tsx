@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
 import { usePostHog } from 'posthog-js/react'
@@ -57,7 +57,7 @@ const MenuItem = ({
   const { sidebarOpened } = useSidebarStore()
 
   const menuClasses = twMerge(
-    'group flex items-center lg:rounded-md px-[12px] py-[8px] text-base font-light hover:bg-default-black-hover hover:font-normal cursor-pointer hover:opacity-100 hover:text-white',
+    'group flex items-center lg:rounded-md px-[12px] py-[8px] text-base font-light hover:bg-default-black-hover cursor-pointer hover:opacity-100 hover:text-white',
     sidebarOpened ? 'gap-x-3 min-w-[200px]' : 'flex-col px-[8px]',
     activeMenu === menu.id && 'text-white bg-white/20',
     className
@@ -104,7 +104,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between lg:rounded-md py-1 pl-4 text-gray-600 hover:bg-default-black-hover hover:text-white',
+    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between lg:rounded-md py-1 pl-4 text-white/60 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 
@@ -183,10 +183,10 @@ export const SidebarMenu = ({
       iconSrc: IconHome,
       isExternalLink: false,
       isExpandable: false,
+      link: PORTAL_DOMAIN,
       onClick: () => {
         setActiveMenu('home')
         menuItemClickCallback?.()
-        router.push('/', { scroll: true })
       }
     },
     {
@@ -205,7 +205,7 @@ export const SidebarMenu = ({
       title: 'Missions',
       iconSrc: IconMissions,
       isExternalLink: false,
-      link: '/missions',
+      link: `${PORTAL_DOMAIN}/missions`,
       onClick: () => {
         menuItemClickCallback?.()
         sendClickEventForLink('Missions')
@@ -216,9 +216,10 @@ export const SidebarMenu = ({
       title: 'Bridge',
       iconSrc: IconBridge,
       isExternalLink: false,
-      link: '',
+      link: '/',
       onClick: () => {
         menuItemClickCallback?.()
+        router.push('/', { scroll: true })
         sendClickEventForLink('Bridge')
       }
     },
@@ -324,7 +325,7 @@ export const SidebarMenu = ({
   return (
     <div
       className={twMerge(
-        'z-10 flex w-full shrink grow flex-col gap-2 overflow-y-auto overflow-x-hidden text-gray-400 sm:mt-[20px]',
+        'z-10 flex w-full shrink grow flex-col gap-1 overflow-y-auto overflow-x-hidden text-white/70 sm:mt-[20px]',
         sidebarOpened ? 'px-4' : 'px-1',
         className
       )}
