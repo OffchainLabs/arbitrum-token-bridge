@@ -27,14 +27,28 @@ const App = dynamic(() => import('../components/App/App'), {
   )
 })
 
-function getDestinationWithSanitizedQueryParams(sanitized: {
-  sourceChainId: number
-  destinationChainId: number
-}) {
+function getDestinationWithSanitizedQueryParams(
+  sanitized: {
+    sourceChainId: number
+    destinationChainId: number
+  },
+  query: GetServerSidePropsContext['query']
+) {
   const sourceChain = encodeChainQueryParam(sanitized.sourceChainId)!
   const destinationChain = encodeChainQueryParam(sanitized.destinationChainId)!
 
-  return `/?sourceChain=${sourceChain}&destinationChain=${destinationChain}`
+  const params = new URLSearchParams()
+  for (const key in query) {
+    const value = query[key]
+    if (typeof value === 'string') {
+      params.set(key, value)
+    }
+  }
+
+  params.set('sourceChain', sourceChain)
+  params.set('destinationChain', destinationChain)
+
+  return `/?${params.toString()}`
 }
 
 function addOrbitChainsToArbitrumSDK() {
@@ -76,7 +90,7 @@ export function getServerSideProps({
     return {
       redirect: {
         permanent: false,
-        destination: getDestinationWithSanitizedQueryParams(sanitized)
+        destination: getDestinationWithSanitizedQueryParams(sanitized, query)
       }
     }
   }
