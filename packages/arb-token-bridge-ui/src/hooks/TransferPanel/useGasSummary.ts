@@ -61,7 +61,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
@@ -172,14 +172,18 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    estimateGas()
+    if (!isConnected) {
+      setGasSummaryStatus('unavailable')
+      return
+    }
   }, [
     // Re-run gas estimation when:
     estimateGas,
     isDepositMode, // when user switches deposit/withdraw mode
     amountDebounced,
     token, // when the token changes
-    setGasSummaryStatus
+    setGasSummaryStatus,
+    isConnected // when the user connects/disconnects their wallet
   ])
 
   return gasSummary
