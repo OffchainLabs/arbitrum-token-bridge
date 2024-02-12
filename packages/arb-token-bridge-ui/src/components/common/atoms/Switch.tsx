@@ -5,6 +5,7 @@ export type SwitchProps = {
   className?: string
   label?: string
   description?: string
+  name?: string
   checked: boolean
   disabled?: boolean
   onChange: () => void
@@ -14,6 +15,7 @@ export const Switch = ({
   className,
   label,
   description,
+  name,
   checked,
   disabled,
   onChange
@@ -23,6 +25,7 @@ export const Switch = ({
       <div className="toggle-switch flex flex-col text-white/70 hover:text-white">
         <div className="flex items-center gap-3">
           <HeadlessSwitch
+            name={name}
             checked={checked}
             onChange={onChange}
             className={twMerge(

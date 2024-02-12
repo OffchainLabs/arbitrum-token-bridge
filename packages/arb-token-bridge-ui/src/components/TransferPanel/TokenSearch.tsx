@@ -91,7 +91,11 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
       key={tokenList.id}
       className="flex cursor-pointer items-center justify-start space-x-3 [&:hover_span]:text-white"
     >
-      <Switch checked={isActive} onChange={switchOnClick} />
+      <Switch
+        name={`${tokenList.name} toggle`}
+        checked={isActive}
+        onChange={switchOnClick}
+      />
       <div className="flex items-center gap-2">
         <Image
           src={tokenList.logoURI}
