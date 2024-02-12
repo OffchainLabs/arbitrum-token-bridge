@@ -208,7 +208,7 @@ export const AdvancedSettings = () => {
       <button
         onClick={handleVisibility}
         className={twMerge(
-          'arb-hover flex flex-row items-center text-sm text-gray-dark',
+          'arb-hover flex flex-row items-center text-sm text-white',
           collapsible ? '' : 'pointer-events-none'
         )}
       >
@@ -221,21 +221,8 @@ export const AdvancedSettings = () => {
       </button>
       {!collapsed && (
         <>
-          <div className="mt-2">
-            <div className="flex items-center space-x-1">
-              <span className="font-medium">Custom Destination Address</span>
-              <Tooltip
-                content={
-                  <span>
-                    This is where your funds will end up at.
-                    {isEOA ? ' Defaults to your wallet address.' : ''}
-                  </span>
-                }
-              >
-                <InformationCircleIcon strokeWidth={2} height={16} />
-              </Tooltip>
-            </div>
-            <p className="my-2 text-sm font-light text-gray-dark">
+          <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
+            <p className="text-sm font-light">
               {isEOA ? (
                 <>
                   Send your funds to a different address.{' '}
@@ -253,14 +240,13 @@ export const AdvancedSettings = () => {
             </p>
             <div
               className={twMerge(
-                'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
-                inputLocked ? 'bg-slate-200' : 'bg-white',
+                'my-1 flex w-full items-center rounded-lg border border-white bg-black/40 px-2 py-1 shadow-input',
                 error ? 'border-red-400' : '',
                 warning && !error ? 'border-yellow-500' : ''
               )}
             >
               <input
-                className="w-full"
+                className="w-full bg-transparent text-white"
                 placeholder={
                   isEOA ? address : 'Enter Custom Destination Address'
                 }
@@ -274,21 +260,18 @@ export const AdvancedSettings = () => {
               {isEOA && (
                 <button onClick={() => setInputLocked(!inputLocked)}>
                   {inputLocked ? (
-                    <LockClosedIcon
-                      height={20}
-                      className="mr-2 text-slate-600"
-                    />
+                    <LockClosedIcon height={20} className="mr-2" />
                   ) : (
-                    <LockOpenIcon height={20} className="mr-2 text-slate-600" />
+                    <LockOpenIcon height={20} className="mr-2" />
                   )}
                 </button>
               )}
             </div>
           </div>
 
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
           {!error && warning && (
-            <p className="text-xs text-yellow-500">{warning}</p>
+            <p className="mt-1 text-xs text-yellow-500">{warning}</p>
           )}
           {destinationAddress && !error && (
             <ExternalLink

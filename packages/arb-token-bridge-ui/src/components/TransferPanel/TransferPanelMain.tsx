@@ -87,17 +87,17 @@ export function SwitchNetworksButton(
       type="button"
       disabled={isSmartContractWallet || isLoadingAccountType}
       className={twMerge(
-        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
+        'flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200',
         isEOA
-          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
+          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-[#F4F4F4] focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
           : ''
       )}
       {...props}
     >
       {isSmartContractWallet ? (
-        <ChevronDownIcon className="text-dark" />
+        <ChevronDownIcon className="h-6 w-6 stroke-2 text-dark" />
       ) : (
-        <ArrowsUpDownIcon className="text-dark" />
+        <ArrowsUpDownIcon className="h-6 w-6 stroke-2 text-dark" />
       )}
     </button>
   )
@@ -193,16 +193,19 @@ function NetworkContainer({
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
-        style={{ backgroundColor: color.secondary }}
+        style={{
+          backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
+          borderColor: color.primary
+        }}
         className={twMerge(
-          'relative rounded-xl p-1 transition-colors',
-          showCustomAddressBanner ? 'rounded-t-none' : ''
+          'relative rounded border p-1 transition-colors',
+          showCustomAddressBanner && 'rounded-t-none'
         )}
       >
         <div
-          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
+          className="absolute left-0 top-0 z-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
           style={{ backgroundImage }}
-        ></div>
+        />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
           {children}
         </div>
@@ -229,9 +232,7 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
-        {formatAmount(balance, { symbol: ether.symbol })}
-      </span>
+      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
     </p>
   )
 }
@@ -262,7 +263,7 @@ function TokenBalance({
   return (
     <p aria-label={`${forToken.symbol} balance on ${on}`}>
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
+      <span>
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}
@@ -988,7 +989,6 @@ export function TransferPanelMain({
       <TransferDisabledDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
-        onClose={() => setOneNovaTransferDestinationNetworkId(null)}
         destinationChainId={oneNovaTransferDestinationNetworkId}
         amount={amount}
       />

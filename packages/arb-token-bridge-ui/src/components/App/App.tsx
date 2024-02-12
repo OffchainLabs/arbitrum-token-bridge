@@ -60,7 +60,7 @@ const rainbowkitTheme = merge(darkTheme(), {
     accentColor: 'var(--blue-link)'
   },
   fonts: {
-    body: "'Space Grotesk', sans-serif"
+    body: 'Roboto, sans-serif'
   }
 } as Theme)
 
@@ -81,8 +81,7 @@ const AppContent = (): JSX.Element => {
     }
 
     return {
-      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
-      className: 'lg:bg-black'
+      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg'
     }
   }, [sourceChain.id])
 
@@ -226,6 +225,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       <BlockedDialog
         address={address}
         isOpen={true}
+        closeable={false}
         // ignoring until we use the package
         // https://github.com/OffchainLabs/config-monorepo/pull/11
         //
