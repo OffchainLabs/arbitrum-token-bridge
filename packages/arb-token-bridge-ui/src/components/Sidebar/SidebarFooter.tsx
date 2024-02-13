@@ -6,12 +6,13 @@ export const SidebarFooter = ({ className }: { className?: string }) => {
   return (
     <div
       className={twMerge(
-        'mb-[20px] mr-[12px] mt-[50px] flex w-full shrink-0 grow-0 flex-col gap-3 overflow-hidden px-[16px]',
+        'mt-4 flex w-full flex-col gap-3 px-3 pb-4',
         className
       )}
     >
       <div className="border-b border-white/30 py-4 text-base text-white/70">
-        The Most Decentralized <br /> L2 Technology
+        The Most Decentralized <br />
+        L2 Technology
       </div>
 
       <div className="flex flex-nowrap items-center gap-2 text-white/60">

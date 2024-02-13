@@ -3,7 +3,7 @@ import { ExternalLink } from './ExternalLink'
 
 export function WalletConnectWarning() {
   return (
-    <div className="m-3 flex max-w-md flex-col gap-4 self-end rounded-md bg-cyan px-3 py-2 text-sm text-cyan-dark">
+    <div className="mx-6 my-3 flex max-w-md flex-col gap-4 self-end rounded-md bg-cyan px-3 py-2 text-sm text-cyan-dark">
       <div>
         Users connecting to the site using WalletConnect may experience errors
         due to their new upgrade. Please{' '}

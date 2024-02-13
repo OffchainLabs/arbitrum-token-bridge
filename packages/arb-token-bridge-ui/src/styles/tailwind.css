@@ -5,6 +5,8 @@
 @tailwind utilities;
 
 :root {
+  --primary: transparent;
+  --secondary: #ffffff30;
   --toastify-color-error: #cd0000;
   --toastify-text-color-light: #1a1c1d;
   --toastify-text-color-info: #1a1c1d;
@@ -14,6 +16,28 @@
   --toastify-font-family: Roboto, sans-serif;
   --toastify-toast-min-height: 44px;
   --blue-link: #1366C1;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) var(--primary);
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--primary);
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--secondary);
+  border-radius: 14px;
+  border: 3px solid var(--primary);
 }
 
 * {

@@ -10,7 +10,13 @@ export const SidebarHeader = () => {
   const { sidebarOpened } = useSidebarStore()
 
   return (
-    <div className="flex-col items-center justify-center gap-x-4 overflow-hidden pb-6">
+    <div
+      className={twMerge(
+        'shrink-0 grow-0',
+        'flex-col items-center justify-center gap-x-4 overflow-hidden pb-6',
+        sidebarOpened ? 'px-4' : 'px-1'
+      )}
+    >
       <Link
         href="/"
         className={twMerge(

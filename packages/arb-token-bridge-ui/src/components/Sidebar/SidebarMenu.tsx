@@ -57,7 +57,7 @@ const MenuItem = ({
   const { sidebarOpened } = useSidebarStore()
 
   const menuClasses = twMerge(
-    'group flex items-center lg:rounded-md px-[12px] py-[8px] text-base font-light hover:bg-default-black-hover cursor-pointer hover:opacity-100 hover:text-white',
+    'group flex items-center md:rounded px-[12px] py-2 text-base font-light hover:bg-default-black-hover cursor-pointer hover:opacity-100 hover:text-white',
     sidebarOpened ? 'gap-x-3 min-w-[200px]' : 'flex-col px-[8px]',
     activeMenu === menu.id && 'text-white bg-white/20',
     className
@@ -104,7 +104,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between lg:rounded-md py-1 pl-4 text-white/60 hover:bg-default-black-hover hover:text-white',
+    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between md:rounded py-1 pl-4 text-white/60 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 
@@ -142,7 +142,6 @@ export const SidebarMenu = ({
 }) => {
   const posthog = usePostHog()
   const { sidebarOpened, activeMenu, setActiveMenu } = useSidebarStore()
-  const router = useRouter()
 
   function sendClickEventForGroup(groupTitle: string) {
     posthog?.capture('Sidebar Menu Dropdown Click', {
@@ -216,11 +215,10 @@ export const SidebarMenu = ({
       title: 'Bridge',
       iconSrc: IconBridge,
       isExternalLink: false,
-      link: '/',
       onClick: () => {
         menuItemClickCallback?.()
-        router.push('/', { scroll: true })
         sendClickEventForLink('Bridge')
+        toggleActiveMenu('bridge')
       }
     },
     {
@@ -325,7 +323,8 @@ export const SidebarMenu = ({
   return (
     <div
       className={twMerge(
-        'z-10 flex w-full shrink grow flex-col gap-1 overflow-y-auto overflow-x-hidden text-white/70 sm:mt-[20px]',
+        'mt-0 flex w-full flex-col text-white/70',
+        'lg:mt-4 lg:shrink lg:grow lg:gap-1 lg:overflow-auto',
         sidebarOpened ? 'px-4' : 'px-1',
         className
       )}
@@ -343,8 +342,8 @@ export const SidebarMenu = ({
             {/* Menu title */}
             <span
               className={twMerge(
-                'grow origin-left text-left duration-200',
-                !sidebarOpened && 'sm:hidden',
+                'grow origin-left text-left text-lg duration-200 md:text-base',
+                !sidebarOpened && 'hidden md:inline',
                 menu.className
               )}
             >
@@ -355,9 +354,9 @@ export const SidebarMenu = ({
             {menu.isExpandable && (
               <ChevronDownIcon
                 className={twMerge(
-                  'h-4 w-4 transition duration-200',
+                  'h-3 w-3 transition duration-200 md:h-4 md:w-4',
                   menu.id === activeMenu && 'rotate-180',
-                  !sidebarOpened && 'sm:hidden'
+                  !sidebarOpened && 'hidden md:inline'
                 )}
               />
             )}

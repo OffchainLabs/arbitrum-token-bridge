@@ -24,8 +24,9 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 }
 
 export const ArbitrumStats = () => {
-  const [, setIsArbitrumStatsVisible] =
+  const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
+
   const [{ settingsOpen }] = useArbQueryParams()
 
   const [networks] = useNetworks()
@@ -58,6 +59,10 @@ export const ArbitrumStats = () => {
 
   const closeArbitrumStats = () => {
     setIsArbitrumStatsVisible(false)
+  }
+
+  if (!isArbitrumStatsVisible) {
+    return null
   }
 
   return (

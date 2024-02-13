@@ -6,6 +6,7 @@ import { SidebarFooter } from './SidebarFooter'
 import { SidebarHeader } from './SidebarHeader'
 import { useSidebarStore } from './SidebarStore'
 
+// Desktop Sidebar
 export const Sidebar = () => {
   const { sidebarOpened, setSidebarOpened } = useSidebarStore()
 
@@ -20,31 +21,22 @@ export const Sidebar = () => {
   )
 
   return (
-    <div className="sticky left-0 top-0 z-50 flex self-start text-gray-400">
-      {/* Sidebar Desktop */}
-      <div
-        className={twMerge(
-          'relative z-[1000] hidden h-screen flex-col justify-between border-r border-gray-600 bg-black pt-[30px] transition-all duration-200 sm:flex', // show the sidebar in md/lg+ resolutions, for sm revert to Header
-          sidebarOpened ? 'w-64' : 'w-[60px] cursor-pointer'
-        )}
-        onClick={clickSidePanel}
-      >
-        <div
-          className={twMerge(
-            'shrink-0 grow-0',
-            sidebarOpened ? 'px-4' : 'px-1'
-          )}
-        >
-          {/* Sidebar - Top Arbitrum Logo */}
-          <SidebarHeader />
-        </div>
+    <div
+      className={twMerge(
+        'relative hidden flex-col justify-between border-r border-gray-6 bg-black pt-6 transition-all duration-200',
+        'h-full md:flex lg:sticky lg:top-0 lg:h-screen', // show the sidebar in md/lg+ resolutions, for sm revert to Header
+        sidebarOpened ? 'w-64' : 'w-12 cursor-pointer'
+      )}
+      onClick={clickSidePanel}
+    >
+      {/* Sidebar - Top Arbitrum Logo */}
+      <SidebarHeader />
 
-        {/* Sidebar - Menu items */}
-        <SidebarMenu />
+      {/* Sidebar - Menu items */}
+      <SidebarMenu />
 
-        {/* Sidebar - footer */}
-        {sidebarOpened && <SidebarFooter />}
-      </div>
+      {/* Sidebar - footer */}
+      {sidebarOpened && <SidebarFooter />}
     </div>
   )
 }

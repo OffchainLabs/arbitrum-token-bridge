@@ -25,7 +25,6 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { useDialog } from '../common/Dialog'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
 import { isNetwork, rpcURLs } from '../../util/networks'
@@ -306,7 +305,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return <>{children}</>
+  return children
 }
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
@@ -370,25 +369,6 @@ function ConnectedChainSyncer() {
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-  const [tosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
 
   return (
     <Provider value={overmind}>
@@ -399,10 +379,12 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <ConnectedChainSyncer />
-            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+            <WelcomeDialog />
             <NetworkReady>
               <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
+                <Injector>
+                  <AppContent />
+                </Injector>
               </AppContextProvider>
             </NetworkReady>
           </RainbowKitProvider>

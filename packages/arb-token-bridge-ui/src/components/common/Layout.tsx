@@ -53,21 +53,23 @@ export function Layout(props: LayoutProps) {
         aria-hidden
       />
       <div className="relative flex flex-col lg:min-h-screen">
-        <SiteBanner>
-          Arbitrum Orbit is mainnet-ready! Learn more about launching a
-          customized chain{' '}
-          <ExternalLink
-            href="https://arbitrum.io/orbit"
-            className="arb-hover underline"
-          >
-            here
-          </ExternalLink>
-          .
-        </SiteBanner>
         <div className="flex flex-row">
           <Sidebar />
 
-          <main className="grow pb-8">{props.children}</main>
+          <main className="grow">
+            <SiteBanner>
+              Arbitrum Orbit is mainnet-ready! Learn more about launching a
+              customized chain{' '}
+              <ExternalLink
+                href="https://arbitrum.io/orbit"
+                className="arb-hover underline"
+              >
+                here
+              </ExternalLink>
+              .
+            </SiteBanner>
+            {props.children}
+          </main>
 
           <Toast />
         </div>
