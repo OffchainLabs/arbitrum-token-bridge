@@ -13,7 +13,8 @@ import { getOrbitChains } from '../util/orbitChainsList'
 import { sanitizeQueryParams } from '../hooks/useNetworks'
 import {
   decodeChainQueryParam,
-  encodeChainQueryParam
+  encodeChainQueryParam,
+  AmountQueryParam
 } from '../hooks/useArbQueryParams'
 
 const App = dynamic(() => import('../components/App/App'), {
@@ -34,9 +35,6 @@ function getDestinationWithSanitizedQueryParams(
   },
   query: GetServerSidePropsContext['query']
 ) {
-  const sourceChain = encodeChainQueryParam(sanitized.sourceChainId)!
-  const destinationChain = encodeChainQueryParam(sanitized.destinationChainId)!
-
   const params = new URLSearchParams()
   for (const key in query) {
     const value = query[key]
@@ -45,8 +43,19 @@ function getDestinationWithSanitizedQueryParams(
     }
   }
 
-  params.set('sourceChain', sourceChain)
-  params.set('destinationChain', destinationChain)
+  const amount = AmountQueryParam.encode(
+    Array.isArray(query['amount']) ? '' : query['amount']
+  )
+  if (amount) {
+    params.set('amount', AmountQueryParam.encode(amount))
+  } else {
+    params.delete('amount')
+  }
+  params.set('sourceChain', encodeChainQueryParam(sanitized.sourceChainId)!)
+  params.set(
+    'destinationChain',
+    encodeChainQueryParam(sanitized.destinationChainId)!
+  )
 
   return `/?${params.toString()}`
 }
