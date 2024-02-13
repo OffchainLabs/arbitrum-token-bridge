@@ -164,7 +164,7 @@ export function Dialog(props: DialogProps) {
               </HeadlessUIDialog.Title>
               {closeable && (
                 <button type="button" onClick={() => handleCloseStart(false)}>
-                  <XMarkIcon className="arb-hover text-gray-7 h-6 w-6" />
+                  <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
                 </button>
               )}
             </div>
