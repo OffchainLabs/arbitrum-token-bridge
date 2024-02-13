@@ -19,31 +19,31 @@ const TokenListSyncer = (): JSX.Element => {
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
 
-  useEffect(() => {
-    if (!arbTokenBridgeLoaded) {
-      return
-    }
+  // useEffect(() => {
+  //   if (!arbTokenBridgeLoaded) {
+  //     return
+  //   }
 
-    if (!walletAddress) {
-      return
-    }
+  //   if (!walletAddress) {
+  //     return
+  //   }
 
-    const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
-      // Always load the Arbitrum Token token list
-      if (bridgeTokenList.isArbitrumTokenTokenList) {
-        return true
-      }
+  //   const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
+  //     // Always load the Arbitrum Token token list
+  //     if (bridgeTokenList.isArbitrumTokenTokenList) {
+  //       return true
+  //     }
 
-      return (
-        bridgeTokenList.originChainID === childChain.id &&
-        bridgeTokenList.isDefault
-      )
-    })
+  //     return (
+  //       bridgeTokenList.originChainID === childChain.id &&
+  //       bridgeTokenList.isDefault
+  //     )
+  //   })
 
-    tokenListsToSet.forEach(bridgeTokenList => {
-      addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
-    })
-  }, [walletAddress, childChain.id, arbTokenBridgeLoaded])
+  //   tokenListsToSet.forEach(bridgeTokenList => {
+  //     addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+  //   })
+  // }, [walletAddress, childChain.id, arbTokenBridgeLoaded])
 
   return <></>
 }
