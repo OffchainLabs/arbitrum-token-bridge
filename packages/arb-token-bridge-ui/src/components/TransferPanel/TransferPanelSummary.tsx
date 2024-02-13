@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getBaseChainIdByChainId, getNetworkName } from '../../util/networks'
+import { getNetworkName } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -65,14 +65,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: childChain.id
-  })
-
   const estimatedConfirmationDate = getTxConfirmationDate({
     createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id,
-    baseChainId
+    withdrawalFromChainId: childChain.id
   })
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
