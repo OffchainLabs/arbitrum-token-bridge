@@ -350,6 +350,9 @@ export function isNetwork(chainId: ChainId) {
   const customChainIds = customChains.map(chain => chain.chainID)
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
+  const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
+  const isOrbitChain = !isCoreChain
+
   const isTestnet =
     isGoerli ||
     isLocal ||
@@ -388,10 +391,12 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
-    isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
+    isOrbitChain,
     isTestnet,
     // General
-    isSupported
+    isSupported,
+    // Core Chain is a chain category for the UI
+    isCoreChain
   }
 }
 
@@ -399,18 +404,25 @@ export function getNetworkName(chainId: number) {
   return getBridgeUiConfigForChain(chainId).network.name
 }
 
-export function getSupportedChainIds(
-  {
-    includeTestnets
-  }: {
-    includeTestnets: boolean
-  } = { includeTestnets: false }
-): ChainId[] {
+export function getSupportedChainIds({
+  includeMainnets = true,
+  includeTestnets = false
+}: {
+  includeMainnets?: boolean
+  includeTestnets?: boolean
+}): ChainId[] {
   return getChains()
     .map(chain => chain.chainID)
     .filter(chainId => {
-      if (!includeTestnets) {
-        return !isNetwork(chainId).isTestnet
+      const { isTestnet } = isNetwork(chainId)
+      if (includeMainnets && !includeTestnets) {
+        return !isTestnet
+      }
+      if (!includeMainnets && includeTestnets) {
+        return isTestnet
+      }
+      if (!includeMainnets && !includeTestnets) {
+        return false
       }
       return true
     })
