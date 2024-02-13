@@ -10,6 +10,7 @@ import {
   ArrowSmallLeftIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { Loader } from '../atoms/Loader'
 
@@ -57,6 +58,7 @@ function SearchPanel({ children }: { children: React.ReactNode }) {
 function MainPageCTA({
   children,
   onClick,
+  className,
   ...props
 }: React.HTMLAttributes<HTMLButtonElement>) {
   const { setPanel: showSecondaryPage } = usePanel(Panel.SECONDARY)
@@ -71,7 +73,10 @@ function MainPageCTA({
 
   return (
     <button
-      className="arb-hover text-gray flex items-center gap-2 text-sm"
+      className={twMerge(
+        'arb-hover text-gray flex items-center gap-2 text-sm',
+        className
+      )}
       onClick={onClickHandler}
       {...props}
     >
@@ -83,11 +88,11 @@ function MainPageCTA({
 SearchPanel.MainPageCTA = MainPageCTA
 
 function CloseButton({
-  onClick,
+  className,
   ...props
 }: React.HTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className="arb-hover" onClick={onClick} {...props}>
+    <button className={twMerge('arb-hover', className)} {...props}>
       <XMarkIcon className="h-7 w-7 text-gray-7 lg:h-5 lg:w-5" />
     </button>
   )
@@ -120,10 +125,17 @@ SearchPanel.MainPage = SearchPanelMainPage
 function SearchPanelPageTitle({
   title,
   children,
+  className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { title: string }) {
   return (
-    <div className="flex flex-row items-center justify-between pb-4" {...props}>
+    <div
+      className={twMerge(
+        'flex flex-row items-center justify-between pb-4',
+        className
+      )}
+      {...props}
+    >
       <span className="text-xl">{title}</span>
       {children}
     </div>
@@ -133,7 +145,6 @@ SearchPanel.PageTitle = SearchPanelPageTitle
 
 function SearchPanelSecondaryPage({
   children,
-  className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const { isActivePanel: shouldShowSecondary } = usePanel(Panel.SECONDARY)
@@ -142,16 +153,13 @@ function SearchPanelSecondaryPage({
     return null
   }
 
-  return (
-    <div className={className} {...props}>
-      {children}
-    </div>
-  )
+  return <div {...props}>{children}</div>
 }
 SearchPanel.SecondaryPage = SearchPanelSecondaryPage
 
 function SecondaryPageCTA({
   children,
+  className,
   onClick,
   ...props
 }: React.HTMLAttributes<HTMLButtonElement>) {
@@ -168,7 +176,10 @@ function SecondaryPageCTA({
   return (
     <div className="mt-4 flex justify-start">
       <button
-        className="arb-hover flex items-center space-x-2 text-sm"
+        className={twMerge(
+          'arb-hover flex items-center space-x-2 text-sm',
+          className
+        )}
         onClick={onClickHandler}
         {...props}
       >
