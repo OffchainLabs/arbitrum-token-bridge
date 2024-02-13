@@ -7,7 +7,9 @@ module.exports = {
       backgroundImage: {
         gradient:
           'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
-        gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)'
+        gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)',
+        highlight:
+          'linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0))'
       },
       colors: {
         // ACTION
@@ -96,11 +98,20 @@ module.exports = {
       boxShadow: {
         // shadow used for input fields across the app
         input:
-          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)',
-        2: '0px 0px 1px 0px rgba(33, 37, 41, 0.08), 0px 2px 2px 0px rgba(33, 37, 41, 0.06)'
+          '0px 2px 2px rgba(33,37,41,0.06), 0px 0px 1px rgba(33,37,41,0.08)'
       },
-      transitionDuration: {
-        400: '400ms'
+      keyframes: {
+        'blink-pulse': {
+          '0%, 100%': {
+            opacity: 1
+          },
+          '50%': {
+            opacity: 0.5
+          }
+        }
+      },
+      animation: {
+        blink: 'blink-pulse 1s ease-in-out 1'
       }
     }
   }
