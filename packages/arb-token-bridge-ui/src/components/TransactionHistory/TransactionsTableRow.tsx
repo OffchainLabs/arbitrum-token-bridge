@@ -222,7 +222,7 @@ export function TransactionsTableRow({
           address={address}
         />
       </div>
-      <div className="pl-3 align-middle">
+      <div className="pl-2 align-middle">
         <Button
           variant="primary"
           className="rounded border border-white p-2 text-xs text-white"
