@@ -47,9 +47,16 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-button,
-input {
-  outline: none !important;
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+  box-sizing: border-box;
+  outline-offset: -2px;
+  outline: 2px solid rgb(0, 95, 204);
 }
 
 /*react error overlay hidden in dev mode while testing network switches which trow errors*/
