@@ -1,5 +1,4 @@
 import React, {
-  PropsWithChildren,
   createContext,
   useCallback,
   useContext,
@@ -55,12 +54,26 @@ function SearchPanel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function MainPageCTA({ children }: { children: React.ReactNode }) {
+function MainPageCTA({
+  children,
+  onClick,
+  ...props
+}: React.HTMLAttributes<HTMLButtonElement>) {
   const { setPanel: showSecondaryPage } = usePanel(Panel.SECONDARY)
+
+  const onClickHandler = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      showSecondaryPage()
+      onClick?.(event)
+    },
+    [onClick, showSecondaryPage]
+  )
+
   return (
     <button
       className="arb-hover text-gray flex items-center gap-2 text-sm"
-      onClick={showSecondaryPage}
+      onClick={onClickHandler}
+      {...props}
     >
       <span>{children}</span>
       <ArrowRightIcon className="h-3 w-3 stroke-[3px]" />
@@ -69,10 +82,13 @@ function MainPageCTA({ children }: { children: React.ReactNode }) {
 }
 SearchPanel.MainPageCTA = MainPageCTA
 
-function CloseButton({ onClick }: React.HTMLAttributes<HTMLButtonElement>) {
+function CloseButton({
+  onClick,
+  ...props
+}: React.HTMLAttributes<HTMLButtonElement>) {
   return (
-    <button className="arb-hover" onClick={onClick}>
-      <XMarkIcon className="h-7 w-7 text-gray-7" />
+    <button className="arb-hover" onClick={onClick} {...props}>
+      <XMarkIcon className="h-7 w-7 text-gray-7 lg:h-5 lg:w-5" />
     </button>
   )
 }
@@ -80,7 +96,8 @@ SearchPanel.CloseButton = CloseButton
 
 function SearchPanelMainPage({
   children,
-  className
+  className,
+  ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const { isActivePanel: shouldShowMain } = usePanel(Panel.MAIN)
 
@@ -92,16 +109,21 @@ function SearchPanelMainPage({
     return children
   }
 
-  return <div className={className}>{children}</div>
+  return (
+    <div className={className} {...props}>
+      {children}
+    </div>
+  )
 }
 SearchPanel.MainPage = SearchPanelMainPage
 
 function SearchPanelPageTitle({
   title,
-  children
-}: PropsWithChildren<{ title: string }>) {
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { title: string }) {
   return (
-    <div className="flex flex-row items-center justify-between pb-4">
+    <div className="flex flex-row items-center justify-between pb-4" {...props}>
       <span className="text-xl">{title}</span>
       {children}
     </div>
@@ -111,7 +133,8 @@ SearchPanel.PageTitle = SearchPanelPageTitle
 
 function SearchPanelSecondaryPage({
   children,
-  className
+  className,
+  ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const { isActivePanel: shouldShowSecondary } = usePanel(Panel.SECONDARY)
 
@@ -119,20 +142,35 @@ function SearchPanelSecondaryPage({
     return null
   }
 
-  return <div className={className}>{children}</div>
+  return (
+    <div className={className} {...props}>
+      {children}
+    </div>
+  )
 }
 SearchPanel.SecondaryPage = SearchPanelSecondaryPage
 
 function SecondaryPageCTA({
-  children
+  children,
+  onClick,
+  ...props
 }: React.HTMLAttributes<HTMLButtonElement>) {
   const { setPanel: showMainPage } = usePanel(Panel.MAIN)
+
+  const onClickHandler = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      showMainPage()
+      onClick?.(event)
+    },
+    [onClick, showMainPage]
+  )
 
   return (
     <div className="mt-4 flex justify-start">
       <button
         className="arb-hover flex items-center space-x-2 text-sm"
-        onClick={showMainPage}
+        onClick={onClickHandler}
+        {...props}
       >
         <ArrowSmallLeftIcon className="h-3 w-3 stroke-[3px]" />
         <span>{children}</span>
@@ -152,4 +190,4 @@ function LoaderWithMessage({ loadingMessage }: { loadingMessage?: string }) {
 }
 SearchPanel.LoaderWithMessage = LoaderWithMessage
 
-export default SearchPanel
+export { SearchPanel }

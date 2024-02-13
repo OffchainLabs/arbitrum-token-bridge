@@ -62,7 +62,7 @@ function BlockExplorerTokenLink({
   return (
     <ExternalLink
       href={`${getExplorerUrl(chain.id)}/token/${address}`}
-      className="text-xs underline"
+      className="arb-hover text-xs underline"
       onClick={e => e.stopPropagation()}
     >
       {shortenAddress(address).toLowerCase()}
@@ -297,7 +297,7 @@ export function TokenRow({
 
   const tokenBalanceContent = useMemo(() => {
     if (!tokenIsAddedToTheBridge) {
-      return <span className="text-sm">Import</span>
+      return <span className="arb-hover text-sm">Import</span>
     }
 
     // We don't want users to be able to click on USDC before we know whether or not they are SCW users
@@ -345,7 +345,7 @@ export function TokenRow({
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
       className={twMerge(
-        'flex w-full flex-row items-center justify-between px-4 py-3 hover:bg-white/10',
+        'flex w-full flex-row items-center justify-between px-4 py-3 transition duration-200 hover:bg-white/10',
         tokenIsBridgeable
           ? 'cursor-pointer opacity-100'
           : 'cursor-not-allowed opacity-50'
@@ -355,7 +355,7 @@ export function TokenRow({
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 grow-0"
+          className="h-6 w-6 grow-0"
           fallback={<TokenLogoFallback />}
         />
 
@@ -367,7 +367,7 @@ export function TokenRow({
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
-                  <CheckCircleIcon className="h-4 w-4" />
+                  <CheckCircleIcon className="h-3 w-3" />
                   <span className="text-xs">
                     Official{isSmallScreen ? '' : ' ARB token'}
                   </span>
@@ -386,7 +386,7 @@ export function TokenRow({
           </div>
 
           {token && (
-            <div className="flex w-full flex-col items-start">
+            <div className="flex w-full flex-col items-start gap-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               <div className="flex w-full justify-between">
                 {isDepositMode ? (
