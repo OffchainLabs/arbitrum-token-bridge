@@ -9,8 +9,8 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, Column, Table } from 'react-virtualized'
 import {
-  ArrowDownOnSquareIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  PlusCircleIcon
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 
@@ -88,7 +88,7 @@ export const LoadMoreButton = (
     <button {...props} className="arb-hover text-xs">
       <div className="flex space-x-1 rounded border border-white px-2 py-1">
         <span>Load more</span>
-        <ArrowDownOnSquareIcon width={16} />
+        <PlusCircleIcon width={16} />
       </div>
     </button>
   )

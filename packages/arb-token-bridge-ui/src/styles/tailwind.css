@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Ropa+Sans&family=Montserrat:wght@900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700');
 
 @tailwind base;
 @tailwind components;
@@ -11,7 +11,7 @@
   --toastify-text-color-success: #1a1c1d;
   --toastify-text-color-warning: #1a1c1d;
   --toastify-text-color-error: #1a1c1d;
-  --toastify-font-family: 'Space Grotesk', sans-serif;
+  --toastify-font-family: Roboto, sans-serif;
   --toastify-toast-min-height: 44px;
   --blue-link: #1366C1;
 }
@@ -21,9 +21,13 @@
   letter-spacing: -0.5px;
 }
 
+.tabular-nums {
+  font-family: Roboto !important;
+}
+
 @layer base {
-  body {
-    @apply font-serif;
+  html {
+    font-family: Roboto, sans-serif;
   }
 }
 
@@ -31,8 +35,7 @@
 body {
   @apply min-h-screen;
   @apply bg-black;
-
-  letter-spacing: -0.5px;
+  font-weight: 300;
 }
 
 /*** HIDE NUMBER INPUT STEPS BUTTONS ****/
