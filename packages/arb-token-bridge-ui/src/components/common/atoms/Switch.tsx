@@ -28,8 +28,8 @@ export const Switch = ({
             checked={checked}
             onChange={onChange}
             className={twMerge(
-              'relative inline-flex h-4 w-8 items-center rounded-full transition-colors ui-checked:bg-white ui-not-checked:bg-white/50 [&:disabled]:cursor-not-allowed',
-              '[&_span]:bg-black [&_span]:ui-checked:translate-x-[20px] [&_span]:ui-not-checked:translate-x-[3px] [&~*]:ui-checked:text-white',
+              'relative inline-flex h-3 w-7 items-center rounded-full transition-colors ui-checked:bg-white ui-not-checked:bg-white/50 [&:disabled]:cursor-not-allowed',
+              '[&_span]:bg-black [&_span]:ui-checked:translate-x-[22px] [&_span]:ui-not-checked:translate-x-[3px] [&~*]:ui-checked:text-white',
               className
             )}
             disabled={disabled}

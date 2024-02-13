@@ -10,7 +10,6 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
@@ -39,17 +38,14 @@ enum ChainGroupName {
 
 type ChainGroupInfo = {
   name: ChainGroupName
-  description: string
 }
 
 const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
-    name: ChainGroupName.core,
-    description: 'Chains managed directly by Ethereum or Arbitrum'
+    name: ChainGroupName.core
   },
   orbit: {
-    name: ChainGroupName.orbit,
-    description: 'Independent projects using Arbitrum technology.'
+    name: ChainGroupName.orbit
   }
 }
 
@@ -60,7 +56,7 @@ function ChainTypeInfoRow({
   chainGroup: ChainGroupInfo
   style: CSSProperties
 }) {
-  const { name, description } = chainGroup
+  const { name } = chainGroup
   const isCoreGroup = chainGroup.name === ChainGroupName.core
 
   return (
@@ -74,9 +70,6 @@ function ChainTypeInfoRow({
       )}
     >
       <p className="text-sm text-white/70">{name}</p>
-      {description && (
-        <p className="mt-2 text-xs text-white/50">{description}</p>
-      )}
     </div>
   )
 }
@@ -109,7 +102,7 @@ function NetworkRow({
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-white/10',
+        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg hover:bg-white/10',
         chainId === sourceChain.id && 'bg-white/10' // selected row
       )}
     >
@@ -220,13 +213,13 @@ function NetworksPanel({
       return 0
     }
     if (typeof rowItemOrChainId === 'string') {
-      return 65
+      return 45
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
       return 90
     }
-    return 52
+    return 60
   }
 
   useEffect(() => {

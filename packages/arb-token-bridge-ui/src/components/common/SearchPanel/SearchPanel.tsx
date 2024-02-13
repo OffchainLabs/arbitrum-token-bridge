@@ -72,7 +72,7 @@ SearchPanel.MainPageCTA = MainPageCTA
 function CloseButton({ onClick }: React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <button className="arb-hover" onClick={onClick}>
-      <XMarkIcon className="h-8 w-8 text-gray-7" />
+      <XMarkIcon className="h-7 w-7 text-gray-7" />
     </button>
   )
 }
