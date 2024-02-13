@@ -25,7 +25,6 @@ export const Switch = ({
       <div className="toggle-switch flex flex-col text-white/70 hover:text-white">
         <div className="flex items-center gap-3">
           <HeadlessSwitch
-            name={name}
             checked={checked}
             onChange={onChange}
             className={twMerge(
@@ -34,6 +33,7 @@ export const Switch = ({
               className
             )}
             disabled={disabled}
+            aria-label={name}
           >
             <span
               className={`inline-block h-[10px] w-[10px] transform rounded-full transition-transform`}
