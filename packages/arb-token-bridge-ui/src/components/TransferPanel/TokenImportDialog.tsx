@@ -21,7 +21,6 @@ import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -29,6 +28,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { useTokenLists } from '../../hooks/useTokenLists'
 
 enum ImportStatus {
   LOADING,
@@ -85,13 +85,8 @@ export function TokenImportDialog({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
+  const { data: tokens } = useTokenLists(networks.sourceChain.id)
   const actions = useActions()
-
-  const tokensFromUser = useTokensFromUser()
-  const latestTokensFromUser = useLatest(tokensFromUser)
-
-  const tokensFromLists = useTokensFromLists()
-  const latestTokensFromLists = useLatest(tokensFromLists)
 
   const latestBridgeTokens = useLatest(bridgeTokens)
 
@@ -139,14 +134,14 @@ export function TokenImportDialog({
   }, [parentChainProvider, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
-    (erc20L1Address: string): TokenListSearchResult => {
+    (erc20Address: string): TokenListSearchResult => {
       // We found the token in an imported list
       const currentBridgeTokens = latestBridgeTokens.current
       if (typeof currentBridgeTokens === 'undefined') {
         return { found: false }
       }
 
-      const l1Token = currentBridgeTokens[erc20L1Address]
+      const l1Token = currentBridgeTokens[erc20Address]
       if (typeof l1Token !== 'undefined') {
         return {
           found: true,
@@ -155,12 +150,7 @@ export function TokenImportDialog({
         }
       }
 
-      const tokens = {
-        ...latestTokensFromLists.current,
-        ...latestTokensFromUser.current
-      }
-
-      const token = tokens[erc20L1Address]
+      const token = tokens[erc20Address]
       // We found the token in an unimported list
       if (typeof token !== 'undefined') {
         return {

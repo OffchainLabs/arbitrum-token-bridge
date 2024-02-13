@@ -3,7 +3,8 @@ import React, {
   useMemo,
   useState,
   useCallback,
-  memo
+  memo,
+  useEffect
 } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
@@ -24,7 +25,6 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
@@ -170,9 +170,7 @@ function TokensPanel({
   const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
     childChain.id
   )
-  const tokensFromUser = useTokensFromUser()
-  const tokensFromLists = useTokensFromLists()
-
+  const { data: tokensFromLists } = useTokenLists(networks.sourceChain.id)
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
@@ -218,12 +216,13 @@ function TokensPanel({
     ]
   )
 
+  useEffect(() => {
+    console.log('tokensFromLists changed', tokensFromLists)
+  }, [tokensFromLists])
+
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-    const tokenAddresses = [
-      ...Object.keys(tokensFromUser),
-      ...Object.keys(tokensFromLists)
-    ]
+    const tokenAddresses = Object.keys(tokensFromLists)
     if (!isDepositMode) {
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -240,7 +239,7 @@ function TokensPanel({
     return tokens
       .filter(address => {
         // Derive the token object from the address string
-        let token = tokensFromUser[address] || tokensFromLists[address]
+        let token = tokensFromLists[address]
 
         if (isTokenArbitrumOneNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
@@ -265,9 +264,9 @@ function TokensPanel({
           }
 
           // Always show official ARB token except from or to Orbit chain
-          if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
-            return !isOrbitChain
-          }
+          // if (token?.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)) {
+          //   return !isOrbitChain
+          // }
 
           const balance = getBalance(address)
           // Only show tokens with a balance greater than zero
@@ -317,7 +316,6 @@ function TokensPanel({
       })
   }, [
     newToken,
-    tokensFromUser,
     tokensFromLists,
     isDepositMode,
     isArbitrumOne,
@@ -396,7 +394,7 @@ function TokensPanel({
       } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
         token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
       } else if (address) {
-        token = tokensFromLists[address] || tokensFromUser[address] || null
+        token = tokensFromLists[address] || null
       }
 
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
@@ -418,7 +416,7 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, tokensFromLists, tokensFromUser, onTokenSelected]
+    [tokensToShow, tokensFromLists, onTokenSelected]
   )
 
   const AddButton = useMemo(
