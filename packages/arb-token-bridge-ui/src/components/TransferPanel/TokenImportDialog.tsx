@@ -89,20 +89,10 @@ export function TokenImportDialog({
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
-  const [isDialogVisible, setIsDialogVisible] = useState(false)
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
   })
-
-  // we use a different state to handle dialog visiblity to trigger the entry transition,
-  // otherwise if we only used isOpen then the transition would never trigger because
-  // we conditionally render the component and we'd always start with isOpen as true
-  //
-  // for the transition to work we need to start as false and update it to true
-  useEffect(() => {
-    setIsDialogVisible(isOpen)
-  }, [isOpen])
 
   const modalTitle = useMemo(() => {
     switch (status) {
@@ -312,7 +302,7 @@ export function TokenImportDialog({
   if (status === ImportStatus.LOADING) {
     return (
       <Dialog
-        isOpen={isDialogVisible}
+        isOpen={isOpen}
         onClose={onClose}
         title={modalTitle}
         actionButtonProps={{ hidden: true }}
@@ -327,7 +317,7 @@ export function TokenImportDialog({
   if (status === ImportStatus.ERROR) {
     return (
       <Dialog
-        isOpen={isDialogVisible}
+        isOpen={isOpen}
         onClose={onClose}
         title={modalTitle}
         actionButtonProps={{ hidden: true }}
@@ -344,7 +334,7 @@ export function TokenImportDialog({
 
   return (
     <Dialog
-      isOpen={isDialogVisible}
+      isOpen={isOpen}
       onClose={onClose}
       title={modalTitle}
       actionButtonProps={{
