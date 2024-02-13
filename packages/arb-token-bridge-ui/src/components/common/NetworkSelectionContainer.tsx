@@ -141,7 +141,7 @@ function AddCustomOrbitChainButton() {
   }
 
   return (
-    <button className="text-sm underline" onClick={openSettingsPanel}>
+    <button className="arb-hover text-sm underline" onClick={openSettingsPanel}>
       <span>Add Custom Orbit Chain</span>
     </button>
   )
