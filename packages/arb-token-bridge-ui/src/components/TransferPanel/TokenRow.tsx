@@ -70,13 +70,13 @@ function BlockExplorerTokenLink({
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onClick: React.MouseEventHandler<HTMLButtonElement>
+  onTokenSelected: (token: ERC20BridgeToken | null) => void
   token: ERC20BridgeToken | null
 }
 
 export function TokenRow({
   style,
-  onClick,
+  onTokenSelected,
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
@@ -333,10 +333,12 @@ export function TokenRow({
     tokenSymbol
   ])
 
+  const buttonOnClick = () => onTokenSelected(token)
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={buttonOnClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
       className={twMerge(
