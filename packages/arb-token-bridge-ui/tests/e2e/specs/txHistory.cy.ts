@@ -5,7 +5,11 @@ describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
     // open tx history panel
     context('open transactions history panel', () => {
@@ -18,6 +22,20 @@ describe('Transaction History', () => {
         .should('be.visible')
         .should('have.attr', 'data-headlessui-state')
         .and('equal', 'selected')
+    })
+
+    // We load 3 transactions in a batch, and only we load more only if these transactions happened last month
+    // Our 3 most recent transactions are settled transactions.
+    // That means 'Load more' button click is required to fetch our pending transaction.
+    cy.waitUntil(
+      () => cy.findByRole('button', { name: 'Load more' }).should('be.visible'),
+      {
+        errorMsg: 'Did not find Load more button.',
+        timeout: 30_000,
+        interval: 500
+      }
+    ).then(btn => {
+      cy.wrap(btn).click()
     })
 
     // wait for transactions to fetch
@@ -43,7 +61,11 @@ describe('Transaction History', () => {
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
     // open tx history panel
     context('open transactions history panel', () => {

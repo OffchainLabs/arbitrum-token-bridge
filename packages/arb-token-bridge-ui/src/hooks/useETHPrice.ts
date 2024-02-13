@@ -15,7 +15,7 @@ export function useETHPrice(): UseETHPriceResult {
     'https://api.coinbase.com/v2/prices/ETH-USD/spot',
     url => axios.get(url).then(res => res.data.data.amount),
     {
-      refreshInterval: 300_000,
+      refreshInterval: 300_000, // 5 minutes
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000
