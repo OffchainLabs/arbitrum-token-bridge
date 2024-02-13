@@ -2,20 +2,20 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import React, { PropsWithChildren } from 'react'
 
 type SearchPanelTableProps = {
-  searchInputPlaceholder: string
-  searchInputValue: string
+  searchInput: {
+    placeholder: string
+    value: string
+    onChange: React.ChangeEventHandler<HTMLInputElement>
+  }
   SearchInputButton?: React.JSX.Element
-  onSearchInputChange: React.ChangeEventHandler<HTMLInputElement>
   onSubmit?: React.FormEventHandler<HTMLFormElement>
   errorMessage: string
   dataCy?: string
 }
 
 export const SearchPanelTable = ({
-  searchInputPlaceholder,
-  searchInputValue,
+  searchInput,
   SearchInputButton,
-  onSearchInputChange,
   onSubmit = event => {
     event.preventDefault()
   },
@@ -27,15 +27,12 @@ export const SearchPanelTable = ({
     <div className="flex flex-col gap-3">
       <form onSubmit={onSubmit} className="flex flex-col">
         <div className="flex items-stretch gap-2">
-          <div className="relative flex h-full w-full grow items-center rounded-lg border-[1px] border-gray-dark bg-white px-2 text-gray-dark shadow-input">
-            <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-dark" />
-
+          <div className="relative flex h-full w-full grow items-center rounded border-[1px] border-gray-dark bg-black/30 px-2 text-white shadow-input">
+            <MagnifyingGlassIcon className="h-4 w-4 shrink-0" />
             <input
               type="search"
-              value={searchInputValue}
-              onChange={onSearchInputChange}
-              placeholder={searchInputPlaceholder}
-              className="h-full w-full p-2 text-sm font-light text-dark placeholder:text-xs placeholder:text-gray-dark"
+              {...searchInput}
+              className="h-full w-full bg-transparent p-2 text-sm font-light placeholder:text-xs placeholder:text-white"
             />
           </div>
           {SearchInputButton}
@@ -45,7 +42,7 @@ export const SearchPanelTable = ({
         )}
       </form>
       <div
-        className="h-[calc(100vh_-_230px)] rounded-md border border-gray-2 bg-white lg:h-[400px] lg:shadow-[0px_4px_10px_rgba(120,120,120,0.25)]"
+        className="h-[calc(100vh_-_180px)] overflow-hidden rounded border border-gray-dark lg:h-[400px] lg:shadow-search-panel"
         data-cy={dataCy}
       >
         {children}
