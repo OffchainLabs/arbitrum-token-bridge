@@ -153,7 +153,7 @@ export function TransactionsTableRowAction({
     ) : (
       <Button
         variant="primary"
-        className="w-16 rounded bg-green-400 p-2 text-xs text-black"
+        className="w-12 rounded bg-green-400 p-2 text-xs text-black"
         onClick={handleClaim}
       >
         Claim
@@ -165,7 +165,7 @@ export function TransactionsTableRowAction({
     return (
       <Button
         variant="primary"
-        className="rounded bg-white p-2 text-xs text-black"
+        className="w-12 rounded bg-white p-2 text-xs text-black"
         onClick={getHelpOnError}
       >
         Get help

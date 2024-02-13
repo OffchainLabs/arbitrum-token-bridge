@@ -103,6 +103,19 @@ module.exports = {
       },
       transitionDuration: {
         400: '400ms'
+      },
+      keyframes: {
+        'blink-pulse': {
+          '0%, 100%': {
+            opacity: 1
+          },
+          '50%': {
+            opacity: 0.5
+          }
+        }
+      },
+      transitionDuration: {
+        400: '400ms'
       }
     }
   }

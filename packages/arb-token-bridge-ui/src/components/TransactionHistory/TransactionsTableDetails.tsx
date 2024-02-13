@@ -29,7 +29,7 @@ const DetailsBox = ({
   header
 }: PropsWithChildren<{ header?: string }>) => {
   return (
-    <div className="my-2 flex w-full flex-col rounded border border-white/20 bg-black px-4 py-3 font-light text-white">
+    <div className="my-2 flex w-full flex-col rounded border border-white/20 bg-black p-3 font-light text-white">
       {header && (
         <h4 className="mb-2 text-xs uppercase text-white/60">{header}</h4>
       )}
@@ -116,7 +116,7 @@ export const TransactionsTableDetails = ({
               leaveTo="opacity-0 scale-95"
               afterLeave={reset}
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded border border-white/10 bg-dark p-6 text-left align-middle shadow shadow-white/10 transition-all">
+              <Dialog.Panel className="w-full max-w-[488px] transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all">
                 <Dialog.Title
                   className="mb-4 flex items-center justify-between text-lg font-light text-white"
                   as="h3"

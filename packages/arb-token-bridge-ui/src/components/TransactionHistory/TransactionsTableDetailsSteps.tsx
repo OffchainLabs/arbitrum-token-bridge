@@ -95,7 +95,7 @@ const Step = ({
   return (
     <div
       className={twMerge(
-        'my-3 flex h-5 items-center justify-between',
+        'my-3 flex h-3 items-center justify-between',
         pending && 'animate-pulse'
       )}
     >

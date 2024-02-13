@@ -35,11 +35,11 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
-        className="arb-hover flex items-center space-x-1 text-red-400"
+        className="arb-hover flex shrink-0 items-center space-x-1 text-red-400"
       >
-        <XCircleIcon height={14} className="mr-1" />
+        <XCircleIcon height={14} />
         <span>Failed</span>
-        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+        <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
       </ExternalLink>
     )
   }
@@ -48,11 +48,11 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
-        className="arb-hover flex items-center space-x-1 text-red-400"
+        className="arb-hover flex shrink-0 items-center space-x-1 text-red-400"
       >
-        <XCircleIcon height={14} className="mr-1" />
+        <XCircleIcon height={14} />
         <span>Expired</span>
-        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+        <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
       </ExternalLink>
     )
   }
@@ -63,9 +63,9 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
         className="arb-hover flex items-center space-x-1 text-yellow-400"
       >
-        <div className="mr-1 h-[10px] w-[10px] rounded-full border border-yellow-400" />
+        <div className="h-[10px] w-[10px] rounded-full border border-yellow-400 " />
         <span>Pending</span>
-        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+        <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
       </ExternalLink>
     )
   }
@@ -76,9 +76,9 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
         className="arb-hover flex items-center space-x-1 text-green-400"
       >
-        <div className="mr-1 h-[10px] w-[10px] rounded-full border border-green-400" />
+        <div className="h-[10px] w-[10px] shrink-0 rounded-full border border-green-400" />
         <span>Claimable</span>
-        <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+        <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
       </ExternalLink>
     )
   }
@@ -96,11 +96,11 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
       className={destinationNetworkTxId ? 'arb-hover' : 'pointer-events-none'}
     >
       <div className="flex items-center space-x-1">
-        <CheckCircleIcon height={14} className="mr-1" />
+        <CheckCircleIcon height={14} className="shrink-0" />
         <span>Success</span>
 
         {destinationNetworkTxId && (
-          <ArrowTopRightOnSquareIcon height={10} className="pl-1" />
+          <ArrowTopRightOnSquareIcon height={10} className="shrink-0" />
         )}
       </div>
     </ExternalLink>
@@ -167,7 +167,7 @@ export function TransactionsTableRow({
     <div
       data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
       className={twMerge(
-        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+        'relative ml-4 mr-2 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
         className
       )}
     >
