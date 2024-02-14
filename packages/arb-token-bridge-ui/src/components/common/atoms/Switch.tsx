@@ -30,7 +30,7 @@ export const Switch = ({
             <HeadlessSwitch.Label
               className={twMerge(
                 'heading mr-4 cursor-pointer text-sm transition',
-                checked ? 'text-white' : 'text-gray-dark'
+                checked ? 'text-white' : 'text-white/70'
               )}
             >
               {label}
@@ -41,7 +41,7 @@ export const Switch = ({
           <HeadlessSwitch.Description
             className={twMerge(
               'mt-1 pl-8 text-sm transition',
-              checked ? 'text-white' : 'text-gray-dark'
+              checked ? 'text-white' : 'text-white/70'
             )}
           >
             {description}
