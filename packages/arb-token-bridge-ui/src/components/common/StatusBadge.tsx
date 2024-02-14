@@ -1,4 +1,5 @@
 import React from 'react'
+import { twMerge } from 'tailwind-merge'
 
 export type StatusBadgeProps = React.HTMLAttributes<HTMLDivElement> & {
   variant?: 'blue' | 'yellow' | 'green' | 'red' | 'gray'
@@ -19,7 +20,10 @@ export function StatusBadge({
 }: StatusBadgeProps): JSX.Element {
   return (
     <div
-      className={`status-badge w-max rounded-full px-3 py-1 text-sm ${variants[variant]} flex flex-nowrap items-center gap-1`}
+      className={twMerge(
+        'status-badge flex w-max flex-nowrap items-center gap-1 rounded py-1 pl-1 pr-2 text-sm font-normal',
+        variants[variant]
+      )}
       {...props}
     >
       {children}
