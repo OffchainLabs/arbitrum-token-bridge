@@ -50,7 +50,7 @@ export function NetworkListbox({
               key={option.id}
               value={option}
               className={twMerge(
-                'hover:white/20 flex h-12 cursor-pointer select-none items-center gap-1 px-3 py-2 ui-selected:bg-white/20 ui-active:bg-white/20'
+                'hover:white/20 flex h-12 cursor-pointer select-none items-center gap-1 px-3 py-2 transition-[background] duration-200 ui-selected:bg-white/20 ui-active:bg-white/20'
               )}
             >
               <div className="flex h-8 w-8 items-center justify-center">
