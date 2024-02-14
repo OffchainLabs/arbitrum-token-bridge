@@ -47,7 +47,7 @@ export const Switch = ({
           )}
         </div>
         {description && (
-          <HeadlessSwitch.Description className="mt-1 pl-11 text-sm text-gray-3 text-white/50">
+          <HeadlessSwitch.Description className="mt-1 pl-[50px] text-sm text-white/70">
             {description}
           </HeadlessSwitch.Description>
         )}

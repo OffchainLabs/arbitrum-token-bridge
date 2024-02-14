@@ -56,7 +56,7 @@ export const SettingsDialog = () => {
 
           <Switch
             label="Show Network Stats"
-            description="Show live, nerdy stats about Ethereum and Arbitrum chains, like
+            description="Live, nerdy stats about Ethereum and Arbitrum chains, like
         block number and current gas price."
             checked={!!isArbitrumStatsVisible}
             onChange={
@@ -70,7 +70,7 @@ export const SettingsDialog = () => {
           <SectionTitle>Developer Mode</SectionTitle>
 
           <TestnetToggle
-            label="Turn on Testnet mode"
+            label="Turn on testnet mode"
             description="Show testnet networks and enable other testnet features."
           />
         </div>
@@ -79,14 +79,15 @@ export const SettingsDialog = () => {
         <div
           className={twMerge(
             'w-full transition-opacity',
-            isTestnetMode && 'pointer-events-none opacity-20'
+            !isTestnetMode && 'pointer-events-none opacity-20'
           )}
         >
           <SectionTitle className="mb-1">Add Testnet Orbit Chain</SectionTitle>
           <p className="mb-4 text-sm">
             Add in your own Orbit Testnet to the bridge. This will only be for
-            local testing. Learn more about how to create and add your Orbit
-            Testnet to the bridge in{' '}
+            local testing.
+            <br />
+            Learn more about how to create and add your Orbit Testnet in{' '}
             <ExternalLink
               className="arb-hover underline"
               href={ORBIT_QUICKSTART_LINK}

@@ -284,7 +284,7 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
+        placeholder="Paste the JSON configuration from the 'outputInfo.json' file that's generated at the end of the custom Orbit chain deployment."
         className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-white/70"
       />
       {error && (
