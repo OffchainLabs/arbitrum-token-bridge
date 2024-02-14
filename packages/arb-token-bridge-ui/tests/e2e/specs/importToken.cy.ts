@@ -68,6 +68,33 @@ describe('Import token', () => {
       })
     })
 
+    context('User clicks token list toggle', () => {
+      it('should toggle token list', () => {
+        // we don't have the token list locally so we test on mainnet
+        cy.login({
+          networkType: 'L1',
+          networkName: 'mainnet'
+        })
+
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', 'ETH')
+          .click()
+
+        // Check that token list is imported
+        cy.findByRole('button', { name: 'Manage token lists' })
+          .scrollIntoView()
+          .should('be.visible')
+          .click()
+
+        cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
+        cy.findByLabelText('Arbed CMC List').click()
+        cy.findByRole('switch', {
+          name: /Arbed CMC List toggle/
+        }).should('have.attr', 'aria-checked', 'true')
+      })
+    })
+
     context('User uses token symbol', () => {
       it('should import token', () => {
         // we don't have the token list locally so we test on mainnet
@@ -88,14 +115,12 @@ describe('Import token', () => {
           .click()
 
         cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
-        cy.findByLabelText('Arbed CMC List')
-          .as('tokenListToggle')
-          .parent()
-          .click()
-        cy.get('@tokenListToggle').should('be.checked')
+        cy.findByLabelText('Arbed CMC List').click()
+        cy.findByRole('switch', {
+          name: /Arbed CMC List toggle/
+        }).should('have.attr', 'aria-checked', 'true')
 
-        cy.findByRole('button', { name: 'Back to Select Token' })
-          .scrollIntoView()
+        cy.findByRole('button', { name: /Back to Select Token/ })
           .should('be.visible')
           .click()
 
@@ -107,13 +132,7 @@ describe('Import token', () => {
         // flaky test can load data too slowly here
         cy.wait(5000)
 
-        cy.get('[data-cy="tokenSearchList"]')
-          .first()
-          .within(() => {
-            // cy.get() will only search for elements within .tokenSearchList,
-            // not within the entire document, fixing the multiple Uniswap text issue
-            cy.findByText('Uniswap').click({ force: true })
-          })
+        cy.findByText('Uniswap').click()
 
         // UNI token should be selected now and popup should be closed after selection
         cy.findByRole('button', { name: 'Select Token' })

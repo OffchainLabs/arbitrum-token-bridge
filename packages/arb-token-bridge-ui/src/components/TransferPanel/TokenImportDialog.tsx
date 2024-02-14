@@ -95,7 +95,7 @@ export function TokenImportDialog({
     l2Provider: childChainProvider
   })
 
-  // we use a different state to handle dialog visiblity to trigger the entry transition,
+  // we use a different state to handle dialog visibility to trigger the entry transition,
   // otherwise if we only used isOpen then the transition would never trigger because
   // we conditionally render the component and we'd always start with isOpen as true
   //
@@ -332,12 +332,10 @@ export function TokenImportDialog({
         title={modalTitle}
         actionButtonProps={{ hidden: true }}
       >
-        <div className="flex py-4">
-          <span>
-            Whoops, looks like this token address is invalid. Try asking the
-            token team to update their link.
-          </span>
-        </div>
+        <span className="flex py-4">
+          Whoops, looks like this token address is invalid. Try asking the token
+          team to update their link.
+        </span>
       </Dialog>
     )
   }
@@ -366,7 +364,7 @@ export function TokenImportDialog({
         )}
 
         <div className="flex flex-col pb-4">
-          <TokenInfo token={tokenToImport} />
+          <TokenInfo token={tokenToImport} showFullAddress />
 
           {status === ImportStatus.UNKNOWN && (
             <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark">

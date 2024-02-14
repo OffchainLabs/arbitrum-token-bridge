@@ -161,13 +161,13 @@ export function Dialog(props: DialogProps) {
               className
             )}
           >
-            <div className="flex items-center justify-between px-6 pt-4">
-              <HeadlessUIDialog.Title className="text-xl">
+            <div className="flex items-start justify-between px-6 pt-4">
+              <HeadlessUIDialog.Title className="text-xl text-gray-2">
                 {props.title}
               </HeadlessUIDialog.Title>
               {closeable && (
                 <button type="button" onClick={() => handleCloseStart(false)}>
-                  <XMarkIcon className="arb-hover h-5 w-5 text-white" />
+                  <XMarkIcon className="arb-hover h-6 w-6 text-gray-7" />
                 </button>
               )}
             </div>
