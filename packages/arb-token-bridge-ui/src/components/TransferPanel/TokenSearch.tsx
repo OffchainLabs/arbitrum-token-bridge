@@ -89,7 +89,7 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
   return (
     <label
       key={tokenList.id}
-      className="flex cursor-pointer items-center justify-start space-x-3 [&:hover_span]:text-white"
+      className="flex cursor-pointer items-center justify-start space-x-3 duration-200 [&:hover_img]:opacity-100 [&:hover_span]:text-white"
     >
       <Switch
         name={`${tokenList.name} toggle`}
@@ -100,11 +100,19 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
         <Image
           src={tokenList.logoURI}
           alt={`${tokenList.name} Logo`}
-          className="h-4 w-4 rounded-full"
+          className={twMerge(
+            'h-4 w-4 rounded-full transition-opacity',
+            !isActive && 'opacity-70'
+          )}
           width={16}
           height={16}
         />
-        <span className={twMerge('text-sm', !isActive && 'text-white/70')}>
+        <span
+          className={twMerge(
+            'text-sm transition-colors',
+            !isActive && 'text-white/70'
+          )}
+        >
           {tokenList.name}
         </span>
       </div>
