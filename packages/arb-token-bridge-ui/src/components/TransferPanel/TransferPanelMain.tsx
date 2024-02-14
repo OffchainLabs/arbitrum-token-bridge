@@ -12,8 +12,7 @@ import {
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork,
-  getSupportedChainIds
+  isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -60,6 +59,7 @@ import {
 import { defaultErc20Decimals } from '../../defaults'
 import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -68,7 +68,6 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -316,7 +315,6 @@ export function TransferPanelMain({
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const [isTestnetMode] = useIsTestnetMode()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -731,17 +729,11 @@ export function TransferPanelMain({
   }, [actions.app, isDepositMode, selectedToken, token])
 
   type NetworkListboxesProps = {
-    from: Omit<NetworkListboxProps, 'label'>
+    from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    function getSourceChains() {
-      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
-        getWagmiChain
-      )
-    }
-
     function getDestinationChains() {
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
@@ -771,14 +763,10 @@ export function TransferPanelMain({
       )
     }
 
-    const sourceChains = getSourceChains()
     const destinationChains = getDestinationChains()
 
     return {
       from: {
-        disabled: isSmartContractWallet || isLoadingAccountType,
-        options: sourceChains,
-        value: networks.sourceChain,
         onChange: async network => {
           if (networks.destinationChain.id === network.id) {
             switchNetworksOnTransferPanel()
@@ -816,17 +804,35 @@ export function TransferPanelMain({
     isLoadingAccountType,
     networks.sourceChain,
     networks.destinationChain,
-    isTestnetMode,
     setNetworks,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog
   ])
 
+  const buttonStyle = useMemo(
+    () => ({
+      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
+        .primary
+    }),
+    [networks.sourceChain.id]
+  )
+
   return (
     <div className="flex flex-col pb-6">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="From:" {...networkListboxProps.from} />
+          <NetworkSelectionContainer
+            buttonStyle={buttonStyle}
+            buttonClassName={twMerge(
+              'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+            )}
+            onChange={networkListboxProps.from.onChange}
+          >
+            <span className="max-w-[220px] truncate md:max-w-[250px]">
+              From: {getNetworkName(networks.sourceChain.id)}
+            </span>
+            <ChevronDownIcon className="h-4 w-4" />
+          </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
               on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
