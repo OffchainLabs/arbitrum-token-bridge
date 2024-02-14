@@ -14,6 +14,15 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
+import { SafeImage } from '../common/SafeImage'
+
+function TokenLogoFallback() {
+  return (
+    <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
+      ?
+    </div>
+  )
+}
 
 export const TokenInfo = ({
   token,
@@ -50,13 +59,12 @@ export const TokenInfo = ({
 
   return (
     <div className="flex flex-row items-center space-x-3">
-      {tokenLogo ? ( // eslint-disable-next-line @next/next/no-img-element
-        <img src={tokenLogo} alt="Token logo" className="h-6 w-6" />
-      ) : (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
-          ?
-        </div>
-      )}
+      <SafeImage
+        src={tokenLogo}
+        alt="Token logo"
+        className="h-6 w-6 grow-0"
+        fallback={<TokenLogoFallback />}
+      />
       <div className="flex flex-col">
         <div className="flex items-center space-x-1">
           <span className="text-base">{token?.symbol}</span>
