@@ -1,5 +1,13 @@
+import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
+
+export type NetworkType =
+  | 'Ethereum'
+  | 'Rollup'
+  | 'AnyTrust'
+  | 'Ethereum Testnet'
+  | 'Arbitrum Testnet'
 
 export type BridgeUiConfig = {
   color: {
@@ -9,6 +17,7 @@ export type BridgeUiConfig = {
   network: {
     name: string
     logo: string
+    description?: string
   }
   nativeTokenData?: NativeCurrencyBase
 }
@@ -16,7 +25,7 @@ export type BridgeUiConfig = {
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
 
 export const orbitMainnets: {
-  [key in number]: OrbitChainConfig
+  [key: number]: OrbitChainConfig
 } = {
   660279: {
     chainID: 660279,
@@ -36,6 +45,7 @@ export const orbitMainnets: {
     name: 'Xai',
     slug: 'xai',
     partnerChainID: 42161,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0xb15A0826d65bE4c2fDd961b72636168ee70Af030',
@@ -56,6 +66,7 @@ export const orbitMainnets: {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#F30019',
@@ -63,7 +74,9 @@ export const orbitMainnets: {
       },
       network: {
         name: 'Xai',
-        logo: '/images/XaiLogo.svg'
+        logo: '/images/XaiLogo.svg',
+        description:
+          'A chain for Web2 and Web3 gamers to play blockchain games.'
       },
       nativeTokenData: {
         name: 'Xai',
@@ -90,6 +103,7 @@ export const orbitMainnets: {
     name: 'RARI Mainnet',
     slug: 'rari-mainnet',
     partnerChainID: 42161,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0x8bE956aB42274056ef4471BEb211b33e258b7324',
@@ -110,6 +124,7 @@ export const orbitMainnets: {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#B16EFF',
@@ -117,6 +132,8 @@ export const orbitMainnets: {
       },
       network: {
         name: 'RARI Mainnet',
+        description:
+          'A chain designed specifically for NFT royalties and creator empowerment.',
         logo: '/images/RARIMainnetLogo.svg'
       }
     }
@@ -141,6 +158,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     name: 'Xai Orbit Testnet',
     slug: 'xai-testnet',
     partnerChainID: 421613,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0xdBbDc3EE848C05792CC93EA140c59731f920c3F2',
@@ -161,6 +179,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: {
         primary: '#F30019',
@@ -168,7 +187,8 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       },
       network: {
         name: 'Xai Testnet',
-        logo: '/images/XaiLogo.svg'
+        logo: '/images/XaiLogo.svg',
+        description: 'The testnet for Xai’s gaming chain.'
       }
     }
   }

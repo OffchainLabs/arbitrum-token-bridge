@@ -4,14 +4,9 @@ import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
-import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
-import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -23,6 +18,7 @@ import {
 } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Transition } from '../common/Transition'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -215,11 +211,14 @@ export const AdvancedSettings = () => {
         <span>Advanced Settings</span>
         {collapsible && (
           <ChevronDownIcon
-            className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
+            className={twMerge(
+              'ml-1 h-4 w-4 transition-transform duration-200',
+              collapsed ? 'rotate-0' : '-rotate-180'
+            )}
           />
         )}
       </button>
-      {!collapsed && (
+      <Transition isOpen={!collapsed}>
         <>
           <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
             <p className="text-sm font-light">
@@ -289,7 +288,7 @@ export const AdvancedSettings = () => {
             </ExternalLink>
           )}
         </>
-      )}
+      </Transition>
     </div>
   )
 }

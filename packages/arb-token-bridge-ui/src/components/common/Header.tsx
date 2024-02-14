@@ -16,7 +16,7 @@ import {
 import { DOCS_DOMAIN, GET_HELP_LINK } from '../../constants'
 import { ChainId, getExplorerUrl } from '../../util/networks'
 
-const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center lg:bg-black'
+const defaultHeaderClassName = 'z-40 flex h-[80px] justify-center'
 
 function toHeaderMenuProps(
   links: { title: string; link: string }[]

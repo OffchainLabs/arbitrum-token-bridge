@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import { addCustomChain } from '@arbitrum/sdk'
+import {
+  addCustomNetwork,
+  constants as arbitrumSdkConstants
+} from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
@@ -190,10 +193,12 @@ async function mapOrbitConfigToOrbitChain(
     isCustom: true,
     name: data.chainInfo.chainName,
     partnerChainID: data.chainInfo.parentChainId,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 900000,
+    blockTime: arbitrumSdkConstants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     nativeToken: data.chainInfo.nativeToken,
     isArbitrum: true,
     tokenBridge: {
@@ -264,7 +269,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomChain({ customChain })
+      addCustomNetwork({ customL2Network: customChain })
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
@@ -279,8 +284,8 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
-        className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-gray-3"
+        placeholder="Paste the JSON configuration from the 'outputInfo.json' file that's generated at the end of the custom Orbit chain deployment."
+        className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-white/70"
       />
       {error && (
         <div className="relative">
@@ -302,7 +307,7 @@ export const AddCustomChain = () => {
           // Need to replace with an atom
           <button
             onClick={onAddChain}
-            className="arb-hover rounded bg-white p-2 text-sm text-black transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            className="arb-hover rounded bg-white p-2 text-sm text-black transition-all disabled:cursor-not-allowed disabled:bg-gray-4 disabled:opacity-50"
             disabled={!chainJson.trim()}
           >
             Add Chain

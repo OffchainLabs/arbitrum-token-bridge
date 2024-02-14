@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { twMerge } from 'tailwind-merge'
 import { XMarkIcon } from '@heroicons/react/24/outline'
@@ -21,7 +21,15 @@ export const SidePanel = ({
   panelClassNameOverrides = '',
   scrollable = true
 }: SidePanelProps) => {
+  const [open, setOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+
+  // When user refreshes the page with the panel open, the query param starts as true
+  // For the transition to trigger we need to start from false, that's why we need another state
+  // Otherwise it also causes the backdrop to have no opacity so it looks quite bad
+  useEffect(() => {
+    setOpen(isOpen)
+  }, [isOpen])
 
   const handleCloseStart = useCallback(() => {
     setIsClosing(true)
@@ -37,9 +45,9 @@ export const SidePanel = ({
   }, [onClose, setIsClosing])
 
   return (
-    <Transition show={isOpen && !isClosing} as={Fragment}>
+    <Transition show={open && !isClosing} as={Fragment}>
       <Dialog
-        open={isOpen}
+        open={open}
         onClose={handleCloseStart}
         className="fixed z-40 h-screen max-h-screen"
       >
@@ -77,7 +85,7 @@ export const SidePanel = ({
               )}
             >
               <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white">
-                {heading && <span className="text-xl">{heading}</span>}
+                {heading && <span className="text-2xl">{heading}</span>}
                 <button className="arb-hover" onClick={handleCloseStart}>
                   <XMarkIcon
                     className={twMerge(
