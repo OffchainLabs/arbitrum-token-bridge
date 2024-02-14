@@ -6,16 +6,16 @@ export const SidebarFooter = ({ className }: { className?: string }) => {
   return (
     <div
       className={twMerge(
-        'mt-4 flex w-full flex-col gap-3 px-3 pb-4',
+        'mt-[20px] flex w-full flex-col gap-[12px] px-[16px] pb-[16px]',
         className
       )}
     >
-      <div className="border-b border-white/30 py-4 text-base text-white/70">
+      <div className="border-b border-white/30 py-[16px] text-base text-white/70">
         The Most Decentralized <br />
         L2 Technology
       </div>
 
-      <div className="flex flex-nowrap items-center gap-2 text-white/60">
+      <div className="flex flex-nowrap items-center gap-[8px] text-white/60">
         <ExternalLink
           className="cursor-pointer text-xs text-white/60"
           href="https://bridge.arbitrum.io/tos"

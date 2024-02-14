@@ -13,15 +13,15 @@ export const SidebarHeader = () => {
     <div
       className={twMerge(
         'shrink-0 grow-0',
-        'flex-col items-center justify-center gap-x-4 overflow-hidden pb-6',
-        sidebarOpened ? 'px-4' : 'px-1'
+        'flex-col items-center justify-center gap-x-[16px] overflow-hidden pb-[24px]',
+        sidebarOpened ? 'px-[16px]' : 'px-[4px]'
       )}
     >
       <Link
         href="/"
         className={twMerge(
           'arb-hover flex cursor-pointer flex-col items-start',
-          sidebarOpened && 'items-start px-4'
+          sidebarOpened && 'items-start px-[16px]'
         )}
       >
         <Image

@@ -23,9 +23,9 @@ export const Sidebar = () => {
   return (
     <div
       className={twMerge(
-        'relative hidden flex-col justify-between border-r border-gray-6 bg-black pt-6 transition-all duration-200',
+        'relative hidden flex-col justify-between border-r border-gray-6 bg-black pt-[30px] font-normal transition-all duration-200',
         'h-full md:flex lg:sticky lg:top-0 lg:h-screen', // show the sidebar in md/lg+ resolutions, for sm revert to Header
-        sidebarOpened ? 'w-64' : 'w-12 cursor-pointer'
+        sidebarOpened ? 'w-[256px]' : 'w-[48px] cursor-pointer'
       )}
       onClick={clickSidePanel}
     >

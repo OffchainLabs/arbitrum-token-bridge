@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
 import { usePostHog } from 'posthog-js/react'
@@ -57,8 +56,8 @@ const MenuItem = ({
   const { sidebarOpened } = useSidebarStore()
 
   const menuClasses = twMerge(
-    'group flex items-center md:rounded px-[12px] py-2 text-base font-light hover:bg-default-black-hover cursor-pointer hover:opacity-100 hover:text-white',
-    sidebarOpened ? 'gap-x-3 min-w-[200px]' : 'flex-col px-[8px]',
+    'group flex items-center md:rounded px-[12px] py-[8px] text-base hover:bg-white/20 cursor-pointer hover:opacity-100 hover:text-white',
+    sidebarOpened ? 'gap-x-[16px] min-w-[200px]' : 'flex-col px-[8px]',
     activeMenu === menu.id && 'text-white bg-white/20',
     className
   )
@@ -104,7 +103,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-8 flex min-w-[175px] cursor-pointer items-center justify-between md:rounded py-1 pl-4 text-white/60 hover:bg-default-black-hover hover:text-white',
+    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between md:rounded py-[4px] pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 
@@ -113,7 +112,7 @@ const SubMenuItem = ({
       <ExternalLink href={link} className={subMenuClasses} onClick={onClick}>
         {children}
 
-        <ArrowTopRightOnSquareIcon className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
+        <ArrowTopRightOnSquareIcon className="mr-[12px] h-[16px] w-[16px] opacity-50 group-hover:opacity-100" />
       </ExternalLink>
     )
   }
@@ -229,7 +228,7 @@ export const SidebarMenu = ({
       isExternalLink: false,
       onClick: () => toggleActiveMenu('learn'),
       children: (
-        <div className="mb-4 flex flex-col gap-2 text-sm">
+        <div className="mb-[16px] flex flex-col gap-[8px] text-sm">
           {learnMenuItems.map(subMenuItem => (
             <SubMenuItem
               key={stringToKey(subMenuItem.title)}
@@ -254,7 +253,7 @@ export const SidebarMenu = ({
       isExpandable: true,
       onClick: () => toggleActiveMenu('tools'),
       children: (
-        <div className="mb-4 flex flex-col gap-2 text-sm">
+        <div className="mb-[16px] flex flex-col gap-[8px] text-sm">
           {toolsMenuItems.map(subMenuItem => (
             <SubMenuItem
               key={stringToKey(subMenuItem.title)}
@@ -279,7 +278,7 @@ export const SidebarMenu = ({
       isExpandable: true,
       onClick: () => toggleActiveMenu('community'),
       children: (
-        <div className="mb-4 flex flex-col gap-2 text-sm">
+        <div className="mb-[16px] flex flex-col gap-[8px] text-sm">
           {communityMenuItems.map(subMenuItem => (
             <SubMenuItem
               key={stringToKey(subMenuItem.title)}
@@ -324,8 +323,8 @@ export const SidebarMenu = ({
     <div
       className={twMerge(
         'mt-0 flex w-full flex-col text-white/70',
-        'lg:mt-4 lg:shrink lg:grow lg:gap-1 lg:overflow-auto',
-        sidebarOpened ? 'px-4' : 'px-1',
+        'lg:mt-[20px] lg:shrink lg:grow lg:gap-[8px] lg:overflow-auto',
+        sidebarOpened ? 'px-[16px]' : 'px-[4px]',
         className
       )}
     >
@@ -336,7 +335,7 @@ export const SidebarMenu = ({
             <Image
               src={menu.iconSrc}
               alt={menu.title}
-              className={twMerge('h-6 w-6')}
+              className={twMerge('h-[24px] w-[24px]')}
             />
 
             {/* Menu title */}
@@ -354,7 +353,7 @@ export const SidebarMenu = ({
             {menu.isExpandable && (
               <ChevronDownIcon
                 className={twMerge(
-                  'h-3 w-3 transition duration-200 md:h-4 md:w-4',
+                  'h-[16px] w-[16px] transition duration-200',
                   menu.id === activeMenu && 'rotate-180',
                   !sidebarOpened && 'hidden md:inline'
                 )}
@@ -364,7 +363,7 @@ export const SidebarMenu = ({
             {menu.isExternalLink && (
               <ArrowTopRightOnSquareIcon
                 className={twMerge(
-                  'h-4 w-4 opacity-70 group-hover:opacity-100',
+                  'h-[16px] w-[16px] opacity-70 group-hover:opacity-100',
                   !sidebarOpened && 'hidden'
                 )}
               />
