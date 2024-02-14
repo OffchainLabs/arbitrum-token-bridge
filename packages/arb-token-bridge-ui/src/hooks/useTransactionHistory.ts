@@ -405,8 +405,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   )
 
   const deposits = (depositsData || []).flat()
+  console.log('XXXX deposits without statuses', deposits)
 
   const withdrawals = (withdrawalsData || []).flat()
+  console.log('XXXX withdrawals without statuses', withdrawals)
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [
@@ -414,6 +416,8 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     ...withdrawals,
     ...combinedCctpTransfers
   ].flat()
+
+  console.log('XXXX transactions without statuses', transactions)
 
   return {
     data: transactions,
@@ -535,6 +539,14 @@ export const useTransactionHistory = (
 
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
+
+      console.log('xxxxx dedupedTransactions', dedupedTransactions)
+
+      /***
+       * Deduped transactions already have a lot of info
+       *
+       *
+       */
 
       return Promise.all(
         dedupedTransactions

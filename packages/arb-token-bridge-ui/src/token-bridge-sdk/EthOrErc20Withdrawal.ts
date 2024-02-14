@@ -12,6 +12,7 @@ import { OutgoingMessageState } from '../hooks/arbTokenBridge.types'
 export class EthOrErc20Withdrawal extends BridgeTransfer {
   public requiresClaim = true
   public isClaimable = false
+  public isPendingUserAction = false
 
   private constructor(props: {
     status: BridgeTransferStatus
@@ -118,8 +119,9 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
       return 'destination_chain_tx_success'
     } else if (messageStatus === OutgoingMessageState.CONFIRMED) {
       this.isClaimable = true
+      this.isPendingUserAction = true
     }
-    return 'source_chain_tx_success'
+    return 'destination_chain_tx_pending'
   }
 
   public async claim(): Promise<void> {

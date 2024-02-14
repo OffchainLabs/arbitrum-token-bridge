@@ -8,7 +8,7 @@ import {
 } from './BridgeTransferStarter'
 import { getAddressFromSigner } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
-import { EthOrErc20Withdrawal } from './EthorErc20Withdrawal'
+import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'

@@ -17,6 +17,7 @@ import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 export class EthDeposit extends BridgeTransfer {
   public requiresClaim = false
   public isClaimable = false
+  public isPendingUserAction = false
 
   private constructor(props: {
     status: BridgeTransferStatus

@@ -23,6 +23,8 @@ export abstract class BridgeTransfer {
   public destinationChainTx?: ContractTransaction
   public destinationChainTxReceipt?: ContractReceipt
 
+  abstract isPendingUserAction: boolean // if the transfer is pending user - like claim or redeem
+
   // claim status
   abstract requiresClaim: boolean // if the transfer requires a claim to proceed
   abstract isClaimable: boolean // is requires claim, then is the transfer claimable now?
@@ -79,7 +81,7 @@ export abstract class BridgeTransfer {
         props.onChange(this)
       }
 
-      if (this.isStatusFinal(this.status)) {
+      if (this.isStatusFinal(this.status) || this.isPendingUserAction) {
         clearInterval(intervalId)
       }
     }, props.intervalMs ?? 15_000)

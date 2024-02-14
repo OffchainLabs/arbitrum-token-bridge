@@ -18,7 +18,7 @@ import {
 import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
-import { EthOrErc20Withdrawal } from './EthorErc20Withdrawal'
+import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'

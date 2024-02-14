@@ -12,6 +12,7 @@ import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 export class Erc20Deposit extends BridgeTransfer {
   public requiresClaim = false
   public isClaimable = false
+  public isPendingUserAction = false
   public claim(): void {
     //no-op
   }
@@ -122,6 +123,7 @@ export class Erc20Deposit extends BridgeTransfer {
       return 'source_chain_tx_success'
     }
 
+    this.isPendingUserAction = true // try for redemption
     return 'destination_chain_tx_error'
   }
 }
