@@ -46,7 +46,7 @@ export function WithdrawalConfirmationDialog(
   const { childChain, childChainProvider, parentChain } =
     useNetworksRelationship(networks)
 
-  const [isFastBridgesTab, setIsFastBridgesTab] = useState(true)
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
   const destinationNetworkName = getNetworkName(parentChain.id)
 
@@ -82,12 +82,14 @@ export function WithdrawalConfirmationDialog(
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
+  const isFastBridgesTab = isArbitrumOne && selectedIndex === 0
+
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
 
     setCheckbox1Checked(false)
     setCheckbox2Checked(false)
-    setIsFastBridgesTab(true)
+    setSelectedIndex(0)
   }
 
   return (
@@ -100,7 +102,7 @@ export function WithdrawalConfirmationDialog(
       actionButtonProps={{ disabled: !bothCheckboxesChecked }}
     >
       <div className="flex flex-col pt-4">
-        <Tab.Group onChange={index => setIsFastBridgesTab(index === 0)}>
+        <Tab.Group onChange={setSelectedIndex}>
           <Tab.List className="border-b border-gray-dark">
             {isArbitrumOne && <TabButton>Third party bridge</TabButton>}
             <TabButton>Arbitrum’s bridge</TabButton>
