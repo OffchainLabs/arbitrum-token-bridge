@@ -41,7 +41,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 
-const ARB_ONE_NATIVE_USDC_TOKEN = {
+export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
@@ -51,7 +51,7 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
+export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,

@@ -364,10 +364,7 @@ export function TokenImportDialog({
         )}
 
         <div className="flex flex-col pb-4">
-          <TokenInfo
-            token={tokenToImport}
-            options={{ showTokenLogo: false, shortenAddress: false }}
-          />
+          <TokenInfo token={tokenToImport} showFullAddress />
 
           {status === ImportStatus.UNKNOWN && (
             <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark">
