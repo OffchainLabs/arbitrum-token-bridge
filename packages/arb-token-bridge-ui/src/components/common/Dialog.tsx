@@ -161,7 +161,7 @@ export function Dialog(props: DialogProps) {
               className
             )}
           >
-            <div className="flex items-center justify-between px-6 pt-4">
+            <div className="flex items-start justify-between px-6 pt-4">
               <HeadlessUIDialog.Title className="text-xl text-gray-2">
                 {props.title}
               </HeadlessUIDialog.Title>
