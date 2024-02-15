@@ -16,5 +16,20 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
+export function pluralizeWord({
+  word,
+  shouldPluralize = true,
+  postfix = 's'
+}: {
+  word: string
+  shouldPluralize?: boolean
+  postfix?: string
+}) {
+  if (!shouldPluralize) {
+    return word
+  }
+  return word + postfix
+}
+
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'

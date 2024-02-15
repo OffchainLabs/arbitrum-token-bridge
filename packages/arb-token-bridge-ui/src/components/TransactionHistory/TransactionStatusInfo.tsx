@@ -16,6 +16,7 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { Button } from '../common/Button'
 import { isTxClaimable, isTxPending } from './helpers'
 import { Transition } from '../common/Transition'
+import { pluralizeWord } from '../../util/CommonUtils'
 
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
@@ -60,15 +61,15 @@ export const TransactionStatusInfo = () => {
   }, [numClaimableTransactions, numRetryablesToRedeem, numPendingTransactions])
 
   const Content = useCallback(() => {
-    const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${
-      numClaimableTransactions === 1 ? 'transaction' : 'transactions'
-    }`
-    const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${
-      numRetryablesToRedeem === 1 ? 'transaction' : 'transactions'
-    }`
-    const numPendingTransactionsString = `${numPendingTransactions} pending ${
-      numPendingTransactions === 1 ? 'transaction' : 'transactions'
-    }`
+    const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
+      { word: 'transaction', shouldPluralize: numClaimableTransactions > 1 }
+    )}`
+    const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${pluralizeWord(
+      { word: 'transaction', shouldPluralize: numRetryablesToRedeem > 1 }
+    )}`
+    const numPendingTransactionsString = `${numPendingTransactions} pending ${pluralizeWord(
+      { word: 'transaction', shouldPluralize: numPendingTransactions > 1 }
+    )}`
 
     if (numClaimableTransactions > 0 && numRetryablesToRedeem > 0) {
       return (
@@ -77,7 +78,7 @@ export const TransactionStatusInfo = () => {
           <span>
             Time sensitive: You must{' '}
             <span className="font-bold">{numRetryablesToRedeemString}</span> and{' '}
-            <span className="font-bold">{numClaimableTransactionsString}</span>{' '}
+            <span className="font-bold">{numClaimableTransactionsString}</span>
           </span>
         </div>
       )
@@ -89,7 +90,7 @@ export const TransactionStatusInfo = () => {
           <ExclamationTriangleIcon width={20} />
           <span>
             You must{' '}
-            <span className="font-bold">{numRetryablesToRedeemString}</span>{' '}
+            <span className="font-bold">{numRetryablesToRedeemString}</span>
           </span>
         </div>
       )
@@ -101,7 +102,7 @@ export const TransactionStatusInfo = () => {
           <ExclamationTriangleIcon width={20} />
           <span>
             You must{' '}
-            <span className="font-bold">{numClaimableTransactionsString}</span>{' '}
+            <span className="font-bold">{numClaimableTransactionsString}</span>
           </span>
         </div>
       )
@@ -113,7 +114,7 @@ export const TransactionStatusInfo = () => {
           <Image src={ArrowsIcon} width={20} height={20} alt="Transactions" />
           <span>
             You have{' '}
-            <span className="font-bold">{numPendingTransactionsString}</span>{' '}
+            <span className="font-bold">{numPendingTransactionsString}</span>
           </span>
         </div>
       )
@@ -137,7 +138,7 @@ export const TransactionStatusInfo = () => {
 
   return (
     <Transition isOpen={shouldShow} options={{ enterSpeed: 'normal' }}>
-      {shouldShow ? (
+      {shouldShow && (
         <Button
           className={twMerge(
             'w-full border border-white/30 p-3',
@@ -151,7 +152,7 @@ export const TransactionStatusInfo = () => {
         >
           <Content />
         </Button>
-      ) : null}
+      )}
     </Transition>
   )
 }
