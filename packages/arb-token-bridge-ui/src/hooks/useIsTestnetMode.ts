@@ -1,4 +1,5 @@
 import { useLocalStorage } from '@uidotdev/usehooks'
+import { useMemo } from 'react'
 
 const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
 
@@ -8,5 +9,8 @@ export const useIsTestnetMode = () => {
     false
   )
 
-  return [isTestnetMode, setIsTestnetMode] as const
+  return useMemo(
+    () => [isTestnetMode, setIsTestnetMode] as const,
+    [isTestnetMode, setIsTestnetMode]
+  )
 }
