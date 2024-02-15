@@ -53,7 +53,7 @@ export const SidePanel = ({
       >
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-[400ms]"
+          enter="ease-out duration-400"
           enterFrom="opacity-0"
           enterTo="opacity-80"
           leave="ease-in duration-300"

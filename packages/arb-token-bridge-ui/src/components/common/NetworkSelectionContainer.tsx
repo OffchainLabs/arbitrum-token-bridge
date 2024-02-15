@@ -12,6 +12,7 @@ import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -28,6 +29,7 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
+import { Transition } from './Transition'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -102,7 +104,7 @@ function NetworkRow({
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg hover:bg-white/10',
+        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
         chainId === sourceChain.id && 'bg-white/10' // selected row
       )}
     >
@@ -315,33 +317,52 @@ export const NetworkSelectionContainer = ({
 
   return (
     <Popover className="relative w-full lg:w-max">
-      <Popover.Button
-        style={buttonStyle}
-        disabled={isSmartContractWallet || isLoadingAccountType}
-        className={buttonClassName}
-        onClick={onPopoverButtonClick}
-      >
-        {children}
-      </Popover.Button>
+      {({ open }) => (
+        <>
+          <Popover.Button
+            style={buttonStyle}
+            disabled={isSmartContractWallet || isLoadingAccountType}
+            className={buttonClassName}
+            onClick={onPopoverButtonClick}
+          >
+            {children}
+            <ChevronDownIcon
+              className={twMerge(
+                'h-4 w-4 transition-transform duration-200',
+                open ? '-rotate-180' : 'rotate-0'
+              )}
+            />
+          </Popover.Button>
 
-      <Popover.Panel className={twMerge(panelWrapperClassnames)}>
-        {({ close }) => {
-          function onClose() {
-            onPopoverClose()
-            close()
-          }
-          return (
-            <SearchPanel>
-              <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
-                <SearchPanel.PageTitle title="Select Network">
-                  <SearchPanel.CloseButton onClick={onClose} />
-                </SearchPanel.PageTitle>
-                <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
-              </SearchPanel.MainPage>
-            </SearchPanel>
-          )
-        }}
-      </Popover.Panel>
+          <Transition
+            className="fixed left-0 top-0 z-50 lg:absolute lg:top-[62px]"
+            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+            options={{ unmountOnLeave: false }}
+          >
+            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
+              {({ close }) => {
+                function onClose() {
+                  onPopoverClose()
+                  close()
+                }
+                return (
+                  <SearchPanel>
+                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
+                      <SearchPanel.PageTitle title="Select Network">
+                        <SearchPanel.CloseButton onClick={onClose} />
+                      </SearchPanel.PageTitle>
+                      <NetworksPanel
+                        close={onClose}
+                        onNetworkRowClick={onChange}
+                      />
+                    </SearchPanel.MainPage>
+                  </SearchPanel>
+                )
+              }}
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
     </Popover>
   )
 }

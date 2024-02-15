@@ -14,6 +14,7 @@ import {
 } from '../common/SearchPanel/SearchPanelUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Transition } from '../common/Transition'
 
 export function TokenButton(): JSX.Element {
   const {
@@ -66,42 +67,58 @@ export function TokenButton(): JSX.Element {
 
   return (
     <>
-      <Popover className="h-full">
-        <Popover.Button
-          className="arb-hover h-full w-max rounded-bl rounded-tl px-3 text-white"
-          aria-label="Select Token"
-        >
-          <div className="flex items-center space-x-2">
-            {tokenLogo && (
-              // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-              // It would throw error if it's loaded from external domains
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={tokenLogo}
-                alt="Token logo"
-                className="h-5 w-5 sm:h-8 sm:w-8"
-              />
-            )}
-            <span className="text-xl font-light sm:text-3xl">
-              {tokenSymbol}
-            </span>
-            <ChevronDownIcon className="h-4 w-4 text-gray-6" />
-          </div>
-        </Popover.Button>
-        <Popover.Panel
-          className={twMerge(
-            panelWrapperClassnames,
-            'lg:ml-12 lg:min-w-[466px]'
-          )}
-        >
-          {({ close }) => {
-            function onClose() {
-              onPopoverClose()
-              close()
-            }
-            return <TokenSearch className="px-5 py-4" close={onClose} />
-          }}
-        </Popover.Panel>
+      <Popover className="relative h-full">
+        {({ open }) => (
+          <>
+            <Popover.Button
+              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 text-white"
+              aria-label="Select Token"
+            >
+              <div className="flex items-center space-x-2">
+                {tokenLogo && (
+                  // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
+                  // It would throw error if it's loaded from external domains
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={tokenLogo}
+                    alt="Token logo"
+                    className="h-5 w-5 sm:h-8 sm:w-8"
+                  />
+                )}
+                <span className="text-xl font-light sm:text-3xl">
+                  {tokenSymbol}
+                </span>
+                <ChevronDownIcon
+                  className={twMerge(
+                    'h-4 w-4 text-gray-6 transition-transform duration-200',
+                    open ? '-rotate-180' : 'rotate-0'
+                  )}
+                />
+              </div>
+            </Popover.Button>
+
+            <Transition
+              // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+              options={{ unmountOnLeave: false }}
+              className="fixed left-0 top-0 z-50 lg:absolute lg:top-16"
+            >
+              <Popover.Panel className={panelWrapperClassnames}>
+                {({ close }) => {
+                  function onClose() {
+                    onPopoverClose()
+                    close()
+                  }
+                  return (
+                    <TokenSearch
+                      className="px-5 py-4 lg:w-[466px]"
+                      close={onClose}
+                    />
+                  )
+                }}
+              </Popover.Panel>
+            </Transition>
+          </>
+        )}
       </Popover>
     </>
   )
