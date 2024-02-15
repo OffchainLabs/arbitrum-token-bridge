@@ -911,7 +911,7 @@ export function TransferPanelMain({
         <EstimatedGas chainType="source" />
       </NetworkContainer>
 
-      <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
+      <div className="z-[1] flex h-10 w-full items-center justify-center lg:h-12">
         <SwitchNetworksButton
           onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
