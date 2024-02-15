@@ -393,12 +393,10 @@ export function TokenRow({
     isBridgeable: tokenIsBridgeable
   } = useTokenInfo(token)
 
-  const buttonOnClick = () => onTokenSelected(token)
-
   return (
     <button
       type="button"
-      onClick={buttonOnClick}
+      onClick={() => onTokenSelected(token)}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
       className={twMerge(
