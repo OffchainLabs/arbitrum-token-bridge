@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
@@ -13,6 +13,7 @@ import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from 'react-use'
+
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
@@ -24,14 +25,8 @@ import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { useDialog } from '../common/Dialog'
-import {
-  HeaderContent,
-  HeaderOverrides,
-  HeaderOverridesProps
-} from '../common/Header'
+import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { Notifications } from '../common/Notifications'
 import { isNetwork, rpcURLs } from '../../util/networks'
 import {
   ArbQueryParamProvider,
@@ -65,25 +60,11 @@ const rainbowkitTheme = merge(darkTheme(), {
 } as Theme)
 
 const AppContent = (): JSX.Element => {
-  const [{ sourceChain }] = useNetworks()
   const {
     app: { connectionState }
   } = useAppState()
 
   useSyncQueryParamsToTestnetMode()
-
-  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    if (isNetwork(sourceChain.id).isTestnet) {
-      return {
-        imageSrc: 'images/HeaderArbitrumLogoTestnet.webp',
-        className: 'lg:bg-ocl-blue'
-      }
-    }
-
-    return {
-      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg'
-    }
-  }, [sourceChain.id])
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
@@ -99,15 +80,11 @@ const AppContent = (): JSX.Element => {
 
   return (
     <>
-      <HeaderOverrides {...headerOverridesProps} />
-
-      <HeaderContent>
+      <Header>
         <HeaderAccountPopover />
-      </HeaderContent>
-
+      </Header>
       <TokenListSyncer />
       <BalanceUpdater />
-      <Notifications />
       <MainContent />
     </>
   )
@@ -315,9 +292,9 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
   if (!isConnected) {
     return (
       <>
-        <HeaderContent>
+        <Header>
           <HeaderConnectWalletButton />
-        </HeaderContent>
+        </Header>
 
         <AppConnectionFallbackContainer>
           <span className="text-white">
@@ -328,7 +305,7 @@ function NetworkReady({ children }: { children: React.ReactNode }) {
     )
   }
 
-  return <>{children}</>
+  return children
 }
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
@@ -392,25 +369,6 @@ function ConnectedChainSyncer() {
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-  const [tosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
 
   return (
     <Provider value={overmind}>
@@ -421,10 +379,12 @@ export default function App() {
             {...rainbowKitProviderProps}
           >
             <ConnectedChainSyncer />
-            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
+            <WelcomeDialog />
             <NetworkReady>
               <AppContextProvider>
-                <Injector>{isTosAccepted && <AppContent />}</Injector>
+                <Injector>
+                  <AppContent />
+                </Injector>
               </AppContextProvider>
             </NetworkReady>
           </RainbowKitProvider>
