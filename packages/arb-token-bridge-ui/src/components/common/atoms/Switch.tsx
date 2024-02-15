@@ -28,16 +28,14 @@ export const Switch = ({
             checked={checked}
             onChange={onChange}
             className={twMerge(
-              'relative inline-flex h-3 w-7 items-center rounded-full transition-colors ui-checked:bg-white ui-not-checked:bg-white/50 [&:disabled]:cursor-not-allowed [.toggle-switch:hover_&]:ui-not-checked:bg-white/70 [label:hover_&]:ui-not-checked:bg-white/70',
+              'relative inline-flex h-3 w-7 items-center rounded-full transition-colors ui-checked:bg-white ui-not-checked:bg-white/50 [&:disabled]:cursor-not-allowed',
               'duration-200 [&_span]:bg-black [&_span]:ui-checked:translate-x-[22px] [&_span]:ui-not-checked:translate-x-[3px] [&~*]:ui-checked:text-white',
               className
             )}
             disabled={disabled}
             aria-label={name}
           >
-            <span
-              className={`inline-block h-[10px] w-[10px] transform rounded-full transition-transform`}
-            />
+            <span className="inline-block h-[10px] w-[10px] transform rounded-full transition-transform" />
           </HeadlessSwitch>
 
           {label && (
@@ -48,9 +46,8 @@ export const Switch = ({
             </HeadlessSwitch.Label>
           )}
         </div>
-
         {description && (
-          <HeadlessSwitch.Description className="mt-1 pl-11 text-sm text-gray-3 text-white/50">
+          <HeadlessSwitch.Description className="mt-1 pl-10 text-sm text-white/70">
             {description}
           </HeadlessSwitch.Description>
         )}

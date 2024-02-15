@@ -106,7 +106,8 @@ module.exports = {
         'search-panel': '0px 4px 10px 0px rgba(120, 120, 120, 0.25)'
       },
       transitionDuration: {
-        400: '400ms'
+        400: '400ms',
+        1000: '1000ms'
       }
     }
   }
