@@ -102,18 +102,18 @@ export function TokenButton(): JSX.Element {
               options={{ unmountOnLeave: false }}
               className="fixed left-0 top-0 z-50 lg:absolute lg:top-16"
             >
-              <Popover.Panel className={panelWrapperClassnames}>
+              <Popover.Panel
+                className={twMerge(
+                  panelWrapperClassnames,
+                  'px-5 py-4 lg:ml-12 lg:min-w-[466px]'
+                )}
+              >
                 {({ close }) => {
                   function onClose() {
                     onPopoverClose()
                     close()
                   }
-                  return (
-                    <TokenSearch
-                      className="px-5 py-4 lg:w-[466px]"
-                      close={onClose}
-                    />
-                  )
+                  return <TokenSearch close={onClose} />
                 }}
               </Popover.Panel>
             </Transition>
