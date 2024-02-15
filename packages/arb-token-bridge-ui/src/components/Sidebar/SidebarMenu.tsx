@@ -1,3 +1,4 @@
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
@@ -44,21 +45,20 @@ const stringToKey = (str: string) => str.split(' ').join('_').toLowerCase()
 
 const MenuItem = ({
   menu,
-  activeMenu,
   children,
   className
 }: {
   menu: MenuConfig
-  activeMenu: string
   children?: React.ReactNode
   className?: string
 }) => {
   const { sidebarOpened } = useSidebarStore()
+  const pathname = usePathname()
 
   const menuClasses = twMerge(
     'group flex items-center sm:rounded px-[12px] py-[8px] text-base hover:bg-white/20 cursor-pointer hover:opacity-100 hover:text-white',
     sidebarOpened ? 'gap-x-[16px] min-w-[200px]' : 'flex-col px-[8px]',
-    activeMenu === menu.id && 'text-white bg-white/20',
+    pathname === menu.link && 'text-white bg-white/20',
     className
   )
 
@@ -237,6 +237,7 @@ export const SidebarMenu = ({
       id: 'bridge',
       title: 'Bridge',
       iconSrc: IconBridge,
+      link: '/',
       isExternalLink: false,
       onClick: () => {
         menuItemClickCallback?.()
@@ -354,7 +355,7 @@ export const SidebarMenu = ({
     >
       {menuConfig.map((menu, index) => (
         <Fragment key={`menu-${index}`}>
-          <MenuItem menu={menu} activeMenu={activeMenu}>
+          <MenuItem menu={menu}>
             {/* Menu icon */}
             <Image
               src={menu.iconSrc}
