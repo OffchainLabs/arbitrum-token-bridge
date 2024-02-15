@@ -19,22 +19,24 @@ type TransitionProps = PropsWithChildren<{
 function getDurationClassName(speed: TransitionSpeed) {
   switch (speed) {
     case 'slow':
-      return 'duration-[1000ms]'
+      return 'duration-1000'
     case 'normal':
       return 'duration-500'
-    default:
+    case 'fast':
       return 'duration-200'
   }
 }
 
 export const Transition = (props: TransitionProps) => {
-  const enterSpeed = props.options?.enterSpeed ?? 'fast'
-  const leaveSpeed = props.options?.leaveSpeed ?? 'fast'
-  const unmountOnLeave = props.options?.unmountOnLeave ?? true
+  const { options, children, className, isOpen } = props
+
+  const enterSpeed = options?.enterSpeed ?? 'fast'
+  const leaveSpeed = options?.leaveSpeed ?? 'fast'
+  const unmountOnLeave = options?.unmountOnLeave ?? true
 
   return (
     <HeadlessUiTransition
-      show={props.isOpen}
+      show={isOpen}
       unmount={unmountOnLeave}
       enter={twMerge('transition ease-out', getDurationClassName(enterSpeed))}
       enterFrom="opacity-0 translate-y-1"
@@ -42,9 +44,9 @@ export const Transition = (props: TransitionProps) => {
       leave={twMerge('transition ease-in', getDurationClassName(leaveSpeed))}
       leaveFrom="opacity-100 translate-y-0"
       leaveTo="opacity-0 translate-y-1"
-      className={props.className}
+      className={className}
     >
-      {props.children}
+      {children}
     </HeadlessUiTransition>
   )
 }
