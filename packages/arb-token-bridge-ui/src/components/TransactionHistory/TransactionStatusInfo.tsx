@@ -137,11 +137,15 @@ export const TransactionStatusInfo = () => {
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
 
   return (
-    <Transition isOpen={shouldShow} options={{ enterSpeed: 'normal' }}>
+    <Transition
+      isOpen={shouldShow}
+      options={{ enterSpeed: 'normal' }}
+      className="px-5 sm:px-0"
+    >
       {shouldShow && (
         <Button
           className={twMerge(
-            'w-full border border-white/30 p-3',
+            'mt-4 w-full border border-white/30 p-3 text-left sm:mt-0',
             buttonBgClassName
           )}
           onClick={openTransactionHistoryPanel}

@@ -70,9 +70,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         <div
-          className={`flex flex-row items-center justify-${
-            props.textLeft ? 'start' : 'center'
-          } space-x-3`}
+          className={twMerge(
+            'flex flex-row items-center space-x-3',
+            props.textLeft ? 'justify-start' : 'justify-center',
+            props.showArrow && 'pr-4'
+          )}
         >
           {showLoader && (
             <Loader
@@ -85,7 +87,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {props.showArrow && (
           <ArrowRightIcon
             className={twMerge(
-              'absolute right-3 top-[50%] hidden translate-y-[-50%] transition-transform duration-300 md:block',
+              'absolute right-3 top-[50%] translate-y-[-50%] transition-transform duration-300',
               hovered && 'translate-x-[3px]'
             )}
             width={16}
