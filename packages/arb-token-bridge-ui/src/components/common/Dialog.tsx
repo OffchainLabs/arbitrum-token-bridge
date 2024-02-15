@@ -1,5 +1,5 @@
 import { Dialog as HeadlessUIDialog, Transition } from '@headlessui/react'
-import { Fragment, useCallback, useRef, useState } from 'react'
+import { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
@@ -79,7 +79,10 @@ export function useDialog(params?: UseDialogParams): UseDialogResult {
     []
   )
 
-  return [{ isOpen, onClose: closeDialog }, openDialog, { didOpen }]
+  return useMemo(
+    () => [{ isOpen, onClose: closeDialog }, openDialog, { didOpen }],
+    [closeDialog, didOpen, isOpen, openDialog]
+  )
 }
 
 export type DialogProps = {
