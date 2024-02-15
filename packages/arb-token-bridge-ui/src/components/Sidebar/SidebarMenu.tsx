@@ -53,7 +53,7 @@ const MenuItem = ({
   className?: string
 }) => {
   const { sidebarOpened } = useSidebarStore()
-  const pathname = usePathname()
+  const pathname = usePathname().replace('/', '')
 
   const menuClasses = twMerge(
     'group flex items-center sm:rounded px-[12px] py-[8px] text-base hover:bg-white/20 cursor-pointer hover:opacity-100 hover:text-white',
@@ -237,7 +237,7 @@ export const SidebarMenu = ({
       id: 'bridge',
       title: 'Bridge',
       iconSrc: IconBridge,
-      link: '/',
+      link: '',
       isExternalLink: false,
       onClick: () => {
         menuItemClickCallback?.()

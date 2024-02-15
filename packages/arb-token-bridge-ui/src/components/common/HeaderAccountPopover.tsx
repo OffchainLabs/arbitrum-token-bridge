@@ -137,7 +137,7 @@ export function HeaderAccountPopover({
     'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm sm:text-sm text-white hover:bg-ocl-blue sm:px-4 sm:py-1'
 
   return (
-    <Popover className="relative z-50 w-full px-4 sm:w-max sm:p-0">
+    <Popover className="relative w-full px-4 sm:w-max sm:p-0">
       <Popover.Button
         className={twMerge(
           'flex w-full flex-row items-center justify-start gap-3 px-2 py-2',

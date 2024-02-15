@@ -61,7 +61,7 @@ export function Header({ children }: { children: React.ReactNode }) {
 
 function HeaderMobile({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed left-0 top-0 z-50 flex h-screen w-full flex-col items-center overflow-auto bg-dark sm:hidden">
+    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center overflow-auto bg-dark sm:hidden">
       <Disclosure.Button
         className="flex h-12 w-full justify-end px-4 pt-3 sm:hidden"
         onClick={onMobileMenuClose}
