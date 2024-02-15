@@ -201,7 +201,6 @@ export const SidebarMenu = ({
       iconSrc: IconProjects,
       isExternalLink: false,
       isExpandable: true,
-      link: '',
       onClick: () => {
         toggleActiveMenu('projects')
       },
