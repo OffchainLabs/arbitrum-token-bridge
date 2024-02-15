@@ -166,11 +166,11 @@ export function HeaderAccountPopover({
       <Transition className="z-40 w-full sm:absolute sm:top-0">
         <Popover.Panel className="flex w-full flex-col overflow-hidden rounded bg-dark pb-2 sm:absolute sm:top-0">
           {/* Profile photo with address */}
-          <Transition isOpen={showCopied}>
-            <span className="absolute right-4 top-4 z-10 text-xs text-white">
+          {showCopied && (
+            <span className="absolute right-2 top-4 z-50 text-xs text-white">
               Copied to clipboard!
             </span>
-          </Transition>
+          )}
           <button
             className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 text-white/70 hover:text-white sm:flex"
             onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
