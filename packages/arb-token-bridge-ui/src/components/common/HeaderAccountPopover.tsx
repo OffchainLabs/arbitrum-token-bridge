@@ -134,37 +134,37 @@ export function HeaderAccountPopover({
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm lg:text-sm text-white hover:bg-ocl-blue lg:px-4 lg:py-1'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm sm:text-sm text-white hover:bg-ocl-blue sm:px-4 sm:py-1'
 
   return (
-    <Popover className="relative z-50 w-full px-4 lg:w-max lg:p-0">
+    <Popover className="relative z-50 w-full px-4 sm:w-max sm:p-0">
       <Popover.Button
         className={twMerge(
           'flex w-full flex-row items-center justify-start gap-3 px-2 py-2',
           'ui-open:bg-white/20 ui-not-open:bg-transparent ui-not-open:hover:bg-white/20',
-          'lg:w-max lg:rounded lg:border',
+          'sm:w-max sm:rounded sm:border',
           isTestnet
-            ? 'lg:border-white lg:ui-not-open:bg-white/20'
-            : 'lg:border-gray-1 lg:bg-gray-1'
+            ? 'sm:border-white sm:ui-not-open:bg-white/20'
+            : 'sm:border-gray-1 sm:bg-gray-1'
         )}
         role="button"
         aria-label="Account Header Button"
       >
         <SafeImage
           src={ensAvatar || undefined}
-          className="h-6 w-6 rounded-full lg:h-8 lg:w-8"
+          className="h-6 w-6 rounded-full sm:h-8 sm:w-8"
           fallback={
             <CustomBoringAvatar size={isSmallScreen ? 30 : 40} name={address} />
           }
         />
-        <span className="text-lg text-white lg:text-base">
+        <span className="text-lg text-white sm:text-base">
           {ensName ?? udInfo.name ?? accountShort}
         </span>
 
         <ChevronDownIcon className="ml-auto h-3 w-3 text-white" />
       </Popover.Button>
       <Transition>
-        <Popover.Panel className="relative flex w-full flex-col overflow-hidden rounded bg-dark pb-2 lg:absolute lg:top-0">
+        <Popover.Panel className="relative flex w-full flex-col overflow-hidden rounded bg-dark pb-2 sm:absolute sm:top-0">
           {/* Profile photo with address */}
           <Transition show={showCopied}>
             <span className="absolute right-4 top-4 z-10 text-xs text-white">
@@ -172,7 +172,7 @@ export function HeaderAccountPopover({
             </span>
           </Transition>
           <button
-            className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 text-white/70 hover:text-white lg:flex"
+            className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 text-white/70 hover:text-white sm:flex"
             onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
           >
             {/* Blurred background */}
@@ -204,7 +204,7 @@ export function HeaderAccountPopover({
             </div>
           </button>
 
-          <div className="flex w-full flex-col justify-between lg:flex-col lg:items-end lg:px-0">
+          <div className="flex w-full flex-col justify-between sm:flex-col sm:items-end sm:px-0">
             {/* Transactions button */}
             {isCorrectNetworkConnected && (
               <button

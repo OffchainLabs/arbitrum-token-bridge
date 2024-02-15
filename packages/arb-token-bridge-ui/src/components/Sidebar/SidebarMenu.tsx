@@ -56,7 +56,7 @@ const MenuItem = ({
   const { sidebarOpened } = useSidebarStore()
 
   const menuClasses = twMerge(
-    'group flex items-center md:rounded px-[12px] py-[8px] text-base hover:bg-white/20 cursor-pointer hover:opacity-100 hover:text-white',
+    'group flex items-center sm:rounded px-[12px] py-[8px] text-base hover:bg-white/20 cursor-pointer hover:opacity-100 hover:text-white',
     sidebarOpened ? 'gap-x-[16px] min-w-[200px]' : 'flex-col px-[8px]',
     activeMenu === menu.id && 'text-white bg-white/20',
     className
@@ -103,7 +103,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between md:rounded py-[4px] pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
+    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 
@@ -131,6 +131,14 @@ const SubMenuItem = ({
     </button>
   )
 }
+
+const projectCategories = {
+  DeFi: 'defi',
+  'Bridges and On-ramps': 'bridges-and-on-ramps',
+  Gaming: 'gaming',
+  NFTs: 'nfts',
+  'Infra & Tools': 'infra-and-tools'
+} as const
 
 export const SidebarMenu = ({
   menuItemClickCallback,
@@ -192,11 +200,27 @@ export const SidebarMenu = ({
       title: 'Projects',
       iconSrc: IconProjects,
       isExternalLink: false,
-      isExpandable: false,
-      link: PORTAL_DOMAIN,
+      isExpandable: true,
+      link: '',
       onClick: () => {
         toggleActiveMenu('projects')
-      }
+      },
+      children: (
+        <div className="mb-[16px] flex flex-col gap-[8px] text-sm">
+          {Object.entries(projectCategories).map(([categoryName, path]) => (
+            <SubMenuItem
+              link={`${PORTAL_DOMAIN}/projects/${path}`}
+              onClick={() => {
+                menuItemClickCallback?.()
+                sendClickEventForMenuItem(categoryName)
+              }}
+              key={path}
+            >
+              {categoryName}
+            </SubMenuItem>
+          ))}
+        </div>
+      )
     },
     {
       id: 'missions',
@@ -323,7 +347,7 @@ export const SidebarMenu = ({
     <div
       className={twMerge(
         'mt-0 flex w-full flex-col text-white/70',
-        'lg:mt-[20px] lg:shrink lg:grow lg:gap-[8px] lg:overflow-auto',
+        'sm:mt-[20px] sm:shrink sm:grow sm:gap-[8px] sm:overflow-auto',
         sidebarOpened ? 'px-[16px]' : 'px-[4px]',
         className
       )}
@@ -341,8 +365,8 @@ export const SidebarMenu = ({
             {/* Menu title */}
             <span
               className={twMerge(
-                'grow origin-left text-left text-lg duration-200 md:text-base',
-                !sidebarOpened && 'hidden md:inline',
+                'grow origin-left text-left text-lg duration-200 sm:text-base',
+                !sidebarOpened && 'sm:hidden',
                 menu.className
               )}
             >
@@ -355,7 +379,7 @@ export const SidebarMenu = ({
                 className={twMerge(
                   'h-[16px] w-[16px] transition duration-200',
                   menu.id === activeMenu && 'rotate-180',
-                  !sidebarOpened && 'hidden md:inline'
+                  !sidebarOpened && 'sm:hidden'
                 )}
               />
             )}

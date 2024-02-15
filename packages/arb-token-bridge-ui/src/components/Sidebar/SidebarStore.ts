@@ -33,12 +33,13 @@ export const useSidebarStore = () => {
     // on app mount/width change, taking into account screen size and user preference, calculate if we want to keep the sidebar expanded or collapsed
     const calculateSidebarState = () => {
       // on mobile, always keep sidebar menu full-width
+      if (width < 640) return true
 
       // on mid/large screens, if user has force-set sidebar preference to false (`collapsed`), then keep it collapsed, else let the screen size decide
       if (sidebarOpenedLocalStorage === false) {
         return false
       }
-      return true
+      return width >= 768 // collapse in mid-sized screens, else open it
     }
 
     setSidebarOpened(calculateSidebarState())

@@ -24,25 +24,25 @@ export function Header({ children }: { children: React.ReactNode }) {
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black px-4 md:static md:h-16 md:px-6',
-        isTestnet ? 'border-b border-white bg-white/20' : 'md:bg-transparent'
+        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black px-4 sm:static sm:h-16 sm:px-6',
+        isTestnet ? 'border-b border-white bg-white/20' : 'sm:bg-transparent'
       )}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image
-          className="mr-auto h-6 w-6 md:hidden"
+          className="mr-auto h-6 w-6 sm:hidden"
           src={ArbitrumLogoSmall}
           alt="Arbitrum"
         />
         {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
-        <div className="hidden md:flex">{children}</div>
+        <div className="hidden sm:flex">{children}</div>
       </div>
       <Disclosure>
         {({ open }) => (
           <>
             {!open && (
               <Disclosure.Button
-                className="md:hidden"
+                className="sm:hidden"
                 aria-label="Menu Toggle Button"
                 onClick={onMobileMenuOpen}
               >
@@ -61,9 +61,9 @@ export function Header({ children }: { children: React.ReactNode }) {
 
 function HeaderMobile({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed left-0 top-0 z-50 flex h-screen w-full flex-col items-center overflow-auto bg-dark lg:hidden">
+    <div className="fixed left-0 top-0 z-50 flex h-screen w-full flex-col items-center overflow-auto bg-dark sm:hidden">
       <Disclosure.Button
-        className="flex h-12 w-full justify-end px-4 pt-3 lg:hidden"
+        className="flex h-12 w-full justify-end px-4 pt-3 sm:hidden"
         onClick={onMobileMenuClose}
       >
         <XMarkIcon className="h-8 w-8 text-white" />
