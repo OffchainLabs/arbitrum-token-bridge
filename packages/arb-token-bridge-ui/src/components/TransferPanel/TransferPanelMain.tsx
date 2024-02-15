@@ -198,7 +198,7 @@ function NetworkContainer({
           borderColor: color.primary
         }}
         className={twMerge(
-          'relative rounded border p-1 transition-colors',
+          'relative rounded border p-1 transition-colors duration-400',
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >
