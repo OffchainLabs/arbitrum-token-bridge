@@ -62,7 +62,7 @@ function BlockExplorerTokenLink({
   return (
     <ExternalLink
       href={`${getExplorerUrl(chain.id)}/token/${address}`}
-      className="text-xs text-blue-link underline"
+      className="arb-hover text-xs underline"
       onClick={e => e.stopPropagation()}
     >
       {shortenAddress(address).toLowerCase()}
@@ -72,13 +72,13 @@ function BlockExplorerTokenLink({
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onClick: React.MouseEventHandler<HTMLButtonElement>
+  onTokenSelected: (token: ERC20BridgeToken | null) => void
   token: ERC20BridgeToken | null
 }
 
 export function TokenRow({
   style,
-  onClick,
+  onTokenSelected,
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
@@ -297,7 +297,7 @@ export function TokenRow({
 
   const tokenBalanceContent = useMemo(() => {
     if (!tokenIsAddedToTheBridge) {
-      return <span className="text-sm font-medium text-blue-link">Import</span>
+      return <span className="arb-hover text-sm">Import</span>
     }
 
     // We don't want users to be able to click on USDC before we know whether or not they are SCW users
@@ -307,13 +307,13 @@ export function TokenRow({
     ) {
       return (
         <div className="mr-2">
-          <Loader color="#28A0F0" size="small" />
+          <Loader color="white" size="small" />
         </div>
       )
     }
 
     return (
-      <span className="flex items-center whitespace-nowrap text-sm text-gray-500">
+      <span className="flex items-center whitespace-nowrap text-sm text-white/70">
         {tokenBalance ? (
           formatAmount(tokenBalance, {
             decimals: token?.decimals,
@@ -321,7 +321,7 @@ export function TokenRow({
           })
         ) : (
           <div className="mr-2">
-            <Loader color="#28A0F0" size="small" />
+            <Loader color="white" size="small" />
           </div>
         )}
       </span>
@@ -336,14 +336,16 @@ export function TokenRow({
     tokenSymbol
   ])
 
+  const buttonOnClick = () => onTokenSelected(token)
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={buttonOnClick}
       style={{ ...style, minHeight: '84px' }}
       disabled={!tokenIsBridgeable}
       className={twMerge(
-        'flex w-full flex-row items-center justify-between bg-white px-4 py-3 hover:bg-gray-100',
+        'flex w-full flex-row items-center justify-between px-4 py-3 transition duration-200 hover:bg-white/10',
         tokenIsBridgeable
           ? 'cursor-pointer opacity-100'
           : 'cursor-not-allowed opacity-50'
@@ -353,21 +355,19 @@ export function TokenRow({
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-8 w-8 grow-0"
+          className="h-6 w-6 grow-0"
           fallback={<TokenLogoFallback />}
         />
 
         <div className="flex w-full flex-col items-start truncate">
           <div className="flex w-full items-center space-x-2">
-            <span className="text-base font-medium text-gray-900">
-              {tokenSymbol}
-            </span>
-            <span className="text-xs text-gray-500">{tokenName}</span>
+            <span className="text-base font-medium">{tokenSymbol}</span>
+            <span className="text-xs text-white/70">{tokenName}</span>
 
             {isArbitrumToken && (
               <Tooltip content={arbitrumTokenTooltipContent}>
                 <StatusBadge variant="green">
-                  <CheckCircleIcon className="h-4 w-4" />
+                  <CheckCircleIcon className="h-3 w-3" />
                   <span className="text-xs">
                     Official{isSmallScreen ? '' : ' ARB token'}
                   </span>
@@ -386,7 +386,7 @@ export function TokenRow({
           </div>
 
           {token && (
-            <div className="flex w-full flex-col items-start space-y-1">
+            <div className="flex w-full flex-col items-start gap-1">
               {/* TODO: anchor shouldn't be nested within a button */}
               <div className="flex w-full justify-between">
                 {isDepositMode ? (
@@ -411,23 +411,22 @@ export function TokenRow({
                         address={token.l2Address}
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">
+                      <span className="text-xs text-white/70">
                         This token hasn&apos;t been bridged to{' '}
                         {getNetworkName(childChain.id)}.
                       </span>
                     )}
                   </>
                 )}
-                {tokenIsBridgeable && tokenBalanceContent}
               </div>
               {isL2NativeToken ? (
-                <span className="flex gap-1 text-xs font-normal">
+                <span className="flex text-xs text-white/70">
                   {`This token is native to ${getNetworkName(
                     childChain.id
                   )} and can’t be bridged.`}
                 </span>
               ) : (
-                <span className="flex gap-1 whitespace-normal text-left text-xs font-normal text-gray-500">
+                <span className="flex text-xs text-white/70">
                   {tokenListInfo}
                 </span>
               )}
@@ -447,9 +446,7 @@ export function TokenRow({
             </div>
           )}
         </div>
-        {!token && (
-          <div className="flex w-full justify-end">{tokenBalanceContent}</div>
-        )}
+        {(tokenIsBridgeable || !token) && tokenBalanceContent}
       </div>
     </button>
   )

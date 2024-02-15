@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Tab, Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Tab } from '@headlessui/react'
 
 import { Dialog, UseDialogProps } from '../../common/Dialog'
-import { Button } from '../../common/Button'
 import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
@@ -13,7 +11,11 @@ import {
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
 import { useAppState } from '../../../state'
-import { getNetworkName, isNetwork } from '../../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkName,
+  isNetwork
+} from '../../../util/networks'
 import { trackEvent } from '../../../util/AnalyticsUtils'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { USDCDepositConfirmationDialogCheckbox } from './USDCDepositConfirmationDialogCheckbox'
@@ -25,6 +27,8 @@ import { CctpTabContent } from '../CctpTabContent'
 import { CCTP_DOCUMENTATION } from '../../../constants'
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { SecurityGuaranteed, SecurityNotGuaranteed } from '../SecurityLabels'
+import { getUSDCAddresses } from '../../../state/cctpState'
 
 type Props = UseDialogProps & {
   amount: string
@@ -50,6 +54,9 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const destinationNetworkName = getNetworkName(childChain.id)
 
   const tokenSymbol = SpecialTokenSymbol.USDC
+  const usdceTokenDestinationAddress = isNetwork(parentChain.id).isTestnet
+    ? CommonAddress.ArbitrumSepolia['USDC.e']
+    : CommonAddress.ArbitrumOne['USDC.e']
 
   useEffect(() => {
     setAllCheckboxesChecked(false)
@@ -58,7 +65,11 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const handleActionButtonClick = useCallback(
     (confirmed: boolean) => {
       if (confirmed) {
-        trackEvent('Use Arbitrum Bridge Click', { tokenSymbol })
+        const eventName =
+          selectedTabName === SelectedTabName.Bridged
+            ? 'Use Arbitrum Bridge Click'
+            : 'Use CCTP Click'
+        trackEvent(eventName, { tokenSymbol, type: 'Deposit' })
       }
       props.onClose(confirmed, selectedTabName)
     },
@@ -134,8 +145,15 @@ export function USDCDepositConfirmationDialog(props: Props) {
             <div className="flex flex-col space-y-4">
               <p className="font-light">
                 Receive{' '}
-                <span className="font-medium">Bridged USDC (USDC.e)</span> on{' '}
-                {destinationNetworkName} using Arbitrum&apos;s native bridge.
+                <ExternalLink
+                  className="arb-hover underline"
+                  href={`${getExplorerUrl(
+                    childChain.id
+                  )}/token/${usdceTokenDestinationAddress}`}
+                >
+                  Bridged USDC (USDC.e)
+                </ExternalLink>{' '}
+                on {destinationNetworkName} using Arbitrum&apos;s native bridge.
               </p>
 
               <div className="flex flex-col space-y-4">
@@ -146,13 +164,23 @@ export function USDCDepositConfirmationDialog(props: Props) {
                 />
               </div>
             </div>
+            <SecurityGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4">
               <p className="font-light">
-                Receive <span className="font-medium">Native USDC</span> on
-                Arbitrum One using a third-party bridge with Circle&apos;s{' '}
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover underline"
+                  href={`${getExplorerUrl(childChain.id)}/token/${
+                    getUSDCAddresses(childChain.id)?.USDC
+                  }`}
+                >
+                  Native USDC
+                </ExternalLink>{' '}
+                on {destinationNetworkName} using a third-party bridge with
+                Circle&apos;s{' '}
                 <ExternalLink
                   className="arb-hover underline"
                   href={CCTP_DOCUMENTATION}
@@ -167,11 +195,12 @@ export function USDCDepositConfirmationDialog(props: Props) {
               bridgeList={fastBridges}
               selectedNonCanonicalToken={tokenSymbol}
             />
+            <SecurityNotGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4">
-              <CctpTabContent toNetworkName={destinationNetworkName}>
+              <CctpTabContent destinationChainId={childChain.id}>
                 <div className="flex flex-col space-y-4">
                   <USDCDepositConfirmationDialogCheckbox
                     onAllCheckboxesCheched={() => {
@@ -186,6 +215,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                   />
                 </div>
               </CctpTabContent>
+              <SecurityNotGuaranteed />
             </div>
           </Tab.Panel>
         </Tab.Group>
