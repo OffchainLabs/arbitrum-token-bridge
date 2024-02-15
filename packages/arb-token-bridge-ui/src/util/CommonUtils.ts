@@ -18,17 +18,15 @@ export function shortenTxHash(txHash: string) {
 
 export function pluralizeWord({
   word,
-  shouldPluralize = true,
-  postfix = 's'
+  shouldPluralize = true
 }: {
   word: string
   shouldPluralize?: boolean
-  postfix?: string
 }) {
   if (!shouldPluralize) {
     return word
   }
-  return word + postfix
+  return word + 's'
 }
 
 export const isTestingEnvironment =
