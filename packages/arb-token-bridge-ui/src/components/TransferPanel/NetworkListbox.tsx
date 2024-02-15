@@ -25,21 +25,6 @@ export function NetworkListbox({
 }: NetworkListboxProps) {
   const { color } = getBridgeUiConfigForChain(value.id)
 
-  const getOptionClassName = useCallback(
-    (index: number) => {
-      if (index === 0) {
-        return 'rounded-tl-xl rounded-tr-xl'
-      }
-
-      if (index === options.length - 1) {
-        return 'rounded-bl-xl rounded-br-xl'
-      }
-
-      return ''
-    },
-    [options.length]
-  )
-
   return (
     <Listbox
       as="div"
@@ -50,7 +35,7 @@ export function NetworkListbox({
     >
       <Listbox.Button
         style={{ backgroundColor: color.primary }}
-        className="arb-hover flex w-max items-center space-x-1 rounded px-3 py-2 text-sm text-white md:text-xl lg:px-4 lg:py-2"
+        className="arb-hover flex w-max items-center space-x-1 rounded px-3 py-2 text-sm text-white md:text-xl"
       >
         <span className="max-w-[220px] truncate leading-extra-tight md:max-w-[250px]">
           {label} {getNetworkName(value.id)}
@@ -58,15 +43,14 @@ export function NetworkListbox({
         {!disabled && <ChevronDownIcon className="h-4 w-4" />}
       </Listbox.Button>
 
-      <Listbox.Options className="absolute z-20 ml-2 mt-2 max-h-[365px] overflow-hidden overflow-y-auto rounded-xl bg-white shadow-[0px_4px_12px_#9e9e9e]">
-        {options.map((option, index) => {
+      <Listbox.Options className="absolute left-0 z-20 mt-1 max-h-[365px] min-w-full overflow-y-auto overflow-x-hidden rounded border border-white/30 bg-gray-1 font-normal text-white lg:left-auto lg:right-0">
+        {options.map(option => {
           return (
             <Listbox.Option
               key={option.id}
               value={option}
               className={twMerge(
-                'ui-selected:bg-[rgba(0,0,0,0.2) flex h-12 min-w-max cursor-pointer select-none items-center space-x-2 px-4 py-7 hover:bg-[rgba(0,0,0,0.2)] ui-active:bg-[rgba(0,0,0,0.2)]',
-                getOptionClassName(index)
+                'hover:white/20 flex h-12 cursor-pointer select-none items-center gap-1 px-3 py-2 transition-[background] duration-200 ui-selected:bg-white/20 ui-active:bg-white/20'
               )}
             >
               <div className="flex h-8 w-8 items-center justify-center">
@@ -74,8 +58,8 @@ export function NetworkListbox({
                   src={getBridgeUiConfigForChain(option.id).network.logo}
                   alt={`${getNetworkName(option.id)} logo`}
                   className="max-h-7 w-auto"
-                  width={36}
-                  height={36}
+                  width={35}
+                  height={35}
                 />
               </div>
               <span className="max-w-[140px] truncate">
