@@ -53,7 +53,7 @@ export function NetworkListbox({
           </Listbox.Button>
 
           <Transition className="absolute left-0 right-auto z-20 min-w-full lg:left-auto lg:right-0">
-            <Listbox.Options className="mt-1 max-h-[365px] min-w-full overflow-y-auto overflow-x-hidden rounded border border-white/30 bg-gray-1 font-normal text-white lg:left-auto lg:right-0">
+            <Listbox.Options className="mt-1 flex max-h-[365px] min-w-full gap-[8px] overflow-y-auto overflow-x-hidden rounded border border-white/30 bg-gray-1 font-normal text-white lg:left-auto lg:right-0">
               {options.map(option => {
                 return (
                   <Listbox.Option

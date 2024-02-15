@@ -103,7 +103,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
+    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[20px] sm:pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
     isActive && 'text-white'
   )
 
@@ -346,7 +346,7 @@ export const SidebarMenu = ({
   return (
     <div
       className={twMerge(
-        'mt-0 flex w-full flex-col text-white/70',
+        'mt-0 flex w-full flex-col gap-[4px] text-white/70',
         'sm:mt-[20px] sm:shrink sm:grow sm:gap-[8px] sm:overflow-auto',
         sidebarOpened ? 'px-[16px]' : 'px-[4px]',
         className
@@ -365,7 +365,7 @@ export const SidebarMenu = ({
             {/* Menu title */}
             <span
               className={twMerge(
-                'grow origin-left text-left text-lg duration-200 sm:text-base',
+                'grow origin-left text-left text-base duration-200',
                 !sidebarOpened && 'sm:hidden',
                 menu.className
               )}
