@@ -35,9 +35,7 @@ export const Switch = ({
             disabled={disabled}
             aria-label={name}
           >
-            <span
-              className={`inline-block h-[10px] w-[10px] transform rounded-full transition-transform`}
-            />
+            <span className="inline-block h-[10px] w-[10px] transform rounded-full transition-transform" />
           </HeadlessSwitch>
 
           {label && (
@@ -48,9 +46,8 @@ export const Switch = ({
             </HeadlessSwitch.Label>
           )}
         </div>
-
         {description && (
-          <HeadlessSwitch.Description className="mt-1 pl-11 text-sm text-gray-3 text-white/50">
+          <HeadlessSwitch.Description className="mt-1 pl-10 text-sm text-white/70">
             {description}
           </HeadlessSwitch.Description>
         )}
