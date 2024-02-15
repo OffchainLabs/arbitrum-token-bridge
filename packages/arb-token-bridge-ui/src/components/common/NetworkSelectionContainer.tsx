@@ -335,7 +335,7 @@ export const NetworkSelectionContainer = ({
           </Popover.Button>
 
           <Transition
-            className="absolute z-50"
+            className="fixed left-0 top-0 z-50 lg:absolute lg:top-[62px]"
             // we don't unmount on leave here because otherwise transition won't work with virtualized lists
             options={{ unmountOnLeave: false }}
           >
