@@ -68,7 +68,7 @@ export const SidePanel = ({
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-[400ms]"
+            enter="ease-out duration-400"
             enterFrom="translate-x-full"
             enterTo="translate-x-0"
             leave="ease-in duration-300"
