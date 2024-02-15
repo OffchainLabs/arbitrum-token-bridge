@@ -25,6 +25,7 @@ import {
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 import { getProviderForChainId } from '../../hooks/useNetworks'
+import { Transition } from './Transition'
 
 const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 
@@ -352,38 +353,40 @@ export const AddCustomChain = () => {
                       <Popover.Button className="arb-hover">
                         <EllipsisHorizontalIcon width={20} />
                       </Popover.Button>
-                      <Popover.Panel className="absolute bottom-6 right-0 flex w-[230px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
-                        <button
-                          className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
-                          onClick={() => {
-                            removeCustomChainFromLocalStorage(
-                              customChain.chainID
-                            )
-                            removeOrbitConfigFromLocalStorage(
-                              customChain.chainID
-                            )
-                            // reload to apply changes
-                            location.reload()
-                          }}
-                        >
-                          Delete this chain
-                        </button>
-                        <a
-                          className="rounded-b p-4 text-left transition duration-300 hover:bg-[#333333]"
-                          href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                            JSON.stringify(
-                              getOrbitConfigFromLocalStorageById(
+                      <Transition>
+                        <Popover.Panel className="absolute bottom-6 right-0 flex w-[240px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
+                          <button
+                            className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
+                            onClick={() => {
+                              removeCustomChainFromLocalStorage(
                                 customChain.chainID
                               )
-                            )
-                          )}`}
-                          download={`${customChain.name
-                            .split(' ')
-                            .join('')}.json`}
-                        >
-                          Download config for this chain
-                        </a>
-                      </Popover.Panel>
+                              removeOrbitConfigFromLocalStorage(
+                                customChain.chainID
+                              )
+                              // reload to apply changes
+                              location.reload()
+                            }}
+                          >
+                            Delete this chain
+                          </button>
+                          <a
+                            className="rounded-b p-4 text-left transition duration-300 hover:bg-[#333333]"
+                            href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                              JSON.stringify(
+                                getOrbitConfigFromLocalStorageById(
+                                  customChain.chainID
+                                )
+                              )
+                            )}`}
+                            download={`${customChain.name
+                              .split(' ')
+                              .join('')}.json`}
+                          >
+                            Download config for this chain
+                          </a>
+                        </Popover.Panel>
+                      </Transition>
                     </Popover>
                   </th>
                 </tr>
