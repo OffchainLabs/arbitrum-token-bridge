@@ -163,8 +163,8 @@ export function HeaderAccountPopover({
 
         <ChevronDownIcon className="ml-auto h-3 w-3 text-white" />
       </Popover.Button>
-      <Transition>
-        <Popover.Panel className="relative flex w-full flex-col overflow-hidden rounded bg-dark pb-2 sm:absolute sm:top-0">
+      <Transition className="z-40 w-full sm:absolute sm:top-0">
+        <Popover.Panel className="flex w-full flex-col overflow-hidden rounded bg-dark pb-2 sm:absolute sm:top-0">
           {/* Profile photo with address */}
           <Transition isOpen={showCopied}>
             <span className="absolute right-4 top-4 z-10 text-xs text-white">
