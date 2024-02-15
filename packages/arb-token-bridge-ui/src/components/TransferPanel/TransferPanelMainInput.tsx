@@ -1,6 +1,15 @@
 import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
+import { useMemo } from 'react'
+
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useDestinationAddressStore } from './AdvancedSettings'
+import { useBalance } from '../../hooks/useBalance'
+import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useAppState } from '../../state'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -8,6 +17,70 @@ type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 function MaxButton(props: MaxButtonProps) {
   const { loading, className = '', ...rest } = props
+
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const { address: walletAddress } = useAccount()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const { destinationAddress } = useDestinationAddressStore()
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({
+    provider: parentChainProvider,
+    walletAddress: l1WalletAddress
+  })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({
+    provider: childChainProvider,
+    walletAddress: l2WalletAddress
+  })
+  const selectedTokenBalances = useSelectedTokenBalances()
+
+  const maxButtonVisible = useMemo(() => {
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
+
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return false
+      }
+
+      return !tokenBalance.isZero()
+    }
+
+    if (!ethBalance) {
+      return false
+    }
+
+    return !ethBalance.isZero()
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    selectedTokenBalances,
+    selectedToken,
+    isDepositMode
+  ])
+
+  if (!maxButtonVisible) {
+    return null
+  }
 
   if (loading) {
     return (
@@ -34,15 +107,13 @@ function MaxButton(props: MaxButtonProps) {
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | React.ReactNode
-    maxButtonProps: MaxButtonProps & {
-      visible: boolean
-    }
+    maxButtonProps: MaxButtonProps
     value: string
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const { errorMessage, maxButtonProps, value, ...rest } = props
-  const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
+  const { ...restMaxButtonProps } = maxButtonProps
 
   return (
     <>
@@ -69,7 +140,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             value={value}
             {...rest}
           />
-          {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
+          <MaxButton {...restMaxButtonProps} />
         </div>
       </div>
 
