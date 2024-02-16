@@ -97,12 +97,7 @@ export const SidePanel = ({
               </Dialog.Title>
 
               {/* Contents of the panel */}
-              <div
-                className={twMerge(
-                  'side-panel-content z-40 h-full px-4 pb-4',
-                  heading && 'p-4'
-                )}
-              >
+              <div className="side-panel-content z-40 h-full p-4">
                 {children}
               </div>
             </Dialog.Panel>
