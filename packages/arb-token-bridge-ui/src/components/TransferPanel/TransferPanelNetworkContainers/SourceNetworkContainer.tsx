@@ -32,12 +32,97 @@ import {
 import { useTransferReadiness } from '../useTransferReadiness'
 import { useGasSummary } from '../../../hooks/TransferPanel/useGasSummary'
 
+function TokenDepositInfo() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const isTokenDeposit = isDepositMode && selectedToken
+  if (!isTokenDeposit) {
+    return null
+  }
+
+  return (
+    <p className="text-xs font-light text-white">
+      Make sure you have {nativeCurrency.symbol} in your{' '}
+      {getNetworkName(childChain.id)} account, as you’ll need it to power
+      transactions.
+      <br />
+      <ExternalLink
+        href={ETH_BALANCE_ARTICLE_LINK}
+        className="arb-hover underline"
+      >
+        Learn more
+      </ExternalLink>
+      .
+    </p>
+  )
+}
+
+function USDCSpecificInfo() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+
+  const showUSDCSpecificInfo =
+    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
+
+  if (!showUSDCSpecificInfo) {
+    return null
+  }
+  return (
+    <p className="text-xs font-light text-white">
+      Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
+      <ExternalLink href={USDC_LEARN_MORE_LINK} className="arb-hover underline">
+        Learn more
+      </ExternalLink>
+      .
+    </p>
+  )
+}
+
+function TokenNotTransferrableError() {
+  const { openDialog: openTransferDisabledDialog } =
+    useTransferDisabledDialogStore()
+  return (
+    <>
+      <span>This token can&apos;t be bridged over.</span>{' '}
+      <button
+        className="arb-hover underline"
+        onClick={openTransferDisabledDialog}
+      >
+        Learn more.
+      </button>
+    </>
+  )
+}
+
+function GasEstimationFailureError() {
+  return (
+    <span>
+      Gas estimation failed, join our{' '}
+      <ExternalLink
+        href="https://discord.com/invite/ZpZuw7p"
+        className="underline"
+      >
+        Discord
+      </ExternalLink>{' '}
+      and reach out in #support for assistance.
+    </span>
+  )
+}
+
 function ErrorMessage(
   errorMessage: TransferReadinessRichErrorMessage | string | undefined
 ) {
-  const { openDialog: openTransferDisabledDialog } =
-    useTransferDisabledDialogStore()
-
   if (typeof errorMessage === 'undefined') {
     return undefined
   }
@@ -48,32 +133,11 @@ function ErrorMessage(
 
   switch (errorMessage) {
     case TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE:
-      return (
-        <span>
-          Gas estimation failed, join our{' '}
-          <ExternalLink
-            href="https://discord.com/invite/ZpZuw7p"
-            className="underline"
-          >
-            Discord
-          </ExternalLink>{' '}
-          and reach out in #support for assistance.
-        </span>
-      )
+      return <GasEstimationFailureError />
 
     case TransferReadinessRichErrorMessage.TOKEN_WITHDRAW_ONLY:
     case TransferReadinessRichErrorMessage.TOKEN_TRANSFER_DISABLED:
-      return (
-        <>
-          <span>This token can&apos;t be bridged over.</span>{' '}
-          <button
-            className="arb-hover underline"
-            onClick={openTransferDisabledDialog}
-          >
-            Learn more.
-          </button>
-        </>
-      )
+      return <TokenNotTransferrableError />
   }
 }
 
@@ -89,7 +153,7 @@ export function SourceNetworkContainer({
     app: { selectedToken }
   } = useAppState()
   const [networks, setNetworks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
+  const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const selectedTokenBalances = useSelectedTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -112,13 +176,11 @@ export function SourceNetworkContainer({
   )
 
   const { ethL1Balance, ethL2Balance } = useBalances()
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-
-  const showUSDCSpecificInfo =
-    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
   const customFeeTokenBalances = useCustomFeeTokenBalances()
+
+  // TODO: refactor everything that relies on this to use source/destination instead of l1/l2
+  const sourceChainLayer = isDepositMode ? 'l1' : 'l2'
 
   const buttonStyle = useMemo(
     () => ({
@@ -163,26 +225,19 @@ export function SourceNetworkContainer({
             From: {getNetworkName(networks.sourceChain.id)}
           </span>
         </NetworkSelectionContainer>
+
         <NetworkContainer.BalancesContainer>
           <NetworkContainer.TokenBalance
-            on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
-            balance={
-              isDepositMode
-                ? selectedTokenBalances.l1
-                : selectedTokenBalances.l2
-            }
+            on={NetworkType[sourceChainLayer]}
+            balance={selectedTokenBalances[sourceChainLayer]}
             forToken={selectedToken}
             prefix={selectedToken ? 'Balance: ' : ''}
           />
           {nativeCurrency.isCustom ? (
             <>
               <NetworkContainer.TokenBalance
-                on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
-                balance={
-                  isDepositMode
-                    ? customFeeTokenBalances.l1
-                    : customFeeTokenBalances.l2
-                }
+                on={NetworkType[sourceChainLayer]}
+                balance={customFeeTokenBalances[sourceChainLayer]}
                 forToken={nativeCurrency}
                 prefix={selectedToken ? '' : 'Balance: '}
               />
@@ -200,7 +255,7 @@ export function SourceNetworkContainer({
         </NetworkContainer.BalancesContainer>
       </NetworkContainer.NetworkListboxPlusBalancesContainer>
 
-      <div className="flex flex-col space-y-1">
+      <div className="flex flex-col gap-1">
         <TransferPanelMainInput
           maxButtonProps={{
             loading: isMaxAmount || loadingMaxAmount,
@@ -213,34 +268,8 @@ export function SourceNetworkContainer({
           }}
         />
 
-        {showUSDCSpecificInfo && (
-          <p className="mt-1 text-xs font-light text-white">
-            Bridged USDC (USDC.e) will work but is different from Native USDC.{' '}
-            <ExternalLink
-              href={USDC_LEARN_MORE_LINK}
-              className="arb-hover underline"
-            >
-              Learn more
-            </ExternalLink>
-            .
-          </p>
-        )}
-
-        {isDepositMode && selectedToken && (
-          <p className="mt-1 text-xs font-light text-white">
-            Make sure you have {nativeCurrency.symbol} in your{' '}
-            {getNetworkName(childChain.id)} account, as you’ll need it to power
-            transactions.
-            <br />
-            <ExternalLink
-              href={ETH_BALANCE_ARTICLE_LINK}
-              className="arb-hover underline"
-            >
-              Learn more
-            </ExternalLink>
-            .
-          </p>
-        )}
+        <USDCSpecificInfo />
+        <TokenDepositInfo />
       </div>
       <EstimatedGas chainType="source" />
     </NetworkContainer>

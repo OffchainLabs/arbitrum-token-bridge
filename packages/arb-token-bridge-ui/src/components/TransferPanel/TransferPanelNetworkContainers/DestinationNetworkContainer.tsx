@@ -25,40 +25,21 @@ import { getWagmiChain } from '../../../util/wagmi/getWagmiChain'
 import { useMemo } from 'react'
 import { useAccountType } from '../../../hooks/useAccountType'
 
-export function DestinationNetworkContainer({
+type NetworkListboxesProps = {
+  to: Omit<NetworkListboxProps, 'label'>
+}
+
+function useNetworkListBoxProps({
   onChange
 }: {
   onChange: (networkId: number) => void
-}) {
+}): NetworkListboxesProps {
   const actions = useActions()
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks, setNetworks] = useNetworks()
-  const { childChain, childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
-  const { destinationAddress } = useDestinationAddressStore()
-  const selectedTokenBalances = useSelectedTokenBalances()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const { ethL1Balance, ethL2Balance, erc20L2Balances } = useBalances()
-
-  const customFeeTokenBalances = useCustomFeeTokenBalances()
-
-  const showUSDCSpecificInfo =
-    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
-
-  type NetworkListboxesProps = {
-    to: Omit<NetworkListboxProps, 'label'>
-  }
-
-  const networkListboxProps: NetworkListboxesProps = useMemo(() => {
+  return useMemo(() => {
     function getDestinationChains() {
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
@@ -112,6 +93,100 @@ export function DestinationNetworkContainer({
     setNetworks,
     actions.app
   ])
+}
+
+/**  In deposit mode, when user selected USDC on mainnet,
+ * the UI shows the Arb One balance of both USDC.e and native USDC
+ */
+function DepositModeUSDCSpecificInfo() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChain, isDepositMode } = useNetworksRelationship(networks)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+
+  const { erc20L2Balances } = useBalances()
+
+  const showUSDCSpecificInfo =
+    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
+
+  const isDepositModeUSDC = isDepositMode && showUSDCSpecificInfo
+
+  if (!isDepositModeUSDC) {
+    return null
+  }
+
+  return (
+    <NetworkContainer.TokenBalance
+      balance={
+        (isArbitrumOne
+          ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
+          : erc20L2Balances?.[CommonAddress.ArbitrumSepolia.USDC]) ??
+        constants.Zero
+      }
+      on={NetworkType.l2}
+      forToken={selectedToken ? { ...selectedToken, symbol: 'USDC' } : null}
+      tokenSymbolOverride="USDC"
+    />
+  )
+}
+
+function CustomGasTokenChainDestinationBalances() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+  const customFeeTokenBalances = useCustomFeeTokenBalances()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const { ethL1Balance } = useBalances()
+
+  // TODO: refactor everything that relies on this to use source/destination instead of l1/l2
+  const destinationChainLayer = isDepositMode ? 'l2' : 'l1'
+
+  if (!nativeCurrency.isCustom) {
+    return null
+  }
+
+  return (
+    <>
+      <NetworkContainer.TokenBalance
+        on={NetworkType[destinationChainLayer]}
+        balance={customFeeTokenBalances[destinationChainLayer]}
+        forToken={nativeCurrency}
+        prefix={selectedToken ? '' : 'Balance: '}
+      />
+      {!isDepositMode && <NetworkContainer.ETHBalance balance={ethL1Balance} />}
+    </>
+  )
+}
+
+export function DestinationNetworkContainer({
+  onChange
+}: {
+  onChange: (networkId: number) => void
+}) {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+  const { address: walletAddress } = useAccount()
+  const { destinationAddress } = useDestinationAddressStore()
+  const selectedTokenBalances = useSelectedTokenBalances()
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const { ethL1Balance, ethL2Balance } = useBalances()
+
+  const networkListboxProps = useNetworkListBoxProps({ onChange })
+
+  // TODO: refactor everything that relies on this to use source/destination instead of l1/l2
+  const destinationChainLayer = isDepositMode ? 'l2' : 'l1'
 
   return (
     <NetworkContainer
@@ -120,57 +195,20 @@ export function DestinationNetworkContainer({
     >
       <NetworkContainer.NetworkListboxPlusBalancesContainer>
         <NetworkListbox label="To:" {...networkListboxProps.to} />
+
         <NetworkContainer.BalancesContainer>
           {destinationAddressOrWalletAddress &&
             utils.isAddress(destinationAddressOrWalletAddress) && (
               <>
                 <NetworkContainer.TokenBalance
-                  balance={
-                    isDepositMode
-                      ? selectedTokenBalances.l2
-                      : selectedTokenBalances.l1
-                  }
-                  on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                  balance={selectedTokenBalances[destinationChainLayer]}
+                  on={NetworkType[destinationChainLayer]}
                   forToken={selectedToken}
                   prefix={selectedToken ? 'Balance: ' : ''}
                 />
-                {/* In deposit mode, when user selected USDC on mainnet,
-                the UI shows the Arb One balance of both USDC.e and native USDC */}
-                {isDepositMode && showUSDCSpecificInfo && (
-                  <NetworkContainer.TokenBalance
-                    balance={
-                      (isArbitrumOne
-                        ? erc20L2Balances?.[CommonAddress.ArbitrumOne.USDC]
-                        : erc20L2Balances?.[
-                            CommonAddress.ArbitrumSepolia.USDC
-                          ]) ?? constants.Zero
-                    }
-                    on={NetworkType.l2}
-                    forToken={
-                      selectedToken
-                        ? { ...selectedToken, symbol: 'USDC' }
-                        : null
-                    }
-                    tokenSymbolOverride="USDC"
-                  />
-                )}
-                {nativeCurrency.isCustom ? (
-                  <>
-                    <NetworkContainer.TokenBalance
-                      on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
-                      balance={
-                        isDepositMode
-                          ? customFeeTokenBalances.l2
-                          : customFeeTokenBalances.l1
-                      }
-                      forToken={nativeCurrency}
-                      prefix={selectedToken ? '' : 'Balance: '}
-                    />
-                    {!isDepositMode && (
-                      <NetworkContainer.ETHBalance balance={ethL1Balance} />
-                    )}
-                  </>
-                ) : (
+                <DepositModeUSDCSpecificInfo />
+                <CustomGasTokenChainDestinationBalances />
+                {!nativeCurrency.isCustom && (
                   <NetworkContainer.ETHBalance
                     balance={isDepositMode ? ethL2Balance : ethL1Balance}
                     prefix={selectedToken ? '' : 'Balance: '}
