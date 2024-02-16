@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
@@ -24,6 +23,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
+import { NoteBox } from '../common/NoteBox'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -218,19 +218,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         </div>
 
         <div className="flex flex-col">
-          <div className="flex flex-row items-center space-x-1 rounded bg-cyan p-2">
-            <InformationCircleIcon className="h-3 w-3 text-cyan-dark" />
-            <span className="w-full text-xs text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet for
-              the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
-              <ExternalLink
-                href={TOKEN_APPROVAL_ARTICLE_LINK}
-                className="arb-hover ml-1 underline"
-              >
-                Learn more.
-              </ExternalLink>
-            </span>
-          </div>
+          <NoteBox>
+            After approval, you&apos;ll see a second prompt in your wallet for
+            the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
+            <ExternalLink
+              href={TOKEN_APPROVAL_ARTICLE_LINK}
+              className="arb-hover ml-1 underline"
+            >
+              Learn more.
+            </ExternalLink>
+          </NoteBox>
         </div>
       </div>
     </Dialog>
