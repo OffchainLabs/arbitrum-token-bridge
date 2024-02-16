@@ -1,4 +1,3 @@
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLatest } from 'react-use'
@@ -22,6 +21,7 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
+import { NoteBox } from '../common/NoteBox'
 
 enum ImportStatus {
   LOADING,
@@ -367,8 +367,7 @@ export function TokenImportDialog({
           <TokenInfo token={tokenToImport} showFullAddress />
 
           {status === ImportStatus.UNKNOWN && (
-            <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-orange p-3 text-sm text-orange-dark">
-              <InformationCircleIcon className="h-4 w-4 shrink-0 stroke-orange-dark" />
+            <NoteBox className="mt-4" variant="warning">
               <div className="flex flex-col space-y-2">
                 <p>
                   This token address doesn&apos;t exist in any of the token
@@ -384,18 +383,15 @@ export function TokenImportDialog({
                   reasonable to believe we might not have it.
                 </p>
               </div>
-            </div>
+            </NoteBox>
           )}
 
-          <div className="mt-4 flex w-full items-center justify-start gap-1 rounded-lg bg-cyan p-3 text-sm text-cyan-dark">
-            <InformationCircleIcon className="h-4 w-4 shrink-0 stroke-cyan-dark" />
-            <p>
-              The bridge does not support tokens with non-standard behaviour in
-              balance calculation, i.e. the token balance increases or decreases
-              while sitting in a wallet address. If you are unsure, please
-              contact the team behind the token.
-            </p>
-          </div>
+          <NoteBox className="mt-4">
+            The bridge does not support tokens with non-standard behaviour in
+            balance calculation, i.e. the token balance increases or decreases
+            while sitting in a wallet address. If you are unsure, please contact
+            the team behind the token.
+          </NoteBox>
         </div>
       </div>
     </Dialog>
