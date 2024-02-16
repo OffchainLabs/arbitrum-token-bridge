@@ -39,9 +39,7 @@ export const TestnetToggle = ({
   }, [isSourceChainTestnet, setIsTestnetMode, setNetworks])
 
   return (
-    <div
-      className={twMerge(!isTestnetMode && 'opacity-60', className?.wrapper)}
-    >
+    <label className={twMerge('cursor-pointer', className?.wrapper)}>
       <Switch
         className={className?.switch}
         label={label}
@@ -49,6 +47,6 @@ export const TestnetToggle = ({
         checked={isTestnetMode}
         onChange={onChange}
       />
-    </div>
+    </label>
   )
 }

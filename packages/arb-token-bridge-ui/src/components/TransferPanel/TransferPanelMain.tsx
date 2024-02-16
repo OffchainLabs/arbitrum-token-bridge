@@ -87,7 +87,7 @@ export function SwitchNetworksButton(
       type="button"
       disabled={isSmartContractWallet || isLoadingAccountType}
       className={twMerge(
-        'flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200',
+        'arb-hover flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200',
         isEOA
           ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-[#F4F4F4] focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
           : ''
@@ -198,7 +198,7 @@ function NetworkContainer({
           borderColor: color.primary
         }}
         className={twMerge(
-          'relative rounded border p-1 transition-colors',
+          'relative rounded border p-1 transition-colors duration-400',
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >
@@ -829,7 +829,6 @@ export function TransferPanelMain({
             <span className="max-w-[220px] truncate md:max-w-[250px]">
               From: {getNetworkName(networks.sourceChain.id)}
             </span>
-            <ChevronDownIcon className="h-4 w-4" />
           </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
@@ -912,7 +911,7 @@ export function TransferPanelMain({
         <EstimatedGas chainType="source" />
       </NetworkContainer>
 
-      <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
+      <div className="z-[1] flex h-10 w-full items-center justify-center lg:h-12">
         <SwitchNetworksButton
           onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
