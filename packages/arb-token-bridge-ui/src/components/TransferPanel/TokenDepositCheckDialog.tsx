@@ -33,7 +33,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
               <p className="pb-2">
                 You are the first to bridge {symbol} to Arbitrum ⭐
               </p>
-              <b>Important facts</b>
+              <span className="font-medium">Important facts</span>
               <ol>
                 <li>1. Some tokens are not compatible with the bridge</li>
                 <li>
@@ -60,19 +60,21 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
     <Dialog {...props} title={title} className="flex flex-col gap-4">
       <p>{textContent}</p>
       <NoteBox variant="error">
-        <p>
-          <b>Do not bridge</b> if your token does something non-standard like
-          generates passive interest or is a rebasing stablecoin.
+        <p className="mb-2">
+          <span className="font-medium">Do not bridge</span> if your token does
+          something non-standard like generates passive interest or is a
+          rebasing stablecoin.
         </p>
+        <p>Not sure if your token is compatible?</p>
         <p>
-          Not sure if your token is compatible? Check the{' '}
+          Check the{' '}
           <ExternalLink
             className="arb-hover underline"
             href={`${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20#the-arbitrum-generic-custom-gateway`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <b>docs</b>
+            <span className="font-medium">docs</span>
           </ExternalLink>{' '}
           or ask on{' '}
           <ExternalLink
@@ -81,7 +83,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <b>Discord</b>
+            <span className="font-medium">Discord</span>
           </ExternalLink>
           .
         </p>
