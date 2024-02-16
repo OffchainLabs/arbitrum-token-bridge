@@ -45,18 +45,17 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
     <>
       <div
         className={twMerge(
-          'flex h-12 flex-row items-center rounded border bg-black/40 shadow-2 lg:h-16',
+          'flex flex-row rounded border bg-black/40 shadow-2',
           errorMessage ? 'border-[#cd0000]' : 'border-white'
         )}
       >
         <TokenButton />
-        <div className="h-full border-r border-gray-2" />
-        <div className="flex h-full flex-grow flex-row items-center justify-center">
+        <div className="flex flex-row items-center justify-center border-l border-gray-2">
           <input
             type="text"
             inputMode="decimal"
             placeholder="Enter amount"
-            className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+            className="h-full w-full bg-transparent px-3 text-xl font-light text-white placeholder:text-gray-dark sm:text-3xl"
             value={value}
             {...rest}
           />

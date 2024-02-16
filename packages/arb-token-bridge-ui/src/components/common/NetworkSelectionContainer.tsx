@@ -341,14 +341,14 @@ export const NetworkSelectionContainer = ({
             {children}
             <ChevronDownIcon
               className={twMerge(
-                'h-4 w-4 transition-transform duration-200',
+                'h-3 w-3 transition-transform duration-200',
                 open ? '-rotate-180' : 'rotate-0'
               )}
             />
           </Popover.Button>
 
           <Transition
-            className="fixed left-0 top-0 z-50 lg:absolute lg:top-[62px]"
+            className="fixed left-0 top-0 z-50 lg:absolute lg:left-auto lg:right-0 lg:top-[54px]"
             // we don't unmount on leave here because otherwise transition won't work with virtualized lists
             options={{ unmountOnLeave: false }}
           >
