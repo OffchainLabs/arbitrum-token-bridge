@@ -79,9 +79,9 @@ export const SidePanel = ({
             {/* The heading of dialog  */}
             <Dialog.Panel
               className={twMerge(
-                'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black py-4 text-white',
+                'side-panel flex h-full w-screen max-w-[1000px] flex-col border-l border-gray-dark bg-black',
                 panelClassNameOverrides,
-                !scrollable ? '' : 'overflow-y-auto'
+                scrollable && 'overflow-y-auto'
               )}
             >
               <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white">
