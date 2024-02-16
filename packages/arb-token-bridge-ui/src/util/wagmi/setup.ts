@@ -4,6 +4,7 @@ import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
 import { infuraProvider } from 'wagmi/providers/infura'
+import { alchemyProvider } from 'wagmi/providers/alchemy'
 
 import {
   sepolia,
@@ -137,6 +138,7 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
+      alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY! }),
       infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
       publicProvider()
     ]
