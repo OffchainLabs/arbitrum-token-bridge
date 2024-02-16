@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -40,6 +41,7 @@ enum ChainGroupName {
 
 type ChainGroupInfo = {
   name: ChainGroupName
+  description?: React.ReactNode
 }
 
 const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
@@ -47,7 +49,17 @@ const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
     name: ChainGroupName.core
   },
   orbit: {
-    name: ChainGroupName.orbit
+    name: ChainGroupName.orbit,
+    description: (
+      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+        <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
+        <span>
+          Independent projects using Arbitrum technology. Orbit chains have
+          varying degrees of decentralization.{' '}
+          <span className="font-semibold">Bridge at your own risk.</span>
+        </span>
+      </p>
+    )
   }
 }
 
@@ -58,7 +70,7 @@ function ChainTypeInfoRow({
   chainGroup: ChainGroupInfo
   style: CSSProperties
 }) {
-  const { name } = chainGroup
+  const { name, description } = chainGroup
   const isCoreGroup = chainGroup.name === ChainGroupName.core
 
   return (
@@ -66,12 +78,13 @@ function ChainTypeInfoRow({
       key={name}
       style={style}
       className={twMerge(
-        'px-6 py-3',
+        'px-4 py-3',
         !isCoreGroup &&
-          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]'
       )}
     >
       <p className="text-sm text-white/70">{name}</p>
+      {description}
     </div>
   )
 }
@@ -215,7 +228,7 @@ function NetworksPanel({
       return 0
     }
     if (typeof rowItemOrChainId === 'string') {
-      return 45
+      return rowItemOrChainId === ChainGroupName.core ? 45 : 115
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
