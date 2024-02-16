@@ -328,7 +328,7 @@ export const NetworkSelectionContainer = ({
             {children}
             <ChevronDownIcon
               className={twMerge(
-                'h-4 w-4 transition-transform duration-200',
+                'h-3 w-3 transition-transform duration-200',
                 open ? '-rotate-180' : 'rotate-0'
               )}
             />

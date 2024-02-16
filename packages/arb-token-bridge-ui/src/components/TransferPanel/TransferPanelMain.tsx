@@ -804,11 +804,11 @@ export function TransferPanelMain({
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
             buttonClassName={twMerge(
-              'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
+              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
             )}
             onChange={networkListboxProps.from.onChange}
           >
-            <span className="max-w-[220px] truncate text-sm md:max-w-[250px] md:text-xl">
+            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
               From: {getNetworkName(networks.sourceChain.id)}
             </span>
           </NetworkSelectionContainer>
