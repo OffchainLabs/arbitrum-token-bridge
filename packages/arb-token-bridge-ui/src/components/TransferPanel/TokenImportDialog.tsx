@@ -112,11 +112,7 @@ export function TokenImportDialog({
       case ImportStatus.KNOWN_UNIMPORTED:
         return 'Import known token'
       case ImportStatus.UNKNOWN:
-        return (
-          <span>
-            Import <span style={{ color: '#CD0000' }}>unknown</span> token{' '}
-          </span>
-        )
+        return 'Import unknown token'
       case ImportStatus.ERROR:
         return 'Invalid token address'
     }
