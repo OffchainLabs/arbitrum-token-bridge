@@ -383,8 +383,10 @@ export function TokenImportDialog({
           )}
 
           <NoteBox className="mt-4">
-            <b>Non-standard tokens aren&apos;t supported by the bridge.</b> Ex:
-            if the token balance increases or decreases while sitting in a
+            <span className="font-medium">
+              Non-standard tokens aren&apos;t supported by the bridge.
+            </span>{' '}
+            Ex: if the token balance increases or decreases while sitting in a
             wallet address. Contact the team behind the token to find out if
             this token is standard or not.
           </NoteBox>
