@@ -67,14 +67,14 @@ export function TokenButton(): JSX.Element {
 
   return (
     <>
-      <Popover className="relative h-full">
+      <Popover className="relative">
         {({ open }) => (
           <>
             <Popover.Button
-              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 text-white"
+              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
               aria-label="Select Token"
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 {tokenLogo && (
                   // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
                   // It would throw error if it's loaded from external domains
@@ -82,7 +82,7 @@ export function TokenButton(): JSX.Element {
                   <img
                     src={tokenLogo}
                     alt="Token logo"
-                    className="h-5 w-5 sm:h-8 sm:w-8"
+                    className="h-5 w-5 sm:h-7 sm:w-7"
                   />
                 )}
                 <span className="text-xl font-light sm:text-3xl">
@@ -90,7 +90,7 @@ export function TokenButton(): JSX.Element {
                 </span>
                 <ChevronDownIcon
                   className={twMerge(
-                    'h-4 w-4 text-gray-6 transition-transform duration-200',
+                    'h-3 w-3 text-gray-6 transition-transform duration-200',
                     open ? '-rotate-180' : 'rotate-0'
                   )}
                 />
@@ -100,13 +100,10 @@ export function TokenButton(): JSX.Element {
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed left-0 top-0 z-50 lg:absolute lg:top-16"
+              className="fixed left-0 top-0 z-50 lg:absolute lg:left-auto lg:right-0 lg:top-[76px] lg:max-w-[466px]"
             >
               <Popover.Panel
-                className={twMerge(
-                  panelWrapperClassnames,
-                  'px-5 py-4 lg:ml-12 lg:min-w-[466px]'
-                )}
+                className={twMerge(panelWrapperClassnames, 'px-5 py-4')}
               >
                 {({ close }) => {
                   function onClose() {

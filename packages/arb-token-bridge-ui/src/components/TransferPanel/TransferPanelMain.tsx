@@ -110,21 +110,7 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
   const { color } = getBridgeUiConfigForChain(network.id)
-
-  const backgroundColorForL1OrL2Chain = useMemo(() => {
-    if (isOrbitChain) {
-      return ''
-    }
-    if (!isArbitrum) {
-      return 'bg-cyan'
-    }
-    if (isArbitrumNova) {
-      return 'bg-orange'
-    }
-    return 'bg-cyan'
-  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -133,16 +119,12 @@ function CustomAddressBanner({
   return (
     <div
       style={{
-        backgroundColor: isOrbitChain
-          ? // add opacity to create a lighter shade
-            `${color.primary}20`
-          : undefined,
-        color: color.secondary,
-        borderColor: color.secondary
+        backgroundColor: `${color.primary}AA`,
+        color: 'white',
+        borderColor: color.primary
       }}
       className={twMerge(
-        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        !isOrbitChain && backgroundColorForL1OrL2Chain
+        'w-full rounded-t border border-b-0 p-1 text-center text-sm'
       )}
     >
       <span>
@@ -822,11 +804,11 @@ export function TransferPanelMain({
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
             buttonClassName={twMerge(
-              'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
             )}
             onChange={networkListboxProps.from.onChange}
           >
-            <span className="max-w-[220px] truncate md:max-w-[250px]">
+            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
               From: {getNetworkName(networks.sourceChain.id)}
             </span>
           </NetworkSelectionContainer>
@@ -865,7 +847,7 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
-        <div className="flex flex-col space-y-1">
+        <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,

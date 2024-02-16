@@ -37,7 +37,7 @@ export function NetworkListbox({
         <>
           <Listbox.Button
             style={{ backgroundColor: color.primary }}
-            className="arb-hover flex w-max items-center space-x-1 rounded px-3 py-2 text-sm text-white md:text-xl"
+            className="arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white md:gap-2 md:text-xl"
           >
             <span className="max-w-[220px] truncate leading-extra-tight md:max-w-[250px]">
               {label} {getNetworkName(value.id)}
@@ -45,7 +45,7 @@ export function NetworkListbox({
             {!disabled && (
               <ChevronDownIcon
                 className={twMerge(
-                  'h-4 w-4 transition-transform',
+                  'h-3 w-3 transition-transform',
                   open ? '-rotate-180' : 'rotate-0'
                 )}
               />
@@ -53,7 +53,7 @@ export function NetworkListbox({
           </Listbox.Button>
 
           <Transition className="absolute left-0 right-auto z-20 min-w-full lg:left-auto lg:right-0">
-            <Listbox.Options className="mt-1 max-h-[365px] min-w-full overflow-y-auto overflow-x-hidden rounded border border-white/30 bg-gray-1 font-normal text-white lg:left-auto lg:right-0">
+            <Listbox.Options className="mt-2 flex max-h-[365px] min-w-full flex-col gap-[8px] overflow-y-auto overflow-x-hidden rounded border border-white/30 bg-gray-1 font-normal text-white lg:left-auto lg:right-0">
               {options.map(option => {
                 return (
                   <Listbox.Option

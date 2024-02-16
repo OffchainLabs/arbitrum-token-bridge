@@ -141,7 +141,7 @@ export const TransactionStatusInfo = () => {
       {shouldShow && (
         <Button
           className={twMerge(
-            'mt-4 w-full rounded-none border-y border-white/30 p-3 text-left sm:mt-0 sm:rounded sm:border',
+            'mt-3 w-full rounded-none border-y border-white/30 p-3 text-left sm:mt-0 sm:rounded sm:border',
             buttonBgClassName
           )}
           onClick={openTransactionHistoryPanel}

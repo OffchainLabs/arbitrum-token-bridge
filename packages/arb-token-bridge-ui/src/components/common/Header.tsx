@@ -61,12 +61,12 @@ export function Header({ children }: { children: React.ReactNode }) {
 
 function HeaderMobile({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center overflow-auto bg-dark sm:hidden">
+    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center gap-1 overflow-auto bg-black font-normal sm:hidden">
       <Disclosure.Button
-        className="flex h-12 w-full justify-end px-4 pt-3 sm:hidden"
+        className="flex h-12 w-full shrink-0 justify-end px-4 pt-3 sm:hidden"
         onClick={onMobileMenuClose}
       >
-        <XMarkIcon className="h-8 w-8 text-white" />
+        <XMarkIcon className="h-[32px] w-[32px] text-white" />
       </Disclosure.Button>
       {children}
       {/* Mobile menu panel */}
