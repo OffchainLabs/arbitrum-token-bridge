@@ -1,29 +1,26 @@
 import { useEffect, useMemo } from 'react'
-import useLocalStorage from '@rehooks/local-storage'
 import { useAccount } from 'wagmi'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
+import { ArbitrumStats } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
-export function MainContent() {
-  const { address } = useAccount()
+function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
-  const transactionHistoryProps = useTransactionHistory(address, {
-    runFetcher: true
-  })
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
+  const { address } = useAccount()
 
-  const [isArbitrumStatsVisible] =
-    useLocalStorage<boolean>(statsLocalStorageKey)
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
 
   const { transactions, updatePendingTransaction } = transactionHistoryProps
 
@@ -40,27 +37,33 @@ export function MainContent() {
   }, [pendingTransactions, updatePendingTransaction])
 
   return (
-    <div className="flex w-full justify-center">
-      <div className="main-panel flex w-full max-w-[600px] flex-col gap-2">
-        <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
+    <SidePanel
+      isOpen={isTransactionHistoryPanelVisible}
+      heading="Transaction History"
+      onClose={closeTransactionHistoryPanel}
+      scrollable={false}
+    >
+      <TransactionHistory props={{ ...transactionHistoryProps, address }} />
+    </SidePanel>
+  )
+}
 
+export function MainContent() {
+  return (
+    <>
+      <div className="main-panel mx-auto flex w-full max-w-[600px] flex-col gap-2 lg:pb-12 lg:pt-6">
         <TransactionStatusInfo />
 
         <TransferPanel />
       </div>
-      <SidePanel
-        isOpen={isTransactionHistoryPanelVisible}
-        onClose={closeTransactionHistoryPanel}
-        scrollable={false}
-      >
-        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
-      </SidePanel>
+
+      <TransactionHistorySidePanel />
 
       {/* Settings panel */}
       <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
-      {isArbitrumStatsVisible && <ArbitrumStats />}
-    </div>
+      <ArbitrumStats />
+    </>
   )
 }

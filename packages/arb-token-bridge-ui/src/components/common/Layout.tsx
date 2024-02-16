@@ -4,8 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { Header } from './Header'
-import { Footer } from './Footer'
+import { Sidebar } from '../Sidebar'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
 import { ExternalLink } from './ExternalLink'
@@ -53,24 +52,27 @@ export function Layout(props: LayoutProps) {
         className="absolute bottom-0 left-1/2 w-full -translate-x-1/2 opacity-20"
         aria-hidden
       />
-      <div className="relative flex flex-col lg:min-h-screen">
-        <SiteBanner>
-          Arbitrum Orbit is mainnet-ready! Learn more about launching a
-          customized chain{' '}
-          <ExternalLink
-            href="https://arbitrum.io/orbit"
-            className="arb-hover underline"
-          >
-            here
-          </ExternalLink>
-          .
-        </SiteBanner>
-        <Header />
+      <div className="relative flex flex-col sm:min-h-screen">
+        <div className="flex flex-row">
+          <Sidebar />
 
-        <main className="grow">{props.children}</main>
+          <main className="grow">
+            <SiteBanner>
+              Arbitrum Orbit is mainnet-ready! Learn more about launching a
+              customized chain{' '}
+              <ExternalLink
+                href="https://arbitrum.io/orbit"
+                className="arb-hover underline"
+              >
+                here
+              </ExternalLink>
+              .
+            </SiteBanner>
+            {props.children}
+          </main>
 
-        <Toast />
-        <Footer />
+          <Toast />
+        </div>
       </div>
     </div>
   )

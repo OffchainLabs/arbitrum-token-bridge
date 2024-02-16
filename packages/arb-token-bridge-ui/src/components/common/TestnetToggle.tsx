@@ -30,6 +30,11 @@ export const TestnetToggle = ({
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
       })
+    } else {
+      setNetworks({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
     }
     setTimeout(() => {
       // this is to ensure it's done after setNetworks
@@ -39,9 +44,7 @@ export const TestnetToggle = ({
   }, [isSourceChainTestnet, setIsTestnetMode, setNetworks])
 
   return (
-    <div
-      className={twMerge(!isTestnetMode && 'opacity-60', className?.wrapper)}
-    >
+    <label className={twMerge('cursor-pointer', className?.wrapper)}>
       <Switch
         className={className?.switch}
         label={label}
@@ -49,6 +52,6 @@ export const TestnetToggle = ({
         checked={isTestnetMode}
         onChange={onChange}
       />
-    </div>
+    </label>
   )
 }

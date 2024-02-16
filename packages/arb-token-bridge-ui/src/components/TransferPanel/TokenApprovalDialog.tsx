@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
@@ -22,9 +21,9 @@ import {
 } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { shortenAddress, shortenTxHash } from '../../util/CommonUtils'
-import { useAppState } from '../../state'
-import { sanitizeImageSrc } from '../../util'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { TokenInfo } from './TokenInfo'
+import { NoteBox } from '../common/NoteBox'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
@@ -52,11 +51,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { data: signer } = useSigner({
     chainId
   })
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
 
   const [checked, setChecked] = useState(false)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>(constants.Zero)
@@ -81,22 +75,6 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const approvalFeeText = useMemo(() => {
     return `${ethFeeText} ${usdFeeText}`.trim()
   }, [ethFeeText, usdFeeText])
-
-  const tokenLogo = useMemo(() => {
-    if (typeof bridgeTokens === 'undefined') {
-      return undefined
-    }
-    if (!token?.address) {
-      return undefined
-    }
-    const logo = bridgeTokens[token.address]?.logoURI
-
-    if (logo) {
-      return sanitizeImageSrc(logo)
-    }
-
-    return undefined
-  }, [bridgeTokens, token])
 
   useEffect(() => {
     if (!isOpen) {
@@ -208,34 +186,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       actionButtonProps={{ disabled: !checked }}
     >
       <div className="flex flex-col space-y-4 py-4">
-        <div className="flex flex-row items-center space-x-3">
-          {tokenLogo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tokenLogo} alt="Token logo" className="h-6 w-6" />
-          ) : (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
-              ?
-            </div>
-          )}
-
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-1">
-              <span className="text-base">{token?.symbol}</span>
-              <span className="text-xs text-white/70">{token?.name}</span>
-            </div>
-            {token?.address && (
-              <ExternalLink
-                href={`${getExplorerUrl(networks.sourceChain.id)}/token/${
-                  token?.address
-                }`}
-                className="arb-hover text-xs underline"
-              >
-                {shortenAddress(token.address.toLowerCase())}
-              </ExternalLink>
-            )}
-          </div>
-        </div>
-
+        <TokenInfo token={token} />
         <Checkbox
           label={
             <div>
@@ -267,19 +218,16 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         </div>
 
         <div className="flex flex-col">
-          <div className="flex flex-row items-center space-x-1 rounded bg-cyan p-2">
-            <InformationCircleIcon className="h-3 w-3 text-cyan-dark" />
-            <span className="w-full text-xs text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet for
-              the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
-              <ExternalLink
-                href={TOKEN_APPROVAL_ARTICLE_LINK}
-                className="arb-hover ml-1 underline"
-              >
-                Learn more.
-              </ExternalLink>
-            </span>
-          </div>
+          <NoteBox>
+            After approval, you&apos;ll see a second prompt in your wallet for
+            the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
+            <ExternalLink
+              href={TOKEN_APPROVAL_ARTICLE_LINK}
+              className="arb-hover ml-1 underline"
+            >
+              Learn more.
+            </ExternalLink>
+          </NoteBox>
         </div>
       </div>
     </Dialog>

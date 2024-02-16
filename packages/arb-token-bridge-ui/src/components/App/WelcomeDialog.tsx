@@ -1,15 +1,40 @@
 import * as Sentry from '@sentry/react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useCallback, useEffect } from 'react'
+import { useLocalStorage } from 'react-use'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, useDialog } from '../common/Dialog'
 import { errorToast } from '../common/atoms/Toast'
+import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 
-export function WelcomeDialog(props: UseDialogProps) {
+export function WelcomeDialog() {
+  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
+  const [tosAccepted, setTosAccepted] =
+    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const isTosAccepted = tosAccepted !== undefined
+
   const { openConnectModal } = useConnectModal()
 
-  const closeHandler = () => {
-    props.onClose(true)
+  useEffect(() => {
+    if (!isTosAccepted) {
+      openWelcomeDialog()
+    }
+  }, [isTosAccepted, openWelcomeDialog])
+
+  const onClose = useCallback(
+    (confirmed: boolean) => {
+      // Only close after confirming (agreeing to terms)
+      if (confirmed) {
+        setTosAccepted('true')
+        welcomeDialogProps.onClose(confirmed)
+      }
+    },
+    [setTosAccepted, welcomeDialogProps]
+  )
+
+  const closeHandler = useCallback(() => {
+    onClose(true)
 
     try {
       openConnectModal?.()
@@ -17,11 +42,11 @@ export function WelcomeDialog(props: UseDialogProps) {
       errorToast('Failed to open up RainbowKit Connect Modal')
       Sentry.captureException(error)
     }
-  }
+  }, [onClose, openConnectModal])
 
   return (
     <Dialog
-      {...props}
+      {...welcomeDialogProps}
       onClose={closeHandler}
       title="Welcome"
       actionButtonTitle="Agree to Terms and Continue"
