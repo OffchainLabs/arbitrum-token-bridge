@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
 
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
-import { getExplorerUrl, isNetwork } from '../../../util/networks'
+import { getExplorerUrl } from '../../../util/networks'
 import { shortenAddress } from '../../../util/CommonUtils'
 import { ExternalLink } from '../../common/ExternalLink'
 import { Loader } from '../../common/atoms/Loader'
@@ -13,6 +13,10 @@ import { NativeCurrencyErc20 } from '../../../hooks/useNativeCurrency'
 import { formatAmount } from '../../../util/NumberUtils'
 import { TokenSymbolWithExplorerLink } from '../../common/TokenSymbolWithExplorerLink'
 import { ether } from '../../../constants'
+import { useDestinationAddressStore } from '../AdvancedSettings'
+import { useBalances } from './hooks'
+import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 export enum NetworkType {
   l1 = 'l1',
@@ -23,10 +27,30 @@ function StyledLoader() {
   return <Loader color="white" size="small" />
 }
 
-function BalancesContainer({ children }: { children: React.ReactNode }) {
+function BalancesContainer({
+  children,
+  chainType
+}: {
+  chainType: 'source' | 'destination'
+  children: React.ReactNode
+}) {
+  const { address: walletAddress } = useAccount()
+  const { destinationAddress } = useDestinationAddressStore()
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+  const isAddressValid =
+    destinationAddressOrWalletAddress &&
+    utils.isAddress(destinationAddressOrWalletAddress)
+
+  if (chainType === 'destination' && !isAddressValid) {
+    return null
+  }
+
   return (
     <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white md:text-lg">
-      {children}
+      <div className="flex justify-start gap-1">
+        <span>Balance: </span>
+        <div className="text-right">{children}</div>
+      </div>
     </div>
   )
 }
@@ -87,75 +111,74 @@ function TokenBalance({
 }
 NetworkContainer.TokenBalance = TokenBalance
 
-function ETHBalance({
-  balance,
-  prefix = ''
-}: {
-  balance: BigNumber | null
-  prefix?: string
-}) {
+function ETHBalance({ chainType }: { chainType: 'source' | 'destination' }) {
+  const [networks] = useNetworks()
+  const { isDepositMode } = useNetworksRelationship(networks)
+  const { ethL1Balance, ethL2Balance } = useBalances()
+
+  const balance = useMemo(() => {
+    if (chainType === 'source') {
+      if (isDepositMode) {
+        return ethL1Balance
+      }
+      return ethL2Balance
+    } else {
+      // destination chain
+      if (isDepositMode) {
+        return ethL2Balance
+      }
+      return ethL1Balance
+    }
+  }, [chainType, ethL1Balance, ethL2Balance, isDepositMode])
+
   if (!balance) {
     return <StyledLoader />
   }
 
-  return (
-    <p>
-      <span className="font-light">{prefix}</span>
-      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
-    </p>
-  )
+  return <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
 }
 NetworkContainer.ETHBalance = ETHBalance
 
-function CustomAddressBanner({
-  network,
-  customAddress
-}: {
-  network: Chain
-  customAddress: string | undefined
-}) {
-  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
-  const { color } = getBridgeUiConfigForChain(network.id)
+function CustomDestinationAddressBanner({ className }: { className: string }) {
+  const [networks] = useNetworks()
+  const { address } = useAccount()
+  const { color } = getBridgeUiConfigForChain(networks.destinationChain.id)
+  const { destinationAddress } = useDestinationAddressStore()
+  const walletAddressLowercased = address?.toLowerCase()
 
-  const backgroundColorForL1OrL2Chain = useMemo(() => {
-    if (isOrbitChain) {
-      return ''
-    }
-    if (!isArbitrum) {
-      return 'bg-cyan'
-    }
-    if (isArbitrumNova) {
-      return 'bg-orange'
-    }
-    return 'bg-cyan'
-  }, [isArbitrum, isArbitrumNova, isOrbitChain])
+  if (!destinationAddress || !walletAddressLowercased) {
+    return null
+  }
 
-  if (!customAddress) {
+  if (destinationAddress === walletAddressLowercased) {
+    return null
+  }
+
+  if (!utils.isAddress(destinationAddress)) {
     return null
   }
 
   return (
     <div
       style={{
-        backgroundColor: isOrbitChain
-          ? // add opacity to create a lighter shade
-            `${color.primary}20`
-          : undefined,
-        color: color.secondary,
-        borderColor: color.secondary
+        backgroundColor: `${color.primary}AA`,
+        color: 'white',
+        borderColor: color.primary
       }}
       className={twMerge(
-        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        !isOrbitChain && backgroundColorForL1OrL2Chain
+        'w-full rounded-t border-b p-1 text-center text-sm',
+        className
       )}
     >
       <span>
         Showing balance for Custom Destination Address:{' '}
         <ExternalLink
           className="arb-hover underline"
-          href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
+          href={`${getExplorerUrl(
+            networks.destinationChain.id
+          )}/address/${destinationAddress}`}
         >
-          {shortenAddress(customAddress)}
+          {shortenAddress(destinationAddress)}
         </ExternalLink>
       </span>
     </div>
@@ -164,14 +187,11 @@ function CustomAddressBanner({
 
 function NetworkContainer({
   network,
-  customAddress,
   children
 }: {
   network: Chain
-  customAddress?: string
   children: React.ReactNode
 }) {
-  const { address } = useAccount()
   const {
     color,
     network: { logo: networkLogo }
@@ -179,42 +199,25 @@ function NetworkContainer({
 
   const backgroundImage = `url(${networkLogo})`
 
-  const walletAddressLowercased = address?.toLowerCase()
-
-  const showCustomAddressBanner = useMemo(() => {
-    if (!customAddress || !walletAddressLowercased) {
-      return false
-    }
-    if (customAddress === walletAddressLowercased) {
-      return false
-    }
-    return utils.isAddress(customAddress)
-  }, [customAddress, walletAddressLowercased])
-
   return (
-    <>
-      {showCustomAddressBanner && (
-        <CustomAddressBanner network={network} customAddress={customAddress} />
+    <div
+      style={{
+        backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
+        borderColor: color.primary
+      }}
+      className={twMerge(
+        'relative rounded border transition-colors duration-400'
       )}
+    >
+      <CustomDestinationAddressBanner className="custom-address" />
       <div
-        style={{
-          backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color.primary
-        }}
-        className={twMerge(
-          'relative rounded border p-1 transition-colors duration-400',
-          showCustomAddressBanner && 'rounded-t-none'
-        )}
-      >
-        <div
-          className="absolute left-0 top-0 z-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage }}
-        />
-        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
-          {children}
-        </div>
+        className="absolute left-0 top-0 z-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50 [.custom-address~&]:bg-[-2px_40px]"
+        style={{ backgroundImage }}
+      />
+      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+        {children}
       </div>
-    </>
+    </div>
   )
 }
 

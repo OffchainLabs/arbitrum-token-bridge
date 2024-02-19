@@ -1,14 +1,12 @@
-import { constants, utils } from 'ethers'
+import { constants } from 'ethers'
 
 import { useNetworks } from '../../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
-import { useDestinationAddressStore } from '../AdvancedSettings'
 import { EstimatedGas } from '../EstimatedGas'
 import { NetworkListbox, NetworkListboxProps } from '../NetworkListbox'
 import { NetworkContainer, NetworkType } from './NetworkContainer'
 import { useSelectedTokenBalances } from '../../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useActions, useAppState } from '../../../state'
-import { useAccount } from 'wagmi'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import {
   ChainId,
@@ -98,7 +96,7 @@ function useNetworkListBoxProps({
 /**  In deposit mode, when user selected USDC on mainnet,
  * the UI shows the Arb One balance of both USDC.e and native USDC
  */
-function DepositModeUSDCSpecificInfo() {
+function DepositModeUSDCBalances() {
   const {
     app: { selectedToken }
   } = useAppState()
@@ -134,15 +132,11 @@ function DepositModeUSDCSpecificInfo() {
 }
 
 function CustomGasTokenChainDestinationBalances() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const customFeeTokenBalances = useCustomFeeTokenBalances()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const { ethL1Balance } = useBalances()
 
   // TODO: refactor everything that relies on this to use source/destination instead of l1/l2
   const destinationChainLayer = isDepositMode ? 'l2' : 'l1'
@@ -152,15 +146,11 @@ function CustomGasTokenChainDestinationBalances() {
   }
 
   return (
-    <>
-      <NetworkContainer.TokenBalance
-        on={NetworkType[destinationChainLayer]}
-        balance={customFeeTokenBalances[destinationChainLayer]}
-        forToken={nativeCurrency}
-        prefix={selectedToken ? '' : 'Balance: '}
-      />
-      {!isDepositMode && <NetworkContainer.ETHBalance balance={ethL1Balance} />}
-    </>
+    <NetworkContainer.TokenBalance
+      on={NetworkType[destinationChainLayer]}
+      balance={customFeeTokenBalances[destinationChainLayer]}
+      forToken={nativeCurrency}
+    />
   )
 }
 
@@ -173,15 +163,8 @@ export function DestinationNetworkContainer({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
-  const { destinationAddress } = useDestinationAddressStore()
+  const { isDepositMode } = useNetworksRelationship(networks)
   const selectedTokenBalances = useSelectedTokenBalances()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const { ethL1Balance, ethL2Balance } = useBalances()
 
   const networkListboxProps = useNetworkListBoxProps({ onChange })
 
@@ -189,33 +172,19 @@ export function DestinationNetworkContainer({
   const destinationChainLayer = isDepositMode ? 'l2' : 'l1'
 
   return (
-    <NetworkContainer
-      network={networks.destinationChain}
-      customAddress={destinationAddress}
-    >
+    <NetworkContainer network={networks.destinationChain}>
       <NetworkContainer.NetworkListboxPlusBalancesContainer>
         <NetworkListbox label="To:" {...networkListboxProps.to} />
 
-        <NetworkContainer.BalancesContainer>
-          {destinationAddressOrWalletAddress &&
-            utils.isAddress(destinationAddressOrWalletAddress) && (
-              <>
-                <NetworkContainer.TokenBalance
-                  balance={selectedTokenBalances[destinationChainLayer]}
-                  on={NetworkType[destinationChainLayer]}
-                  forToken={selectedToken}
-                  prefix={selectedToken ? 'Balance: ' : ''}
-                />
-                <DepositModeUSDCSpecificInfo />
-                <CustomGasTokenChainDestinationBalances />
-                {!nativeCurrency.isCustom && (
-                  <NetworkContainer.ETHBalance
-                    balance={isDepositMode ? ethL2Balance : ethL1Balance}
-                    prefix={selectedToken ? '' : 'Balance: '}
-                  />
-                )}
-              </>
-            )}
+        <NetworkContainer.BalancesContainer chainType="destination">
+          <NetworkContainer.TokenBalance
+            on={NetworkType[destinationChainLayer]}
+            balance={selectedTokenBalances[destinationChainLayer]}
+            forToken={selectedToken}
+          />
+          <DepositModeUSDCBalances />
+          <CustomGasTokenChainDestinationBalances />
+          <NetworkContainer.ETHBalance chainType="destination" />
         </NetworkContainer.BalancesContainer>
       </NetworkContainer.NetworkListboxPlusBalancesContainer>
       <EstimatedGas chainType="destination" />

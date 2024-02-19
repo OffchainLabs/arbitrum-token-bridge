@@ -22,7 +22,7 @@ import {
   isTokenMainnetUSDC,
   isTokenSepoliaUSDC
 } from '../../../util/TokenUtils'
-import { useBalances, useCustomFeeTokenBalances } from './hooks'
+import { useCustomFeeTokenBalances } from './hooks'
 import { useTransferDisabledDialogStore } from '../TransferDisabledDialog'
 import { TransferReadinessRichErrorMessage } from '../useTransferReadinessUtils'
 import {
@@ -175,8 +175,6 @@ export function SourceNetworkContainer({
     [setQueryParams]
   )
 
-  const { ethL1Balance, ethL2Balance } = useBalances()
-
   const customFeeTokenBalances = useCustomFeeTokenBalances()
 
   // TODO: refactor everything that relies on this to use source/destination instead of l1/l2
@@ -221,37 +219,20 @@ export function SourceNetworkContainer({
           )}
           onChange={onChange}
         >
-          <span className="max-w-[220px] truncate md:max-w-[250px]">
-            From: {getNetworkName(networks.sourceChain.id)}
-          </span>
+          From: {getNetworkName(networks.sourceChain.id)}
         </NetworkSelectionContainer>
 
-        <NetworkContainer.BalancesContainer>
+        <NetworkContainer.BalancesContainer chainType="source">
           <NetworkContainer.TokenBalance
             on={NetworkType[sourceChainLayer]}
-            balance={selectedTokenBalances[sourceChainLayer]}
-            forToken={selectedToken}
-            prefix={selectedToken ? 'Balance: ' : ''}
+            balance={
+              nativeCurrency.isCustom
+                ? customFeeTokenBalances[sourceChainLayer]
+                : selectedTokenBalances[sourceChainLayer]
+            }
+            forToken={nativeCurrency.isCustom ? nativeCurrency : selectedToken}
           />
-          {nativeCurrency.isCustom ? (
-            <>
-              <NetworkContainer.TokenBalance
-                on={NetworkType[sourceChainLayer]}
-                balance={customFeeTokenBalances[sourceChainLayer]}
-                forToken={nativeCurrency}
-                prefix={selectedToken ? '' : 'Balance: '}
-              />
-              {/* Only show ETH balance on L1 */}
-              {isDepositMode && (
-                <NetworkContainer.ETHBalance balance={ethL1Balance} />
-              )}
-            </>
-          ) : (
-            <NetworkContainer.ETHBalance
-              balance={isDepositMode ? ethL1Balance : ethL2Balance}
-              prefix={selectedToken ? '' : 'Balance: '}
-            />
-          )}
+          <NetworkContainer.ETHBalance chainType="source" />
         </NetworkContainer.BalancesContainer>
       </NetworkContainer.NetworkListboxPlusBalancesContainer>
 
@@ -267,7 +248,6 @@ export function SourceNetworkContainer({
             setAmount(e.target.value)
           }}
         />
-
         <USDCSpecificInfo />
         <TokenDepositInfo />
       </div>
