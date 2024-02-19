@@ -71,7 +71,7 @@ function HeaderMobile({ children }: { children: React.ReactNode }) {
       {children}
       {/* Mobile menu panel */}
       <SidebarMenu menuItemClickCallback={close} className="px-4" />
-      <SidebarFooter className="pb-6" />
+      <SidebarFooter className="px-[35px] pb-6" />
     </div>
   )
 }
