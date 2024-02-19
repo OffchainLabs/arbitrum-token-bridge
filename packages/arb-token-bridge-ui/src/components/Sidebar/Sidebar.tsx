@@ -41,7 +41,7 @@ export const Sidebar = () => {
   return (
     <div
       className={twMerge(
-        'relative hidden flex-col justify-between border-r border-gray-6 bg-black pt-[30px] font-normal transition-all duration-200',
+        'relative z-10 hidden flex-col justify-between border-r border-gray-6 bg-black pt-[30px] font-normal transition-all duration-200',
         'h-full shrink-0 sm:sticky sm:top-0 sm:flex sm:h-screen', // show the sidebar in md/lg+ resolutions, for sm revert to Header
         sidebarOpened ? 'w-[256px]' : 'w-[60px] cursor-pointer'
       )}
@@ -50,7 +50,7 @@ export const Sidebar = () => {
       {/* Sidebar toggle button */}
       <button
         className={twMerge(
-          'absolute right-[-16px] top-[60px] z-[1000] flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-full border border-gray-6 bg-gray-1 transition duration-200',
+          'absolute right-[-16px] top-[60px] flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-full border border-gray-6 bg-gray-1 transition duration-200',
           !sidebarOpened && 'rotate-180'
         )}
         onClick={sidebarToggleClick}

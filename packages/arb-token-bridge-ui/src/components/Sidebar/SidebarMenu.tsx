@@ -103,7 +103,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[20px] sm:pl-[16px] text-white/60 hover:bg-default-black-hover hover:text-white',
+    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[20px] sm:pl-[16px] text-white/60 hover:bg-white/20 hover:text-white',
     isActive && 'text-white'
   )
 
