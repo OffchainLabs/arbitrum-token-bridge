@@ -140,7 +140,7 @@ export const orbitMainnets: {
   },
   4078: {
     chainID: 4078,
-    confirmPeriodBlocks: 45818,
+    confirmPeriodBlocks: 7200,
     ethBridge: {
       bridge: '0xB0EC3C1368AF7d9C2CAE6B7f8E022Cc14d59D2b1',
       inbox: '0x18BB8310E3a3DF4EFcCb6B3E9AeCB8bE6d4af07f',
