@@ -29,14 +29,13 @@ function MaxButton(props: MaxButtonProps) {
   )
 }
 
-export type TransferPanelMainInputProps =
-  React.InputHTMLAttributes<HTMLInputElement> & {
-    errorMessage?: string | React.ReactNode
-    maxButtonProps: MaxButtonProps & {
-      visible: boolean
-    }
-    value: string
+export type TransferPanelMainInputProps = {
+  errorMessage?: string | React.ReactNode
+  maxButtonProps: MaxButtonProps & {
+    visible: boolean
   }
+  value: string
+}
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
   const { errorMessage, maxButtonProps, value } = props
