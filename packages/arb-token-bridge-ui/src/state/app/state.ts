@@ -2,7 +2,6 @@ import { BigNumber } from 'ethers'
 import {
   ArbTokenBridge,
   AssetType,
-  ERC20BridgeToken,
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
@@ -13,6 +12,7 @@ import {
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
 
 export enum WhiteListState {
   VERIFYING,
@@ -85,7 +85,7 @@ export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  selectedToken: ERC20BridgeToken | null
+  selectedToken: CrossChainTokenInfo | null
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
