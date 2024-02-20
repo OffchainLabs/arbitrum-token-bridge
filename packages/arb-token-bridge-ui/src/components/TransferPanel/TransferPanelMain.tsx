@@ -109,7 +109,7 @@ function SwitchNetworkButtonBorderTop() {
 
   return (
     <div
-      className="absolute -bottom-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-t border transition-[background] duration-200 lg:h-[11px]"
+      className="absolute -bottom-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-t border transition-[border-color] duration-200 lg:h-[11px]"
       style={{ borderColor: sourceNetworkPrimaryColor }}
     />
   )
@@ -124,7 +124,7 @@ function SwitchNetworkButtonBorderBottom() {
 
   return (
     <div
-      className="absolute -top-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-b border transition-[background] duration-200 lg:h-[11px]"
+      className="absolute -top-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-b border transition-[border-color] duration-200 lg:h-[11px]"
       style={{ borderColor: destinationNetworkPrimaryColor }}
     />
   )
