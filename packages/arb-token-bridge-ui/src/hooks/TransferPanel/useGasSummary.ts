@@ -2,7 +2,6 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
 import { useDebouncedValue } from '../useDebouncedValue'
 import {
