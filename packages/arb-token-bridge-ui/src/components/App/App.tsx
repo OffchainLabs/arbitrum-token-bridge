@@ -23,7 +23,6 @@ import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
-import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { useDialog } from '../common/Dialog'
 import {
   HeaderContent,
@@ -48,6 +47,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
+import { BRIDGE_TOKEN_LISTS } from '../../features/tokenLists/store'
 
 declare global {
   interface Window {
@@ -67,8 +67,16 @@ const rainbowkitTheme = merge(darkTheme(), {
 const AppContent = (): JSX.Element => {
   const [{ sourceChain }] = useNetworks()
   const {
-    app: { connectionState }
+    app: { connectionState, arbTokenBridge }
   } = useAppState()
+
+  useEffect(() => {
+    BRIDGE_TOKEN_LISTS.forEach(list => {
+      if (list.isDefault && arbTokenBridge.token) {
+        arbTokenBridge.token.addTokensFromList(list.id)
+      }
+    })
+  }, [arbTokenBridge.token?.addTokensFromList])
 
   useSyncQueryParamsToTestnetMode()
 
@@ -106,7 +114,6 @@ const AppContent = (): JSX.Element => {
         <HeaderAccountPopover />
       </HeaderContent>
 
-      <TokenListSyncer />
       <BalanceUpdater />
       <Notifications />
       <MainContent />
