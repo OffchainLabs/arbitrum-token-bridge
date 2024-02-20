@@ -6,7 +6,6 @@ import Tippy from '@tippyjs/react'
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
@@ -21,14 +20,16 @@ import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import { useTokenLists } from '../../hooks/useTokenLists'
+import {
+  CrossChainTokenInfo,
+  useTokenListsStore
+} from '../../features/tokenLists/store'
 
 enum ImportStatus {
   LOADING,
@@ -44,7 +45,7 @@ type TokenListSearchResult =
     }
   | {
       found: true
-      token: ERC20BridgeToken
+      token: CrossChainTokenInfo
       status: ImportStatus
     }
 
@@ -85,14 +86,11 @@ export function TokenImportDialog({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-  const { data: tokens } = useTokenLists(networks.sourceChain.id)
+  const { tokens } = useTokenListsStore()
   const actions = useActions()
-
-  const latestBridgeTokens = useLatest(bridgeTokens)
-
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
-  const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
+  const [tokenToImport, setTokenToImport] = useState<CrossChainTokenInfo>()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
@@ -135,38 +133,26 @@ export function TokenImportDialog({
 
   const searchForTokenInLists = useCallback(
     (erc20Address: string): TokenListSearchResult => {
-      // We found the token in an imported list
-      const currentBridgeTokens = latestBridgeTokens.current
-      if (typeof currentBridgeTokens === 'undefined') {
-        return { found: false }
-      }
-
-      const l1Token = currentBridgeTokens[erc20Address]
-      if (typeof l1Token !== 'undefined') {
-        return {
-          found: true,
-          token: l1Token,
-          status: ImportStatus.KNOWN
-        }
-      }
-
-      const token = tokens[erc20Address]
-      // We found the token in an unimported list
-      if (typeof token !== 'undefined') {
+      // TODO: fix, check in imported list, then unimported?
+      const tokensForSourceChain = tokens[networks.sourceChain.id]
+      const token = tokensForSourceChain
+        ? tokensForSourceChain[erc20Address]
+        : null
+      if (token) {
         return {
           found: true,
           token,
-          status: ImportStatus.KNOWN_UNIMPORTED
+          status: ImportStatus.KNOWN
         }
       }
 
       return { found: false }
     },
-    [latestBridgeTokens, latestTokensFromLists, latestTokensFromUser]
+    [networks.sourceChain.id, tokens]
   )
 
   const selectToken = useCallback(
-    async (_token: ERC20BridgeToken) => {
+    async (_token: CrossChainTokenInfo) => {
       await token.updateTokenData(_token.address)
       actions.app.setSelectedToken(_token)
     },
@@ -193,7 +179,6 @@ export function TokenImportDialog({
       if (searchResult1.found) {
         setStatus(searchResult1.status)
         setTokenToImport(searchResult1.token)
-
         return
       }
     }
