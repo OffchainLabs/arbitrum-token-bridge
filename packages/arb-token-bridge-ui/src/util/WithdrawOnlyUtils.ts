@@ -140,6 +140,18 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
       l1Address: '0x580e933d90091b9ce380740e3a4a39c67eb85b4c',
       l2Address: '0x88e5369f73312eba739dcdf83bdb8bad3d08f4c8'
+    },
+    {
+      symbol: 'eETH',
+      l2CustomAddr: '',
+      l1Address: '0x35fA164735182de50811E8e2E824cFb9B6118ac2',
+      l2Address: '0x832307742aACFe2b9680309526b4d8a409e274E0'
+    },
+    {
+      symbol: 'rsETH',
+      l2CustomAddr: '',
+      l1Address: '0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7',
+      l2Address: '0x3d19a8b57e8082c4bbd5e068016295cfdb255e6a'
     }
   ],
   [ChainId.ArbitrumNova]: []
