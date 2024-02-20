@@ -140,7 +140,7 @@ export function HeaderAccountPopover({
     <Popover className="relative w-full px-4 sm:w-max sm:p-0">
       <Popover.Button
         className={twMerge(
-          'flex w-full flex-row items-center justify-start gap-3 px-[12px] py-[7px]',
+          'flex w-full flex-row items-center justify-start gap-3 px-[12px] py-[7px] transition-[background] duration-300',
           'ui-open:bg-white/20 ui-not-open:bg-transparent ui-not-open:hover:bg-white/20',
           'sm:w-max sm:rounded sm:border sm:px-2 sm:py-1',
           isTestnet
