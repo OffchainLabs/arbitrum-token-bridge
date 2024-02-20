@@ -16,7 +16,6 @@ import {
 import { Button } from '../common/Button'
 import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
-import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
@@ -459,8 +458,7 @@ export function TokenSearch({ close }: { close: () => void }) {
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { setTokenQueryParam } = useTokenFromSearchParams()
-
-  const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
+  const { tokenLists } = useTokenListsStore()
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -550,7 +548,7 @@ export function TokenSearch({ close }: { close: () => void }) {
       SearchPanelSecondaryPage={<TokenListsPanel />}
       mainPageTitle="Select Token"
       secondPageTitle="Token Lists"
-      isLoading={isFetchingTokenLists}
+      isLoading={tokenLists.size === 0}
       loadingMessage="Fetching Tokens..."
       bottomRightCtaText="Manage token lists"
     >
