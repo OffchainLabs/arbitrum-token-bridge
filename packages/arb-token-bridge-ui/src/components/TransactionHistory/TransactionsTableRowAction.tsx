@@ -165,7 +165,7 @@ export function TransactionsTableRowAction({
     return (
       <Button
         variant="primary"
-        className="w-12 rounded bg-white p-2 text-xs text-black"
+        className="w-14 rounded bg-white p-2 text-xs text-black"
         onClick={getHelpOnError}
       >
         Get help

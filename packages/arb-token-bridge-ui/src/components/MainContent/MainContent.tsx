@@ -50,7 +50,7 @@ function TransactionHistorySidePanel() {
 export function MainContent() {
   return (
     <>
-      <div className="main-panel mx-auto flex w-full max-w-[600px] flex-col gap-2 lg:pb-12 lg:pt-6">
+      <div className="main-panel mx-auto flex w-full max-w-[600px] flex-col sm:pb-12 sm:pt-6">
         <TransactionStatusInfo />
 
         <TransferPanel />

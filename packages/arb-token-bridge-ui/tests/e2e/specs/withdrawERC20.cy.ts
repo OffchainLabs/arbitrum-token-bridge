@@ -93,7 +93,7 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should withdraw successfully', () => {
-        cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
+        cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
         // the Continue withdrawal button should be disabled at first
         cy.findByRole('button', {
