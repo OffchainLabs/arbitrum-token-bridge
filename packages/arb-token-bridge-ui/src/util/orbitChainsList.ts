@@ -137,6 +137,57 @@ export const orbitMainnets: {
         logo: '/images/RARIMainnetLogo.svg'
       }
     }
+  },
+  4078: {
+    chainID: 4078,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0xB0EC3C1368AF7d9C2CAE6B7f8E022Cc14d59D2b1',
+      inbox: '0x18BB8310E3a3DF4EFcCb6B3E9AeCB8bE6d4af07f',
+      outbox: '0xD17550876106645988051ffDd31dFc3cDaA29F9c',
+      rollup: '0x73CA76d9B04661604fF950fB8DBc9f18F1B853f1',
+      sequencerInbox: '0xfb27e42E964F3364630F76D62EB295ae792BD4FA'
+    },
+    explorerUrl: 'https://muster-explorer.alt.technology',
+    rpcUrl: 'https://muster.alt.technology',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'Muster',
+    slug: 'muster',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x6085B32d97be137cC2D6447DcB3BF684C0835D2F',
+      l1ERC20Gateway: '0x6551eF99126253B7a838Cf46340030C8eD5342c2',
+      l1GatewayRouter: '0x5040981c42fD61219cc567e255129166A840938e',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0x37119EAcFBc1c83DDAf80F6705b6B19630C101C4',
+      l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      l1WethGateway: '0x5e833dd255e2aafFcfB32E874F5e2dFA17A109Ee',
+      l2CustomGateway: '0x9FcC7aC2c40eFD0443D8B641e482F04310F113f6',
+      l2ERC20Gateway: '0xFdEb5b89bb8FCA61BF77f205B9F89aC3C5fA5dB8',
+      l2GatewayRouter: '0xDcF4964Dbb526e91CD6354ac3d1247Ce93C21fc4',
+      l2Multicall: '0xaA6669a609862871ce72c91a93E70F1ef7590271',
+      l2ProxyAdmin: '0xf10D50B24eDd74ECF3B6Bc22aE74b7F9843e0fDD',
+      l2Weth: '0x869Bf8814d77106323745758135b999D34C79a87',
+      l2WethGateway: '0xB6145BFd3fA9D270871037238003c66B984787f4'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: {
+        primary: '#F4C7C3',
+        secondary: '#624F7B'
+      },
+      network: {
+        name: 'Muster Network',
+        description: 'A gaming chain with cheap fees and account abstraction.',
+        logo: '/images/MusterLogo.svg'
+      }
+    }
   }
 }
 
