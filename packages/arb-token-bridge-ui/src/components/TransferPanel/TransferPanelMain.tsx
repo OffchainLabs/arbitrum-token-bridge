@@ -86,16 +86,18 @@ export function SwitchNetworksButton(
       type="button"
       disabled={disabled}
       className={twMerge(
-        'group flex h-7 w-7 items-center justify-center rounded bg-[#191919] p-1',
+        'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
         disabled && 'pointer-events-none'
       )}
       {...props}
     >
+      <SwitchNetworkButtonBorderTop />
       {isSmartContractWallet ? (
         <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
       ) : (
         <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
       )}
+      <SwitchNetworkButtonBorderBottom />
     </button>
   )
 }
@@ -109,7 +111,7 @@ function SwitchNetworkButtonBorderTop() {
 
   return (
     <div
-      className="absolute -bottom-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-t border transition-[border-color] duration-200 lg:h-[11px]"
+      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
       style={{ borderColor: sourceNetworkPrimaryColor }}
     />
   )
@@ -124,7 +126,7 @@ function SwitchNetworkButtonBorderBottom() {
 
   return (
     <div
-      className="absolute -top-[6px] left-0 right-0 m-auto h-[9px] w-[37px] rounded-b border transition-[border-color] duration-200 lg:h-[11px]"
+      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
       style={{ borderColor: destinationNetworkPrimaryColor }}
     />
   )
@@ -828,7 +830,6 @@ export function TransferPanelMain({
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
-          <SwitchNetworkButtonBorderTop />
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
             buttonClassName={twMerge(
@@ -933,7 +934,6 @@ export function TransferPanelMain({
         customAddress={destinationAddress}
       >
         <NetworkListboxPlusBalancesContainer>
-          <SwitchNetworkButtonBorderBottom />
           <NetworkListbox label="To:" {...networkListboxProps.to} />
           <BalancesContainer>
             {destinationAddressOrWalletAddress &&
