@@ -36,7 +36,7 @@ import {
   getProvider
 } from '../components/TransactionHistory/helpers'
 import { useNetworks } from './useNetworks'
-import { useTokenListsStore } from '../features/tokenLists/store'
+import { useTokenListsStore } from '../features/tokenLists/useTokenListsStore'
 import { useNetworksRelationship } from './useNetworksRelationship'
 
 export const wait = (ms = 0) => {
@@ -105,8 +105,7 @@ export const useArbTokenBridge = (
   const {
     addTokenList,
     removeTokenList,
-    tokens: bridgeTokens,
-    tokenLists
+    tokens: bridgeTokens
   } = useTokenListsStore()
 
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
@@ -842,7 +841,6 @@ export const useArbTokenBridge = (
   }
 
   return {
-    bridgeTokens,
     eth: {
       deposit: depositEth,
       withdraw: withdrawEth,
