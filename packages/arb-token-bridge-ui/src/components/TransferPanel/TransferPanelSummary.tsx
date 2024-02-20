@@ -2,7 +2,11 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getBaseChainIdByChainId, getNetworkName } from '../../util/networks'
+import {
+  ChainId,
+  getBaseChainIdByChainId,
+  getNetworkName
+} from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -141,7 +145,11 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             token={token}
             isParentChain={!isDepositMode}
           />{' '}
-          {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
+          {isTokenUSDC(token?.address) &&
+            isDepositMode &&
+            networks.destinationChain.id === ChainId.ArbitrumOne && (
+              <>or USDC</>
+            )}
           <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>

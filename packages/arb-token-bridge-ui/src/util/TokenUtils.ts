@@ -274,6 +274,10 @@ type SanitizeTokenOptions = {
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
+export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumOne['USDC.e'].toLowerCase()
+
 export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
 
@@ -310,6 +314,7 @@ export function sanitizeTokenSymbol(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
     isTokenSepoliaUSDC(options.erc20L1Address)
   ) {
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
@@ -333,6 +338,7 @@ export function sanitizeTokenName(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
     isTokenSepoliaUSDC(options.erc20L1Address)
   ) {
     // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
