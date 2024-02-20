@@ -598,10 +598,12 @@ export function TransferPanelMain({
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
   useEffect(() => {
+    setQueryParams({ amount })
+
     if (isMaxAmount) {
       setMaxAmount()
     }
-  }, [isMaxAmount, setMaxAmount])
+  }, [isMaxAmount, setMaxAmount, setQueryParams, amount])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
