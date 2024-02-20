@@ -1,23 +1,22 @@
 import { useMemo } from 'react'
-
-import { ArbTokenBridge } from './arbTokenBridge.types'
 import { defaultErc20Decimals } from '../defaults'
+import { useTokens } from '../features/tokenLists/hooks/useTokens'
+import { useNetworks } from './useNetworks'
 
-const useTokenDecimals = (
-  bridgeTokens: ArbTokenBridge['bridgeTokens'],
-  tokenAddress: string | null
-) => {
+const useTokenDecimals = (tokenAddress: string | null) => {
+  const [networks] = useNetworks()
+  const { sourceTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
+
   return useMemo(() => {
-    if (typeof bridgeTokens === 'undefined') {
-      return defaultErc20Decimals
-    }
-
     if (!tokenAddress) {
       return defaultErc20Decimals
     }
 
-    return bridgeTokens[tokenAddress]?.decimals ?? defaultErc20Decimals
-  }, [bridgeTokens, tokenAddress])
+    return sourceTokens[tokenAddress]?.decimals ?? defaultErc20Decimals
+  }, [sourceTokens, tokenAddress])
 }
 
 export { useTokenDecimals }
