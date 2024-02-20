@@ -9,9 +9,9 @@ import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { useActions, useAppState } from '../../state'
 import {
   fetchErc20Data,
-  erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumSepoliaNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC,
+  erc20DataToCrossChainTokenInfo
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useBalance } from '../../hooks/useBalance'
@@ -35,8 +35,10 @@ import { useTokenFromSearchParams } from './TransferPanelUtils'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
+  CrossChainTokenInfo,
   useTokenListsStore
-} from '../../features/tokenLists/store'
+} from '../../features/tokenLists/useTokenListsStore'
+import { useTokens } from '../../features/tokenLists/hooks/useTokens'
 
 const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -136,7 +138,10 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { tokens: tokensFromLists } = useTokenListsStore()
+  const { sourceTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const {
@@ -194,8 +199,7 @@ function TokensPanel({
 
   const tokensToShow = useMemo(() => {
     const tokenSearch = newToken.trim().toLowerCase()
-    const currentTokens = tokensFromLists[networks.sourceChain.id]
-    const tokenAddresses = Object.keys(currentTokens || {})
+    const tokenAddresses = Object.keys(sourceTokens)
     if (!isDepositMode) {
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
@@ -209,14 +213,14 @@ function TokensPanel({
       // Deduplicate addresses
       ...tokenAddresses
     ]
-    if (!currentTokens || Object.keys(currentTokens).length === 0) {
+    if (Object.keys(sourceTokens).length === 0) {
       return tokens
     }
 
     return tokens
       .filter(address => {
         // Derive the token object from the address string
-        let token = currentTokens[address]
+        let token = sourceTokens[address]
 
         if (isTokenArbitrumOneNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
@@ -294,8 +298,7 @@ function TokensPanel({
       })
   }, [
     newToken,
-    tokensFromLists,
-    networks.sourceChain.id,
+    sourceTokens,
     isDepositMode,
     isArbitrumOne,
     isArbitrumSepolia,
@@ -366,14 +369,14 @@ function TokensPanel({
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {
       const address = tokensToShow[virtualizedProps.index]
-      let token: ERC20BridgeToken | null = null
+      let token: CrossChainTokenInfo | null = null
 
       if (isTokenArbitrumOneNativeUSDC(address)) {
         token = ARB_ONE_NATIVE_USDC_TOKEN
       } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
         token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
       } else if (address) {
-        token = tokensFromLists[networks.sourceChain.id][address] || null
+        token = sourceTokens[address] || null
       }
 
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
@@ -395,7 +398,7 @@ function TokensPanel({
         />
       )
     },
-    [tokensToShow, onTokenSelected, tokensFromLists, networks.sourceChain.id]
+    [tokensToShow, onTokenSelected, sourceTokens]
   )
 
   const AddButton = useMemo(
@@ -444,7 +447,7 @@ export function TokenSearch({ close }: { close: () => void }) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { token, bridgeTokens }
+      arbTokenBridge: { token }
     }
   } = useAppState()
   const {
@@ -459,8 +462,12 @@ export function TokenSearch({ close }: { close: () => void }) {
     useTransferDisabledDialogStore()
   const { setTokenQueryParam } = useTokenFromSearchParams()
   const { tokenLists } = useTokenListsStore()
+  const { sourceTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
+  async function selectToken(_token: CrossChainTokenInfo | null) {
     close()
 
     if (_token === null) {
@@ -469,10 +476,6 @@ export function TokenSearch({ close }: { close: () => void }) {
     }
 
     if (!_token.address) {
-      return
-    }
-
-    if (typeof bridgeTokens === 'undefined') {
       return
     }
 
@@ -500,26 +503,13 @@ export function TokenSearch({ close }: { close: () => void }) {
       }
 
       // Token not added to the bridge, so we'll handle importing it
-      if (typeof bridgeTokens[_token.address] === 'undefined') {
+      if (typeof sourceTokens[_token.address.toLowerCase()] === 'undefined') {
         setTokenQueryParam(_token.address)
         return
       }
 
       if (!walletAddress) {
         return
-      }
-
-      const data = await fetchErc20Data({
-        address: _token.address,
-        provider: parentChainProvider
-      })
-
-      if (data) {
-        token.updateTokenData(_token.address)
-        setSelectedToken({
-          ...erc20DataToErc20BridgeToken(data),
-          l2Address: _token.l2Address
-        })
       }
 
       // do not allow import of withdraw-only tokens at deposit mode
@@ -531,6 +521,24 @@ export function TokenSearch({ close }: { close: () => void }) {
       if (isTransferDisabledToken(_token.address, childChain.id)) {
         openTransferDisabledDialog()
         return
+      }
+
+      if (sourceTokens[_token.address.toLowerCase()]) {
+        setSelectedToken(_token)
+        return
+      }
+
+      const data = await fetchErc20Data({
+        address: _token.address,
+        provider: networks.sourceChainProvider
+      })
+
+      if (data) {
+        token.updateTokenData(_token.address)
+        // TODO: find bridgeInfo, how?
+        setSelectedToken(
+          erc20DataToCrossChainTokenInfo(data, networks.sourceChain.id)
+        )
       }
     } catch (error: any) {
       console.warn(error)

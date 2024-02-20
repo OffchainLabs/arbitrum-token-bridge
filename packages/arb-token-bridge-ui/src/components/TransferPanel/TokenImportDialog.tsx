@@ -26,10 +26,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
-import {
-  CrossChainTokenInfo,
-  useTokenListsStore
-} from '../../features/tokenLists/store'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
+import { useTokens } from '../../features/tokenLists/hooks/useTokens'
 
 enum ImportStatus {
   LOADING,
@@ -74,7 +72,7 @@ export function TokenImportDialog({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
+      arbTokenBridge: { token },
       selectedToken
     }
   } = useAppState()
@@ -86,7 +84,6 @@ export function TokenImportDialog({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
-  const { tokens } = useTokenListsStore()
   const actions = useActions()
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
@@ -97,6 +94,10 @@ export function TokenImportDialog({
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
+  })
+  const { sourceTokens, destinationTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
   })
 
   const modalTitle = useMemo(() => {
@@ -132,23 +133,29 @@ export function TokenImportDialog({
   }, [parentChainProvider, walletAddress, l1Address])
 
   const searchForTokenInLists = useCallback(
-    (erc20Address: string): TokenListSearchResult => {
-      // TODO: fix, check in imported list, then unimported?
-      const tokensForSourceChain = tokens[networks.sourceChain.id]
-      const token = tokensForSourceChain
-        ? tokensForSourceChain[erc20Address]
-        : null
-      if (token) {
+    (erc20L1Address: string): TokenListSearchResult => {
+      const sourceToken = sourceTokens[erc20L1Address.toLowerCase()]
+      const destinationToken = destinationTokens[erc20L1Address.toLowerCase()]
+
+      if (sourceToken) {
         return {
           found: true,
-          token,
+          token: sourceToken,
+          status: ImportStatus.KNOWN
+        }
+      }
+
+      if (destinationToken) {
+        return {
+          found: true,
+          token: destinationToken,
           status: ImportStatus.KNOWN
         }
       }
 
       return { found: false }
     },
-    [networks.sourceChain.id, tokens]
+    [destinationTokens, sourceTokens]
   )
 
   const selectToken = useCallback(
@@ -161,10 +168,6 @@ export function TokenImportDialog({
 
   useEffect(() => {
     if (!isOpen) {
-      return
-    }
-
-    if (typeof bridgeTokens === 'undefined') {
       return
     }
 
@@ -199,7 +202,6 @@ export function TokenImportDialog({
       })
   }, [
     tokenAddress,
-    bridgeTokens,
     getL1TokenDataFromL1Address,
     isL1AddressLoading,
     isOpen,
@@ -216,7 +218,7 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[l1Address || tokenAddress]
+    const foundToken = sourceTokens[l1Address || tokenAddress]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -235,7 +237,7 @@ export function TokenImportDialog({
     onClose,
     selectToken,
     selectedToken,
-    tokensFromUser
+    sourceTokens
   ])
 
   async function storeNewToken(newToken: string) {
@@ -249,10 +251,6 @@ export function TokenImportDialog({
   }
 
   function handleTokenImport() {
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
-
     if (isImportingToken) {
       return
     }
@@ -263,7 +261,7 @@ export function TokenImportDialog({
       return
     }
 
-    if (typeof bridgeTokens[l1Address] !== 'undefined') {
+    if (typeof sourceTokens[l1Address] !== 'undefined') {
       // Token is already added to the bridge
       onClose(true)
       selectToken(tokenToImport!)

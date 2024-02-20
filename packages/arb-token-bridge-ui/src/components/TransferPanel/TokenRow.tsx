@@ -33,7 +33,8 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { CrossChainTokenInfo } from '../../features/tokenLists/store'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
+import { useTokens } from '../../features/tokenLists/hooks/useTokens'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -73,7 +74,7 @@ function BlockExplorerTokenLink({
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  onTokenSelected: (token: CrossChainTokenInfo | null) => void
   token: CrossChainTokenInfo | null
 }
 
@@ -83,11 +84,6 @@ export function TokenRow({
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {
@@ -97,6 +93,10 @@ export function TokenRow({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
+  const { sourceTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const chainId = isDepositMode ? parentChain.id : childChain.id
   const isSmallScreen = useMedia('(max-width: 419px)')
@@ -249,10 +249,9 @@ export function TokenRow({
       return true
     }
 
-    return bridgeTokens[networks.sourceChain.id][token.address.toLowerCase()]
+    return sourceTokens[token.address.toLowerCase()]
   }, [
-    bridgeTokens,
-    networks.sourceChain.id,
+    sourceTokens,
     token,
     tokenIsArbOneNativeUSDC,
     tokenIsArbSepoliaNativeUSDC
