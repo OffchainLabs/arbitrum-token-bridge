@@ -79,20 +79,22 @@ export function SwitchNetworksButton(
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
+  const disabled = isSmartContractWallet || isLoadingAccountType
+
   return (
     <button
       type="button"
-      disabled={isSmartContractWallet || isLoadingAccountType}
+      disabled={disabled}
       className={twMerge(
         'group flex h-7 w-7 items-center justify-center rounded bg-[#191919] p-1',
-        (isSmartContractWallet || isLoadingAccountType) && 'pointer-events-none'
+        disabled && 'pointer-events-none'
       )}
       {...props}
     >
       {isSmartContractWallet ? (
-        <ArrowDownIcon className="h-6 w-6 stroke-2 text-white" />
+        <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
       ) : (
-        <ArrowsUpDownIcon className="h-8 w-8 stroke-2 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
+        <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
       )}
     </button>
   )
@@ -823,7 +825,7 @@ export function TransferPanelMain({
   )
 
   return (
-    <div className="flex flex-col pb-6 lg:space-y-1">
+    <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <SwitchNetworkButtonBorderTop />
