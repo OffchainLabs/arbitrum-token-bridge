@@ -56,12 +56,12 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
       >
         <TokenButton />
         <div className="h-full border-r border-gray-2" />
-        <div className="flex h-full flex-grow flex-row items-center justify-center px-3">
+        <div className="flex h-full flex-grow flex-row items-center justify-center">
           <input
             type="text"
             inputMode="decimal"
             placeholder="Enter amount"
-            className="h-full w-full bg-transparent text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+            className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
             value={value}
             {...rest}
           />

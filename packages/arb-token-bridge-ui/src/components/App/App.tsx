@@ -45,6 +45,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
+import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -75,6 +76,8 @@ const AppContent = (): JSX.Element => {
       updateTokenData(selectedToken.address)
     }
   }, 10_000)
+
+  useSyncQueryParamsToTestnetMode()
 
   const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
     if (isNetwork(sourceChain.id).isTestnet) {
@@ -124,8 +127,7 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { address, isConnected } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const { childChainProvider, parentChain } = useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
