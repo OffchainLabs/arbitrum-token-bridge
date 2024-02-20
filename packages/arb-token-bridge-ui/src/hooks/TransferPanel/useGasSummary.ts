@@ -117,7 +117,6 @@ export function useGasSummary(): UseGasSummaryResult {
       setGasSummaryStatus('loading')
 
       if (isDepositMode) {
-        console.log('TOKEN', token)
         estimateGasResult = token
           ? await depositTokenEstimateGas({
               ...estimateGasFunctionParams,
