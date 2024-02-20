@@ -30,6 +30,11 @@ export const TestnetToggle = ({
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
       })
+    } else {
+      setNetworks({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
+      })
     }
     setTimeout(() => {
       // this is to ensure it's done after setNetworks

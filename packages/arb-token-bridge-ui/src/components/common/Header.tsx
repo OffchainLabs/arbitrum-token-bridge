@@ -24,8 +24,8 @@ export function Header({ children }: { children: React.ReactNode }) {
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black px-4 sm:static sm:h-16 sm:px-6',
-        isTestnet ? 'border-b border-white bg-white/20' : 'sm:bg-transparent'
+        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:static sm:h-16 sm:px-6 sm:backdrop-blur-none',
+        isTestnet ? 'border-b border-white sm:bg-white/20' : 'sm:bg-transparent'
       )}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
@@ -61,17 +61,17 @@ export function Header({ children }: { children: React.ReactNode }) {
 
 function HeaderMobile({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center overflow-auto bg-dark sm:hidden">
+    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center gap-1 overflow-auto bg-black font-normal sm:hidden">
       <Disclosure.Button
-        className="flex h-12 w-full justify-end px-4 pt-3 sm:hidden"
+        className="flex h-12 w-full shrink-0 justify-end px-4 pt-3 sm:hidden"
         onClick={onMobileMenuClose}
       >
-        <XMarkIcon className="h-8 w-8 text-white" />
+        <XMarkIcon className="h-[32px] w-[32px] text-white" />
       </Disclosure.Button>
       {children}
       {/* Mobile menu panel */}
       <SidebarMenu menuItemClickCallback={close} className="px-4" />
-      <SidebarFooter className="pb-6" />
+      <SidebarFooter className="px-[35px] pb-6" />
     </div>
   )
 }

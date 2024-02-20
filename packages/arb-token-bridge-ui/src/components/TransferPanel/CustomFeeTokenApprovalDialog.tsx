@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSigner } from 'wagmi'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -16,7 +15,7 @@ import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { shortenAddress } from '../../util/CommonUtils'
-import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { NoteBox } from '../common/NoteBox'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -144,10 +143,7 @@ export function CustomFeeTokenApprovalDialog(
         />
 
         <div className="flex flex-col">
-          <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan p-2`}
-          >
-            <InformationCircleIcon className="h-3 w-3 text-cyan-dark" />
+          <NoteBox>
             {selectedToken ? (
               <span className="text-sm font-light text-cyan-dark">
                 After approval, you&apos;ll see additional prompts related to
@@ -161,7 +157,7 @@ export function CustomFeeTokenApprovalDialog(
                 <span className="font-medium">{customFeeToken.symbol}</span>.
               </span>
             )}
-          </div>
+          </NoteBox>
         </div>
       </div>
     </Dialog>
