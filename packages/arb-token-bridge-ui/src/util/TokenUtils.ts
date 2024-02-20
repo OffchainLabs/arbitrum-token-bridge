@@ -8,6 +8,7 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { CrossChainTokenInfo } from '../features/tokenLists/useTokenListsStore'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -351,5 +352,20 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     address: data.address,
     decimals: data.decimals,
     listIds: new Set()
+  }
+}
+
+export function erc20DataToCrossChainTokenInfo(
+  data: Erc20Data,
+  chainId: number
+): CrossChainTokenInfo {
+  return {
+    name: data.name,
+    symbol: data.symbol,
+    address: data.address,
+    decimals: data.decimals,
+    chainId,
+    logoURI: '',
+    bridgeInfo: {}
   }
 }

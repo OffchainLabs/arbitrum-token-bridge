@@ -1,12 +1,7 @@
 import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
-import { TokenList } from '@uniswap/token-lists'
-import {
-  L1ToL2MessageStatus,
-  L2ToL1MessageStatus as OutgoingMessageState
-} from '@arbitrum/sdk'
-import { L1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -164,7 +159,7 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: number) => void
+  addTokensFromList: (listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   approve: (params: {
@@ -209,7 +204,6 @@ export type ArbTokenBridgeTransactions = {
 } & Pick<TransactionActions, 'addTransaction' | 'updateTransaction'>
 
 export interface ArbTokenBridge {
-  bridgeTokens: ContractStorage<ERC20BridgeToken> | undefined
   eth: ArbTokenBridgeEth
   token: ArbTokenBridgeToken
   transactions: ArbTokenBridgeTransactions

@@ -33,6 +33,8 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
+import { useTokens } from '../../features/tokenLists/hooks/useTokens'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -72,8 +74,8 @@ function BlockExplorerTokenLink({
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
-  token: ERC20BridgeToken | null
+  onTokenSelected: (token: CrossChainTokenInfo | null) => void
+  token: CrossChainTokenInfo | null
 }
 
 export function TokenRow({
@@ -82,11 +84,6 @@ export function TokenRow({
   token
 }: TokenRowProps): JSX.Element {
   const { address: walletAddress } = useAccount()
-  const {
-    app: {
-      arbTokenBridge: { bridgeTokens }
-    }
-  } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const [networks] = useNetworks()
   const {
@@ -96,6 +93,10 @@ export function TokenRow({
     parentChainProvider,
     isDepositMode
   } = useNetworksRelationship(networks)
+  const { sourceTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const chainId = isDepositMode ? parentChain.id : childChain.id
   const isSmallScreen = useMedia('(max-width: 419px)')
@@ -123,7 +124,9 @@ export function TokenRow({
     return nativeCurrency.symbol
   }, [token, nativeCurrency.symbol, chainId])
 
-  const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  // TODO: isL2Native: if bridgeInfo.destBridgeToken (or origin?) is undefined, then it's native
+  // const isL2NativeToken = useMemo(() => token?.isL2Native ?? false, [token])
+  const isL2NativeToken = false
   const tokenIsArbOneNativeUSDC = useMemo(
     () => isTokenArbitrumOneNativeUSDC(token?.address),
     [token]
@@ -157,6 +160,7 @@ export function TokenRow({
   }, [token, nativeCurrency])
 
   const tokenBalance = useMemo(() => {
+    // TODO: refactor with erc20SourceBalance[token.address]
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode
@@ -168,14 +172,10 @@ export function TokenRow({
     }
 
     if (isDepositMode) {
-      return erc20L1Balances?.[token.address.toLowerCase()]
+      return erc20L1Balances?.[token.address.toLowerCase()] ?? constants.Zero
     }
 
-    if (!token.l2Address) {
-      return constants.Zero
-    }
-
-    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
+    return erc20L2Balances?.[token.address.toLowerCase()] ?? constants.Zero
   }, [
     erc20L1Balances,
     erc20L2Balances,
@@ -191,7 +191,8 @@ export function TokenRow({
       return false
     }
 
-    return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
+    return false
+    // return token.listIds.has(SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID)
   }, [token])
 
   const isPotentialFakeArbitrumToken = useMemo(() => {
@@ -206,44 +207,40 @@ export function TokenRow({
   }, [token, isArbitrumToken])
 
   const tokenListInfo = useMemo(() => {
-    if (!token) {
-      return null
-    }
+    // if (!token) {
+    //   return null
+    // }
 
-    if (tokenIsArbOneNativeUSDC) {
-      return 'Native USDC on Arbitrum One'
-    }
+    // if (tokenIsArbOneNativeUSDC) {
+    //   return 'Native USDC on Arbitrum One'
+    // }
 
-    if (tokenIsArbSepoliaNativeUSDC) {
-      return 'Native USDC on Arbitrum Sepolia'
-    }
+    // if (tokenIsArbSepoliaNativeUSDC) {
+    //   return 'Native USDC on Arbitrum Sepolia'
+    // }
 
-    const listIds: Set<number> = token.listIds
-    const listIdsSize = listIds.size
-    if (listIdsSize === 0) {
-      return 'Added by User'
-    }
+    // const listIds: Set<number> = token.listIds
+    // const listIdsSize = listIds.size
+    // if (listIdsSize === 0) {
+    //   return 'Added by User'
+    // }
 
-    const listIdsArray = Array.from(listIds)
-    if (listIdsSize < 2) {
-      return tokenListIdsToNames(listIdsArray)
-    }
+    // const listIdsArray = Array.from(listIds)
+    // if (listIdsSize < 2) {
+    //   return tokenListIdsToNames(listIdsArray)
+    // }
 
-    const firstList = listIdsArray.slice(0, 1)
-    const more = listIdsSize - 1
+    // const firstList = listIdsArray.slice(0, 1)
+    // const more = listIdsSize - 1
 
-    return (
-      tokenListIdsToNames(firstList) +
-      ` and ${more} more list${more > 1 ? 's' : ''}`
-    )
+    // return (
+    //   tokenListIdsToNames(firstList) +
+    //   ` and ${more} more list${more > 1 ? 's' : ''}`
+    // )
+    return null
   }, [token, tokenIsArbSepoliaNativeUSDC, tokenIsArbOneNativeUSDC])
 
   const tokenIsAddedToTheBridge = useMemo(() => {
-    // Can happen when switching networks.
-    if (typeof bridgeTokens === 'undefined') {
-      return true
-    }
-
     if (!token) {
       return true
     }
@@ -252,9 +249,9 @@ export function TokenRow({
       return true
     }
 
-    return typeof bridgeTokens[token.address] !== 'undefined'
+    return sourceTokens[token.address.toLowerCase()]
   }, [
-    bridgeTokens,
+    sourceTokens,
     token,
     tokenIsArbOneNativeUSDC,
     tokenIsArbSepoliaNativeUSDC
@@ -265,8 +262,8 @@ export function TokenRow({
       return true
     }
 
-    return typeof token.l2Address !== 'undefined'
-  }, [token])
+    return token.bridgeInfo[networks.destinationChain.id]?.tokenAddress
+  }, [networks.destinationChain.id, token])
 
   const tokenIsBridgeable = useMemo(() => {
     if (isL2NativeToken) {

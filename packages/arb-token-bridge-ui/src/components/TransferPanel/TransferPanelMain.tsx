@@ -67,6 +67,7 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useSelectedToken } from '../../features/tokenLists/hooks/useSelectedToken'
 
 enum NetworkType {
   l1 = 'l1',
@@ -323,6 +324,10 @@ export function TransferPanelMain({
   const { address: walletAddress } = useAccount()
   const { arbTokenBridge, selectedToken } = app
   const { token } = arbTokenBridge
+  const { sourceSelectedToken, destinationSelectedToken } = useSelectedToken({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -379,16 +384,32 @@ export function TransferPanelMain({
       return
     }
 
-    updateErc20L1Balances([selectedToken.address])
-    if (selectedToken.l2Address) {
-      updateErc20L2Balances([selectedToken.l2Address])
+    // TODO: remove once we use useBalances with source/child provider
+    if (isDepositMode) {
+      if (sourceSelectedToken) {
+        updateErc20L1Balances([sourceSelectedToken.address])
+      }
+      if (destinationSelectedToken) {
+        updateErc20L2Balances([destinationSelectedToken.address])
+      }
+    } else {
+      if (destinationSelectedToken) {
+        updateErc20L1Balances([destinationSelectedToken.address])
+      }
+      if (sourceSelectedToken) {
+        updateErc20L2Balances([sourceSelectedToken.address])
+      }
     }
   }, [
     selectedToken,
     updateErc20L1Balances,
     updateErc20L2Balances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances
+    updateUSDCBalances,
+    childChain.id,
+    isDepositMode,
+    sourceSelectedToken,
+    destinationSelectedToken
   ])
 
   type Balances = {
@@ -417,20 +438,33 @@ export function TransferPanelMain({
       return result
     }
 
-    if (erc20L1Balances) {
-      result.l1 = erc20L1Balances[selectedToken.address] ?? null
-    }
-
-    if (
-      erc20L2Balances &&
-      selectedToken.l2Address &&
-      selectedToken.l2Address in erc20L2Balances
-    ) {
-      result.l2 = erc20L2Balances[selectedToken.l2Address] ?? constants.Zero
+    if (isDepositMode) {
+      if (erc20L1Balances && sourceSelectedToken) {
+        result.l1 =
+          erc20L1Balances[sourceSelectedToken.address.toLowerCase()] ?? null
+      }
+      if (erc20L2Balances && destinationSelectedToken) {
+        result.l2 =
+          erc20L2Balances[destinationSelectedToken.address.toLowerCase()] ??
+          null
+      }
+    } else {
+      if (erc20L1Balances && destinationSelectedToken) {
+        result.l1 =
+          erc20L1Balances[destinationSelectedToken.address.toLowerCase()] ??
+          null
+      }
+      if (erc20L2Balances && sourceSelectedToken) {
+        result.l2 =
+          erc20L2Balances[sourceSelectedToken.address.toLowerCase()] ?? null
+      }
     }
 
     // token not bridged to the child chain, show zero
-    if (!selectedToken.l2Address) {
+    if (
+      (isDepositMode && !destinationSelectedToken) ||
+      (!isDepositMode && !sourceSelectedToken)
+    ) {
       result.l2 = constants.Zero
     }
 
@@ -456,7 +490,14 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [
+    destinationSelectedToken,
+    erc20L1Balances,
+    erc20L2Balances,
+    isDepositMode,
+    selectedToken,
+    sourceSelectedToken
+  ])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =

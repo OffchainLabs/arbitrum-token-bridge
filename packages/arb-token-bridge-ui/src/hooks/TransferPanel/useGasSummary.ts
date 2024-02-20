@@ -2,7 +2,6 @@ import { BigNumber, constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
 import { useDebouncedValue } from '../useDebouncedValue'
 import {
@@ -20,6 +19,7 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
+import { useSelectedToken } from '../../features/tokenLists/hooks/useSelectedToken'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -55,18 +55,24 @@ export type UseGasSummaryResult = {
 }
 
 export function useGasSummary(): UseGasSummaryResult {
-  const {
-    app: { selectedToken: token }
-  } = useAppState()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
+  const { sourceSelectedToken: token } = useSelectedToken({
+    sourceChainId: parentChain.id,
+    destinationChainId: childChain.id
+  })
 
   const amountBigNumber = useMemo(() => {
     try {
@@ -111,6 +117,7 @@ export function useGasSummary(): UseGasSummaryResult {
       setGasSummaryStatus('loading')
 
       if (isDepositMode) {
+        console.log('TOKEN', token)
         estimateGasResult = token
           ? await depositTokenEstimateGas({
               ...estimateGasFunctionParams,

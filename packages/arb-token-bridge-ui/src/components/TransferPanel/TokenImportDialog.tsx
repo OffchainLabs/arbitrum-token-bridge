@@ -6,7 +6,6 @@ import Tippy from '@tippyjs/react'
 import { useAccount } from 'wagmi'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
@@ -21,14 +20,14 @@ import { Loader } from '../common/atoms/Loader'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { SafeImage } from '../common/SafeImage'
 import GrumpyCat from '@/images/grumpy-cat.webp'
-import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { warningToast } from '../common/atoms/Toast'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
+import { useTokens } from '../../features/tokenLists/hooks/useTokens'
 
 enum ImportStatus {
   LOADING,
@@ -44,7 +43,7 @@ type TokenListSearchResult =
     }
   | {
       found: true
-      token: ERC20BridgeToken
+      token: CrossChainTokenInfo
       status: ImportStatus
     }
 
@@ -73,7 +72,7 @@ export function TokenImportDialog({
   const { address: walletAddress } = useAccount()
   const {
     app: {
-      arbTokenBridge: { bridgeTokens, token },
+      arbTokenBridge: { token },
       selectedToken
     }
   } = useAppState()
@@ -86,24 +85,19 @@ export function TokenImportDialog({
     isDepositMode
   } = useNetworksRelationship(networks)
   const actions = useActions()
-
-  const tokensFromUser = useTokensFromUser()
-  const latestTokensFromUser = useLatest(tokensFromUser)
-
-  const tokensFromLists = useTokensFromLists()
-  const latestTokensFromLists = useLatest(tokensFromLists)
-
-  const latestBridgeTokens = useLatest(bridgeTokens)
-
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
-  const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
+  const [tokenToImport, setTokenToImport] = useState<CrossChainTokenInfo>()
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
+  })
+  const { sourceTokens, destinationTokens } = useTokens({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
   })
 
   const modalTitle = useMemo(() => {
@@ -140,43 +134,32 @@ export function TokenImportDialog({
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
-      // We found the token in an imported list
-      const currentBridgeTokens = latestBridgeTokens.current
-      if (typeof currentBridgeTokens === 'undefined') {
-        return { found: false }
-      }
+      const sourceToken = sourceTokens[erc20L1Address.toLowerCase()]
+      const destinationToken = destinationTokens[erc20L1Address.toLowerCase()]
 
-      const l1Token = currentBridgeTokens[erc20L1Address]
-      if (typeof l1Token !== 'undefined') {
+      if (sourceToken) {
         return {
           found: true,
-          token: l1Token,
+          token: sourceToken,
           status: ImportStatus.KNOWN
         }
       }
 
-      const tokens = {
-        ...latestTokensFromLists.current,
-        ...latestTokensFromUser.current
-      }
-
-      const token = tokens[erc20L1Address]
-      // We found the token in an unimported list
-      if (typeof token !== 'undefined') {
+      if (destinationToken) {
         return {
           found: true,
-          token,
-          status: ImportStatus.KNOWN_UNIMPORTED
+          token: destinationToken,
+          status: ImportStatus.KNOWN
         }
       }
 
       return { found: false }
     },
-    [latestBridgeTokens, latestTokensFromLists, latestTokensFromUser]
+    [destinationTokens, sourceTokens]
   )
 
   const selectToken = useCallback(
-    async (_token: ERC20BridgeToken) => {
+    async (_token: CrossChainTokenInfo) => {
       await token.updateTokenData(_token.address)
       actions.app.setSelectedToken(_token)
     },
@@ -185,10 +168,6 @@ export function TokenImportDialog({
 
   useEffect(() => {
     if (!isOpen) {
-      return
-    }
-
-    if (typeof bridgeTokens === 'undefined') {
       return
     }
 
@@ -203,7 +182,6 @@ export function TokenImportDialog({
       if (searchResult1.found) {
         setStatus(searchResult1.status)
         setTokenToImport(searchResult1.token)
-
         return
       }
     }
@@ -224,7 +202,6 @@ export function TokenImportDialog({
       })
   }, [
     tokenAddress,
-    bridgeTokens,
     getL1TokenDataFromL1Address,
     isL1AddressLoading,
     isOpen,
@@ -241,7 +218,7 @@ export function TokenImportDialog({
       return
     }
 
-    const foundToken = tokensFromUser[l1Address || tokenAddress]
+    const foundToken = sourceTokens[l1Address || tokenAddress]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -260,7 +237,7 @@ export function TokenImportDialog({
     onClose,
     selectToken,
     selectedToken,
-    tokensFromUser
+    sourceTokens
   ])
 
   async function storeNewToken(newToken: string) {
@@ -274,10 +251,6 @@ export function TokenImportDialog({
   }
 
   function handleTokenImport() {
-    if (typeof bridgeTokens === 'undefined') {
-      return
-    }
-
     if (isImportingToken) {
       return
     }
@@ -288,7 +261,7 @@ export function TokenImportDialog({
       return
     }
 
-    if (typeof bridgeTokens[l1Address] !== 'undefined') {
+    if (typeof sourceTokens[l1Address] !== 'undefined') {
       // Token is already added to the bridge
       onClose(true)
       selectToken(tokenToImport!)

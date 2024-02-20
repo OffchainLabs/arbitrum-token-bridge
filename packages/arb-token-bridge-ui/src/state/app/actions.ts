@@ -5,6 +5,7 @@ import {
 import { Context } from '..'
 import { ConnectionState } from '../../util'
 import { WhiteListState, WarningTokens } from './state'
+import { CrossChainTokenInfo } from '../../features/tokenLists/useTokenListsStore'
 
 export const setConnectionState = (
   { state }: Context,
@@ -23,7 +24,7 @@ export const setChainIds = (
 
 export const setSelectedToken = (
   { state }: Context,
-  token: ERC20BridgeToken | null
+  token: CrossChainTokenInfo | null
 ) => {
   state.app.selectedToken = token ? { ...token } : null
 }

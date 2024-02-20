@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { schema, TokenList } from '@uniswap/token-lists'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
@@ -9,7 +8,6 @@ import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
 import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
 import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
-import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
@@ -186,47 +184,4 @@ export const validateTokenList = (tokenList: TokenList) => {
   const validate = ajv.compile(schema)
 
   return validate(tokenList)
-}
-
-export const addBridgeTokenListToBridge = (
-  bridgeTokenList: BridgeTokenList,
-  arbTokenBridge: ArbTokenBridge
-) => {
-  fetchTokenListFromURL(bridgeTokenList.url).then(
-    ({ isValid, data: tokenList }) => {
-      if (!isValid) return
-
-      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
-    }
-  )
-}
-
-export async function fetchTokenListFromURL(tokenListURL: string): Promise<{
-  isValid: boolean
-  data: TokenList | undefined
-}> {
-  try {
-    const { data } = await axios.get(tokenListURL, {
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      }
-    })
-
-    const isValid = validateTokenList(data)
-
-    const tokenList = BRIDGE_TOKEN_LISTS.find(list => list.url === tokenListURL)
-
-    if (tokenList) {
-      tokenList.isValid = isValid
-    }
-
-    if (!isValid) {
-      console.warn('Token List Invalid', data)
-    }
-
-    return { isValid, data }
-  } catch (error) {
-    console.warn('Token List URL Invalid', tokenListURL)
-    return { isValid: false, data: undefined }
-  }
 }
