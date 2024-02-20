@@ -1,36 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import tokenList from './tokenlist.json'
-
-type CrossChainTokenInfo = {
-  address: string
-  chainId: number
-  decimals: number
-  logoURI: string
-  name: string
-  symbol: string
-  extensions?: {
-    bridgeInfo: {
-      [chainId: string]: {
-        tokenAddress: string
-        destBridgeAddress: string
-        originBridgeAddress: string
-      }
-    }
-  }
-}
-
-export type TokensMap = { [tokenAddress: string]: CrossChainTokenInfo }
-export type TokenListMap = {
-  [chainId: number]: TokensMap
-}
-function parseTokenList(list: { tokens: CrossChainTokenInfo[] }): TokenListMap {
-  const result: TokenListMap = {}
-  for (const token of list.tokens) {
-    result[token.chainId] = result[token.chainId] || {}
-    result[token.chainId][token.address] = token
-  }
-  return result
-}
+import {
+  CrossChainTokenInfo,
+  TokenListMap
+} from '../../features/tokenLists/store'
 
 export type Response =
   | {
@@ -42,13 +15,27 @@ export type Response =
       error: string
     }
 
+type TokensInput = Omit<CrossChainTokenInfo, 'bridgeInfo'> & {
+  extensions?: Pick<CrossChainTokenInfo, 'bridgeInfo'>
+}
+function parseTokenList(list: { tokens: TokensInput[] }): TokenListMap {
+  const result: TokenListMap = {}
+  for (const token of list.tokens) {
+    result[token.chainId] = result[token.chainId] || {}
+    // TODO: fix type
+    token.bridgeInfo = token.extensions?.bridgeInfo
+    delete token.extensions
+    result[token.chainId][token.address] = token
+  }
+  return result
+}
 const parsedTokenList = parseTokenList(tokenList)
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Response>
 ) {
   try {
-    // Add check for invalid chainId
     // if (
     //   typeof type !== 'string' ||
     //   (type !== 'deposits' && type !== 'withdrawals')
