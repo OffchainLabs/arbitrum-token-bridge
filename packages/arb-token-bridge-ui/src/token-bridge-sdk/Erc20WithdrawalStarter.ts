@@ -7,8 +7,7 @@ import {
   BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import {
   fetchErc20L1GatewayAddress,
@@ -19,6 +18,7 @@ import { getAddressFromSigner, getChainIdFromProvider } from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
+import { TransferType } from './BridgeTransfer'
 
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'

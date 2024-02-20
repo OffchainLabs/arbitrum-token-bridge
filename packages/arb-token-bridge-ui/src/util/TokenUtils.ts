@@ -237,6 +237,8 @@ export async function fetchErc20L2GatewayAddress({
 /*
  Retrieves the L2 address of an ERC-20 token using its L1 address.
 */
+
+const l2Erc20AddressCache: { [id: string]: string } = {}
 export async function getL2ERC20Address({
   erc20L1Address,
   l1Provider,
@@ -246,8 +248,19 @@ export async function getL2ERC20Address({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<string> {
+  const l1ChainID = await (await l1Provider.getNetwork()).chainId
+  const l2ChainID = await (await l2Provider.getNetwork()).chainId
+
+  const cacheKey = `${l1ChainID}-${l2ChainID}-${erc20L1Address}`
+  if (l2Erc20AddressCache[cacheKey]) l2Erc20AddressCache[cacheKey]
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
+  const l2Erc20Address = await erc20Bridger.getL2ERC20Address(
+    erc20L1Address,
+    l1Provider
+  )
+  l2Erc20AddressCache[cacheKey] = l2Erc20Address
+
+  return l2Erc20Address
 }
 
 /*

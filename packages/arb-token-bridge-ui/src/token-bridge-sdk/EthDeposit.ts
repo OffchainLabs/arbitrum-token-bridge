@@ -5,7 +5,8 @@ import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message
 import {
   BridgeTransfer,
   BridgeTransferStatus,
-  BridgeTransferFetchStatusFunctionResult
+  BridgeTransferFetchStatusFunctionResult,
+  TransferType
 } from './BridgeTransfer'
 import {
   EthDepositStatus,
@@ -20,6 +21,7 @@ export class EthDeposit extends BridgeTransfer {
   public isPendingUserAction = false
 
   private constructor(props: {
+    transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
     sourceChainTxReceipt?: ContractReceipt
@@ -50,7 +52,12 @@ export class EthDeposit extends BridgeTransfer {
       status = 'source_chain_tx_pending'
     }
 
-    return new EthDeposit({ ...props, status, sourceChainTxReceipt })
+    return new EthDeposit({
+      ...props,
+      status,
+      sourceChainTxReceipt,
+      transferType: 'eth_deposit'
+    })
   }
 
   public static async initializeFromSourceChainTxHash(props: {

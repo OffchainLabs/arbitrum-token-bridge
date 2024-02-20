@@ -10,6 +10,7 @@ type BridgeTransferFactoryProps = {
   sourceChainProvider: Provider
   destinationChainProvider: Provider
   sourceChainErc20Address?: string
+  isNativeCurrencyTransfer?: boolean // optionally, if `sourceChainErc20Address` is not known, use this flag
 }
 
 export class BridgeTransferFactory {
@@ -20,15 +21,21 @@ export class BridgeTransferFactory {
       sourceChainTxHash,
       sourceChainProvider,
       destinationChainProvider,
-      sourceChainErc20Address
+      sourceChainErc20Address,
+      isNativeCurrencyTransfer: isNativeCurrencyTransferFromProps
     } = initProps
 
-    const { isDeposit, isNativeCurrencyTransfer } =
-      await getBridgeTransferProperties({
-        sourceChainProvider,
-        destinationChainProvider,
-        sourceChainErc20Address
-      })
+    const {
+      isDeposit,
+      isNativeCurrencyTransfer: isNativeCurrencyTransferDeduced
+    } = await getBridgeTransferProperties({
+      sourceChainProvider,
+      destinationChainProvider,
+      sourceChainErc20Address
+    })
+
+    const isNativeCurrencyTransfer =
+      isNativeCurrencyTransferFromProps || isNativeCurrencyTransferDeduced
 
     if (isDeposit && isNativeCurrencyTransfer) {
       // return Eth deposit
@@ -56,7 +63,8 @@ export class BridgeTransferFactory {
       return EthOrErc20Withdrawal.initializeFromSourceChainTxHash({
         sourceChainTxHash,
         sourceChainProvider,
-        destinationChainProvider
+        destinationChainProvider,
+        isNativeCurrencyTransfer
       })
     }
 

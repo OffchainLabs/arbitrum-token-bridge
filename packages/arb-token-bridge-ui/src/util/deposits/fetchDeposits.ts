@@ -127,7 +127,16 @@ export const fetchDeposits = async ({
         isClassic: tx.isClassic,
 
         childChainId: l2ChainId,
-        parentChainId: l1ChainId
+        parentChainId: l1ChainId,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.transactionHash,
+        sourceChainProvider: l1Provider,
+        destinationChainProvider: l2Provider,
+        sourceChainErc20Address:
+          assetDetails.assetType === AssetType.ETH
+            ? undefined
+            : assetDetails.tokenAddress
       }
     }
   )

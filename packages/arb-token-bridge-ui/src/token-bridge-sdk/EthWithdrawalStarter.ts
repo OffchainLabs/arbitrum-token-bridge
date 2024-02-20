@@ -3,12 +3,12 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import { getAddressFromSigner } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
+import { TransferType } from './BridgeTransfer'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'

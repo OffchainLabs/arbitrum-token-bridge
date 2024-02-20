@@ -4,11 +4,18 @@ import { ContractReceipt, ContractTransaction } from 'ethers'
 type Chain = 'source_chain' | 'destination_chain'
 type TxStatus = 'pending' | 'success' | 'error'
 
+type Asset = 'erc20' | 'eth'
+type TxType = 'deposit' | 'withdrawal'
+
+export type TransferType = `${Asset}_${TxType}` | 'cctp'
+
 export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type BridgeTransferFetchStatusFunctionResult =
   Promise<BridgeTransferStatus>
 
 export abstract class BridgeTransfer {
+  public transferType: TransferType
+
   // status
   public status: BridgeTransferStatus
   public isFetchingStatus = false
@@ -31,12 +38,14 @@ export abstract class BridgeTransfer {
   public abstract claim(): void // claim the transfer, as applicable
 
   protected constructor(props: {
+    transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
     sourceChainTxReceipt?: ContractReceipt
     sourceChainProvider: Provider
     destinationChainProvider: Provider
   }) {
+    this.transferType = props.transferType
     this.status = props.status
     this.sourceChainTx = props.sourceChainTx
     this.sourceChainTxReceipt = props.sourceChainTxReceipt

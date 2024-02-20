@@ -4,7 +4,7 @@ import { BigNumber, utils } from 'ethers'
 import dayjs from 'dayjs'
 import { TransactionResponse } from '@ethersproject/providers'
 
-import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
+import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransfer'
 import {
   DepositStatus,
   MergedTransaction,
@@ -35,7 +35,7 @@ export const convertBridgeSdkToMergedTransaction = ({
   nativeCurrency,
   amount
 }: SdkToUiConversionProps): MergedTransaction => {
-  const { transferType, sourceChainTransaction: tx } = bridgeTransfer
+  const { transferType, sourceChainTx: tx } = bridgeTransfer
   const isDeposit = transferType.includes('deposit')
 
   return {
@@ -45,7 +45,7 @@ export const convertBridgeSdkToMergedTransaction = ({
     status: isDeposit ? 'pending' : WithdrawalStatus.UNCONFIRMED,
     createdAt: dayjs().valueOf(),
     resolvedAt: null,
-    txId: bridgeTransfer.sourceChainTransaction.hash,
+    txId: bridgeTransfer.sourceChainTx.hash,
     asset: selectedToken ? selectedToken.symbol : nativeCurrency.symbol,
     assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
     value: utils.formatUnits(
@@ -70,8 +70,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
   nativeCurrency,
   amount
 }: SdkToUiConversionProps): Deposit => {
-  const transaction =
-    bridgeTransfer.sourceChainTransaction as TransactionResponse
+  const transaction = bridgeTransfer.sourceChainTx as TransactionResponse
   return {
     sender: walletAddress!,
     destination: walletAddress,

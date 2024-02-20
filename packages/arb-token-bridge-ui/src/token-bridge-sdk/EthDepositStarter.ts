@@ -6,13 +6,13 @@ import {
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { EthDeposit } from './EthDeposit'
+import { TransferType } from './BridgeTransfer'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -51,7 +51,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await EthBridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+    const approveCustomFeeTokenTx = await ethBridger.approveGasToken({
       l1Signer: signer
     })
     await approveCustomFeeTokenTx.wait()

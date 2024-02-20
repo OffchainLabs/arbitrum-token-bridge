@@ -12,6 +12,7 @@ import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
+import { getL2ERC20Address } from '../TokenUtils'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -79,7 +80,12 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'subgraph',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.l2TxHash,
+        sourceChainProvider: l2Provider,
+        destinationChainProvider: l1Provider
       }
     })
   } catch (error) {
@@ -111,7 +117,12 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.transactionHash,
+        sourceChainProvider: l2Provider,
+        destinationChainProvider: l1Provider
       }
     })
 
@@ -122,7 +133,12 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.txHash,
+        sourceChainProvider: l2Provider,
+        destinationChainProvider: l1Provider
       }
     })
 

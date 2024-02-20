@@ -5,7 +5,8 @@ import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message
 import {
   BridgeTransfer,
   BridgeTransferStatus,
-  BridgeTransferFetchStatusFunctionResult
+  BridgeTransferFetchStatusFunctionResult,
+  TransferType
 } from './BridgeTransfer'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 
@@ -18,6 +19,7 @@ export class Erc20Deposit extends BridgeTransfer {
   }
 
   private constructor(props: {
+    transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
     sourceChainTxReceipt?: ContractReceipt
@@ -48,7 +50,12 @@ export class Erc20Deposit extends BridgeTransfer {
       status = 'source_chain_tx_pending'
     }
 
-    return new Erc20Deposit({ ...props, status, sourceChainTxReceipt })
+    return new Erc20Deposit({
+      ...props,
+      status,
+      sourceChainTxReceipt,
+      transferType: 'erc20_deposit'
+    })
   }
 
   public static async initializeFromSourceChainTxHash(props: {

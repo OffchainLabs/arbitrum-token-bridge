@@ -4,7 +4,8 @@ import { Provider } from '@ethersproject/providers'
 import {
   BridgeTransfer,
   BridgeTransferStatus,
-  BridgeTransferFetchStatusFunctionResult
+  BridgeTransferFetchStatusFunctionResult,
+  TransferType
 } from './BridgeTransfer'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { OutgoingMessageState } from '../hooks/arbTokenBridge.types'
@@ -15,6 +16,7 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
   public isPendingUserAction = false
 
   private constructor(props: {
+    transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
     sourceChainTxReceipt?: ContractReceipt
@@ -28,6 +30,7 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
     sourceChainTx: ContractTransaction
     sourceChainProvider: Provider
     destinationChainProvider: Provider
+    isNativeCurrencyTransfer?: boolean
   }) {
     const sourceChainTxReceipt =
       await props.sourceChainProvider.getTransactionReceipt(
@@ -45,13 +48,21 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
       status = 'source_chain_tx_pending'
     }
 
-    return new EthOrErc20Withdrawal({ ...props, status, sourceChainTxReceipt })
+    return new EthOrErc20Withdrawal({
+      ...props,
+      status,
+      sourceChainTxReceipt,
+      transferType: props.isNativeCurrencyTransfer
+        ? 'eth_withdrawal'
+        : 'erc20_withdrawal'
+    })
   }
 
   public static async initializeFromSourceChainTxHash(props: {
     sourceChainTxHash: string
     sourceChainProvider: Provider
     destinationChainProvider: Provider
+    isNativeCurrencyTransfer?: boolean
   }) {
     const sourceChainTx = await props.sourceChainProvider.getTransaction(
       props.sourceChainTxHash
