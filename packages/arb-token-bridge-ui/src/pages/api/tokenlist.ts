@@ -3,7 +3,7 @@ import tokenList from './tokenlist.json'
 import {
   CrossChainTokenInfo,
   TokenListMap
-} from '../../features/tokenLists/store'
+} from '../../features/tokenLists/useTokenListsStore'
 
 export type Response =
   | {
