@@ -103,9 +103,8 @@ export async function depositTokenEstimateGas(
     l2Provider,
     from: address,
     retryableGasOverrides: {
-      // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
-      // the 30% gas limit increase should cover the difference
-      gasLimit: { percentIncrease: BigNumber.from(30) }
+      // temp hardcoded value for v2.2.4
+      gasLimit: { base: BigNumber.from(300_000) }
     }
   })
 
