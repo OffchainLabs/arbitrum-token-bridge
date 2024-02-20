@@ -1,10 +1,9 @@
-import { useCallback, useState, useMemo, useEffect } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber, utils } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
 import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
 import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
@@ -18,10 +17,7 @@ import useTransactions from './useTransactions'
 import {
   ArbTokenBridge,
   AssetType,
-  ContractStorage,
-  ERC20BridgeToken,
   L2ToL1EventResultPlus,
-  TokenType,
   L2ToL1EventResult,
   L1EthDepositTransactionLifecycle,
   L1ContractCallTransactionLifecycle,
@@ -29,17 +25,8 @@ import {
   ArbTokenBridgeToken
 } from './arbTokenBridge.types'
 import { useBalance } from './useBalance'
-import {
-  fetchErc20Data,
-  getL1ERC20Address,
-  fetchErc20L2GatewayAddress,
-  getL2ERC20Address,
-  l1TokenIsDisabled,
-  isValidErc20
-} from '../util/TokenUtils'
+import { fetchErc20Data, fetchErc20L2GatewayAddress } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
-import { CommonAddress } from '../util/CommonAddressUtils'
-import { isNetwork } from '../util/networks'
 import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
@@ -48,9 +35,9 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
-import { TokensMap } from '../pages/api/tokenlist'
-import { useTokenLists } from './useTokenLists'
 import { useNetworks } from './useNetworks'
+import { useTokenListsStore } from '../features/tokenLists/store'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -110,15 +97,18 @@ export const useArbTokenBridge = (
 ): ArbTokenBridge => {
   const { l1, l2 } = params
   const { address: walletAddress } = useAccount()
-  const [bridgeTokens, setBridgeTokens] = useState<TokensMap | undefined>(
-    undefined
-  )
+  // const [bridgeTokens, setBridgeTokens] = useState<TokensMap | undefined>(
+  //   undefined
+  // )
   const [networks] = useNetworks()
-  const { data: tokensFromTokenList } = useTokenLists(networks.sourceChain.id)
+  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const {
+    addTokenList,
+    removeTokenList,
+    tokens: bridgeTokens,
+    tokenLists
+  } = useTokenListsStore()
 
-  useEffect(() => {
-    setBridgeTokens(tokensFromTokenList)
-  }, [setBridgeTokens, tokensFromTokenList])
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
   const {
@@ -624,141 +614,40 @@ export const useArbTokenBridge = (
   }
 
   const removeTokensFromList = (listID: number) => {
-    // setBridgeTokens(prevBridgeTokens => {
-    //   const newBridgeTokens = { ...prevBridgeTokens }
-    //   for (const address in bridgeTokens) {
-    //     const token = bridgeTokens[address]
-    //     if (!token) continue
-    //     token.listIds.delete(listID)
-    //     if (token.listIds.size === 0) {
-    //       delete newBridgeTokens[address]
-    //     }
-    //   }
-    //   return newBridgeTokens
-    // })
+    removeTokenList(listID)
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    // const l1ChainID = l1.network.id
-    // const l2ChainID = l2.network.id
-    // const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
-    // const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
-    // for (const tokenData of arbTokenList.tokens) {
-    //   const { address, name, symbol, extensions, decimals, logoURI, chainId } =
-    //     tokenData
-    //   if (![l1ChainID, l2ChainID].includes(chainId)) {
-    //     continue
-    //   }
-    //   const bridgeInfo = (() => {
-    //     // TODO: parsing the token list format could be from arbts or the tokenlist package
-    //     interface Extensions {
-    //       bridgeInfo: {
-    //         [chainId: string]: {
-    //           tokenAddress: string
-    //           originBridgeAddress: string
-    //           destBridgeAddress: string
-    //         }
-    //       }
-    //     }
-    //     const isExtensions = (obj: any): obj is Extensions => {
-    //       if (!obj) return false
-    //       if (!obj['bridgeInfo']) return false
-    //       return Object.keys(obj['bridgeInfo'])
-    //         .map(key => obj['bridgeInfo'][key])
-    //         .every(
-    //           e =>
-    //             e &&
-    //             'tokenAddress' in e &&
-    //             'originBridgeAddress' in e &&
-    //             'destBridgeAddress' in e
-    //         )
-    //     }
-    //     if (!isExtensions(extensions)) {
-    //       return null
-    //     } else {
-    //       return extensions.bridgeInfo
-    //     }
-    //   })()
-    //   if (bridgeInfo) {
-    //     const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
-    //     if (!l1Address) {
-    //       return
-    //     }
-    //     bridgeTokensToAdd[l1Address] = {
-    //       name,
-    //       type: TokenType.ERC20,
-    //       symbol,
-    //       address: l1Address,
-    //       l2Address: address.toLowerCase(),
-    //       decimals,
-    //       logoURI,
-    //       listIds: new Set([listId])
-    //     }
-    //   }
-    //   // save potentially unbridged L1 tokens:
-    //   // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
-    //   else if (arbTokenList.tokens.length < 1000) {
-    //     candidateUnbridgedTokensToAdd.push({
-    //       name,
-    //       type: TokenType.ERC20,
-    //       symbol,
-    //       address: address.toLowerCase(),
-    //       decimals,
-    //       logoURI,
-    //       listIds: new Set([listId])
-    //     })
-    //   }
-    // }
-    // // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
-    // const l1AddressesOfBridgedTokens = new Set(
-    //   Object.keys(bridgeTokensToAdd).map(
-    //     l1Address =>
-    //       l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
-    //   )
-    // )
-    // for (const l1TokenData of candidateUnbridgedTokensToAdd) {
-    //   if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
-    //     bridgeTokensToAdd[l1TokenData.address] = l1TokenData
-    //   }
-    // }
-    // // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
-    // setBridgeTokens(oldBridgeTokens => {
-    //   const l1Addresses: string[] = []
-    //   const l2Addresses: string[] = []
-    //   // USDC is not on any token list as it's unbridgeable
-    //   // but we still want to detect its balance on user's wallet
-    //   if (isNetwork(l2ChainID).isArbitrumOne) {
-    //     l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
-    //   }
-    //   if (isNetwork(l2ChainID).isArbitrumSepolia) {
-    //     l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
-    //   }
-    //   for (const tokenAddress in bridgeTokensToAdd) {
-    //     const tokenToAdd = bridgeTokensToAdd[tokenAddress]
-    //     if (!tokenToAdd) {
-    //       return
-    //     }
-    //     const { address, l2Address } = tokenToAdd
-    //     if (address) {
-    //       l1Addresses.push(address)
-    //     }
-    //     if (l2Address) {
-    //       l2Addresses.push(l2Address)
-    //     }
-    //     // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
-    //     // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
-    //     const oldListIds =
-    //       oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
-    //     tokenToAdd.listIds = new Set([...oldListIds, listId])
-    //   }
-    //   updateErc20L1Balance(l1Addresses)
-    //   updateErc20L2Balance(l2Addresses)
-    //   return {
-    //     ...oldBridgeTokens,
-    //     ...bridgeTokensToAdd
-    //   }
-    // })
-  }
+  const addTokensFromList = useCallback(
+    async (listId: number) => {
+      const newTokens = await addTokenList(listId)
+      const l2Tokens = newTokens[childChain.id]
+
+      if (!l2Tokens) {
+        return
+      }
+
+      const l1Tokens = Object.keys(l2Tokens).map(tokenAddress =>
+        l2Tokens[tokenAddress]?.bridgeInfo[
+          parentChain.id
+        ]?.tokenAddress.toLowerCase()
+      )
+      updateErc20L2Balance(
+        Object.keys(l2Tokens).map(tokenAddress => tokenAddress.toLowerCase())
+      )
+
+      // TODO: only update the new tokens
+      if (l1Tokens) {
+        updateErc20L1Balance(l1Tokens)
+      }
+    },
+    [
+      addTokenList,
+      childChain.id,
+      parentChain.id,
+      updateErc20L1Balance,
+      updateErc20L2Balance
+    ]
+  )
 
   async function addToken(erc20L1orL2Address: string) {
     // let l1Address: string
@@ -838,7 +727,7 @@ export const useArbTokenBridge = (
       //   updateErc20L2Balance([l2Address])
       // }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [bridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
   )
 
   const updateEthBalances = async () => {
