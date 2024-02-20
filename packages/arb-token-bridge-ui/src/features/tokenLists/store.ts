@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { ChainId } from '../../util/networks'
 import { ImageProps } from 'next/image'
-import { useTokenLists } from '../../hooks/useTokenLists'
 
 export interface BridgeTokenList {
   id: number
