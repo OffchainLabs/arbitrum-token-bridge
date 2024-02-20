@@ -47,7 +47,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
-import { BRIDGE_TOKEN_LISTS } from '../../features/tokenLists/store'
+import { BRIDGE_TOKEN_LISTS } from '../../features/tokenLists/useTokenListsStore'
 
 declare global {
   interface Window {
