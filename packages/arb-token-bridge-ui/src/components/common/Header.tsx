@@ -24,8 +24,8 @@ export function Header({ children }: { children: React.ReactNode }) {
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black px-4 sm:static sm:h-16 sm:px-6',
-        isTestnet ? 'border-b border-white bg-white/20' : 'sm:bg-transparent'
+        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:static sm:h-16 sm:px-6 sm:backdrop-blur-none',
+        isTestnet ? 'border-b border-white sm:bg-white/20' : 'sm:bg-transparent'
       )}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
@@ -71,7 +71,7 @@ function HeaderMobile({ children }: { children: React.ReactNode }) {
       {children}
       {/* Mobile menu panel */}
       <SidebarMenu menuItemClickCallback={close} className="px-4" />
-      <SidebarFooter className="pb-6" />
+      <SidebarFooter className="px-[35px] pb-6" />
     </div>
   )
 }
