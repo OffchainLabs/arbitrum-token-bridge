@@ -11,12 +11,22 @@ import { TokenType } from '../../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../../util/CommonAddressUtils'
 import { ChainId } from '../../../util/networks'
 
+const commonUSDC = {
+  name: 'USD Coin',
+  type: TokenType.ERC20,
+  symbol: 'USDC',
+  decimals: 6,
+  listIds: new Set<number>()
+}
+
 export function useUpdateUSDCTokenData() {
   const actions = useActions()
   const {
-    app: { arbTokenBridge, selectedToken }
+    app: {
+      arbTokenBridge: { token },
+      selectedToken
+    }
   } = useAppState()
-  const { token } = arbTokenBridge
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
 
@@ -25,24 +35,13 @@ export function useUpdateUSDCTokenData() {
     const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
       selectedToken?.address
     )
+
     // If user select native USDC on L2, when switching to deposit mode,
     // we need to default to set the corresponding USDC on L1
     if (!isDepositMode) {
       return
     }
 
-    // When switching network, token might be undefined
-    if (!token) {
-      return
-    }
-
-    const commonUSDC = {
-      name: 'USD Coin',
-      type: TokenType.ERC20,
-      symbol: 'USDC',
-      decimals: 6,
-      listIds: new Set<number>()
-    }
     if (isArbOneUSDC && networks.destinationChain.id === ChainId.ArbitrumOne) {
       token.updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
@@ -50,7 +49,9 @@ export function useUpdateUSDCTokenData() {
         address: CommonAddress.Ethereum.USDC,
         l2Address: CommonAddress.ArbitrumOne['USDC.e']
       })
-    } else if (
+    }
+
+    if (
       isArbSepoliaUSDC &&
       networks.destinationChain.id === ChainId.ArbitrumSepolia
     ) {
