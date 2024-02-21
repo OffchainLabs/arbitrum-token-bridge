@@ -41,7 +41,7 @@ export const Sidebar = () => {
   return (
     <div
       className={twMerge(
-        'relative z-10 hidden flex-col justify-between border-r border-gray-6 bg-black pt-[30px] font-normal transition-all duration-200',
+        'relative z-20 hidden flex-col justify-between border-r border-gray-6 bg-black pt-[30px] font-normal transition-all duration-200',
         'h-full shrink-0 sm:sticky sm:top-0 sm:flex sm:h-screen', // show the sidebar in md/lg+ resolutions, for sm revert to Header
         sidebarOpened ? 'w-[256px]' : 'w-[60px] cursor-pointer'
       )}

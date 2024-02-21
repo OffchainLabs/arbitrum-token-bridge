@@ -100,7 +100,7 @@ export function TokenButton(): JSX.Element {
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed left-0 top-0 z-50 lg:absolute lg:left-auto lg:right-0 lg:top-[76px] lg:max-w-[466px]"
+              className="fixed left-0 top-0 z-20 lg:absolute lg:left-auto lg:right-0 lg:top-[76px] lg:max-w-[466px]"
             >
               <Popover.Panel
                 className={twMerge(panelWrapperClassnames, 'px-5 py-4')}

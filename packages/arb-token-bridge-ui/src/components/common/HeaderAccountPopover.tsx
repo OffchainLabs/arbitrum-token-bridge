@@ -163,7 +163,7 @@ export function HeaderAccountPopover({
 
         <ChevronDownIcon className="ml-auto h-[16px] w-[16px] text-white/60 transition duration-200 sm:text-white" />
       </Popover.Button>
-      <Transition className="z-40 w-full sm:absolute sm:top-0">
+      <Transition className="w-full sm:absolute sm:top-0">
         <Popover.Panel className="flex w-full flex-col overflow-hidden rounded pb-2 sm:absolute sm:top-0 sm:bg-dark">
           {/* Profile photo with address */}
           {showCopied && (
@@ -187,7 +187,7 @@ export function HeaderAccountPopover({
             </div>
 
             {/* Actual image and account name */}
-            <div className="relative z-10 flex flex-row items-center gap-2">
+            <div className="relative flex flex-row items-center gap-2">
               <div className="avatar-container box-content rounded-full border-[3px] border-dark">
                 <SafeImage
                   src={ensAvatar || undefined}

@@ -11,10 +11,10 @@ import { SidebarMenu } from '../Sidebar/SidebarMenu'
 import { SidebarFooter } from '../Sidebar/SidebarFooter'
 
 function onMobileMenuOpen() {
-  document.body.classList.add('overflow-hidden')
+  document.body.classList.add('overflow-hidden', 'menu-open')
 }
 function onMobileMenuClose() {
-  document.body.classList.remove('overflow-hidden')
+  document.body.classList.remove('overflow-hidden', 'menu-open')
 }
 
 export function Header({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,7 @@ export function Header({ children }: { children: React.ReactNode }) {
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:static sm:h-16 sm:px-6 sm:backdrop-blur-none',
+        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
         isTestnet ? 'border-b border-white sm:bg-white/20' : 'sm:bg-transparent'
       )}
     >
