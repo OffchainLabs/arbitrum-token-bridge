@@ -281,6 +281,10 @@ export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
 export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
 
+export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumSepolia['USDC.e'].toLowerCase()
+
 export const isTokenArbitrumOneNativeUSDC = (
   tokenAddress: string | undefined
 ) =>
@@ -315,7 +319,8 @@ export function sanitizeTokenSymbol(
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
     isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'

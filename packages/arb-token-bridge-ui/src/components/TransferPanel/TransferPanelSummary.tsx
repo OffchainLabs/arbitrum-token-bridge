@@ -69,6 +69,12 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
+  const isDepositingUSDCtoArbOneOrArbSepolia =
+    isTokenUSDC(token?.address) &&
+    isDepositMode &&
+    (networks.destinationChain.id === ChainId.ArbitrumOne ||
+      networks.destinationChain.id === ChainId.ArbitrumSepolia)
+
   const baseChainId = getBaseChainIdByChainId({
     chainId: childChain.id
   })
@@ -145,11 +151,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             token={token}
             isParentChain={!isDepositMode}
           />{' '}
-          {isTokenUSDC(token?.address) &&
-            isDepositMode &&
-            networks.destinationChain.id === ChainId.ArbitrumOne && (
-              <>or USDC</>
-            )}
+          {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
           <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>
