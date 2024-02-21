@@ -1064,12 +1064,8 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                borderColor: transferReady.deposit
-                  ? destinationChainUIcolor.primary
-                  : '#999999',
-                backgroundColor: transferReady.deposit
-                  ? destinationChainUIcolor.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor.primary,
+                backgroundColor: destinationChainUIcolor.secondary
               }}
               className="w-full border bg-eth-dark py-4 text-lg disabled:border lg:text-2xl"
             >
@@ -1096,13 +1092,10 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                borderColor: transferReady.withdrawal
-                  ? destinationChainUIcolor.primary
-                  : '#999999',
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor.primary,
+                backgroundColor: getBridgeUiConfigForChain(
+                  networks.destinationChain.id
+                ).color.secondary
               }}
               className="w-full border py-4 text-lg disabled:border lg:text-2xl"
             >

@@ -17,8 +17,6 @@ function getClassNameForVariant(variant: ButtonVariant) {
 }
 
 const defaultClassName = 'relative arb-hover w-max rounded p-2 text-sm'
-const disabledClassName =
-  'disabled:bg-gray-3 disabled:text-white disabled:cursor-not-allowed'
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string
@@ -61,7 +59,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled}
         className={twMerge(
           defaultClassName,
-          disabledClassName,
+          'disabled:cursor-not-allowed disabled:opacity-60',
           getClassNameForVariant(variant),
           customClassName
         )}
