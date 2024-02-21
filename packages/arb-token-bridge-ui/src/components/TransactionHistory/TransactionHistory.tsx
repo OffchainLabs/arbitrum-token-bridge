@@ -18,7 +18,7 @@ import { TransactionsTableDetails } from './TransactionsTableDetails'
 import { Address } from '../../util/AddressUtils'
 
 const tabClasses =
-  'text-white px-3 mr-2 ui-selected:border-b-2 ui-selected:border-white ui-not-selected:text-white/80 arb-hover'
+  'text-white px-3 mr-2 border-b-2 ui-selected:border-white ui-not-selected:border-transparent ui-not-selected:text-white/80 arb-hover'
 
 type TxDetailsStore = {
   tx: MergedTransaction | null
