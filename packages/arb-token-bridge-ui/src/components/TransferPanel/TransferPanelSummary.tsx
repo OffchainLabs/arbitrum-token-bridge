@@ -3,9 +3,9 @@ import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
 import {
-  ChainId,
   getBaseChainIdByChainId,
-  getNetworkName
+  getNetworkName,
+  isNetwork
 } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
@@ -69,11 +69,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
+
   const isDepositingUSDCtoArbOneOrArbSepolia =
     isTokenUSDC(token?.address) &&
     isDepositMode &&
-    (networks.destinationChain.id === ChainId.ArbitrumOne ||
-      networks.destinationChain.id === ChainId.ArbitrumSepolia)
+    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
   const baseChainId = getBaseChainIdByChainId({
     chainId: childChain.id

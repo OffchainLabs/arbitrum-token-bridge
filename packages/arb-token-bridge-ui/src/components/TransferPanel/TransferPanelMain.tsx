@@ -314,18 +314,26 @@ export function TransferPanelMain({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isEthereumMainnet: isSourceChainEthereum,
+    isSepolia: isSourceChainSepolia,
+    isArbitrumSepolia: isSourceChainArbitrumSepolia
+  } = isNetwork(networks.sourceChain.id)
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isEthereumMainnet: isDestinationChainEthereum,
+    isSepolia: isDestinationChainSepolia,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
 
   const isSepoliaArbSepoliaPair =
-    (networks.sourceChain.id === ChainId.Sepolia &&
-      networks.destinationChain.id === ChainId.ArbitrumSepolia) ||
-    (networks.sourceChain.id === ChainId.ArbitrumSepolia &&
-      networks.destinationChain.id === ChainId.Sepolia)
+    (isSourceChainSepolia && isDestinationChainArbitrumSepolia) ||
+    (isSourceChainArbitrumSepolia && isDestinationChainSepolia)
 
   const isEthereumArbitrumOnePair =
-    (networks.sourceChain.id === ChainId.Ethereum &&
-      networks.destinationChain.id === ChainId.ArbitrumOne) ||
-    (networks.sourceChain.id === ChainId.ArbitrumOne &&
-      networks.destinationChain.id === ChainId.Ethereum)
+    (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
+    (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
