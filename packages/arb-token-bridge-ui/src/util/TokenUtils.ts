@@ -344,7 +344,8 @@ export function sanitizeTokenName(
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
     isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
