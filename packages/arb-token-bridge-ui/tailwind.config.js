@@ -117,6 +117,9 @@ module.exports = {
           }
         }
       },
+      animation: {
+        blink: 'blink-pulse 1s ease-in-out 1'
+      },
       transitionDuration: {
         400: '400ms',
         1000: '1000ms'
