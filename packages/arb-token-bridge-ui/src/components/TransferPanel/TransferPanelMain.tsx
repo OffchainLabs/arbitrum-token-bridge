@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
@@ -76,30 +76,59 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const {
-    isEOA,
-    isSmartContractWallet,
-    isLoading: isLoadingAccountType
-  } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  const disabled = isSmartContractWallet || isLoadingAccountType
 
   return (
     <button
       type="button"
-      disabled={isSmartContractWallet || isLoadingAccountType}
+      disabled={disabled}
       className={twMerge(
-        'arb-hover flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200',
-        isEOA
-          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-[#F4F4F4] focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
-          : ''
+        'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
+        disabled && 'pointer-events-none'
       )}
       {...props}
     >
+      <SwitchNetworkButtonBorderTop />
       {isSmartContractWallet ? (
-        <ChevronDownIcon className="h-6 w-6 stroke-2 text-dark" />
+        <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
       ) : (
-        <ArrowsUpDownIcon className="h-6 w-6 stroke-2 text-dark" />
+        <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
       )}
+      <SwitchNetworkButtonBorderBottom />
     </button>
+  )
+}
+
+function SwitchNetworkButtonBorderTop() {
+  const [networks] = useNetworks()
+
+  const sourceNetworkPrimaryColor = getBridgeUiConfigForChain(
+    networks.sourceChain.id
+  ).color.primary
+
+  return (
+    <div
+      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: sourceNetworkPrimaryColor }}
+    />
+  )
+}
+
+function SwitchNetworkButtonBorderBottom() {
+  const [networks] = useNetworks()
+
+  const destinationNetworkPrimaryColor = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  ).color.primary
+
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: destinationNetworkPrimaryColor }}
+    />
   )
 }
 
@@ -798,7 +827,7 @@ export function TransferPanelMain({
   )
 
   return (
-    <div className="flex flex-col pb-6">
+    <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
@@ -893,7 +922,7 @@ export function TransferPanelMain({
         <EstimatedGas chainType="source" />
       </NetworkContainer>
 
-      <div className="z-[1] flex h-10 w-full items-center justify-center lg:h-12">
+      <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
         <SwitchNetworksButton
           onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
