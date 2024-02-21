@@ -60,16 +60,16 @@ export function NetworkListbox({
                     key={option.id}
                     value={option}
                     className={twMerge(
-                      'hover:white/20 flex h-12 cursor-pointer select-none items-center gap-1 px-3 py-2 transition-[background] duration-200 ui-selected:bg-white/20 ui-active:bg-white/20'
+                      'hover:white/20 flex h-12 cursor-pointer select-none items-center gap-2 px-3 py-2 transition-[background] duration-200 ui-selected:bg-white/20 ui-active:bg-white/20'
                     )}
                   >
-                    <div className="flex h-8 w-8 items-center justify-center">
+                    <div className="flex h-6 w-6 items-center justify-center">
                       <Image
                         src={getBridgeUiConfigForChain(option.id).network.logo}
                         alt={`${getNetworkName(option.id)} logo`}
-                        className="max-h-7 w-auto"
-                        width={35}
-                        height={35}
+                        className="h-full w-auto"
+                        width={30}
+                        height={30}
                       />
                     </div>
                     <span className="max-w-[140px] truncate">
