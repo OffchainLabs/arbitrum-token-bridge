@@ -17,7 +17,7 @@ import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
-import { isTokenUSDC } from '../../util/TokenUtils'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
@@ -75,7 +75,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   } = isNetwork(networks.destinationChain.id)
 
   const isDepositingUSDCtoArbOneOrArbSepolia =
-    isTokenUSDC(token?.address) &&
+    isTokenNativeUSDC(token?.address) &&
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 

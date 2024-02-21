@@ -296,7 +296,7 @@ export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress?.toLowerCase() ===
   CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
 
-export const isTokenUSDC = (tokenAddress: string | undefined) => {
+export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   return (
     isTokenMainnetUSDC(tokenAddress) ||
     isTokenSepoliaUSDC(tokenAddress) ||
