@@ -3,24 +3,24 @@ import { EthDeposit } from './EthDeposit'
 import { Erc20Deposit } from './Erc20Deposit'
 import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
 import { getBridgeTransferProperties } from './utils'
-import { Provider } from '@ethersproject/providers'
+import { getProviderForChainId } from '../hooks/useNetworks'
 
 type BridgeTransferFactoryProps = {
   sourceChainTxHash: string
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
+  sourceChainId: number
+  destinationChainId: number
   sourceChainErc20Address?: string
   isNativeCurrencyTransfer?: boolean // optionally, if `sourceChainErc20Address` is not known, use this flag
 }
 
 export class BridgeTransferFactory {
-  public static async init(
+  public static init(
     initProps: BridgeTransferFactoryProps
   ): Promise<BridgeTransfer> {
     const {
       sourceChainTxHash,
-      sourceChainProvider,
-      destinationChainProvider,
+      sourceChainId,
+      destinationChainId,
       sourceChainErc20Address,
       isNativeCurrencyTransfer: isNativeCurrencyTransferFromProps
     } = initProps
@@ -28,11 +28,14 @@ export class BridgeTransferFactory {
     const {
       isDeposit,
       isNativeCurrencyTransfer: isNativeCurrencyTransferDeduced
-    } = await getBridgeTransferProperties({
-      sourceChainProvider,
-      destinationChainProvider,
+    } = getBridgeTransferProperties({
+      sourceChainId,
+      destinationChainId,
       sourceChainErc20Address
     })
+
+    const sourceChainProvider = getProviderForChainId(sourceChainId)
+    const destinationChainProvider = getProviderForChainId(destinationChainId)
 
     const isNativeCurrencyTransfer =
       isNativeCurrencyTransferFromProps || isNativeCurrencyTransferDeduced

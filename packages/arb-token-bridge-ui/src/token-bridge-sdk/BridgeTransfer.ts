@@ -15,6 +15,7 @@ export type BridgeTransferFetchStatusFunctionResult =
 
 export abstract class BridgeTransfer {
   public transferType: TransferType
+  public key: string // key to uniquely identify the transfer (sourceChainId_destinationChainId_sourceChainTxHash)
 
   // status
   public status: BridgeTransferStatus
@@ -38,6 +39,7 @@ export abstract class BridgeTransfer {
   public abstract claim(): void // claim the transfer, as applicable
 
   protected constructor(props: {
+    key: string
     transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
@@ -45,6 +47,7 @@ export abstract class BridgeTransfer {
     sourceChainProvider: Provider
     destinationChainProvider: Provider
   }) {
+    this.key = props.key
     this.transferType = props.transferType
     this.status = props.status
     this.sourceChainTx = props.sourceChainTx

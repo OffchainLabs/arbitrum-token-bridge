@@ -9,6 +9,7 @@ import {
   TransferType
 } from './BridgeTransfer'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { getBridgeTransferKeyFromProviders } from './utils'
 
 export class Erc20Deposit extends BridgeTransfer {
   public requiresClaim = false
@@ -19,6 +20,7 @@ export class Erc20Deposit extends BridgeTransfer {
   }
 
   private constructor(props: {
+    key: string
     transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
@@ -34,6 +36,12 @@ export class Erc20Deposit extends BridgeTransfer {
     sourceChainProvider: Provider
     destinationChainProvider: Provider
   }) {
+    const txKey = await getBridgeTransferKeyFromProviders({
+      sourceChainProvider: props.sourceChainProvider,
+      destinationChainProvider: props.destinationChainProvider,
+      sourceChainTxHash: props.sourceChainTx.hash
+    })
+
     const sourceChainTxReceipt =
       await props.sourceChainProvider.getTransactionReceipt(
         props.sourceChainTx.hash
@@ -52,6 +60,7 @@ export class Erc20Deposit extends BridgeTransfer {
 
     return new Erc20Deposit({
       ...props,
+      key: txKey,
       status,
       sourceChainTxReceipt,
       transferType: 'erc20_deposit'
@@ -122,6 +131,11 @@ export class Erc20Deposit extends BridgeTransfer {
     const successfulRedeem = await message.getSuccessfulRedeem()
 
     if (successfulRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+      this.destinationChainTx =
+        await this.destinationChainProvider.getTransaction(
+          successfulRedeem.l2TxReceipt.transactionHash
+        )
+
       this.destinationChainTxReceipt = successfulRedeem.l2TxReceipt
       return 'destination_chain_tx_success'
     }

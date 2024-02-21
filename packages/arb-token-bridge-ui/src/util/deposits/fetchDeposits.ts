@@ -131,8 +131,8 @@ export const fetchDeposits = async ({
 
         // fields compatible with new bridge sdk
         sourceChainTxHash: tx.transactionHash,
-        sourceChainProvider: l1Provider,
-        destinationChainProvider: l2Provider,
+        sourceChainId: l1ChainId,
+        destinationChainId: l2ChainId,
         sourceChainErc20Address:
           assetDetails.assetType === AssetType.ETH
             ? undefined

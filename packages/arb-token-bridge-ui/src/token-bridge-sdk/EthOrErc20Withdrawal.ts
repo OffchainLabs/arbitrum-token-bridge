@@ -9,6 +9,7 @@ import {
 } from './BridgeTransfer'
 import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
 import { OutgoingMessageState } from '../hooks/arbTokenBridge.types'
+import { getBridgeTransferKeyFromProviders } from './utils'
 
 export class EthOrErc20Withdrawal extends BridgeTransfer {
   public requiresClaim = true
@@ -16,6 +17,7 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
   public isPendingUserAction = false
 
   private constructor(props: {
+    key: string
     transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
@@ -32,6 +34,12 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
     destinationChainProvider: Provider
     isNativeCurrencyTransfer?: boolean
   }) {
+    const txKey = await getBridgeTransferKeyFromProviders({
+      sourceChainProvider: props.sourceChainProvider,
+      destinationChainProvider: props.destinationChainProvider,
+      sourceChainTxHash: props.sourceChainTx.hash
+    })
+
     const sourceChainTxReceipt =
       await props.sourceChainProvider.getTransactionReceipt(
         props.sourceChainTx.hash
@@ -50,6 +58,7 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
 
     return new EthOrErc20Withdrawal({
       ...props,
+      key: txKey,
       status,
       sourceChainTxReceipt,
       transferType: props.isNativeCurrencyTransfer
@@ -127,6 +136,9 @@ export class EthOrErc20Withdrawal extends BridgeTransfer {
     }
     if (messageStatus === OutgoingMessageState.EXECUTED) {
       this.isClaimable = false
+
+      // also try getting the destination chain tx receipt here by some way
+
       return 'destination_chain_tx_success'
     } else if (messageStatus === OutgoingMessageState.CONFIRMED) {
       this.isClaimable = true

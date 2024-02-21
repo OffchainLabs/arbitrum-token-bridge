@@ -12,7 +12,6 @@ import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
 import { attachTimestampToTokenWithdrawal } from './helpers'
 import { WithdrawalInitiated } from '../../hooks/arbTokenBridge.types'
-import { getL2ERC20Address } from '../TokenUtils'
 
 export type FetchWithdrawalsParams = {
   sender?: string
@@ -84,8 +83,9 @@ export async function fetchWithdrawals({
 
         // fields compatible with new bridge sdk
         sourceChainTxHash: tx.l2TxHash,
-        sourceChainProvider: l2Provider,
-        destinationChainProvider: l1Provider
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: tx.l1Token?.id ? false : true
       }
     })
   } catch (error) {
@@ -121,8 +121,9 @@ export async function fetchWithdrawals({
 
         // fields compatible with new bridge sdk
         sourceChainTxHash: tx.transactionHash,
-        sourceChainProvider: l2Provider,
-        destinationChainProvider: l1Provider
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: true
       }
     })
 
@@ -137,8 +138,9 @@ export async function fetchWithdrawals({
 
         // fields compatible with new bridge sdk
         sourceChainTxHash: tx.txHash,
-        sourceChainProvider: l2Provider,
-        destinationChainProvider: l1Provider
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: false
       }
     })
 

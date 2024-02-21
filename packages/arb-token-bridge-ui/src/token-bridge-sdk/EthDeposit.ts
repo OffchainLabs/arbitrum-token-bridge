@@ -14,6 +14,7 @@ import {
   L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { getBridgeTransferKeyFromProviders } from './utils'
 
 export class EthDeposit extends BridgeTransfer {
   public requiresClaim = false
@@ -21,6 +22,7 @@ export class EthDeposit extends BridgeTransfer {
   public isPendingUserAction = false
 
   private constructor(props: {
+    key: string
     transferType: TransferType
     status: BridgeTransferStatus
     sourceChainTx: ContractTransaction
@@ -36,6 +38,12 @@ export class EthDeposit extends BridgeTransfer {
     sourceChainProvider: Provider
     destinationChainProvider: Provider
   }) {
+    const txKey = await getBridgeTransferKeyFromProviders({
+      sourceChainProvider: props.sourceChainProvider,
+      destinationChainProvider: props.destinationChainProvider,
+      sourceChainTxHash: props.sourceChainTx.hash
+    })
+
     const sourceChainTxReceipt =
       await props.sourceChainProvider.getTransactionReceipt(
         props.sourceChainTx.hash
@@ -54,6 +62,7 @@ export class EthDeposit extends BridgeTransfer {
 
     return new EthDeposit({
       ...props,
+      key: txKey,
       status,
       sourceChainTxReceipt,
       transferType: 'eth_deposit'
@@ -159,9 +168,15 @@ export class EthDeposit extends BridgeTransfer {
 
       const isDeposited = status === EthDepositStatus.DEPOSITED
       if (isDeposited) {
+        const destinationChainTxHash = (message as EthDepositMessage)
+          .l2DepositTxHash
+        this.destinationChainTx =
+          await this.destinationChainProvider.getTransaction(
+            destinationChainTxHash
+          )
         this.destinationChainTxReceipt =
           await this.destinationChainProvider.getTransactionReceipt(
-            (message as EthDepositMessage).l2DepositTxHash
+            destinationChainTxHash
           )
         return 'destination_chain_tx_success'
       }

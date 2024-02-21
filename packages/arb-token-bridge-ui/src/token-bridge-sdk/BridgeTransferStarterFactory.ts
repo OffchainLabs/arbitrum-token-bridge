@@ -6,7 +6,7 @@ import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
-import { getBridgeTransferProperties } from './utils'
+import { getBridgeTransferPropertiesFromProviders } from './utils'
 
 export class BridgeTransferStarterFactory {
   public static async init(
@@ -19,7 +19,7 @@ export class BridgeTransferStarterFactory {
     } = initProps
 
     const { isDeposit, isNativeCurrencyTransfer } =
-      await getBridgeTransferProperties({
+      await getBridgeTransferPropertiesFromProviders({
         sourceChainProvider,
         destinationChainProvider,
         sourceChainErc20Address

@@ -75,8 +75,8 @@ export type Transfer = DepositOrWithdrawal | MergedTransaction
 
 export type SdkRequiredTxData = {
   sourceChainTxHash: string
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
+  sourceChainId: number
+  destinationChainId: number
   sourceChainErc20Address?: string
   isNativeCurrencyTransfer?: boolean
 }
@@ -204,7 +204,9 @@ function getTxIdFromTransaction(tx: Transfer) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
+export const useTransactionHistoryWithoutStatuses = (
+  address: Address | undefined
+) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -400,10 +402,12 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [
-    ...deposits,
-    ...withdrawals,
-    ...combinedCctpTransfers
-  ].flat()
+    ...deposits.slice(0, 5),
+    ...withdrawals.slice(0, 5),
+    ...combinedCctpTransfers.slice(0, 5)
+  ]
+    .flat()
+    .sort(sortByTimestampDescending) as unknown as SdkRequiredTxData[]
 
   return {
     data: transactions,
@@ -492,8 +496,8 @@ export const useTransactionHistory = (
 
         // fields compatible with new bridge sdk
         sourceChainTxHash: deposit.txID,
-        sourceChainProvider: getProvider(deposit.parentChainId),
-        destinationChainProvider: getProvider(deposit.childChainId),
+        sourceChainId: deposit.parentChainId,
+        destinationChainId: deposit.childChainId,
         isNativeCurrencyTransfer: deposit.assetType === AssetType.ETH
       }))
   }, [
@@ -503,10 +507,6 @@ export const useTransactionHistory = (
     isSmartContractWallet,
     chain
   ])
-
-  // const [txPageWithoutStatus, setTxPageWithoutStatus] = useState<
-  //   SdkRequiredTxData[][]
-  // >([])
 
   const {
     data: txPages,
@@ -539,16 +539,17 @@ export const useTransactionHistory = (
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
-      console.log('xxxxx dedupedTransactions', dedupedTransactions)
-
-      // // @ts-ignore: ignore type for now
-      // setTxPageWithoutStatus(dedupedTransactions.slice(startIndex, endIndex))
-
-      return Promise.all(
-        dedupedTransactions
-          .slice(startIndex, endIndex)
-          .map(transformTransaction)
+      const _dedupedTransactions = dedupedTransactions.slice(
+        startIndex,
+        endIndex
       )
+
+      // @ts-ignore: ignore type for now
+      setTxPageWithoutStatus(prev => {
+        return [...prev, ..._dedupedTransactions]
+      })
+
+      return Promise.all(_dedupedTransactions.map(transformTransaction))
     },
     {
       revalidateOnFocus: false,
@@ -562,10 +563,6 @@ export const useTransactionHistory = (
       dedupingInterval: 1_000_000
     }
   )
-
-  // useEffect(() => {
-  //   console.log('Tx pages without status : ', txPageWithoutStatus)
-  // }, [txPageWithoutStatus])
 
   // based on an example from SWR
   // https://swr.vercel.app/examples/infinite-loading
