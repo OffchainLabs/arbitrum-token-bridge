@@ -73,7 +73,7 @@ const TableHeader = ({
 }: PropsWithChildren<{ className?: string }>) => (
   <div
     className={twMerge(
-      'h-full w-full py-4 text-left text-sm font-normal',
+      'h-full w-full pb-2 pt-4 text-left text-sm font-normal',
       className
     )}
   >
@@ -178,7 +178,7 @@ export const TransactionHistoryTable = (
         const aboveHeight = entries[0].contentRect.height
         const viewportHeight = window.innerHeight
         const newTableHeight = Math.max(
-          viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT,
+          viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT - 20,
           0
         )
         setTableHeight(newTableHeight)
@@ -248,7 +248,7 @@ export const TransactionHistoryTable = (
             rowCount={transactions.length}
             headerHeight={52}
             headerRowRenderer={props => (
-              <div className="mx-4 flex w-[928px] border-b border-white/30 text-white">
+              <div className="mx-4 flex w-[920px] border-b border-white/30 text-white">
                 {props.columns}
               </div>
             )}

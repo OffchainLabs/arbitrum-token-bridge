@@ -167,7 +167,7 @@ export function TransactionsTableRow({
     <div
       data-testid={`${isClaimableTx ? 'claimable' : 'deposit'}-row-${tx.txId}`}
       className={twMerge(
-        'relative ml-4 mr-2 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_180px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
+        'relative mx-4 grid h-[60px] grid-cols-[140px_140px_140px_140px_100px_170px_140px] items-center justify-between border-b border-white/30 text-xs text-white',
         className
       )}
     >

@@ -42,6 +42,7 @@ function TransactionHistorySidePanel() {
       heading="Transaction History"
       onClose={closeTransactionHistoryPanel}
       scrollable={false}
+      panelClassNameOverrides="pb-8"
     >
       <TransactionHistory props={{ ...transactionHistoryProps, address }} />
     </SidePanel>

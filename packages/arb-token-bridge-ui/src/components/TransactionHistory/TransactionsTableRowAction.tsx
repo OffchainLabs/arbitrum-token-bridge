@@ -116,7 +116,7 @@ export function TransactionsTableRowAction({
       <Button
         variant="primary"
         onClick={handleRedeemRetryable}
-        className="w-16 rounded bg-red-400 p-2 text-xs"
+        className="w-14 rounded bg-red-400 p-2 text-xs text-black"
       >
         Retry
       </Button>
@@ -153,7 +153,7 @@ export function TransactionsTableRowAction({
     ) : (
       <Button
         variant="primary"
-        className="w-12 rounded bg-green-400 p-2 text-xs text-black"
+        className="w-14 rounded bg-green-400 p-2 text-xs text-black"
         onClick={handleClaim}
       >
         Claim
