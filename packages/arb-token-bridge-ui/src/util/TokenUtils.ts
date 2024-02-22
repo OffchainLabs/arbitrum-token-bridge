@@ -353,3 +353,31 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     listIds: new Set()
   }
 }
+
+export async function isCustomGatewayRegistered({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
+}: {
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}): Promise<boolean> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+
+  const tokenChildChainAddressFromParentGatewayRouter =
+    await erc20Bridger.getL2ERC20Address(
+      erc20ParentChainAddress,
+      parentChainProvider
+    )
+  const tokenChildChainAddressFromParentChainTokenContract =
+    await erc20Bridger.getL1TokenContract(
+      parentChainProvider,
+      erc20ParentChainAddress
+    ).resolvedAddress
+
+  return (
+    tokenChildChainAddressFromParentGatewayRouter ===
+    tokenChildChainAddressFromParentChainTokenContract
+  )
+}
