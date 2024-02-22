@@ -30,7 +30,7 @@ import {
 } from './TransferPanelMainUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
@@ -67,6 +67,7 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 
 enum NetworkType {
   l1 = 'l1',
@@ -296,16 +297,36 @@ export function TransferPanelMain({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isEthereumMainnet: isSourceChainEthereum,
+    isSepolia: isSourceChainSepolia,
+    isArbitrumSepolia: isSourceChainArbitrumSepolia
+  } = isNetwork(networks.sourceChain.id)
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isEthereumMainnet: isDestinationChainEthereum,
+    isSepolia: isDestinationChainSepolia,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
+
+  const isSepoliaArbSepoliaPair =
+    (isSourceChainSepolia && isDestinationChainArbitrumSepolia) ||
+    (isSourceChainArbitrumSepolia && isDestinationChainSepolia)
+
+  const isEthereumArbitrumOnePair =
+    (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
+    (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
   const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
-  const { app } = useAppState()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, selectedToken } = app
-  const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -419,6 +440,7 @@ export function TransferPanelMain({
 
     if (
       isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+      isEthereumArbitrumOnePair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -429,6 +451,7 @@ export function TransferPanelMain({
     }
     if (
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+      isSepoliaArbSepoliaPair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -439,7 +462,13 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [
+    erc20L1Balances,
+    erc20L2Balances,
+    isEthereumArbitrumOnePair,
+    isSepoliaArbSepoliaPair,
+    selectedToken
+  ])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
@@ -668,45 +697,7 @@ export function TransferPanelMain({
     })
   }, [networks.destinationChain.id, networks.sourceChain.id, setNetworks])
 
-  useEffect(() => {
-    const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
-      selectedToken?.address
-    )
-    // If user select native USDC on L2, when switching to deposit mode,
-    // we need to default to set the corresponding USDC on L1
-    if (!isDepositMode) {
-      return
-    }
-
-    // When switching network, token might be undefined
-    if (!token) {
-      return
-    }
-
-    const commonUSDC = {
-      name: 'USD Coin',
-      type: TokenType.ERC20,
-      symbol: 'USDC',
-      decimals: 6,
-      listIds: new Set<number>()
-    }
-    if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Ethereum.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Ethereum.USDC,
-        l2Address: CommonAddress.ArbitrumOne['USDC.e']
-      })
-    } else if (isArbSepoliaUSDC) {
-      token.updateTokenData(CommonAddress.Sepolia.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Sepolia.USDC,
-        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
-      })
-    }
-  }, [actions.app, isDepositMode, selectedToken, token])
+  useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>

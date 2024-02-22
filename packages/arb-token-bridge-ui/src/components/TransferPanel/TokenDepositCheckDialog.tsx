@@ -4,6 +4,8 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { DOCS_DOMAIN } from '../../constants'
 import { NoteBox } from '../common/NoteBox'
 import { ExternalLink } from '../common/ExternalLink'
+import { useNetworks } from '../../hooks/useNetworks'
+import { getNetworkName } from '../../util/networks'
 
 export type TokenDepositCheckDialogType = 'user-added-token' | 'new-token'
 
@@ -15,46 +17,46 @@ export type TokenDepositCheckDialogProps = UseDialogProps & {
 export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
   const { type, symbol } = props
 
+  const [networks] = useNetworks()
+
+  const networkName = getNetworkName(networks.destinationChain.id)
+
   const textContent = useMemo(() => {
     switch (type) {
       case 'user-added-token':
         return (
-          <>
-            <p className="pb-2">
-              You are about to deposit {symbol} to Arbitrum
-            </p>
-          </>
+          <p className="pb-2">
+            You are about to deposit {symbol} to {networkName}
+          </p>
         )
 
       case 'new-token':
         return (
-          <>
-            <div className="mb-4">
-              <p className="pb-2">
-                You are the first to bridge {symbol} to Arbitrum ⭐
-              </p>
-              <span className="font-medium">Important facts</span>
-              <ol>
-                <li>1. Some tokens are not compatible with the bridge</li>
-                <li>
-                  2. The initial bridge is more expensive than following ones
-                </li>
-              </ol>
-            </div>
-          </>
+          <div className="mb-4">
+            <p className="pb-2">
+              You are the first to bridge {symbol} to {networkName} ⭐
+            </p>
+            <span className="font-medium">Important facts</span>
+            <ol>
+              <li>1. Some tokens are not compatible with the bridge</li>
+              <li>
+                2. The initial bridge is more expensive than following ones
+              </li>
+            </ol>
+          </div>
         )
     }
-  }, [type, symbol])
+  }, [type, symbol, networkName])
 
   const title = useMemo(() => {
     switch (type) {
       case 'user-added-token':
-        return `Depositing ${symbol} to Arbitrum`
+        return `Depositing ${symbol} to ${networkName}`
 
       case 'new-token':
         return 'New Token Detected'
     }
-  }, [type, symbol])
+  }, [type, symbol, networkName])
 
   return (
     <Dialog {...props} title={title} className="flex flex-col gap-4">
