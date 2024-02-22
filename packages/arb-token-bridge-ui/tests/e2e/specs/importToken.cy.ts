@@ -194,6 +194,12 @@ describe('Import token', () => {
           }
         })
 
+        // flaky tests' patch, re-visit the url
+        cy.wait(2000)
+        cy.visit(
+          `/?destinationChain=arbitrum-localhost&sourceChain=custom-localhost&token=${ERC20TokenAddressL1}`
+        )
+
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
         cy.wait(3000)
@@ -233,6 +239,12 @@ describe('Import token', () => {
             token: ERC20TokenAddressL2
           }
         })
+
+        // flaky tests' patch, re-visit the url
+        cy.wait(2000)
+        cy.visit(
+          `/?destinationChain=arbitrum-localhost&sourceChain=custom-localhost&token=${ERC20TokenAddressL2}`
+        )
 
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
