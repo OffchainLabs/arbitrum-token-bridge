@@ -10,9 +10,10 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
 import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -29,6 +30,7 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
+import { Transition } from './Transition'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -39,17 +41,25 @@ enum ChainGroupName {
 
 type ChainGroupInfo = {
   name: ChainGroupName
-  description: string
+  description?: React.ReactNode
 }
 
 const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
-    name: ChainGroupName.core,
-    description: 'Chains managed directly by Ethereum or Arbitrum'
+    name: ChainGroupName.core
   },
   orbit: {
     name: ChainGroupName.orbit,
-    description: 'Independent projects using Arbitrum technology.'
+    description: (
+      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+        <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
+        <span>
+          Independent projects using Arbitrum technology. Orbit chains have
+          varying degrees of decentralization.{' '}
+          <span className="font-semibold">Bridge at your own risk.</span>
+        </span>
+      </p>
+    )
   }
 }
 
@@ -68,13 +78,13 @@ function ChainTypeInfoRow({
       key={name}
       style={style}
       className={twMerge(
-        'px-6 py-3',
+        'px-4 py-3',
         !isCoreGroup &&
-          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-black/30 before:content-[""]'
+          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]'
       )}
     >
-      <p className="text-sm text-dark">{name}</p>
-      {description && <p className="mt-2 text-xs">{description}</p>}
+      <p className="text-sm text-white/70">{name}</p>
+      {description}
     </div>
   )
 }
@@ -107,8 +117,8 @@ function NetworkRow({
       type="button"
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
-        'flex h-[90px] w-full items-center gap-4 px-6 py-2 text-lg hover:bg-black/10',
-        chainId === sourceChain.id && 'bg-black/10' // selected row
+        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
+        chainId === sourceChain.id && 'bg-white/10' // selected row
       )}
     >
       <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
@@ -123,11 +133,11 @@ function NetworkRow({
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
-          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15]">
+          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
             {network.description}
           </p>
         )}
-        <p className="text-[10px] leading-none">
+        <p className="text-[10px] leading-none text-white/50">
           {nativeTokenData?.symbol ?? 'ETH'} is the native gas token
         </p>
       </div>
@@ -146,7 +156,7 @@ function AddCustomOrbitChainButton() {
   }
 
   return (
-    <button className="text-sm underline" onClick={openSettingsPanel}>
+    <button className="arb-hover text-sm underline" onClick={openSettingsPanel}>
       <span>Add Custom Orbit Chain</span>
     </button>
   )
@@ -173,11 +183,6 @@ function NetworksPanel({
       }),
     [isTestnetMode]
   )
-
-  const testnetToggleClassNames = {
-    switch:
-      'ui-checked:bg-black/20 ui-not-checked:bg-black/20 [&_span]:ui-not-checked:bg-black'
-  }
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -223,13 +228,13 @@ function NetworksPanel({
       return 0
     }
     if (typeof rowItemOrChainId === 'string') {
-      return 65
+      return rowItemOrChainId === ChainGroupName.core ? 45 : 115
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
       return 90
     }
-    return 52
+    return 60
   }
 
   useEffect(() => {
@@ -280,10 +285,11 @@ function NetworksPanel({
   return (
     <div className="flex flex-col gap-4">
       <SearchPanelTable
-        searchInputPlaceholder="Search a network name"
-        searchInputValue={networkSearched}
-        onSearchInputChange={onSearchInputChange}
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        searchInput={{
+          placeholder: 'Search a network name',
+          value: networkSearched,
+          onChange: onSearchInputChange
+        }}
         errorMessage={errorMessage}
       >
         <AutoSizer>
@@ -301,10 +307,7 @@ function NetworksPanel({
         </AutoSizer>
       </SearchPanelTable>
       <div className="flex justify-between pb-2">
-        <TestnetToggle
-          className={testnetToggleClassNames}
-          label="Testnet mode"
-        />
+        <TestnetToggle label="Testnet mode" />
         <AddCustomOrbitChainButton />
       </div>
     </div>
@@ -327,44 +330,52 @@ export const NetworkSelectionContainer = ({
 
   return (
     <Popover className="relative w-full lg:w-max">
-      <Popover.Button
-        style={buttonStyle}
-        disabled={isSmartContractWallet || isLoadingAccountType}
-        className={buttonClassName}
-        onClick={onPopoverButtonClick}
-      >
-        {children}
-      </Popover.Button>
+      {({ open }) => (
+        <>
+          <Popover.Button
+            style={buttonStyle}
+            disabled={isSmartContractWallet || isLoadingAccountType}
+            className={buttonClassName}
+            onClick={onPopoverButtonClick}
+          >
+            {children}
+            <ChevronDownIcon
+              className={twMerge(
+                'h-3 w-3 transition-transform duration-200',
+                open ? '-rotate-180' : 'rotate-0'
+              )}
+            />
+          </Popover.Button>
 
-      <Popover.Panel className={twMerge(panelWrapperClassnames)}>
-        {({ close }) => {
-          function onClose() {
-            onPopoverClose()
-            close()
-          }
-          return (
-            <>
-              <div className="flex items-center justify-end border-b border-b-black px-5 py-4 lg:hidden">
-                <button onClick={onClose}>
-                  <XMarkIcon className="h-8 w-8" />
-                </button>
-              </div>
-              <div className="px-5 py-4">
-                <SearchPanel
-                  showCloseButton={false}
-                  SearchPanelSecondaryPage={null}
-                  mainPageTitle="Select Network"
-                  secondPageTitle="Networks"
-                  isLoading={false}
-                  loadingMessage="Fetching Networks..."
-                >
-                  <NetworksPanel close={onClose} onNetworkRowClick={onChange} />
-                </SearchPanel>
-              </div>
-            </>
-          )
-        }}
-      </Popover.Panel>
+          <Transition
+            className="fixed left-0 top-0 z-50 lg:absolute lg:left-auto lg:right-0 lg:top-[54px]"
+            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+            options={{ unmountOnLeave: false }}
+          >
+            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
+              {({ close }) => {
+                function onClose() {
+                  onPopoverClose()
+                  close()
+                }
+                return (
+                  <SearchPanel>
+                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
+                      <SearchPanel.PageTitle title="Select Network">
+                        <SearchPanel.CloseButton onClick={onClose} />
+                      </SearchPanel.PageTitle>
+                      <NetworksPanel
+                        close={onClose}
+                        onNetworkRowClick={onChange}
+                      />
+                    </SearchPanel.MainPage>
+                  </SearchPanel>
+                )
+              }}
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
     </Popover>
   )
 }

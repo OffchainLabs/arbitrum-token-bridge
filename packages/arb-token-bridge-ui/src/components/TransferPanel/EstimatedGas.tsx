@@ -39,7 +39,7 @@ function GasFeeForClaimTxMessage({ networkName }: { networkName: string }) {
     <div
       className={twMerge(
         'grid items-center',
-        'rounded-md bg-white/25 px-3 py-2',
+        'rounded bg-white/30 p-2 opacity-80',
         'text-xs font-light text-white'
       )}
     >
@@ -109,8 +109,8 @@ export function EstimatedGas({
     <div
       className={twMerge(
         'flex items-center justify-between',
-        'rounded-md bg-white/25 px-3 py-2',
-        'text-right text-xs font-light text-white'
+        'rounded-md bg-white/30 p-2',
+        'text-right text-xs font-light text-white opacity-80'
       )}
     >
       <div className="flex w-1/2 flex-row items-center gap-1">
@@ -136,7 +136,7 @@ export function EstimatedGas({
             showPrice ? ' justify-between' : 'justify-end'
           )}
         >
-          <span className="text-right tabular-nums">
+          <span className="text-right">
             {formatAmount(estimatedGasFee, {
               symbol: nativeCurrency.symbol
             })}
