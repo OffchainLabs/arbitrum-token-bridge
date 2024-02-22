@@ -2,6 +2,7 @@ import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { L2GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2GatewayRouter__factory'
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
@@ -370,14 +371,21 @@ export async function isCustomGatewayRegistered({
       erc20ParentChainAddress,
       parentChainProvider
     )
-  const tokenChildChainAddressFromParentChainTokenContract =
-    await erc20Bridger.getL1TokenContract(
-      parentChainProvider,
-      erc20ParentChainAddress
-    ).resolvedAddress
+
+  const childChainGatewayAddressFromChildChainRouter =
+    await erc20Bridger.getL2GatewayAddress(
+      erc20ParentChainAddress,
+      childChainProvider
+    )
+
+  const tokenChildChainAddressFromChildChainGateway =
+    await L2GatewayRouter__factory.connect(
+      childChainGatewayAddressFromChildChainRouter,
+      childChainProvider
+    ).calculateL2TokenAddress(erc20ParentChainAddress)
 
   return (
     tokenChildChainAddressFromParentGatewayRouter ===
-    tokenChildChainAddressFromParentChainTokenContract
+    tokenChildChainAddressFromChildChainGateway
   )
 }
