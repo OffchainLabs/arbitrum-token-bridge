@@ -216,7 +216,7 @@ describe('Deposit ERC20 Token', () => {
 
       context('deposit should complete successfully', () => {
         //wait for some time for tx to go through
-        cy.wait(30_000).then(() => {
+        cy.wait(60_000).then(() => {
           // switch to settled transactions
           cy.findByLabelText('show settled transactions')
             .should('be.visible')
