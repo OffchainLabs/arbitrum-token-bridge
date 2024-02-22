@@ -303,7 +303,7 @@ export function TransferPanel() {
         return false
       }
 
-      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+      const approveCustomFeeTokenTx = await ethBridger.approveGasToken({
         l1Signer
       })
       await approveCustomFeeTokenTx.wait()
@@ -360,7 +360,7 @@ export function TransferPanel() {
         return false
       }
 
-      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+      const approveCustomFeeTokenTx = await erc20Bridger.approveGasToken({
         erc20L1Address: selectedToken.address,
         l1Signer
       })

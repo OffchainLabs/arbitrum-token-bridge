@@ -6,7 +6,7 @@ import {
   NativeCurrencyErc20,
   useNativeCurrency
 } from '../../hooks/useNativeCurrency'
-import { isTokenUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { isTokenNativeUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { ExternalLink } from './ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -75,7 +75,7 @@ export function TokenSymbolWithExplorerLink({
   if (
     token === null ||
     !isERC20BridgeToken(token) ||
-    isTokenUSDC(token.address)
+    isTokenNativeUSDC(token.address)
   ) {
     return <span>{symbol}</span>
   }

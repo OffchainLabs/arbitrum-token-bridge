@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Chain } from 'wagmi'
 import { useDebounce } from '@uidotdev/usehooks'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 
@@ -39,17 +39,30 @@ enum ChainGroupName {
 
 type ChainGroupInfo = {
   name: ChainGroupName
-  description: string
+  description: React.ReactNode
 }
 
 const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
   core: {
     name: ChainGroupName.core,
-    description: 'Chains managed directly by Ethereum or Arbitrum'
+    description: (
+      <p className="mt-2 whitespace-normal text-xs">
+        Chains managed directly by Ethereum or Arbitrum
+      </p>
+    )
   },
   orbit: {
     name: ChainGroupName.orbit,
-    description: 'Independent projects using Arbitrum technology.'
+    description: (
+      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange px-2 py-1 text-xs text-orange-dark">
+        <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
+        <span>
+          Independent projects using Arbitrum technology. Orbit chains have
+          varying degrees of decentralization.{' '}
+          <span className="font-semibold">Bridge at your own risk.</span>
+        </span>
+      </p>
+    )
   }
 }
 
@@ -74,7 +87,7 @@ function ChainTypeInfoRow({
       )}
     >
       <p className="text-sm text-dark">{name}</p>
-      {description && <p className="mt-2 text-xs">{description}</p>}
+      {description}
     </div>
   )
 }
@@ -223,7 +236,7 @@ function NetworksPanel({
       return 0
     }
     if (typeof rowItemOrChainId === 'string') {
-      return 65
+      return rowItemOrChainId === ChainGroupName.core ? 65 : 110
     }
     const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
     if (rowItem.network.description) {
