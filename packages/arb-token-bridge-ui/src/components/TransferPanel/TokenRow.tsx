@@ -274,7 +274,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
 
 function ArbitrumTokenBadge() {
   return (
-    <StatusBadge variant="green" className="text-xs">
+    <StatusBadge variant="green" className="text-xs leading-extra-tight">
       <CheckCircleIcon className="h-3 w-3" />
       <p>
         <span>Official</span>
