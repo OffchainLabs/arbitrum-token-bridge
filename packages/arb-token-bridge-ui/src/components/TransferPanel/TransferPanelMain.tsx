@@ -324,7 +324,10 @@ export function TransferPanelMain({
   const { address: walletAddress } = useAccount()
   const { arbTokenBridge, selectedToken } = app
   const { token } = arbTokenBridge
-  const { sourceSelectedToken, destinationSelectedToken } = useSelectedToken({
+  const {
+    sourceToken: sourceSelectedToken,
+    destinationToken: destinationSelectedToken
+  } = useSelectedToken({
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })

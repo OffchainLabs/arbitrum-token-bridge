@@ -69,7 +69,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
-  const { sourceSelectedToken: token } = useSelectedToken({
+  const { sourceToken: token } = useSelectedToken({
     sourceChainId: parentChain.id,
     destinationChainId: childChain.id
   })
