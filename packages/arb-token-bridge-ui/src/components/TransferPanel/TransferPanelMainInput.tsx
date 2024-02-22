@@ -45,14 +45,17 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
     <>
       <div
         className={twMerge(
-          'flex flex-row rounded border border-current bg-black/40 shadow-2',
-          errorMessage ? 'text-error' : 'text-white'
+          'flex flex-row rounded border bg-black/40 shadow-2',
+          errorMessage
+            ? 'border-error/30 text-error'
+            : 'border-white/30 text-white'
         )}
       >
         <TokenButton />
         <div
           className={twMerge(
-            'flex flex-row items-center justify-center border-l border-current'
+            'flex flex-row items-center justify-center border-l',
+            errorMessage ? 'border-error/30' : 'border-white/30'
           )}
         >
           <input
