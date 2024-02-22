@@ -2,8 +2,15 @@ import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { isNetwork } from '../../util/networks'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
-function getMinutesRemainingText(minutesRemaining: number): string {
+function getMinutesRemainingText({
+  minutesRemaining,
+  unknownCompletionTime
+}: {
+  minutesRemaining: number
+  unknownCompletionTime: boolean
+}): string {
   if (minutesRemaining <= 1) {
     if (minutesRemaining <= 0) {
       return 'Almost there...'
@@ -12,23 +19,25 @@ function getMinutesRemainingText(minutesRemaining: number): string {
     return 'Less than a minute...'
   }
 
-  return `~${minutesRemaining} mins remaining`
+  const prefix = unknownCompletionTime ? 'up to ' : '~'
+
+  return `${prefix}${minutesRemaining} mins remaining`
 }
 
 function getEstimatedDepositDurationInMinutes(
-  parentChainId: number | undefined
+  childChainId: number | undefined
 ) {
-  if (!parentChainId) {
+  if (!childChainId) {
     return 15
   }
 
-  const { isEthereumMainnetOrTestnet, isTestnet } = isNetwork(parentChainId)
+  const { isOrbitChain, isTestnet } = isNetwork(childChainId)
 
-  // this covers orbit chains
-  if (!isEthereumMainnetOrTestnet) {
-    return 1
+  if (isOrbitChain) {
+    return getBridgeUiConfigForChain(childChainId).depositTimeMinutes ?? 15
   }
 
+  // L2 chains
   return isTestnet ? 10 : 15
 }
 
@@ -48,11 +57,21 @@ export function DepositCountdown({
   ) {
     // Subtract the diff from the initial deposit time
     const minutesRemaining =
-      getEstimatedDepositDurationInMinutes(tx.parentChainId) -
+      getEstimatedDepositDurationInMinutes(tx.childChainId) -
       now.diff(whenCreated, 'minutes')
+
+    const { isOrbitChain } = isNetwork(tx.childChainId)
+
+    // we can't estimate how much time certain Orbit chain will take to finalize a deposit
+    // if this time is not specified by us, then it is an unknown completion time and we will display it a bit differently in the UI
+    const unknownCompletionTime =
+      isOrbitChain &&
+      typeof getBridgeUiConfigForChain(tx.childChainId).depositTimeMinutes ===
+        'undefined'
+
     return (
       <span className="whitespace-nowrap">
-        {getMinutesRemainingText(minutesRemaining)}
+        {getMinutesRemainingText({ minutesRemaining, unknownCompletionTime })}
       </span>
     )
   }
