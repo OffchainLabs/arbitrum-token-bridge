@@ -728,8 +728,6 @@ export function TransferPanel() {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          console.log('selectedToken?? ', selectedToken)
-
           if (
             !(await isCustomGatewayRegistered({
               erc20ParentChainAddress: selectedToken.address,
