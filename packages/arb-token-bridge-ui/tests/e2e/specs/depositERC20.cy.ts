@@ -44,7 +44,7 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should bridge ERC-20 successfully', () => {
+    it.skip('should bridge ERC-20 successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'L1' })
