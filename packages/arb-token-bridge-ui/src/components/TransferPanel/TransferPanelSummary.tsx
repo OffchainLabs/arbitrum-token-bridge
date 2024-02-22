@@ -65,14 +65,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: childChain.id
-  })
-
   const estimatedConfirmationDate = getTxConfirmationDate({
     createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id,
-    baseChainId
+    withdrawalFromChainId: childChain.id
   })
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)

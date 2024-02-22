@@ -42,7 +42,7 @@ export const SearchPanelTable = ({
         )}
       </form>
       <div
-        className="h-[calc(100vh_-_190px)] overflow-hidden rounded border border-gray-dark lg:h-[400px] lg:shadow-search-panel"
+        className="lg:shadow-search-panel h-[calc(100vh_-_190px)] overflow-hidden rounded border border-gray-dark lg:h-[400px]"
         data-cy={dataCy}
       >
         {children}
