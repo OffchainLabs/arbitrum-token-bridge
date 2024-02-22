@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { DOCS_DOMAIN } from '../../constants'
+import { useNetworks } from '../../hooks/useNetworks'
+import { getNetworkName } from '../../util/networks'
 
 export type TokenDepositCheckDialogType = 'user-added-token' | 'new-token'
 
@@ -13,12 +15,16 @@ export type TokenDepositCheckDialogProps = UseDialogProps & {
 export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
   const { type, symbol } = props
 
+  const [networks] = useNetworks()
+
+  const networkName = getNetworkName(networks.destinationChain.id)
+
   const textContent = useMemo(() => {
     switch (type) {
       case 'user-added-token':
         return (
           <>
-            You are about to deposit {symbol} to Arbitrum 🎉 <br />
+            You are about to deposit {symbol} to {networkName} 🎉 <br />
             <br />
             <span className="text-red-600">Do not bridge</span> if your token
             does something non-standard like generates passive interest or is a
@@ -55,7 +61,7 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
       case 'new-token':
         return (
           <>
-            You are the first to bridge {symbol} to Arbitrum 🎉 <br />
+            You are the first to bridge {symbol} to {networkName} 🎉 <br />
             <br />
             <b>Important facts</b>
             <ol>
@@ -97,17 +103,17 @@ export function TokenDepositCheckDialog(props: TokenDepositCheckDialogProps) {
           </>
         )
     }
-  }, [type, symbol])
+  }, [type, symbol, networkName])
 
   const title = useMemo(() => {
     switch (type) {
       case 'user-added-token':
-        return `Depositing ${symbol} to Arbitrum`
+        return `Depositing ${symbol} to ${networkName}`
 
       case 'new-token':
         return 'New Token Detected'
     }
-  }, [type, symbol])
+  }, [type, symbol, networkName])
 
   return (
     <Dialog {...props} title={title}>
