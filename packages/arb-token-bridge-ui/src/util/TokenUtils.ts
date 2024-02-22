@@ -277,8 +277,16 @@ type SanitizeTokenOptions = {
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
+export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumOne['USDC.e'].toLowerCase()
+
 export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
+
+export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumSepolia['USDC.e'].toLowerCase()
 
 export const isTokenArbitrumOneNativeUSDC = (
   tokenAddress: string | undefined
@@ -291,7 +299,7 @@ export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress?.toLowerCase() ===
   CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
 
-export const isTokenUSDC = (tokenAddress: string | undefined) => {
+export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   return (
     isTokenMainnetUSDC(tokenAddress) ||
     isTokenSepoliaUSDC(tokenAddress) ||
@@ -313,7 +321,9 @@ export function sanitizeTokenSymbol(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
@@ -336,7 +346,9 @@ export function sanitizeTokenName(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
