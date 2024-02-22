@@ -47,7 +47,6 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 import { Address } from '../util/AddressUtils'
-import { Provider } from '@ethersproject/providers'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -72,14 +71,6 @@ export type Withdrawal =
 
 type DepositOrWithdrawal = Deposit | Withdrawal
 export type Transfer = DepositOrWithdrawal | MergedTransaction
-
-export type SdkRequiredTxData = {
-  sourceChainTxHash: string
-  sourceChainId: number
-  destinationChainId: number
-  sourceChainErc20Address?: string
-  isNativeCurrencyTransfer?: boolean
-}
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
@@ -204,9 +195,7 @@ function getTxIdFromTransaction(tx: Transfer) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-export const useTransactionHistoryWithoutStatuses = (
-  address: Address | undefined
-) => {
+const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -402,12 +391,10 @@ export const useTransactionHistoryWithoutStatuses = (
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [
-    ...deposits.slice(0, 5),
-    ...withdrawals.slice(0, 5),
-    ...combinedCctpTransfers.slice(0, 5)
-  ]
-    .flat()
-    .sort(sortByTimestampDescending) as unknown as SdkRequiredTxData[]
+    ...deposits,
+    ...withdrawals,
+    ...combinedCctpTransfers
+  ].flat()
 
   return {
     data: transactions,
@@ -491,15 +478,6 @@ export const useTransactionHistory = (
         }
         return true
       })
-      .map(deposit => ({
-        ...deposit,
-
-        // fields compatible with new bridge sdk
-        sourceChainTxHash: deposit.txID,
-        sourceChainId: deposit.parentChainId,
-        destinationChainId: deposit.childChainId,
-        isNativeCurrencyTransfer: deposit.assetType === AssetType.ETH
-      }))
   }, [
     address,
     isTestnetMode,
@@ -539,17 +517,11 @@ export const useTransactionHistory = (
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
 
-      const _dedupedTransactions = dedupedTransactions.slice(
-        startIndex,
-        endIndex
+      return Promise.all(
+        dedupedTransactions
+          .slice(startIndex, endIndex)
+          .map(transformTransaction)
       )
-
-      // @ts-ignore: ignore type for now
-      setTxPageWithoutStatus(prev => {
-        return [...prev, ..._dedupedTransactions]
-      })
-
-      return Promise.all(_dedupedTransactions.map(transformTransaction))
     },
     {
       revalidateOnFocus: false,

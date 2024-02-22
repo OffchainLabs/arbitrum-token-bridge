@@ -1,22 +1,40 @@
 import { useAccount } from 'wagmi'
-import {
-  SdkRequiredTxData,
-  useTransactionHistoryWithoutStatuses
-} from '../../hooks/useTransactionHistory'
 import { useEffect, useState } from 'react'
 import { BridgeTransfer } from '../../token-bridge-sdk/BridgeTransfer'
 import { BridgeTransferFactory } from '../../token-bridge-sdk/BridgeTransferFactory'
 import { getBridgeTransferKey } from '../../token-bridge-sdk/utils'
 import { twMerge } from 'tailwind-merge'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
+
+export type SdkRequiredTxData = {
+  sourceChainTxHash: string
+  sourceChainId: number
+  destinationChainId: number
+  sourceChainErc20Address?: string
+  isNativeCurrencyTransfer?: boolean
+}
 
 export const TransactionHistoryMini = () => {
   const { address } = useAccount()
-  const { data } = useTransactionHistoryWithoutStatuses(address)
+  const { transactions } = useTransactionHistory(address)
+
+  const sdkCompatibleTransactions: SdkRequiredTxData[] = transactions
+    .filter(tx => !tx.isCctp && tx.parentChainId !== 1337) // ignore local-node
+    .map(tx => ({
+      ...tx,
+      sourceChainTxHash: tx.txId,
+      sourceChainId: tx.sourceChainId,
+      destinationChainId: tx.destinationChainId,
+      isNativeCurrencyTransfer: tx.assetType === AssetType.ETH
+    }))
   const [skdTransactions, setSdkTransactions] = useState<{
     [id: string]: BridgeTransfer
   }>({})
 
-  const transactionHistorySequence = data.filter(tx => tx.sourceChainTxHash)
+  const transactionHistorySequence = sdkCompatibleTransactions.filter(
+    tx => tx.sourceChainTxHash
+  )
   const transactionHistorySequenceKeys = transactionHistorySequence
     .map(tx => tx.sourceChainTxHash)
     .join('_')
