@@ -390,7 +390,7 @@ export async function isCustomGatewayRegistered({
       childChainProvider
     )
 
-  const tokenChildChainAddressFromChildChainGateway =
+  const tokenChildChainAddressFromChildChainGatewayRouter =
     await L2GatewayRouter__factory.connect(
       childChainGatewayAddressFromChildChainRouter,
       childChainProvider
@@ -398,6 +398,6 @@ export async function isCustomGatewayRegistered({
 
   return (
     tokenChildChainAddressFromParentGatewayRouter ===
-    tokenChildChainAddressFromChildChainGateway
+    tokenChildChainAddressFromChildChainGatewayRouter
   )
 }
