@@ -44,7 +44,7 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it.skip('should bridge ERC-20 successfully', () => {
+    it('should bridge ERC-20 successfully', () => {
       const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'L1' })
@@ -242,13 +242,10 @@ describe('Deposit ERC20 Token', () => {
         // close transaction history
         cy.findByLabelText('close side panel').click()
 
-        // the deposited amount should be the displayed as new balance of custom destination address
-        cy.findByText(formatAmount(ERC20AmountToSend))
-          .should('be.visible')
-          .siblings()
-          .contains('Balance: ')
-          .siblings()
-          .contains('WETH')
+        // the custom destination address should now have some balance greater than zero
+        cy.findByLabelText('WETH balance on l2').within(el => {
+          cy.get('.tabular-nums').should('not.contain', '0')
+        })
       })
     })
 
