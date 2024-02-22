@@ -105,7 +105,8 @@ const networkConnectionWarningToast = () =>
         support
       </ExternalLink>
       .
-    </>
+    </>,
+    { autoClose: false }
   )
 
 export function TransferPanel() {
