@@ -246,7 +246,7 @@ describe('Deposit ERC20 Token', () => {
         cy.findByText(formatAmount(ERC20AmountToSend))
           .should('be.visible')
           .siblings()
-          .contains('BALANCE: ')
+          .contains('Balance: ')
           .siblings()
           .contains('WETH')
       })
