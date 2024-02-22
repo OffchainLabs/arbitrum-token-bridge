@@ -59,12 +59,18 @@ const rainbowkitTheme = merge(darkTheme(), {
   }
 } as Theme)
 
-const AppContent = (): JSX.Element => {
+const AppContent = (): JSX.Element | null => {
   const {
     app: { connectionState }
   } = useAppState()
+  const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
+  const isTosAccepted = tosAccepted !== undefined
 
   useSyncQueryParamsToTestnetMode()
+
+  if (!isTosAccepted) {
+    return null
+  }
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (
