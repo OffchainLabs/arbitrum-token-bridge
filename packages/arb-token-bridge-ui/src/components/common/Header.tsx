@@ -17,7 +17,7 @@ function onMobileMenuClose() {
   document.body.classList.remove('overflow-hidden', 'menu-open')
 }
 
-export function Header({ children }: { children: React.ReactNode }) {
+export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
