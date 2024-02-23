@@ -11,7 +11,7 @@ function MaxButton(props: MaxButtonProps) {
 
   if (loading) {
     return (
-      <div className="px-3">
+      <div className="px-4">
         <Loader color="#999999" size="small" />
       </div>
     )
@@ -20,7 +20,7 @@ function MaxButton(props: MaxButtonProps) {
   return (
     <button
       type="button"
-      className={twMerge('p-2 text-sm font-light text-gray-6', className)}
+      className={twMerge('px-4 py-2 text-sm font-light text-gray-6', className)}
       {...rest}
     >
       MAX
@@ -54,7 +54,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         <TokenButton />
         <div
           className={twMerge(
-            'flex flex-row items-center justify-center border-l',
+            'flex grow flex-row items-center justify-center border-l',
             errorMessage ? 'border-error/30' : 'border-white/30'
           )}
         >
