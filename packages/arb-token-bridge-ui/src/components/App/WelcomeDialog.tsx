@@ -28,23 +28,22 @@ export function WelcomeDialog() {
   }, [openConnectModal, setTosAccepted])
 
   return (
-    <div className="mx-4 my-16 max-w-[350px] rounded border border-gray-dark bg-gray-1 pt-3 text-white sm:mx-auto">
+    <div className="mx-4 my-16 max-w-[380px] overflow-hidden rounded border border-gray-dark bg-gray-1 pt-3 text-white sm:mx-auto">
       <p className="px-4 text-xl">Welcome</p>
       <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-col gap-1 rounded bg-white/10 p-3 text-sm">
           <p className="font-medium">Safety Tip</p>
-          <p>
-            Arbitrum will NEVER ask you for your seed phase or private keys.
-          </p>
+          <p>NEVER share your seed phrase or private keys.</p>
         </div>
         <p className="text-sm">
-          By clicking the button below, you agree to our{' '}
+          Click the button below to agree to our{' '}
           <ExternalLink
             href="https://arbitrum.io/tos"
             className="arb-hover underline"
           >
-            Terms of Service.
+            Terms of Service
           </ExternalLink>
+          .
         </p>
       </div>
       <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-4 py-2">
