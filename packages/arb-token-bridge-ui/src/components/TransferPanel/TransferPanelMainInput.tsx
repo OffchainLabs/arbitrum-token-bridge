@@ -20,7 +20,10 @@ function MaxButton(props: MaxButtonProps) {
   return (
     <button
       type="button"
-      className={twMerge('px-4 py-2 text-sm font-light text-gray-6', className)}
+      className={twMerge(
+        'px-2 py-2 text-sm font-light text-gray-6 sm:px-4',
+        className
+      )}
       {...rest}
     >
       MAX
