@@ -73,6 +73,7 @@ export function TokenButton(): JSX.Element {
               aria-label="Select Token"
             >
               <div className="flex items-center gap-2">
+                {/* Commenting it out until we update the token image source files to be of better quality */}
                 {/* {tokenLogo && ( 
                  // SafeImage is used for token logo, we don't know at buildtime
                 where those images will be loaded from // It would throw error
