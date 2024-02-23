@@ -12,7 +12,7 @@ import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
@@ -59,12 +59,17 @@ const rainbowkitTheme = merge(darkTheme(), {
   }
 } as Theme)
 
-const AppContent = (): JSX.Element => {
+const AppContent = (): JSX.Element | null => {
   const {
     app: { connectionState }
   } = useAppState()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
 
   useSyncQueryParamsToTestnetMode()
+
+  if (!tosAccepted) {
+    return null
+  }
 
   if (connectionState === ConnectionState.NETWORK_ERROR) {
     return (

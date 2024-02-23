@@ -105,7 +105,8 @@ const networkConnectionWarningToast = () =>
         support
       </ExternalLink>
       .
-    </>
+    </>,
+    { autoClose: false }
   )
 
 export function TransferPanel() {
@@ -1064,14 +1065,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                borderColor: transferReady.deposit
-                  ? destinationChainUIcolor.primary
-                  : '#999999',
-                backgroundColor: transferReady.deposit
-                  ? destinationChainUIcolor.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor.primary,
+                backgroundColor: destinationChainUIcolor.secondary
               }}
-              className="w-full border bg-eth-dark py-4 text-lg disabled:border lg:text-2xl"
+              className={twMerge(
+                'w-full border bg-eth-dark py-4 text-lg',
+                'disabled:border disabled:!border-white/10 disabled:!bg-white/10 disabled:text-white/40 disabled:opacity-100',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
@@ -1096,15 +1097,16 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                borderColor: transferReady.withdrawal
-                  ? destinationChainUIcolor.primary
-                  : '#999999',
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor.primary,
+                backgroundColor: getBridgeUiConfigForChain(
+                  networks.destinationChain.id
+                ).color.secondary
               }}
-              className="w-full border py-4 text-lg disabled:border lg:text-2xl"
+              className={twMerge(
+                'w-full border py-4 text-lg',
+                'disabled:border disabled:!border-white/10 disabled:!bg-white/10 disabled:text-white/40 disabled:opacity-100',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'

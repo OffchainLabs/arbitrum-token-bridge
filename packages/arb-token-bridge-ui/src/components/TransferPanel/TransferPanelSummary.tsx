@@ -2,18 +2,12 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getBaseChainIdByChainId,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import dayjs from 'dayjs'
-import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
@@ -35,9 +29,9 @@ function TransferPanelSummaryContainer({
 }) {
   return (
     <div className="flex flex-col text-white">
-      <span className="mb-4 text-xl">Summary</span>
+      <span className="mb-3 text-xl">Summary</span>
 
-      <div className={twMerge('flex flex-col space-y-4', className)}>
+      <div className={twMerge('flex flex-col space-y-3', className)}>
         {children}
       </div>
 
@@ -78,18 +72,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isTokenNativeUSDC(token?.address) &&
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
-
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: childChain.id
-  })
-
-  const estimatedConfirmationDate = getTxConfirmationDate({
-    createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id,
-    baseChainId
-  })
-
-  const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -159,13 +141,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>
-
-      {!isDepositMode && (
-        <p className="flex flex-col gap-3 text-sm font-light">
-          You will have to claim the withdrawal on {parentChain.name} in ~
-          {confirmationPeriod}.
-        </p>
-      )}
     </TransferPanelSummaryContainer>
   )
 }

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useCallback, useEffect } from 'react'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { ExternalLink } from '../common/ExternalLink'
 import { Dialog, useDialog } from '../common/Dialog'
@@ -10,23 +10,24 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 
 export function WelcomeDialog() {
   const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-  const [tosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const isTosAccepted = tosAccepted !== undefined
+  const [tosAccepted, setTosAccepted] = useLocalStorage<boolean>(
+    TOS_LOCALSTORAGE_KEY,
+    false
+  )
 
   const { openConnectModal } = useConnectModal()
 
   useEffect(() => {
-    if (!isTosAccepted) {
+    if (!tosAccepted) {
       openWelcomeDialog()
     }
-  }, [isTosAccepted, openWelcomeDialog])
+  }, [tosAccepted, openWelcomeDialog])
 
   const onClose = useCallback(
     (confirmed: boolean) => {
       // Only close after confirming (agreeing to terms)
       if (confirmed) {
-        setTosAccepted('true')
+        setTosAccepted(true)
         welcomeDialogProps.onClose(confirmed)
       }
     },

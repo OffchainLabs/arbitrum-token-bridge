@@ -48,9 +48,6 @@ describe('Withdraw ETH', () => {
             cy.findByText(
               /You'll have to pay [\w\s]+ gas fee upon claiming./i
             ).should('be.visible')
-            cy.findByText(/You will have to claim the withdrawal on/i).should(
-              'be.visible'
-            )
           })
       })
 

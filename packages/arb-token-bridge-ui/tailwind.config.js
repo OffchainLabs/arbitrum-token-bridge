@@ -4,11 +4,6 @@ module.exports = {
   plugins: [require('@headlessui/tailwindcss')],
   theme: {
     extend: {
-      backgroundImage: {
-        gradient:
-          'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
-        gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)'
-      },
       colors: {
         // ACTION
         error: '#CD0000',
@@ -42,7 +37,8 @@ module.exports = {
 
         // BRAND
         'eth-dark': '#1A1C33',
-        'ocl-blue': '#243145'
+        'ocl-blue': '#243145',
+        'atmosphere-blue': '#152C4E'
       },
       spacing: {
         1: '5px',
