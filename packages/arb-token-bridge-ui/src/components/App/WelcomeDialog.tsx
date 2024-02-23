@@ -1,41 +1,23 @@
 import * as Sentry from '@sentry/react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { ExternalLink } from '../common/ExternalLink'
-import { Dialog, useDialog } from '../common/Dialog'
 import { errorToast } from '../common/atoms/Toast'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { Button } from '../common/Button'
 
 export function WelcomeDialog() {
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-  const [tosAccepted, setTosAccepted] = useLocalStorage<boolean>(
+  const [, setTosAccepted] = useLocalStorage<boolean>(
     TOS_LOCALSTORAGE_KEY,
     false
   )
 
   const { openConnectModal } = useConnectModal()
 
-  useEffect(() => {
-    if (!tosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [tosAccepted, openWelcomeDialog])
-
-  const onClose = useCallback(
-    (confirmed: boolean) => {
-      // Only close after confirming (agreeing to terms)
-      if (confirmed) {
-        setTosAccepted(true)
-        welcomeDialogProps.onClose(confirmed)
-      }
-    },
-    [setTosAccepted, welcomeDialogProps]
-  )
-
   const closeHandler = useCallback(() => {
-    onClose(true)
+    setTosAccepted(true)
 
     try {
       openConnectModal?.()
@@ -43,19 +25,13 @@ export function WelcomeDialog() {
       errorToast('Failed to open up RainbowKit Connect Modal')
       Sentry.captureException(error)
     }
-  }, [onClose, openConnectModal])
+  }, [openConnectModal, setTosAccepted])
 
   return (
-    <Dialog
-      {...welcomeDialogProps}
-      onClose={closeHandler}
-      title="Welcome"
-      actionButtonTitle="Agree to Terms and Continue"
-      closeable={false}
-      className="w-screen"
-    >
-      <div className="flex flex-col space-y-4 py-4">
-        <div className="flex flex-col space-y-1 rounded bg-white/20 p-2 text-sm">
+    <div className="mx-4 my-16 max-w-[350px] rounded border border-gray-dark bg-gray-1 pt-3 text-white sm:mx-auto">
+      <p className="px-4 text-xl">Welcome</p>
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-1 rounded bg-white/10 p-3 text-sm">
           <p className="font-medium">Safety Tip</p>
           <p>
             Arbitrum will NEVER ask you for your seed phase or private keys.
@@ -71,6 +47,15 @@ export function WelcomeDialog() {
           </ExternalLink>
         </p>
       </div>
-    </Dialog>
+      <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-4 py-2">
+        <Button
+          variant="primary"
+          onClick={closeHandler}
+          aria-label="Agree to Terms and Continue"
+        >
+          Agree to Terms and Continue
+        </Button>
+      </div>
+    </div>
   )
 }
