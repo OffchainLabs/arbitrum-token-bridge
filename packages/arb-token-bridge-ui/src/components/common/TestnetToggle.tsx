@@ -11,7 +11,7 @@ export const TestnetToggle = ({
   className,
   label,
   description,
-  addModeText
+  includeToggleStateOnLabel
 }: {
   className?: {
     wrapper?: string
@@ -19,14 +19,14 @@ export const TestnetToggle = ({
   }
   label: string
   description?: string
-  addModeText?: boolean
+  includeToggleStateOnLabel?: boolean
 }) => {
   const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
   const [{ sourceChain }, setNetworks] = useNetworks()
 
   const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
 
-  const labelText = addModeText
+  const labelText = includeToggleStateOnLabel
     ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
     : label
 

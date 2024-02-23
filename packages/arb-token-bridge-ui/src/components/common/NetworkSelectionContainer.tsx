@@ -307,7 +307,7 @@ function NetworksPanel({
         </AutoSizer>
       </SearchPanelTable>
       <div className="flex justify-between pb-2">
-        <TestnetToggle label="Testnet mode" addModeText />
+        <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
         <AddCustomOrbitChainButton />
       </div>
     </div>
