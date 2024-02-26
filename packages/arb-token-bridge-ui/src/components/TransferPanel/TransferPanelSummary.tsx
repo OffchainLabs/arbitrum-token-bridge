@@ -2,7 +2,11 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getBaseChainIdByChainId, getNetworkName } from '../../util/networks'
+import {
+  getBaseChainIdByChainId,
+  getNetworkName,
+  isNetwork
+} from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
@@ -13,7 +17,7 @@ import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
-import { isTokenUSDC } from '../../util/TokenUtils'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
@@ -64,6 +68,16 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   })
 
   const [{ amount }] = useArbQueryParams()
+
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
+
+  const isDepositingUSDCtoArbOneOrArbSepolia =
+    isTokenNativeUSDC(token?.address) &&
+    isDepositMode &&
+    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
   const baseChainId = getBaseChainIdByChainId({
     chainId: childChain.id
@@ -141,7 +155,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             token={token}
             isParentChain={!isDepositMode}
           />{' '}
-          {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
+          {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
           <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>
