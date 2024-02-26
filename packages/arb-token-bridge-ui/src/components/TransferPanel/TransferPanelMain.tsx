@@ -231,7 +231,7 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
+      <span className="balance-amount tabular-nums">
         {formatAmount(balance, { symbol: ether.symbol })}
       </span>
     </p>
@@ -266,7 +266,12 @@ function TokenBalance({
       aria-label={`${tokenSymbolOverride ?? forToken.symbol} balance on ${on}`}
     >
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
+      <span
+        className="tabular-nums"
+        aria-label={`${
+          tokenSymbolOverride ?? forToken.symbol
+        } balance amount on ${on}`}
+      >
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}

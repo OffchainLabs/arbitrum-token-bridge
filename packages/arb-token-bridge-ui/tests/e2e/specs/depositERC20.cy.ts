@@ -243,9 +243,10 @@ describe('Deposit ERC20 Token', () => {
         cy.findByLabelText('close side panel').click()
 
         // the custom destination address should now have some balance greater than zero
-        cy.findByLabelText('WETH balance on l2').within(el => {
-          cy.get('.tabular-nums').should('not.contain', '0')
-        })
+        cy.findByLabelText('WETH balance amount on l2').should(
+          'not.contain',
+          '0'
+        )
       })
     })
 
