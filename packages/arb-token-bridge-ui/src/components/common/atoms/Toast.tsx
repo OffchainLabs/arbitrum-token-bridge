@@ -33,7 +33,7 @@ export const Toast = () => {
       rtl={false}
       pauseOnFocusLoss
       pauseOnHover
-      theme="light"
+      theme="dark"
     />
   )
 }
