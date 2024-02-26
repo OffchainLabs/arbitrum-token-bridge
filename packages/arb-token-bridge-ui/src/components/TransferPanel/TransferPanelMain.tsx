@@ -144,10 +144,12 @@ function CustomAddressBanner({
 function NetworkContainer({
   network,
   customAddress,
+  bgLogoHeight,
   children
 }: {
   network: Chain
   customAddress?: string
+  bgLogoHeight?: number
   children: React.ReactNode
 }) {
   const { address } = useAccount()
@@ -186,8 +188,8 @@ function NetworkContainer({
         )}
       >
         <div
-          className="absolute left-0 top-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage }}
+          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage, backgroundSize: `auto ${bgLogoHeight}px` }}
         />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
           {children}
@@ -790,7 +792,7 @@ export function TransferPanelMain({
 
   return (
     <div className="flex flex-col pb-6">
-      <NetworkContainer network={networks.sourceChain}>
+      <NetworkContainer bgLogoHeight={140} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
@@ -892,6 +894,7 @@ export function TransferPanelMain({
       </div>
 
       <NetworkContainer
+        bgLogoHeight={60}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >
