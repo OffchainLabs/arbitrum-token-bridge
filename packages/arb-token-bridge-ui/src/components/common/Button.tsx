@@ -9,10 +9,10 @@ type ButtonVariant = 'primary' | 'secondary'
 function getClassNameForVariant(variant: ButtonVariant) {
   switch (variant) {
     case 'primary':
-      return 'bg-dark'
+      return ''
 
     case 'secondary':
-      return 'bg-dark hover:(not:disabled):opacity-70 active:(not:disabled):opacity-80'
+      return 'hover:(not:disabled):opacity-70 active:(not:disabled):opacity-80'
   }
 }
 
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type="button"
         disabled={disabled}
         className={twMerge(
-          'arb-hover relative w-max rounded border p-2 text-sm',
+          'arb-hover relative w-max rounded border bg-dark p-2 text-sm',
           'text-white disabled:cursor-not-allowed disabled:border disabled:border-white/10 disabled:bg-white/10 disabled:text-white/50',
           getClassNameForVariant(variant),
           customClassName
