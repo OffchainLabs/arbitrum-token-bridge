@@ -50,7 +50,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         className={twMerge(
           'flex flex-row rounded border bg-black/40 shadow-2',
           errorMessage
-            ? 'border-error/30 text-error'
+            ? 'border-brick text-brick'
             : 'border-white/30 text-white'
         )}
       >
@@ -58,7 +58,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
         <div
           className={twMerge(
             'flex grow flex-row items-center justify-center border-l',
-            errorMessage ? 'border-error/30' : 'border-white/30'
+            errorMessage ? 'border-brick' : 'border-white/30'
           )}
         >
           <input
