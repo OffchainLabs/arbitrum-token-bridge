@@ -11,6 +11,8 @@ import {
 } from '../../support/common'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
+const moreThanZeroBalance = /0(\.\d+)/
+
 describe('Deposit ERC20 Token', () => {
   // when all of our tests need to run in a logged-in state
   // we have to make sure we preserve a healthy LocalStorage state
@@ -243,10 +245,9 @@ describe('Deposit ERC20 Token', () => {
         cy.findByLabelText('close side panel').click()
 
         // the custom destination address should now have some balance greater than zero
-        cy.findByLabelText('WETH balance amount on l2').should(
-          'not.contain',
-          '0'
-        )
+        cy.findByLabelText('WETH balance amount on l2')
+          .contains(moreThanZeroBalance)
+          .should('be.visible')
       })
     })
 
