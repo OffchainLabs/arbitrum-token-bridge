@@ -20,6 +20,82 @@ import { Button } from '../common/Button'
 import { isTxClaimable, isTxPending } from './helpers'
 import { pluralizeWord } from '../../util/CommonUtils'
 
+const Content = ({
+  numClaimableTransactions,
+  numRetryablesToRedeem,
+  numPendingTransactions
+}: {
+  numClaimableTransactions: number
+  numRetryablesToRedeem: number
+  numPendingTransactions: number
+}) => {
+  const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
+    { word: 'transaction', shouldPluralize: numClaimableTransactions > 1 }
+  )}`
+  const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${pluralizeWord(
+    { word: 'transaction', shouldPluralize: numRetryablesToRedeem > 1 }
+  )}`
+  const numPendingTransactionsString = `${numPendingTransactions} pending ${pluralizeWord(
+    { word: 'transaction', shouldPluralize: numPendingTransactions > 1 }
+  )}`
+
+  if (numClaimableTransactions > 0 && numRetryablesToRedeem > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          Time sensitive: You must{' '}
+          <span className="font-bold">{numRetryablesToRedeemString}</span> and{' '}
+          <span className="font-bold">{numClaimableTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
+
+  if (numRetryablesToRedeem > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          You must{' '}
+          <span className="font-bold">{numRetryablesToRedeemString}</span>
+        </span>
+      </div>
+    )
+  }
+
+  if (numClaimableTransactions > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          You must{' '}
+          <span className="font-bold">{numClaimableTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
+
+  if (numPendingTransactions > 0) {
+    return (
+      <div className="flex space-x-2">
+        <Image src={ArrowsIcon} width={20} height={20} alt="Transactions" />
+        <span>
+          You have{' '}
+          <span className="font-bold">{numPendingTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex space-x-2">
+      <DocumentTextIcon width={20} />
+      <span>See transaction history</span>
+    </div>
+  )
+}
+
 export const TransactionStatusInfo = () => {
   const { address } = useAccount()
   const { openTransactionHistoryPanel } = useAppContextActions()
@@ -54,74 +130,6 @@ export const TransactionStatusInfo = () => {
     )
   }, [transactions])
 
-  const Content = useMemo(() => {
-    const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
-      { word: 'transaction', shouldPluralize: numClaimableTransactions > 1 }
-    )}`
-    const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${pluralizeWord(
-      { word: 'transaction', shouldPluralize: numRetryablesToRedeem > 1 }
-    )}`
-    const numPendingTransactionsString = `${numPendingTransactions} pending ${pluralizeWord(
-      { word: 'transaction', shouldPluralize: numPendingTransactions > 1 }
-    )}`
-
-    if (numClaimableTransactions > 0 && numRetryablesToRedeem > 0) {
-      return (
-        <div className="flex space-x-2">
-          <ExclamationTriangleIcon width={20} />
-          <span>
-            Time sensitive: You must{' '}
-            <span className="font-bold">{numRetryablesToRedeemString}</span> and{' '}
-            <span className="font-bold">{numClaimableTransactionsString}</span>
-          </span>
-        </div>
-      )
-    }
-
-    if (numRetryablesToRedeem > 0) {
-      return (
-        <div className="flex space-x-2">
-          <ExclamationTriangleIcon width={20} />
-          <span>
-            You must{' '}
-            <span className="font-bold">{numRetryablesToRedeemString}</span>
-          </span>
-        </div>
-      )
-    }
-
-    if (numClaimableTransactions > 0) {
-      return (
-        <div className="flex space-x-2">
-          <ExclamationTriangleIcon width={20} />
-          <span>
-            You must{' '}
-            <span className="font-bold">{numClaimableTransactionsString}</span>
-          </span>
-        </div>
-      )
-    }
-
-    if (numPendingTransactions > 0) {
-      return (
-        <div className="flex space-x-2">
-          <Image src={ArrowsIcon} width={20} height={20} alt="Transactions" />
-          <span>
-            You have{' '}
-            <span className="font-bold">{numPendingTransactionsString}</span>
-          </span>
-        </div>
-      )
-    }
-
-    return (
-      <div className="flex space-x-2">
-        <DocumentTextIcon width={20} />
-        <span>See transaction history</span>
-      </div>
-    )
-  }, [numClaimableTransactions, numRetryablesToRedeem, numPendingTransactions])
-
   const buttonClassName = useMemo(() => {
     if (numRetryablesToRedeem > 0) {
       return 'bg-red-700'
@@ -147,7 +155,11 @@ export const TransactionStatusInfo = () => {
       truncate={false}
       variant="primary"
     >
-      {Content}
+      <Content
+        numClaimableTransactions={numClaimableTransactions}
+        numRetryablesToRedeem={numRetryablesToRedeem}
+        numPendingTransactions={numPendingTransactions}
+      />
     </Button>
   )
 }
