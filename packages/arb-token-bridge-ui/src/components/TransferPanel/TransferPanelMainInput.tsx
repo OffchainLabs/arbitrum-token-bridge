@@ -1,6 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -28,18 +29,18 @@ function MaxButton(props: MaxButtonProps) {
   )
 }
 
-export type TransferPanelMainInputProps =
-  React.InputHTMLAttributes<HTMLInputElement> & {
-    errorMessage?: string | React.ReactNode
-    maxButtonProps: MaxButtonProps & {
-      visible: boolean
-    }
-    value: string
+export type TransferPanelMainInputProps = {
+  errorMessage?: string | React.ReactNode
+  maxButtonProps: MaxButtonProps & {
+    visible: boolean
   }
+  value: string
+}
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, ...rest } = props
+  const { errorMessage, maxButtonProps, value } = props
   const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
+  const [, setQueryParams] = useArbQueryParams()
 
   const borderClassName =
     typeof errorMessage !== 'undefined'
@@ -63,7 +64,9 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             placeholder="Enter amount"
             className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
             value={value}
-            {...rest}
+            onChange={e => {
+              setQueryParams({ amount: e.target.value })
+            }}
           />
           {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
         </div>

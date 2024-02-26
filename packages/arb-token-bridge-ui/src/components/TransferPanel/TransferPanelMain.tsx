@@ -306,16 +306,19 @@ function NetworkListboxPlusBalancesContainer({
 }
 
 export function TransferPanelMain({
-  amount,
-  setAmount,
   errorMessage
 }: {
-  amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
+  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const setAmount = useCallback(
+    (amount: string) => {
+      setQueryParams({ amount })
+    },
+    [setQueryParams]
+  )
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
@@ -509,8 +512,6 @@ export function TransferPanelMain({
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
     (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
 
-  const [, setQueryParams] = useArbQueryParams()
-
   const estimateGas = useCallback(
     async (
       weiValue: BigNumber
@@ -639,7 +640,7 @@ export function TransferPanelMain({
     if (isMaxAmount) {
       setMaxAmount()
     }
-  }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+  }, [isMaxAmount, setMaxAmount, setQueryParams, amount])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -805,6 +806,13 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
+  const maxButtonProps = useMemo(() => {
+    return {
+      visible: maxButtonVisible,
+      loading: isMaxAmount || loadingMaxAmount,
+      onClick: setMaxAmount
+    }
+  }, [isMaxAmount, loadingMaxAmount, maxButtonVisible, setMaxAmount])
   const buttonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
@@ -866,16 +874,9 @@ export function TransferPanelMain({
 
         <div className="flex flex-col space-y-1">
           <TransferPanelMainInput
-            maxButtonProps={{
-              visible: maxButtonVisible,
-              loading: isMaxAmount || loadingMaxAmount,
-              onClick: setMaxAmount
-            }}
+            maxButtonProps={maxButtonProps}
             errorMessage={errorMessageElement}
             value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
           />
 
           {showUSDCSpecificInfo && (
