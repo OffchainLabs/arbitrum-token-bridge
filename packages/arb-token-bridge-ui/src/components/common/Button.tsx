@@ -4,7 +4,7 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 import { Loader, LoaderProps } from './atoms/Loader'
 
-type ButtonVariant = 'primary' | 'secondary'
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary'
 
 function getClassNameForVariant(variant: ButtonVariant) {
   switch (variant) {
@@ -12,11 +12,14 @@ function getClassNameForVariant(variant: ButtonVariant) {
       return 'bg-dark text-white'
 
     case 'secondary':
+      return 'bg-white text-dark'
+
+    case 'tertiary':
       return 'bg-transparent text-dark'
   }
 }
 
-const defaultClassName = 'relative arb-hover w-max rounded p-2 text-sm'
+const defaultClassName = 'relative arb-hover border w-max rounded p-2 text-sm'
 
 type ButtonLoadingProps = Partial<{
   loaderColor: string
@@ -59,7 +62,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled}
         className={twMerge(
           defaultClassName,
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'disabled:cursor-not-allowed disabled:border disabled:border-white/10 disabled:bg-white/10 disabled:text-white/40',
           getClassNameForVariant(variant),
           customClassName
         )}

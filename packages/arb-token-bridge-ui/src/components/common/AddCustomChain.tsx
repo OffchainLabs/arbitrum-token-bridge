@@ -26,6 +26,7 @@ import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
 import { getProviderForChainId } from '../../hooks/useNetworks'
 import { Transition } from './Transition'
+import { Button } from './Button'
 
 const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 
@@ -305,14 +306,13 @@ export const AddCustomChain = () => {
         {addingChain ? (
           <Loader size="small" color="white" />
         ) : (
-          // Need to replace with an atom
-          <button
+          <Button
+            variant="secondary"
             onClick={onAddChain}
-            className="arb-hover rounded bg-white p-2 text-sm text-black transition-all disabled:cursor-not-allowed disabled:bg-gray-4 disabled:opacity-50"
             disabled={!chainJson.trim()}
           >
             Add Chain
-          </button>
+          </Button>
         )}
       </div>
 

@@ -1070,7 +1070,7 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full border bg-eth-dark py-4 text-lg',
-                'disabled:border disabled:!border-white/10 disabled:!bg-white/10 disabled:text-white/40 disabled:opacity-100',
+                'disabled:!border-white/10 disabled:!bg-white/10',
                 'lg:text-2xl'
               )}
             >
@@ -1104,7 +1104,7 @@ export function TransferPanel() {
               }}
               className={twMerge(
                 'w-full border py-4 text-lg',
-                'disabled:border disabled:!border-white/10 disabled:!bg-white/10 disabled:text-white/40 disabled:opacity-100',
+                'disabled:!border-white/10 disabled:!bg-white/10',
                 'lg:text-2xl'
               )}
             >
