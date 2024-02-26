@@ -5,7 +5,10 @@
 
 import { useAccount } from 'wagmi'
 import { useCallback, useMemo } from 'react'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import {
+  DocumentTextIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import ArrowsIcon from '@/images/arrows.svg'
@@ -15,7 +18,6 @@ import { useAppContextActions } from '../App/AppContext'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { Button } from '../common/Button'
 import { isTxClaimable, isTxPending } from './helpers'
-import { Transition } from '../common/Transition'
 import { pluralizeWord } from '../../util/CommonUtils'
 
 export const TransactionStatusInfo = () => {
@@ -51,14 +53,6 @@ export const TransactionStatusInfo = () => {
       }
     )
   }, [transactions])
-
-  const shouldShow = useMemo(() => {
-    return (
-      numClaimableTransactions > 0 ||
-      numRetryablesToRedeem > 0 ||
-      numPendingTransactions > 0
-    )
-  }, [numClaimableTransactions, numRetryablesToRedeem, numPendingTransactions])
 
   const Content = useCallback(() => {
     const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
@@ -120,10 +114,15 @@ export const TransactionStatusInfo = () => {
       )
     }
 
-    return null
+    return (
+      <div className="flex space-x-2">
+        <DocumentTextIcon width={20} />
+        <span>See transaction history</span>
+      </div>
+    )
   }, [numClaimableTransactions, numRetryablesToRedeem, numPendingTransactions])
 
-  const buttonBgClassName = useMemo(() => {
+  const buttonClassName = useMemo(() => {
     if (numRetryablesToRedeem > 0) {
       return 'bg-red-700'
     }
@@ -133,26 +132,22 @@ export const TransactionStatusInfo = () => {
     if (numPendingTransactions > 0) {
       return 'bg-cyan-dark'
     }
-    return undefined
+    return 'bg-gray-1 text-white/70'
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
 
   return (
-    <Transition isOpen={shouldShow} options={{ enterSpeed: 'normal' }}>
-      {shouldShow && (
-        <Button
-          className={twMerge(
-            'mb-3 mt-3 w-full rounded-none border-y border-white/30 p-3 text-left sm:mt-0 sm:rounded sm:border',
-            buttonBgClassName
-          )}
-          onClick={openTransactionHistoryPanel}
-          textLeft
-          showArrow
-          truncate={false}
-          variant="primary"
-        >
-          <Content />
-        </Button>
+    <Button
+      className={twMerge(
+        'mb-3 mt-3 w-full rounded-none border-y border-white/30 p-3 text-left sm:mt-0 sm:rounded sm:border',
+        buttonClassName
       )}
-    </Transition>
+      onClick={openTransactionHistoryPanel}
+      textLeft
+      showArrow
+      truncate={false}
+      variant="primary"
+    >
+      <Content />
+    </Button>
   )
 }
