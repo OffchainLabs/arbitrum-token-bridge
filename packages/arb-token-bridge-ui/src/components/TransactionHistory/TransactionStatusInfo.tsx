@@ -4,7 +4,7 @@
 */
 
 import { useAccount } from 'wagmi'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   DocumentTextIcon,
   ExclamationTriangleIcon
@@ -54,7 +54,7 @@ export const TransactionStatusInfo = () => {
     )
   }, [transactions])
 
-  const Content = useCallback(() => {
+  const Content = useMemo(() => {
     const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
       { word: 'transaction', shouldPluralize: numClaimableTransactions > 1 }
     )}`
@@ -147,7 +147,7 @@ export const TransactionStatusInfo = () => {
       truncate={false}
       variant="primary"
     >
-      <Content />
+      {Content}
     </Button>
   )
 }
