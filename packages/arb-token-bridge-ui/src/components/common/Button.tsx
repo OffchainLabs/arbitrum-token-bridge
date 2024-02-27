@@ -4,15 +4,18 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 import { Loader, LoaderProps } from './atoms/Loader'
 
-type ButtonVariant = 'primary' | 'secondary'
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary'
 
 function getClassNameForVariant(variant: ButtonVariant) {
   switch (variant) {
     case 'primary':
-      return ''
+      return 'border-dark'
 
     case 'secondary':
       return 'hover:(not:disabled):opacity-70 active:(not:disabled):opacity-80'
+
+    case 'tertiary':
+      return 'bg-transparent border-transparent text-white'
   }
 }
 
