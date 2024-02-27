@@ -48,10 +48,6 @@
   font-family: Roboto !important;
 }
 
-.tabular-nums {
-  font-family: Roboto !important;
-}
-
 @layer base {
   html {
     font-family: Roboto, sans-serif;
