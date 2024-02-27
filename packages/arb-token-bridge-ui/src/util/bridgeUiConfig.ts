@@ -1,10 +1,7 @@
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
 import { orbitChains, BridgeUiConfig } from './orbitChainsList'
 
-export function getBridgeUiConfigForChain(
-  chainId: number,
-  { variant }: { variant?: 'light' | 'dark' } = {}
-): BridgeUiConfig {
+export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
   type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {
     network: Omit<BridgeUiConfig['network'], 'name'>
   }
@@ -131,10 +128,7 @@ export function getBridgeUiConfigForChain(
         color: '#12AAFF',
         network: {
           name: customChain ? customChain.name : 'Unknown',
-          logo:
-            variant === 'light'
-              ? '/images/OrbitLogoWhite.svg'
-              : '/images/OrbitLogo.svg'
+          logo: '/images/OrbitLogo.svg'
         }
       }
     }
