@@ -48,7 +48,6 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import {
@@ -154,16 +153,16 @@ function CustomAddressBanner({
         borderColor: color
       }}
       className={twMerge(
-        'w-full rounded-t border border-b-0 p-1 text-center text-sm'
+        'w-full rounded-t border border-b-0 p-2 text-center text-sm'
       )}
     >
       <span>
-        Showing balance for Custom Destination Address:{' '}
+        Showing balance for{' '}
         <ExternalLink
           className="arb-hover underline"
           href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
         >
-          {shortenAddress(customAddress)}
+          {customAddress}
         </ExternalLink>
       </span>
     </div>
@@ -202,7 +201,7 @@ function NetworkContainer({
   }, [customAddress, walletAddressLowercased])
 
   return (
-    <>
+    <div>
       {showCustomAddressBanner && (
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
@@ -224,7 +223,7 @@ function NetworkContainer({
           {children}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
