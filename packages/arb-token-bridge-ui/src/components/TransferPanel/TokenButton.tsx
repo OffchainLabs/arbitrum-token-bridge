@@ -22,8 +22,7 @@ export function TokenButton(): JSX.Element {
   } = useAppState()
   const [networks] = useNetworks()
   const { bridgeTokens } = useBridgeTokensStore()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -42,7 +41,6 @@ export function TokenButton(): JSX.Element {
     }
     return undefined
   }, [nativeCurrency, bridgeTokens, selectedToken?.address])
-  const chainId = isDepositMode ? parentChain.id : childChain.id
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -51,9 +49,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chainId
+      chainId: networks.sourceChain.id
     })
-  }, [selectedToken, chainId, nativeCurrency.symbol])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
 
   return (
     <>
