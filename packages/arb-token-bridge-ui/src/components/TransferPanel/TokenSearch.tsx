@@ -442,7 +442,7 @@ function TokensPanel({
         loading={isAddingToken}
         loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
         disabled={!isAddress(newToken)}
-        className="border border-gray-dark py-1 text-white disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
+        className="border border-gray-dark py-1"
         aria-label="Add New Token"
       >
         Add

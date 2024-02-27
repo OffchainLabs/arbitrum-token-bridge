@@ -179,7 +179,7 @@ export function Dialog(props: DialogProps) {
                 {closeable && (
                   <Button
                     ref={cancelButtonRef}
-                    variant="secondary"
+                    variant="tertiary"
                     onClick={() => handleCloseStart(false)}
                     aria-label="Dialog Cancel"
                     className="text-white"

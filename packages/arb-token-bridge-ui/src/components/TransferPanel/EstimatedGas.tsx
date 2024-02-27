@@ -12,7 +12,7 @@ import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
-import { isTokenUSDC } from '../../util/TokenUtils'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
@@ -78,8 +78,6 @@ export function EstimatedGas({
 
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
-  const isCCTP = selectedToken && isTokenUSDC(selectedToken.address)
-
   const estimatedGasFee = useMemo(() => {
     if (!isDepositMode && !isParentChain) {
       return estimatedL1GasFees + estimatedL2GasFees
@@ -99,7 +97,7 @@ export function EstimatedGas({
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 
-  if (isCCTP && !isSourceChain) {
+  if (isTokenNativeUSDC(selectedToken?.address) && !isSourceChain) {
     return (
       <GasFeeForClaimTxMessage networkName={networks.destinationChain.name} />
     )

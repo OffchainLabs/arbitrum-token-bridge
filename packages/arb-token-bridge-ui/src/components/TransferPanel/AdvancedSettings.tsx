@@ -271,7 +271,7 @@ export const AdvancedSettings = () => {
         )}
         {destinationAddress && !error && (
           <ExternalLink
-            className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
+            className="arb-hover mt-2 flex w-fit items-center text-xs font-medium text-white/50"
             href={`${getExplorerUrl(
               isDepositMode ? childChain.id : parentChain.id
             )}/address/${destinationAddress}`}

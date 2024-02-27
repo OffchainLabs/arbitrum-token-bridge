@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
@@ -30,7 +30,7 @@ import {
 } from './TransferPanelMainUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
@@ -48,7 +48,6 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import {
@@ -67,6 +66,7 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 
 enum NetworkType {
   l1 = 'l1',
@@ -76,30 +76,59 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const {
-    isEOA,
-    isSmartContractWallet,
-    isLoading: isLoadingAccountType
-  } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  const disabled = isSmartContractWallet || isLoadingAccountType
 
   return (
     <button
       type="button"
-      disabled={isSmartContractWallet || isLoadingAccountType}
+      disabled={disabled}
       className={twMerge(
-        'arb-hover flex h-12 w-12 items-center justify-center rounded-full bg-white p-2 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200',
-        isEOA
-          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-[#F4F4F4] focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
-          : ''
+        'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
+        disabled && 'pointer-events-none'
       )}
       {...props}
     >
+      <SwitchNetworkButtonBorderTop />
       {isSmartContractWallet ? (
-        <ChevronDownIcon className="h-6 w-6 stroke-2 text-dark" />
+        <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
       ) : (
-        <ArrowsUpDownIcon className="h-6 w-6 stroke-2 text-dark" />
+        <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
       )}
+      <SwitchNetworkButtonBorderBottom />
     </button>
+  )
+}
+
+function SwitchNetworkButtonBorderTop() {
+  const [networks] = useNetworks()
+
+  const sourceNetworkColor = getBridgeUiConfigForChain(
+    networks.sourceChain.id
+  ).color
+
+  return (
+    <div
+      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: sourceNetworkColor }}
+    />
+  )
+}
+
+function SwitchNetworkButtonBorderBottom() {
+  const [networks] = useNetworks()
+
+  const destinationNetworkColor = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  ).color
+
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: destinationNetworkColor }}
+    />
   )
 }
 
@@ -119,21 +148,21 @@ function CustomAddressBanner({
   return (
     <div
       style={{
-        backgroundColor: `${color.primary}AA`,
+        backgroundColor: `${color}AA`,
         color: 'white',
-        borderColor: color.primary
+        borderColor: color
       }}
       className={twMerge(
-        'w-full rounded-t border border-b-0 p-1 text-center text-sm'
+        'w-full rounded-t border border-b-0 p-2 text-center text-sm'
       )}
     >
       <span>
-        Showing balance for Custom Destination Address:{' '}
+        Showing balance for{' '}
         <ExternalLink
           className="arb-hover underline"
           href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
         >
-          {shortenAddress(customAddress)}
+          {customAddress}
         </ExternalLink>
       </span>
     </div>
@@ -143,10 +172,12 @@ function CustomAddressBanner({
 function NetworkContainer({
   network,
   customAddress,
+  bgLogoHeight,
   children
 }: {
   network: Chain
   customAddress?: string
+  bgLogoHeight?: number
   children: React.ReactNode
 }) {
   const { address } = useAccount()
@@ -170,14 +201,14 @@ function NetworkContainer({
   }, [customAddress, walletAddressLowercased])
 
   return (
-    <>
+    <div>
       {showCustomAddressBanner && (
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
         style={{
-          backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color.primary
+          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
+          borderColor: color
         }}
         className={twMerge(
           'relative rounded border p-1 transition-colors duration-400',
@@ -185,14 +216,14 @@ function NetworkContainer({
         )}
       >
         <div
-          className="absolute left-0 top-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage }}
+          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage, backgroundSize: `auto ${bgLogoHeight}px` }}
         />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
           {children}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -296,16 +327,36 @@ export function TransferPanelMain({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isEthereumMainnet: isSourceChainEthereum,
+    isSepolia: isSourceChainSepolia,
+    isArbitrumSepolia: isSourceChainArbitrumSepolia
+  } = isNetwork(networks.sourceChain.id)
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isEthereumMainnet: isDestinationChainEthereum,
+    isSepolia: isDestinationChainSepolia,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
+
+  const isSepoliaArbSepoliaPair =
+    (isSourceChainSepolia && isDestinationChainArbitrumSepolia) ||
+    (isSourceChainArbitrumSepolia && isDestinationChainSepolia)
+
+  const isEthereumArbitrumOnePair =
+    (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
+    (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
   const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
-  const { app } = useAppState()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, selectedToken } = app
-  const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -419,6 +470,7 @@ export function TransferPanelMain({
 
     if (
       isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+      isEthereumArbitrumOnePair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -429,6 +481,7 @@ export function TransferPanelMain({
     }
     if (
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+      isSepoliaArbSepoliaPair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -439,7 +492,13 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [
+    erc20L1Balances,
+    erc20L2Balances,
+    isEthereumArbitrumOnePair,
+    isSepoliaArbSepoliaPair,
+    selectedToken
+  ])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
@@ -668,45 +727,7 @@ export function TransferPanelMain({
     })
   }, [networks.destinationChain.id, networks.sourceChain.id, setNetworks])
 
-  useEffect(() => {
-    const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
-      selectedToken?.address
-    )
-    // If user select native USDC on L2, when switching to deposit mode,
-    // we need to default to set the corresponding USDC on L1
-    if (!isDepositMode) {
-      return
-    }
-
-    // When switching network, token might be undefined
-    if (!token) {
-      return
-    }
-
-    const commonUSDC = {
-      name: 'USD Coin',
-      type: TokenType.ERC20,
-      symbol: 'USDC',
-      decimals: 6,
-      listIds: new Set<number>()
-    }
-    if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Ethereum.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Ethereum.USDC,
-        l2Address: CommonAddress.ArbitrumOne['USDC.e']
-      })
-    } else if (isArbSepoliaUSDC) {
-      token.updateTokenData(CommonAddress.Sepolia.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Sepolia.USDC,
-        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
-      })
-    }
-  }, [actions.app, isDepositMode, selectedToken, token])
+  useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>
@@ -792,14 +813,13 @@ export function TransferPanelMain({
   const buttonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-        .primary
     }),
     [networks.sourceChain.id]
   )
 
   return (
-    <div className="flex flex-col pb-6">
-      <NetworkContainer network={networks.sourceChain}>
+    <div className="flex flex-col pb-6 lg:gap-y-1">
+      <NetworkContainer bgLogoHeight={140} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
@@ -893,7 +913,7 @@ export function TransferPanelMain({
         <EstimatedGas chainType="source" />
       </NetworkContainer>
 
-      <div className="z-[1] flex h-10 w-full items-center justify-center lg:h-12">
+      <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
         <SwitchNetworksButton
           onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
@@ -901,6 +921,7 @@ export function TransferPanelMain({
       </div>
 
       <NetworkContainer
+        bgLogoHeight={60}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >

@@ -2,18 +2,16 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import { getNetworkName } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import dayjs from 'dayjs'
-import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
-import { isTokenUSDC } from '../../util/TokenUtils'
+import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
 
@@ -31,9 +29,9 @@ function TransferPanelSummaryContainer({
 }) {
   return (
     <div className="flex flex-col text-white">
-      <span className="mb-4 text-xl">Summary</span>
+      <span className="mb-3 text-xl">Summary</span>
 
-      <div className={twMerge('flex flex-col space-y-4', className)}>
+      <div className={twMerge('flex flex-col space-y-3', className)}>
         {children}
       </div>
 
@@ -65,12 +63,15 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const [{ amount }] = useArbQueryParams()
 
-  const estimatedConfirmationDate = getTxConfirmationDate({
-    createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id
-  })
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
 
-  const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
+  const isDepositingUSDCtoArbOneOrArbSepolia =
+    isTokenNativeUSDC(token?.address) &&
+    isDepositMode &&
+    (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
@@ -136,17 +137,10 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             token={token}
             isParentChain={!isDepositMode}
           />{' '}
-          {isTokenUSDC(token?.address) && isDepositMode && <>or USDC</>}
+          {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
           <NativeCurrencyPrice amount={Number(amount)} showBrackets />
         </span>
       </div>
-
-      {!isDepositMode && (
-        <p className="flex flex-col gap-3 text-sm font-light">
-          You will have to claim the withdrawal on {parentChain.name} in ~
-          {confirmationPeriod}.
-        </p>
-      )}
     </TransferPanelSummaryContainer>
   )
 }

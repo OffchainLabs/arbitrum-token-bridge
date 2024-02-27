@@ -32,19 +32,12 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { TokenLogoFallback } from './TokenInfo'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
     .map((tokenListId: number) => listIdsToNames[tokenListId])
     .join(', ')
-}
-
-function TokenLogoFallback() {
-  return (
-    <div className="flex h-8 w-8 min-w-[2rem] items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
-      ?
-    </div>
-  )
 }
 
 function StyledLoader() {
@@ -79,7 +72,10 @@ function BlockExplorerTokenLink({
 
 function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
+    provider: childChainProvider
+  })
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -115,7 +111,14 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   }, [token])
 
   if (!token) {
-    return null
+    const nativeTokenChain = getNetworkName(
+      (childChainNativeCurrencyIsCustom ? childChain : networks.sourceChain).id
+    )
+    return (
+      <span className="flex text-xs text-white/70">
+        Native token on {nativeTokenChain}
+      </span>
+    )
   }
 
   if (token?.isL2Native) {
@@ -274,7 +277,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
 
 function ArbitrumTokenBadge() {
   return (
-    <StatusBadge variant="green" className="text-xs">
+    <StatusBadge variant="green" className="text-xs leading-extra-tight">
       <CheckCircleIcon className="h-3 w-3" />
       <p>
         <span>Official</span>
@@ -410,7 +413,7 @@ export function TokenRow({
         <SafeImage
           src={tokenLogoURI}
           alt={`${tokenName} logo`}
-          className="h-6 w-6 grow-0"
+          className="h-6 w-6 shrink-0"
           fallback={<TokenLogoFallback />}
         />
 

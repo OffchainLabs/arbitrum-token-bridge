@@ -44,7 +44,8 @@ module.exports = {
 
         // BRAND
         'eth-dark': '#1A1C33',
-        'ocl-blue': '#243145'
+        'ocl-blue': '#243145',
+        'atmosphere-blue': '#152C4E'
       },
       spacing: {
         1: '5px',
