@@ -3,8 +3,7 @@ import { getNetworkName, isNetwork } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export const NetworkImage = ({
-  chainId,
-  theme = 'light'
+  chainId
 }: {
   chainId: number
   theme?: 'light' | 'dark'
@@ -14,9 +13,7 @@ export const NetworkImage = ({
   return (
     <div className="flex w-4 justify-center">
       <Image
-        src={
-          getBridgeUiConfigForChain(chainId, { variant: theme }).network.logo
-        }
+        src={getBridgeUiConfigForChain(chainId).network.logo}
         alt={`${getNetworkName(chainId)} logo`}
         width={size}
         height={size}
