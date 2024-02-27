@@ -106,14 +106,14 @@ export function SwitchNetworksButton(
 function SwitchNetworkButtonBorderTop() {
   const [networks] = useNetworks()
 
-  const sourceNetworkPrimaryColor = getBridgeUiConfigForChain(
+  const sourceNetworkColor = getBridgeUiConfigForChain(
     networks.sourceChain.id
-  ).color.primary
+  ).color
 
   return (
     <div
       className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: sourceNetworkPrimaryColor }}
+      style={{ borderColor: sourceNetworkColor }}
     />
   )
 }
@@ -121,14 +121,14 @@ function SwitchNetworkButtonBorderTop() {
 function SwitchNetworkButtonBorderBottom() {
   const [networks] = useNetworks()
 
-  const destinationNetworkPrimaryColor = getBridgeUiConfigForChain(
+  const destinationNetworkColor = getBridgeUiConfigForChain(
     networks.destinationChain.id
-  ).color.primary
+  ).color
 
   return (
     <div
       className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
-      style={{ borderColor: destinationNetworkPrimaryColor }}
+      style={{ borderColor: destinationNetworkColor }}
     />
   )
 }
@@ -149,9 +149,9 @@ function CustomAddressBanner({
   return (
     <div
       style={{
-        backgroundColor: `${color.primary}AA`,
+        backgroundColor: `${color}AA`,
         color: 'white',
-        borderColor: color.primary
+        borderColor: color
       }}
       className={twMerge(
         'w-full rounded-t border border-b-0 p-1 text-center text-sm'
@@ -173,10 +173,12 @@ function CustomAddressBanner({
 function NetworkContainer({
   network,
   customAddress,
+  bgLogoHeight,
   children
 }: {
   network: Chain
   customAddress?: string
+  bgLogoHeight?: number
   children: React.ReactNode
 }) {
   const { address } = useAccount()
@@ -206,8 +208,8 @@ function NetworkContainer({
       )}
       <div
         style={{
-          backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
-          borderColor: color.primary
+          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
+          borderColor: color
         }}
         className={twMerge(
           'relative rounded border p-1 transition-colors duration-400',
@@ -215,8 +217,8 @@ function NetworkContainer({
         )}
       >
         <div
-          className="absolute left-0 top-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage }}
+          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
+          style={{ backgroundImage, backgroundSize: `auto ${bgLogoHeight}px` }}
         />
         <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
           {children}
@@ -812,14 +814,13 @@ export function TransferPanelMain({
   const buttonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-        .primary
     }),
     [networks.sourceChain.id]
   )
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <NetworkContainer network={networks.sourceChain}>
+      <NetworkContainer bgLogoHeight={140} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
@@ -921,6 +922,7 @@ export function TransferPanelMain({
       </div>
 
       <NetworkContainer
+        bgLogoHeight={60}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >

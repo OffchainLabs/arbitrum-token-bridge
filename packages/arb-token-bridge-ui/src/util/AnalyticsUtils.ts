@@ -1,9 +1,5 @@
 import posthog from 'posthog-js'
 
-import {
-  ExploreArbitrumDeFiProjectName,
-  ExploreArbitrumNFTProjectName
-} from '../components/MainContent/ExploreArbitrumContent'
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 
 type AccountType = 'EOA' | 'Smart Contract'
@@ -38,8 +34,6 @@ type AnalyticsEventMap = {
     amount: number
   }
   'Connect Wallet Click': { walletName: ProviderName }
-  'Explore: DeFi Project Click': { project: ExploreArbitrumDeFiProjectName }
-  'Explore: NFT Project Click': { project: ExploreArbitrumNFTProjectName }
   'Fast Bridge Click': {
     bridge: FastBridgeName
     tokenSymbol?: SpecialTokenSymbol.USDC

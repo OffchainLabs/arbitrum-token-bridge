@@ -10,20 +10,14 @@ export function getBridgeUiConfigForChain(
   }
 
   const ethereumBaseConfig: BaseBridgeUiConfig = {
-    color: {
-      primary: '#454A75',
-      secondary: '#1A1C33'
-    },
+    color: '#454A75',
     network: {
       logo: '/images/EthereumLogo.svg'
     }
   }
 
   const arbitrumBaseConfig: BaseBridgeUiConfig = {
-    color: {
-      primary: '#1B4ADD',
-      secondary: '#001A6B'
-    },
+    color: '#1B4ADD',
     network: {
       logo: '/images/ArbitrumLogo.svg'
     }
@@ -107,10 +101,7 @@ export function getBridgeUiConfigForChain(
       }
     case ChainId.ArbitrumNova:
       return {
-        color: {
-          primary: '#E57310',
-          secondary: '#743600'
-        },
+        color: '#E57310',
         network: {
           name: 'Arbitrum Nova',
           logo: '/images/ArbitrumNovaLogo.svg',
@@ -120,10 +111,7 @@ export function getBridgeUiConfigForChain(
       }
     case ChainId.StylusTestnet:
       return {
-        color: {
-          primary: '#E3066E',
-          secondary: '#7E0028'
-        },
+        color: '#E3066E',
         network: {
           name: 'Stylus Testnet',
           logo: '/images/StylusLogo.svg',
@@ -140,10 +128,7 @@ export function getBridgeUiConfigForChain(
       }
 
       return {
-        color: {
-          primary: '#12AAFF',
-          secondary: '#0C4260'
-        },
+        color: '#12AAFF',
         network: {
           name: customChain ? customChain.name : 'Unknown',
           logo:

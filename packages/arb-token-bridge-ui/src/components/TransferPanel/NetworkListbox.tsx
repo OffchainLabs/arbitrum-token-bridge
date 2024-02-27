@@ -23,7 +23,7 @@ export function NetworkListbox({
   value,
   onChange
 }: NetworkListboxProps) {
-  const { color } = getBridgeUiConfigForChain(value.id)
+  const { color: backgroundColor } = getBridgeUiConfigForChain(value.id)
 
   return (
     <Listbox
@@ -36,7 +36,7 @@ export function NetworkListbox({
       {({ open }) => (
         <>
           <Listbox.Button
-            style={{ backgroundColor: color.primary }}
+            style={{ backgroundColor }}
             className="arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white md:gap-2 md:text-xl"
           >
             <span className="max-w-[220px] truncate leading-extra-tight md:max-w-[250px]">
