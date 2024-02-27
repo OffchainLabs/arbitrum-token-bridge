@@ -21,7 +21,7 @@ function MaxButton(props: MaxButtonProps) {
     <button
       type="button"
       className={twMerge(
-        'px-2 py-2 text-sm font-light text-gray-6 sm:px-4',
+        'arb-hover px-2 py-2 text-sm font-light text-gray-6 sm:px-4',
         className
       )}
       {...rest}
