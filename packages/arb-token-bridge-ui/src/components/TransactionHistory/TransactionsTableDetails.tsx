@@ -105,7 +105,7 @@ export const TransactionsTableDetails = ({
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="xs:p-4 flex min-h-full items-center justify-center text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-200"
@@ -116,7 +116,7 @@ export const TransactionsTableDetails = ({
               leaveTo="opacity-0 scale-95"
               afterLeave={reset}
             >
-              <Dialog.Panel className="w-full max-w-[488px] transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all">
+              <Dialog.Panel className="xs:max-w-[488px] xs:h-auto xs:w-full h-screen w-screen transform overflow-hidden rounded border border-white/10 bg-dark p-4 text-left align-middle shadow shadow-white/10 transition-all">
                 <Dialog.Title
                   className="mb-4 flex items-center justify-between text-lg font-light text-white"
                   as="h3"
