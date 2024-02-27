@@ -204,7 +204,7 @@ export const orbitMainnets: {
     isArbitrum: true,
     isCustom: true,
     name: 'PoP Apex',
-    slug: 'proof-of-play-apex',
+    slug: 'pop-apex',
     partnerChainID: 42161,
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
