@@ -261,16 +261,14 @@ function TokenBalance({
     return <StyledLoader />
   }
 
+  const tokenSymbol = tokenSymbolOverride ?? forToken.symbol
+
   return (
-    <p
-      aria-label={`${tokenSymbolOverride ?? forToken.symbol} balance on ${on}`}
-    >
+    <p aria-label={`${tokenSymbol} balance on ${on}`}>
       <span className="font-light">{prefix}</span>
       <span
         className="tabular-nums"
-        aria-label={`${
-          tokenSymbolOverride ?? forToken.symbol
-        } balance amount on ${on}`}
+        aria-label={`${tokenSymbol} balance amount on ${on}`}
       >
         {formatAmount(balance, {
           decimals: forToken.decimals
