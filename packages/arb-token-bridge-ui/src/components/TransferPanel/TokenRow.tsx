@@ -72,7 +72,10 @@ function BlockExplorerTokenLink({
 
 function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
+    provider: childChainProvider
+  })
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
@@ -108,7 +111,14 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   }, [token])
 
   if (!token) {
-    return null
+    const nativeTokenChain = getNetworkName(
+      (childChainNativeCurrencyIsCustom ? childChain : networks.sourceChain).id
+    )
+    return (
+      <span className="flex text-xs text-white/70">
+        Native token on {nativeTokenChain}
+      </span>
+    )
   }
 
   if (token?.isL2Native) {
