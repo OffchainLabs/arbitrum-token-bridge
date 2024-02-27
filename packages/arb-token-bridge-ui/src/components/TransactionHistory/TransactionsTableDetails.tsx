@@ -29,7 +29,7 @@ const DetailsBox = ({
   header
 }: PropsWithChildren<{ header?: string }>) => {
   return (
-    <div className="my-2 flex w-full flex-col rounded border border-white/20 bg-black p-3 font-light text-white">
+    <div className="my-2 flex w-full flex-col rounded border border-white/30 bg-black p-3 font-light text-white">
       {header && (
         <h4 className="mb-2 text-xs uppercase text-white/60">{header}</h4>
       )}
@@ -224,8 +224,8 @@ export const TransactionsTableDetails = ({
                 <div className="flex justify-end">
                   <ExternalLink href={GET_HELP_LINK}>
                     <Button
-                      variant="primary"
-                      className="rounded bg-white p-2 text-xs text-black"
+                      variant="secondary"
+                      className="border-white/30 text-xs"
                     >
                       Get help
                     </Button>
