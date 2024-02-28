@@ -20,6 +20,7 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
+import { useBalance } from '../useBalance'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -62,6 +63,14 @@ export function useGasSummary(): UseGasSummaryResult {
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
+  const {
+    eth: [ethBalance],
+    erc20: [erc20Balances]
+  } = useBalance({
+    provider: networks.sourceChainProvider,
+    walletAddress
+  })
+
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
@@ -96,6 +105,17 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
+      return
+    }
+
+    const balance = !token ? ethBalance : erc20Balances?.[token.address]
+    // If user has inputed an amount over their balance, don't estimate gas
+    if (!balance || amountDebounced.gte(balance)) {
+      setGasSummary({
+        status: 'success',
+        estimatedL1GasFees: 0,
+        estimatedL2GasFees: 0
+      })
       return
     }
 
@@ -151,13 +171,15 @@ export function useGasSummary(): UseGasSummaryResult {
     }
   }, [
     walletAddress,
+    erc20Balances,
+    ethBalance,
+    token,
     amountDebounced,
     childChainProvider,
     setGasSummaryStatus,
     isDepositMode,
     parentChainGasPrice,
     childChainGasPrice,
-    token,
     parentChainProvider
   ])
 
