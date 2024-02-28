@@ -10,7 +10,11 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { ExternalLink } from '../common/ExternalLink'
 import { Button } from '../common/Button'
 import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkDisplayName,
+  getNetworkName
+} from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import {
   isCustomDestinationAddressTx,
@@ -183,8 +187,8 @@ function DepositRowTime({ tx }: { tx: MergedTransaction }) {
 }
 
 function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
-  const sourceNetworkName = getNetworkName(tx.sourceChainId)
-  const destinationNetworkName = getNetworkName(tx.destinationChainId)
+  const sourceNetworkName = getNetworkDisplayName(tx.sourceChainId)
+  const destinationNetworkName = getNetworkDisplayName(tx.destinationChainId)
 
   const l2TxHash = (() => {
     if (tx.l1ToL2MsgData?.l2TxID) {
@@ -217,7 +221,9 @@ function DepositRowTxID({ tx }: { tx: MergedTransaction }) {
       >
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
         <NetworkImage chainId={tx.destinationChainId} />
-        <span className="pl-1">{getNetworkName(tx.destinationChainId)}: </span>
+        <span className="pl-1">
+          {getNetworkDisplayName(tx.destinationChainId)}:{' '}
+        </span>
         {l2TxHash ? (
           <ExternalLink
             href={`${getExplorerUrl(tx.destinationChainId)}/tx/${l2TxHash}`}

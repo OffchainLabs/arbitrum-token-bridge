@@ -9,7 +9,11 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { ExternalLink } from '../common/ExternalLink'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { Tooltip } from '../common/Tooltip'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import {
+  getExplorerUrl,
+  getNetworkDisplayName,
+  getNetworkName
+} from '../../util/networks'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { isCustomDestinationAddressTx, isPending } from '../../state/app/utils'
 import { TransactionDateTime } from './TransactionHistoryTable'
@@ -262,7 +266,9 @@ function ClaimedTxInfo({ tx }: CommonProps) {
       <span className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark">
         <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
         <NetworkImage chainId={destinationChainId} />
-        <span className="pl-1">{getNetworkName(destinationChainId)}: </span>
+        <span className="pl-1">
+          {getNetworkDisplayName(destinationChainId)}:{' '}
+        </span>
         {!isExecuted && !isBeingClaimed ? 'Pending' : 'Not available'}
       </span>
     )
@@ -271,11 +277,13 @@ function ClaimedTxInfo({ tx }: CommonProps) {
   return (
     <span
       className="flex flex-nowrap items-center gap-1 whitespace-nowrap text-dark"
-      aria-label={`${getNetworkName(destinationChainId)} Transaction Link`}
+      aria-label={`${getNetworkDisplayName(
+        destinationChainId
+      )} Transaction Link`}
     >
       <span className="w-8 rounded-md pr-2 text-xs text-dark">To</span>
       <NetworkImage chainId={destinationChainId} />
-      {getNetworkName(destinationChainId)}:{' '}
+      {getNetworkDisplayName(destinationChainId)}:{' '}
       <ExternalLink
         href={`${getExplorerUrl(destinationChainId)}/tx/${claimedTxId}`}
         className="arb-hover text-blue-link"
@@ -288,7 +296,7 @@ function ClaimedTxInfo({ tx }: CommonProps) {
 
 function ClaimableRowTxID({ tx }: CommonProps) {
   const { txId, sourceChainId } = tx
-  const sourceNetworkName = getNetworkName(sourceChainId)
+  const sourceNetworkName = getNetworkDisplayName(sourceChainId)
 
   return (
     <div className="flex flex-col space-y-3">

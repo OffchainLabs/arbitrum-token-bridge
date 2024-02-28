@@ -12,7 +12,8 @@ import {
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork
+  isNetwork,
+  getNetworkDisplayName
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -817,7 +818,7 @@ export function TransferPanelMain({
             onChange={networkListboxProps.from.onChange}
           >
             <span className="max-w-[220px] truncate md:max-w-[250px]">
-              From: {getNetworkName(networks.sourceChain.id)}
+              From: {getNetworkDisplayName(networks.sourceChain.id)}
             </span>
             <ChevronDownIcon className="h-4 w-4" />
           </NetworkSelectionContainer>

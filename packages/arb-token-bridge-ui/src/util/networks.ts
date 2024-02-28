@@ -404,6 +404,11 @@ export function getNetworkName(chainId: number) {
   return getBridgeUiConfigForChain(chainId).network.name
 }
 
+export function getNetworkDisplayName(chainId: number) {
+  const networkConfig = getBridgeUiConfigForChain(chainId).network
+  return networkConfig.displayName ?? networkConfig.name
+}
+
 export function getSupportedChainIds({
   includeMainnets = true,
   includeTestnets = false

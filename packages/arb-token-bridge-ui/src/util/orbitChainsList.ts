@@ -16,6 +16,7 @@ export type BridgeUiConfig = {
   }
   network: {
     name: string
+    displayName?: string
     logo: string
     description?: string
   }
@@ -234,7 +235,8 @@ export const orbitMainnets: {
         secondary: '#252631'
       },
       network: {
-        name: 'PoP Apex',
+        name: 'Proof of Play Apex',
+        displayName: 'PoP Apex',
         description:
           "Apex is the first chain in Proof of Play's Multichain, powering the popular Pirate Nation game.",
         logo: '/images/PopApexLogo.svg'
