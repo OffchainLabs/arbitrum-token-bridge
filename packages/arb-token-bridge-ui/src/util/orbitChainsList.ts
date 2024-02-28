@@ -203,7 +203,7 @@ export const orbitMainnets: {
     rpcUrl: 'https://rpc.apex.proofofplay.com',
     isArbitrum: true,
     isCustom: true,
-    name: 'PoP Apex',
+    name: 'Proof of Play Apex',
     slug: 'pop-apex',
     partnerChainID: 42161,
     partnerChainIDs: [],
