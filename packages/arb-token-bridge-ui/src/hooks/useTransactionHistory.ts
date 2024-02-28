@@ -219,7 +219,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
         return undefined
       }
       // EOA
-      isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+        ? 'all'
+        : undefined
     },
     [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
   )

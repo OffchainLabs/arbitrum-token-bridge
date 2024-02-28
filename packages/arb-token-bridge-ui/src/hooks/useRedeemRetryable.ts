@@ -15,7 +15,7 @@ import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 
 export type UseRedeemRetryableResult = {
-  redeem: () => void
+  redeem: () => Promise<void>
   isRedeeming: boolean
 }
 
@@ -23,7 +23,7 @@ export function useRedeemRetryable(
   tx: MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
-  const { data: signer } = useSigner({ chainId: tx.childChainId })
+  const { data: signer } = useSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const l2NetworkName = getNetworkName(tx.childChainId)

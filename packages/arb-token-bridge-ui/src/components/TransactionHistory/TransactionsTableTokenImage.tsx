@@ -3,7 +3,6 @@ import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
-import { ChainId } from '../../util/networks'
 import { MergedTransaction } from '../../state/app/state'
 import { orbitChains } from '../../util/orbitChainsList'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -14,17 +13,19 @@ export const TransactionsTableTokenImage = ({
   tx: MergedTransaction
 }) => {
   // we need to take token image from mainnet by symbol, some token images don't exists on other networks
-  const tokenLists = useTokenLists(ChainId.ArbitrumOne)
+  const tokenLists = useTokenLists(tx.sourceChainId)
 
-  const allTokens = useMemo(() => {
-    return tokenLists.data?.flatMap(t => t.tokens) || []
+  const tokenAddressToLogoSrcMap = useMemo(() => {
+    const arrayOfTokens = tokenLists.data?.flatMap(tkn => tkn.tokens) || []
+    return arrayOfTokens.reduce((acc, tkn) => {
+      acc[tkn.address.toLowerCase()] = tkn.logoURI
+      return acc
+    }, {} as { [key in string]: string | undefined })
   }, [tokenLists])
 
-  const token = useMemo(() => {
-    return allTokens.find(
-      t => t.symbol.toLowerCase() === tx.asset.toLowerCase()
-    )
-  }, [allTokens, tx.asset])
+  const tokenLogoSrc = tx.tokenAddress
+    ? tokenAddressToLogoSrcMap[tx.tokenAddress]
+    : undefined
 
   if (tx.assetType === AssetType.ETH) {
     const orbitChain = orbitChains[tx.childChainId]
@@ -54,16 +55,12 @@ export const TransactionsTableTokenImage = ({
     )
   }
 
-  if (!token || !token.logoURI) {
+  if (!tokenLogoSrc) {
     return <div className="h-[20px] w-[20px] rounded-full bg-white/20" />
   }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className="w-[20px]"
-      alt={token.symbol + ' logo'}
-      src={token.logoURI}
-    />
+    <img className="w-[20px]" alt={tx.asset + ' logo'} src={tokenLogoSrc} />
   )
 }

@@ -45,7 +45,7 @@ export function TransactionsTableRowAction({
       if (!isConnectedToCorrectNetworkForRedeem) {
         await switchNetworkAsync?.(tx.childChainId)
       }
-      redeem()
+      await redeem()
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
