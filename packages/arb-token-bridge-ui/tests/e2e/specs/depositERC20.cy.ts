@@ -23,7 +23,7 @@ describe('Deposit ERC20 Token', () => {
     let l1ERC20bal: string
 
     // log in to metamask before deposit
-    before(() => {
+    beforeEach(() => {
       getInitialERC20Balance({
         tokenAddress: wethTokenAddressL1,
         multiCallerAddress: getL1NetworkConfig().multiCall,
@@ -248,6 +248,12 @@ describe('Deposit ERC20 Token', () => {
         cy.findByLabelText('WETH balance amount on l2')
           .contains(moreThanZeroBalance)
           .should('be.visible')
+
+        // the balance on the source chain should not be the same as before
+        cy.findByLabelText('WETH balance on l1')
+          .should('be.visible')
+          .findByText(l1ERC20bal.split(' ')[0])
+          .should('not.be.visible')
       })
     })
 

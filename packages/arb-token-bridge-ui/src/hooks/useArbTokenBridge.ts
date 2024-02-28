@@ -121,14 +121,28 @@ export const useArbTokenBridge = (
     erc20: [, updateErc20L1Balance]
   } = useBalance({
     provider: l1.provider,
-    walletAddress: destinationAddress || walletAddress
+    walletAddress: walletAddress
   })
   const {
     eth: [, updateEthL2Balance],
     erc20: [, updateErc20L2Balance]
   } = useBalance({
     provider: l2.provider,
-    walletAddress: destinationAddress || walletAddress
+    walletAddress: walletAddress
+  })
+  const {
+    eth: [, updateEthL1CustomDestinationBalance],
+    erc20: [, updateErc20L1CustomDestinationBalance]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: destinationAddress
+  })
+  const {
+    eth: [, updateEthL2CustomDestinationBalance],
+    erc20: [, updateErc20CustomDestinationL2Balance]
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: destinationAddress
   })
 
   interface ExecutedMessagesCache {
@@ -860,15 +874,34 @@ export const useArbTokenBridge = (
       })
       const { l2Address } = bridgeToken
       updateErc20L1Balance([l1AddressLowerCased])
+      if (destinationAddress) {
+        updateErc20L1CustomDestinationBalance([l1AddressLowerCased])
+      }
       if (l2Address) {
         updateErc20L2Balance([l2Address])
+        if (destinationAddress) {
+          updateErc20CustomDestinationL2Balance([l2Address])
+        }
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      setBridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances,
+      updateErc20L1CustomDestinationBalance,
+      updateErc20CustomDestinationL2Balance
+    ]
   )
 
   const updateEthBalances = async () => {
-    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+    Promise.all([
+      updateEthL1Balance(),
+      updateEthL2Balance(),
+      updateEthL1CustomDestinationBalance(),
+      updateEthL2CustomDestinationBalance()
+    ])
   }
 
   async function triggerOutboxToken({
