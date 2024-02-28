@@ -217,10 +217,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#3E63DD',
-        secondary: '#252631'
-      },
+      color: '#3E63DD',
       network: {
         name: 'Proof of Play Apex',
         description:
