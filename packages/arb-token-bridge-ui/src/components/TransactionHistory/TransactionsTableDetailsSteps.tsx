@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, useMemo } from 'react'
 import dayjs from 'dayjs'
 import { twMerge } from 'tailwind-merge'
 import {
@@ -71,37 +71,37 @@ const Step = ({
 }) => {
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
-  let iconColorClassName = 'text-white/50'
+  let iconClassName = 'text-white/50 shrink-0'
   let textColorClassName = 'text-white/50'
 
   if (done || claimable) {
     borderColorClassName = 'border-green-400'
-    iconColorClassName = 'text-green-400'
+    iconClassName = 'text-green-400 shrink-0'
     textColorClassName = 'text-white'
   }
 
   if (pending) {
     borderColorClassName = 'border-yellow-400'
-    iconColorClassName = 'text-yellow-400'
+    iconClassName = 'text-yellow-400 shrink-0'
     textColorClassName = 'text-white'
   }
 
   if (failure) {
     borderColorClassName = 'border-red-400'
-    iconColorClassName = 'text-red-400'
+    iconClassName = 'text-red-400 shrink-0'
     textColorClassName = 'text-white'
   }
 
   return (
     <div
       className={twMerge(
-        'my-3 flex h-3 items-center justify-between',
+        'my-3 flex h-3 items-center justify-between space-x-2',
         pending && 'animate-pulse'
       )}
     >
       <div className="flex items-center space-x-3">
-        {done && <CheckCircleIcon className={iconColorClassName} height={18} />}
-        {failure && <XCircleIcon className={iconColorClassName} height={18} />}
+        {done && <CheckCircleIcon className={iconClassName} height={18} />}
+        {failure && <XCircleIcon className={iconClassName} height={18} />}
         {!done && !failure && (
           <div
             className={twMerge(
@@ -164,10 +164,9 @@ export const TransactionsTableDetailsSteps = ({
 }) => {
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const { sourceChainId, destinationChainId } = tx
+  const { sourceChainId } = tx
 
   const sourceNetworkName = getNetworkName(sourceChainId)
-  const destinationNetworkName = getNetworkName(destinationChainId)
 
   const isSourceChainDepositFailure =
     typeof tx.depositStatus !== 'undefined' &&
@@ -177,6 +176,21 @@ export const TransactionsTableDetailsSteps = ({
 
   const isDestinationChainFailure =
     !isSourceChainDepositFailure && isTxFailed(tx)
+
+  const destinationChainTxText = useMemo(() => {
+    const networkName = getNetworkName(tx.destinationChainId)
+
+    if (isTxExpired(tx)) {
+      return `Transaction expired on ${networkName}`
+    }
+    if (isDepositReadyToRedeem(tx)) {
+      return `Transaction failed on ${networkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
+    }
+    if (isDestinationChainFailure) {
+      return `Transaction failed on ${networkName}.`
+    }
+    return `Funds arrived on ${networkName}`
+  }, [tx, isDestinationChainFailure])
 
   return (
     <div className="flex flex-col text-xs">
@@ -240,13 +254,7 @@ export const TransactionsTableDetailsSteps = ({
       <Step
         done={isTxCompleted(tx)}
         failure={isTxExpired(tx) || isDestinationChainFailure}
-        text={
-          isTxExpired(tx) || isDestinationChainFailure
-            ? `Transaction ${
-                isDestinationChainFailure ? 'failed' : 'expired'
-              } on ${destinationNetworkName}`
-            : `Funds arrived on ${destinationNetworkName}`
-        }
+        text={destinationChainTxText}
         endItem={<LastStepEndItem tx={tx} address={address} />}
       />
     </div>
