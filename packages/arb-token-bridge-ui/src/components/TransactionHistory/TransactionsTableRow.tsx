@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useInterval } from 'react-use'
 import { twMerge } from 'tailwind-merge'
 import dayjs from 'dayjs'
 import {
@@ -126,23 +127,13 @@ export function TransactionsTableRow({
 
   const isClaimableTx = tx.isCctp || tx.isWithdrawal
 
-  useEffect(() => {
-    // make sure relative time updates periodically
-    const interval = setInterval(() => {
-      setTxRelativeTime(dayjs(tx.createdAt).fromNow())
-    }, 10_000)
+  // make sure relative time updates periodically
+  useInterval(() => setTxRelativeTime(dayjs(tx.createdAt).fromNow()), 10_000)
 
-    return () => clearInterval(interval)
-  }, [tx])
-
-  const tokenSymbol = useMemo(
-    () =>
-      sanitizeTokenSymbol(tx.asset, {
-        erc20L1Address: tx.tokenAddress,
-        chainId: tx.sourceChainId
-      }),
-    [tx.asset, tx.tokenAddress, tx.sourceChainId]
-  )
+  const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
+    erc20L1Address: tx.tokenAddress,
+    chainId: tx.sourceChainId
+  })
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {

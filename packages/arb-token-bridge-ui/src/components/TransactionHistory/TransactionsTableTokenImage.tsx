@@ -17,7 +17,7 @@ export const TransactionsTableTokenImage = ({
   const tokenLists = useTokenLists(ChainId.ArbitrumOne)
 
   const allTokens = useMemo(() => {
-    return tokenLists.data?.map(t => t.tokens).flat() || []
+    return tokenLists.data?.flatMap(t => t.tokens) || []
   }, [tokenLists])
 
   const token = useMemo(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { GET_HELP_LINK } from '../../constants'
 import { useClaimWithdrawal } from '../../hooks/useClaimWithdrawal'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -36,19 +36,9 @@ export function TransactionsTableRowAction({
   const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const isConnectedToCorrectNetworkForClaim = useMemo(() => {
-    if (!chain) {
-      return false
-    }
-    return chain.id === tx.destinationChainId
-  }, [chain, tx.destinationChainId])
-
-  const isConnectedToCorrectNetworkForRedeem = useMemo(() => {
-    if (!chain) {
-      return false
-    }
-    return chain.id === tx.childChainId
-  }, [chain, tx.childChainId])
+  const isConnectedToCorrectNetworkForClaim =
+    chain?.id === tx.destinationChainId
+  const isConnectedToCorrectNetworkForRedeem = chain?.id === tx.childChainId
 
   const handleRedeemRetryable = useCallback(async () => {
     try {

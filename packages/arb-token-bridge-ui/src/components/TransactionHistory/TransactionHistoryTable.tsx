@@ -166,6 +166,10 @@ export const TransactionHistoryTable = (
       .length
   }, [transactions])
 
+  const topmostPendingTxId = useMemo(() => {
+    return transactions.filter(isTxPending)[0]?.txId
+  }, [transactions])
+
   // TODO: look into https://www.npmjs.com/package/react-intersection-observer that could simplify this
   useEffect(() => {
     // Calculate table height to be passed to the React Virtualized Table
@@ -178,6 +182,7 @@ export const TransactionHistoryTable = (
         const aboveHeight = entries[0].contentRect.height
         const viewportHeight = window.innerHeight
         const newTableHeight = Math.max(
+          // we subtract a little padding at the end so that the table doesn't end at the edge of the screen
           viewportHeight - aboveHeight - SIDE_PANEL_HEADER_HEIGHT - 20,
           0
         )
@@ -267,7 +272,7 @@ export const TransactionHistoryTable = (
 
               // only blink the topmost tx, in case many txs are queued in a short amount of time
               const isTopmostPendingTx =
-                transactions.filter(isTxPending)[0]?.txId === tx.txId
+                topmostPendingTxId && topmostPendingTxId === tx.txId
 
               return (
                 <div key={key} style={style}>

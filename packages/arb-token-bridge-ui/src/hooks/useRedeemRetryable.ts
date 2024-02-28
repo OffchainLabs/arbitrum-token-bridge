@@ -71,19 +71,17 @@ export function useRedeemRetryable(
         depositStatus: isSuccess ? DepositStatus.L2_SUCCESS : tx.depositStatus
       })
 
-      setIsRedeeming(false)
-
       // track in analytics
       trackEvent('Redeem Retryable', { network: l2NetworkName })
     } catch (error: any) {
-      setIsRedeeming(false)
-
       if (isUserRejectedError(error)) {
         return
       }
       return errorToast(
         `There was an error, here is more information: ${error.message}`
       )
+    } finally {
+      setIsRedeeming(false)
     }
   }, [isRedeeming, l2NetworkName, signer, tx, updatePendingTransaction])
 
