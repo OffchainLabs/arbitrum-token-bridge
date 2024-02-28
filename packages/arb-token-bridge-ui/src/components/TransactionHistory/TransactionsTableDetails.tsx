@@ -20,7 +20,7 @@ import { GET_HELP_LINK } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { getProvider } from './helpers'
+import { getProvider, isTxCompleted } from './helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Address } from '../../util/AddressUtils'
 
@@ -221,16 +221,18 @@ export const TransactionsTableDetails = ({
                   <TransactionsTableDetailsSteps tx={tx} address={address} />
                 </DetailsBox>
 
-                <div className="flex justify-end">
-                  <ExternalLink href={GET_HELP_LINK}>
-                    <Button
-                      variant="secondary"
-                      className="border-white/30 text-xs"
-                    >
-                      Get help
-                    </Button>
-                  </ExternalLink>
-                </div>
+                {!isTxCompleted(tx) && (
+                  <div className="flex justify-end">
+                    <ExternalLink href={GET_HELP_LINK}>
+                      <Button
+                        variant="secondary"
+                        className="border-white/30 text-xs"
+                      >
+                        Get help
+                      </Button>
+                    </ExternalLink>
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>

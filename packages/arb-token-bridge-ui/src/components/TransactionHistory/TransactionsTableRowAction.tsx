@@ -106,7 +106,7 @@ export function TransactionsTableRowAction({
       <Button
         variant="primary"
         onClick={handleRedeemRetryable}
-        className="w-14 rounded bg-red-400 p-2 text-xs text-black"
+        className="w-14 bg-red-400 p-2 text-xs text-black"
       >
         Retry
       </Button>
@@ -154,8 +154,8 @@ export function TransactionsTableRowAction({
   if (isError) {
     return (
       <Button
-        variant="primary"
-        className="w-12 rounded bg-white p-2 text-xs text-black"
+        variant="secondary"
+        className="w-14 border-white/30 text-xs"
         onClick={getHelpOnError}
       >
         Get help
