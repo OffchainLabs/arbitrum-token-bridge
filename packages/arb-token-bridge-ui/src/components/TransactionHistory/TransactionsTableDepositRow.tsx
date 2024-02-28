@@ -243,7 +243,8 @@ export function TransactionsTableDepositRow({
   const { redeem, isRedeeming } = useRedeemRetryable()
   const { chain } = useNetwork()
 
-  const isConnectedToCorrectNetworkForRedeem = chain?.id === tx.childChainId
+  const isConnectedToCorrectNetworkForRedeem =
+    chain?.id === tx.destinationChainId
 
   const isError = useMemo(() => {
     if (
