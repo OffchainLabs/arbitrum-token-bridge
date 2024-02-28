@@ -223,7 +223,7 @@ export const TransactionHistoryTable = (
         ref={contentAboveTable}
       >
         {loading ? (
-          <div className="flex items-center space-x-2">
+          <div className="flex h-[28px] items-center space-x-2">
             <FailedChainPairsTooltip failedChainPairs={failedChainPairs} />
             <HistoryLoader />
           </div>
