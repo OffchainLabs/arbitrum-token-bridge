@@ -351,7 +351,7 @@ export function TransactionsTableClaimableRow({
     <div
       data-testid={`withdrawal-row-${tx.txId}`}
       className={twMerge(
-        'relative grid h-full grid-cols-[150px_250px_140px_320px_110px] border-b border-dark text-sm text-dark',
+        'relative grid h-full grid-cols-[150px_250px_140px_300px_130px] border-b border-dark text-sm text-dark',
         className,
         bgClassName
       )}
