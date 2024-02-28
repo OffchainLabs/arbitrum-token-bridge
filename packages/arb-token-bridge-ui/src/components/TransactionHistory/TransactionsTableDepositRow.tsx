@@ -314,7 +314,7 @@ export function TransactionsTableDepositRow({
     <div
       data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative grid h-full grid-cols-[150px_250px_140px_290px_140px] border-b border-dark text-sm text-dark',
+        'relative grid h-full grid-cols-[150px_250px_140px_320px_170px] border-b border-dark text-sm text-dark',
         bgClassName,
         className
       )}
