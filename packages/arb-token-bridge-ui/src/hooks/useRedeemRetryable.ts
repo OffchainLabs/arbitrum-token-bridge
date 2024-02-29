@@ -26,7 +26,7 @@ export function useRedeemRetryable(
   const { data: signer } = useSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
-  const l2NetworkName = getNetworkName(tx.childChainId)
+  const destinationNetworkName = getNetworkName(tx.destinationChainId)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
@@ -72,7 +72,7 @@ export function useRedeemRetryable(
       })
 
       // track in analytics
-      trackEvent('Redeem Retryable', { network: l2NetworkName })
+      trackEvent('Redeem Retryable', { network: destinationNetworkName })
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
@@ -83,7 +83,13 @@ export function useRedeemRetryable(
     } finally {
       setIsRedeeming(false)
     }
-  }, [isRedeeming, l2NetworkName, signer, tx, updatePendingTransaction])
+  }, [
+    isRedeeming,
+    destinationNetworkName,
+    signer,
+    tx,
+    updatePendingTransaction
+  ])
 
   return { redeem, isRedeeming }
 }

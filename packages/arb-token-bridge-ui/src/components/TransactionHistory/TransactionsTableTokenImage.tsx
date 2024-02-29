@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import EthereumLogoRoundLight from '@/images/EthereumLogoRoundLight.svg'
 import Image from 'next/image'
 
@@ -6,6 +5,20 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { MergedTransaction } from '../../state/app/state'
 import { orbitChains } from '../../util/orbitChainsList'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { TokenListWithId } from '../../util/TokenListUtils'
+
+function createTokenLogoMapFromTokenLists(
+  tokenLists: TokenListWithId[] | undefined
+) {
+  if (!tokenLists) {
+    return {}
+  }
+  const arrayOfTokens = tokenLists.flatMap(tkn => tkn.tokens) || []
+  return arrayOfTokens.reduce((acc, tkn) => {
+    acc[tkn.address.toLowerCase()] = tkn.logoURI
+    return acc
+  }, {} as { [key in string]: string | undefined })
+}
 
 export const TransactionsTableTokenImage = ({
   tx
@@ -15,16 +28,12 @@ export const TransactionsTableTokenImage = ({
   // we need to take token image from mainnet by symbol, some token images don't exists on other networks
   const tokenLists = useTokenLists(tx.sourceChainId)
 
-  const tokenAddressToLogoSrcMap = useMemo(() => {
-    const arrayOfTokens = tokenLists.data?.flatMap(tkn => tkn.tokens) || []
-    return arrayOfTokens.reduce((acc, tkn) => {
-      acc[tkn.address.toLowerCase()] = tkn.logoURI
-      return acc
-    }, {} as { [key in string]: string | undefined })
-  }, [tokenLists])
+  const tokenAddressToLogoSrcMap = createTokenLogoMapFromTokenLists(
+    tokenLists.data
+  )
 
   const tokenLogoSrc = tx.tokenAddress
-    ? tokenAddressToLogoSrcMap[tx.tokenAddress]
+    ? tokenAddressToLogoSrcMap[tx.tokenAddress.toLowerCase()]
     : undefined
 
   if (tx.assetType === AssetType.ETH) {

@@ -36,14 +36,13 @@ export function TransactionsTableRowAction({
   const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const isConnectedToCorrectNetworkForClaim =
+  const isConnectedToCorrectNetworkForAction =
     chain?.id === tx.destinationChainId
-  const isConnectedToCorrectNetworkForRedeem = chain?.id === tx.childChainId
 
   const handleRedeemRetryable = useCallback(async () => {
     try {
-      if (!isConnectedToCorrectNetworkForRedeem) {
-        await switchNetworkAsync?.(tx.childChainId)
+      if (!isConnectedToCorrectNetworkForAction) {
+        await switchNetworkAsync?.(tx.destinationChainId)
       }
       await redeem()
     } catch (error: any) {
@@ -54,15 +53,15 @@ export function TransactionsTableRowAction({
       errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
     }
   }, [
-    isConnectedToCorrectNetworkForRedeem,
+    isConnectedToCorrectNetworkForAction,
     redeem,
     switchNetworkAsync,
-    tx.childChainId
+    tx.destinationChainId
   ])
 
   const handleClaim = useCallback(async () => {
     try {
-      if (!isConnectedToCorrectNetworkForClaim) {
+      if (!isConnectedToCorrectNetworkForAction) {
         await switchNetworkAsync?.(tx.destinationChainId)
       }
 
@@ -85,7 +84,7 @@ export function TransactionsTableRowAction({
   }, [
     claim,
     claimCctp,
-    isConnectedToCorrectNetworkForClaim,
+    isConnectedToCorrectNetworkForAction,
     switchNetworkAsync,
     tx,
     type

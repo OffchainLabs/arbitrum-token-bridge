@@ -70,7 +70,7 @@ export const TransactionsTableDetails = ({
   }
 
   const showPriceInUsd =
-    isNetwork(tx.parentChainId).isEthereumMainnet &&
+    !isNetwork(tx.parentChainId).isTestnet &&
     tx.assetType === AssetType.ETH &&
     !nativeCurrency.isCustom
 
