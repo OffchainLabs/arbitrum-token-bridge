@@ -16,12 +16,10 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { ExternalLink } from '../common/ExternalLink'
 import { TransactionsTableDetailsSteps } from './TransactionsTableDetailsSteps'
 import { Button } from '../common/Button'
-import { GET_HELP_LINK } from '../../constants'
+import { GET_HELP_LINK, ether } from '../../constants'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { getProvider, isTxCompleted } from './helpers'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
 
 const DetailsBox = ({
@@ -61,18 +59,12 @@ export const TransactionsTableDetails = ({
     )
   }, [transactions, txFromStore])
 
-  const nativeCurrency = useNativeCurrency({
-    provider: getProvider(tx?.parentChainId ?? 1)
-  })
-
   if (!tx || !address) {
     return null
   }
 
   const showPriceInUsd =
-    !isNetwork(tx.parentChainId).isTestnet &&
-    tx.assetType === AssetType.ETH &&
-    !nativeCurrency.isCustom
+    !isNetwork(tx.parentChainId).isTestnet && tx.asset === ether.symbol
 
   const isDifferentSourceAddress =
     address.toLowerCase() !== tx.sender?.toLowerCase()
