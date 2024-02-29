@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
@@ -20,7 +20,6 @@ import {
 } from '../../state/app/utils'
 import { TransactionDateTime } from './TransactionHistoryTable'
 import { formatAmount } from '../../util/NumberUtils'
-import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { TransactionsTableCustomAddressLabel } from './TransactionsTableCustomAddressLabel'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
@@ -242,15 +241,10 @@ export function TransactionsTableDepositRow({
 }) {
   const { address } = useAccount()
   const { redeem, isRedeeming } = useRedeemRetryable()
-  const isConnectedToArbitrum = useIsConnectedToArbitrum()
+  const { chain } = useNetwork()
 
-  const isRedeemButtonDisabled = useMemo(
-    () =>
-      typeof isConnectedToArbitrum !== 'undefined'
-        ? !isConnectedToArbitrum
-        : true,
-    [isConnectedToArbitrum]
-  )
+  const isConnectedToCorrectNetworkForRedeem =
+    chain?.id === tx.destinationChainId
 
   const isError = useMemo(() => {
     if (
@@ -314,7 +308,7 @@ export function TransactionsTableDepositRow({
     <div
       data-testid={`deposit-row-${tx.txId}`}
       className={twMerge(
-        'relative grid h-full grid-cols-[150px_250px_140px_290px_140px] border-b border-dark text-sm text-dark',
+        'relative grid h-full grid-cols-[150px_250px_140px_300px_130px] border-b border-dark text-sm text-dark',
         bgClassName,
         className
       )}
@@ -368,20 +362,20 @@ export function TransactionsTableDepositRow({
       >
         {showRedeemRetryableButton && (
           <Tooltip
-            show={isRedeemButtonDisabled}
+            show={!isConnectedToCorrectNetworkForRedeem}
             wrapperClassName=""
             content={
               <span>
-                Please connect to the L2 network to re-execute your deposit. You
-                have 7 days to re-execute a failed tx. After that, the tx is no
-                longer recoverable.
+                Please connect to {getNetworkName(tx.destinationChainId)} to
+                re-execute your deposit. You have 7 days to re-execute a failed
+                tx. After that, the tx is no longer recoverable.
               </span>
             }
           >
             <Button
               variant="primary"
               loading={isRedeeming}
-              disabled={isRedeemButtonDisabled}
+              disabled={!isConnectedToCorrectNetworkForRedeem}
               onClick={() => redeem(tx)}
             >
               Retry
