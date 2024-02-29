@@ -208,7 +208,7 @@ export const TransactionHistoryTable = (
         isError={typeof error !== 'undefined'}
         paused={paused}
         resume={resume}
-        tab={isPendingTab ? 'pending' : 'settled'}
+        tabType={isPendingTab ? 'pending' : 'settled'}
       />
     )
   }

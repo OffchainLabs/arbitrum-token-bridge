@@ -11,13 +11,13 @@ export const EmptyTransactionHistory = ({
   isError,
   paused,
   resume,
-  tab
+  tabType
 }: {
   loading: boolean
   isError: boolean
   paused: boolean
   resume: () => void
-  tab: 'pending' | 'settled'
+  tabType: 'pending' | 'settled'
 }) => {
   if (loading) {
     return (
@@ -45,14 +45,9 @@ export const EmptyTransactionHistory = ({
     )
   }
   if (paused) {
-    const isPendingTab = tab === 'pending'
-
     return (
       <ContentWrapper className="space-y-4">
-        <p>
-          There are no recent {isPendingTab ? 'pending' : 'settled'}{' '}
-          transactions.
-        </p>
+        <p>There are no recent {tabType} transactions.</p>
         <LoadMoreButton onClick={resume} />
       </ContentWrapper>
     )
