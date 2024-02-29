@@ -377,6 +377,22 @@ export async function isCustomGatewayRegistered({
   childChainProvider: Provider
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+  const parentChainStandardGatewayAddressFromChainConfig =
+    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway
+
+  const parentChainGatewayAddressFromParentGatewayRouter =
+    await erc20Bridger.getL1GatewayAddress(
+      erc20ParentChainAddress,
+      parentChainProvider
+    )
+
+  // token uses standard gateway; no need to check further
+  if (
+    parentChainStandardGatewayAddressFromChainConfig ===
+    parentChainGatewayAddressFromParentGatewayRouter
+  ) {
+    return true
+  }
 
   const tokenChildChainAddressFromParentGatewayRouter =
     await erc20Bridger.getL2ERC20Address(
