@@ -35,7 +35,8 @@ import {
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  isValidErc20
+  isValidErc20,
+  isCustomGatewayRegistered
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -340,6 +341,16 @@ export const useArbTokenBridge = (
 
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
+    if (
+      !(await isCustomGatewayRegistered({
+        erc20ParentChainAddress: erc20L1Address,
+        parentChainProvider: l1.provider,
+        childChainProvider: l2.provider
+      }))
+    ) {
+      throw Error('Custom gateway is not registered yet.')
+    }
+
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
       l1Signer
@@ -431,6 +442,16 @@ export const useArbTokenBridge = (
       .timestamp
 
     try {
+      if (
+        !(await isCustomGatewayRegistered({
+          erc20ParentChainAddress: erc20L1Address,
+          parentChainProvider: l1.provider,
+          childChainProvider: l2.provider
+        }))
+      ) {
+        throw Error('Custom gateway is not registered yet.')
+      }
+
       const { symbol, decimals } = await fetchErc20Data({
         address: erc20L1Address,
         provider: l1.provider
