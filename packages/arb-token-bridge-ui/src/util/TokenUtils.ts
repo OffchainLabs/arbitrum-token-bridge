@@ -2,6 +2,7 @@ import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
@@ -364,4 +365,39 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     decimals: data.decimals,
     listIds: new Set()
   }
+}
+
+export async function isCustomGatewayRegistered({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
+}: {
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}): Promise<boolean> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+
+  const tokenChildChainAddressFromParentGatewayRouter =
+    await erc20Bridger.getL2ERC20Address(
+      erc20ParentChainAddress,
+      parentChainProvider
+    )
+
+  const childChainGatewayAddressFromChildChainRouter =
+    await erc20Bridger.getL2GatewayAddress(
+      erc20ParentChainAddress,
+      childChainProvider
+    )
+
+  const tokenChildChainAddressFromChildChainGateway =
+    await L2ERC20Gateway__factory.connect(
+      childChainGatewayAddressFromChildChainRouter,
+      childChainProvider
+    ).calculateL2TokenAddress(erc20ParentChainAddress)
+
+  return (
+    tokenChildChainAddressFromParentGatewayRouter ===
+    tokenChildChainAddressFromChildChainGateway
+  )
 }

@@ -54,6 +54,14 @@
   }
 }
 
+/**
+ * Hacky fix for the issue where the sidebar would be shortened when a dialog is open
+ * https://github.com/tailwindlabs/headlessui/discussions/2181
+ */
+html {
+  overflow: auto !important;
+}
+
 #root,
 body {
   @apply min-h-screen;

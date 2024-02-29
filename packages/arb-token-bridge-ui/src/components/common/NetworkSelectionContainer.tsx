@@ -1,5 +1,4 @@
 import { Popover } from '@headlessui/react'
-import Image from 'next/image'
 import {
   CSSProperties,
   useCallback,
@@ -31,6 +30,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
 import { Transition } from './Transition'
+import { NetworkImage } from './NetworkImage'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -121,15 +121,11 @@ function NetworkRow({
         chainId === sourceChain.id && 'bg-white/10' // selected row
       )}
     >
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center lg:h-6 lg:w-6">
-        <Image
-          src={network.logo}
-          alt={`${network.name} logo`}
-          className="h-full w-auto"
-          width={24}
-          height={24}
-        />
-      </span>
+      <NetworkImage
+        chainId={chainId}
+        className="h-[32px] w-[32px] p-[6px]"
+        size={20}
+      />
       <div className={twMerge('flex flex-col items-start gap-1')}>
         <span className="truncate leading-[1.1]">{network.name}</span>
         {network.description && (
