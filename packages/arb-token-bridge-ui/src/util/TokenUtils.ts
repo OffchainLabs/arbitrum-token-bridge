@@ -367,7 +367,7 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
   }
 }
 
-export async function isCustomGatewayRegistered({
+export async function isGatewayRegistered({
   erc20ParentChainAddress,
   parentChainProvider,
   childChainProvider
