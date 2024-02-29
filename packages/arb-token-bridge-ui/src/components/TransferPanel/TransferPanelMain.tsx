@@ -755,7 +755,13 @@ export function TransferPanelMain({
             )}
             onChange={networkListboxProps.from.onChange}
           >
-            <span className="max-w-[220px] truncate md:max-w-[250px]">
+            <span
+              className={twMerge(
+                'max-w-[220px] truncate md:max-w-[250px]',
+                // temporary fix not to truncate their network name, this will be resolved by the reskin
+                networks.sourceChain.id === 70700 && 'text-[20px]'
+              )}
+            >
               From: {getNetworkName(networks.sourceChain.id)}
             </span>
             <ChevronDownIcon className="h-4 w-4" />
