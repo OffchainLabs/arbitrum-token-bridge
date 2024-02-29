@@ -181,7 +181,7 @@ export function TransactionsTableRow({
           href={`${getExplorerUrl(sourceChainId)}/address/${tx.sender}`}
         >
           <span>
-            <NetworkImage chainId={sourceChainId} />
+            <NetworkImage chainId={sourceChainId} className="h-5 w-5" />
           </span>
           <span className="inline-block max-w-[55px] break-words">
             {getNetworkName(sourceChainId)}
@@ -194,9 +194,8 @@ export function TransactionsTableRow({
             tx.destination ?? tx.sender
           }`}
         >
-          <span>
-            <NetworkImage chainId={destinationChainId} />
-          </span>
+          <NetworkImage chainId={destinationChainId} className="h-5 w-5" />
+
           <span className="inline-block max-w-[55px] break-words">
             {getNetworkName(destinationChainId)}
           </span>

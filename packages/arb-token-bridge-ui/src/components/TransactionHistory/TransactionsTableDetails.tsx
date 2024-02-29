@@ -152,12 +152,18 @@ export const TransactionsTableDetails = ({
                 <DetailsBox header="Network">
                   <div className="flex space-x-4">
                     <div className="flex items-center space-x-2">
-                      <NetworkImage chainId={sourceChainId} />
+                      <NetworkImage
+                        chainId={sourceChainId}
+                        className="h-5 w-5"
+                      />
                       <span>{sourceNetworkName}</span>
                     </div>
                     <ArrowRightIcon width={16} />
                     <div className="flex space-x-2">
-                      <NetworkImage chainId={destinationChainId} />
+                      <NetworkImage
+                        chainId={destinationChainId}
+                        className="h-5 w-5"
+                      />
                       <span>{destinationNetworkName}</span>
                     </div>
                   </div>
