@@ -378,13 +378,14 @@ export async function isGatewayRegistered({
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
-    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway
+    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
 
-  const parentChainGatewayAddressFromParentGatewayRouter =
+  const parentChainGatewayAddressFromParentGatewayRouter = (
     await erc20Bridger.getL1GatewayAddress(
       erc20ParentChainAddress,
       parentChainProvider
     )
+  ).toLowerCase()
 
   // token uses standard gateway; no need to check further
   if (
@@ -394,23 +395,26 @@ export async function isGatewayRegistered({
     return true
   }
 
-  const tokenChildChainAddressFromParentGatewayRouter =
+  const tokenChildChainAddressFromParentGatewayRouter = (
     await erc20Bridger.getL2ERC20Address(
       erc20ParentChainAddress,
       parentChainProvider
     )
+  ).toLowerCase()
 
-  const childChainGatewayAddressFromChildChainRouter =
+  const childChainGatewayAddressFromChildChainRouter = (
     await erc20Bridger.getL2GatewayAddress(
       erc20ParentChainAddress,
       childChainProvider
     )
+  ).toLowerCase()
 
-  const tokenChildChainAddressFromChildChainGateway =
+  const tokenChildChainAddressFromChildChainGateway = (
     await L2ERC20Gateway__factory.connect(
       childChainGatewayAddressFromChildChainRouter,
       childChainProvider
     ).calculateL2TokenAddress(erc20ParentChainAddress)
+  ).toLowerCase()
 
   return (
     tokenChildChainAddressFromParentGatewayRouter ===
