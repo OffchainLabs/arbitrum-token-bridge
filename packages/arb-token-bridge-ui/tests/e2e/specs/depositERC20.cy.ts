@@ -46,8 +46,8 @@ describe('Deposit ERC20 Token', () => {
         .should('have.text', 'ETH')
     })
 
-    it('should bridge ERC-20 successfully to the same address', () => {
-      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
+    it('should deposit ERC-20 successfully to the same address', () => {
+      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'L1' })
       context('should add a new token', () => {
@@ -128,8 +128,8 @@ describe('Deposit ERC20 Token', () => {
       })
     })
 
-    it('should bridge ERC-20 to custom destination address successfully', () => {
-      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(6)) // randomize the amount to be sure that previous transactions are not checked in e2e
+    it('should deposit ERC-20 to custom destination address successfully', () => {
+      const ERC20AmountToSend = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
       cy.login({ networkType: 'L1' })
       context('should add a new token', () => {
