@@ -78,7 +78,7 @@ describe('Deposit USDC through CCTP', () => {
       })
     })
 
-    it('should initiate depositing USDC through CCTP successfully', () => {
+    it('should initiate depositing USDC to the same address through CCTP successfully', () => {
       context('should show clickable deposit button', () => {
         cy.findByRole('button', {
           name: /Move funds to Arbitrum Sepolia/i
