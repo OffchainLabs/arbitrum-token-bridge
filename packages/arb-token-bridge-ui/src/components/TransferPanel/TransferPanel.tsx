@@ -1026,7 +1026,7 @@ export function TransferPanel() {
       <div
         className={twMerge(
           'flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
-          'lg:rounded lg:border'
+          'sm:rounded sm:border'
         )}
       >
         <TransferPanelMain

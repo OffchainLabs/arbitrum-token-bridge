@@ -325,7 +325,7 @@ export const NetworkSelectionContainer = ({
     useAccountType()
 
   return (
-    <Popover className="relative w-full lg:w-max">
+    <Popover className="relative w-full sm:w-max">
       {({ open }) => (
         <>
           <Popover.Button
@@ -344,9 +344,10 @@ export const NetworkSelectionContainer = ({
           </Popover.Button>
 
           <Transition
-            className="fixed left-0 top-0 z-50 lg:absolute lg:top-[54px]"
+            className="fixed left-0 top-0 z-50 sm:absolute sm:top-[54px]"
             // we don't unmount on leave here because otherwise transition won't work with virtualized lists
             options={{ unmountOnLeave: false }}
+            afterLeave={onPopoverClose}
           >
             <Popover.Panel className={twMerge(panelWrapperClassnames)}>
               {({ close }) => {

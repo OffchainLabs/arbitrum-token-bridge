@@ -14,6 +14,7 @@ type TransitionProps = PropsWithChildren<{
   isOpen?: boolean
   options?: TransitionOptions
   className?: string
+  afterLeave?: () => void
 }>
 
 function getDurationClassName(speed: TransitionSpeed) {
@@ -28,7 +29,7 @@ function getDurationClassName(speed: TransitionSpeed) {
 }
 
 export const Transition = (props: TransitionProps) => {
-  const { options, children, className, isOpen } = props
+  const { options, children, className, isOpen, afterLeave } = props
 
   const enterSpeed = options?.enterSpeed ?? 'fast'
   const leaveSpeed = options?.leaveSpeed ?? 'fast'
@@ -44,6 +45,7 @@ export const Transition = (props: TransitionProps) => {
       leave={twMerge('transition ease-in', getDurationClassName(leaveSpeed))}
       leaveFrom="opacity-100 translate-y-0"
       leaveTo="opacity-0 translate-y-1"
+      afterLeave={afterLeave}
       className={className}
     >
       {children}
