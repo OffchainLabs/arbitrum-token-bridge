@@ -124,7 +124,7 @@ export const TransactionHistoryMini = () => {
             <div>Source Tx: {bridgeTransfer.sourceChainTx.hash}</div>
             <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
             {bridgeTransfer.isClaimable && (
-              <div className="cursor-pointer bg-black p-2 text-white">
+              <div className="m-2 w-auto cursor-pointer  bg-black p-2 text-white">
                 Claim
               </div>
             )}
