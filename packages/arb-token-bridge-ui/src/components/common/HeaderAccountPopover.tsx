@@ -134,7 +134,7 @@ export function HeaderAccountPopover({
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm sm:text-sm  text-white/60 sm:text-white hover:bg-ocl-blue sm:px-4 sm:py-1'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm sm:text-sm text-gray-4 sm:text-white hover:bg-ocl-blue sm:px-4 sm:py-1'
 
   return (
     <Popover className="relative w-full px-4 sm:w-max sm:p-0">
@@ -157,11 +157,11 @@ export function HeaderAccountPopover({
             <CustomBoringAvatar size={isSmallScreen ? 24 : 40} name={address} />
           }
         />
-        <span className="text-base text-white/60 sm:text-white">
+        <span className="text-base text-gray-4 sm:text-white">
           {ensName ?? udInfo.name ?? accountShort}
         </span>
 
-        <ChevronDownIcon className="ml-auto h-[16px] w-[16px] text-white/60 transition duration-200 sm:text-white" />
+        <ChevronDownIcon className="ml-auto h-[16px] w-[16px] text-gray-4 transition duration-200 sm:text-white" />
       </Popover.Button>
       <Transition className="w-full sm:absolute sm:top-0">
         <Popover.Panel className="flex w-full flex-col overflow-hidden rounded pb-2 sm:absolute sm:top-0 sm:bg-dark">
