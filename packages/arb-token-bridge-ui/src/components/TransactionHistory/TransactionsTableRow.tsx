@@ -36,6 +36,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        aria-label="Transaction status"
         className="arb-hover flex shrink-0 items-center space-x-1 text-red-400"
       >
         <XCircleIcon height={14} />
@@ -49,6 +50,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        aria-label="Transaction status"
         className="arb-hover flex shrink-0 items-center space-x-1 text-red-400"
       >
         <XCircleIcon height={14} />
@@ -62,6 +64,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        aria-label="Transaction status"
         className="arb-hover flex items-center space-x-1 text-yellow-400"
       >
         <div className="h-[10px] w-[10px] rounded-full border border-yellow-400 " />
@@ -75,6 +78,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
     return (
       <ExternalLink
         href={`${getExplorerUrl(sourceChainId)}/tx/${tx.txId}`}
+        aria-label="Transaction status"
         className="arb-hover flex items-center space-x-1 text-green-400"
       >
         <div className="h-[10px] w-[10px] shrink-0 rounded-full border border-green-400" />
@@ -94,6 +98,7 @@ const StatusLabel = ({ tx }: { tx: MergedTransaction }) => {
           ? `${getExplorerUrl(destinationChainId)}/tx/${destinationNetworkTxId}`
           : ''
       }
+      aria-label="Transaction status"
       className={destinationNetworkTxId ? 'arb-hover' : 'pointer-events-none'}
     >
       <div className="flex items-center space-x-1">

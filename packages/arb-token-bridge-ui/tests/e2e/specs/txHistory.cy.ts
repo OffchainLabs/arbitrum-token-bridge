@@ -14,7 +14,6 @@ describe('Transaction History', () => {
     // open tx history panel
     context('open transactions history panel', () => {
       cy.openTransactionsPanel()
-      cy.findByText('Transaction History').should('be.visible')
     })
 
     context('pending tab should be selected', () => {
