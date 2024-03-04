@@ -169,7 +169,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: '#F4C7C3',
+      color: '#DF62DD',
       network: {
         name: 'Muster Network',
         description: 'A gaming chain with cheap fees and account abstraction.',
