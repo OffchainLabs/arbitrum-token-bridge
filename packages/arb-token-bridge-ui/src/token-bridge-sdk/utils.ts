@@ -1,6 +1,12 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenMainnetUSDC,
+  isTokenSepoliaUSDC
+} from '../util/TokenUtils'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -36,9 +42,16 @@ export const getBridgeTransferProperties = ({
 
   const isNativeCurrencyTransfer = !sourceChainErc20Address
 
+  const isUsdcTransfer =
+    isTokenSepoliaUSDC(sourceChainErc20Address) ||
+    isTokenMainnetUSDC(sourceChainErc20Address) ||
+    isTokenArbitrumOneNativeUSDC(sourceChainErc20Address) ||
+    isTokenArbitrumSepoliaNativeUSDC(sourceChainErc20Address)
+
   return {
     isDeposit,
-    isNativeCurrencyTransfer
+    isNativeCurrencyTransfer,
+    isUsdcTransfer
   }
 }
 

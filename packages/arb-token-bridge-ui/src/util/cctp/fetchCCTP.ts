@@ -8,10 +8,11 @@ import {
 import { utils } from 'ethers'
 
 export type FetchParams = {
-  walletAddress: string
+  walletAddress?: string
   l1ChainId: ChainId
   pageNumber: number
   pageSize: number
+  sourceChainTxHash?: string
 }
 
 function convertStringToUsdcBigNumber(amount: string) {
@@ -31,7 +32,8 @@ async function fetchCCTP({
   l1ChainId,
   pageNumber,
   pageSize,
-  type
+  type,
+  sourceChainTxHash
 }: FetchParams & { type: 'deposits' | 'withdrawals' }): Promise<
   Response['data']
 > {
@@ -40,7 +42,8 @@ async function fetchCCTP({
       walletAddress,
       l1ChainId,
       pageNumber,
-      pageSize
+      pageSize,
+      sourceChainTxHash
     })
   )
 
@@ -74,4 +77,15 @@ export async function fetchCCTPWithdrawals(
   params: FetchParams
 ): Promise<FetchCctpResponse> {
   return fetchCCTP({ ...params, type: 'withdrawals' })
+}
+
+export async function fetchCompletedCCTPTransferBySourceChainTxHash(
+  params: FetchParams
+): Promise<CompletedCCTPTransfer | undefined> {
+  const depositResult = await fetchCCTP({ ...params, type: 'deposits' })
+  if (depositResult.pending.length || depositResult.completed.length) {
+    return depositResult.completed[0]
+  }
+  const withdrawalResult = await fetchCCTP({ ...params, type: 'withdrawals' })
+  return withdrawalResult.completed[0]
 }

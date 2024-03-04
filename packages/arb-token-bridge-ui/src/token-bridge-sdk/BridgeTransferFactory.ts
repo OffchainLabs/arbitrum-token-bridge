@@ -4,6 +4,7 @@ import { Erc20Deposit } from './Erc20Deposit'
 import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
 import { getBridgeTransferProperties } from './utils'
 import { getProviderForChainId } from '../hooks/useNetworks'
+import { CctpTransfer } from './CctpTransfer'
 
 type BridgeTransferFactoryProps = {
   sourceChainTxHash: string
@@ -11,6 +12,7 @@ type BridgeTransferFactoryProps = {
   destinationChainId: number
   sourceChainErc20Address?: string
   isNativeCurrencyTransfer?: boolean // optionally, if `sourceChainErc20Address` is not known, use this flag
+  isCctpTransfer?: boolean // optionally, if we know if it's a USDC-CCTP transfer
 }
 
 export class BridgeTransferFactory {
@@ -22,12 +24,14 @@ export class BridgeTransferFactory {
       sourceChainId,
       destinationChainId,
       sourceChainErc20Address,
-      isNativeCurrencyTransfer: isNativeCurrencyTransferFromProps
+      isNativeCurrencyTransfer: isNativeCurrencyTransferFromProps,
+      isCctpTransfer: isCctpTransferFromProps
     } = initProps
 
     const {
       isDeposit,
-      isNativeCurrencyTransfer: isNativeCurrencyTransferDeduced
+      isNativeCurrencyTransfer: isNativeCurrencyTransferDeduced,
+      isUsdcTransfer
     } = getBridgeTransferProperties({
       sourceChainId,
       destinationChainId,
@@ -39,6 +43,18 @@ export class BridgeTransferFactory {
 
     const isNativeCurrencyTransfer =
       isNativeCurrencyTransferFromProps || isNativeCurrencyTransferDeduced
+
+    const isCctpTransfer = isCctpTransferFromProps || isUsdcTransfer
+
+    if (isCctpTransfer) {
+      // return USDC deposit/withdrawal
+      console.log('bridge-sdk transaction: USDC Deposit/Withdrawal')
+      return CctpTransfer.initializeFromSourceChainTxHash({
+        sourceChainTxHash,
+        sourceChainProvider,
+        destinationChainProvider
+      })
+    }
 
     if (isDeposit && isNativeCurrencyTransfer) {
       // return Eth deposit

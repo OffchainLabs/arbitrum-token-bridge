@@ -1,142 +1,182 @@
-// import { ContractTransaction, ContractReceipt } from 'ethers'
-// import { Provider } from '@ethersproject/providers'
-// import { L1ContractCallTransactionReceipt } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import { ContractTransaction, ContractReceipt } from 'ethers'
+import { Provider } from '@ethersproject/providers'
 
-// import {
-//   BridgeTransfer,
-//   BridgeTransferStatus,
-//   BridgeTransferFetchStatusFunctionResult
-// } from './BridgeTransfer'
-// import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import {
+  BridgeTransfer,
+  BridgeTransferStatus,
+  BridgeTransferFetchStatusFunctionResult,
+  TransferType
+} from './BridgeTransfer'
+import { getAttestationHashAndMessageFromReceipt } from '../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { getCctpUtils } from './cctp'
+import {
+  getBridgeTransferKeyFromProviders,
+  getBridgeTransferPropertiesFromProviders,
+  getChainIdFromProvider
+} from './utils'
+import { fetchCompletedCCTPTransferBySourceChainTxHash } from '../util/cctp/fetchCCTP'
 
-// export class CctpTransfer extends BridgeTransfer {
-//   public requiresClaim = true
-//   public isClaimable = false
-//   public claim(): void {
-//     //no-op
-//   }
+export class CctpTransfer extends BridgeTransfer {
+  public isPendingUserAction = false
+  public requiresClaim = true
+  public isClaimable = false
+  public claim(): void {
+    //no-op
+  }
 
-//   private constructor(props: {
-//     status: BridgeTransferStatus
-//     sourceChainTx: ContractTransaction
-//     sourceChainTxReceipt?: ContractReceipt
-//     sourceChainProvider: Provider
-//     destinationChainProvider: Provider
-//   }) {
-//     super(props)
-//   }
+  private constructor(props: {
+    key: string
+    transferType: TransferType
+    status: BridgeTransferStatus
+    sourceChainTx: ContractTransaction
+    sourceChainTxReceipt?: ContractReceipt
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) {
+    super(props)
+  }
 
-//   public static async initializeFromSourceChainTx(props: {
-//     sourceChainTx: ContractTransaction
-//     sourceChainProvider: Provider
-//     destinationChainProvider: Provider
-//   }) {
-//     const sourceChainTxReceipt =
-//       await props.sourceChainProvider.getTransactionReceipt(
-//         props.sourceChainTx.hash
-//       )
+  public static async initializeFromSourceChainTx(props: {
+    sourceChainTx: ContractTransaction
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) {
+    const txKey = await getBridgeTransferKeyFromProviders({
+      sourceChainProvider: props.sourceChainProvider,
+      destinationChainProvider: props.destinationChainProvider,
+      sourceChainTxHash: props.sourceChainTx.hash
+    })
 
-//     let status: BridgeTransferStatus
+    const sourceChainTxReceipt =
+      await props.sourceChainProvider.getTransactionReceipt(
+        props.sourceChainTx.hash
+      )
 
-//     if (sourceChainTxReceipt) {
-//       status =
-//         sourceChainTxReceipt.status === 0
-//           ? 'source_chain_tx_error'
-//           : 'source_chain_tx_success'
-//     } else {
-//       status = 'source_chain_tx_pending'
-//     }
+    let status: BridgeTransferStatus
 
-//     return new CctpTransfer({ ...props, status, sourceChainTxReceipt })
-//   }
+    if (sourceChainTxReceipt) {
+      status =
+        sourceChainTxReceipt.status === 0
+          ? 'source_chain_tx_error'
+          : 'source_chain_tx_success'
+    } else {
+      status = 'source_chain_tx_pending'
+    }
 
-//   public static async initializeFromSourceChainTxHash(props: {
-//     sourceChainTxHash: string
-//     sourceChainProvider: Provider
-//     destinationChainProvider: Provider
-//   }) {
-//     const sourceChainTx = await props.sourceChainProvider.getTransaction(
-//       props.sourceChainTxHash
-//     )
+    return new CctpTransfer({
+      ...props,
+      status,
+      sourceChainTxReceipt,
+      key: txKey,
+      transferType: 'cctp'
+    })
+  }
 
-//     const erc20Deposit = await CctpTransfer.initializeFromSourceChainTx({
-//       ...props,
-//       sourceChainTx
-//     })
+  public static async initializeFromSourceChainTxHash(props: {
+    sourceChainTxHash: string
+    sourceChainProvider: Provider
+    destinationChainProvider: Provider
+  }) {
+    const sourceChainTx = await props.sourceChainProvider.getTransaction(
+      props.sourceChainTxHash
+    )
 
-//     await erc20Deposit.updateStatus()
+    const erc20Deposit = await CctpTransfer.initializeFromSourceChainTx({
+      ...props,
+      sourceChainTx
+    })
 
-//     return erc20Deposit
-//   }
+    await erc20Deposit.updateStatus()
 
-//   protected isStatusFinal(status: BridgeTransferStatus): boolean {
-//     if (
-//       status === 'source_chain_tx_error' ||
-//       status === 'destination_chain_tx_success'
-//     ) {
-//       return true
-//     }
+    return erc20Deposit
+  }
 
-//     return false
-//   }
+  protected isStatusFinal(status: BridgeTransferStatus): boolean {
+    if (
+      status === 'source_chain_tx_error' ||
+      status === 'destination_chain_tx_success'
+    ) {
+      return true
+    }
 
-//   public async updateStatus(): Promise<void> {
-//     this.status = await this.fetchStatus()
-//   }
+    return false
+  }
 
-//   public async fetchStatus(): BridgeTransferFetchStatusFunctionResult {
-//     // we don't have a source chain tx receipt yet
-//     if (!this.sourceChainTxReceipt) {
-//       // let's fetch it
-//       this.sourceChainTxReceipt =
-//         await this.sourceChainProvider.getTransactionReceipt(
-//           this.sourceChainTx.hash
-//         )
+  public async updateStatus(): Promise<void> {
+    this.status = await this.fetchStatus()
+  }
 
-//       // still nothing
-//       if (!this.sourceChainTxReceipt) {
-//         return 'source_chain_tx_pending'
-//       }
-//     }
+  public async fetchStatus(): BridgeTransferFetchStatusFunctionResult {
+    // we don't have a source chain tx receipt yet
+    if (!this.sourceChainTxReceipt) {
+      // let's fetch it
+      this.sourceChainTxReceipt =
+        await this.sourceChainProvider.getTransactionReceipt(
+          this.sourceChainTx.hash
+        )
 
-//     if (this.sourceChainTxReceipt.status === 0) {
-//       return 'source_chain_tx_fa'
-//     }
-//     if (tx.cctpData?.receiveMessageTransactionHash) {
-//       return {
-//         ...txWithTxId,
-//         status: WithdrawalStatus.EXECUTED
-//       }
-//     }
-//     if (receipt.blockNumber && !tx.blockNum) {
-//       // If blockNumber was never set (for example, network switch just after the deposit)
-//       const { messageBytes, attestationHash } =
-//         getAttestationHashAndMessageFromReceipt(receipt)
-//       return {
-//         ...txWithTxId,
-//         blockNum: receipt.blockNumber,
-//         cctpData: {
-//           ...tx.cctpData,
-//           messageBytes,
-//           attestationHash
-//         }
-//       }
-//     }
-//     const isConfirmed =
-//       tx.createdAt &&
-//       dayjs().diff(tx.createdAt, 'second') >
-//         requiredL1BlocksBeforeConfirmation * blockTime
-//     if (
-//       // If transaction claim was set to failure, don't reset to Confirmed
-//       tx.status !== WithdrawalStatus.FAILURE &&
-//       isConfirmed
-//     ) {
-//       return {
-//         ...txWithTxId,
-//         status: WithdrawalStatus.CONFIRMED
-//       }
-//     }
+      // still nothing
+      if (!this.sourceChainTxReceipt) {
+        return 'source_chain_tx_pending'
+      }
+    }
 
-//     return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
-//   }
-// }
+    if (this.sourceChainTxReceipt.status === 0) {
+      return 'source_chain_tx_error'
+    }
+
+    const { attestationHash } = getAttestationHashAndMessageFromReceipt(
+      this.sourceChainTxReceipt
+    )
+
+    if (!attestationHash) {
+      return 'source_chain_tx_pending'
+    }
+
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+    const destinationChainId = await getChainIdFromProvider(
+      this.destinationChainProvider
+    )
+    const attestationStatus = await getCctpUtils({
+      sourceChainId
+    }).fetchAttestation(attestationHash)
+
+    if (attestationStatus.status === 'complete') {
+      // either ready to be claimed or already claimed
+
+      const { isDeposit } = await getBridgeTransferPropertiesFromProviders({
+        sourceChainProvider: this.sourceChainProvider,
+        destinationChainProvider: this.destinationChainProvider
+      })
+
+      const destinationChainCctpTransfer =
+        await fetchCompletedCCTPTransferBySourceChainTxHash({
+          l1ChainId: isDeposit ? sourceChainId : destinationChainId,
+          pageNumber: 0,
+          pageSize: 1,
+          sourceChainTxHash: this.sourceChainTx.hash
+        })
+
+      if (destinationChainCctpTransfer) {
+        // already claimed
+        const destinationChainTxHash =
+          destinationChainCctpTransfer.messageReceived.transactionHash
+
+        this.destinationChainTxReceipt =
+          await this.destinationChainProvider.getTransactionReceipt(
+            destinationChainTxHash
+          )
+
+        return 'destination_chain_tx_success'
+      } else {
+        // ready to be claimed
+        this.isClaimable = true
+        this.isPendingUserAction = true
+
+        return 'destination_chain_tx_pending'
+      }
+    }
+
+    return 'source_chain_tx_pending'
+  }
+}

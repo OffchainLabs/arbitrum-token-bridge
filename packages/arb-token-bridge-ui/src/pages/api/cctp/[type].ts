@@ -21,10 +21,11 @@ export function getSubgraphClient(subgraph: string) {
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
-    walletAddress: Address
+    walletAddress?: Address
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
+    sourceChainTxHash?: string
   }
 }
 
@@ -93,7 +94,8 @@ export default async function handler(
       l1ChainId: l1ChainIdString,
       pageNumber = '0',
       pageSize = '10',
-      type
+      type,
+      sourceChainTxHash
     } = req.query
     const l1ChainId = parseInt(l1ChainIdString, 10)
 
@@ -126,7 +128,8 @@ export default async function handler(
     // validate the request parameters
     const errorMessage = []
     if (!l1ChainId) errorMessage.push('<l1ChainId> is required')
-    if (!walletAddress) errorMessage.push('<walletAddress> is required')
+    if (!walletAddress && !sourceChainTxHash)
+      errorMessage.push('<walletAddress> or <sourceChainTxHash> is required')
 
     if (errorMessage.length) {
       res.status(400).json({
@@ -158,14 +161,18 @@ export default async function handler(
       l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-sepolia'
     )
 
+    const whereClause = sourceChainTxHash
+      ? `{ sourceChainTxHash: "${sourceChainTxHash}" }`
+      : `{
+    or: [
+      { sender: "${walletAddress}" },
+      { recipient: "${walletAddress}" }
+    ]
+  }`
+
     const messagesSentQuery = gql(`{
       messageSents(
-        where: {
-          or: [
-            { sender: "${walletAddress}" },
-            { recipient: "${walletAddress}" }
-          ]
-        }
+        where: ${whereClause}
         orderDirection: "desc"
         orderBy: "blockTimestamp"
         first: ${Number(pageSize)}

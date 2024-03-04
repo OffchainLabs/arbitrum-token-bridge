@@ -13,6 +13,7 @@ export type SdkRequiredTxData = {
   destinationChainId: number
   sourceChainErc20Address?: string
   isNativeCurrencyTransfer?: boolean
+  isCctpTransfer?: boolean
 }
 
 export const TransactionHistoryMini = () => {
@@ -20,13 +21,14 @@ export const TransactionHistoryMini = () => {
   const { transactions } = useTransactionHistory(address)
 
   const sdkCompatibleTransactions: SdkRequiredTxData[] = transactions
-    .filter(tx => !tx.isCctp && tx.parentChainId !== 1337) // ignore local-node
+    .filter(tx => tx.parentChainId !== 1337) // ignore local-node
     .map(tx => ({
       ...tx,
       sourceChainTxHash: tx.txId,
       sourceChainId: tx.sourceChainId,
       destinationChainId: tx.destinationChainId,
-      isNativeCurrencyTransfer: tx.assetType === AssetType.ETH
+      isNativeCurrencyTransfer: tx.assetType === AssetType.ETH,
+      isCctpTransfer: tx.isCctp || typeof tx.cctpData !== 'undefined'
     }))
   const [skdTransactions, setSdkTransactions] = useState<{
     [id: string]: BridgeTransfer
@@ -62,7 +64,8 @@ export const TransactionHistoryMini = () => {
             sourceChainId: tx.sourceChainId,
             destinationChainId: tx.destinationChainId,
             sourceChainErc20Address: tx.sourceChainErc20Address,
-            isNativeCurrencyTransfer: tx.isNativeCurrencyTransfer
+            isNativeCurrencyTransfer: tx.isNativeCurrencyTransfer,
+            isCctpTransfer: tx.isCctpTransfer
           }
         }
       }
@@ -120,6 +123,11 @@ export const TransactionHistoryMini = () => {
             <div>Status: {bridgeTransfer.status}</div>
             <div>Source Tx: {bridgeTransfer.sourceChainTx.hash}</div>
             <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
+            {bridgeTransfer.isClaimable && (
+              <div className="cursor-pointer bg-black p-2 text-white">
+                Claim
+              </div>
+            )}
           </div>
         )
       })}
