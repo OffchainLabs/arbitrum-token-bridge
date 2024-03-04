@@ -9,6 +9,7 @@ import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
+  onPopoverButtonClick,
   onPopoverClose,
   panelWrapperClassnames
 } from '../common/SearchPanel/SearchPanelUtils'
@@ -71,6 +72,7 @@ export function TokenButton(): JSX.Element {
             <Popover.Button
               className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
               aria-label="Select Token"
+              onClick={onPopoverButtonClick}
             >
               <div className="flex items-center gap-2">
                 {/* Commenting it out until we update the token image source files to be of better quality */}
@@ -100,7 +102,8 @@ export function TokenButton(): JSX.Element {
             <Transition
               // we don't unmount on leave here because otherwise transition won't work with virtualized lists
               options={{ unmountOnLeave: false }}
-              className="fixed left-0 top-0 z-20 lg:absolute lg:top-[76px] lg:max-w-[466px]"
+              className="fixed left-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              afterLeave={onPopoverClose}
             >
               <Popover.Panel
                 className={twMerge(panelWrapperClassnames, 'px-5 py-4')}
