@@ -35,7 +35,7 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isCustomGatewayRegistered
+  isGatewayRegistered
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -735,7 +735,7 @@ export function TransferPanel() {
           const amountRaw = utils.parseUnits(amount, decimals)
 
           if (
-            !(await isCustomGatewayRegistered({
+            !(await isGatewayRegistered({
               erc20ParentChainAddress: selectedToken.address,
               parentChainProvider,
               childChainProvider
