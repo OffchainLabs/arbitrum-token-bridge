@@ -1,6 +1,7 @@
 import { utils } from 'ethers'
-import useLocalStorage from '@rehooks/local-storage'
 import { useBlockNumber } from 'wagmi'
+import Image from 'next/image'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNetworkTPS } from '../../hooks/useNetworkTPS'
@@ -10,7 +11,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import Image from 'next/image'
 
 export const statsLocalStorageKey = 'arbitrum:bridge:preferences:stats'
 
@@ -27,7 +27,7 @@ const getActivityThresholdL2 = (gasPrice: number) => {
 }
 
 export const ArbitrumStats = () => {
-  const [isArbitrumStatsVisible, setIsArbitrumStatsVisible] =
+  const [, setIsArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
   const [{ settingsOpen }] = useArbQueryParams()
@@ -62,10 +62,6 @@ export const ArbitrumStats = () => {
 
   const closeArbitrumStats = () => {
     setIsArbitrumStatsVisible(false)
-  }
-
-  if (!isArbitrumStatsVisible) {
-    return null
   }
 
   return (

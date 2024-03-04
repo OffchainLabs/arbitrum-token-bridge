@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { useAccount } from 'wagmi'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { ArbitrumStats } from './ArbitrumStats'
+import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
 import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
@@ -49,6 +50,9 @@ function TransactionHistorySidePanel() {
 }
 
 export function MainContent() {
+  const [isArbitrumStatsVisible] =
+    useLocalStorage<boolean>(statsLocalStorageKey)
+
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col sm:max-w-[600px] sm:pb-12 sm:pt-6">
@@ -63,7 +67,7 @@ export function MainContent() {
       <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
-      <ArbitrumStats />
+      {isArbitrumStatsVisible && <ArbitrumStats />}
     </>
   )
 }
