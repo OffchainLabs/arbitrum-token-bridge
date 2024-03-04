@@ -16,18 +16,5 @@ export function shortenTxHash(txHash: string) {
   )}`
 }
 
-export function pluralizeWord({
-  word,
-  shouldPluralize = true
-}: {
-  word: string
-  shouldPluralize?: boolean
-}) {
-  if (!shouldPluralize) {
-    return word
-  }
-  return word + 's'
-}
-
 export const isTestingEnvironment =
   !!window.Cypress || process.env.NODE_ENV !== 'production'

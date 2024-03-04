@@ -18,7 +18,6 @@ import { useAppContextActions } from '../App/AppContext'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { Button } from '../common/Button'
 import { isTxClaimable, isTxPending } from './helpers'
-import { pluralizeWord } from '../../util/CommonUtils'
 
 const Content = ({
   numClaimableTransactions,
@@ -29,15 +28,15 @@ const Content = ({
   numRetryablesToRedeem: number
   numPendingTransactions: number
 }) => {
-  const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${pluralizeWord(
-    { word: 'transaction', shouldPluralize: numClaimableTransactions > 1 }
-  )}`
-  const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${pluralizeWord(
-    { word: 'transaction', shouldPluralize: numRetryablesToRedeem > 1 }
-  )}`
-  const numPendingTransactionsString = `${numPendingTransactions} pending ${pluralizeWord(
-    { word: 'transaction', shouldPluralize: numPendingTransactions > 1 }
-  )}`
+  const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${
+    numClaimableTransactions > 1 ? 'transactions' : 'transaction'
+  }`
+  const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${
+    numRetryablesToRedeem > 1 ? 'transactions' : 'transaction'
+  }`
+  const numPendingTransactionsString = `${numPendingTransactions} pending ${
+    numPendingTransactions > 1 ? 'transactions' : 'transaction'
+  }`
 
   if (numClaimableTransactions > 0 && numRetryablesToRedeem > 0) {
     return (

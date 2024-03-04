@@ -34,28 +34,26 @@ export const TokenInfo = ({
   const [networks] = useNetworks()
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
-  const tokenAddressLowercased = token?.address.toLocaleLowerCase()
+  const tokenAddressLowercased = token?.address.toLowerCase()
 
   const tokenLogo = useMemo(() => {
-    const tokenAddress = token?.address
-
-    if (!tokenAddress) {
+    if (!tokenAddressLowercased) {
       return undefined
     }
 
-    if (isTokenArbitrumOneNativeUSDC(tokenAddress)) {
-      ARB_ONE_NATIVE_USDC_TOKEN.logoURI
+    if (isTokenArbitrumOneNativeUSDC(tokenAddressLowercased)) {
+      return ARB_ONE_NATIVE_USDC_TOKEN.logoURI
     }
 
-    if (isTokenArbitrumSepoliaNativeUSDC(tokenAddress)) {
+    if (isTokenArbitrumSepoliaNativeUSDC(tokenAddressLowercased)) {
       return ARB_SEPOLIA_NATIVE_USDC_TOKEN.logoURI
     }
 
     return (
-      tokensFromLists[token.address]?.logoURI ||
-      tokensFromUser[token.address]?.logoURI
+      tokensFromLists[tokenAddressLowercased]?.logoURI ||
+      tokensFromUser[tokenAddressLowercased]?.logoURI
     )
-  }, [token, tokensFromLists, tokensFromUser])
+  }, [tokenAddressLowercased, tokensFromLists, tokensFromUser])
 
   return (
     <div className="flex flex-row items-center space-x-3">
