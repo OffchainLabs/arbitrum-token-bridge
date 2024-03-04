@@ -31,6 +31,8 @@ enum SelectedTabName {
   Cctp = 'cctp'
 }
 
+const defaultSelectedTabName: SelectedTabName = SelectedTabName.ThirdParty
+
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
 ) {
@@ -39,7 +41,7 @@ export function USDCWithdrawalConfirmationDialog(
 
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const [selectedTabName, setSelectedTabName] = useState<SelectedTabName>(
-    SelectedTabName.ThirdParty
+    defaultSelectedTabName
   )
   const { isArbitrumSepolia } = isNetwork(childChain.id)
   const destinationNetworkName = getNetworkName(parentChain.id)
@@ -51,6 +53,8 @@ export function USDCWithdrawalConfirmationDialog(
         trackEvent('Use CCTP Click', { tokenSymbol, type: 'Withdrawal' })
       }
       props.onClose(confirmed, selectedTabName)
+      // reset tab
+      setSelectedTabName(defaultSelectedTabName)
     },
     [props, tokenSymbol, selectedTabName]
   )
