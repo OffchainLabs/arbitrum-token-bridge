@@ -103,7 +103,7 @@ const SubMenuItem = ({
   isExternalLink?: boolean
 }) => {
   const subMenuClasses = twMerge(
-    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[20px] sm:pl-[16px] text-white/60 hover:bg-white/20 hover:text-white',
+    'group ml-[32px] flex min-w-[175px] cursor-pointer items-center justify-between sm:rounded py-[4px] pl-[20px] sm:pl-[16px] text-gray-4 hover:bg-white/20 hover:text-white',
     isActive && 'text-white'
   )
 
@@ -222,14 +222,16 @@ export const SidebarMenu = ({
       )
     },
     {
-      id: 'missions',
-      title: 'Missions',
+      id: 'arcade',
+      title: 'Arcade',
       iconSrc: IconMissions,
       isExternalLink: false,
-      link: `${PORTAL_DOMAIN}/missions`,
+      link: `${PORTAL_DOMAIN}/arcade`,
+      className:
+        'bg-gradient-to-r from-[#E59010] to-[#00ADE3] bg-clip-text text-transparent',
       onClick: () => {
         menuItemClickCallback?.()
-        sendClickEventForLink('Missions')
+        sendClickEventForLink('Arcade')
       }
     },
     {
@@ -346,7 +348,7 @@ export const SidebarMenu = ({
   return (
     <div
       className={twMerge(
-        'mt-0 flex w-full flex-col gap-[4px] text-white/70',
+        'mt-0 flex w-full flex-col gap-[4px] text-gray-4',
         'sm:mt-[20px] sm:shrink sm:grow sm:gap-[8px] sm:overflow-auto',
         sidebarOpened ? 'px-[16px]' : 'px-[4px]',
         className
