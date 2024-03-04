@@ -171,6 +171,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
+  },
+  {
+    id: 17,
+    // Proof of Play Apex
+    originChainID: 70700,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/70700_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
