@@ -72,9 +72,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     return `${isEthereumMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, ethToUSD, isEthereumMainnet])
 
-  const approvalFeeText = useMemo(() => {
-    return `${ethFeeText} ${usdFeeText}`.trim()
-  }, [ethFeeText, usdFeeText])
+  const approvalFeeText = `${ethFeeText} ${usdFeeText}`.trim()
 
   useEffect(() => {
     if (!isOpen) {
