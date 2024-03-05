@@ -176,7 +176,7 @@ jobs:
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
-    needs: [install, check-files, check-is-hotfix, load-e2e-files]
+    needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     strategy:
       fail-fast: false # If one test fails, let the other tests run
@@ -188,8 +188,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
+      - name: Restore build
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ./packages/arb-token-bridge-ui/build
+          key: build-artifacts-${{ github.run_id }}
 
       - name: Install linux deps
         run: |
