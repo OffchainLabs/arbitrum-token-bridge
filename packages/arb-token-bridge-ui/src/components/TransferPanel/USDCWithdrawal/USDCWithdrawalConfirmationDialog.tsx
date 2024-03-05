@@ -118,7 +118,7 @@ export function USDCWithdrawalConfirmationDialog(
                     getUSDCAddresses(parentChain.id)?.USDC
                   }`}
                 >
-                  USDC
+                  Native USDC
                 </ExternalLink>{' '}
                 on {destinationNetworkName} using a third-party bridge with
                 Circle&apos;s{' '}
