@@ -145,6 +145,7 @@ export enum ChainId {
 }
 
 export const supportedCustomOrbitParentChains = [
+  ChainId.Sepolia,
   ChainId.ArbitrumGoerli,
   ChainId.ArbitrumSepolia
 ]
@@ -230,6 +231,10 @@ export const l2wstETHGatewayAddresses: { [chainId: number]: string } = {
 
 export const l2LptGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
+}
+
+export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
 }
 
 const defaultL1Network: L1Network = {
@@ -349,6 +354,9 @@ export function isNetwork(chainId: ChainId) {
   const customChainIds = customChains.map(chain => chain.chainID)
   const isCustomOrbitChain = customChainIds.includes(chainId)
 
+  const isCoreChain = isEthereumMainnetOrTestnet || isArbitrum
+  const isOrbitChain = !isCoreChain
+
   const isTestnet =
     isGoerli ||
     isLocal ||
@@ -387,10 +395,12 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumGoerli,
     isArbitrumSepolia,
     // Orbit chains
-    isOrbitChain: !isEthereumMainnetOrTestnet && !isArbitrum,
+    isOrbitChain,
     isTestnet,
     // General
-    isSupported
+    isSupported,
+    // Core Chain is a chain category for the UI
+    isCoreChain
   }
 }
 
@@ -398,18 +408,25 @@ export function getNetworkName(chainId: number) {
   return getBridgeUiConfigForChain(chainId).network.name
 }
 
-export function getSupportedChainIds(
-  {
-    includeTestnets
-  }: {
-    includeTestnets: boolean
-  } = { includeTestnets: false }
-): ChainId[] {
+export function getSupportedChainIds({
+  includeMainnets = true,
+  includeTestnets = false
+}: {
+  includeMainnets?: boolean
+  includeTestnets?: boolean
+}): ChainId[] {
   return getChains()
     .map(chain => chain.chainID)
     .filter(chainId => {
-      if (!includeTestnets) {
-        return !isNetwork(chainId).isTestnet
+      const { isTestnet } = isNetwork(chainId)
+      if (includeMainnets && !includeTestnets) {
+        return !isTestnet
+      }
+      if (!includeMainnets && includeTestnets) {
+        return isTestnet
+      }
+      if (!includeMainnets && !includeTestnets) {
+        return false
       }
       return true
     })

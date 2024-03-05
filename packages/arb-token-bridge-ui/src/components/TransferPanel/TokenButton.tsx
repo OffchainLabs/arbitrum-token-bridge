@@ -1,12 +1,17 @@
 import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  onPopoverClose,
+  panelWrapperClassnames
+} from '../common/SearchPanel/SearchPanelUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -19,8 +24,7 @@ export function TokenButton(): JSX.Element {
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
+  const { childChainProvider } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -46,7 +50,6 @@ export function TokenButton(): JSX.Element {
     selectedToken?.address,
     arbTokenBridgeLoaded
   ])
-  const chainId = isDepositMode ? parentChain.id : childChain.id
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
@@ -55,9 +58,9 @@ export function TokenButton(): JSX.Element {
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chainId
+      chainId: networks.sourceChain.id
     })
-  }, [selectedToken, chainId, nativeCurrency.symbol])
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
 
   return (
     <>
@@ -83,8 +86,30 @@ export function TokenButton(): JSX.Element {
             <ChevronDownIcon className="h-4 w-4 text-gray-6" />
           </div>
         </Popover.Button>
-        <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
-          {({ close }) => <TokenSearch close={close} />}
+        <Popover.Panel
+          className={twMerge(
+            panelWrapperClassnames,
+            'lg:ml-12 lg:min-w-[466px]'
+          )}
+        >
+          {({ close }) => {
+            function onClose() {
+              onPopoverClose()
+              close()
+            }
+            return (
+              <>
+                <div className="flex items-center justify-end border-b border-b-black px-5 py-4 lg:hidden">
+                  <button onClick={onClose}>
+                    <XMarkIcon className="h-8 w-8" />
+                  </button>
+                </div>
+                <div className="px-5 py-4">
+                  <TokenSearch close={onClose} />
+                </div>
+              </>
+            )
+          }}
         </Popover.Panel>
       </Popover>
     </>

@@ -12,8 +12,7 @@ import {
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork,
-  getSupportedChainIds
+  isNetwork
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -31,7 +30,7 @@ import {
 } from './TransferPanelMainUtils'
 import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
@@ -59,6 +58,7 @@ import {
 import { defaultErc20Decimals } from '../../defaults'
 import { EstimatedGas } from './EstimatedGas'
 import { TransferReadinessRichErrorMessage } from './useTransferReadinessUtils'
+import { NetworkSelectionContainer } from '../common/NetworkSelectionContainer'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -67,7 +67,7 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 
 enum NetworkType {
   l1 = 'l1',
@@ -313,18 +313,37 @@ export function TransferPanelMain({
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const [isTestnetMode] = useIsTestnetMode()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const {
+    isArbitrumOne: isSourceChainArbitrumOne,
+    isEthereumMainnet: isSourceChainEthereum,
+    isSepolia: isSourceChainSepolia,
+    isArbitrumSepolia: isSourceChainArbitrumSepolia
+  } = isNetwork(networks.sourceChain.id)
+  const {
+    isArbitrumOne: isDestinationChainArbitrumOne,
+    isEthereumMainnet: isDestinationChainEthereum,
+    isSepolia: isDestinationChainSepolia,
+    isArbitrumSepolia: isDestinationChainArbitrumSepolia
+  } = isNetwork(networks.destinationChain.id)
+
+  const isSepoliaArbSepoliaPair =
+    (isSourceChainSepolia && isDestinationChainArbitrumSepolia) ||
+    (isSourceChainArbitrumSepolia && isDestinationChainSepolia)
+
+  const isEthereumArbitrumOnePair =
+    (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
+    (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
   const l2GasPrice = useGasPrice({ provider: childChainProvider })
 
-  const { app } = useAppState()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const { address: walletAddress } = useAccount()
-  const { arbTokenBridge, selectedToken } = app
-  const { token } = arbTokenBridge
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -438,6 +457,7 @@ export function TransferPanelMain({
 
     if (
       isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+      isEthereumArbitrumOnePair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -448,6 +468,7 @@ export function TransferPanelMain({
     }
     if (
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+      isSepoliaArbSepoliaPair &&
       erc20L1Balances &&
       erc20L2Balances
     ) {
@@ -458,7 +479,13 @@ export function TransferPanelMain({
     }
 
     return result
-  }, [erc20L1Balances, erc20L2Balances, selectedToken])
+  }, [
+    erc20L1Balances,
+    erc20L2Balances,
+    isEthereumArbitrumOnePair,
+    isSepoliaArbSepoliaPair,
+    selectedToken
+  ])
 
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
@@ -687,58 +714,14 @@ export function TransferPanelMain({
     })
   }, [networks.destinationChain.id, networks.sourceChain.id, setNetworks])
 
-  useEffect(() => {
-    const isArbOneUSDC = isTokenArbitrumOneNativeUSDC(selectedToken?.address)
-    const isArbSepoliaUSDC = isTokenArbitrumSepoliaNativeUSDC(
-      selectedToken?.address
-    )
-    // If user select native USDC on L2, when switching to deposit mode,
-    // we need to default to set the corresponding USDC on L1
-    if (!isDepositMode) {
-      return
-    }
-
-    // When switching network, token might be undefined
-    if (!token) {
-      return
-    }
-
-    const commonUSDC = {
-      name: 'USD Coin',
-      type: TokenType.ERC20,
-      symbol: 'USDC',
-      decimals: 6,
-      listIds: new Set<number>()
-    }
-    if (isArbOneUSDC) {
-      token.updateTokenData(CommonAddress.Ethereum.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Ethereum.USDC,
-        l2Address: CommonAddress.ArbitrumOne['USDC.e']
-      })
-    } else if (isArbSepoliaUSDC) {
-      token.updateTokenData(CommonAddress.Sepolia.USDC)
-      actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Sepolia.USDC,
-        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
-      })
-    }
-  }, [actions.app, isDepositMode, selectedToken, token])
+  useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
-    from: Omit<NetworkListboxProps, 'label'>
+    from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
   }
 
   const networkListboxProps: NetworkListboxesProps = useMemo(() => {
-    function getSourceChains() {
-      return getSupportedChainIds({ includeTestnets: isTestnetMode }).map(
-        getWagmiChain
-      )
-    }
-
     function getDestinationChains() {
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
@@ -768,14 +751,10 @@ export function TransferPanelMain({
       )
     }
 
-    const sourceChains = getSourceChains()
     const destinationChains = getDestinationChains()
 
     return {
       from: {
-        disabled: isSmartContractWallet || isLoadingAccountType,
-        options: sourceChains,
-        value: networks.sourceChain,
         onChange: async network => {
           if (networks.destinationChain.id === network.id) {
             switchNetworksOnTransferPanel()
@@ -813,17 +792,41 @@ export function TransferPanelMain({
     isLoadingAccountType,
     networks.sourceChain,
     networks.destinationChain,
-    isTestnetMode,
     setNetworks,
     switchNetworksOnTransferPanel,
     openOneNovaTransferDialog
   ])
 
+  const buttonStyle = useMemo(
+    () => ({
+      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
+        .primary
+    }),
+    [networks.sourceChain.id]
+  )
+
   return (
     <div className="flex flex-col pb-6">
       <NetworkContainer network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="From:" {...networkListboxProps.from} />
+          <NetworkSelectionContainer
+            buttonStyle={buttonStyle}
+            buttonClassName={twMerge(
+              'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+            )}
+            onChange={networkListboxProps.from.onChange}
+          >
+            <span
+              className={twMerge(
+                'max-w-[220px] truncate md:max-w-[250px]',
+                // temporary fix not to truncate their network name, this will be resolved by the reskin
+                networks.sourceChain.id === 70700 && 'text-[20px]'
+              )}
+            >
+              From: {getNetworkName(networks.sourceChain.id)}
+            </span>
+            <ChevronDownIcon className="h-4 w-4" />
+          </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
               on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
