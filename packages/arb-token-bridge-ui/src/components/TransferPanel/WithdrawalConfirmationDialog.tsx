@@ -10,11 +10,7 @@ import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
-import {
-  getBaseChainIdByChainId,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
 import { CONFIRMATION_PERIOD_ARTICLE_LINK } from '../../constants'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -69,15 +65,11 @@ export function WithdrawalConfirmationDialog(
   const [checkbox2Checked, setCheckbox2Checked] = useState(false)
 
   const { isArbitrumOne } = isNetwork(childChain.id)
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: childChain.id
-  })
   const bothCheckboxesChecked = checkbox1Checked && checkbox2Checked
 
   const estimatedConfirmationDate = getTxConfirmationDate({
     createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id,
-    baseChainId
+    withdrawalFromChainId: childChain.id
   })
 
   const confirmationPeriod = estimatedConfirmationDate.fromNow(true)

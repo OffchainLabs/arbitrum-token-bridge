@@ -53,10 +53,10 @@ export const SidePanel = ({
       >
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-400"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-80"
-          leave="ease-in duration-300"
+          leave="ease-in duration-200"
           leaveFrom="opacity-80"
           leaveTo="opacity-0"
         >
@@ -68,10 +68,10 @@ export const SidePanel = ({
         <div className="fixed inset-0 right-0 top-0 flex h-full w-full items-start justify-end">
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-400"
+            enter="ease-out duration-200"
             enterFrom="translate-x-full"
             enterTo="translate-x-0"
-            leave="ease-in duration-300"
+            leave="ease-in duration-200"
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
             afterLeave={handleCloseEnd}
@@ -84,7 +84,12 @@ export const SidePanel = ({
                 scrollable && 'overflow-y-auto'
               )}
             >
-              <Dialog.Title className="sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white">
+              <Dialog.Title
+                className={twMerge(
+                  'sticky top-0 z-50 mx-4 flex flex-row justify-between bg-black pt-4 text-white',
+                  !heading && 'pb-4'
+                )}
+              >
                 {heading && <span className="text-2xl">{heading}</span>}
                 <button className="arb-hover" onClick={handleCloseStart}>
                   <XMarkIcon
