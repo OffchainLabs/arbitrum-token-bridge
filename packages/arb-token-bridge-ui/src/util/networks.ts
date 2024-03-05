@@ -233,6 +233,10 @@ export const l2LptGatewayAddresses: { [chainId: number]: string } = {
   [ChainId.ArbitrumOne]: '0x6D2457a4ad276000A615295f7A80F79E48CcD318'
 }
 
+export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
+  [ChainId.ArbitrumNova]: '0xA430a792c14d3E49d9D00FD7B4BA343F516fbB81'
+}
+
 const defaultL1Network: L1Network = {
   blockTime: 10,
   chainID: 1337,
