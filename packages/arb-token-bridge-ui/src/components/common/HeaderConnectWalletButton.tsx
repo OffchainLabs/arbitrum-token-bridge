@@ -11,8 +11,8 @@ export function HeaderConnectWalletButton() {
             onClick={openConnectModal}
             type="button"
             className={twMerge(
-              'arb-hover flex w-full flex-row items-center bg-lime-dark px-[12px] py-2 text-white',
-              'sm:rounded sm:bg-lime-dark sm:px-3 sm:py-1 sm:text-base sm:font-normal'
+              'arb-hover flex w-full flex-row items-center border border-lime-dark bg-lime-dark px-[12px] py-2 text-white',
+              'sm:min-w-[198px] sm:rounded sm:bg-lime-dark sm:py-1 sm:pl-2 sm:pr-3 sm:text-base sm:font-normal'
             )}
           >
             <PlusCircleIcon className="mr-3 h-[24px] w-[24px] stroke-1 sm:h-8 sm:w-8" />
