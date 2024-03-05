@@ -84,7 +84,7 @@ export function HeaderAccountPopover({
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()
-  const isSmallScreen = useMedia('(max-width: 419px)')
+  const isSmallScreen = useMedia('(max-width: 639px)')
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()

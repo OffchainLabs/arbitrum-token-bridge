@@ -45,7 +45,7 @@ export function NetworkListbox({
             {!disabled && (
               <ChevronDownIcon
                 className={twMerge(
-                  'h-3 w-3 transition-transform',
+                  'h-[12px] w-[12px] transition-transform sm:h-3 sm:w-3',
                   open ? '-rotate-180' : 'rotate-0'
                 )}
               />

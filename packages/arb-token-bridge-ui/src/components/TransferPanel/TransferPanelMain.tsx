@@ -3,6 +3,7 @@ import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
+import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -172,7 +173,7 @@ function CustomAddressBanner({
 function NetworkContainer({
   network,
   customAddress,
-  bgLogoHeight,
+  bgLogoHeight = 58,
   children
 }: {
   network: Chain
@@ -185,6 +186,7 @@ function NetworkContainer({
     color,
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(network.id)
+  const isSmallScreen = useMedia('(max-width: 639px)')
 
   const backgroundImage = `url(${networkLogo})`
 
@@ -211,15 +213,18 @@ function NetworkContainer({
           borderColor: color
         }}
         className={twMerge(
-          'relative rounded border p-1 transition-colors duration-400',
+          'relative rounded border transition-colors duration-400',
           showCustomAddressBanner && 'rounded-t-none'
         )}
       >
         <div
-          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage, backgroundSize: `auto ${bgLogoHeight}px` }}
+          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50"
+          style={{
+            backgroundImage,
+            backgroundSize: `auto ${bgLogoHeight + (isSmallScreen ? -12 : 0)}px`
+          }}
         />
-        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row">
           {children}
         </div>
       </div>
@@ -292,7 +297,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white md:text-lg">
+    <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
       {children}
     </div>
   )
@@ -304,7 +309,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-start justify-between gap-1 gap-y-2.5 whitespace-nowrap sm:flex-row sm:items-center">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-1 gap-y-2.5 whitespace-nowrap">
       {children}
     </div>
   )
@@ -819,7 +824,7 @@ export function TransferPanelMain({
 
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
-      <NetworkContainer bgLogoHeight={140} network={networks.sourceChain}>
+      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
@@ -921,7 +926,7 @@ export function TransferPanelMain({
       </div>
 
       <NetworkContainer
-        bgLogoHeight={60}
+        bgLogoHeight={58}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >

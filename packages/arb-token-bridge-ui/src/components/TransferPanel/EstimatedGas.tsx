@@ -119,7 +119,7 @@ export function EstimatedGas({
           gas fee
         </span>
         <Tooltip content={layerGasFeeTooltipContent}>
-          <InformationCircleIcon className="h-4 w-4" />
+          <InformationCircleIcon className="h-3 w-3" />
         </Tooltip>
       </div>
       {gasSummaryStatus === 'loading' ? (

@@ -256,9 +256,9 @@ export const AdvancedSettings = () => {
             {isEOA && (
               <button onClick={() => setInputLocked(!inputLocked)}>
                 {inputLocked ? (
-                  <LockClosedIcon height={20} className="mr-2" />
+                  <LockClosedIcon height={16} />
                 ) : (
-                  <LockOpenIcon height={20} className="mr-2" />
+                  <LockOpenIcon height={16} />
                 )}
               </button>
             )}

@@ -15,15 +15,15 @@ export function PendingDepositWarning() {
     >
       <Disclosure.Button className="flex items-center text-left">
         <div className="flex items-start gap-1">
-          <InformationCircleIcon className="mt-[2px] h-4 w-4 shrink-0 stroke-orange-dark" />
+          <InformationCircleIcon className="mt-[2px] h-3 w-3 shrink-0 stroke-orange-dark" />
           <p>
             Deposit might fail if the gas fee provided was too low. Stay on this
             page until the transaction succeeds.
           </p>
         </div>
-        <ChevronRightIcon className="ml-auto h-4 w-4 shrink-0 ui-open:rotate-90 ui-open:transform" />
+        <ChevronRightIcon className="ml-auto h-3 w-3 shrink-0 ui-open:rotate-90 ui-open:transform" />
       </Disclosure.Button>
-      <Disclosure.Panel className="flex flex-col gap-2 pl-5">
+      <Disclosure.Panel className="flex flex-col gap-2 pl-4">
         <p>
           If you must leave, check back <strong>within a week</strong>. In most
           cases, your deposits should go through successfully.

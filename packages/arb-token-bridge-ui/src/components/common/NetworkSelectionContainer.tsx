@@ -323,7 +323,7 @@ export const NetworkSelectionContainer = ({
     useAccountType()
 
   return (
-    <Popover className="relative w-full sm:w-max">
+    <Popover className="relative w-max">
       {({ open }) => (
         <>
           <Popover.Button
@@ -335,7 +335,7 @@ export const NetworkSelectionContainer = ({
             {children}
             <ChevronDownIcon
               className={twMerge(
-                'h-3 w-3 transition-transform duration-200',
+                'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
                 open ? '-rotate-180' : 'rotate-0'
               )}
             />
