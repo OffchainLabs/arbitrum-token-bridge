@@ -6,6 +6,7 @@ import { getBridgeTransferKey } from '../../token-bridge-sdk/utils'
 import { twMerge } from 'tailwind-merge'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { Loader } from '../common/atoms/Loader'
 
 export type SdkRequiredTxData = {
   sourceChainTxHash: string
@@ -30,6 +31,7 @@ export const TransactionHistoryMini = () => {
       isNativeCurrencyTransfer: tx.assetType === AssetType.ETH,
       isCctpTransfer: tx.isCctp || typeof tx.cctpData !== 'undefined'
     }))
+
   const [skdTransactions, setSdkTransactions] = useState<{
     [id: string]: BridgeTransfer
   }>({})
@@ -78,15 +80,20 @@ export const TransactionHistoryMini = () => {
       await Promise.all(transfers).then(res => {
         res.forEach((transfer, i) => {
           if (transfer && !skdTransactions[transfer.key]) {
+            transfer.pollForStatus({
+              onChange: () => {
+                console.log('Status changed for ', transfer.key)
+              }
+            })
+
             _sdkTransactions[transfer.key] = transfer
           }
         })
       })
+
       setSdkTransactions(prev => {
         return { ...prev, ..._sdkTransactions }
       })
-
-      console.log('sdk transfers', skdTransactions)
     }
 
     initSdkTransactions()
@@ -119,15 +126,16 @@ export const TransactionHistoryMini = () => {
               bridgeTransfer.destinationChainTx?.hash ? 'bg-lime' : 'bg-orange'
             )}
           >
+            <div>
+              {bridgeTransfer.isFetchingStatus && (
+                <Loader color="#28A0F0" size="small" />
+              )}
+            </div>
             <div>Type: {bridgeTransfer.transferType}</div>
             <div>Status: {bridgeTransfer.status}</div>
             <div>Source Tx: {bridgeTransfer.sourceChainTx.hash}</div>
             <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
-            {bridgeTransfer.isClaimable && (
-              <div className="m-2 w-auto cursor-pointer  bg-black p-2 text-white">
-                Claim
-              </div>
-            )}
+            <div>Last update: {bridgeTransfer.lastUpdatedTimestamp}</div>
           </div>
         )
       })}

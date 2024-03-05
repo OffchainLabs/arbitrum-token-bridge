@@ -162,7 +162,7 @@ export default async function handler(
     )
 
     const whereClause = sourceChainTxHash
-      ? `{ sourceChainTxHash: "${sourceChainTxHash}" }`
+      ? `{ transactionHash: "${sourceChainTxHash}" }`
       : `{
     or: [
       { sender: "${walletAddress}" },

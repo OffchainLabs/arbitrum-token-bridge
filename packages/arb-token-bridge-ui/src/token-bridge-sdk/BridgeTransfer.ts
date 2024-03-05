@@ -13,6 +13,11 @@ export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type BridgeTransferFetchStatusFunctionResult =
   Promise<BridgeTransferStatus>
 
+export type PollForStatusProps = {
+  intervalMs?: number
+  onChange?: (bridgeTransfer: BridgeTransfer) => void
+}
+
 export abstract class BridgeTransfer {
   public transferType: TransferType
   public key: string // key to uniquely identify the transfer (sourceChainId_destinationChainId_sourceChainTxHash)
@@ -20,6 +25,7 @@ export abstract class BridgeTransfer {
   // status
   public status: BridgeTransferStatus
   public isFetchingStatus = false
+  public lastUpdatedTimestamp: number
 
   // source chain
   public sourceChainProvider: Provider
@@ -54,6 +60,7 @@ export abstract class BridgeTransfer {
     this.sourceChainTxReceipt = props.sourceChainTxReceipt
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
+    this.lastUpdatedTimestamp = Date.now()
   }
 
   /**
@@ -75,14 +82,12 @@ export abstract class BridgeTransfer {
   private async _fetchStatus(): BridgeTransferFetchStatusFunctionResult {
     this.isFetchingStatus = true
     const status = await this.fetchStatus()
+    this.lastUpdatedTimestamp = Date.now()
     this.isFetchingStatus = false
     return status
   }
 
-  public pollForStatus(props: {
-    intervalMs?: number
-    onChange: (bridgeTransfer: BridgeTransfer) => void
-  }): void {
+  public pollForStatus(props?: PollForStatusProps): void {
     const intervalId = setInterval(async () => {
       console.log(`Fetching status for transfer ${this.sourceChainTx.hash}`)
       const status = await this._fetchStatus()
@@ -90,12 +95,12 @@ export abstract class BridgeTransfer {
       this.status = status
 
       if (statusChanged) {
-        props.onChange(this)
+        props?.onChange?.(this)
       }
 
       if (this.isStatusFinal(this.status) || this.isPendingUserAction) {
         clearInterval(intervalId)
       }
-    }, props.intervalMs ?? 15_000)
+    }, props?.intervalMs ?? 15_000)
   }
 }

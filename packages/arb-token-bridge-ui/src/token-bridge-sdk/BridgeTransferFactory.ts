@@ -42,9 +42,9 @@ export class BridgeTransferFactory {
     const destinationChainProvider = getProviderForChainId(destinationChainId)
 
     const isNativeCurrencyTransfer =
-      isNativeCurrencyTransferFromProps || isNativeCurrencyTransferDeduced
+      isNativeCurrencyTransferFromProps ?? isNativeCurrencyTransferDeduced
 
-    const isCctpTransfer = isCctpTransferFromProps || isUsdcTransfer
+    const isCctpTransfer = isCctpTransferFromProps ?? isUsdcTransfer
 
     if (isCctpTransfer) {
       // return USDC deposit/withdrawal
