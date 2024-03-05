@@ -40,6 +40,8 @@ enum SelectedTabName {
   Cctp = 'cctp'
 }
 
+const defaultSelectedTabName: SelectedTabName = SelectedTabName.Bridged
+
 export function USDCDepositConfirmationDialog(props: Props) {
   const {
     app: { selectedToken }
@@ -49,7 +51,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
   const { isArbitrumSepolia } = isNetwork(childChain.id)
   const [allCheckboxesCheched, setAllCheckboxesChecked] = useState(false)
   const [selectedTabName, setSelectedTabName] = useState<SelectedTabName>(
-    SelectedTabName.Bridged
+    defaultSelectedTabName
   )
   const destinationNetworkName = getNetworkName(childChain.id)
 
@@ -71,9 +73,12 @@ export function USDCDepositConfirmationDialog(props: Props) {
             : 'Use CCTP Click'
         trackEvent(eventName, { tokenSymbol, type: 'Deposit' })
       }
+
       props.onClose(confirmed, selectedTabName)
+      // reset tab
+      setSelectedTabName(defaultSelectedTabName)
     },
-    [props, tokenSymbol, selectedTabName]
+    [props, selectedTabName, tokenSymbol]
   )
 
   if (!selectedToken) {

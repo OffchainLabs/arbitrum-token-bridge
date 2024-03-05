@@ -3,7 +3,7 @@ import {
   InformationCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import { PropsWithChildren, useMemo } from 'react'
+import { PropsWithChildren } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 type NoteBoxProps = PropsWithChildren<{
@@ -13,27 +13,22 @@ type NoteBoxProps = PropsWithChildren<{
 
 const iconClassName = 'h-3 w-3 shrink-0 mt-[2px]'
 
+const wrapperClassNames = {
+  info: 'bg-cyan text-cyan-dark',
+  warning: 'bg-orange text-orange-dark',
+  error: 'bg-brick text-brick-dark'
+}
+
 export const NoteBox = ({
   children,
   variant = 'info',
   className
 }: NoteBoxProps) => {
-  const wrapperClassName = useMemo(() => {
-    switch (variant) {
-      case 'info':
-        return 'bg-cyan text-cyan-dark'
-      case 'warning':
-        return 'bg-orange text-orange-dark'
-      case 'error':
-        return 'bg-brick text-brick-dark'
-    }
-  }, [variant])
-
   return (
     <div
       className={twMerge(
         'flex flex-row space-x-2 rounded p-2',
-        wrapperClassName,
+        wrapperClassNames[variant],
         className
       )}
     >

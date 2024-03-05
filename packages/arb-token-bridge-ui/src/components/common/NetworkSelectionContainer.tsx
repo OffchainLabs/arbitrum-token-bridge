@@ -281,11 +281,9 @@ function NetworksPanel({
   return (
     <div className="flex flex-col gap-4">
       <SearchPanelTable
-        searchInput={{
-          placeholder: 'Search a network name',
-          value: networkSearched,
-          onChange: onSearchInputChange
-        }}
+        searchInputPlaceholder="Search a network name"
+        searchInputValue={networkSearched}
+        searchInputOnChange={onSearchInputChange}
         errorMessage={errorMessage}
       >
         <AutoSizer>
