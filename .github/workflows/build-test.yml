@@ -229,6 +229,7 @@ jobs:
           CYPRESS_RECORD_VIDEO: false
           CYPRESS_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
           CYPRESS_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          CYPRESS_SKIP_METAMASK_SETUP: true
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@v4
