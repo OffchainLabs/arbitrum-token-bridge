@@ -21,6 +21,7 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { shortenAddress } from '../../util/CommonUtils'
 import { isTxCompleted } from './helpers'
 import { Address } from '../../util/AddressUtils'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 
 const DetailsBox = ({
   children,
@@ -62,6 +63,11 @@ export const TransactionsTableDetails = ({
   if (!tx || !address) {
     return null
   }
+
+  const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
+    erc20L1Address: tx.tokenAddress,
+    chainId: tx.sourceChainId
+  })
 
   const showPriceInUsd =
     !isNetwork(tx.parentChainId).isTestnet && tx.asset === ether.symbol
@@ -129,7 +135,7 @@ export const TransactionsTableDetails = ({
                       <TransactionsTableTokenImage tx={tx} />
                       <span>
                         {formatAmount(Number(tx.value), {
-                          symbol: tx.asset
+                          symbol: tokenSymbol
                         })}
                       </span>
                       {showPriceInUsd && (
