@@ -1,11 +1,8 @@
-import { useState } from 'react'
-import {
-  L1ToL2MessageWriter as IL1ToL2MessageWriter,
-  L1ToL2MessageStatus
-} from '@arbitrum/sdk'
-import { useAccount, useSigner } from 'wagmi'
-import { TransactionReceipt } from '@ethersproject/providers'
+import { useCallback, useState } from 'react'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
+import { TransactionReceipt } from '@ethersproject/providers'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
@@ -13,30 +10,30 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { useNetworks } from './useNetworks'
-import { useNetworksRelationship } from './useNetworksRelationship'
+import { getProviderForChainId } from './useNetworks'
 import { useTransactionHistory } from './useTransactionHistory'
+import { Address } from '../util/AddressUtils'
 
 export type UseRedeemRetryableResult = {
-  redeem: (tx: MergedTransaction) => void
+  redeem: () => Promise<void>
   isRedeeming: boolean
 }
 
-export function useRedeemRetryable(): UseRedeemRetryableResult {
-  const [networks] = useNetworks()
-  const { address } = useAccount()
-  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
+export function useRedeemRetryable(
+  tx: MergedTransaction,
+  address: Address | undefined
+): UseRedeemRetryableResult {
+  const { data: signer } = useSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
-  const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(childChain.id)
+
+  const destinationNetworkName = getNetworkName(tx.destinationChainId)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
-  async function redeem(tx: MergedTransaction) {
+  const redeem = useCallback(async () => {
     if (isRedeeming) {
       return
     }
-
     try {
       setIsRedeeming(true)
 
@@ -47,7 +44,7 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       const retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: parentChainProvider,
+        l1Provider: getProviderForChainId(tx.parentChainId),
         l2Signer: signer
       })
 
@@ -73,21 +70,26 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
         resolvedAt: isSuccess ? dayjs().valueOf() : null,
         depositStatus: isSuccess ? DepositStatus.L2_SUCCESS : tx.depositStatus
       })
+
+      // track in analytics
+      trackEvent('Redeem Retryable', { network: destinationNetworkName })
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
       }
-
       return errorToast(
         `There was an error, here is more information: ${error.message}`
       )
     } finally {
       setIsRedeeming(false)
-
-      // track in analytics
-      trackEvent('Redeem Retryable', { network: l2NetworkName })
     }
-  }
+  }, [
+    isRedeeming,
+    destinationNetworkName,
+    signer,
+    tx,
+    updatePendingTransaction
+  ])
 
   return { redeem, isRedeeming }
 }

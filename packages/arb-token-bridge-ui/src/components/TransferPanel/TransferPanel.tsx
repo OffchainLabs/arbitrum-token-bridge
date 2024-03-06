@@ -8,6 +8,7 @@ import { useAccount, useChainId, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -27,14 +28,14 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
-  getL2ERC20Address,
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
-  isTokenMainnetUSDC
+  isTokenMainnetUSDC,
+  isGatewayRegistered
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -104,7 +105,8 @@ const networkConnectionWarningToast = () =>
         support
       </ExternalLink>
       .
-    </>
+    </>,
+    { autoClose: false }
   )
 
 export function TransferPanel() {
@@ -205,6 +207,10 @@ export function TransferPanel() {
     gasSummary
   })
 
+  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  )
+
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
@@ -303,7 +309,7 @@ export function TransferPanel() {
         return false
       }
 
-      const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+      const approveCustomFeeTokenTx = await ethBridger.approveGasToken({
         l1Signer
       })
       await approveCustomFeeTokenTx.wait()
@@ -360,7 +366,7 @@ export function TransferPanel() {
         return false
       }
 
-      const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+      const approveCustomFeeTokenTx = await erc20Bridger.approveGasToken({
         erc20L1Address: selectedToken.address,
         l1Signer
       })
@@ -728,19 +734,14 @@ export function TransferPanel() {
           const { decimals } = selectedToken
           const amountRaw = utils.parseUnits(amount, decimals)
 
-          // check that a registration is not currently in progress
-          const l2RoutedAddress = await getL2ERC20Address({
-            erc20L1Address: selectedToken.address,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
-          })
-
           if (
-            selectedToken.l2Address &&
-            selectedToken.l2Address.toLowerCase() !==
-              l2RoutedAddress.toLowerCase()
+            !(await isGatewayRegistered({
+              erc20ParentChainAddress: selectedToken.address,
+              parentChainProvider,
+              childChainProvider
+            }))
           ) {
-            alert(
+            warningToast(
               'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
             )
             return
@@ -996,8 +997,6 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
-        amount={amount}
-        allowance={allowance}
         token={selectedToken}
         isCctp={isCctp}
       />
@@ -1024,7 +1023,12 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <div className="flex flex-col bg-white px-6 py-6 shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:rounded">
+      <div
+        className={twMerge(
+          'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
+          'sm:rounded sm:border'
+        )}
+      >
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
@@ -1056,12 +1060,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.deposit
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border bg-eth-dark py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
@@ -1086,12 +1092,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
