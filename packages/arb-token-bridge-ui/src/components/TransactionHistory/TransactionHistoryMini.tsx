@@ -174,6 +174,9 @@ const TransactionHistoryMiniRow = ({
       <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
       <div>Txn clock: {bridgeTransfer.lastUpdatedTimestamp}</div>
       <div>Rerender update : {Date.now()}</div>
+      {bridgeTransfer.isClaimable && (
+        <div className="m-1 w-fit bg-black p-1 text-white">Claim</div>
+      )}
     </div>
   )
 }

@@ -69,13 +69,12 @@ export abstract class BridgeTransfer {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
     this.lastUpdatedTimestamp = Date.now()
-
     this.onStateChange = () => {
       // no-op
     }
 
     const interceptor = {
-      set(obj: any, prop: string, value: any, receiver: any) {
+      set(obj: any, prop: string, value: any) {
         const keysToWatch: { [key: string]: boolean } = {
           status: true,
           isFetchingStatus: true,
@@ -89,9 +88,12 @@ export abstract class BridgeTransfer {
           isClaimable: true
         }
         if (keysToWatch[prop] && obj[prop] !== value) {
+          console.log(
+            `intercepting the setter for ${prop} - previous value: ${obj[prop]}, new value: ${value}`
+          )
           obj.onStateChange?.({ bridgeTransfer: obj, property: prop, value })
         }
-        return Reflect.set(obj, prop, value, receiver)
+        return Reflect.set(obj, prop, value)
       }
     }
     return new Proxy(this, interceptor)
