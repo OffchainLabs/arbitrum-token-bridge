@@ -171,10 +171,7 @@ export function HeaderAccountPopover({
               Copied to clipboard!
             </span>
           )}
-          <button
-            className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 text-white/70 hover:text-white sm:flex"
-            onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
-          >
+          <div className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 sm:flex">
             {/* Blurred background */}
             <div className="absolute inset-0 flex h-8 w-full flex-col items-center overflow-hidden bg-dark text-center">
               <div className="scale-400 blur-2xl filter">
@@ -195,14 +192,17 @@ export function HeaderAccountPopover({
                   fallback={<CustomBoringAvatar size={54} name={address} />}
                 />
               </div>
-              <div className="flex translate-y-1 flex-row items-center gap-1">
+              <button
+                className="flex translate-y-1 flex-row items-center gap-1 text-white/70 hover:text-white"
+                onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
+              >
                 <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm">
                   {ensName ?? udInfo.name ?? accountShort}
                 </span>
                 <DocumentDuplicateIcon className="h-3 w-3" />
-              </div>
+              </button>
             </div>
-          </button>
+          </div>
 
           <div className="flex w-full flex-col justify-between sm:flex-col sm:items-end sm:px-0">
             {/* Transactions button */}
