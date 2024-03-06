@@ -156,7 +156,7 @@ describe('Withdraw USDC through CCTP', () => {
             .should('be.enabled')
             .click()
 
-          cy.findByText(/I understand that I have to pay a one-time/).click()
+          cy.findByText(/pay a one-time approval fee/).click()
           cy.findByRole('button', {
             name: /Pay approval fee of/
           }).click()

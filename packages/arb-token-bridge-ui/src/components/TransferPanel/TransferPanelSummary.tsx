@@ -2,18 +2,12 @@ import React, { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { formatAmount } from '../../util/NumberUtils'
-import {
-  getBaseChainIdByChainId,
-  getNetworkName,
-  isNetwork
-} from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
-import dayjs from 'dayjs'
-import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
@@ -44,14 +38,12 @@ function TransferPanelSummaryContainer({
   className?: string
 }) {
   return (
-    <div className="flex flex-col">
-      <span className="mb-4 text-xl text-gray-dark">Summary</span>
+    <div className="mb-8 flex flex-col text-white">
+      <span className="mb-3 text-xl">Summary</span>
 
-      <div className={twMerge('flex flex-col space-y-4', className)}>
+      <div className={twMerge('flex flex-col space-y-3', className)}>
         {children}
       </div>
-
-      <div className="h-10" />
     </div>
   )
 }
@@ -59,7 +51,7 @@ function TransferPanelSummaryContainer({
 function TransferPanelSummaryUnavailable() {
   return (
     <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm text-gray-dark lg:text-base">
+      <div className="flex flex-row justify-between text-sm lg:text-base">
         Gas estimates are not available for this action.
       </div>
     </TransferPanelSummaryContainer>
@@ -109,18 +101,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
 
-  const baseChainId = getBaseChainIdByChainId({
-    chainId: childChain.id
-  })
-
-  const estimatedConfirmationDate = getTxConfirmationDate({
-    createdAt: dayjs(new Date()),
-    withdrawalFromChainId: childChain.id,
-    baseChainId
-  })
-
-  const confirmationPeriod = estimatedConfirmationDate.fromNow(true)
-
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
     () =>
@@ -158,7 +138,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     <TransferPanelSummaryContainer>
       <div
         className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
         )}
       >
         <span className="text-left">You will pay in gas fees:</span>
@@ -166,7 +146,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="font-medium">
           {gasSummaryLoading && <StyledLoader />}
           {!gasSummaryLoading && differentNativeCurrencyAndDepositMode && (
-            <>
+            <span className="tabular-nums">
               {formatAmount(estimatedParentChainGasFees, {
                 symbol: parentChainNativeCurrency.symbol
               })}{' '}
@@ -175,7 +155,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
                 showBrackets
               />
               {selectedToken && ' and '}
-            </>
+            </span>
           )}
           {!gasSummaryLoading &&
             showChildChainNativeCurrencyAsGasFee &&
@@ -183,7 +163,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
               symbol: childChainNativeCurrency.symbol
             })}
           {!gasSummaryLoading && sameNativeCurrency && (
-            <>
+            <span className="tabular-nums">
               {formatAmount(estimatedTotalGasFees, {
                 symbol: childChainNativeCurrency.symbol
               })}{' '}
@@ -191,14 +171,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
                 amount={estimatedTotalGasFees}
                 showBrackets
               />
-            </>
+            </span>
           )}{' '}
         </span>
       </div>
 
       <div
         className={twMerge(
-          'grid grid-cols-[260px_auto] items-center text-sm font-light tabular-nums text-gray-dark'
+          'grid grid-cols-[260px_auto] items-center text-sm font-light'
         )}
       >
         <span>
@@ -206,7 +186,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           {getNetworkName(isDepositMode ? childChain.id : parentChain.id)}:
         </span>
         <span className="font-medium">
-          {formatAmount(Number(amount))}{' '}
+          <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
           <TokenSymbolWithExplorerLink
             token={token}
             isParentChain={!isDepositMode}
@@ -217,13 +197,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
-
-      {!isDepositMode && (
-        <p className="flex flex-col gap-3 text-sm font-light text-gray-dark">
-          You will have to claim the withdrawal on {parentChain.name} in ~
-          {confirmationPeriod}.
-        </p>
-      )}
     </TransferPanelSummaryContainer>
   )
 }
