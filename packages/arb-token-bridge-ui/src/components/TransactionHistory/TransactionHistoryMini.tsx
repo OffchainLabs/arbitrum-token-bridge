@@ -86,6 +86,10 @@ export const TransactionHistoryMini = () => {
                 console.log(
                   `${props?.property} changed for ${transfer.key} to ${props?.value}`
                 )
+                setSdkTransactions(prev => ({
+                  ...prev,
+                  [transfer.key]: transfer
+                }))
               }
             })
 

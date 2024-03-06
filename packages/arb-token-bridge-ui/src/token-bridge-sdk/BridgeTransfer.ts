@@ -69,12 +69,13 @@ export abstract class BridgeTransfer {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
     this.lastUpdatedTimestamp = Date.now()
+
     this.onStateChange = () => {
       // no-op
     }
 
     const interceptor = {
-      set(obj: any, prop: string, value: any) {
+      set(obj: any, prop: string, value: any, receiver: any) {
         const keysToWatch: { [key: string]: boolean } = {
           status: true,
           isFetchingStatus: true,
@@ -88,12 +89,9 @@ export abstract class BridgeTransfer {
           isClaimable: true
         }
         if (keysToWatch[prop] && obj[prop] !== value) {
-          console.log(
-            `intercepting the setter for ${prop} - previous value: ${obj[prop]}, new value: ${value}`
-          )
           obj.onStateChange?.({ bridgeTransfer: obj, property: prop, value })
         }
-        return Reflect.set(obj, prop, value)
+        return Reflect.set(obj, prop, value, receiver)
       }
     }
     return new Proxy(this, interceptor)
@@ -140,7 +138,7 @@ export abstract class BridgeTransfer {
       if (statusChanged) {
         props?.onChange?.(this)
       }
-    }, props?.intervalMs ?? 15_000)
+    }, props?.intervalMs ?? 10_000)
   }
 
   public stopPollingForStatus(): void {
@@ -156,7 +154,3 @@ export abstract class BridgeTransfer {
     this.onStateChange = props.onChange
   }
 }
-
-/*
- bridgeTransfer.watch({onChange:(this:BridgeTransfer)=>{console.log('Status changed for ', this.key)}})
- */
