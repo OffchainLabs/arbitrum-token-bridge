@@ -172,10 +172,7 @@ export function useGasSummary(): UseGasSummaryResult {
       }
     }
 
-    if (!isConnected) {
-      setGasSummaryStatus('unavailable')
-      return
-    }
+    estimateGas()
   }, [
     // Re-run gas estimation when:
     estimateGas,

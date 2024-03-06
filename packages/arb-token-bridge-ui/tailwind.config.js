@@ -35,7 +35,6 @@ module.exports = {
         'gray-4': '#CCCCCC',
         'gray-5': '#AEAEAE',
         'gray-6': '#999999',
-        'gray-header-menu': '#8d8e8e',
         'gray-7': '#BDBDBD',
         'gray-dark': '#6D6D6D',
         'line-gray': '#F4F4F4',

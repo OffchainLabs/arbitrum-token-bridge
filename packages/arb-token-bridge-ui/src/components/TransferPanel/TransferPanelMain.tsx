@@ -332,7 +332,6 @@ export function TransferPanelMain({
   setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
-  const { isConnected } = useAccount()
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
