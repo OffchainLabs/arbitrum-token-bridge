@@ -177,6 +177,10 @@ describe('ChainParam custom encoder and decoder', () => {
     it('should return ChainQueryParam if value is a valid chainId', () => {
       expect(ChainParam.encode(ChainId.Ethereum)).toEqual('ethereum')
       expect(ChainParam.encode(ChainId.ArbitrumOne)).toEqual('arbitrum-one')
+      expect(ChainParam.encode(ChainId.Sepolia)).toEqual('sepolia')
+      expect(ChainParam.encode(ChainId.ArbitrumSepolia)).toEqual(
+        'arbitrum-sepolia'
+      )
       expect(ChainParam.encode(1234567890)).toBeUndefined()
       localStorage.setItem(
         customChainLocalStorageKey,
@@ -198,6 +202,10 @@ describe('ChainParam custom encoder and decoder', () => {
     it('should decode to ChainId if value is a valid ChainQueryParam', () => {
       expect(ChainParam.decode('ethereum')).toEqual(ChainId.Ethereum)
       expect(ChainParam.decode('arbitrum-one')).toEqual(ChainId.ArbitrumOne)
+      expect(ChainParam.decode('sepolia')).toEqual(ChainId.Sepolia)
+      expect(ChainParam.decode('arbitrum-sepolia')).toEqual(
+        ChainId.ArbitrumSepolia
+      )
       expect(ChainParam.decode('aaa123')).toBeUndefined()
     })
 
@@ -207,6 +215,10 @@ describe('ChainParam custom encoder and decoder', () => {
       }
       expect(decodeChainId(ChainId.Ethereum)).toEqual(ChainId.Ethereum)
       expect(decodeChainId(ChainId.ArbitrumOne)).toEqual(ChainId.ArbitrumOne)
+      expect(decodeChainId(ChainId.Sepolia)).toEqual(ChainId.Sepolia)
+      expect(decodeChainId(ChainId.ArbitrumSepolia)).toEqual(
+        ChainId.ArbitrumSepolia
+      )
       expect(ChainParam.decode('1234567890')).toBeUndefined()
       const customChain = createMockOrbitChain({
         chainId: 222222,
