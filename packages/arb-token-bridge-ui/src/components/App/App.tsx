@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useAccount, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
@@ -6,29 +6,22 @@ import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage } from '@uidotdev/usehooks'
+
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
-import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { useDialog } from '../common/Dialog'
-import {
-  HeaderContent,
-  HeaderOverrides,
-  HeaderOverridesProps
-} from '../common/Header'
-import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { Notifications } from '../common/Notifications'
-import { isNetwork } from '../../util/networks'
+import { Header } from '../common/Header'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
-import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { isNetwork, rpcURLs } from '../../util/networks'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
@@ -37,7 +30,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
-import { SettingsToggle } from '../common/atoms/SettingsToggle'
+import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -50,65 +43,15 @@ const rainbowkitTheme = merge(darkTheme(), {
     accentColor: 'var(--blue-link)'
   },
   fonts: {
-    body: "'Space Grotesk', sans-serif"
+    body: 'Roboto, sans-serif'
   }
 } as Theme)
 
-const AppContent = (): JSX.Element => {
-  const { isConnected } = useAccount()
-  const [{ sourceChain }] = useNetworks()
-  const {
-    app: { connectionState }
-  } = useAppState()
-
-  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    if (isNetwork(sourceChain.id).isTestnet) {
-      return {
-        imageSrc: 'images/HeaderArbitrumLogoTestnet.webp',
-        className: 'lg:bg-ocl-blue'
-      }
-    }
-
-    return {
-      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
-      className: 'lg:bg-black'
-    }
-  }, [sourceChain.id])
-
-  if (connectionState === ConnectionState.NETWORK_ERROR) {
-    return (
-      <Alert type="red">
-        Error: unable to connect to network. Try again soon and contact{' '}
-        <a rel="noreferrer" target="_blank" href={GET_HELP_LINK}>
-          <u>support</u>
-        </a>{' '}
-        if problem persists.
-      </Alert>
-    )
-  }
-
-  return (
-    <>
-      <HeaderOverrides {...headerOverridesProps} />
-
-      <HeaderContent>
-        {isConnected ? <HeaderAccountPopover /> : <SettingsToggle />}
-      </HeaderContent>
-
-      <TokenListSyncer />
-      <BalanceUpdater />
-      <Notifications />
-      <MainContent />
-    </>
-  )
-}
-
-const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
+const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
-  const { app } = useAppState()
-  const { selectedToken } = app
-  const { address } = useAccount()
-  const { isBlocked } = useAccountIsBlocked()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
@@ -185,7 +128,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
     })
   }, [
-    address,
     networks.sourceChain.id,
     parentChain.id,
     childChain.id,
@@ -208,11 +150,35 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
+  if (!tokenBridgeParams) {
+    return null
+  }
+
+  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
+}
+
+function AppContent() {
+  const { address } = useAccount()
+  const { isBlocked } = useAccountIsBlocked()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+
+  useSyncQueryParamsToTestnetMode()
+
+  if (!tosAccepted) {
+    return (
+      <>
+        <Header />
+        <WelcomeDialog />
+      </>
+    )
+  }
+
   if (address && isBlocked) {
     return (
       <BlockedDialog
         address={address}
         isOpen={true}
+        closeable={false}
         // ignoring until we use the package
         // https://github.com/OffchainLabs/config-monorepo/pull/11
         //
@@ -224,10 +190,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
 
   return (
     <>
-      {tokenBridgeParams && (
-        <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
-      )}
-      {children}
+      <Header />
+      <TokenListSyncer />
+      <BalanceUpdater />
+      <ArbTokenBridgeStoreSyncWrapper />
+      <MainContent />
     </>
   )
 }
@@ -252,25 +219,6 @@ Object.keys(localStorage).forEach(key => {
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-  const [tosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  const isTosAccepted = tosAccepted !== undefined
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  function onClose(confirmed: boolean) {
-    // Only close after confirming (agreeing to terms)
-    if (confirmed) {
-      setTosAccepted('true')
-      welcomeDialogProps.onClose(confirmed)
-    }
-  }
 
   return (
     <Provider value={overmind}>
@@ -280,9 +228,8 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
             <AppContextProvider>
-              <Injector>{isTosAccepted && <AppContent />}</Injector>
+              <AppContent />
             </AppContextProvider>
           </RainbowKitProvider>
         </WagmiConfig>

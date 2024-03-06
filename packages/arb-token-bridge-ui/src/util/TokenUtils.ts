@@ -2,6 +2,7 @@ import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
@@ -274,11 +275,19 @@ type SanitizeTokenOptions = {
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
+export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumOne['USDC.e'].toLowerCase()
+
 export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
 
+export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumSepolia['USDC.e'].toLowerCase()
+
 export const isTokenArbitrumOneNativeUSDC = (
-  tokenAddress: string | undefined
+  tokenAddress: string | undefined | null
 ) =>
   tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
 
@@ -288,7 +297,7 @@ export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress?.toLowerCase() ===
   CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
 
-export const isTokenUSDC = (tokenAddress: string | undefined) => {
+export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
   return (
     isTokenMainnetUSDC(tokenAddress) ||
     isTokenSepoliaUSDC(tokenAddress) ||
@@ -310,7 +319,9 @@ export function sanitizeTokenSymbol(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
@@ -333,7 +344,9 @@ export function sanitizeTokenName(
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
     // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
@@ -352,4 +365,59 @@ export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
     decimals: data.decimals,
     listIds: new Set()
   }
+}
+
+export async function isGatewayRegistered({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
+}: {
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}): Promise<boolean> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+  const parentChainStandardGatewayAddressFromChainConfig =
+    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
+
+  const parentChainGatewayAddressFromParentGatewayRouter = (
+    await erc20Bridger.getL1GatewayAddress(
+      erc20ParentChainAddress,
+      parentChainProvider
+    )
+  ).toLowerCase()
+
+  // token uses standard gateway; no need to check further
+  if (
+    parentChainStandardGatewayAddressFromChainConfig ===
+    parentChainGatewayAddressFromParentGatewayRouter
+  ) {
+    return true
+  }
+
+  const tokenChildChainAddressFromParentGatewayRouter = (
+    await erc20Bridger.getL2ERC20Address(
+      erc20ParentChainAddress,
+      parentChainProvider
+    )
+  ).toLowerCase()
+
+  const childChainGatewayAddressFromChildChainRouter = (
+    await erc20Bridger.getL2GatewayAddress(
+      erc20ParentChainAddress,
+      childChainProvider
+    )
+  ).toLowerCase()
+
+  const tokenChildChainAddressFromChildChainGateway = (
+    await L2ERC20Gateway__factory.connect(
+      childChainGatewayAddressFromChildChainRouter,
+      childChainProvider
+    ).calculateL2TokenAddress(erc20ParentChainAddress)
+  ).toLowerCase()
+
+  return (
+    tokenChildChainAddressFromParentGatewayRouter ===
+    tokenChildChainAddressFromChildChainGateway
+  )
 }
