@@ -10,7 +10,8 @@ import { useNetworks } from '../../hooks/useNetworks'
 export const TestnetToggle = ({
   className,
   label,
-  description
+  description,
+  includeToggleStateOnLabel
 }: {
   className?: {
     wrapper?: string
@@ -18,17 +19,27 @@ export const TestnetToggle = ({
   }
   label: string
   description?: string
+  includeToggleStateOnLabel?: boolean
 }) => {
   const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
   const [{ sourceChain }, setNetworks] = useNetworks()
 
   const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
 
+  const labelText = includeToggleStateOnLabel
+    ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
+    : label
+
   const onChange = useCallback(() => {
     if (isSourceChainTestnet) {
       setNetworks({
         sourceChainId: ChainId.Ethereum,
         destinationChainId: ChainId.ArbitrumOne
+      })
+    } else {
+      setNetworks({
+        sourceChainId: ChainId.Sepolia,
+        destinationChainId: ChainId.ArbitrumSepolia
       })
     }
     setTimeout(() => {
@@ -39,16 +50,14 @@ export const TestnetToggle = ({
   }, [isSourceChainTestnet, setIsTestnetMode, setNetworks])
 
   return (
-    <div
-      className={twMerge(!isTestnetMode && 'opacity-60', className?.wrapper)}
-    >
+    <label className={twMerge('cursor-pointer', className?.wrapper)}>
       <Switch
         className={className?.switch}
-        label={label}
+        label={labelText}
         description={description}
         checked={isTestnetMode}
         onChange={onChange}
       />
-    </div>
+    </label>
   )
 }

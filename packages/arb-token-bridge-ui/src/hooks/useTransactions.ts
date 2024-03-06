@@ -3,7 +3,6 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { L1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }

@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDownIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
+import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
 import { useActions, useAppState } from '../../state'
@@ -48,7 +49,6 @@ import {
   ether
 } from '../../constants'
 import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
-import { shortenAddress } from '../../util/CommonUtils'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import {
@@ -77,30 +77,59 @@ enum NetworkType {
 export function SwitchNetworksButton(
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) {
-  const {
-    isEOA,
-    isSmartContractWallet,
-    isLoading: isLoadingAccountType
-  } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  const disabled = isSmartContractWallet || isLoadingAccountType
 
   return (
     <button
       type="button"
-      disabled={isSmartContractWallet || isLoadingAccountType}
+      disabled={disabled}
       className={twMerge(
-        'min-h-14 lg:min-h-16 min-w-14 lg:min-w-16 flex h-14 w-14 items-center justify-center rounded-full bg-white p-3 shadow-[0_0_4px_0_rgba(0,0,0,0.25)] transition duration-200 lg:h-16 lg:w-16 lg:p-4',
-        isEOA
-          ? 'hover:animate-rotate-180 focus-visible:animate-rotate-180 hover:bg-gray-1 focus-visible:ring-2 focus-visible:ring-gray-4 active:bg-gray-2'
-          : ''
+        'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
+        disabled && 'pointer-events-none'
       )}
       {...props}
     >
+      <SwitchNetworkButtonBorderTop />
       {isSmartContractWallet ? (
-        <ChevronDownIcon className="text-dark" />
+        <ArrowDownIcon className="h-6 w-6 stroke-1 text-white" />
       ) : (
-        <ArrowsUpDownIcon className="text-dark" />
+        <ArrowsUpDownIcon className="h-8 w-8 stroke-1 text-white transition duration-300 group-hover:rotate-180 group-hover:opacity-80" />
       )}
+      <SwitchNetworkButtonBorderBottom />
     </button>
+  )
+}
+
+function SwitchNetworkButtonBorderTop() {
+  const [networks] = useNetworks()
+
+  const sourceNetworkColor = getBridgeUiConfigForChain(
+    networks.sourceChain.id
+  ).color
+
+  return (
+    <div
+      className="absolute left-0 right-0 top-0 m-auto h-[7.5px] w-full rounded-t border-x border-t transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: sourceNetworkColor }}
+    />
+  )
+}
+
+function SwitchNetworkButtonBorderBottom() {
+  const [networks] = useNetworks()
+
+  const destinationNetworkColor = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  ).color
+
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 m-auto h-[7.5px] w-full rounded-b border-x border-b transition-[border-color] duration-200 lg:h-[10px]"
+      style={{ borderColor: destinationNetworkColor }}
+    />
   )
 }
 
@@ -111,21 +140,7 @@ function CustomAddressBanner({
   network: Chain
   customAddress: string | undefined
 }) {
-  const { isArbitrum, isArbitrumNova, isOrbitChain } = isNetwork(network.id)
   const { color } = getBridgeUiConfigForChain(network.id)
-
-  const backgroundColorForL1OrL2Chain = useMemo(() => {
-    if (isOrbitChain) {
-      return ''
-    }
-    if (!isArbitrum) {
-      return 'bg-cyan'
-    }
-    if (isArbitrumNova) {
-      return 'bg-orange'
-    }
-    return 'bg-cyan'
-  }, [isArbitrum, isArbitrumNova, isOrbitChain])
 
   if (!customAddress) {
     return null
@@ -134,25 +149,21 @@ function CustomAddressBanner({
   return (
     <div
       style={{
-        backgroundColor: isOrbitChain
-          ? // add opacity to create a lighter shade
-            `${color.primary}20`
-          : undefined,
-        color: color.secondary,
-        borderColor: color.secondary
+        backgroundColor: `${color}AA`,
+        color: 'white',
+        borderColor: color
       }}
       className={twMerge(
-        'w-full rounded-t-lg border-4 p-1 text-center text-sm',
-        !isOrbitChain && backgroundColorForL1OrL2Chain
+        'w-full rounded-t border border-b-0 p-2 text-center text-sm'
       )}
     >
       <span>
-        Showing balance for Custom Destination Address:{' '}
+        Showing balance for{' '}
         <ExternalLink
           className="arb-hover underline"
           href={`${getExplorerUrl(network.id)}/address/${customAddress}`}
         >
-          {shortenAddress(customAddress)}
+          {customAddress}
         </ExternalLink>
       </span>
     </div>
@@ -162,10 +173,12 @@ function CustomAddressBanner({
 function NetworkContainer({
   network,
   customAddress,
+  bgLogoHeight = 58,
   children
 }: {
   network: Chain
   customAddress?: string
+  bgLogoHeight?: number
   children: React.ReactNode
 }) {
   const { address } = useAccount()
@@ -173,6 +186,7 @@ function NetworkContainer({
     color,
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(network.id)
+  const isSmallScreen = useMedia('(max-width: 639px)')
 
   const backgroundImage = `url(${networkLogo})`
 
@@ -189,26 +203,32 @@ function NetworkContainer({
   }, [customAddress, walletAddressLowercased])
 
   return (
-    <>
+    <div>
       {showCustomAddressBanner && (
         <CustomAddressBanner network={network} customAddress={customAddress} />
       )}
       <div
-        style={{ backgroundColor: color.secondary }}
+        style={{
+          backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
+          borderColor: color
+        }}
         className={twMerge(
-          'relative rounded-xl p-1 transition-colors',
-          showCustomAddressBanner ? 'rounded-t-none' : ''
+          'relative rounded border transition-colors duration-400',
+          showCustomAddressBanner && 'rounded-t-none'
         )}
       >
         <div
-          className="absolute left-0 top-0 z-0 h-full w-full bg-contain bg-left bg-no-repeat bg-origin-content p-2 opacity-50"
-          style={{ backgroundImage }}
-        ></div>
-        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+          className="absolute left-0 top-0 h-full w-full bg-[-2px_0] bg-no-repeat bg-origin-content p-3 opacity-50"
+          style={{
+            backgroundImage,
+            backgroundSize: `auto ${bgLogoHeight + (isSmallScreen ? -12 : 0)}px`
+          }}
+        />
+        <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row">
           {children}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -230,9 +250,7 @@ function ETHBalance({
   return (
     <p>
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
-        {formatAmount(balance, { symbol: ether.symbol })}
-      </span>
+      <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
     </p>
   )
 }
@@ -263,7 +281,7 @@ function TokenBalance({
   return (
     <p aria-label={`${forToken.symbol} balance on ${on}`}>
       <span className="font-light">{prefix}</span>
-      <span className="tabular-nums">
+      <span>
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}
@@ -279,7 +297,7 @@ function TokenBalance({
 
 function BalancesContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ml-1 flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white md:text-lg">
+    <div className="flex flex-col flex-nowrap items-end break-all text-sm tracking-[.25px] text-white sm:text-lg">
       {children}
     </div>
   )
@@ -291,7 +309,7 @@ function NetworkListboxPlusBalancesContainer({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col items-start justify-between gap-1 gap-y-2.5 whitespace-nowrap sm:flex-row sm:items-center">
+    <div className="flex flex-row flex-wrap items-center justify-between gap-1 gap-y-2.5 whitespace-nowrap">
       {children}
     </div>
   )
@@ -800,32 +818,24 @@ export function TransferPanelMain({
   const buttonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-        .primary
     }),
     [networks.sourceChain.id]
   )
 
   return (
-    <div className="flex flex-col pb-6">
-      <NetworkContainer network={networks.sourceChain}>
+    <div className="flex flex-col pb-6 lg:gap-y-1">
+      <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             buttonStyle={buttonStyle}
             buttonClassName={twMerge(
-              'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
             )}
             onChange={networkListboxProps.from.onChange}
           >
-            <span
-              className={twMerge(
-                'max-w-[220px] truncate md:max-w-[250px]',
-                // temporary fix not to truncate their network name, this will be resolved by the reskin
-                networks.sourceChain.id === 70700 && 'text-[20px]'
-              )}
-            >
+            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
               From: {getNetworkName(networks.sourceChain.id)}
             </span>
-            <ChevronDownIcon className="h-4 w-4" />
           </NetworkSelectionContainer>
           <BalancesContainer>
             <TokenBalance
@@ -862,7 +872,7 @@ export function TransferPanelMain({
           </BalancesContainer>
         </NetworkListboxPlusBalancesContainer>
 
-        <div className="flex flex-col space-y-1">
+        <div className="flex flex-col gap-1">
           <TransferPanelMainInput
             maxButtonProps={{
               visible: maxButtonVisible,
@@ -908,7 +918,7 @@ export function TransferPanelMain({
         <EstimatedGas chainType="source" />
       </NetworkContainer>
 
-      <div className="z-10 flex h-10 w-full items-center justify-center lg:h-12">
+      <div className="z-[1] flex h-4 w-full items-center justify-center lg:h-1">
         <SwitchNetworksButton
           onClick={switchNetworksOnTransferPanel}
           aria-label="Switch Networks" // useful for accessibility, and catching the element in automation
@@ -916,6 +926,7 @@ export function TransferPanelMain({
       </div>
 
       <NetworkContainer
+        bgLogoHeight={58}
         network={networks.destinationChain}
         customAddress={destinationAddress}
       >
@@ -985,7 +996,6 @@ export function TransferPanelMain({
       <TransferDisabledDialog />
       <OneNovaTransferDialog
         {...oneNovaTransferDialogProps}
-        onClose={() => setOneNovaTransferDestinationNetworkId(null)}
         destinationChainId={oneNovaTransferDestinationNetworkId}
         amount={amount}
       />
