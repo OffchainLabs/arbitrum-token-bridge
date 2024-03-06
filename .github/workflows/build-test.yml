@@ -223,12 +223,12 @@ jobs:
           browser: chrome
           spec: ${{ matrix.tests.file }}
         env:
-          CYPRESS_NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-          CYPRESS_NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
+          NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+          NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://geth:8545
           NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://sequencer:8547
-          CYPRESS_RECORD_VIDEO: false
-          CYPRESS_PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
-          CYPRESS_PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
+          RECORD_VIDEO: false
+          PRIVATE_KEY_CUSTOM: ${{ secrets.E2E_PRIVATE_KEY }}
+          PRIVATE_KEY_USER: ${{ secrets.E2E_PRIVATE_KEY_USER }}
           SKIP_METAMASK_SETUP: true
 
       - name: Archive e2e artifacts
