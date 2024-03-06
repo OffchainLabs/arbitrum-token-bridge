@@ -238,13 +238,16 @@ export const AdvancedSettings = () => {
           </p>
           <div
             className={twMerge(
-              'my-1 flex w-full items-center rounded-lg border border-white bg-black/40 px-2 py-1 shadow-input',
+              'my-1 flex w-full items-center rounded-lg border px-2 py-1 shadow-input',
+              inputLocked
+                ? 'border-white/20 bg-white/20'
+                : 'border-white bg-black/40',
               error ? 'border-red-400' : '',
               warning && !error ? 'border-yellow-500' : ''
             )}
           >
             <input
-              className="w-full bg-transparent text-white"
+              className="w-full bg-transparent text-white placeholder-white/50"
               placeholder={isEOA ? address : 'Enter Custom Destination Address'}
               value={destinationAddress}
               disabled={inputLocked}
