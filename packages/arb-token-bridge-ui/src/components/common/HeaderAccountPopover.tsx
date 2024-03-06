@@ -99,10 +99,6 @@ export function HeaderAccountPopover({
     chainId: 1
   })
 
-  useEffect(() => {
-    console.log('isSmartContractWallet', isSmartContractWallet)
-  }, [isSmartContractWallet])
-
   const { data: ensAvatar } = useEnsAvatar({
     address,
     chainId: 1
