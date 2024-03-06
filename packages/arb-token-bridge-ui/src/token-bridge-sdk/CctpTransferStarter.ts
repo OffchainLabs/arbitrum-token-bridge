@@ -7,8 +7,7 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import { formatAmount } from '../util/NumberUtils'
 import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
@@ -16,6 +15,7 @@ import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
+import { TransferType } from './BridgeTransfer'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
   public transferType: TransferType
@@ -89,6 +89,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     }
   }
 
+  // @ts-ignore : until I implement cctp transfer type
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
@@ -136,7 +137,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
     return {
       transferType: this.transferType,
-      status: 'pending',
+      status: 'source_chain_tx_pending',
       sourceChainProvider: this.sourceChainProvider,
       sourceChainTransaction: depositForBurnTx,
       destinationChainProvider: this.destinationChainProvider

@@ -79,7 +79,13 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'subgraph',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.l2TxHash,
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: tx.l1Token?.id ? false : true
       }
     })
   } catch (error) {
@@ -111,7 +117,13 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.transactionHash,
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: true
       }
     })
 
@@ -122,7 +134,13 @@ export async function fetchWithdrawals({
         direction: 'withdrawal',
         source: 'event_logs',
         parentChainId: l1ChainID,
-        childChainId: l2ChainID
+        childChainId: l2ChainID,
+
+        // fields compatible with new bridge sdk
+        sourceChainTxHash: tx.txHash,
+        sourceChainId: l2ChainID,
+        destinationChainId: l1ChainID,
+        isNativeCurrencyTransfer: false
       }
     })
 

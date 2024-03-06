@@ -9,8 +9,7 @@ import {
   RequiresNativeCurrencyApprovalProps,
   RequiresTokenApprovalProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import {
   fetchErc20Allowance,
@@ -18,6 +17,8 @@ import {
 } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
+import { Erc20Deposit } from './Erc20Deposit'
+import { TransferType } from './BridgeTransfer'
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
@@ -98,7 +99,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+    const approveCustomFeeTokenTx = await erc20Bridger.approveGasToken({
       erc20L1Address: this.sourceChainErc20Address,
       l1Signer: signer
     })
@@ -224,18 +225,16 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await erc20Bridger.deposit({
+    const sourceChainTx = await erc20Bridger.deposit({
       ...depositRequest,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
 
-    return {
-      transferType: this.transferType,
-      status: 'pending',
+    return Erc20Deposit.initializeFromSourceChainTx({
+      sourceChainTx,
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
       destinationChainProvider: this.destinationChainProvider
-    }
+    })
   }
 }

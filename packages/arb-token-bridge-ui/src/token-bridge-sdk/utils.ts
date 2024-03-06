@@ -1,6 +1,12 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
+import {
+  isTokenArbitrumOneNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenMainnetUSDC,
+  isTokenSepoliaUSDC
+} from '../util/TokenUtils'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -17,7 +23,39 @@ export const getProviderFromSigner = (signer: Signer) => {
   return signer.provider
 }
 
-export const getBridgeTransferProperties = async ({
+export const getBridgeTransferProperties = ({
+  sourceChainId,
+  destinationChainId,
+  sourceChainErc20Address
+}: {
+  sourceChainId: number
+  destinationChainId: number
+  sourceChainErc20Address?: string
+}) => {
+  const isBaseChainEthereum =
+    isNetwork(sourceChainId).isEthereumMainnetOrTestnet
+  const isBaseChainArbitrum = isNetwork(sourceChainId).isArbitrum
+  const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
+
+  const isDeposit =
+    isBaseChainEthereum || (isBaseChainArbitrum && isDestinationChainOrbit)
+
+  const isNativeCurrencyTransfer = !sourceChainErc20Address
+
+  const isUsdcTransfer =
+    isTokenSepoliaUSDC(sourceChainErc20Address) ||
+    isTokenMainnetUSDC(sourceChainErc20Address) ||
+    isTokenArbitrumOneNativeUSDC(sourceChainErc20Address) ||
+    isTokenArbitrumSepoliaNativeUSDC(sourceChainErc20Address)
+
+  return {
+    isDeposit,
+    isNativeCurrencyTransfer,
+    isUsdcTransfer
+  }
+}
+
+export const getBridgeTransferPropertiesFromProviders = async ({
   sourceChainProvider,
   destinationChainProvider,
   sourceChainErc20Address
@@ -30,21 +68,11 @@ export const getBridgeTransferProperties = async ({
   const destinationChainId = await getChainIdFromProvider(
     destinationChainProvider
   )
-
-  const isBaseChainEthereum =
-    isNetwork(sourceChainId).isEthereumMainnetOrTestnet
-  const isBaseChainArbitrum = isNetwork(sourceChainId).isArbitrum
-  const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
-
-  const isDeposit =
-    isBaseChainEthereum || (isBaseChainArbitrum && isDestinationChainOrbit)
-
-  const isNativeCurrencyTransfer = !sourceChainErc20Address
-
-  return {
-    isDeposit,
-    isNativeCurrencyTransfer
-  }
+  return getBridgeTransferProperties({
+    sourceChainId,
+    destinationChainId,
+    sourceChainErc20Address
+  })
 }
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L76
@@ -53,4 +81,35 @@ export function percentIncrease(
   increase: BigNumber
 ): BigNumber {
   return num.add(num.mul(increase).div(100))
+}
+
+export const getBridgeTransferKey = ({
+  sourceChainId,
+  destinationChainId,
+  sourceChainTxHash
+}: {
+  sourceChainId: number
+  destinationChainId: number
+  sourceChainTxHash: string
+}) => {
+  return `${sourceChainId}_${destinationChainId}_${sourceChainTxHash}`.toLowerCase()
+}
+
+export const getBridgeTransferKeyFromProviders = async ({
+  sourceChainProvider,
+  destinationChainProvider,
+  sourceChainTxHash
+}: {
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+  sourceChainTxHash: string
+}) => {
+  const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
+  const destinationChainId = (await destinationChainProvider.getNetwork())
+    .chainId
+  return getBridgeTransferKey({
+    sourceChainId,
+    destinationChainId,
+    sourceChainTxHash
+  })
 }

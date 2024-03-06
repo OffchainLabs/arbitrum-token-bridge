@@ -3,11 +3,12 @@ import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
 import { getAddressFromSigner } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
+import { EthOrErc20Withdrawal } from './EthOrErc20Withdrawal'
+import { TransferType } from './BridgeTransfer'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'
@@ -49,19 +50,17 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
 
     const ethBridger = await EthBridger.fromProvider(this.sourceChainProvider)
-    const tx = await ethBridger.withdraw({
+    const sourceChainTx = await ethBridger.withdraw({
       amount,
       l2Signer: signer,
       destinationAddress: address,
       from: address
     })
 
-    return {
-      transferType: this.transferType,
-      status: 'pending',
+    return EthOrErc20Withdrawal.initializeFromSourceChainTx({
+      sourceChainTx,
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: tx,
       destinationChainProvider: this.destinationChainProvider
-    }
+    })
   }
 }

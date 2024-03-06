@@ -11,6 +11,7 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
+import { TransactionHistoryMini } from '../TransactionHistory/TransactionHistoryMini'
 
 export function MainContent() {
   const { address } = useAccount()
@@ -40,7 +41,7 @@ export function MainContent() {
   }, [pendingTransactions, updatePendingTransaction])
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center gap-4">
       <div className="main-panel flex w-full max-w-[600px] flex-col gap-2">
         <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
 
@@ -48,6 +49,9 @@ export function MainContent() {
 
         <TransferPanel />
       </div>
+
+      <TransactionHistoryMini />
+
       <SidePanel
         isOpen={isTransactionHistoryPanelVisible}
         heading="Transaction History"
