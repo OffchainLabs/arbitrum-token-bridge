@@ -2,7 +2,6 @@ import { Listbox } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { Chain } from 'wagmi'
-import Image from 'next/image'
 
 import { getNetworkName } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'

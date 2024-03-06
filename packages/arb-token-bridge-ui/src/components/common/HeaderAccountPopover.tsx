@@ -31,6 +31,7 @@ import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { useNetworks } from '../../hooks/useNetworks'
+import { useAccountType } from '../../hooks/useAccountType'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -85,6 +86,8 @@ export function HeaderAccountPopover({
   const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()
   const isSmallScreen = useMedia('(max-width: 639px)')
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
@@ -95,6 +98,10 @@ export function HeaderAccountPopover({
     address,
     chainId: 1
   })
+
+  useEffect(() => {
+    console.log('isSmartContractWallet', isSmartContractWallet)
+  }, [isSmartContractWallet])
 
   const { data: ensAvatar } = useEnsAvatar({
     address,
@@ -157,8 +164,11 @@ export function HeaderAccountPopover({
             <CustomBoringAvatar size={isSmallScreen ? 24 : 40} name={address} />
           }
         />
-        <span className="text-base text-gray-4 sm:text-white">
+        <span className="flex flex-col text-justify text-base leading-extra-tight text-gray-4 sm:text-white">
           {ensName ?? udInfo.name ?? accountShort}
+          {isSmartContractWallet && !isLoadingAccountType && (
+            <span className="text-[10px]">Smart Contract Wallet</span>
+          )}
         </span>
 
         <ChevronDownIcon className="ml-auto h-[16px] w-[16px] text-gray-4 transition duration-200 sm:text-white" />
