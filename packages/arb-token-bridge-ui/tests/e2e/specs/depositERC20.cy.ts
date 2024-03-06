@@ -111,7 +111,7 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('~10 mins remaining').should('be.visible')
+              cy.findByText('10 minutes').should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'

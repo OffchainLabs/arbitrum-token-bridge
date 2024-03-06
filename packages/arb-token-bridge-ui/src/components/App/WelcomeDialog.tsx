@@ -1,20 +1,23 @@
-import { useRef } from 'react'
-import { Dialog as HeadlessUIDialog } from '@headlessui/react'
-import Image from 'next/image'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import * as Sentry from '@sentry/react'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useCallback } from 'react'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { Button } from '../common/Button'
 import { ExternalLink } from '../common/ExternalLink'
-import { Dialog, UseDialogProps } from '../common/Dialog'
 import { errorToast } from '../common/atoms/Toast'
+import { TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { Button } from '../common/Button'
 
-export function WelcomeDialog(props: UseDialogProps) {
-  const confirmButtonRef = useRef(null)
+export function WelcomeDialog() {
+  const [, setTosAccepted] = useLocalStorage<boolean>(
+    TOS_LOCALSTORAGE_KEY,
+    false
+  )
+
   const { openConnectModal } = useConnectModal()
 
-  const closeHandler = () => {
-    props.onClose(true)
+  const closeHandler = useCallback(() => {
+    setTosAccepted(true)
 
     try {
       openConnectModal?.()
@@ -22,51 +25,36 @@ export function WelcomeDialog(props: UseDialogProps) {
       errorToast('Failed to open up RainbowKit Connect Modal')
       Sentry.captureException(error)
     }
-  }
+  }, [openConnectModal, setTosAccepted])
 
   return (
-    <Dialog
-      {...props}
-      initialFocus={confirmButtonRef}
-      isCustom
-      className="mx-auto my-3 flex max-w-[340px] flex-col rounded-lg px-8 py-4 md:max-w-[600px]"
-    >
-      <HeadlessUIDialog.Title className="text-2xl font-medium">
-        Welcome
-      </HeadlessUIDialog.Title>
-
-      <div className="flex grow flex-col items-center gap-8 md:flex-row md:items-stretch">
-        <Image
-          src="/images/arbinaut-flying.webp"
-          alt="An Astronaut in an Arbitrum space suit"
-          width={256}
-          height={383}
-          className="h-[55vh] max-h-[383px] w-auto"
-        />
-        <div className="flex grow flex-col justify-between font-light">
-          <p>We will NEVER ask you for your seed phrase or private keys.</p>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm">
-              By clicking the button below, you agree to our{' '}
-              <ExternalLink
-                href="https://arbitrum.io/tos"
-                className="arb-hover underline"
-              >
-                Terms of Service.
-              </ExternalLink>
-            </p>
-
-            <Button
-              ref={confirmButtonRef}
-              variant="primary"
-              className="w-full"
-              onClick={closeHandler}
-            >
-              Agree to terms
-            </Button>
-          </div>
+    <div className="mx-4 my-16 max-w-[380px] overflow-hidden rounded border border-gray-dark bg-gray-1 pt-3 text-white sm:mx-auto">
+      <p className="px-4 text-xl">Welcome</p>
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-1 rounded bg-white/10 p-3 text-sm">
+          <p className="font-medium">Safety Tip</p>
+          <p>NEVER share your seed phrase or private keys.</p>
         </div>
+        <p className="text-sm">
+          Click the button below to agree to our{' '}
+          <ExternalLink
+            href="https://arbitrum.io/tos"
+            className="arb-hover underline"
+          >
+            Terms of Service
+          </ExternalLink>
+          .
+        </p>
       </div>
-    </Dialog>
+      <div className="flex flex-row justify-end space-x-2 bg-[#3B3B3B] px-4 py-2">
+        <Button
+          variant="primary"
+          onClick={closeHandler}
+          aria-label="Agree to Terms and Continue"
+        >
+          Agree to Terms and Continue
+        </Button>
+      </div>
+    </div>
   )
 }

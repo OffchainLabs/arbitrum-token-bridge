@@ -36,7 +36,7 @@ import {
   getL2ERC20Address,
   l1TokenIsDisabled,
   isValidErc20,
-  isCustomGatewayRegistered
+  isGatewayRegistered
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -336,7 +336,7 @@ export const useArbTokenBridge = (
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
 
     if (
-      !(await isCustomGatewayRegistered({
+      !(await isGatewayRegistered({
         erc20ParentChainAddress: erc20L1Address,
         parentChainProvider: l1.provider,
         childChainProvider: l2.provider
@@ -437,7 +437,7 @@ export const useArbTokenBridge = (
 
     try {
       if (
-        !(await isCustomGatewayRegistered({
+        !(await isGatewayRegistered({
           erc20ParentChainAddress: erc20L1Address,
           parentChainProvider: l1.provider,
           childChainProvider: l2.provider

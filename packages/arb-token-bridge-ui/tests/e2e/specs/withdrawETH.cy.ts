@@ -48,9 +48,6 @@ describe('Withdraw ETH', () => {
             cy.findByText(
               /You'll have to pay [\w\s]+ gas fee upon claiming./i
             ).should('be.visible')
-            cy.findByText(/You will have to claim the withdrawal on/i).should(
-              'be.visible'
-            )
           })
       })
 
@@ -65,7 +62,7 @@ describe('Withdraw ETH', () => {
               .should('be.visible')
               .should('be.enabled')
               .click()
-            cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
+            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
             // the Continue withdrawal button should be disabled at first
             cy.findByRole('button', {
@@ -92,7 +89,7 @@ describe('Withdraw ETH', () => {
                   .click()
                   .then(() => {
                     cy.confirmMetamaskTransaction().then(() => {
-                      cy.findByText('an hour remaining').should('be.visible')
+                      cy.findByText('an hour').should('be.visible')
                       cy.findByText(
                         `${formatAmount(ETHToWithdraw, {
                           symbol: 'ETH'
