@@ -60,7 +60,7 @@ export const TransactionHistoryMini = () => {
           sourceChainTxHash: tx.sourceChainTxHash
         })
 
-        if (!preSdkInformation[txKey]) {
+        if (!skdTransactions[txKey] && !preSdkInformation[txKey]) {
           preSdkInformation[txKey] = {
             sourceChainTxHash: tx.sourceChainTxHash,
             sourceChainId: tx.sourceChainId,
@@ -80,9 +80,12 @@ export const TransactionHistoryMini = () => {
       await Promise.all(transfers).then(res => {
         res.forEach((transfer, i) => {
           if (transfer && !skdTransactions[transfer.key]) {
-            transfer.pollForStatus({
-              onChange: () => {
-                console.log('Status changed for ', transfer.key)
+            transfer.pollForStatus()
+            transfer.watch({
+              onChange: props => {
+                console.log(
+                  `${props?.property} changed for ${transfer.key} to ${props?.value}`
+                )
               }
             })
 
@@ -97,7 +100,22 @@ export const TransactionHistoryMini = () => {
     }
 
     initSdkTransactions()
+
+    return () => {
+      // stop the polling on txns that are unmounting
+      Object.values(skdTransactions).forEach(transfer => {
+        transfer.stopPollingForStatus()
+      })
+    }
   }, [transactionHistorySequenceKeys])
+
+  // useEffect(() => {
+  //   // making stuff reactive
+
+  //   setInterval(() => {
+
+  //   }, 1000)
+  // }, [])
 
   return (
     <div className="w-[700px] rounded-lg bg-white text-sm">
@@ -119,26 +137,39 @@ export const TransactionHistoryMini = () => {
         }
 
         return (
-          <div
+          <TransactionHistoryMiniRow
             key={transferKey}
-            className={twMerge(
-              'border border-dark',
-              bridgeTransfer.destinationChainTx?.hash ? 'bg-lime' : 'bg-orange'
-            )}
-          >
-            <div>
-              {bridgeTransfer.isFetchingStatus && (
-                <Loader color="#28A0F0" size="small" />
-              )}
-            </div>
-            <div>Type: {bridgeTransfer.transferType}</div>
-            <div>Status: {bridgeTransfer.status}</div>
-            <div>Source Tx: {bridgeTransfer.sourceChainTx.hash}</div>
-            <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
-            <div>Last update: {bridgeTransfer.lastUpdatedTimestamp}</div>
-          </div>
+            bridgeTransfer={bridgeTransfer}
+          />
         )
       })}
+    </div>
+  )
+}
+
+const TransactionHistoryMiniRow = ({
+  bridgeTransfer
+}: {
+  bridgeTransfer: BridgeTransfer
+}) => {
+  return (
+    <div
+      className={twMerge(
+        'border border-dark',
+        bridgeTransfer.destinationChainTx?.hash ? 'bg-lime' : 'bg-orange'
+      )}
+    >
+      <div>
+        {bridgeTransfer.isFetchingStatus && (
+          <Loader color="#28A0F0" size="small" />
+        )}
+      </div>
+      <div>Type: {bridgeTransfer.transferType}</div>
+      <div>Status: {bridgeTransfer.status}</div>
+      <div>Source Tx: {bridgeTransfer.sourceChainTx.hash}</div>
+      <div>Dest Tx: {bridgeTransfer.destinationChainTx?.hash}</div>
+      <div>Txn clock: {bridgeTransfer.lastUpdatedTimestamp}</div>
+      <div>Rerender update : {Date.now()}</div>
     </div>
   )
 }

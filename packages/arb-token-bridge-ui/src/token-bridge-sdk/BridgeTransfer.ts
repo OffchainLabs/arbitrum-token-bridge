@@ -9,7 +9,7 @@ type TxType = 'deposit' | 'withdrawal'
 
 export type TransferType = `${Asset}_${TxType}` | 'cctp'
 
-export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
+export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}` | 'unknown'
 export type BridgeTransferFetchStatusFunctionResult =
   Promise<BridgeTransferStatus>
 
@@ -18,12 +18,18 @@ export type PollForStatusProps = {
   onChange?: (bridgeTransfer: BridgeTransfer) => void
 }
 
+export type OnStateChangeProps = {
+  bridgeTransfer: BridgeTransfer
+  property: string
+  value: any
+}
+
 export abstract class BridgeTransfer {
   public transferType: TransferType
   public key: string // key to uniquely identify the transfer (sourceChainId_destinationChainId_sourceChainTxHash)
 
   // status
-  public status: BridgeTransferStatus
+  public status: BridgeTransferStatus = 'unknown'
   public isFetchingStatus = false
   public lastUpdatedTimestamp: number
 
@@ -44,6 +50,8 @@ export abstract class BridgeTransfer {
   abstract isClaimable: boolean // is requires claim, then is the transfer claimable now?
   public abstract claim(): void // claim the transfer, as applicable
 
+  public onStateChange: (props: OnStateChangeProps) => void
+
   protected constructor(props: {
     key: string
     transferType: TransferType
@@ -61,6 +69,34 @@ export abstract class BridgeTransfer {
     this.sourceChainProvider = props.sourceChainProvider
     this.destinationChainProvider = props.destinationChainProvider
     this.lastUpdatedTimestamp = Date.now()
+    this.onStateChange = () => {
+      // no-op
+    }
+
+    const interceptor = {
+      set(obj: any, prop: string, value: any) {
+        const keysToWatch: { [key: string]: boolean } = {
+          status: true,
+          isFetchingStatus: true,
+          lastUpdatedTimestamp: true,
+          sourceChainTx: true,
+          sourceChainTxReceipt: true,
+          destinationChainTx: true,
+          destinationChainTxReceipt: true,
+          isPendingUserAction: true,
+          requiresClaim: true,
+          isClaimable: true
+        }
+        if (keysToWatch[prop] && obj[prop] !== value) {
+          console.log(
+            `intercepting the setter for ${prop} - previous value: ${obj[prop]}, new value: ${value}`
+          )
+          obj.onStateChange?.({ bridgeTransfer: obj, property: prop, value })
+        }
+        return Reflect.set(obj, prop, value)
+      }
+    }
+    return new Proxy(this, interceptor)
   }
 
   /**
@@ -87,8 +123,15 @@ export abstract class BridgeTransfer {
     return status
   }
 
+  private intervalId: NodeJS.Timeout | undefined
   public pollForStatus(props?: PollForStatusProps): void {
-    const intervalId = setInterval(async () => {
+    if (this.intervalId !== undefined) clearInterval(this.intervalId)
+
+    this.intervalId = setInterval(async () => {
+      if (this.isStatusFinal(this.status) || this.isPendingUserAction) {
+        this.stopPollingForStatus()
+      }
+
       console.log(`Fetching status for transfer ${this.sourceChainTx.hash}`)
       const status = await this._fetchStatus()
       const statusChanged = this.status !== status
@@ -97,10 +140,23 @@ export abstract class BridgeTransfer {
       if (statusChanged) {
         props?.onChange?.(this)
       }
-
-      if (this.isStatusFinal(this.status) || this.isPendingUserAction) {
-        clearInterval(intervalId)
-      }
     }, props?.intervalMs ?? 15_000)
   }
+
+  public stopPollingForStatus(): void {
+    console.log(
+      `Stopping polling status for transfer ${this.sourceChainTx.hash}`
+    )
+    if (this.intervalId !== undefined) clearInterval(this.intervalId)
+  }
+
+  public watch(props: {
+    onChange: (props?: OnStateChangeProps) => void
+  }): void {
+    this.onStateChange = props.onChange
+  }
 }
+
+/*
+ bridgeTransfer.watch({onChange:(this:BridgeTransfer)=>{console.log('Status changed for ', this.key)}})
+ */
