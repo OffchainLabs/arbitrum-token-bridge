@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { getNetworkName } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { Transition } from '../common/Transition'
+import { NetworkImage } from '../common/NetworkImage'
 
 export type NetworkListboxProps = {
   disabled?: boolean
@@ -64,12 +65,10 @@ export function NetworkListbox({
                     )}
                   >
                     <div className="flex h-6 w-6 items-center justify-center">
-                      <Image
-                        src={getBridgeUiConfigForChain(option.id).network.logo}
-                        alt={`${getNetworkName(option.id)} logo`}
-                        className="h-full w-auto"
-                        width={30}
-                        height={30}
+                      <NetworkImage
+                        chainId={option.id}
+                        className="h-[32px] w-[32px] p-[6px]"
+                        size={20}
                       />
                     </div>
                     <span className="max-w-[140px] truncate">
