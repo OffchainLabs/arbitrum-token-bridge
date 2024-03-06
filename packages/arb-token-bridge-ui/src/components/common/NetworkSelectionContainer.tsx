@@ -333,12 +333,14 @@ export const NetworkSelectionContainer = ({
             onClick={onPopoverButtonClick}
           >
             {children}
-            <ChevronDownIcon
-              className={twMerge(
-                'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
-                open ? '-rotate-180' : 'rotate-0'
-              )}
-            />
+            {!isSmartContractWallet && (
+              <ChevronDownIcon
+                className={twMerge(
+                  'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
+                  open ? '-rotate-180' : 'rotate-0'
+                )}
+              />
+            )}
           </Popover.Button>
 
           <Transition
