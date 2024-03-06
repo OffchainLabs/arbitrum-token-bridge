@@ -49,7 +49,6 @@ export function OneNovaTransferDialog(
         sourceChainId
       )} to ${getNetworkName(destinationChainId ?? 0)}`}
       actionButtonProps={{ hidden: true }}
-      isFooterHidden={true}
       className="max-w-[700px]"
     >
       <div className="flex flex-col pt-4">

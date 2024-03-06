@@ -88,7 +88,6 @@ export function USDCWithdrawalConfirmationDialog(
         disabled: !allCheckboxesCheched,
         hidden: selectedTabName === SelectedTabName.ThirdParty
       }}
-      isFooterHidden={selectedTabName === SelectedTabName.ThirdParty}
       onClose={handleActionButtonClick}
     >
       <div className="flex max-h-screen w-full flex-col pt-4">

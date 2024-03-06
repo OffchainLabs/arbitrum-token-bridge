@@ -117,7 +117,6 @@ export function USDCDepositConfirmationDialog(props: Props) {
         disabled: !allCheckboxesCheched,
         hidden: selectedTabName === SelectedTabName.ThirdParty
       }}
-      isFooterHidden={selectedTabName === SelectedTabName.ThirdParty}
       onClose={handleActionButtonClick}
     >
       <div className="flex flex-col pt-4">

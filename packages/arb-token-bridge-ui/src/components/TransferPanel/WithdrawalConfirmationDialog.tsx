@@ -90,8 +90,10 @@ export function WithdrawalConfirmationDialog(
       onClose={closeWithReset}
       className="max-w-[700px]"
       title={`Move funds to ${destinationNetworkName}`}
-      isFooterHidden={isFastBridgesTab}
-      actionButtonProps={{ disabled: !bothCheckboxesChecked }}
+      actionButtonProps={{
+        disabled: !bothCheckboxesChecked,
+        hidden: isFastBridgesTab
+      }}
     >
       <div className="flex flex-col pt-4">
         <Tab.Group onChange={setSelectedIndex}>
