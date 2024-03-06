@@ -4,13 +4,11 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { ImageProps } from 'next/image'
 
-import ArbitrumLogo from '@/images/lists/arbitrum.svg'
 import UniswapLogo from '@/images/lists/uniswap.png'
 import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
 import CoinGeckoLogo from '@/images/lists/coinGecko.svg'
-import ArbitrumFoundation from '@/images/lists/ArbitrumFoundation.png'
-
+import ArbitrumLogo from '@/images/lists/ArbitrumLogo.png'
 import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
 
@@ -37,7 +35,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     url: 'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
     name: 'Arbitrum Token',
     isDefault: true,
-    logoURI: ArbitrumFoundation,
+    logoURI: ArbitrumLogo,
     isArbitrumTokenTokenList: true
   },
   {

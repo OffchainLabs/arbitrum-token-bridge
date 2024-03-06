@@ -10,10 +10,7 @@ export type NetworkType =
   | 'Arbitrum Testnet'
 
 export type BridgeUiConfig = {
-  color: {
-    primary: `#${string}`
-    secondary: `#${string}`
-  }
+  color: `#${string}`
   network: {
     name: string
     logo: string
@@ -68,10 +65,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
+      color: '#F30019',
       network: {
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
@@ -126,10 +120,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#B16EFF',
-        secondary: '#1E1E1E'
-      },
+      color: '#B16EFF',
       network: {
         name: 'RARI Mainnet',
         description:
@@ -178,10 +169,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F4C7C3',
-        secondary: '#624F7B'
-      },
+      color: '#DF62DD',
       network: {
         name: 'Muster Network',
         description: 'A gaming chain with cheap fees and account abstraction.',
@@ -229,10 +217,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#3E63DD',
-        secondary: '#252631'
-      },
+      color: '#3E63DD',
       network: {
         name: 'Proof of Play Apex',
         description:
@@ -284,10 +269,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
+      color: '#F30019',
       network: {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',

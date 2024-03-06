@@ -1,84 +1,25 @@
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { HeaderAccountPopover } from './HeaderAccountPopover'
-
-function NetworkButtonAndConnectButton({
-  connected,
-  chainUnsupported,
-  openConnectModal,
-  openChainModal
-}: {
-  connected: boolean
-  chainUnsupported?: boolean
-  openChainModal: () => void
-  openConnectModal: () => void
-}) {
-  if (!connected) {
-    return (
-      <button
-        onClick={openConnectModal}
-        type="button"
-        className="arb-hover flex w-full flex-row items-center bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:bg-lime-dark lg:px-4 lg:py-2 lg:text-base lg:font-normal"
-      >
-        <PlusCircleIcon className="mr-3 h-10 w-10 rounded-full bg-white stroke-lime-dark p-1 opacity-40" />
-        Connect Wallet
-      </button>
-    )
-  }
-
-  if (chainUnsupported) {
-    return (
-      <button
-        onClick={openChainModal}
-        type="button"
-        className="arb-hover flex w-full flex-row items-center bg-[#FF494A] bg-lime-dark px-6 py-3 text-2xl font-medium text-white lg:rounded-full lg:px-4 lg:py-2 lg:text-base lg:font-normal"
-      >
-        Wrong network
-      </button>
-    )
-  }
-
-  return (
-    <div className="flex gap-3">
-      <HeaderAccountPopover />
-    </div>
-  )
-}
-
-function HeaderConnectWalletButtonWrapper({
-  children,
-  ready
-}: {
-  children: JSX.Element
-  ready: boolean
-}) {
-  return (
-    <div
-      className={!ready ? 'pointer-events-none select-none opacity-0' : ''}
-      aria-hidden={!ready}
-    >
-      {children}
-    </div>
-  )
-}
+import { twMerge } from 'tailwind-merge'
 
 export function HeaderConnectWalletButton() {
   return (
     <ConnectButton.Custom>
-      {({ account, chain, openChainModal, openConnectModal, mounted }) => {
-        const connected = !!(mounted && account && chain)
-
-        return (
-          <HeaderConnectWalletButtonWrapper ready={mounted}>
-            <NetworkButtonAndConnectButton
-              connected={connected}
-              chainUnsupported={chain?.unsupported}
-              openChainModal={openChainModal}
-              openConnectModal={openConnectModal}
-            />
-          </HeaderConnectWalletButtonWrapper>
-        )
-      }}
+      {({ openConnectModal }) => (
+        <div className="w-full px-4 sm:px-0">
+          <button
+            onClick={openConnectModal}
+            type="button"
+            className={twMerge(
+              'arb-hover flex w-full flex-row items-center border border-lime-dark bg-lime-dark px-[12px] py-2 text-white',
+              'sm:min-w-[198px] sm:rounded sm:bg-lime-dark sm:py-1 sm:pl-2 sm:pr-3 sm:text-base sm:font-normal'
+            )}
+          >
+            <PlusCircleIcon className="mr-3 h-[24px] w-[24px] stroke-1 sm:h-8 sm:w-8" />
+            Connect Wallet
+          </button>
+        </div>
+      )}
     </ConnectButton.Custom>
   )
 }

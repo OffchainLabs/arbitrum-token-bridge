@@ -1,14 +1,9 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback,
-  memo
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { twMerge } from 'tailwind-merge'
 
 import { useActions, useAppState } from '../../state'
 import {
@@ -31,7 +26,7 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
-import { isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -44,8 +39,9 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
+import { Switch } from '../common/atoms/Switch'
 
-const ARB_ONE_NATIVE_USDC_TOKEN = {
+export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
@@ -55,7 +51,7 @@ const ARB_ONE_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumOne.USDC
 }
 
-const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
+export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
   listIds: new Set<number>(),
   type: TokenType.ERC20,
@@ -63,13 +59,77 @@ const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
-function TokenListsPanel() {
+function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
   const {
     app: { arbTokenBridge }
   } = useAppState()
+  const { bridgeTokens, token } = arbTokenBridge
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
-  const { bridgeTokens, token } = arbTokenBridge
+
+  const toggleTokenList = useCallback(
+    (bridgeTokenList: BridgeTokenList, isActive: boolean) => {
+      if (isActive) {
+        token.removeTokensFromList(bridgeTokenList.id)
+      } else {
+        addBridgeTokenListToBridge({
+          bridgeTokenList,
+          arbTokenBridge,
+          parentChainId: parentChain.id,
+          childChainId: childChain.id
+        })
+      }
+    },
+    [arbTokenBridge, childChain.id, parentChain.id, token]
+  )
+
+  const isActive = Object.keys(bridgeTokens ?? []).some(address => {
+    const token = bridgeTokens?.[address]
+    return token?.listIds.has(tokenList?.id)
+  })
+
+  const switchOnClick = useCallback(
+    () => toggleTokenList(tokenList, isActive),
+    [isActive, toggleTokenList, tokenList]
+  )
+
+  return (
+    <label
+      key={tokenList.id}
+      className="flex cursor-pointer items-center justify-start space-x-3 duration-200 [&:hover_img]:opacity-100 [&:hover_span]:text-white"
+    >
+      <Switch
+        name={`${tokenList.name} toggle`}
+        checked={isActive}
+        onChange={switchOnClick}
+      />
+      <div className="flex items-center gap-2">
+        <Image
+          src={tokenList.logoURI}
+          alt={`${tokenList.name} Logo`}
+          className={twMerge(
+            'h-4 w-4 rounded-full transition-opacity',
+            !isActive && 'opacity-70'
+          )}
+          width={16}
+          height={16}
+        />
+        <span
+          className={twMerge(
+            'text-sm transition-colors',
+            !isActive && 'text-white/70'
+          )}
+        >
+          {tokenList.name}
+        </span>
+      </div>
+    </label>
+  )
+}
+
+function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   const listsToShow: BridgeTokenList[] = useMemo(() => {
     return BRIDGE_TOKEN_LISTS.filter(tokenList => {
@@ -86,62 +146,24 @@ function TokenListsPanel() {
     })
   }, [childChain.id])
 
-  const toggleTokenList = (
-    bridgeTokenList: BridgeTokenList,
-    isActive: boolean
-  ) => {
-    if (isActive) {
-      token.removeTokensFromList(bridgeTokenList.id)
-    } else {
-      addBridgeTokenListToBridge({
-        bridgeTokenList,
-        arbTokenBridge,
-        parentChainId: parentChain.id,
-        childChainId: childChain.id
-      })
-    }
-  }
-
-  // Can happen when switching networks.
-  if (typeof bridgeTokens === 'undefined') {
-    return null
-  }
-
   return (
-    <div className="flex flex-col gap-6 rounded-md border border-gray-300 p-6">
-      {listsToShow.map(tokenList => {
-        const isActive = Object.keys(bridgeTokens).some(address => {
-          const token = bridgeTokens[address]
-          return token?.listIds.has(tokenList?.id)
-        })
-
-        return (
-          <label
-            key={tokenList.id}
-            className="flex items-center justify-start space-x-3"
-          >
-            <div className="switch">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={() => toggleTokenList(tokenList, isActive)}
-              />
-              <span className="slider round"></span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Image
-                src={tokenList.logoURI}
-                alt={`${tokenList.name} Logo`}
-                className="h-6 w-6 rounded-full"
-                width={24}
-                height={24}
-              />
-              <span className="text-sm text-gray-900">{tokenList.name}</span>
-            </div>
-          </label>
-        )
-      })}
-    </div>
+    <>
+      <SearchPanel.PageTitle title="Token Lists">
+        <SearchPanel.CloseButton onClick={closePanel} />
+      </SearchPanel.PageTitle>
+      <div className="flex flex-col gap-6 rounded-md border border-gray-dark p-6 text-white">
+        {listsToShow.map(tokenList => (
+          <TokenListRow key={tokenList.id} tokenList={tokenList} />
+        ))}
+        {listsToShow.length === 0 && (
+          <span className="text-sm leading-relaxed">
+            Sorry, there are no lists of tokens bridged from{' '}
+            {getNetworkName(networks.sourceChain.id)} to{' '}
+            {getNetworkName(networks.destinationChain.id)}.
+          </span>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -434,7 +456,7 @@ function TokensPanel({
         loading={isAddingToken}
         loadingProps={{ loaderColor: '#999999' /** text-gray-6 */ }}
         disabled={!isAddress(newToken)}
-        className="border border-dark py-1 disabled:border disabled:border-current disabled:bg-white disabled:text-gray-4"
+        className="border border-gray-dark py-1"
         aria-label="Add New Token"
       >
         Add
@@ -445,9 +467,9 @@ function TokensPanel({
 
   return (
     <SearchPanelTable
-      searchInputPlaceholder={`Search by token name, symbol, or address`}
+      searchInputPlaceholder="Search by token name, symbol, or address"
       searchInputValue={newToken}
-      onSearchInputChange={onSearchInputChange}
+      searchInputOnChange={onSearchInputChange}
       errorMessage={errorMessage}
       onSubmit={addNewToken}
       SearchInputButton={AddButton}
@@ -468,7 +490,13 @@ function TokensPanel({
   )
 }
 
-export function TokenSearch({ close }: { close: () => void }) {
+export function TokenSearch({
+  className,
+  close
+}: {
+  className?: string
+  close: () => void
+}) {
   const { address: walletAddress } = useAccount()
   const {
     app: {
@@ -576,17 +604,28 @@ export function TokenSearch({ close }: { close: () => void }) {
   }
 
   return (
-    <SearchPanel
-      showCloseButton={false}
-      close={close}
-      SearchPanelSecondaryPage={<TokenListsPanel />}
-      mainPageTitle="Select Token"
-      secondPageTitle="Token Lists"
-      isLoading={isFetchingTokenLists}
-      loadingMessage="Fetching Tokens..."
-      bottomRightCtaText="Manage token lists"
-    >
-      <TokensPanel onTokenSelected={selectToken} />
+    <SearchPanel>
+      <SearchPanel.MainPage className={className}>
+        <SearchPanel.PageTitle title="Select Token">
+          <SearchPanel.CloseButton onClick={close} />
+        </SearchPanel.PageTitle>
+        <TokensPanel onTokenSelected={selectToken} />
+        <div className="flex justify-end pt-4">
+          {isFetchingTokenLists ? (
+            <SearchPanel.LoaderWithMessage loadingMessage="Fetching Tokens..." />
+          ) : (
+            <SearchPanel.MainPageCTA>
+              Manage token lists
+            </SearchPanel.MainPageCTA>
+          )}
+        </div>
+      </SearchPanel.MainPage>
+      <SearchPanel.SecondaryPage className={className}>
+        <TokenListsPanel closePanel={close} />
+        <SearchPanel.SecondaryPageCTA>
+          Back to Select Token
+        </SearchPanel.SecondaryPageCTA>
+      </SearchPanel.SecondaryPage>
     </SearchPanel>
   )
 }

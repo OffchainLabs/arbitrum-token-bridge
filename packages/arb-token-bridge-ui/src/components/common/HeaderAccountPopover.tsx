@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard } from 'react-use'
+import { useCopyToClipboard, useMedia } from 'react-use'
 import { Popover } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -12,6 +12,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
+import { twMerge } from 'tailwind-merge'
 import {
   useAccount,
   useDisconnect,
@@ -24,11 +25,13 @@ import {
 import { Transition } from './Transition'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
-import { getExplorerUrl } from '../../util/networks'
-import { TransactionHistoryTab, useAppContextActions } from '../App/AppContext'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useAccountType } from '../../hooks/useAccountType'
 
 type UDInfo = { name: string | null }
 const udInfoDefaults: UDInfo = { name: null }
@@ -79,7 +82,12 @@ export function HeaderAccountPopover({
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
   const { chain } = useNetwork()
+  const [{ sourceChain }] = useNetworks()
+  const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()
+  const isSmallScreen = useMedia('(max-width: 639px)')
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
@@ -129,82 +137,87 @@ export function HeaderAccountPopover({
   }
 
   const headerItemsClassName =
-    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-lg lg:text-sm font-light text-white hover:bg-ocl-blue lg:px-4'
+    'arb-hover flex w-full flex-row items-center space-x-2 px-12 py-2 text-sm sm:text-sm text-gray-4 sm:text-white hover:bg-ocl-blue sm:px-4 sm:py-1'
 
   return (
-    <Popover className="relative z-50 w-full lg:w-max">
+    <Popover className="relative w-full px-4 sm:w-max sm:p-0">
       <Popover.Button
-        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+        className={twMerge(
+          'flex w-full flex-row items-center justify-start gap-3 px-[12px] py-[7px] transition-[background] duration-300',
+          'ui-open:bg-white/20 ui-not-open:bg-transparent ui-not-open:hover:bg-white/20',
+          'sm:w-max sm:rounded sm:border sm:px-2 sm:py-1',
+          isTestnet
+            ? 'sm:border-white sm:ui-not-open:bg-white/20'
+            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
+        )}
         role="button"
-        aria-label={`Account Header Button`}
+        aria-label="Account Header Button"
       >
-        <div>
-          <div className="flex flex-row items-center space-x-3 rounded-full lg:bg-dark lg:px-4 lg:py-2">
-            <SafeImage
-              src={ensAvatar || undefined}
-              className="h-10 w-10 rounded-full"
-              fallback={<CustomBoringAvatar size={40} name={address} />}
-            />
-            <span className="text-2xl font-medium text-white lg:text-base lg:font-normal">
-              {ensName ?? udInfo.name ?? accountShort}
-            </span>
+        <SafeImage
+          src={ensAvatar || undefined}
+          className="h-6 w-6 rounded-full sm:h-8 sm:w-8"
+          fallback={
+            <CustomBoringAvatar size={isSmallScreen ? 24 : 40} name={address} />
+          }
+        />
+        <span className="flex flex-col text-justify text-base leading-extra-tight text-gray-4 sm:text-white">
+          {ensName ?? udInfo.name ?? accountShort}
+          {isSmartContractWallet && !isLoadingAccountType && (
+            <span className="text-[10px]">Smart Contract Wallet</span>
+          )}
+        </span>
 
-            <ChevronDownIcon className="h-4 w-4 text-white" />
-          </div>
-        </div>
+        <ChevronDownIcon className="ml-auto h-[16px] w-[16px] text-gray-4 transition duration-200 sm:text-white" />
       </Popover.Button>
-
-      <Transition>
-        <Popover.Panel className="relative flex flex-col overflow-hidden rounded-md bg-dark pb-2 lg:absolute lg:mt-1 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
+      <Transition className="w-full sm:absolute sm:top-0">
+        <Popover.Panel className="flex w-full flex-col overflow-hidden rounded pb-2 sm:absolute sm:top-0 sm:bg-dark">
           {/* Profile photo with address */}
-          <div className="flex flex-row justify-between">
-            <Transition show={showCopied}>
-              <span className="absolute left-[90px] top-[2rem] z-10 text-xs font-light text-white">
-                Copied to clipboard!
-              </span>
-            </Transition>
-            <button
-              className="relative hidden flex-row items-center px-4 py-2 pt-[1rem] text-gray-5 hover:bg-ocl-blue hover:text-white lg:flex"
-              onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
-            >
-              {/* Blurred background */}
-              <div className="absolute inset-0 flex h-[3rem] w-full flex-col items-center overflow-hidden bg-dark text-center">
-                <div className="scale-400 blur-2xl filter">
-                  <SafeImage
-                    className="h-100 w-100 rounded-full"
-                    src={ensAvatar || undefined}
-                    fallback={<CustomBoringAvatar size={200} name={address} />}
-                  />
-                </div>
+          {showCopied && (
+            <span className="absolute right-2 top-4 z-50 text-xs text-white">
+              Copied to clipboard!
+            </span>
+          )}
+          <div className="relative hidden w-full flex-row items-center px-2 pb-2 pt-3 sm:flex">
+            {/* Blurred background */}
+            <div className="absolute inset-0 flex h-8 w-full flex-col items-center overflow-hidden bg-dark text-center">
+              <div className="scale-400 blur-2xl filter">
+                <SafeImage
+                  className="h-100 w-100 rounded-full"
+                  src={ensAvatar || undefined}
+                  fallback={<CustomBoringAvatar size={200} name={address} />}
+                />
               </div>
+            </div>
 
-              {/* Actual image and account name */}
-              <div className="relative z-10 flex flex-row items-center space-x-2">
-                <div className="avatar-container box-content rounded-full border-[4px] border-dark">
-                  <SafeImage
-                    src={ensAvatar || undefined}
-                    className="h-14 w-14 rounded-full"
-                    fallback={<CustomBoringAvatar size={56} name={address} />}
-                  />
-                </div>
-                <div className="flex translate-y-[15px] flex-row items-center space-x-3">
-                  <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm font-normal">
-                    {ensName ?? udInfo.name ?? accountShort}
-                  </span>
-                  <DocumentDuplicateIcon className="h-4 w-4" />
-                </div>
+            {/* Actual image and account name */}
+            <div className="relative flex flex-row items-center gap-2">
+              <div className="avatar-container box-content rounded-full border-[3px] border-dark">
+                <SafeImage
+                  src={ensAvatar || undefined}
+                  className="h-[54px] w-[54px] rounded-full"
+                  fallback={<CustomBoringAvatar size={54} name={address} />}
+                />
               </div>
-            </button>
+              <button
+                className="flex translate-y-1 flex-row items-center gap-1 text-white/70 hover:text-white"
+                onClick={() => copy(ensName ?? udInfo.name ?? address ?? '')}
+              >
+                <span className="max-w-[10rem] overflow-hidden text-ellipsis text-sm">
+                  {ensName ?? udInfo.name ?? accountShort}
+                </span>
+                <DocumentDuplicateIcon className="h-3 w-3" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex w-full flex-col justify-between lg:flex-col lg:items-end lg:px-0">
+          <div className="flex w-full flex-col justify-between sm:flex-col sm:items-end sm:px-0">
             {/* Transactions button */}
             {isCorrectNetworkConnected && (
               <button
                 className={headerItemsClassName}
                 onClick={openTransactionHistory}
               >
-                <DocumentTextIcon className="h-4 w-4 text-white" />
+                <DocumentTextIcon className="h-3 w-3 text-white/60 sm:text-white" />
                 <span>Transactions</span>
               </button>
             )}
@@ -215,7 +228,7 @@ export function HeaderAccountPopover({
                 href={`${getExplorerUrl(chain.id)}/address/${address}`}
                 className={headerItemsClassName}
               >
-                <ArrowTopRightOnSquareIcon className="h-4 w-4 text-white" />
+                <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/60 sm:text-white" />
                 <span>Explorer</span>
               </ExternalLink>
             )}
@@ -226,7 +239,7 @@ export function HeaderAccountPopover({
                 className={headerItemsClassName}
                 onClick={() => setQueryParams({ settingsOpen: true })}
               >
-                <Cog6ToothIcon className="h-4 w-4 text-white" />
+                <Cog6ToothIcon className="h-3 w-3 text-white/60 sm:text-white" />
                 <span>Settings</span>
               </button>
             )}
@@ -236,7 +249,7 @@ export function HeaderAccountPopover({
               className={headerItemsClassName}
               onClick={() => disconnect()}
             >
-              <ArrowLeftOnRectangleIcon className="h-4 w-4 text-white" />
+              <ArrowLeftOnRectangleIcon className="h-3 w-3 text-white/60 sm:text-white" />
               <span>Disconnect</span>
             </button>
           </div>
