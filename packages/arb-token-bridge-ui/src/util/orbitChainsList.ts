@@ -278,7 +278,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       },
       nativeTokenData: {
         name: 'Xai',
-        symbol: 'SXAI',
+        symbol: 'sXAI',
         decimals: 18,
         logoUrl: '/images/XaiLogo.svg'
       }
