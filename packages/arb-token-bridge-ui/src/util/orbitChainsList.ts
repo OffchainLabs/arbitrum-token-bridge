@@ -244,8 +244,8 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     rpcUrl: 'https://testnet-v2.xai-chain.net/rpc',
     isArbitrum: true,
     isCustom: true,
-    name: 'Xai Testnet V2',
-    slug: 'xai-testnet-v2',
+    name: 'Xai Testnet',
+    slug: 'xai-testnet',
     partnerChainID: 421614,
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
@@ -275,6 +275,12 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',
         description: 'The testnet for Xai’s gaming chain.'
+      },
+      nativeTokenData: {
+        name: 'Xai',
+        symbol: 'sXAI',
+        decimals: 18,
+        logoUrl: '/images/XaiLogo.svg'
       }
     }
   }

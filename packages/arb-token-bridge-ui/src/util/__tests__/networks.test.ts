@@ -124,6 +124,12 @@ describe('getBaseChainIdByChainId', () => {
     it('should return the correct base chain', () => {
       expect(
         getBaseChainIdByChainId({
+          chainId: xaiTestnetChainId
+        })
+      ).toBe(ChainId.Sepolia)
+
+      expect(
+        getBaseChainIdByChainId({
           chainId: ChainId.StylusTestnet
         })
       ).toBe(ChainId.Sepolia)
