@@ -99,9 +99,6 @@ describe('Withdraw ERC20 Token', () => {
             cy.findByText(
               /You'll have to pay [\w\s]+ gas fee upon claiming./i
             ).should('be.visible')
-            cy.findByText(/You will have to claim the withdrawal on/i).should(
-              'be.visible'
-            )
           })
       })
 
@@ -116,7 +113,7 @@ describe('Withdraw ERC20 Token', () => {
       })
 
       context('should withdraw successfully', () => {
-        cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
+        cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
         // the Continue withdrawal button should be disabled at first
         cy.findByRole('button', {

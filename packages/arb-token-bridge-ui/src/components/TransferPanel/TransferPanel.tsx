@@ -8,6 +8,7 @@ import { useAccount, useChainId, useSigner } from 'wagmi'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
@@ -104,7 +105,8 @@ const networkConnectionWarningToast = () =>
         support
       </ExternalLink>
       .
-    </>
+    </>,
+    { autoClose: false }
   )
 
 export function TransferPanel() {
@@ -204,6 +206,10 @@ export function TransferPanel() {
     amount,
     gasSummary
   })
+
+  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  )
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -991,8 +997,6 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
-        amount={amount}
-        allowance={allowance}
         token={selectedToken}
         isCctp={isCctp}
       />
@@ -1019,7 +1023,12 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <div className="flex flex-col bg-white px-6 py-6 shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:rounded">
+      <div
+        className={twMerge(
+          'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
+          'sm:rounded sm:border'
+        )}
+      >
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
@@ -1051,12 +1060,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.deposit
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border bg-eth-dark py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
@@ -1081,12 +1092,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'

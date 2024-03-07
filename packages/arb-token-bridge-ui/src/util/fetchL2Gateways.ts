@@ -5,6 +5,7 @@ import {
   l2ArbReverseGatewayAddresses,
   l2DaiGatewayAddresses,
   l2LptGatewayAddresses,
+  l2MoonGatewayAddresses,
   l2wstETHGatewayAddresses
 } from '../util/networks'
 
@@ -24,6 +25,7 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
   const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainID]
   const l2LptGateway = l2LptGatewayAddresses[l2Network.chainID]
+  const l2MoonGateway = l2MoonGatewayAddresses[l2Network.chainID]
 
   if (l2ArbReverseGateway) {
     gatewaysToUse.push(l2ArbReverseGateway)
@@ -36,6 +38,9 @@ export async function fetchL2Gateways(l2Provider: Provider) {
   }
   if (l2LptGateway) {
     gatewaysToUse.push(l2LptGateway)
+  }
+  if (l2MoonGateway) {
+    gatewaysToUse.push(l2MoonGateway)
   }
 
   return gatewaysToUse
