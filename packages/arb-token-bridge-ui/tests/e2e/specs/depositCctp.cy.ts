@@ -108,7 +108,7 @@ describe('Deposit USDC through CCTP', () => {
 
         // By default, confirm button is disabled
         cy.findByRole('button', {
-          name: 'Confirm'
+          name: /Continue/i
         })
           .should('be.visible')
           .should('be.disabled')
@@ -132,13 +132,13 @@ describe('Deposit USDC through CCTP', () => {
           .click()
 
         cy.findByRole('button', {
-          name: 'Confirm'
+          name: /Continue/i
         })
           .should('be.visible')
           .should('be.enabled')
           .click()
 
-        cy.findByText(/I understand that I have to pay a one-time/).click()
+        cy.findByText(/I understand that I have to/).click()
         cy.findByRole('button', {
           name: /Pay approval fee of/
         }).click()
@@ -202,10 +202,8 @@ describe('Deposit USDC through CCTP', () => {
 
         // By default, confirm button is disabled
         cy.findByRole('button', {
-          name: 'Confirm'
-        })
-          .should('be.visible')
-          .should('be.disabled')
+          name: /Continue/i
+        }).should('be.disabled')
 
         // Checkbox
         cy.findByRole('switch', {
@@ -226,13 +224,13 @@ describe('Deposit USDC through CCTP', () => {
           .click()
 
         cy.findByRole('button', {
-          name: 'Confirm'
+          name: /Continue/i
         })
           .should('be.visible')
           .should('be.enabled')
           .click()
 
-        cy.findByText(/I understand that I have to pay a one-time/).click()
+        cy.findByText(/I understand that I have to/).click()
         cy.findByRole('button', {
           name: /Pay approval fee of/
         }).click()
