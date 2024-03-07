@@ -204,6 +204,9 @@ export const TransactionsTableDetails = ({
                           href={`${getExplorerUrl(sourceChainId)}/address/${
                             tx.sender
                           }`}
+                          aria-label={`Custom address: ${shortenAddress(
+                            String(tx.sender)
+                          )}`}
                         >
                           {shortenAddress(String(tx.sender))}
                         </ExternalLink>
@@ -217,6 +220,9 @@ export const TransactionsTableDetails = ({
                           href={`${getExplorerUrl(
                             destinationChainId
                           )}/address/${tx.destination}`}
+                          aria-label={`Custom address: ${shortenAddress(
+                            String(tx.destination)
+                          )}`}
                         >
                           {shortenAddress(String(tx.destination))}
                         </ExternalLink>

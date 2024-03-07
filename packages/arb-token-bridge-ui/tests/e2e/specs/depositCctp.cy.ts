@@ -165,11 +165,8 @@ describe('Deposit USDC through CCTP', () => {
         // click on advanced settings
         cy.findByLabelText('advanced settings').should('be.visible').click()
 
-        // check if it is open
-        cy.findByText('Custom Destination Address').should('be.visible')
-
         // unlock custom destination address input
-        cy.findByLabelText('custom destination input lock')
+        cy.findByLabelText('Custom destination input lock')
           .should('be.visible')
           .click()
 
@@ -263,7 +260,7 @@ describe('Deposit USDC through CCTP', () => {
 
                   // custom destination label in pending tx history should be visible
                   cy.findByLabelText(
-                    `custom address: ${shortenAddress(
+                    `Custom address: ${shortenAddress(
                       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
                     )}`
                   ).should('be.visible')

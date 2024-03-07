@@ -261,7 +261,7 @@ export const AdvancedSettings = () => {
             {isEOA && (
               <button
                 onClick={() => setInputLocked(!inputLocked)}
-                aria-label="custom destination input lock"
+                aria-label="Custom destination input lock"
               >
                 {inputLocked ? (
                   <LockClosedIcon height={16} />
