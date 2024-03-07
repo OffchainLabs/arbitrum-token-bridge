@@ -7,7 +7,7 @@ import {
 } from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
 
-const xaiTestnetChainId = 47279324479
+const xaiTestnetChainId = 37714555429
 
 beforeAll(() => {
   const xaiTestnet = orbitTestnets[xaiTestnetChainId]
@@ -136,7 +136,7 @@ describe('getBaseChainIdByChainId', () => {
         getBaseChainIdByChainId({
           chainId: xaiTestnetChainId
         })
-      ).toBe(ChainId.Goerli)
+      ).toBe(ChainId.Sepolia)
 
       expect(
         getBaseChainIdByChainId({
