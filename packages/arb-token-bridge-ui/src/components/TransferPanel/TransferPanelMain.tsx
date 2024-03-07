@@ -347,27 +347,6 @@ export function TransferPanelMain({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
-  const {
-    isArbitrumOne: isSourceChainArbitrumOne,
-    isEthereumMainnet: isSourceChainEthereum,
-    isSepolia: isSourceChainSepolia,
-    isArbitrumSepolia: isSourceChainArbitrumSepolia
-  } = isNetwork(networks.sourceChain.id)
-  const {
-    isArbitrumOne: isDestinationChainArbitrumOne,
-    isEthereumMainnet: isDestinationChainEthereum,
-    isSepolia: isDestinationChainSepolia,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
-  } = isNetwork(networks.destinationChain.id)
-
-  const isSepoliaArbSepoliaPair =
-    (isSourceChainSepolia && isDestinationChainArbitrumSepolia) ||
-    (isSourceChainArbitrumSepolia && isDestinationChainSepolia)
-
-  const isEthereumArbitrumOnePair =
-    (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
-    (isSourceChainArbitrumOne && isDestinationChainEthereum)
-
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
