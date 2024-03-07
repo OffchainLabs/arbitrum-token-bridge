@@ -145,7 +145,7 @@ describe('Withdraw ERC20 Token', () => {
                   symbol: 'WETH'
                 })}`
               ).should('be.visible')
-              cy.findAllByText('an hour remaining').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
+              cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
             })
           })
       })
@@ -255,16 +255,29 @@ describe('Withdraw ERC20 Token', () => {
                   symbol: 'WETH'
                 })}`
               ).should('be.visible')
-              cy.findAllByText('an hour remaining').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
+              cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
 
-              // custom destination label in pending tx history should be visible
-              cy.findByLabelText(
-                `custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              ).should('be.visible')
+              // open the tx details popup
+              cy.findAllByLabelText('Transaction details button')
+                .first()
+                .click()
+                .then(() => {
+                  cy.findByText('Transaction details').should('be.visible')
 
-              cy.findByLabelText('close side panel').click()
+                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+                  // custom destination label in pending tx history should be visible
+                  cy.findByLabelText(
+                    `custom address: ${shortenAddress(
+                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+                    )}`
+                  ).should('be.visible')
+                })
+
+              // close popup
+              cy.findByLabelText('Close transaction details popup').click()
+
+              cy.findByLabelText('Close side panel').click()
 
               // the balance on the source chain should not be the same as before
               cy.findByLabelText('WETH balance amount on l2')

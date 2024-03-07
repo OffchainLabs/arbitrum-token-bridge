@@ -215,14 +215,25 @@ describe('Withdraw USDC through CCTP', () => {
                 })}`
               ).should('be.visible')
 
-              // custom destination label in pending tx history should be visible
-              cy.findAllByLabelText(
-                `custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              )
+              // open the tx details popup
+              cy.findAllByLabelText('Transaction details button')
                 .first()
-                .should('be.visible')
+                .click()
+                .then(() => {
+                  cy.findByText('Transaction details').should('be.visible')
+
+                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+                  // custom destination label in pending tx history should be visible
+                  cy.findByLabelText(
+                    `custom address: ${shortenAddress(
+                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+                    )}`
+                  ).should('be.visible')
+                })
+
+              // close popup
+              cy.findByLabelText('Close transaction details popup').click()
             })
           }
         )

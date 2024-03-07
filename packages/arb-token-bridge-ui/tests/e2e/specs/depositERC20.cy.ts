@@ -199,19 +199,32 @@ describe('Deposit ERC20 Token', () => {
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('~10 mins remaining').should('be.visible')
+              cy.findByText('10 minutes').should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'
                 })}`
               ).should('be.visible')
 
-              // custom destination label in pending tx history should be visible
-              cy.findByLabelText(
-                `custom address: ${shortenAddress(
-                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-                )}`
-              ).should('be.visible')
+              // open the tx details popup
+              cy.findAllByLabelText('Transaction details button')
+                .first()
+                .click()
+                .then(() => {
+                  cy.findByText('Transaction details').should('be.visible')
+
+                  cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+                  // custom destination label in pending tx history should be visible
+                  cy.findByLabelText(
+                    `custom address: ${shortenAddress(
+                      Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+                    )}`
+                  ).should('be.visible')
+                })
+
+              // close popup
+              cy.findByLabelText('Close transaction details popup').click()
             })
           })
       })
@@ -231,18 +244,31 @@ describe('Deposit ERC20 Token', () => {
             })}`
           ).should('be.visible')
 
-          // custom destination label in settled tx history should be visible
-          cy.findByLabelText(
-            `custom address: ${shortenAddress(
-              Cypress.env('CUSTOM_DESTINATION_ADDRESS')
-            )}`
-          )
+          // open the tx details popup
+          cy.findAllByLabelText('Transaction details button')
+            .first()
+            .click()
+            .then(() => {
+              cy.findByText('Transaction details').should('be.visible')
+
+              cy.findByText(/CUSTOM ADDRESS/i).should('be.visible')
+
+              // custom destination label in pending tx history should be visible
+              cy.findByLabelText(
+                `custom address: ${shortenAddress(
+                  Cypress.env('CUSTOM_DESTINATION_ADDRESS')
+                )}`
+              ).should('be.visible')
+            })
+
+          // close popup
+          cy.findByLabelText('Close transaction details popup').click()
         })
       })
 
       context('funds should reach destination account successfully', () => {
         // close transaction history
-        cy.findByLabelText('close side panel').click()
+        cy.findByLabelText('Close side panel').click()
 
         // the custom destination address should now have some balance greater than zero
         cy.findByLabelText('WETH balance amount on l2')

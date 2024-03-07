@@ -120,7 +120,11 @@ export const TransactionsTableDetails = ({
                   as="h3"
                 >
                   Transaction details
-                  <button onClick={close} className="arb-hover">
+                  <button
+                    onClick={close}
+                    className="arb-hover"
+                    aria-label="Close transaction details popup"
+                  >
                     <XMarkIcon height={20} />
                   </button>
                 </Dialog.Title>
