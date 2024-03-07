@@ -65,8 +65,7 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
-          description:
-            'Rollup protocol. Permissionless validation, secured by operational fraud proofs.'
+          description: 'Rollup protocol. Secured by operational fraud proofs.'
         }
       }
     case ChainId.ArbitrumGoerli:
