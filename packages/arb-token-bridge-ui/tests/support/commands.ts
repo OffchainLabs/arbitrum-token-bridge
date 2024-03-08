@@ -104,7 +104,9 @@ export const logout = () => {
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText(/Agree to Terms and Continue/i)
+    .should('be.visible')
+    .click()
   cy.findByText('Connect a Wallet').should('be.visible')
   cy.findByText('MetaMask').should('be.visible').click()
 }
@@ -112,7 +114,7 @@ export const connectToApp = () => {
 export const openTransactionsPanel = () => {
   cy.waitUntil(
     () =>
-      cy.findByText(/Bridging summary will appear here/i).then(() => {
+      cy.findByText(/Summary/i).then(() => {
         // Open tx history panel
         cy.findByRole('button', { name: /account header button/i })
           .should('be.visible')

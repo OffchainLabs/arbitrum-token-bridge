@@ -20,24 +20,25 @@ describe('Login Account', () => {
 
   it('should show connect wallet if not logged in', () => {
     cy.visit('/')
-    cy.findByText('Agree to terms').should('be.visible').click()
+    cy.findByText(/Agree to Terms and Continue/i)
+      .should('be.visible')
+      .click()
     cy.findByText('Connect a Wallet').should('be.visible')
     cy.findByText('MetaMask').should('be.visible')
   })
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
     cy.login({ networkType: 'L1' })
-    cy.findByText('Bridging summary will appear here.').should('be.visible')
-    // BALANCE: is in a different element so we check for siblings
+    // Balance: is in a different element so we check for siblings
     cy.findByText(l1ETHbal)
       .should('be.visible')
       .siblings()
-      .contains('BALANCE: ')
-    // BALANCE: is in a different element so we check for siblings
+      .contains('Balance: ')
+    // Balance: is in a different element so we check for siblings
     cy.findByText(l2ETHbal)
       .should('be.visible')
       .siblings()
-      .contains('BALANCE: ')
+      .contains('Balance: ')
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
     cy.findByRole('button', { name: /To: Arbitrum/i }).should('be.visible')
   })

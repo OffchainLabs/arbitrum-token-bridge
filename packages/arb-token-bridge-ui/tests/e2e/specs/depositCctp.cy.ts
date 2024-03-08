@@ -139,13 +139,13 @@ describe('Deposit USDC through CCTP', () => {
                 .last()
                 .contains(zeroToLessThanOneETH)
                 .should('be.visible')
-              cy.findByText('L1 gas')
+              cy.findByText('Ethereum Local gas fee')
                 .parent()
                 .siblings()
                 .last()
                 .contains(zeroToLessThanOneETH)
                 .should('be.visible')
-              cy.findByText('L2 gas')
+              cy.findByText('Arbitrum Local gas fee')
                 .parent()
                 .siblings()
                 .last()
@@ -212,7 +212,7 @@ describe('Deposit USDC through CCTP', () => {
             .should('be.enabled')
             .click()
 
-          cy.findByText(/I understand that I have to pay a one-time/).click()
+          cy.findByText(/pay a one-time approval fee/).click()
           cy.findByRole('button', {
             name: /Pay approval fee of/
           }).click()

@@ -1,53 +1,54 @@
-import React, { Fragment } from 'react'
-import { Transition as HeadlessUITransition } from '@headlessui/react'
+import { Transition as HeadlessUiTransition } from '@headlessui/react'
+import { PropsWithChildren } from 'react'
+import { twMerge } from 'tailwind-merge'
 
-type TransitionDuration = 'fast' | 'normal'
+type TransitionSpeed = 'slow' | 'normal' | 'fast'
 
-function getDurationNumbers(
-  duration: TransitionDuration
-): [enterDuration: number, leaveDuration: number] {
-  switch (duration) {
-    case 'fast':
-      return [150, 100]
+type TransitionOptions = {
+  enterSpeed?: TransitionSpeed
+  leaveSpeed?: TransitionSpeed
+  unmountOnLeave?: boolean
+}
 
+type TransitionProps = PropsWithChildren<{
+  isOpen?: boolean
+  options?: TransitionOptions
+  className?: string
+  afterLeave?: () => void
+}>
+
+function getDurationClassName(speed: TransitionSpeed) {
+  switch (speed) {
+    case 'slow':
+      return 'duration-1000'
     case 'normal':
-      return [300, 200]
+      return 'duration-500'
+    case 'fast':
+      return 'duration-200'
   }
 }
 
-export function getTransitionProps(duration: TransitionDuration = 'fast') {
-  const [enterDuration, leaveDuration] = getDurationNumbers(duration)
+export const Transition = (props: TransitionProps) => {
+  const { options, children, className, isOpen, afterLeave } = props
 
-  return {
-    enter: `transition ease-out duration-${enterDuration}`,
-    enterFrom: 'opacity-0',
-    enterTo: 'opacity-100',
-    leave: `transition ease-out duration-${leaveDuration}`,
-    leaveFrom: 'opacity-100',
-    leaveTo: 'opacity-0'
-  }
-}
+  const enterSpeed = options?.enterSpeed ?? 'fast'
+  const leaveSpeed = options?.leaveSpeed ?? 'fast'
+  const unmountOnLeave = options?.unmountOnLeave ?? true
 
-export type TransitionProps = {
-  duration?: TransitionDuration
-  show?: boolean
-  appear?: boolean
-  children: React.ReactNode
-}
-
-export function Transition({
-  duration = 'fast',
-  show,
-  children
-}: TransitionProps) {
   return (
-    <HeadlessUITransition
-      appear
-      as={Fragment}
-      show={show}
-      {...getTransitionProps(duration)}
+    <HeadlessUiTransition
+      show={isOpen}
+      unmount={unmountOnLeave}
+      enter={twMerge('transition ease-out', getDurationClassName(enterSpeed))}
+      enterFrom="opacity-0 translate-y-1"
+      enterTo="opacity-100 translate-y-0"
+      leave={twMerge('transition ease-in', getDurationClassName(leaveSpeed))}
+      leaveFrom="opacity-100 translate-y-0"
+      leaveTo="opacity-0 translate-y-1"
+      afterLeave={afterLeave}
+      className={className}
     >
-      <div>{children}</div>
-    </HeadlessUITransition>
+      {children}
+    </HeadlessUiTransition>
   )
 }

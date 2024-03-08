@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import useLocalStorage from '@rehooks/local-storage'
 import { useAccount } from 'wagmi'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
 import { SidePanel } from '../common/SidePanel'
@@ -13,34 +12,16 @@ import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
-export const motionDivProps = {
-  layout: true,
-  initial: {
-    opacity: 0,
-    scale: 0.9
-  },
-  animate: {
-    opacity: 1,
-    scale: 1
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9
-  }
-}
-
-export function MainContent() {
-  const { address } = useAccount()
+function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
-  const transactionHistoryProps = useTransactionHistory(address, {
-    runFetcher: true
-  })
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
+  const { address } = useAccount()
 
-  const [isArbitrumStatsVisible] =
-    useLocalStorage<boolean>(statsLocalStorageKey)
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
 
   const { transactions, updatePendingTransaction } = transactionHistoryProps
 
@@ -57,36 +38,36 @@ export function MainContent() {
   }, [pendingTransactions, updatePendingTransaction])
 
   return (
-    <div className="flex w-full justify-center">
-      <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
-        <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
+    <SidePanel
+      isOpen={isTransactionHistoryPanelVisible}
+      onClose={closeTransactionHistoryPanel}
+      scrollable={false}
+      panelClassNameOverrides="pb-8"
+    >
+      <TransactionHistory props={{ ...transactionHistoryProps, address }} />
+    </SidePanel>
+  )
+}
 
+export function MainContent() {
+  const [isArbitrumStatsVisible] =
+    useLocalStorage<boolean>(statsLocalStorageKey)
+
+  return (
+    <>
+      <div className="main-panel mx-auto flex w-full flex-col sm:max-w-[600px] sm:pb-12 sm:pt-6">
         <TransactionStatusInfo />
 
-        <AnimatePresence>
-          <motion.div
-            key="transfer-panel"
-            {...motionDivProps}
-            className="relative z-10"
-          >
-            <TransferPanel />
-          </motion.div>
-        </AnimatePresence>
+        <TransferPanel />
       </div>
-      <SidePanel
-        isOpen={isTransactionHistoryPanelVisible}
-        heading="Transaction History"
-        onClose={closeTransactionHistoryPanel}
-        scrollable={false}
-      >
-        <TransactionHistory props={{ ...transactionHistoryProps, address }} />
-      </SidePanel>
+
+      <TransactionHistorySidePanel />
 
       {/* Settings panel */}
       <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
       {isArbitrumStatsVisible && <ArbitrumStats />}
-    </div>
+    </>
   )
 }

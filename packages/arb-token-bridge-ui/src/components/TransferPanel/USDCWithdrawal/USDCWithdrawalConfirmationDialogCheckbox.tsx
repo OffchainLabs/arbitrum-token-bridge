@@ -1,8 +1,8 @@
-import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
-import { isNetwork } from '../../../util/networks'
-import { useChainLayers } from '../../../hooks/useChainLayers'
-import { useNetwork } from 'wagmi'
+
+import { Checkbox } from '../../common/Checkbox'
+import { getNetworkName, isNetwork } from '../../../util/networks'
+import { useNetworks } from '../../../hooks/useNetworks'
 
 export function USDCWithdrawalConfirmationDialogCheckbox({
   onChange,
@@ -12,9 +12,10 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
   onAllCheckboxesCheched?: () => void
 }) {
   const [checkboxesChecked, setCheckboxesChecked] = useState([false, false])
-  const { chain } = useNetwork()
-  const { parentLayer } = useChainLayers()
-  const { isTestnet } = isNetwork(chain?.id ?? 0)
+  const [networks] = useNetworks()
+  const { isTestnet } = isNetwork(networks.sourceChain.id)
+
+  const destinationNetworkName = getNetworkName(networks.destinationChain.id)
 
   useEffect(() => {
     if (checkboxesChecked.every(checked => checked)) {
@@ -29,9 +30,9 @@ export function USDCWithdrawalConfirmationDialogCheckbox({
           <span className="select-none font-light">
             I understand that I&apos;ll have to send{' '}
             <span className="font-medium">
-              a second transaction on {parentLayer}
+              a second transaction on {destinationNetworkName}
             </span>{' '}
-            and pay another {parentLayer} fee to claim my USDC.
+            and pay another {destinationNetworkName} fee to claim my USDC.
           </span>
         }
         checked={checkboxesChecked[0] ?? false}

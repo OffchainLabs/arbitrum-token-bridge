@@ -12,7 +12,6 @@ import {
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
-import { UseGasSummaryResult } from './TransferPanelSummary'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   TransferReadinessRichErrorMessage,
@@ -21,6 +20,10 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
+import {
+  GasEstimationStatus,
+  UseGasSummaryResult
+} from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -95,7 +98,7 @@ export function useTransferReadiness({
   gasSummary
 }: {
   amount: string
-  gasSummary: UseGasSummaryResult
+  gasSummary: UseGasSummaryResult & { status: GasEstimationStatus }
 }): UseTransferReadinessResult {
   const {
     app: { selectedToken }
@@ -181,7 +184,7 @@ export function useTransferReadiness({
   }, [nativeCurrency, erc20L1Balances])
 
   return useMemo(() => {
-    if (!amount) {
+    if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady()
     }
 
@@ -290,7 +293,6 @@ export function useTransferReadiness({
     // The amount entered is enough funds, but now let's include gas costs
     switch (gasSummary.status) {
       // No error while loading gas costs
-      case 'idle':
       case 'loading':
         return notReady()
 

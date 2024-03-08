@@ -35,7 +35,8 @@ import {
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  isValidErc20
+  isValidErc20,
+  isGatewayRegistered
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -151,10 +152,8 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
-  const [
-    transactions,
-    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
-  ] = useTransactions()
+  const [transactions, { addTransaction, updateTransaction }] =
+    useTransactions()
 
   const depositEth = async ({
     amount,
@@ -216,7 +215,9 @@ export const useArbTokenBridge = (
       tokenAddress: null,
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID)
+      childChainId: Number(l2NetworkID),
+      sourceChainId: Number(l1NetworkID),
+      destinationChainId: Number(l2NetworkID)
     })
 
     addDepositToCache({
@@ -299,7 +300,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: null,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -331,6 +334,16 @@ export const useArbTokenBridge = (
     }
 
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
+    if (
+      !(await isGatewayRegistered({
+        erc20ParentChainAddress: erc20L1Address,
+        parentChainProvider: l1.provider,
+        childChainProvider: l2.provider
+      }))
+    ) {
+      throw Error('Custom gateway is not registered yet.')
+    }
 
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
@@ -423,6 +436,16 @@ export const useArbTokenBridge = (
       .timestamp
 
     try {
+      if (
+        !(await isGatewayRegistered({
+          erc20ParentChainAddress: erc20L1Address,
+          parentChainProvider: l1.provider,
+          childChainProvider: l2.provider
+        }))
+      ) {
+        throw Error('Custom gateway is not registered yet.')
+      }
+
       const { symbol, decimals } = await fetchErc20Data({
         address: erc20L1Address,
         provider: l1.provider
@@ -471,7 +494,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l1NetworkID),
+        destinationChainId: Number(l2NetworkID)
       })
 
       addDepositToCache({
@@ -590,7 +615,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -991,8 +1018,7 @@ export const useArbTokenBridge = (
     transactions: {
       transactions,
       updateTransaction,
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      addTransaction
     }
   }
 }

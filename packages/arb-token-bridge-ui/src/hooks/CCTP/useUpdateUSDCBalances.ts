@@ -4,6 +4,7 @@ import { isTokenSepoliaUSDC, isTokenMainnetUSDC } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
+import { Address } from '../../util/AddressUtils'
 
 function getL1AddressFromAddress(address: string) {
   switch (address) {
@@ -44,7 +45,7 @@ export function useUpdateUSDCBalances({
   })
 
   const updateUSDCBalances = useCallback(
-    (address: `0x${string}` | string) => {
+    (address: Address | string) => {
       const l1Address = getL1AddressFromAddress(address)
 
       updateErc20L1Balance([l1Address.toLowerCase()])

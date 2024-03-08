@@ -77,33 +77,27 @@ describe('Deposit ERC20 Token', () => {
       context('should show ERC-20 balance correctly', () => {
         cy.findByLabelText('WETH balance on l1')
           .should('be.visible')
-          .contains(l1ERC20bal)
+          .findByText(l1ERC20bal.split(' ')[0]) // only use the number
+          .should('be.visible')
       })
 
-      context('should show summary', () => {
+      context('should show gas estimations', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
           .then(() => {
-            cy.findByText("You're moving")
-              .siblings()
-              .last()
-              .contains(formatAmount(ERC20AmountToSend))
-              .should('be.visible')
-            cy.findByText("You'll now pay in gas fees")
+            cy.findByText('You will pay in gas fees:')
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('L1 gas')
+            cy.findByText('Ethereum Local gas fee')
               .parent()
               .siblings()
-              .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('L2 gas')
+            cy.findByText('Arbitrum Local gas fee')
               .parent()
               .siblings()
-              .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
           })
@@ -111,12 +105,13 @@ describe('Deposit ERC20 Token', () => {
 
       context('should deposit successfully', () => {
         cy.findByRole('button', {
-          name: 'Move funds to Arbitrum'
+          name: 'Move funds to Arbitrum Local'
         })
+          .scrollIntoView()
           .click()
           .then(() => {
             cy.confirmMetamaskTransaction().then(() => {
-              cy.findByText('~10 mins remaining').should('be.visible')
+              cy.findByText('10 minutes').should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'

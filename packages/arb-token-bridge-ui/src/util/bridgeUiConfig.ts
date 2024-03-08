@@ -1,130 +1,134 @@
-import { constants } from 'ethers'
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
+import { orbitChains, BridgeUiConfig } from './orbitChainsList'
 
-type BridgeConfigUi = {
-  primaryColor: `#${string}`
-  secondaryColor: `#${string}`
-  networkName: string
-  networkLogo: string
-  nativeTokenLogo: string
-}
+export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
+  type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {
+    network: Omit<BridgeUiConfig['network'], 'name'>
+  }
 
-type BaseBridgeConfigUi = Omit<BridgeConfigUi, 'networkName'>
+  const ethereumBaseConfig: BaseBridgeUiConfig = {
+    color: '#454A75',
+    network: {
+      logo: '/images/EthereumLogo.svg'
+    }
+  }
 
-const ETHER_TOKEN_LOGO = '/images/EthereumLogoRound.svg'
+  const arbitrumBaseConfig: BaseBridgeUiConfig = {
+    color: '#1B4ADD',
+    network: {
+      logo: '/images/ArbitrumLogo.svg'
+    }
+  }
 
-const ethereumBaseConfig: BaseBridgeConfigUi = {
-  primaryColor: '#454A75',
-  secondaryColor: '#1A1C33',
-  networkLogo: '/images/EthereumLogo.svg',
-  nativeTokenLogo: ETHER_TOKEN_LOGO
-}
-
-const arbitrumBaseConfig: BaseBridgeConfigUi = {
-  primaryColor: '#1B4ADD',
-  secondaryColor: '#001A6B',
-  networkLogo: '/images/ArbitrumLogo.svg',
-  nativeTokenLogo: ETHER_TOKEN_LOGO
-}
-
-export function getBridgeUiConfigForChain(
-  chainId: ChainId,
-  { variant }: { variant?: 'light' | 'dark' } = {}
-): BridgeConfigUi {
   const customChain = getCustomChainFromLocalStorageById(chainId)
-
-  const isCustomOrbitChainWithCustomNativeToken =
-    customChain &&
-    customChain.nativeToken &&
-    customChain.nativeToken !== constants.AddressZero
 
   switch (chainId) {
     case ChainId.Ethereum:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Ethereum'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Ethereum',
+          description: 'The OG chain that started it all.'
+        }
       }
     case ChainId.Goerli:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Goerli'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Goerli',
+          description: 'A deprecated Ethereum testnet, use Sepolia instead.'
+        }
       }
     case ChainId.Sepolia:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Sepolia'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Sepolia',
+          description: 'The current recommended Ethereum testnet.'
+        }
       }
     case ChainId.Local:
       return {
         ...ethereumBaseConfig,
-        networkName: 'Ethereum'
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Ethereum Local'
+        }
       }
     case ChainId.ArbitrumOne:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum One',
-        networkLogo: '/images/ArbitrumOneLogo.svg'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum One',
+          logo: '/images/ArbitrumOneLogo.svg',
+          description: 'Rollup protocol. Secured by operational fraud proofs.'
+        }
       }
     case ChainId.ArbitrumGoerli:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Goerli'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum Goerli',
+          description:
+            'A deprecated Arbitrum One testnet, use Arbitrum Sepolia instead.'
+        }
       }
     case ChainId.ArbitrumSepolia:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum Sepolia'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum Sepolia',
+          description: 'The current recommended Arbitrum testnet.'
+        }
       }
     case ChainId.ArbitrumLocal:
       return {
         ...arbitrumBaseConfig,
-        networkName: 'Arbitrum'
+        network: {
+          ...arbitrumBaseConfig.network,
+          name: 'Arbitrum Local'
+        }
       }
     case ChainId.ArbitrumNova:
       return {
-        primaryColor: '#E57310',
-        secondaryColor: '#743600',
-        networkName: 'Arbitrum Nova',
-        networkLogo: '/images/ArbitrumNovaLogo.svg',
-        nativeTokenLogo: ETHER_TOKEN_LOGO
+        color: '#E57310',
+        network: {
+          name: 'Arbitrum Nova',
+          logo: '/images/ArbitrumNovaLogo.svg',
+          description:
+            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
+        }
       }
     case ChainId.StylusTestnet:
       return {
-        primaryColor: '#E3066E',
-        secondaryColor: '#7E0028',
-        networkName: 'Stylus Testnet',
-        networkLogo: '/images/StylusLogo.svg',
-        nativeTokenLogo: ETHER_TOKEN_LOGO
-      }
-    case ChainId.Xai:
-      return {
-        primaryColor: '#F30019',
-        secondaryColor: '#87000E',
-        networkName: 'Xai',
-        networkLogo: '/images/XaiLogo.svg',
-        nativeTokenLogo: '/images/XaiLogo.svg'
-      }
-    case ChainId.XaiTestnet:
-      return {
-        primaryColor: '#F30019',
-        secondaryColor: '#87000E',
-        networkName: 'Xai Testnet',
-        networkLogo: '/images/XaiLogo.svg',
-        nativeTokenLogo: ETHER_TOKEN_LOGO
+        color: '#E3066E',
+        network: {
+          name: 'Stylus Testnet',
+          logo: '/images/StylusLogo.svg',
+          description:
+            'An experimental playground for Arbitrum Stylus smart contracts.'
+        }
       }
     default: {
-      // custom Orbit chains
+      // added Orbit chains
+      const orbitChain = orbitChains[chainId]
+
+      if (orbitChain) {
+        return orbitChain.bridgeUiConfig
+      }
+
       return {
-        primaryColor: '#12AAFF',
-        secondaryColor: '#0C4260',
-        networkName: customChain ? customChain.name : 'Unknown',
-        networkLogo:
-          variant === 'light'
-            ? '/images/OrbitLogoWhite.svg'
-            : '/images/OrbitLogo.svg',
-        nativeTokenLogo: isCustomOrbitChainWithCustomNativeToken
-          ? ''
-          : ETHER_TOKEN_LOGO
+        color: '#12AAFF',
+        network: {
+          name: customChain ? customChain.name : 'Unknown',
+          logo: '/images/OrbitLogo.svg'
+        }
       }
     }
   }
