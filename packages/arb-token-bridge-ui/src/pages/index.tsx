@@ -20,11 +20,14 @@ import {
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,
   loading: () => (
-    <AppConnectionFallbackContainer>
-      <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
-        <Loader size="large" color="white" />
-      </div>
-    </AppConnectionFallbackContainer>
+    <>
+      <div className="h-12 w-full lg:h-16" />
+      <AppConnectionFallbackContainer>
+        <div className="fixed inset-0 m-auto h-[44px] w-[44px]">
+          <Loader size="large" color="white" />
+        </div>
+      </AppConnectionFallbackContainer>
+    </>
   )
 })
 

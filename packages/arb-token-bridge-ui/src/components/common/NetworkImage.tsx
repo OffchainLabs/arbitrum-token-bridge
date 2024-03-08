@@ -1,25 +1,38 @@
 import Image from 'next/image'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { twMerge } from 'tailwind-merge'
+
+import { getNetworkName } from '../../util/networks'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 export const NetworkImage = ({
   chainId,
-  theme = 'light'
+  className,
+  size
 }: {
   chainId: number
-  theme?: 'light' | 'dark'
+  className?: string
+  size?: number
 }) => {
-  const size = isNetwork(chainId).isEthereumMainnetOrTestnet ? 12 : 16
+  const imageSize = size ?? 16
+  const { network, color } = getBridgeUiConfigForChain(chainId)
+  const networkName = getNetworkName(chainId)
 
   return (
-    <div className="flex w-4 justify-center">
+    <div
+      style={{
+        backgroundColor: `${color}33`
+      }}
+      className={twMerge(
+        'flex w-4 shrink-0 items-center justify-center rounded-full p-[4px]',
+        className
+      )}
+    >
       <Image
-        src={
-          getBridgeUiConfigForChain(chainId, { variant: theme }).network.logo
-        }
-        alt={`${getNetworkName(chainId)} logo`}
-        width={size}
-        height={size}
+        src={network.logo}
+        alt={`${networkName} logo`}
+        className="h-full w-auto"
+        width={imageSize}
+        height={imageSize}
       />
     </div>
   )

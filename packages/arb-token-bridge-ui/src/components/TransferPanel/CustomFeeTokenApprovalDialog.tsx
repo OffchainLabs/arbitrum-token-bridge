@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSigner } from 'wagmi'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -15,6 +14,8 @@ import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { shortenAddress } from '../../util/CommonUtils'
+import { NoteBox } from '../common/NoteBox'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -79,10 +80,6 @@ export function CustomFeeTokenApprovalDialog(
     setChecked(false)
   }
 
-  if (!customFeeToken) {
-    return null
-  }
-
   return (
     <Dialog
       {...props}
@@ -91,24 +88,22 @@ export function CustomFeeTokenApprovalDialog(
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="flex flex-col space-y-6 md:max-w-[490px]">
-        <div className="flex flex-row items-center space-x-4">
+      <div className="flex flex-col space-y-4 py-4">
+        <div className="flex flex-row items-center space-x-3">
           <SafeImage
             src={customFeeToken.logoUrl}
             alt={`${customFeeToken.name} logo`}
-            className="h-8 w-8 grow-0 rounded-full"
+            className="h-6 w-6 grow-0"
             fallback={
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
                 ?
               </div>
             }
           />
           <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              <span className="text-base font-medium text-gray-900">
-                {customFeeToken.symbol}
-              </span>
-              <span className="text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
+              <span className="text-base">{customFeeToken.symbol}</span>
+              <span className="text-xs text-white/70">
                 {customFeeToken.name}
               </span>
             </div>
@@ -116,9 +111,9 @@ export function CustomFeeTokenApprovalDialog(
               href={`${getExplorerUrl(parentChain.id)}/token/${
                 customFeeToken.address
               }`}
-              className="text-xs text-blue-link underline"
+              className="arb-hover text-xs underline"
             >
-              {customFeeToken.address}
+              {shortenAddress(customFeeToken.address)}
             </ExternalLink>
           </div>
         </div>
@@ -138,7 +133,7 @@ export function CustomFeeTokenApprovalDialog(
             <span className="font-light">
               I understand that I have to pay a one-time{' '}
               <span className="font-medium">
-                approval fee of {approvalFeeText}*
+                approval fee of {approvalFeeText}
               </span>{' '}
               for this.
             </span>
@@ -147,11 +142,8 @@ export function CustomFeeTokenApprovalDialog(
           onChange={setChecked}
         />
 
-        <div className="flex flex-col md:max-w-[490px]">
-          <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan px-2 py-3`}
-          >
-            <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
+        <div className="flex flex-col">
+          <NoteBox>
             {selectedToken ? (
               <span className="text-sm font-light text-cyan-dark">
                 After approval, you&apos;ll see additional prompts related to
@@ -165,7 +157,7 @@ export function CustomFeeTokenApprovalDialog(
                 <span className="font-medium">{customFeeToken.symbol}</span>.
               </span>
             )}
-          </div>
+          </NoteBox>
         </div>
       </div>
     </Dialog>
