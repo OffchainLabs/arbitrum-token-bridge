@@ -41,15 +41,19 @@ export function TransferDisabledDialog() {
       actionButtonTitle="Close"
       isOpen={isOpenTransferDisabledDialog}
       onClose={onClose}
-      className="md:max-w-[628px]"
     >
-      <p>
-        Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
-        has a custom bridge solution that is incompatible with the canonical
-        Arbitrum bridge. For more information please contact{' '}
-        <span className="font-medium">{unsupportedToken}</span>
-        &apos;s developer team directly or explore their docs.
-      </p>
+      <div className="flex flex-col space-y-4 py-4">
+        <p>
+          Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
+          has a custom bridge solution that is incompatible with the canonical
+          Arbitrum bridge.
+        </p>
+        <p>
+          For more information please contact{' '}
+          <span className="font-medium">{unsupportedToken}</span>
+          &apos;s developer team directly or explore their docs.
+        </p>
+      </div>
     </Dialog>
   )
 }

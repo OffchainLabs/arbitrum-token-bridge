@@ -64,71 +64,75 @@ export function BridgesTable(props: {
   })
 
   return (
-    <table className="w-full border border-gray-3">
-      <thead className="bg-gray-1 text-left">
-        <tr className="text-gray-6">
-          <th className="w-1/6 px-6 py-4 font-normal">Favorite</th>
-          <th className="w-4/6 px-6 py-4 font-normal">Exchange</th>
-          <th className="w-1/6 px-6 py-4 font-normal"></th>
-        </tr>
-      </thead>
-      <tbody className="font-light">
-        {sortedFastBridges.map(bridge => (
-          <tr
-            key={bridge.name}
-            className="cursor-pointer border border-gray-3 hover:bg-cyan"
-          >
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                className="flex h-16 items-center px-6"
-                onClick={() => onClick(bridge.name)}
-              >
-                <button
-                  onClick={event => {
-                    event.preventDefault()
-                    toggleFavorite(bridge.name)
-                  }}
-                >
-                  {isFavorite(bridge.name) ? (
-                    <StarIconSolid className="h-6 w-6 text-ocl-blue" />
-                  ) : (
-                    <StarIconOutline className="h-6 w-6 text-ocl-blue" />
-                  )}
-                </button>
-              </ExternalLink>
-            </td>
-
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                onClick={() => onClick(bridge.name)}
-              >
-                <div className="flex h-16 items-center space-x-4 px-6">
-                  <Image
-                    src={bridge.imageSrc}
-                    alt={bridge.name}
-                    className="bridge-logos h-8 w-8 rounded-full object-contain"
-                    width={32}
-                    height={32}
-                  />
-                  <span>{bridge.name}</span>
-                </div>
-              </ExternalLink>
-            </td>
-
-            <td>
-              <ExternalLink
-                href={bridge.href}
-                className="arb-hover flex h-16 w-full items-center justify-center text-gray-4 hover:text-ocl-blue"
-                onClick={() => onClick(bridge.name)}
-              >
-                <ArrowTopRightOnSquareIcon className="h-5 w-5" />
-              </ExternalLink>
-            </td>
+    <div className="rounded border border-gray-dark">
+      <table className="w-full overflow-hidden rounded">
+        <thead className="bg-black text-left">
+          <tr className="text-white">
+            <th className="w-1/5 px-5 py-4 font-normal">Favorite</th>
+            <th className="px-5 py-4 font-normal">Bridge</th>
+            <th className="px-5 py-4 font-normal"></th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="font-light">
+          {sortedFastBridges.map(bridge => (
+            <tr
+              key={bridge.name}
+              className="cursor-pointer rounded border-t border-white bg-black transition duration-300 hover:bg-white/20"
+            >
+              <td>
+                <ExternalLink
+                  href={bridge.href}
+                  className="flex items-center px-5 py-3"
+                  onClick={() => onClick(bridge.name)}
+                >
+                  <button
+                    onClick={event => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      toggleFavorite(bridge.name)
+                    }}
+                    className="arb-hover"
+                  >
+                    {isFavorite(bridge.name) ? (
+                      <StarIconSolid className="h-5 w-5 text-white" />
+                    ) : (
+                      <StarIconOutline className="h-5 w-5 text-white" />
+                    )}
+                  </button>
+                </ExternalLink>
+              </td>
+
+              <td>
+                <ExternalLink
+                  href={bridge.href}
+                  onClick={() => onClick(bridge.name)}
+                >
+                  <div className="flex items-center space-x-4 px-5 py-3">
+                    <Image
+                      src={bridge.imageSrc}
+                      alt={bridge.name}
+                      className="bridge-logos h-6 w-6 rounded-full object-contain"
+                      width={32}
+                      height={32}
+                    />
+                    <span className="text-sm">{bridge.name}</span>
+                  </div>
+                </ExternalLink>
+              </td>
+
+              <td>
+                <ExternalLink
+                  href={bridge.href}
+                  className="arb-hover flex w-full items-center justify-end pr-5 text-gray-4"
+                  onClick={() => onClick(bridge.name)}
+                >
+                  <ArrowTopRightOnSquareIcon className="h-3 w-3" />
+                </ExternalLink>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }

@@ -514,7 +514,9 @@ export function useClaimCctp(tx: MergedTransaction) {
   })
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner()
+  const { data: signer } = useSigner({
+    chainId: tx.destinationChainId
+  })
 
   const claim = useCallback(async () => {
     if (!tx.cctpData?.attestationHash || !tx.cctpData.messageBytes || !signer) {
@@ -646,7 +648,7 @@ export function useRemainingTime(tx: MergedTransaction) {
     if (isTransferConfirmed(tx)) {
       setIsConfirmed(true)
     } else {
-      setRemainingTime(canBeClaimedDate.fromNow(true).toString() + ' remaining')
+      setRemainingTime(canBeClaimedDate.fromNow(true).toString())
     }
   }, 2000)
 

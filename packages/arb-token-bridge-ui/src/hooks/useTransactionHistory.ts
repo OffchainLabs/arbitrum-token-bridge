@@ -219,11 +219,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
         return undefined
       }
       // EOA
-      // fetch all for testnet mode, do not fetch testnets if testnet mode disabled
-      if (isTestnetMode) {
-        return 'all'
-      }
-      return isNetwork(chainPair.parentChainId).isTestnet ? undefined : 'all'
+      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+        ? 'all'
+        : undefined
     },
     [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
   )
@@ -304,12 +302,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 chain.id
               )
             }
-            if (isTestnetMode) {
-              // in testnet mode we fetch all chain pairs
-              return true
-            }
-            // otherwise don't fetch testnet chain pairs
-            return !isNetwork(chainPair.parentChainId).isTestnet
+
+            return (
+              isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+            )
           })
           .map(async chainPair => {
             // SCW address is tied to a specific network
@@ -454,9 +450,7 @@ export const useTransactionHistory = (
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
-      .filter(tx =>
-        isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-      )
+      .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
         const chainPairExists = getMultiChainFetchList().some(chainPair => {
           return (

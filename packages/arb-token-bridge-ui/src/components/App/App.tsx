@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
@@ -12,32 +12,26 @@ import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage } from '@uidotdev/usehooks'
+
 import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
 import { config, useActions, useAppState } from '../../state'
-import { Alert } from '../common/Alert'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
-import { useDialog } from '../common/Dialog'
-import {
-  HeaderContent,
-  HeaderOverrides,
-  HeaderOverridesProps
-} from '../common/Header'
+import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { Notifications } from '../common/Notifications'
 import { isNetwork, rpcURLs } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
 } from '../../hooks/useArbQueryParams'
-import { GET_HELP_LINK, TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
@@ -47,7 +41,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
-import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -60,52 +53,15 @@ const rainbowkitTheme = merge(darkTheme(), {
     accentColor: 'var(--blue-link)'
   },
   fonts: {
-    body: "'Space Grotesk', sans-serif"
+    body: 'Roboto, sans-serif'
   }
 } as Theme)
 
-const AppContent = React.memo((): JSX.Element => {
-  const [{ sourceChain }] = useNetworks()
-
-  useSyncQueryParamsToTestnetMode()
-
-  const headerOverridesProps: HeaderOverridesProps = useMemo(() => {
-    if (isNetwork(sourceChain.id).isTestnet) {
-      return {
-        imageSrc: 'images/HeaderArbitrumLogoTestnet.webp',
-        className: 'lg:bg-ocl-blue'
-      }
-    }
-
-    return {
-      imageSrc: 'images/HeaderArbitrumLogoMainnet.svg',
-      className: 'lg:bg-black'
-    }
-  }, [sourceChain.id])
-
-  return (
-    <>
-      <HeaderOverrides {...headerOverridesProps} />
-
-      <HeaderContent>
-        <HeaderAccountPopover />
-      </HeaderContent>
-
-      <TokenListSyncer />
-      <BalanceUpdater />
-      <Notifications />
-      <MainContent />
-    </>
-  )
-})
-AppContent.displayName = 'AppContent'
-
-const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
+const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
-  const { app } = useAppState()
-  const { selectedToken } = app
-  const { address, isConnected } = useAccount()
-  const { isBlocked } = useAccountIsBlocked()
+  const {
+    app: { selectedToken }
+  } = useAppState()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
@@ -143,10 +99,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
     setTokenBridgeParams(null)
     actions.app.setConnectionState(ConnectionState.LOADING)
 
-    if (!isConnected) {
-      return
-    }
-
     const {
       isArbitrum: isConnectedToArbitrum,
       isOrbitChain: isConnectedToOrbitChain
@@ -183,8 +135,6 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       }
     })
   }, [
-    isConnected,
-    address,
     networks.sourceChain.id,
     parentChain.id,
     childChain.id,
@@ -207,28 +157,11 @@ const Injector = ({ children }: { children: React.ReactNode }): JSX.Element => {
       })
   }, [])
 
-  if (address && isBlocked) {
-    return (
-      <BlockedDialog
-        address={address}
-        isOpen={true}
-        // ignoring until we use the package
-        // https://github.com/OffchainLabs/config-monorepo/pull/11
-        //
-        // eslint-disable-next-line
-        onClose={() => {}}
-      />
-    )
+  if (!tokenBridgeParams) {
+    return null
   }
 
-  return (
-    <>
-      {tokenBridgeParams && (
-        <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
-      )}
-      {children}
-    </>
-  )
+  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
 // connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
@@ -262,63 +195,97 @@ function getBaseUrl(url: string) {
   }
 }
 
-const NetworkReady = React.memo(
-  ({ children }: { children: React.ReactNode }) => {
-    const [networks] = useNetworks()
-    const { parentChain, childChain } = useNetworksRelationship(networks)
-    const { isConnected, connector } = useAccount()
-    const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-    const { openConnectModal } = useConnectModal()
+const AppContent = React.memo(() => {
+  const [networks] = useNetworks()
+  const { parentChain, childChain } = useNetworksRelationship(networks)
+  const { address, isConnected, connector } = useAccount()
+  const { isBlocked } = useAccountIsBlocked()
+  const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
+  const { openConnectModal } = useConnectModal()
 
-    useEffect(() => {
-      if (tosAccepted !== undefined && !isConnected) {
-        openConnectModal?.()
-      }
-    }, [isConnected, tosAccepted, openConnectModal])
+  useEffect(() => {
+    if (tosAccepted && !isConnected) {
+      openConnectModal?.()
+    }
+  }, [isConnected, tosAccepted, openConnectModal])
 
-    useEffect(() => {
-      if (isConnected && connector) {
-        const walletName = getWalletName(connector.name)
-        trackEvent('Connect Wallet Click', { walletName })
-      }
-
-      // set a custom tag in sentry to filter issues by connected wallet.name
-      Sentry.setTag('wallet.name', connector?.name ?? '')
-    }, [isConnected, connector])
-
-    useEffect(() => {
-      Sentry.setTag('network.parent_chain_id', parentChain.id)
-      Sentry.setTag(
-        'network.parent_chain_rpc_url',
-        getBaseUrl(rpcURLs[parentChain.id] ?? '')
-      )
-      Sentry.setTag('network.child_chain_id', childChain.id)
-      Sentry.setTag(
-        'network.child_chain_rpc_url',
-        getBaseUrl(rpcURLs[childChain.id] ?? '')
-      )
-    }, [childChain.id, parentChain.id])
-
-    if (!isConnected) {
-      return (
-        <>
-          <HeaderContent>
-            <HeaderConnectWalletButton />
-          </HeaderContent>
-
-          <AppConnectionFallbackContainer>
-            <span className="text-white">
-              Please connect your wallet to use the bridge.
-            </span>
-          </AppConnectionFallbackContainer>
-        </>
-      )
+  useEffect(() => {
+    if (isConnected && connector) {
+      const walletName = getWalletName(connector.name)
+      trackEvent('Connect Wallet Click', { walletName })
     }
 
-    return <>{children}</>
+    // set a custom tag in sentry to filter issues by connected wallet.name
+    Sentry.setTag('wallet.name', connector?.name ?? '')
+  }, [isConnected, connector])
+
+  useEffect(() => {
+    Sentry.setTag('network.parent_chain_id', parentChain.id)
+    Sentry.setTag(
+      'network.parent_chain_rpc_url',
+      getBaseUrl(rpcURLs[parentChain.id] ?? '')
+    )
+    Sentry.setTag('network.child_chain_id', childChain.id)
+    Sentry.setTag(
+      'network.child_chain_rpc_url',
+      getBaseUrl(rpcURLs[childChain.id] ?? '')
+    )
+  }, [childChain.id, parentChain.id])
+
+  if (!tosAccepted) {
+    return (
+      <>
+        <Header />
+        <WelcomeDialog />
+      </>
+    )
   }
-)
-NetworkReady.displayName = 'NetworkReady'
+
+  if (!isConnected) {
+    return (
+      <>
+        <Header>
+          <HeaderConnectWalletButton />
+        </Header>
+
+        <AppConnectionFallbackContainer>
+          <p className="text-5xl">No wallet connected</p>
+          <p className="text-xl">
+            Please connect your wallet to use the bridge.
+          </p>
+        </AppConnectionFallbackContainer>
+      </>
+    )
+  }
+
+  if (address && isBlocked) {
+    return (
+      <BlockedDialog
+        address={address}
+        isOpen={true}
+        closeable={false}
+        // ignoring until we use the package
+        // https://github.com/OffchainLabs/config-monorepo/pull/11
+        //
+        // eslint-disable-next-line
+        onClose={() => {}}
+      />
+    )
+  }
+
+  return (
+    <>
+      <Header>
+        <HeaderAccountPopover />
+      </Header>
+      <TokenListSyncer />
+      <BalanceUpdater />
+      <ArbTokenBridgeStoreSyncWrapper />
+      <MainContent />
+    </>
+  )
+})
+AppContent.displayName = 'AppContent'
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //
@@ -379,84 +346,24 @@ function ConnectedChainSyncer() {
   return null
 }
 
-export function AppContentWrapper() {
-  const {
-    app: { connectionState }
-  } = useAppState()
-  const [tosAccepted] = useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const isTosAccepted = tosAccepted !== undefined
-
-  if (!isTosAccepted) {
-    return null
-  }
-
-  if (connectionState === ConnectionState.NETWORK_ERROR) {
-    return (
-      <Alert type="red">
-        Error: unable to connect to network. Try again soon and contact{' '}
-        <a rel="noreferrer" target="_blank" href={GET_HELP_LINK}>
-          <u>support</u>
-        </a>{' '}
-        if problem persists.
-      </Alert>
-    )
-  }
-
-  return <AppContent />
-}
-
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
-  const [isTosAccepted, setTosAccepted] =
-    useLocalStorage<string>(TOS_LOCALSTORAGE_KEY)
-  const [welcomeDialogProps, openWelcomeDialog] = useDialog()
-
-  useEffect(() => {
-    if (!isTosAccepted) {
-      openWelcomeDialog()
-    }
-  }, [isTosAccepted, openWelcomeDialog])
-
-  const onClose = useCallback(
-    (confirmed: boolean) => {
-      // Only close after confirming (agreeing to terms)
-      if (confirmed) {
-        setTosAccepted('true')
-        welcomeDialogProps.onClose(confirmed)
-      }
-    },
-    [setTosAccepted, welcomeDialogProps]
-  )
-
-  const Content = useMemo(
-    function Content() {
-      return (
-        <>
-          <ConnectedChainSyncer />
-          <WelcomeDialog {...welcomeDialogProps} onClose={onClose} />
-          <NetworkReady>
-            <AppContextProvider>
-              <Injector>
-                <AppContentWrapper />
-              </Injector>
-            </AppContextProvider>
-          </NetworkReady>
-        </>
-      )
-    },
-    [onClose, welcomeDialogProps]
-  )
 
   return (
     <Provider value={overmind}>
-      <WagmiConfig {...wagmiConfigProps}>
-        <RainbowKitProvider
-          theme={rainbowkitTheme}
-          {...rainbowKitProviderProps}
-        >
-          <ArbQueryParamProvider>{Content}</ArbQueryParamProvider>
-        </RainbowKitProvider>
-      </WagmiConfig>
+      <ArbQueryParamProvider>
+        <WagmiConfig {...wagmiConfigProps}>
+          <RainbowKitProvider
+            theme={rainbowkitTheme}
+            {...rainbowKitProviderProps}
+          >
+            <ConnectedChainSyncer />
+            <AppContextProvider>
+              <AppContent />
+            </AppContextProvider>
+          </RainbowKitProvider>
+        </WagmiConfig>
+      </ArbQueryParamProvider>
     </Provider>
   )
 }
