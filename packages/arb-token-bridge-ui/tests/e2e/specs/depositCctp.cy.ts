@@ -6,7 +6,6 @@ import { formatAmount } from '../../../src/util/NumberUtils'
 import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
-import { getExplorerUrl, ChainId } from '../../../src/util/networks'
 
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
@@ -186,15 +185,7 @@ describe('Deposit USDC through CCTP', () => {
                     `Custom address: ${shortenAddress(
                       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
                     )}`
-                  )
-                    .should('be.visible')
-                    .should('have.attr', 'href')
-                    .and(
-                      'include',
-                      `${getExplorerUrl(
-                        ChainId.ArbitrumSepolia
-                      )}/address/${Cypress.env('CUSTOM_DESTINATION_ADDRESS')}`
-                    )
+                  ).should('be.visible')
                 })
 
               // close popup

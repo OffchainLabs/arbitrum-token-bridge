@@ -208,7 +208,7 @@ export const AdvancedSettings = () => {
           collapsible ? '' : 'pointer-events-none'
         )}
       >
-        <span>Advanced Settings</span>
+        <span aria-label="advanced settings">Advanced Settings</span>
         {collapsible && (
           <ChevronDownIcon
             className={twMerge(

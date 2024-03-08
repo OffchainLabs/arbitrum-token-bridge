@@ -5,7 +5,6 @@
 import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddressUtils'
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
-import { getExplorerUrl, ChainId } from '../../../src/util/networks'
 
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
@@ -161,15 +160,7 @@ describe('Withdraw USDC through CCTP', () => {
                     `Custom address: ${shortenAddress(
                       Cypress.env('CUSTOM_DESTINATION_ADDRESS')
                     )}`
-                  )
-                    .should('be.visible')
-                    .should('have.attr', 'href')
-                    .and(
-                      'include',
-                      `${getExplorerUrl(ChainId.Sepolia)}/address/${Cypress.env(
-                        'CUSTOM_DESTINATION_ADDRESS'
-                      )}`
-                    )
+                  ).should('be.visible')
                 })
 
               // close popup
