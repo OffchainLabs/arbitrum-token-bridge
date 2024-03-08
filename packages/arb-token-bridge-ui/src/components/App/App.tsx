@@ -21,7 +21,7 @@ import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { isNetwork } from '../../util/networks'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
@@ -30,7 +30,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
-import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -161,8 +160,6 @@ function AppContent() {
   const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-
-  useSyncQueryParamsToTestnetMode()
 
   if (!tosAccepted) {
     return (
