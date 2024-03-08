@@ -51,31 +51,10 @@ describe('Deposit ERC20 Token', () => {
 
       cy.login({ networkType: 'L1' })
       context('should add a new token', () => {
-        // Click on the ETH dropdown (Select token button)
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
-
-        // open the Select Token popup
-        cy.findByPlaceholderText(/Search by token name/i)
-          .typeRecursively(wethTokenAddressL1)
-          .should('be.visible')
-          .then(() => {
-            // Click on the Add new token button
-
-            cy.findByRole('button', { name: 'Add New Token' })
-              .should('be.visible')
-              .click()
-
-            // Select the WETH token
-            cy.findAllByText('WETH').first().click()
-
-            // WETH token should be selected now and popup should be closed after selection
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'WETH')
-          })
+        cy.searchAndSelectToken({
+          tokenName: 'WETH',
+          tokenAddress: wethTokenAddressL1
+        })
       })
 
       context('should show ERC-20 balance correctly', () => {
@@ -133,31 +112,10 @@ describe('Deposit ERC20 Token', () => {
 
       cy.login({ networkType: 'L1' })
       context('should add a new token', () => {
-        // Click on the ETH dropdown (Select token button)
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
-
-        // open the Select Token popup
-        cy.findByPlaceholderText(/Search by token name/i)
-          .typeRecursively(wethTokenAddressL1)
-          .should('be.visible')
-          .then(() => {
-            // Click on the Add new token button
-
-            cy.findByRole('button', { name: 'Add New Token' })
-              .should('be.visible')
-              .click()
-
-            // Select the WETH token
-            cy.findAllByText('WETH').first().click()
-
-            // WETH token should be selected now and popup should be closed after selection
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'WETH')
-          })
+        cy.searchAndSelectToken({
+          tokenName: 'WETH',
+          tokenAddress: wethTokenAddressL1
+        })
       })
 
       context('should show summary', () => {
@@ -173,17 +131,7 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should fill custom destination address successfully', () => {
-        // click on advanced settings
-        cy.findByLabelText('advanced settings').should('be.visible').click()
-
-        // unlock custom destination address input
-        cy.findByLabelText('Custom destination input lock')
-          .should('be.visible')
-          .click()
-
-        cy.findByPlaceholderText(Cypress.env('ADDRESS'))
-          .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
-          .should('be.visible')
+        cy.fillCustomDestinationAddress()
       })
 
       context('should deposit successfully', () => {

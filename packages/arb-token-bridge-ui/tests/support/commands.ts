@@ -200,6 +200,97 @@ export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   }
 }
 
+export const searchAndSelectToken = ({
+  tokenName,
+  tokenAddress
+}: {
+  tokenName: string
+  tokenAddress: string
+}) => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click()
+
+  // open the Select Token popup
+  cy.findByPlaceholderText(/Search by token name/i)
+    .typeRecursively(tokenAddress)
+    .should('be.visible')
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click()
+
+      // Select the USDC token
+      cy.findAllByText(tokenName).first().click()
+
+      // USDC token should be selected now and popup should be closed after selection
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', tokenName)
+    })
+}
+
+export const fillCustomDestinationAddress = () => {
+  // click on advanced settings
+  cy.findByLabelText('advanced settings').should('be.visible').click()
+
+  // unlock custom destination address input
+  cy.findByLabelText('Custom destination input lock')
+    .should('be.visible')
+    .click()
+
+  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+    .should('be.visible')
+    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+}
+
+export const confirmAndApproveCctpTransaction = () => {
+  // Tabs
+  cy.findByRole('tab', {
+    name: 'Third party (USDC)',
+    selected: true
+  })
+  cy.findByRole('tab', {
+    name: 'Circle (USDC)',
+    selected: false
+  }).click()
+
+  // By default, confirm button is disabled
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.disabled')
+
+  // Checkbox
+  cy.findByRole('switch', {
+    name: /I understand that I'll have to send/i
+  })
+    .should('be.visible')
+    .click()
+  cy.findByRole('switch', {
+    name: /I understand that it will take/i
+  })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.enabled')
+    .click()
+
+  cy.findByText(/I understand that I have to/).click()
+  cy.findByRole('button', {
+    name: /Pay approval fee of/
+  }).click()
+  cy.log('Approving USDC...')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -207,5 +298,8 @@ Cypress.Commands.addAll({
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress,
+  confirmAndApproveCctpTransaction
 })

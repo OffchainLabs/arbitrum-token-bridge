@@ -30,30 +30,10 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('should add USDC token', () => {
-        // Click on the ETH dropdown (Select token button)
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', 'ETH')
-          .click()
-
-        // open the Select Token popup
-        cy.findByPlaceholderText(/Search by token name/i)
-          .typeRecursively(CommonAddress.ArbitrumSepolia.USDC)
-          .should('be.visible')
-          .then(() => {
-            // Click on the Add new token button
-            cy.findByRole('button', { name: 'Add New Token' })
-              .should('be.visible')
-              .click()
-
-            // Select the USDC token
-            cy.findAllByText('USDC').first().click()
-
-            // USDC token should be selected now and popup should be closed after selection
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', 'USDC')
-          })
+        cy.searchAndSelectToken({
+          tokenName: 'USDC',
+          tokenAddress: CommonAddress.ArbitrumSepolia.USDC
+        })
       })
     })
 
@@ -71,47 +51,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        // Tabs
-        cy.findByRole('tab', {
-          name: 'Third party (USDC)',
-          selected: true
-        })
-        cy.findByRole('tab', {
-          name: 'Circle (USDC)',
-          selected: false
-        }).click()
-
-        // By default, confirm button is disabled
-        cy.findByRole('button', {
-          name: /Continue/i
-        })
-          .should('be.visible')
-          .should('be.disabled')
-
-        // Checkbox
-        cy.findByRole('switch', {
-          name: /I understand that I'll have to send/i
-        })
-          .should('be.visible')
-          .click()
-        cy.findByRole('switch', {
-          name: /I understand that it will take/i
-        })
-          .should('be.visible')
-          .click()
-
-        cy.findByRole('button', {
-          name: /Continue/i
-        })
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
-
-        cy.findByText(/I understand that I have to/).click()
-        cy.findByRole('button', {
-          name: /Pay approval fee of/
-        }).click()
-        cy.log('Approving USDC...')
+        cy.confirmAndApproveCctpTransaction()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line
@@ -137,17 +77,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('should fill custom destination address successfully', () => {
-        // click on advanced settings
-        cy.findByLabelText('advanced settings').should('be.visible').click()
-
-        // unlock custom destination address input
-        cy.findByLabelText('Custom destination input lock')
-          .should('be.visible')
-          .click()
-
-        cy.findByPlaceholderText(Cypress.env('ADDRESS'))
-          .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
-          .should('be.visible')
+        cy.fillCustomDestinationAddress()
       })
 
       context('should click withdraw successfully', () => {
@@ -159,47 +89,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        // Tabs
-        cy.findByRole('tab', {
-          name: 'Third party (USDC)',
-          selected: true
-        })
-        cy.findByRole('tab', {
-          name: 'Circle (USDC)',
-          selected: false
-        }).click()
-
-        // By default, confirm button is disabled
-        cy.findByRole('button', {
-          name: /Continue/i
-        })
-          .should('be.visible')
-          .should('be.disabled')
-
-        // Checkbox
-        cy.findByRole('switch', {
-          name: /I understand that I'll have to send/i
-        })
-          .should('be.visible')
-          .click()
-        cy.findByRole('switch', {
-          name: /I understand that it will take/i
-        })
-          .should('be.visible')
-          .click()
-
-        cy.findByRole('button', {
-          name: /Continue/i
-        })
-          .should('be.visible')
-          .should('be.enabled')
-          .click()
-
-        cy.findByText(/I understand that I have to/).click()
-        cy.findByRole('button', {
-          name: /Pay approval fee of/
-        }).click()
-        cy.log('Approving USDC...')
+        cy.confirmAndApproveCctpTransaction()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line
