@@ -207,6 +207,10 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
           : ethL2Balance
       }
 
+      if (!walletAddress) {
+        return constants.Zero
+      }
+
       return isDepositMode ? ethL1Balance : ethL2Balance
     }
 
@@ -226,7 +230,8 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
     erc20L2Balances,
     isDepositMode,
     nativeCurrency,
-    token
+    token,
+    walletAddress
   ])
 
   const isArbitrumToken = useMemo(() => {
