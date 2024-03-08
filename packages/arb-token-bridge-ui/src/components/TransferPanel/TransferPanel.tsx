@@ -6,6 +6,8 @@ import { useLatest } from 'react-use'
 import * as Sentry from '@sentry/react'
 import { useAccount, useChainId, useSigner } from 'wagmi'
 import { Provider, TransactionResponse } from '@ethersproject/providers'
+import { twMerge } from 'tailwind-merge'
+
 import { useAppState } from '../../state'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
@@ -27,7 +29,8 @@ import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
-  isTokenMainnetUSDC
+  isTokenMainnetUSDC,
+  isGatewayRegistered
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -79,7 +82,8 @@ const networkConnectionWarningToast = () =>
         support
       </ExternalLink>
       .
-    </>
+    </>,
+    { autoClose: false }
   )
 
 export function TransferPanel() {
@@ -186,6 +190,10 @@ export function TransferPanel() {
     amount,
     gasSummary
   })
+
+  const { color: destinationChainUIcolor } = getBridgeUiConfigForChain(
+    networks.destinationChain.id
+  )
 
   function closeWithResetTokenImportDialog() {
     setTokenQueryParam(undefined)
@@ -770,11 +778,11 @@ export function TransferPanel() {
         }
 
         // token suspension handling
-        const isTokenSuspended = await checkTokenSuspension({
-          selectedToken,
+        const isTokenSuspended = !(await isGatewayRegistered({
+          erc20ParentChainAddress: selectedToken.address,
           parentChainProvider,
           childChainProvider
-        })
+        }))
         if (isTokenSuspended) {
           const message =
             'Depositing is currently suspended for this token as a new gateway is being registered. Please try again later and contact support if this issue persists.'
@@ -913,8 +921,6 @@ export function TransferPanel() {
     <>
       <TokenApprovalDialog
         {...tokenApprovalDialogProps}
-        amount={amount}
-        allowance={allowance}
         token={selectedToken}
         isCctp={isCctp}
       />
@@ -941,7 +947,12 @@ export function TransferPanel() {
         amount={amount}
       />
 
-      <div className="flex flex-col bg-white px-6 py-6 shadow-[0px_4px_20px_rgba(0,0,0,0.2)] lg:rounded">
+      <div
+        className={twMerge(
+          'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',
+          'sm:rounded sm:border'
+        )}
+      >
         <TransferPanelMain
           amount={amount}
           setAmount={setAmount}
@@ -973,12 +984,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.deposit
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full bg-eth-dark py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border bg-eth-dark py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
@@ -1003,12 +1016,14 @@ export function TransferPanel() {
                 }
               }}
               style={{
-                backgroundColor: transferReady.withdrawal
-                  ? getBridgeUiConfigForChain(networks.destinationChain.id)
-                      .color.secondary
-                  : undefined
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
               }}
-              className="w-full py-4 text-lg lg:text-2xl"
+              className={twMerge(
+                'w-full border py-3 text-lg',
+                'disabled:!border-white/10 disabled:!bg-white/10',
+                'lg:text-2xl'
+              )}
             >
               {isSmartContractWallet && isTransferring
                 ? 'Sending request...'
