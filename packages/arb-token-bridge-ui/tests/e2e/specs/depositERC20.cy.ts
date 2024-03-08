@@ -175,20 +175,27 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('deposit should complete successfully', () => {
-        //wait for some time for tx to go through
-        cy.wait(60_000).then(() => {
-          // switch to settled transactions
-          cy.findByLabelText('show settled transactions')
-            .should('be.visible')
-            .click()
+        // switch to settled transactions
+        cy.findByLabelText('show settled transactions')
+          .should('be.visible')
+          .click()
 
-          // find the new amount in settled transactions
-          cy.findByText(
-            `${formatAmount(ERC20AmountToSend, {
-              symbol: 'WETH'
-            })}`
-          ).should('be.visible')
-
+        //wait for some time for tx to go through and find the new amount in settled transactions
+        cy.waitUntil(
+          () =>
+            cy
+              .findByText(
+                `${formatAmount(ERC20AmountToSend, {
+                  symbol: 'WETH'
+                })}`
+              )
+              .should('be.visible'),
+          {
+            errorMsg: 'Could not find settled ERC20 Deposit transaction',
+            timeout: 60_000,
+            interval: 500
+          }
+        ).then(() => {
           // open the tx details popup
           cy.findAllByLabelText('Transaction details button')
             .first()
