@@ -9,8 +9,7 @@ import {
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress,
-  confirmAndApproveCctpTransaction
+  fillCustomDestinationAddress
 } from '../support/commands'
 import { NetworkType, NetworkName } from '../support/common'
 
@@ -43,7 +42,6 @@ declare global {
         tokenAddress: string
       }): typeof searchAndSelectToken
       fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
-      confirmAndApproveCctpTransaction(): typeof confirmAndApproveCctpTransaction
     }
   }
 }

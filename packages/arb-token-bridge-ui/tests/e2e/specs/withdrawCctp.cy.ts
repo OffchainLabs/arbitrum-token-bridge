@@ -6,6 +6,50 @@ import { CommonAddress } from 'packages/arb-token-bridge-ui/src/util/CommonAddre
 import { formatAmount } from '../../../src/util/NumberUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
+// common function for this cctp withdrawal
+export const confirmAndApproveCctpWithdrawal = () => {
+  cy.findByRole('tab', {
+    name: 'Third party (USDC)',
+    selected: true
+  })
+  cy.findByRole('tab', {
+    name: 'Circle (USDC)',
+    selected: false
+  }).click()
+
+  // By default, confirm button is disabled
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.disabled')
+
+  // Checkbox
+  cy.findByRole('switch', {
+    name: /I understand that I'll have to send/i
+  })
+    .should('be.visible')
+    .click()
+  cy.findByRole('switch', {
+    name: /I understand that it will take/i
+  })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.enabled')
+    .click()
+
+  cy.findByText(/I understand that I have to/).click()
+  cy.findByRole('button', {
+    name: /Pay approval fee of/
+  }).click()
+  cy.log('Approving USDC...')
+}
+
 describe('Withdraw USDC through CCTP', () => {
   // Happy Path
   context('User is on L2 and imports USDC', () => {
@@ -51,7 +95,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        cy.confirmAndApproveCctpTransaction()
+        confirmAndApproveCctpWithdrawal()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line
@@ -89,7 +133,7 @@ describe('Withdraw USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        cy.confirmAndApproveCctpTransaction()
+        confirmAndApproveCctpWithdrawal()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line

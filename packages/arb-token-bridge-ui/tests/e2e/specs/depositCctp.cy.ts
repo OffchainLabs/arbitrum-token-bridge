@@ -7,6 +7,62 @@ import { zeroToLessThanOneETH } from '../../support/common'
 import { CommonAddress } from '../../../src/util/CommonAddressUtils'
 import { shortenAddress } from '../../../src/util/CommonUtils'
 
+// common function for this cctp deposit
+const confirmAndApproveCctpDeposit = () => {
+  cy.findByRole('tab', {
+    name: "Arbitrum's bridge (USDC.e)",
+    selected: true
+  }).should('exist')
+  cy.findByRole('tab', {
+    name: 'Third party (USDC)',
+    selected: false
+  }).should('exist')
+  cy.findByRole('tab', {
+    name: 'Circle (USDC)',
+    selected: false
+  })
+    .should('exist')
+    .click()
+
+  // By default, confirm button is disabled
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.disabled')
+
+  // Checkbox
+  cy.findByRole('switch', {
+    name: /I understand that I'll have to send/i
+  })
+    .should('be.visible')
+    .click()
+  cy.findByRole('switch', {
+    name: /I understand that it will take/i
+  })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('switch', {
+    name: /I understand USDC.e/i
+  })
+    .should('be.visible')
+    .click()
+
+  cy.findByRole('button', {
+    name: /Continue/i
+  })
+    .should('be.visible')
+    .should('be.enabled')
+    .click()
+
+  cy.findByText(/I understand that I have to/).click()
+  cy.findByRole('button', {
+    name: /Pay approval fee of/
+  }).click()
+  cy.log('Approving USDC...')
+}
+
 describe('Deposit USDC through CCTP', () => {
   // Happy Path
   context('User has some USDC and is on L1', () => {
@@ -70,7 +126,7 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        cy.confirmAndApproveCctpTransaction()
+        confirmAndApproveCctpDeposit()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line
@@ -102,7 +158,7 @@ describe('Deposit USDC through CCTP', () => {
       })
 
       context('Should display CCTP modal', () => {
-        cy.confirmAndApproveCctpTransaction()
+        confirmAndApproveCctpDeposit()
         cy.confirmMetamaskPermissionToSpend(USDCAmountToSend.toString()).then(
           () => {
             // eslint-disable-next-line

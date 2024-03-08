@@ -247,50 +247,6 @@ export const fillCustomDestinationAddress = () => {
     .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
 }
 
-export const confirmAndApproveCctpTransaction = () => {
-  // Tabs
-  cy.findByRole('tab', {
-    name: 'Third party (USDC)',
-    selected: true
-  })
-  cy.findByRole('tab', {
-    name: 'Circle (USDC)',
-    selected: false
-  }).click()
-
-  // By default, confirm button is disabled
-  cy.findByRole('button', {
-    name: /Continue/i
-  })
-    .should('be.visible')
-    .should('be.disabled')
-
-  // Checkbox
-  cy.findByRole('switch', {
-    name: /I understand that I'll have to send/i
-  })
-    .should('be.visible')
-    .click()
-  cy.findByRole('switch', {
-    name: /I understand that it will take/i
-  })
-    .should('be.visible')
-    .click()
-
-  cy.findByRole('button', {
-    name: /Continue/i
-  })
-    .should('be.visible')
-    .should('be.enabled')
-    .click()
-
-  cy.findByText(/I understand that I have to/).click()
-  cy.findByRole('button', {
-    name: /Pay approval fee of/
-  }).click()
-  cy.log('Approving USDC...')
-}
-
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -300,6 +256,5 @@ Cypress.Commands.addAll({
   fundUserUsdcTestnet,
   fundUserWalletEth,
   searchAndSelectToken,
-  fillCustomDestinationAddress,
-  confirmAndApproveCctpTransaction
+  fillCustomDestinationAddress
 })
