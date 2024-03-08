@@ -49,6 +49,7 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
+import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -653,142 +654,173 @@ export const useArbTokenBridge = (
     })
   }
 
-  const addTokensFromList = async (arbTokenList: TokenList, listId: number) => {
-    const l1ChainID = l1.network.id
-    const l2ChainID = l2.network.id
+  const addTokensFromList = useCallback(
+    async (arbTokenList: TokenList, listId: number) => {
+      const l1ChainID = l1.network.id
+      const l2ChainID = l2.network.id
 
-    const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
+      const bridgeTokensToAdd: ContractStorage<ERC20BridgeToken> = {}
 
-    const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
+      const candidateUnbridgedTokensToAdd: ERC20BridgeToken[] = []
 
-    for (const tokenData of arbTokenList.tokens) {
-      const { address, name, symbol, extensions, decimals, logoURI, chainId } =
-        tokenData
+      for (const tokenData of arbTokenList.tokens) {
+        const {
+          address,
+          name,
+          symbol,
+          extensions,
+          decimals,
+          logoURI,
+          chainId
+        } = tokenData
 
-      if (![l1ChainID, l2ChainID].includes(chainId)) {
-        continue
-      }
+        if (![l1ChainID, l2ChainID].includes(chainId)) {
+          continue
+        }
 
-      const bridgeInfo = (() => {
-        // TODO: parsing the token list format could be from arbts or the tokenlist package
-        interface Extensions {
-          bridgeInfo: {
-            [chainId: string]: {
-              tokenAddress: string
-              originBridgeAddress: string
-              destBridgeAddress: string
+        const bridgeInfo = (() => {
+          // TODO: parsing the token list format could be from arbts or the tokenlist package
+          interface Extensions {
+            bridgeInfo: {
+              [chainId: string]: {
+                tokenAddress: string
+                originBridgeAddress: string
+                destBridgeAddress: string
+              }
             }
           }
-        }
-        const isExtensions = (obj: any): obj is Extensions => {
-          if (!obj) return false
-          if (!obj['bridgeInfo']) return false
-          return Object.keys(obj['bridgeInfo'])
-            .map(key => obj['bridgeInfo'][key])
-            .every(
-              e =>
-                e &&
-                'tokenAddress' in e &&
-                'originBridgeAddress' in e &&
-                'destBridgeAddress' in e
-            )
-        }
-        if (!isExtensions(extensions)) {
-          return null
-        } else {
-          return extensions.bridgeInfo
-        }
-      })()
+          const isExtensions = (obj: any): obj is Extensions => {
+            if (!obj) return false
+            if (!obj['bridgeInfo']) return false
+            return Object.keys(obj['bridgeInfo'])
+              .map(key => obj['bridgeInfo'][key])
+              .every(
+                e =>
+                  e &&
+                  'tokenAddress' in e &&
+                  'originBridgeAddress' in e &&
+                  'destBridgeAddress' in e
+              )
+          }
+          if (!isExtensions(extensions)) {
+            return null
+          } else {
+            return extensions.bridgeInfo
+          }
+        })()
 
-      if (bridgeInfo) {
-        const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
+        if (bridgeInfo) {
+          const l1Address = bridgeInfo[l1NetworkID]?.tokenAddress.toLowerCase()
 
-        if (!l1Address) {
-          return
+          if (!l1Address) {
+            return
+          }
+
+          bridgeTokensToAdd[l1Address] = {
+            name,
+            type: TokenType.ERC20,
+            symbol,
+            address: l1Address,
+            l2Address: address.toLowerCase(),
+            decimals,
+            logoURI,
+            listIds: new Set([listId])
+          }
         }
-
-        bridgeTokensToAdd[l1Address] = {
-          name,
-          type: TokenType.ERC20,
-          symbol,
-          address: l1Address,
-          l2Address: address.toLowerCase(),
-          decimals,
-          logoURI,
-          listIds: new Set([listId])
+        // save potentially unbridged L1 tokens:
+        // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
+        else if (arbTokenList.tokens.length < 1000) {
+          candidateUnbridgedTokensToAdd.push({
+            name,
+            type: TokenType.ERC20,
+            symbol,
+            address: address.toLowerCase(),
+            decimals,
+            logoURI,
+            listIds: new Set([listId])
+          })
         }
       }
-      // save potentially unbridged L1 tokens:
-      // stopgap: giant lists (i.e., CMC list) currently severaly hurts page performace, so for now we only add the bridged tokens
-      else if (arbTokenList.tokens.length < 1000) {
-        candidateUnbridgedTokensToAdd.push({
-          name,
-          type: TokenType.ERC20,
-          symbol,
-          address: address.toLowerCase(),
-          decimals,
-          logoURI,
-          listIds: new Set([listId])
-        })
-      }
-    }
 
-    // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
-    const l1AddressesOfBridgedTokens = new Set(
-      Object.keys(bridgeTokensToAdd).map(
-        l1Address =>
-          l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
+      // add L1 tokens only if they aren't already bridged (i.e., if they haven't already beed added as L2 arb-tokens to the list)
+      const l1AddressesOfBridgedTokens = new Set(
+        Object.keys(bridgeTokensToAdd).map(
+          l1Address =>
+            l1Address.toLowerCase() /* lists should have the checksummed case anyway, but just in case (pun unintended) */
+        )
       )
-    )
-    for (const l1TokenData of candidateUnbridgedTokensToAdd) {
-      if (!l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())) {
-        bridgeTokensToAdd[l1TokenData.address] = l1TokenData
-      }
-    }
-
-    // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
-    setBridgeTokens(oldBridgeTokens => {
-      const l1Addresses: string[] = []
-      const l2Addresses: string[] = []
-
-      // USDC is not on any token list as it's unbridgeable
-      // but we still want to detect its balance on user's wallet
-      if (isNetwork(l2ChainID).isArbitrumOne) {
-        l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
-      }
-      if (isNetwork(l2ChainID).isArbitrumSepolia) {
-        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
-      }
-
-      for (const tokenAddress in bridgeTokensToAdd) {
-        const tokenToAdd = bridgeTokensToAdd[tokenAddress]
-        if (!tokenToAdd) {
-          return
+      for (const l1TokenData of candidateUnbridgedTokensToAdd) {
+        if (
+          !l1AddressesOfBridgedTokens.has(l1TokenData.address.toLowerCase())
+        ) {
+          bridgeTokensToAdd[l1TokenData.address] = l1TokenData
         }
-        const { address, l2Address } = tokenToAdd
-        if (address) {
-          l1Addresses.push(address)
+      }
+
+      // Callback is used here, so we can add listId to the set of listIds rather than creating a new set everytime
+      setBridgeTokens(oldBridgeTokens => {
+        const l1Addresses: string[] = []
+        const l2Addresses: string[] = []
+
+        // USDC is not on any token list as it's unbridgeable
+        // but we still want to detect its balance on user's wallet
+        if (isNetwork(l2ChainID).isArbitrumOne) {
+          l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
         }
-        if (l2Address) {
-          l2Addresses.push(l2Address)
+        if (isNetwork(l2ChainID).isArbitrumSepolia) {
+          l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
         }
 
-        // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
-        // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
-        const oldListIds =
-          oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
-        tokenToAdd.listIds = new Set([...oldListIds, listId])
-      }
+        for (const tokenAddress in bridgeTokensToAdd) {
+          const tokenToAdd = bridgeTokensToAdd[tokenAddress]
+          if (!tokenToAdd) {
+            return
+          }
+          const { address, l2Address } = tokenToAdd
+          if (address) {
+            l1Addresses.push(address)
+          }
+          if (l2Address) {
+            l2Addresses.push(l2Address)
+          }
 
-      updateErc20L1Balance(l1Addresses)
-      updateErc20L2Balance(l2Addresses)
+          // Add the new list id being imported (`listId`) to the existing list ids (from `oldBridgeTokens[address]`)
+          // Set the result to token added to `bridgeTokens` : `tokenToAdd.listIds`
+          const oldListIds =
+            oldBridgeTokens?.[tokenToAdd.address]?.listIds || new Set()
+          tokenToAdd.listIds = new Set([...oldListIds, listId])
+        }
 
-      return {
-        ...oldBridgeTokens,
-        ...bridgeTokensToAdd
-      }
-    })
-  }
+        updateErc20L1Balance(l1Addresses)
+        updateErc20L2Balance(l2Addresses)
+
+        return {
+          ...oldBridgeTokens,
+          ...bridgeTokensToAdd
+        }
+      })
+    },
+    [
+      l1.network.id,
+      l1NetworkID,
+      l2.network.id,
+      updateErc20L1Balance,
+      updateErc20L2Balance
+    ]
+  )
+
+  const addBridgeTokenListToBridge = useCallback(
+    (bridgeTokenList: BridgeTokenList) => {
+      fetchTokenListFromURL(bridgeTokenList.url).then(
+        ({ isValid, data: tokenList }) => {
+          if (!isValid) return
+
+          addTokensFromList(tokenList!, bridgeTokenList.id)
+        }
+      )
+    },
+    [addTokensFromList]
+  )
 
   async function addToken(erc20L1orL2Address: string) {
     let l1Address: string
@@ -1004,6 +1036,7 @@ export const useArbTokenBridge = (
       addL2NativeToken,
       addTokensFromList,
       removeTokensFromList,
+      addBridgeTokenListToBridge,
       updateTokenData,
       approve: approveToken,
       approveL2: approveTokenL2,
