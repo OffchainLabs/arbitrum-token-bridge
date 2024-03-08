@@ -96,6 +96,11 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
+      setGasSummary({
+        status: 'success',
+        estimatedL1GasFees: 0,
+        estimatedL2GasFees: 0
+      })
       return
     }
 
