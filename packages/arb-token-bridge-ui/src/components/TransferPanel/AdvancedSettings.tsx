@@ -182,11 +182,6 @@ export const AdvancedSettings = () => {
     return isEOA && !destinationAddress
   }, [destinationAddress, isEOA])
 
-  // Disabled for ETH
-  if (!selectedToken) {
-    return null
-  }
-
   if (!isEOA && !isSmartContractWallet) {
     return null
   }
@@ -252,9 +247,12 @@ export const AdvancedSettings = () => {
               value={destinationAddress}
               disabled={inputLocked}
               spellCheck={false}
-              onChange={e =>
-                setDestinationAddress(e.target.value?.toLowerCase().trim())
-              }
+              onChange={e => {
+                const value = e.target.value?.toLowerCase().trim()
+                // we make sure the value is never an empty string
+                const valueOrUndefined = value.length > 0 ? value : undefined
+                setDestinationAddress(valueOrUndefined)
+              }}
             />
             {isEOA && (
               <button onClick={() => setInputLocked(!inputLocked)}>
