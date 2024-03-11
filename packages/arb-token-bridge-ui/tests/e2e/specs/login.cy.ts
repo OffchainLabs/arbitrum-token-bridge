@@ -19,24 +19,16 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.visit(
-      '/?destinationChain=custom-localhost&sourceChain=arbitrum-localhost'
-    )
+    cy.visit('/')
     cy.findByText(/Agree to Terms and Continue/i)
       .should('be.visible')
       .click()
-    cy.findByText('Connect Wallet').should('be.visible').click()
+    cy.findAllByText('Connect Wallet').first().should('be.visible').click()
     cy.findByText('MetaMask').should('be.visible')
   })
 
   it('should connect wallet using MetaMask and display L1 and L2 balances', () => {
-    cy.login({
-      networkType: 'L1',
-      query: {
-        destinationChain: 'custom-localhost',
-        sourceChain: 'arbitrum-localhost'
-      }
-    })
+    cy.login({ networkType: 'L1' })
     // Balance: is in a different element so we check for siblings
     cy.findByText(l1ETHbal)
       .should('be.visible')
