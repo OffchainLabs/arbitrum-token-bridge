@@ -19,7 +19,9 @@ describe('Login Account', () => {
   })
 
   it('should show connect wallet if not logged in', () => {
-    cy.visit('/')
+    cy.visit(
+      '/?destinationChain=custom-localhost&sourceChain=arbitrum-localhost'
+    )
     cy.findByText(/Agree to Terms and Continue/i)
       .should('be.visible')
       .click()
