@@ -29,12 +29,7 @@ describe('Deposit ERC20 Token', () => {
         multiCallerAddress: getL1NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ETH_RPC_URL')
-      }).then(
-        val =>
-          (l1ERC20bal = formatAmount(val, {
-            symbol: 'WETH'
-          }))
-      )
+      }).then(val => (l1ERC20bal = formatAmount(val)))
     })
 
     it('should show L1 and L2 chains, and ETH correctly', () => {
@@ -60,7 +55,7 @@ describe('Deposit ERC20 Token', () => {
       context('should show ERC-20 balance correctly', () => {
         cy.findByLabelText('WETH balance amount on l1')
           .should('be.visible')
-          .findByText(l1ERC20bal)
+          .contains(l1ERC20bal)
           .should('be.visible')
       })
 
