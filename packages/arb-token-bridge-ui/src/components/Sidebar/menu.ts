@@ -155,3 +155,15 @@ export const communityMenuItems: MenuItem[] = [
   { title: 'Governance Forum', link: 'https://forum.arbitrum.foundation/' },
   { title: 'Research Forum', link: 'https://research.arbitrum.io/' }
 ]
+
+export const orbitMenuItems: MenuItem[] = [
+  {
+    title: 'Orbit Ecosystem',
+    link: 'https://portal.arbitrum.io/orbit/ecosystem'
+  },
+
+  {
+    title: 'Launch Chain',
+    link: 'https://portal.arbitrum.io/orbit/launch'
+  }
+]
