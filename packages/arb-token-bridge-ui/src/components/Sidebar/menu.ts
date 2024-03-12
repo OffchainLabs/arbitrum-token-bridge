@@ -49,12 +49,6 @@ export const toolsMenuItems: MenuItem[] = [
     link: 'https://docs.arbitrum.io/for-devs/quickstart-solidity-hardhat',
     description: 'Start building an app on Arbitrum.'
   },
-
-  {
-    title: 'Orbit Deployer',
-    link: 'https://orbit.arbitrum.io/',
-    description: 'Deploy a customizable Orbit chain.'
-  },
   {
     title: 'Arbitrum SDK',
     link: 'https://www.npmjs.com/package/@arbitrum/sdk',
