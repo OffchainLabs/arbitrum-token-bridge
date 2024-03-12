@@ -58,9 +58,9 @@ describe('Deposit ERC20 Token', () => {
       })
 
       context('should show ERC-20 balance correctly', () => {
-        cy.findByLabelText('WETH balance on l1')
+        cy.findByLabelText('WETH balance amount on l1')
           .should('be.visible')
-          .findByText(l1ERC20bal.split(' ')[0]) // only use the number
+          .findByText(l1ERC20bal)
           .should('be.visible')
       })
 

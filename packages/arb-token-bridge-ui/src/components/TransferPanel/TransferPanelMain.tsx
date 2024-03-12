@@ -282,7 +282,7 @@ function TokenBalance({
   const tokenSymbol = tokenSymbolOverride ?? forToken.symbol
 
   return (
-    <p aria-label={`${tokenSymbol} balance on ${on}`}>
+    <p>
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {

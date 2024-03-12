@@ -20,7 +20,7 @@ describe('Withdraw ERC20 Token', () => {
   context('User is on L2 and imports ERC-20', () => {
     let l2ERC20bal: string
 
-    // log in to metamask before deposit
+    // log in to metamask before withdrawal
     beforeEach(() => {
       getInitialERC20Balance({
         tokenAddress: wethTokenAddressL2,
