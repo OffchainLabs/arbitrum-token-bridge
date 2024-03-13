@@ -153,7 +153,7 @@ export const startWebApp = (
     // ensures we don't test with the same state that could have caused the test to fail
     cy.reload(true)
   }
-  cy.connectToApp()
+  cy.connectToApp(options.connectMetamask)
   if (options.connectMetamask) {
     cy.task('getWalletConnectedToDapp').then(connected => {
       if (!connected) {
