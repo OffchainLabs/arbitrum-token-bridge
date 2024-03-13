@@ -13,7 +13,19 @@ Cypress.Keyboard.defaults({
   keystrokeDelay: 150
 })
 
-logCollector()
+const options = {
+  // Log console output only
+  collectTypes: [
+    'cons:log',
+    'cons:info',
+    'cons:warn',
+    'cons:error',
+    'cy:command',
+    'cy:log'
+  ]
+} as const
+
+logCollector(options)
 
 before(() => {
   // connect to goerli to avoid connecting to localhost twice and failing
