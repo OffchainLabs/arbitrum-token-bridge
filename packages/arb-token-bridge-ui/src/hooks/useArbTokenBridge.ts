@@ -7,7 +7,10 @@ import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
 import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import {
+  L1ContractCallTransaction,
+  L1EthDepositTransaction
+} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -175,11 +178,14 @@ export const useArbTokenBridge = (
   const depositEth = async ({
     amount,
     l1Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }: {
     amount: BigNumber
     l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    txLifecycle?: L1EthDepositTransactionLifecycle &
+      L1ContractCallTransactionLifecycle
+    destinationAddress?: string
   }) => {
     if (!walletAddress) {
       return
@@ -194,16 +200,31 @@ export const useArbTokenBridge = (
       from: walletAddress
     })
 
-    let tx: L1EthDepositTransaction
+    let tx: L1EthDepositTransaction & L1ContractCallTransaction
+
+    const isDifferentDestinationTransfer =
+      destinationAddress &&
+      destinationAddress.toLowerCase() !== walletAddress.toLocaleLowerCase()
 
     try {
       const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
 
-      tx = await ethBridger.deposit({
-        amount,
-        l1Signer,
-        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
-      })
+      tx = (
+        isDifferentDestinationTransfer
+          ? await ethBridger.depositTo({
+              amount,
+              l1Signer,
+              l2Provider: l2.provider,
+              destinationAddress
+            })
+          : await ethBridger.deposit({
+              amount,
+              l1Signer,
+              overrides: {
+                gasLimit: percentIncrease(gasLimit, BigNumber.from(5))
+              }
+            })
+      ) as typeof tx
 
       if (txLifecycle?.onTxSubmit) {
         txLifecycle.onTxSubmit(tx)
@@ -217,7 +238,7 @@ export const useArbTokenBridge = (
 
     addPendingTransaction({
       sender: walletAddress,
-      destination: walletAddress,
+      destination: destinationAddress ?? walletAddress,
       direction: 'deposit-l1',
       status: 'pending',
       createdAt: parentChainBlockTimestamp * 1_000,
@@ -239,7 +260,7 @@ export const useArbTokenBridge = (
 
     addDepositToCache({
       sender: walletAddress,
-      destination: walletAddress,
+      destination: destinationAddress ?? walletAddress,
       status: 'pending',
       txID: tx.hash,
       assetName: nativeCurrency.symbol,
@@ -272,7 +293,8 @@ export const useArbTokenBridge = (
   const withdrawEth: ArbTokenBridgeEth['withdraw'] = async ({
     amount,
     l2Signer,
-    txLifecycle
+    txLifecycle,
+    destinationAddress
   }) => {
     if (!walletAddress) {
       return
@@ -283,7 +305,7 @@ export const useArbTokenBridge = (
 
       const withdrawalRequest = await ethBridger.getWithdrawalRequest({
         from: walletAddress,
-        destinationAddress: walletAddress,
+        destinationAddress: destinationAddress ?? walletAddress,
         amount
       })
 
@@ -303,7 +325,7 @@ export const useArbTokenBridge = (
 
       addPendingTransaction({
         sender: walletAddress,
-        destination: walletAddress,
+        destination: destinationAddress ?? walletAddress,
         direction: 'withdraw',
         status: WithdrawalStatus.UNCONFIRMED,
         createdAt: dayjs().valueOf(),
