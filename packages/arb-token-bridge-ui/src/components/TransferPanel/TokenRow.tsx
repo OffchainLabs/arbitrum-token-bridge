@@ -200,6 +200,10 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   }, [token, nativeCurrency])
 
   const balance = useMemo(() => {
+    if (!walletAddress) {
+      return constants.Zero
+    }
+
     if (!token) {
       if (nativeCurrency.isCustom) {
         return isDepositMode

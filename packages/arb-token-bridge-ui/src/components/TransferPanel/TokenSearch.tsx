@@ -347,10 +347,6 @@ function TokensPanel({
   ])
 
   const storeNewToken = async () => {
-    if (!walletAddress) {
-      return
-    }
-
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
