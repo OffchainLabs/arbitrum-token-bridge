@@ -1094,6 +1094,10 @@ export function TransferPanel() {
             <Button
               variant="primary"
               onClick={openConnectModal}
+              style={{
+                borderColor: destinationChainUIcolor,
+                backgroundColor: `${destinationChainUIcolor}66`
+              }}
               className="w-full border border-lime-dark bg-lime-dark py-3 text-lg lg:text-2xl"
             >
               <span className="block w-[360px] truncate">Connect Wallet</span>
