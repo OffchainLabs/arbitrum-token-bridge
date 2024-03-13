@@ -204,6 +204,53 @@ export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   }
 }
 
+export const searchAndSelectToken = ({
+  tokenName,
+  tokenAddress
+}: {
+  tokenName: string
+  tokenAddress: string
+}) => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click()
+
+  // open the Select Token popup
+  cy.findByPlaceholderText(/Search by token name/i)
+    .typeRecursively(tokenAddress)
+    .should('be.visible')
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click()
+
+      // Select the USDC token
+      cy.findAllByText(tokenName).first().click()
+
+      // USDC token should be selected now and popup should be closed after selection
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', tokenName)
+    })
+}
+
+export const fillCustomDestinationAddress = () => {
+  // click on advanced settings
+  cy.findByLabelText('advanced settings').should('be.visible').click()
+
+  // unlock custom destination address input
+  cy.findByLabelText('Custom destination input lock')
+    .should('be.visible')
+    .click()
+
+  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+    .should('be.visible')
+    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -211,5 +258,7 @@ Cypress.Commands.addAll({
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress
 })

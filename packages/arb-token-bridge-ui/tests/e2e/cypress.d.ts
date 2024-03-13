@@ -7,7 +7,9 @@ import {
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress
 } from '../support/commands'
 
 declare global {
@@ -26,6 +28,14 @@ declare global {
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
       typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
+      searchAndSelectToken({
+        tokenName,
+        tokenAddress
+      }: {
+        tokenName: string
+        tokenAddress: string
+      }): typeof searchAndSelectToken
+      fillCustomDestinationAddress(): typeof fillCustomDestinationAddress
     }
   }
 }
