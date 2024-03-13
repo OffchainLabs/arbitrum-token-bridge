@@ -195,10 +195,6 @@ describe('Import token', () => {
           connectMetamask: false
         })
 
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
-
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
@@ -233,10 +229,6 @@ describe('Import token', () => {
           },
           connectMetamask: false
         })
-
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
