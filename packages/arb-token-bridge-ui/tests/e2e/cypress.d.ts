@@ -9,7 +9,6 @@ import {
   fundUserUsdcTestnet,
   fundUserWalletEth
 } from '../support/commands'
-import { NetworkType, NetworkName } from '../support/common'
 
 declare global {
   namespace Cypress {
@@ -20,12 +19,7 @@ declare global {
        */
       connectToApp(): typeof connectToApp
       // eslint-disable-next-line no-unused-vars
-      login(options: {
-        networkType: NetworkType
-        networkName?: NetworkName
-        url?: string
-        query?: { [s: string]: string }
-      }): typeof login
+      login: typeof login
       logout(): typeof logout
       openTransactionsPanel(): typeof openTransactionsPanel
       resetCctpAllowance: typeof resetCctpAllowance

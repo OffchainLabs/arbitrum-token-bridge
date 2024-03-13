@@ -38,12 +38,14 @@ export function login({
   networkType,
   networkName,
   url,
-  query
+  query,
+  connectMetamask = true
 }: {
   networkType: NetworkType
   networkName?: NetworkName
   url?: string
   query?: { [s: string]: string }
+  connectMetamask?: boolean
 }) {
   // if networkName is not specified we connect to default network from config
   const network =
@@ -53,7 +55,7 @@ export function login({
   function _startWebApp() {
     const sourceChain =
       networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
-    startWebApp(url, { ...query, sourceChain })
+    startWebApp(url, { query: { ...query, sourceChain }, connectMetamask })
   }
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
@@ -102,13 +104,15 @@ export const logout = () => {
   })
 }
 
-export const connectToApp = () => {
+export const connectToApp = (connectMetamask: boolean) => {
   // initial modal prompts which come in the web-app
   cy.findByText(/Agree to Terms and Continue/i)
     .should('be.visible')
     .click()
-  cy.findAllByText('Connect Wallet').first().should('be.visible').click()
-  cy.findByText('MetaMask').should('be.visible').click()
+  if (connectMetamask) {
+    cy.findAllByText('Connect Wallet').first().should('be.visible').click()
+    cy.findByText('MetaMask').should('be.visible').click()
+  }
 }
 
 export const openTransactionsPanel = () => {

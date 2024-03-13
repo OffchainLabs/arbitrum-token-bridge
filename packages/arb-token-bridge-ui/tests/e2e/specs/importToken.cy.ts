@@ -22,7 +22,7 @@ describe('Import token', () => {
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', connectMetamask: false })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
