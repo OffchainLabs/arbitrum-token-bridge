@@ -50,7 +50,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await EthBridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await ethBridger.approveFeeToken({
+    const approveCustomFeeTokenTx = await ethBridger.approveGasToken({
       l1Signer: signer
     })
     await approveCustomFeeTokenTx.wait()

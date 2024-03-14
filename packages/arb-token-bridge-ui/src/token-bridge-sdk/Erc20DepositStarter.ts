@@ -98,7 +98,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await erc20Bridger.approveFeeToken({
+    const approveCustomFeeTokenTx = await erc20Bridger.approveGasToken({
       erc20L1Address: this.sourceChainErc20Address,
       l1Signer: signer
     })
