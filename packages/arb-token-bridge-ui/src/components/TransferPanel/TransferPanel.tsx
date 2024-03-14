@@ -1,11 +1,11 @@
 import dayjs from 'dayjs'
 import { useState, useMemo, useCallback } from 'react'
 import Tippy from '@tippyjs/react'
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import * as Sentry from '@sentry/react'
 import { useAccount, useChainId, useSigner } from 'wagmi'
-import { Provider, TransactionResponse } from '@ethersproject/providers'
+import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
@@ -25,7 +25,6 @@ import { useAppContextActions, useAppContextState } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { TransferPanelMain } from './TransferPanelMain'
 import {
-  getL2ERC20Address,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
@@ -51,7 +50,7 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -179,7 +178,6 @@ export function TransferPanel() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
 
   const { destinationAddress } = useDestinationAddressStore()
@@ -352,33 +350,6 @@ export function TransferPanel() {
       setTransferring(false)
       setShowSCWalletTooltip(true)
     }, 3000)
-
-  const checkTokenSuspension = async ({
-    selectedToken,
-    parentChainProvider,
-    childChainProvider
-  }: {
-    selectedToken: ERC20BridgeToken
-    parentChainProvider: Provider
-    childChainProvider: Provider
-  }) => {
-    // check that a registration is not currently in progress
-    const l2RoutedAddress = await getL2ERC20Address({
-      erc20L1Address: selectedToken.address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
-    })
-
-    // check if the token is suspended
-    if (
-      selectedToken.l2Address &&
-      selectedToken.l2Address.toLowerCase() !== l2RoutedAddress.toLowerCase()
-    ) {
-      return true
-    }
-
-    return false
-  }
 
   const transferCctp = async () => {
     if (!selectedToken) {
