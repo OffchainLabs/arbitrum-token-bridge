@@ -1,12 +1,17 @@
-import { useLocalStorage } from '@uidotdev/usehooks'
-
-const testnetModeLocalStorageKey = 'arbitrum:bridge:settings:testnetMode'
+import { useCallback } from 'react'
+import { useNetworks } from './useNetworks'
+import { ChainId, isNetwork } from '../util/networks'
 
 export const useIsTestnetMode = () => {
-  const [isTestnetMode, setIsTestnetMode] = useLocalStorage<boolean>(
-    testnetModeLocalStorageKey,
-    false
-  )
+  const [networks, setNetworks] = useNetworks()
 
-  return [isTestnetMode, setIsTestnetMode] as const
+  const isTestnetMode = isNetwork(networks.sourceChain.id).isTestnet
+
+  const toggleTestnetMode = useCallback(() => {
+    setNetworks({
+      sourceChainId: isTestnetMode ? ChainId.Ethereum : ChainId.Sepolia
+    })
+  }, [isTestnetMode, setNetworks])
+
+  return [isTestnetMode, toggleTestnetMode] as const
 }
