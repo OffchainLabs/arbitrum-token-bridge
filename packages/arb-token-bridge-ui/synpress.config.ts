@@ -104,6 +104,9 @@ export default defineConfig({
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
       config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
 
+      config.env.CUSTOM_DESTINATION_ADDRESS =
+        await getCustomDestinationAddress()
+
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
         l1Provider: ethProvider,
@@ -226,6 +229,11 @@ async function approveWeth() {
     constants.MaxInt256
   )
   await tx.wait()
+}
+
+async function getCustomDestinationAddress() {
+  console.log('Getting custom destination address...')
+  return (await Wallet.createRandom().getAddress()).toLowerCase()
 }
 
 function setupCypressTasks(on: Cypress.PluginEvents) {

@@ -41,7 +41,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
-import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -203,8 +202,6 @@ function AppContent() {
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
   const { openConnectModal } = useConnectModal()
-
-  useSyncQueryParamsToTestnetMode()
 
   useEffect(() => {
     if (tosAccepted && !isConnected) {
