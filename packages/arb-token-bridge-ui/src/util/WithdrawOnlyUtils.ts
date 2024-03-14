@@ -1,7 +1,8 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
-import { ChainId } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
+import { isTokenArbitrumOneUSDCe } from './TokenUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -160,10 +161,21 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
 /**
  *
  * @param erc20L1Address
- * @param chainId - Arbitrum chain id
+ * @param childChainId
  */
-export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
-  return (withdrawOnlyTokens[chainId] ?? [])
+export function isWithdrawOnlyToken(
+  erc20L1Address: string,
+  childChainId: number
+) {
+  // disable USDC.e deposits for Orbit chains
+  if (
+    isTokenArbitrumOneUSDCe(erc20L1Address) &&
+    isNetwork(childChainId).isOrbitChain
+  ) {
+    return true
+  }
+
+  return (withdrawOnlyTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }

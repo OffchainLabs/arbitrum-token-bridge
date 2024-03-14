@@ -16,7 +16,8 @@ import {
   fetchErc20Data,
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumSepoliaNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenArbitrumOneUSDCe
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -270,6 +271,11 @@ function TokensPanel({
         if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+        }
+
+        if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
+          // hide USDC.e if depositing to an Orbit chain
+          return false
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
