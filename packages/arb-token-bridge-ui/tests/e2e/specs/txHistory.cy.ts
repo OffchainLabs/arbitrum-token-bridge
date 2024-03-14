@@ -1,16 +1,19 @@
 const DEPOSIT_ROW_IDENTIFIER = /deposit-row-*/i
-const WITHDRAWAL_ROW_IDENTIFIER = /withdrawal-row-*/i
+const CLAIMABLE_ROW_IDENTIFIER = /claimable-row-*/i
 
 describe('Transaction History', () => {
   it('should successfully open and use pending transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
     // open tx history panel
     context('open transactions history panel', () => {
       cy.openTransactionsPanel()
-      cy.findByText('Transaction History').should('be.visible')
     })
 
     context('pending tab should be selected', () => {
@@ -47,7 +50,7 @@ describe('Transaction History', () => {
       }
     ).then(() => {
       const numberOfWithdrawals = cy
-        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
+        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
 
       numberOfWithdrawals.should('be.gt', 0)
@@ -57,12 +60,14 @@ describe('Transaction History', () => {
   it('should successfully open and use settled transactions panel', () => {
     cy.login({
       networkType: 'L1',
-      networkName: 'goerli'
+      networkName: 'goerli',
+      query: {
+        sourceChain: 'goerli',
+        destinationChain: 'arbitrum-goerli'
+      }
     })
-    // open tx history panel
     context('open transactions history panel', () => {
       cy.openTransactionsPanel()
-      cy.findByText('Transaction History').should('be.visible')
     })
 
     context('settled tab should be selected after click', () => {
@@ -85,7 +90,7 @@ describe('Transaction History', () => {
       }
     ).then(() => {
       const numberOfWithdrawals = cy
-        .findAllByTestId(WITHDRAWAL_ROW_IDENTIFIER)
+        .findAllByTestId(CLAIMABLE_ROW_IDENTIFIER)
         .its('length')
 
       numberOfWithdrawals.should('be.gt', 0)

@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.11",
-    "@arbitrum/sdk": "^3.2.0-custom-fee-token.0",
+    "@arbitrum/sdk": "^3.3.0",
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.8",
     "@headlessui/tailwindcss": "^0.1.2",
@@ -84,7 +84,7 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
     "@synthetixio/synpress": "3.6.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.1",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "^16.6.1",

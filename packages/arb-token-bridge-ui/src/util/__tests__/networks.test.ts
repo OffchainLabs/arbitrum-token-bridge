@@ -1,9 +1,13 @@
 import { constants, addCustomNetwork } from '@arbitrum/sdk'
 
-import { ChainId, getBaseChainIdByChainId } from '../networks'
+import {
+  ChainId,
+  getBaseChainIdByChainId,
+  getSupportedChainIds
+} from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
 
-const xaiTestnetChainId = 47279324479
+const xaiTestnetChainId = 37714555429
 
 beforeAll(() => {
   const xaiTestnet = orbitTestnets[xaiTestnetChainId]
@@ -132,7 +136,7 @@ describe('getBaseChainIdByChainId', () => {
         getBaseChainIdByChainId({
           chainId: xaiTestnetChainId
         })
-      ).toBe(ChainId.Goerli)
+      ).toBe(ChainId.Sepolia)
 
       expect(
         getBaseChainIdByChainId({
@@ -149,6 +153,124 @@ describe('getBaseChainIdByChainId', () => {
           chainId: 2222
         })
       ).toBe(2222)
+    })
+  })
+})
+
+describe('getSupportedChainIds', () => {
+  describe('includeMainnets is true, includeTestnets is unset', () => {
+    it('should return a list of chain ids that includes Mainnets', () => {
+      expect(getSupportedChainIds({ includeMainnets: true })).toContain(
+        ChainId.Ethereum
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).toContain(
+        ChainId.ArbitrumOne
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).toContain(
+        ChainId.ArbitrumNova
+      )
+    })
+    it('should return a list of chain ids that does not include Testnets', () => {
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.Goerli
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.ArbitrumGoerli
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.Sepolia
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.ArbitrumSepolia
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.Local
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.ArbitrumLocal
+      )
+      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
+        ChainId.StylusTestnet
+      )
+    })
+  })
+  describe('includeMainnets is true, includeTestnets is true', () => {
+    it('should return a list of chain ids that includes Mainnets', () => {
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.Ethereum)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.ArbitrumOne)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.ArbitrumNova)
+    })
+    it('should return a list of chain ids that includes Testnets', () => {
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.Goerli)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.ArbitrumGoerli)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.Sepolia)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.ArbitrumSepolia)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.Local)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.ArbitrumLocal)
+      expect(
+        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
+      ).toContain(ChainId.StylusTestnet)
+    })
+  })
+  describe('includeMainnets is unset, includeTestnets is true', () => {
+    it('should return a list of chain ids that includes Mainnets', () => {
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.Ethereum
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.ArbitrumOne
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.ArbitrumNova
+      )
+    })
+    it('should return a list of chain ids that includes Testnets', () => {
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.Goerli
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.ArbitrumGoerli
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.Sepolia
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.ArbitrumSepolia
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.Local
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.ArbitrumLocal
+      )
+      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
+        ChainId.StylusTestnet
+      )
+    })
+  })
+  describe('includeMainnets is false, includeTestnets is false', () => {
+    it('should return a list of chain ids that includes Mainnets', () => {
+      expect(
+        getSupportedChainIds({ includeMainnets: false, includeTestnets: false })
+      ).toHaveLength(0)
     })
   })
 })
