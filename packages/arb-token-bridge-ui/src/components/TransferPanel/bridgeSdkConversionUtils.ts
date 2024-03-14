@@ -58,7 +58,9 @@ export const convertBridgeSdkToMergedTransaction = ({
     blockNum: null,
     tokenAddress: selectedToken ? selectedToken.address : undefined,
     parentChainId: Number(parentChainId),
-    childChainId: Number(childChainId)
+    childChainId: Number(childChainId),
+    sourceChainId: isDeposit ? Number(parentChainId) : Number(childChainId),
+    destinationChainId: isDeposit ? Number(childChainId) : Number(parentChainId)
   } as MergedTransaction
 }
 
