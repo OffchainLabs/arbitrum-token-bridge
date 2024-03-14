@@ -15,13 +15,19 @@ import IconProjects from '@/images/sidebar/projects.svg'
 import IconBridge from '@/images/sidebar/bridge.svg'
 import IconLearn from '@/images/sidebar/learn.svg'
 import IconCommunity from '@/images/sidebar/community.svg'
+import IconOrbit from '@/images/sidebar/orbit.svg'
 import IconCareers from '@/images/sidebar/careers.svg'
 import IconTools from '@/images/sidebar/tools.svg'
 import IconGetHelp from '@/images/sidebar/gethelp.svg'
 import IconMissions from '@/images/sidebar/missions.svg'
 import { useSidebarStore } from './SidebarStore'
 
-import { communityMenuItems, learnMenuItems, toolsMenuItems } from './menu'
+import {
+  communityMenuItems,
+  learnMenuItems,
+  orbitMenuItems,
+  toolsMenuItems
+} from './menu'
 import { ExternalLink } from '../common/ExternalLink'
 import {
   CAREERS_ARBITRUM_LINK,
@@ -233,6 +239,30 @@ export const SidebarMenu = ({
         menuItemClickCallback?.()
         sendClickEventForLink('Arcade')
       }
+    },
+    {
+      id: 'orbit',
+      title: 'Orbit',
+      iconSrc: IconOrbit,
+      isExpandable: true,
+      isExternalLink: false,
+      onClick: () => toggleActiveMenu('orbit'),
+      children: (
+        <div className="mb-4 flex flex-col gap-2 text-sm">
+          {orbitMenuItems.map(subMenuItem => (
+            <SubMenuItem
+              key={stringToKey(subMenuItem.title)}
+              link={subMenuItem.link}
+              onClick={() => {
+                menuItemClickCallback?.()
+                sendClickEventForMenuItem(subMenuItem.title)
+              }}
+            >
+              {subMenuItem.title}
+            </SubMenuItem>
+          ))}
+        </div>
+      )
     },
     {
       id: 'bridge',

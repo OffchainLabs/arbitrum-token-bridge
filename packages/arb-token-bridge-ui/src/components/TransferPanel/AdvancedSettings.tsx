@@ -208,9 +208,7 @@ export const AdvancedSettings = () => {
           collapsible ? '' : 'pointer-events-none'
         )}
       >
-        <span className="font-medium" aria-label="advanced settings">
-          Advanced Settings
-        </span>
+        <span aria-label="advanced settings">Advanced Settings</span>
         {collapsible && (
           <ChevronDownIcon
             className={twMerge(
@@ -259,7 +257,10 @@ export const AdvancedSettings = () => {
               }
             />
             {isEOA && (
-              <button onClick={() => setInputLocked(!inputLocked)}>
+              <button
+                onClick={() => setInputLocked(!inputLocked)}
+                aria-label="Custom destination input lock"
+              >
                 {inputLocked ? (
                   <LockClosedIcon height={16} />
                 ) : (

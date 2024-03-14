@@ -37,6 +37,10 @@ export const updateAdditionalDepositData = async ({
     )
   }
 
+  // there are scenarios where we will return the deposit tx early
+  // we need to make sure it has the updated timestamp no matter what
+  depositTx.timestampCreated = timestampCreated
+
   const { isClassic } = depositTx // isClassic is known before-hand from subgraphs
 
   const isEthDeposit = depositTx.assetType === AssetType.ETH
