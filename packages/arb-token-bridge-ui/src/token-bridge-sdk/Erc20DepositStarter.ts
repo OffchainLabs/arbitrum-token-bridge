@@ -46,7 +46,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const l2Network = erc20Bridger.l2Network
 
     if (typeof l2Network.nativeToken === 'undefined') {
-      return false // no native currency found for the network
+      return false // native currency doesn't require approval
     }
 
     const nativeCurrency = ERC20__factory.connect(
@@ -98,11 +98,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await erc20Bridger.approveGasToken({
+    return erc20Bridger.approveGasToken({
       erc20L1Address: this.sourceChainErc20Address,
       l1Signer: signer
     })
-    await approveCustomFeeTokenTx.wait()
   }
 
   public requiresTokenApproval = async ({
@@ -128,10 +127,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       spender: l1GatewayAddress
     })
 
-    return amount.gte(allowanceForL1Gateway)
+    return allowanceForL1Gateway.lt(amount)
   }
 
-  public async approveTokenEstimateGas({ signer }: ApproveTokenProps) {
+  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -151,7 +150,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     return contract.estimateGas.approve(
       l1GatewayAddress,
-      constants.MaxUint256,
+      amount ?? constants.MaxUint256,
       {
         from: address
       }
@@ -202,10 +201,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
-
     const depositRequest = await erc20Bridger.getDepositRequest({
       l1Provider: this.sourceChainProvider,
       l2Provider: this.destinationChainProvider,
@@ -224,7 +219,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await erc20Bridger.deposit({
+    const sourceChainTransaction = await erc20Bridger.deposit({
       ...depositRequest,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
@@ -234,7 +229,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
+      sourceChainTransaction,
       destinationChainProvider: this.destinationChainProvider
     }
   }

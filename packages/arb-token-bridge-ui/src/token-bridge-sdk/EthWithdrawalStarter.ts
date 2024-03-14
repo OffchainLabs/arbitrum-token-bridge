@@ -1,7 +1,6 @@
 import { EthBridger } from '@arbitrum/sdk'
 import {
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
   TransferEstimateGas,
   TransferProps,
   TransferType
@@ -11,10 +10,6 @@ import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'
-
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
-  }
 
   public async requiresNativeCurrencyApproval() {
     // native currency approval not required for withdrawal

@@ -83,7 +83,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     return false
   }
 
-  public async approveTokenEstimateGas({ signer }: ApproveTokenProps) {
+  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -112,7 +112,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     return contract.estimateGas.approve(
       l1GatewayAddress,
-      constants.MaxUint256,
+      amount ?? constants.MaxUint256,
       {
         from: address
       }

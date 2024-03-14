@@ -12,11 +12,6 @@ export const getChainIdFromProvider = async (provider: Provider) => {
   return network.chainId
 }
 
-export const getProviderFromSigner = (signer: Signer) => {
-  if (!signer.provider) throw Error('Signer not able to return provider')
-  return signer.provider
-}
-
 export const getBridgeTransferProperties = async ({
   sourceChainProvider,
   destinationChainProvider,
@@ -31,15 +26,16 @@ export const getBridgeTransferProperties = async ({
     destinationChainProvider
   )
 
-  const isBaseChainEthereum =
+  const isParentChainEthereum =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
-  const isBaseChainArbitrum = isNetwork(sourceChainId).isArbitrum
+  const isParentChainArbitrum = isNetwork(sourceChainId).isArbitrum
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
   const isDeposit =
-    isBaseChainEthereum || (isBaseChainArbitrum && isDestinationChainOrbit)
+    isParentChainEthereum || (isParentChainArbitrum && isDestinationChainOrbit)
 
-  const isNativeCurrencyTransfer = !sourceChainErc20Address
+  const isNativeCurrencyTransfer =
+    typeof sourceChainErc20Address === 'undefined'
 
   return {
     isDeposit,

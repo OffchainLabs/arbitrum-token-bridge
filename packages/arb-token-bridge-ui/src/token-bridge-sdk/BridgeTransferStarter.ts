@@ -82,7 +82,7 @@ export abstract class BridgeTransferStarter {
 
   public abstract approveNativeCurrency(
     props: ApproveNativeCurrencyProps
-  ): Promise<void>
+  ): Promise<ContractTransaction | void>
 
   public abstract requiresTokenApproval(
     props: RequiresTokenApprovalProps

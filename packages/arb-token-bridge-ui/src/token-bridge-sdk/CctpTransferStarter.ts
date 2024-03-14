@@ -5,7 +5,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
   TransferProps,
   TransferType
@@ -18,12 +17,7 @@ import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
-  public transferType: TransferType
-
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
-    this.transferType = 'cctp'
-  }
+  public transferType: TransferType = 'cctp'
 
   public requiresNativeCurrencyApproval = async () => false
 

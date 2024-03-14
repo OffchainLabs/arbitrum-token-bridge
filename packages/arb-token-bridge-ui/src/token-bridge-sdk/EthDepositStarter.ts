@@ -3,7 +3,6 @@ import { BigNumber } from 'ethers'
 import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
   TransferEstimateGas,
   TransferProps,
@@ -15,10 +14,6 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
-
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
-  }
 
   public async requiresNativeCurrencyApproval({
     amount,
@@ -32,7 +27,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const { l2Network } = ethBridger
 
     if (typeof l2Network.nativeToken === 'undefined') {
-      return false // no native currency found for the network
+      return false // native currency doesn't require approval
     }
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
@@ -50,10 +45,9 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const ethBridger = await EthBridger.fromProvider(
       this.destinationChainProvider
     )
-    const approveCustomFeeTokenTx = await ethBridger.approveGasToken({
+    return ethBridger.approveGasToken({
       l1Signer: signer
     })
-    await approveCustomFeeTokenTx.wait()
   }
 
   public requiresTokenApproval = async () => false
@@ -84,10 +78,6 @@ export class EthDepositStarter extends BridgeTransferStarter {
       this.destinationChainProvider
     )
 
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
-
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
       from: address
@@ -97,7 +87,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await ethBridger.deposit({
+    const sourceChainTransaction = await ethBridger.deposit({
       amount,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
@@ -107,7 +97,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
+      sourceChainTransaction,
       destinationChainProvider: this.destinationChainProvider
     }
   }
