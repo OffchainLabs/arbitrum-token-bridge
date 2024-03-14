@@ -43,13 +43,10 @@ describe('Redeem ERC20 Deposit', () => {
           `${formatAmount(wethAmountToDeposit, {
             symbol: 'WETH'
           })}`
-        )
-          .should('be.visible')
-          .parent()
-          .parent()
-          .siblings()
-          .last()
-          .contains(/Retry/i)
+        ).should('be.visible')
+
+        cy.findAllByLabelText(/Retry transaction/i)
+          .first()
           .should('be.visible')
           .should('not.be.disabled')
           .click()
