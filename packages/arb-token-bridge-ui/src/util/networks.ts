@@ -14,8 +14,8 @@ export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
   return chains.filter(
     chain =>
-      // exclude devnet, goerli, and arb goerli
-      chain.chainID !== 1338 && chain.chainID !== 5 && chain.chainID !== 421613
+      // exclude devnet
+      chain.chainID !== 1338
   )
 }
 
