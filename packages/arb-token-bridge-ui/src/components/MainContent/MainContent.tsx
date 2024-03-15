@@ -11,7 +11,6 @@ import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { useTransactionHistory } from '../../hooks/useTransactionHistory'
 import { isTxPending } from '../TransactionHistory/helpers'
 import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
-import { HealthChecksWarning } from '../TransferPanel/HealthChecksWarning'
 
 function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
@@ -57,8 +56,6 @@ export function MainContent() {
   return (
     <>
       <div className="main-panel mx-auto flex w-full flex-col sm:max-w-[600px] sm:pb-12 sm:pt-6">
-        <HealthChecksWarning />
-
         <TransactionStatusInfo />
 
         <TransferPanel />
