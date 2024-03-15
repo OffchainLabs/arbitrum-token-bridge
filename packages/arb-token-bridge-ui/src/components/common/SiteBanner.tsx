@@ -1,5 +1,3 @@
-'use client'
-
 import arbitrumStatusJson from '../../../public/__auto-generated-status.json'
 
 type ArbitrumStatusResponse = {
