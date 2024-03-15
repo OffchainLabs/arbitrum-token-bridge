@@ -47,7 +47,7 @@ async function main() {
       2
     ) + '\n'
 
-  fs.writeFileSync('./public/__auto-generated-arbitrum-status.json', resultJson)
+  fs.writeFileSync('./public/__auto-generated-status.json', resultJson)
 }
 
 main()
