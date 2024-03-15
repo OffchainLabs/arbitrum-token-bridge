@@ -1,5 +1,10 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // https://github.com/advisories/GHSA-cxjh-pqwp-8mfp
+    // axios can leak auth headers when using `Proxy-Authentication` header. We do not use that header.
+    // from: axios>follow-redirects
+    "GHSA-cxjh-pqwp-8mfp"
+  ]
 }
