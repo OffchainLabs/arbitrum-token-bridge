@@ -175,8 +175,13 @@ function TokensPanel({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -188,6 +193,10 @@ function TokensPanel({
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
+  const {
+    isArbitrumOne: isParentChainArbitrumOne,
+    isArbitrumSepolia: isParentChainArbitrumSepolia
+  } = isNetwork(parentChain.id)
   const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
     childChain.id
   )
@@ -246,13 +255,23 @@ function TokensPanel({
       ...Object.keys(tokensFromLists)
     ]
     if (!isDepositMode) {
+      // L2 to L1 withdrawals
       if (isArbitrumOne) {
         tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
       }
       if (isArbitrumSepolia) {
         tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
+    } else {
+      // L2 to L3 deposits
+      if (isParentChainArbitrumOne) {
+        tokenAddresses.push(CommonAddress.ArbitrumOne.USDC)
+      }
+      if (isParentChainArbitrumSepolia) {
+        tokenAddresses.push(CommonAddress.ArbitrumSepolia.USDC)
+      }
     }
+
     const tokens = [
       NATIVE_CURRENCY_IDENTIFIER,
       // Deduplicate addresses
@@ -279,8 +298,11 @@ function TokensPanel({
         }
 
         // If the token on the list is used as a custom fee token, we remove the duplicate
-        if (nativeCurrency.isCustom && address !== NATIVE_CURRENCY_IDENTIFIER) {
-          return address.toLowerCase() !== nativeCurrency.address
+        if (
+          nativeCurrency.isCustom &&
+          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+        ) {
+          return false
         }
 
         // Which tokens to show while the search is not active
