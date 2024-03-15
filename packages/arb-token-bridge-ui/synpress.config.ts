@@ -259,9 +259,9 @@ async function generateTestTxForRedeemRetryable() {
   const erc20Token = {
     symbol: 'WETH',
     decimals: 18,
-    address: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    address: wethTokenAddressL1
   }
-  const amount = utils.parseUnits('0.00001', erc20Token.decimals)
+  const amount = utils.parseUnits('0.001', erc20Token.decimals)
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const depositRequest = await erc20Bridger.getDepositRequest({
     l1Provider,
