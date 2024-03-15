@@ -143,6 +143,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7',
       l2Address: '0x3d19a8b57e8082c4bbd5e068016295cfdb255e6a'
+    },
+    {
+      symbol: 'ETHx',
+      l2CustomAddr: '',
+      l1Address: '0xA35b1B31Ce002FBF2058D22F30f95D405200A15b',
+      l2Address: '0xaade6e725879375ba2b0ca608cfb26399d50a7ce'
     }
   ],
   [ChainId.ArbitrumNova]: []
