@@ -22,7 +22,7 @@ describe('Import token', () => {
     })
     context('User uses L1 address', () => {
       it('should import token through its L1 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', connectMetamask: false })
         importTokenThroughUI(ERC20TokenAddressL1)
 
         // Select the ERC-20 token
@@ -43,7 +43,7 @@ describe('Import token', () => {
 
     context('User uses L2 address', () => {
       it('should import token through its L2 address', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', connectMetamask: false })
         importTokenThroughUI(ERC20TokenAddressL2)
 
         // Select the ERC-20 token
@@ -60,7 +60,7 @@ describe('Import token', () => {
 
     context('User uses invalid address', () => {
       it('should display an error message after invalid input', () => {
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', connectMetamask: false })
         importTokenThroughUI(invalidTokenAddress)
 
         // Error message is displayed
@@ -73,7 +73,8 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet'
+          networkName: 'mainnet',
+          connectMetamask: false
         })
 
         cy.findByRole('button', { name: 'Select Token' })
@@ -100,7 +101,8 @@ describe('Import token', () => {
         // we don't have the token list locally so we test on mainnet
         cy.login({
           networkType: 'L1',
-          networkName: 'mainnet'
+          networkName: 'mainnet',
+          connectMetamask: false
         })
 
         cy.findByRole('button', { name: 'Select Token' })
@@ -148,7 +150,7 @@ describe('Import token', () => {
           ERC20TokenAddressL1.length - 1
         )
 
-        cy.login({ networkType: 'L1' })
+        cy.login({ networkType: 'L1', connectMetamask: false })
         cy.findByRole('button', { name: 'Select Token' })
           .should('be.visible')
           .should('have.text', 'ETH')
@@ -189,12 +191,9 @@ describe('Import token', () => {
           url: '/',
           query: {
             token: ERC20TokenAddressL1
-          }
+          },
+          connectMetamask: false
         })
-
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
@@ -206,9 +205,7 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
+          .trigger('click')
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')
@@ -229,12 +226,9 @@ describe('Import token', () => {
           url: '/',
           query: {
             token: ERC20TokenAddressL2
-          }
+          },
+          connectMetamask: false
         })
-
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
@@ -268,7 +262,8 @@ describe('Import token', () => {
           url: '/',
           query: {
             token: invalidTokenAddress
-          }
+          },
+          connectMetamask: false
         })
 
         visitAfterSomeDelay('/', {
@@ -285,9 +280,7 @@ describe('Import token', () => {
         // Close modal
         cy.findByRole('button', { name: 'Dialog Cancel' })
           .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
+          .trigger('click')
           .then(() => {
             cy.findByRole('button', { name: 'Select Token' })
               .should('be.visible')

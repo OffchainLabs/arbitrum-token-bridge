@@ -9,7 +9,6 @@ import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  addBridgeTokenListToBridge,
   SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 } from '../../util/TokenListUtils'
 import {
@@ -70,10 +69,10 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
       if (isActive) {
         token.removeTokensFromList(bridgeTokenList.id)
       } else {
-        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
+        token.addBridgeTokenListToBridge(bridgeTokenList)
       }
     },
-    [arbTokenBridge, token]
+    [token]
   )
 
   const isActive = Object.keys(bridgeTokens ?? []).some(address => {
@@ -348,10 +347,6 @@ function TokensPanel({
   ])
 
   const storeNewToken = async () => {
-    if (!walletAddress) {
-      return
-    }
-
     let error = 'Token not found on this network.'
     let isSuccessful = false
 
@@ -552,10 +547,6 @@ export function TokenSearch({
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setTokenQueryParam(_token.address)
-        return
-      }
-
-      if (!walletAddress) {
         return
       }
 

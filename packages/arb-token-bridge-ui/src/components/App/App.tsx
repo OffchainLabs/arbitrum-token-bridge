@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
-import {
-  darkTheme,
-  RainbowKitProvider,
-  Theme,
-  useConnectModal
-} from '@rainbow-me/rainbowkit'
+import { useAccount, WagmiConfig } from 'wagmi'
+import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
 import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
@@ -25,22 +19,17 @@ import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
-import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { isNetwork, rpcURLs } from '../../util/networks'
-import {
-  ArbQueryParamProvider,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
+import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
+import { isNetwork } from '../../util/networks'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
+import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
-import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
+import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
 
 declare global {
   interface Window {
@@ -69,6 +58,9 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
+
+  useSyncConnectedChainToAnalytics()
+  useSyncConnectedChainToQueryParams()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
@@ -100,8 +92,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     actions.app.setConnectionState(ConnectionState.LOADING)
 
     const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
+      isArbitrum: isSourceChainArbitrum,
+      isOrbitChain: isSourceChainOrbitChain
     } = isNetwork(networks.sourceChain.id)
     const isParentChainEthereum = isNetwork(
       parentChain.id
@@ -114,8 +106,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     })
 
     if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
+      (isParentChainEthereum && isSourceChainArbitrum) ||
+      isSourceChainOrbitChain
     ) {
       console.info('Withdrawal mode detected:')
       actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
@@ -164,96 +156,16 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
 }
 
-// connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
-function getWalletName(connectorName: string): ProviderName {
-  switch (connectorName) {
-    case 'MetaMask':
-    case 'Coinbase Wallet':
-    case 'Trust Wallet':
-    case 'Safe':
-    case 'Injected':
-    case 'Ledger':
-      return connectorName
-
-    case 'WalletConnectLegacy':
-    case 'WalletConnect':
-      return 'WalletConnect'
-
-    default:
-      return 'Other'
-  }
-}
-
-/** given our RPC url, sanitize it before logging to Sentry, to only pass the url and not the keys */
-function getBaseUrl(url: string) {
-  try {
-    const urlObject = new URL(url)
-    return `${urlObject.protocol}//${urlObject.hostname}`
-  } catch {
-    // if invalid url passed
-    return ''
-  }
-}
-
 function AppContent() {
-  const [networks] = useNetworks()
-  const { parentChain, childChain } = useNetworksRelationship(networks)
-  const { address, isConnected, connector } = useAccount()
+  const { address } = useAccount()
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
-  const { openConnectModal } = useConnectModal()
-
-  useEffect(() => {
-    if (tosAccepted && !isConnected) {
-      openConnectModal?.()
-    }
-  }, [isConnected, tosAccepted, openConnectModal])
-
-  useEffect(() => {
-    if (isConnected && connector) {
-      const walletName = getWalletName(connector.name)
-      trackEvent('Connect Wallet Click', { walletName })
-    }
-
-    // set a custom tag in sentry to filter issues by connected wallet.name
-    Sentry.setTag('wallet.name', connector?.name ?? '')
-  }, [isConnected, connector])
-
-  useEffect(() => {
-    Sentry.setTag('network.parent_chain_id', parentChain.id)
-    Sentry.setTag(
-      'network.parent_chain_rpc_url',
-      getBaseUrl(rpcURLs[parentChain.id] ?? '')
-    )
-    Sentry.setTag('network.child_chain_id', childChain.id)
-    Sentry.setTag(
-      'network.child_chain_rpc_url',
-      getBaseUrl(rpcURLs[childChain.id] ?? '')
-    )
-  }, [childChain.id, parentChain.id])
 
   if (!tosAccepted) {
     return (
       <>
         <Header />
         <WelcomeDialog />
-      </>
-    )
-  }
-
-  if (!isConnected) {
-    return (
-      <>
-        <Header>
-          <HeaderConnectWalletButton />
-        </Header>
-
-        <AppConnectionFallbackContainer>
-          <p className="text-5xl">No wallet connected</p>
-          <p className="text-xl">
-            Please connect your wallet to use the bridge.
-          </p>
-        </AppConnectionFallbackContainer>
       </>
     )
   }
@@ -275,9 +187,7 @@ function AppContent() {
 
   return (
     <>
-      <Header>
-        <HeaderAccountPopover />
-      </Header>
+      <Header />
       <TokenListSyncer />
       <BalanceUpdater />
       <ArbTokenBridgeStoreSyncWrapper />
@@ -304,47 +214,6 @@ Object.keys(localStorage).forEach(key => {
   }
 })
 
-function ConnectedChainSyncer() {
-  const [shouldSync, setShouldSync] = useState(false)
-  const [didSync, setDidSync] = useState(false)
-
-  const [{ sourceChain, destinationChain }, setQueryParams] =
-    useArbQueryParams()
-  const { chain } = useNetwork()
-
-  useEffect(() => {
-    if (shouldSync) {
-      return
-    }
-
-    // Only sync connected chain to query params if the query params were not initially provided
-    if (
-      typeof sourceChain === 'undefined' &&
-      typeof destinationChain === 'undefined'
-    ) {
-      setShouldSync(true)
-    }
-  }, [shouldSync, sourceChain, destinationChain])
-
-  useEffect(() => {
-    // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
-    if (chain && shouldSync && !didSync) {
-      const {
-        sourceChainId: sourceChain,
-        destinationChainId: destinationChain
-      } = sanitizeQueryParams({
-        sourceChainId: chain.id,
-        destinationChainId: undefined
-      })
-
-      setQueryParams({ sourceChain, destinationChain })
-      setDidSync(true)
-    }
-  }, [chain, shouldSync, didSync, setQueryParams])
-
-  return null
-}
-
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
 
@@ -356,7 +225,6 @@ export default function App() {
             theme={rainbowkitTheme}
             {...rainbowKitProviderProps}
           >
-            <ConnectedChainSyncer />
             <AppContextProvider>
               <AppContent />
             </AppContextProvider>

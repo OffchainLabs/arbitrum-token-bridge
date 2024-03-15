@@ -4,11 +4,14 @@ import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
+import { useAccount } from 'wagmi'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { SidebarMenu } from '../Sidebar/SidebarMenu'
 import { SidebarFooter } from '../Sidebar/SidebarFooter'
+import { HeaderAccountPopover } from './HeaderAccountPopover'
+import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 
 function onMobileMenuOpen() {
   document.body.classList.add('overflow-hidden', 'menu-open')
@@ -17,7 +20,16 @@ function onMobileMenuClose() {
   document.body.classList.remove('overflow-hidden', 'menu-open')
 }
 
-export function Header({ children }: { children?: React.ReactNode }) {
+function HeaderAccountOrConnectWalletButton() {
+  const { isConnected } = useAccount()
+
+  if (isConnected) {
+    return <HeaderAccountPopover />
+  }
+  return <HeaderConnectWalletButton />
+}
+
+export function Header() {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
@@ -37,7 +49,9 @@ export function Header({ children }: { children?: React.ReactNode }) {
           alt="Arbitrum"
         />
         {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
-        <div className="hidden sm:flex">{children}</div>
+        <div className="hidden sm:flex">
+          <HeaderAccountOrConnectWalletButton />
+        </div>
       </div>
       <Disclosure>
         {({ open }) => (
@@ -52,7 +66,9 @@ export function Header({ children }: { children?: React.ReactNode }) {
               </Disclosure.Button>
             )}
             <Disclosure.Panel>
-              <HeaderMobile>{children}</HeaderMobile>
+              <HeaderMobile>
+                <HeaderAccountOrConnectWalletButton />
+              </HeaderMobile>
             </Disclosure.Panel>
           </>
         )}
