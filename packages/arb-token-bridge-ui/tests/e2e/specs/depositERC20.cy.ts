@@ -225,8 +225,8 @@ describe('Deposit ERC20 Token', () => {
         // the balance on the source chain should not be the same as before
         cy.findByLabelText('WETH balance amount on l1')
           .should('be.visible')
-          .its('text')
-          .should('not.eq', l1ERC20bal)
+          .invoke('text')
+          .should('eq', formatAmount(Number(l1ERC20bal) - ERC20AmountToSend))
       })
     })
 

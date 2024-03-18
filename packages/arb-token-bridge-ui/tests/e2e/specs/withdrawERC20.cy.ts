@@ -27,12 +27,7 @@ describe('Withdraw ERC20 Token', () => {
         multiCallerAddress: getL2NetworkConfig().multiCall,
         address: Cypress.env('ADDRESS'),
         rpcURL: Cypress.env('ARB_RPC_URL')
-      }).then(
-        val =>
-          (l2ERC20bal = formatAmount(val, {
-            symbol: 'WETH'
-          }))
-      )
+      }).then(val => (l2ERC20bal = formatAmount(val)))
     })
 
     it('should show form fields correctly', () => {
@@ -228,8 +223,11 @@ describe('Withdraw ERC20 Token', () => {
               // the balance on the source chain should not be the same as before
               cy.findByLabelText('WETH balance amount on l2')
                 .should('be.visible')
-                .its('text')
-                .should('not.eq', l2ERC20bal)
+                .invoke('text')
+                .should(
+                  'eq',
+                  formatAmount(Number(l2ERC20bal) - ERC20AmountToSend)
+                )
             })
           })
       })
