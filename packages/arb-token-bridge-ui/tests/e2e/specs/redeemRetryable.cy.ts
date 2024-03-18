@@ -105,7 +105,10 @@ describe('Redeem ERC20 Deposit', () => {
               cy.findByLabelText('WETH balance amount on l2')
                 .should('be.visible')
                 .invoke('text')
-                .should('not.eq', l2ERC20bal)
+                .should(
+                  'eq',
+                  (Number(l2ERC20bal) + wethAmountToDeposit).toString()
+                )
             })
           })
         })
