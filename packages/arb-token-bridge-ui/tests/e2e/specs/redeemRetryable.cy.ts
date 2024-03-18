@@ -107,7 +107,7 @@ describe('Redeem ERC20 Deposit', () => {
                 .invoke('text')
                 .should(
                   'eq',
-                  (Number(l2ERC20bal) + wethAmountToDeposit).toString()
+                  formatAmount(Number(l2ERC20bal) + wethAmountToDeposit)
                 )
             })
           })
