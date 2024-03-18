@@ -97,7 +97,7 @@ export const logout = () => {
       // resetMetamaskAccount doesn't seem to remove the connected network in CI
       // changeMetamaskNetwork fails if already connected to the desired network
       // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('goerli')
+      cy.changeMetamaskNetwork('sepolia')
     })
   })
 }
