@@ -39,10 +39,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.3.0.tgz#b4f70a45ee883cfe86e981b304567dc8debd2a88"
-  integrity sha512-0sqyjcZgf+6Y4XWi0GQdHxjFR+FMh1i7NdjW1KPHSM1iRk21ChdkCm028m75pk1CRtkrxhc9BdMDzV5heoy3/A==
+"@arbitrum/sdk@npm:godzillaba-arbitrum-sdk":
+  version "3.3.3-teleport"
+  resolved "https://registry.yarnpkg.com/godzillaba-arbitrum-sdk/-/godzillaba-arbitrum-sdk-3.3.3-teleport.tgz#40786631068327231633738bfdf8e6a4a8c08281"
+  integrity sha512-gmzKsey8Kumfx7zieFbDZIXAndVQX4HxNq9/qXthVPx9pXy7E1rKIqEtDcaID74ixGUkKTjkHqeszJ6bWk6uJQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -3518,9 +3518,9 @@ async-mutex@^0.2.6:
     tslib "^2.0.0"
 
 async-mutex@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/async-mutex/-/async-mutex-0.4.0.tgz#ae8048cd4d04ace94347507504b3cf15e631c25f"
-  integrity sha512-eJFZ1YhRR8UN8eBLoNzcDPcy/jqjsg6I1AP+KvWQX80BqOSW1oJPJXDylPUEeMr2ZQvHgnQ//Lp6f3RQ1zI7HA==
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/async-mutex/-/async-mutex-0.4.1.tgz#bccf55b96f2baf8df90ed798cb5544a1f6ee4c2c"
+  integrity sha512-WfoBo4E/TbCX1G95XTjbWTE3X2XLG0m1Xbv2cwOtuPdyH9CZvnaA5nCt1ucjaKEgW2A5IF71hxrRhr83Je5xjA==
   dependencies:
     tslib "^2.4.0"
 
