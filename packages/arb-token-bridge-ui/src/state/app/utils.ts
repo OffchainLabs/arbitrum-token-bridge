@@ -94,8 +94,10 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     l1ToL2MsgData: tx.l1ToL2MsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
     depositStatus: getDepositStatus(tx),
+    parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
-    parentChainId: Number(tx.l1NetworkID)
+    sourceChainId: Number(tx.l1NetworkID),
+    destinationChainId: Number(tx.l2NetworkID)
   }
 }
 
@@ -126,8 +128,10 @@ export const transformWithdrawal = (
     blockNum: tx.ethBlockNum.toNumber(),
     tokenAddress: tx.tokenAddress || null,
     nodeBlockDeadline: tx.nodeBlockDeadline,
+    parentChainId: tx.parentChainId,
     childChainId: tx.childChainId,
-    parentChainId: tx.parentChainId
+    sourceChainId: tx.childChainId,
+    destinationChainId: tx.parentChainId
   }
 }
 

@@ -1,59 +1,54 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  InformationCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
-import { useChainId, useSigner } from 'wagmi'
-import { useAppState } from '../../state'
+import { useSigner } from 'wagmi'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
-import { SafeImage } from '../common/SafeImage'
 import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
-import { useChainLayers } from '../../hooks/useChainLayers'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
   fetchErc20L1GatewayAddress,
   fetchErc20L2GatewayAddress
 } from '../../util/TokenUtils'
-import { shortenTxHash } from '../../util/CommonUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getBridger } from '@/token-bridge-sdk/utils'
 import { Erc20L1L3Bridger } from '@arbitrum/sdk'
+import { shortenTxHash } from '../../util/CommonUtils'
+import { TokenInfo } from './TokenInfo'
+import { NoteBox } from '../common/NoteBox'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
   token: ERC20BridgeToken | null
-  allowance: BigNumber | null
-  amount: string
   isCctp: boolean
 }
 
 export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { address: walletAddress } = useAccount()
-  const { allowance, isOpen, amount, token, isCctp } = props
-  const {
-    app: { isDepositMode }
-  } = useAppState()
+  const { isOpen, token, isCctp } = props
 
-  const allowanceParsed =
-    allowance && token ? utils.formatUnits(allowance, token.decimals) : 0
   const { ethToUSD } = useETHPrice()
 
-  const { l1, l2 } = useNetworksAndSigners()
-  const { parentLayer, layer } = useChainLayers()
-  const { isEthereumMainnet, isTestnet } = isNetwork(l1.network.id)
-  const provider = isDepositMode ? l1.provider : l2.provider
+  const [networks] = useNetworks()
+  const { sourceChainProvider, destinationChainProvider } = networks
+  const {
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
+  const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
+  const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
   const { data: signer } = useSigner({
@@ -70,11 +65,17 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     [estimatedGas, gasPrice]
   )
 
-  const approvalFeeText = useMemo(() => {
+  const ethFeeText = useMemo(() => {
     const eth = formatAmount(estimatedGasFees, { symbol: ether.symbol })
+    return eth
+  }, [estimatedGasFees])
+
+  const usdFeeText = useMemo(() => {
     const usd = formatUSD(ethToUSD(estimatedGasFees))
-    return `${eth}${isEthereumMainnet ? ` (${usd})` : ''}`
+    return `${isEthereumMainnet ? ` (${usd})` : ''}`
   }, [estimatedGasFees, ethToUSD, isEthereumMainnet])
+
+  const approvalFeeText = `${ethFeeText} ${usdFeeText}`.trim()
 
   useEffect(() => {
     if (!isOpen) {
@@ -92,8 +93,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         gasEstimate = constants.Zero
       } else if (isCctp) {
         const cctpTransferStarter = new CctpTransferStarter({
-          sourceChainProvider: isDepositMode ? l1.provider : l2.provider,
-          destinationChainProvider: isDepositMode ? l2.provider : l1.provider
+          sourceChainProvider,
+          destinationChainProvider
         })
         gasEstimate = await cctpTransferStarter.approveTokenEstimateGas({
           amount: constants.MaxUint256,
@@ -101,8 +102,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         })
       } else {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
-          sourceChainProvider: isDepositMode ? l1.provider : l2.provider,
-          destinationChainProvider: isDepositMode ? l2.provider : l1.provider,
+          sourceChainProvider,
+          destinationChainProvider,
           sourceChainErc20Address: isDepositMode
             ? token.address
             : token.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
@@ -124,14 +125,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isOpen,
     isDepositMode,
     isTestnet,
-    chainId,
-    provider,
     signer,
     walletAddress,
     token?.address,
     token?.l2Address,
-    l1.provider,
-    l2.provider
+    sourceChainProvider,
+    destinationChainProvider,
+    chainId
   ])
 
   useEffect(() => {
@@ -150,13 +150,13 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
       if (
         isTeleport({
-          sourceChainId: l1.network.id,
-          destinationChainId: l2.network.id
+          sourceChainId: sourceChainProvider.network.chainId,
+          destinationChainId: destinationChainProvider.network.chainId
         })
       ) {
         const l1L3Bridger = (await getBridger({
-          sourceChainProvider: l1.provider,
-          destinationChainProvider: l2.provider
+          sourceChainProvider,
+          destinationChainProvider
         })) as Erc20L1L3Bridger
         setContractAddress(l1L3Bridger.teleporterAddresses.l1Teleporter)
         return
@@ -166,8 +166,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress(
           await fetchErc20L1GatewayAddress({
             erc20L1Address: token.address,
-            l1Provider: l1.provider,
-            l2Provider: l2.provider
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
           })
         )
         return
@@ -175,30 +175,25 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       setContractAddress(
         await fetchErc20L2GatewayAddress({
           erc20L1Address: token.address,
-          l2Provider: l2.provider
+          l2Provider: childChainProvider
         })
       )
     }
     getContractAddress()
-  }, [chainId, isCctp, isDepositMode, l1.provider, l2.provider, token?.address])
+  }, [
+    chainId,
+    childChainProvider,
+    isCctp,
+    isDepositMode,
+    parentChainProvider,
+    token?.address
+  ])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
 
     setChecked(false)
   }
-
-  const displayAllowanceWarning = allowance && !allowance.isZero()
-  const noteMessage = (() => {
-    if (isDepositMode) {
-      return isCctp
-        ? `the CCTP ${layer} deposit fee.`
-        : `the standard ${layer} deposit fee.`
-    }
-    return isCctp
-      ? `the CCTP ${parentLayer} deposit fee.`
-      : `the standard ${parentLayer} deposit fee.`
-  })()
 
   return (
     <Dialog
@@ -208,94 +203,49 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="flex flex-col space-y-6 md:max-w-[490px]">
-        <div className="flex flex-row items-center space-x-4">
-          <SafeImage
-            src={token?.logoURI}
-            alt={`${token?.name} logo`}
-            className="h-8 w-8 grow-0 rounded-full"
-            fallback={
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
-                ?
-              </div>
-            }
-          />
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              <span className="text-base font-medium text-gray-900">
-                {token?.symbol}
-              </span>
-              <span className="text-xs text-gray-500">{token?.name}</span>
-            </div>
-            <ExternalLink
-              href={`${getExplorerUrl(
-                isDepositMode ? l1.network.id : l2.network.id
-              )}/token/${token?.address}`}
-              className="text-xs text-blue-link underline"
-            >
-              {token?.address.toLowerCase()}
-            </ExternalLink>
-          </div>
-        </div>
-
+      <div className="flex flex-col space-y-4 py-4">
+        <TokenInfo token={token} />
         <Checkbox
           label={
-            <span className="font-light">
-              I understand that I have to pay a one-time{' '}
-              <span className="font-medium">
-                approval fee of {approvalFeeText}*
-              </span>{' '}
-              for each new token or spending cap. This transaction gives
-              permission to the{' '}
-              <ExternalLink
-                className="text-blue-link underline"
-                href={`${getExplorerUrl(
-                  isDepositMode ? l1.network.id : l2.network.id
-                )}/address/${contractAddress}`}
-                onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
-                  event.stopPropagation()
-                }}
-              >
-                {shortenTxHash(contractAddress)}
-              </ExternalLink>{' '}
-              contract to transfer a capped amount of a specific token.
-            </span>
+            <div>
+              <span className="text-sm font-light">
+                I understand that I have to{' '}
+                <span className="font-medium">pay a one-time approval fee</span>{' '}
+                of <span className="font-medium">{ethFeeText}</span>{' '}
+                {usdFeeText} for each new token or spending cap.
+              </span>
+            </div>
           }
           checked={checked}
           onChange={setChecked}
         />
 
-        <div className="flex flex-col md:max-w-[490px]">
-          {displayAllowanceWarning && (
-            <div className="flex flex-row items-center space-x-2 rounded-lg bg-yellow-50 px-2 py-3">
-              <ExclamationTriangleIcon className="h-8 w-8 text-yellow-400" />
-              <span className="text-sm font-light">
-                You are seeing this dialog because the current allowance you
-                have set for this token
-                <span className="font-medium"> ({allowanceParsed}) </span>
-                is less than the amount you are trying to bridge
-                <span className="font-medium"> ({amount})</span>.
-              </span>
-            </div>
-          )}
-
-          <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan px-2 py-3 ${
-              displayAllowanceWarning && 'mt-4'
-            }`}
+        <div className="text-sm">
+          This transaction gives permission to the{' '}
+          <ExternalLink
+            className="arb-hover underline"
+            href={`${getExplorerUrl(chainId)}/address/${contractAddress}`}
+            onClick={(event: React.MouseEvent<HTMLAnchorElement>) => {
+              event.stopPropagation()
+            }}
           >
-            <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
-            <span className="text-sm font-light text-cyan-dark">
-              After approval, you&apos;ll see a second prompt in your wallet for{' '}
-              {noteMessage}{' '}
-              <ExternalLink
-                href={TOKEN_APPROVAL_ARTICLE_LINK}
-                className="underline"
-              >
-                Learn more.
-              </ExternalLink>
-            </span>
-          </div>
+            {shortenTxHash(contractAddress)}
+          </ExternalLink>{' '}
+          contract to transfer a capped amount of{' '}
+          {token?.symbol ?? 'a specific token'}.
+        </div>
+
+        <div className="flex flex-col">
+          <NoteBox>
+            After approval, you&apos;ll see a second prompt in your wallet for
+            the {isDepositMode ? 'deposit' : 'withdrawal'} transaction.
+            <ExternalLink
+              href={TOKEN_APPROVAL_ARTICLE_LINK}
+              className="arb-hover ml-1 underline"
+            >
+              Learn more.
+            </ExternalLink>
+          </NoteBox>
         </div>
       </div>
     </Dialog>

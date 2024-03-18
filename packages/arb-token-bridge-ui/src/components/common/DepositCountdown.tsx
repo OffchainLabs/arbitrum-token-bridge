@@ -6,14 +6,10 @@ import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 function getMinutesRemainingText(minutesRemaining: number): string {
   if (minutesRemaining <= 1) {
-    if (minutesRemaining <= 0) {
-      return 'Almost there...'
-    }
-
-    return 'Less than a minute...'
+    return 'Less than a minute'
   }
 
-  return `~${minutesRemaining} mins remaining`
+  return `${minutesRemaining} minutes`
 }
 
 function getEstimatedDepositDurationInMinutes(tx: MergedTransaction) {

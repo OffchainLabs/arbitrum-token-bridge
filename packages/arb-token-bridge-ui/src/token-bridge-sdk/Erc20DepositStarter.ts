@@ -1,4 +1,6 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
+import { BigNumber, constants, utils } from 'ethers'
+import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveNativeCurrencyProps,
   ApproveTokenProps,
@@ -6,18 +8,16 @@ import {
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
   RequiresTokenApprovalProps,
+  TransferEstimateGas,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { approveNativeCurrency } from './approveNativeCurrency'
 import {
   fetchErc20Allowance,
   fetchErc20L1GatewayAddress
 } from '../util/TokenUtils'
-import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
 import { getAddressFromSigner, percentIncrease } from './utils'
-import { BigNumber, constants } from 'ethers'
-import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
@@ -34,17 +34,73 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresNativeCurrencyApprovalProps) {
-    return requiresNativeCurrencyApproval({
-      amount,
-      signer,
-      destinationChainProvider: this.destinationChainProvider
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    const address = await getAddressFromSigner(signer)
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(
+      this.destinationChainProvider
+    )
+    const l2Network = erc20Bridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      return false // native currency doesn't require approval
+    }
+
+    const nativeCurrency = ERC20__factory.connect(
+      l2Network.nativeToken,
+      this.sourceChainProvider
+    )
+
+    const l1Gateway = await fetchErc20L1GatewayAddress({
+      erc20L1Address: this.sourceChainErc20Address,
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider
     })
+
+    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
+      address: l2Network.nativeToken,
+      provider: this.sourceChainProvider,
+      owner: address,
+      spender: l1Gateway
+    })
+
+    const gasSummary = await this.transferEstimateGas({ amount, signer })
+    const destinationChainGasPrice =
+      await this.destinationChainProvider.getGasPrice()
+
+    const estimatedDestinationChainGasFeeEth = parseFloat(
+      utils.formatEther(
+        gasSummary.estimatedL2Gas
+          .mul(destinationChainGasPrice)
+          .add(gasSummary.estimatedL2SubmissionCost)
+      )
+    )
+    const estimatedDestinationChainGasFee = utils.parseUnits(
+      String(estimatedDestinationChainGasFeeEth),
+      await nativeCurrency.decimals()
+    )
+
+    // We want to bridge a certain amount of an ERC-20 token, but the Retryable fees on the destination chain will be paid in the custom fee token
+    // We have to check if the native-token spending allowance is enough to cover the fees
+    return customFeeTokenAllowanceForL1Gateway.lt(
+      estimatedDestinationChainGasFee
+    )
   }
 
   public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
-    return approveNativeCurrency({
-      signer,
-      destinationChainProvider: this.destinationChainProvider
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(
+      this.destinationChainProvider
+    )
+    return erc20Bridger.approveGasToken({
+      erc20L1Address: this.sourceChainErc20Address,
+      l1Signer: signer
     })
   }
 
@@ -71,10 +127,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       spender: l1GatewayAddress
     })
 
-    return amount.gte(allowanceForL1Gateway)
+    return allowanceForL1Gateway.lt(amount)
   }
 
-  public async approveTokenEstimateGas({ signer }: ApproveTokenProps) {
+  public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -94,7 +150,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     return contract.estimateGas.approve(
       l1GatewayAddress,
-      constants.MaxUint256,
+      amount ?? constants.MaxUint256,
       {
         from: address
       }
@@ -116,6 +172,22 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     await tx.wait()
   }
 
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    const address = await getAddressFromSigner(signer)
+
+    return depositTokenEstimateGas({
+      amount,
+      address,
+      erc20L1Address: this.sourceChainErc20Address,
+      l1Provider: this.sourceChainProvider,
+      l2Provider: this.destinationChainProvider
+    })
+  }
+
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
@@ -128,10 +200,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
-
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       l1Provider: this.sourceChainProvider,
@@ -151,7 +219,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       depositRequest.txRequest
     )
 
-    const tx = await erc20Bridger.deposit({
+    const sourceChainTransaction = await erc20Bridger.deposit({
       ...depositRequest,
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
@@ -161,7 +229,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
+      sourceChainTransaction,
       destinationChainProvider: this.destinationChainProvider
     }
   }

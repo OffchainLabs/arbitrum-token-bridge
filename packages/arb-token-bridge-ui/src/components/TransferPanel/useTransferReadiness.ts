@@ -6,15 +6,12 @@ import { useAccountType } from '../../hooks/useAccountType'
 import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 import {
-  isTokenArbitrumGoerliNativeUSDC,
+  isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
-import { useIsSwitchingL2Chain } from './TransferPanelMainUtils'
 import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
-import { UseGasSummaryResult } from './TransferPanelSummary'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import {
   TransferReadinessRichErrorMessage,
@@ -23,7 +20,13 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
+import {
+  GasEstimationStatus,
+  UseGasSummaryResult
+} from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -95,30 +98,29 @@ export function useTransferReadiness({
   gasSummary
 }: {
   amount: string
-  gasSummary: UseGasSummaryResult
+  gasSummary: UseGasSummaryResult & { status: GasEstimationStatus }
 }): UseTransferReadinessResult {
   const {
-    app: { isDepositMode, selectedToken }
+    app: { selectedToken }
   } = useAppState()
   const {
     layout: { isTransferring }
   } = useAppContextState()
-  const {
-    l1: { provider: l1Provider, network: l1Network },
-    l2: { provider: l2Provider, network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
-  const isSwitchingL2Chain = useIsSwitchingL2Chain()
-  const nativeCurrency = useNativeCurrency({ provider: l2Provider })
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: l1Provider, walletAddress })
+  } = useBalance({ provider: parentChainProvider, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: l2Provider, walletAddress })
+  } = useBalance({ provider: childChainProvider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(
@@ -152,7 +154,7 @@ export function useTransferReadiness({
 
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumGoerliNativeUSDC(selectedToken.address)
+      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
     const selectedTokenL2Address = isL2NativeUSDC
       ? selectedToken.address.toLowerCase()
@@ -182,11 +184,11 @@ export function useTransferReadiness({
   }, [nativeCurrency, erc20L1Balances])
 
   return useMemo(() => {
-    if (!amount) {
+    if (isNaN(Number(amount)) || Number(amount) === 0) {
       return notReady()
     }
 
-    if (isTransferring || isSwitchingL2Chain) {
+    if (isTransferring) {
       return notReady()
     }
 
@@ -205,16 +207,12 @@ export function useTransferReadiness({
       return notReady()
     }
 
-    const sourceChain = isDepositMode ? l1Network.name : l2Network.name
-
     const ethBalanceFloat = isDepositMode
       ? ethL1BalanceFloat
       : ethL2BalanceFloat
-
     const selectedTokenBalanceFloat = isDepositMode
       ? selectedTokenL1BalanceFloat
       : selectedTokenL2BalanceFloat
-
     const customFeeTokenBalanceFloat = isDepositMode
       ? customFeeTokenL1BalanceFloat
       : ethL2BalanceFloat
@@ -228,12 +226,12 @@ export function useTransferReadiness({
     if (selectedToken) {
       const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
         selectedToken.address,
-        l2Network.id
+        childChain.id
       )
 
       const selectedTokenIsDisabled = isTransferDisabledToken(
         selectedToken.address,
-        l2Network.id
+        childChain.id
       )
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
@@ -259,7 +257,7 @@ export function useTransferReadiness({
         return notReady({
           errorMessage: getInsufficientFundsErrorMessage({
             asset: selectedToken.symbol,
-            chain: sourceChain
+            chain: networks.sourceChain.name
           })
         })
       }
@@ -276,7 +274,7 @@ export function useTransferReadiness({
         return notReady({
           errorMessage: getInsufficientFundsErrorMessage({
             asset: nativeCurrency.symbol,
-            chain: sourceChain
+            chain: networks.sourceChain.name
           })
         })
       }
@@ -287,7 +285,7 @@ export function useTransferReadiness({
       return notReady({
         errorMessage: getInsufficientFundsErrorMessage({
           asset: ether.symbol,
-          chain: sourceChain
+          chain: networks.sourceChain.name
         })
       })
     }
@@ -295,7 +293,6 @@ export function useTransferReadiness({
     // The amount entered is enough funds, but now let's include gas costs
     switch (gasSummary.status) {
       // No error while loading gas costs
-      case 'idle':
       case 'loading':
         return notReady()
 
@@ -327,7 +324,7 @@ export function useTransferReadiness({
               return notReady({
                 errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                   asset: ether.symbol,
-                  chain: sourceChain
+                  chain: networks.sourceChain.name
                 })
               })
             }
@@ -337,7 +334,7 @@ export function useTransferReadiness({
               return notReady({
                 errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                   asset: nativeCurrency.symbol,
-                  chain: sourceChain
+                  chain: networks.sourceChain.name
                 })
               })
             }
@@ -350,7 +347,7 @@ export function useTransferReadiness({
             return notReady({
               errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
-                chain: sourceChain
+                chain: networks.sourceChain.name
               })
             })
           }
@@ -365,7 +362,7 @@ export function useTransferReadiness({
             return notReady({
               errorMessage: getInsufficientFundsForGasFeesErrorMessage({
                 asset: ether.symbol,
-                chain: sourceChain
+                chain: networks.sourceChain.name
               })
             })
           }
@@ -381,7 +378,7 @@ export function useTransferReadiness({
           return notReady({
             errorMessage: getInsufficientFundsForGasFeesErrorMessage({
               asset: nativeCurrency.symbol,
-              chain: sourceChain
+              chain: networks.sourceChain.name
             })
           })
         }
@@ -391,20 +388,20 @@ export function useTransferReadiness({
     }
   }, [
     amount,
-    isDepositMode,
-    isSmartContractWallet,
     isTransferring,
-    isSwitchingL2Chain,
     destinationAddressError,
-    l1Network,
-    l2Network,
+    isSmartContractWallet,
     selectedToken,
-    gasSummary,
-    nativeCurrency,
+    isDepositMode,
     ethL1BalanceFloat,
     ethL2BalanceFloat,
     selectedTokenL1BalanceFloat,
     selectedTokenL2BalanceFloat,
-    customFeeTokenL1BalanceFloat
+    customFeeTokenL1BalanceFloat,
+    nativeCurrency.isCustom,
+    nativeCurrency.symbol,
+    gasSummary,
+    childChain.id,
+    networks.sourceChain.name
   ])
 }

@@ -1,39 +1,23 @@
 import { EthBridger } from '@arbitrum/sdk'
 import {
-  ApproveNativeCurrencyProps,
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
-  RequiresNativeCurrencyApprovalProps,
+  TransferEstimateGas,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
-import { approveNativeCurrency } from './approveNativeCurrency'
 import { getAddressFromSigner } from './utils'
+import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_withdrawal'
 
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
+  public async requiresNativeCurrencyApproval() {
+    // native currency approval not required for withdrawal
+    return false
   }
 
-  public async requiresNativeCurrencyApproval({
-    amount,
-    signer
-  }: RequiresNativeCurrencyApprovalProps) {
-    return requiresNativeCurrencyApproval({
-      amount,
-      signer,
-      destinationChainProvider: this.destinationChainProvider
-    })
-  }
-
-  public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
-    return approveNativeCurrency({
-      signer,
-      destinationChainProvider: this.destinationChainProvider
-    })
+  public async approveNativeCurrency() {
+    // no-op
   }
 
   public requiresTokenApproval = async () => false
@@ -44,6 +28,16 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
 
   public approveToken = async () => {
     // no-op
+  }
+
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    const address = (await getAddressFromSigner(signer)) as `0x${string}`
+
+    return withdrawInitTxEstimateGas({
+      amount,
+      address,
+      l2Provider: this.sourceChainProvider
+    })
   }
 
   public async transfer({ amount, signer }: TransferProps) {

@@ -14,11 +14,10 @@
 
 */
 import React from 'react'
-import { NextAdapter } from 'next-query-params'
+import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
 import {
   BooleanParam,
-  NumberParam,
   QueryParamProvider,
   StringParam,
   decodeNumber,
@@ -50,7 +49,6 @@ export const useArbQueryParams = () => {
     sourceChain: ChainParam,
     destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
@@ -171,7 +169,7 @@ export function ArbQueryParamProvider({
 }) {
   return (
     <QueryParamProvider
-      adapter={NextAdapter}
+      adapter={NextAdapterPages}
       options={{
         searchStringToObject: queryString.parse,
         objectToSearchString: queryString.stringify,

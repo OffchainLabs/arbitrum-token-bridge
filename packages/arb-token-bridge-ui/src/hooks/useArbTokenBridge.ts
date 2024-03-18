@@ -35,7 +35,8 @@ import {
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  isValidErc20
+  isValidErc20,
+  isGatewayRegistered
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -48,6 +49,7 @@ import {
   addDepositToCache,
   getProvider
 } from '../components/TransactionHistory/helpers'
+import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -113,6 +115,8 @@ export const useArbTokenBridge = (
 
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
+  const { destinationAddress } = useDestinationAddressStore()
+
   const {
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
@@ -126,6 +130,20 @@ export const useArbTokenBridge = (
   } = useBalance({
     provider: l2.provider,
     walletAddress
+  })
+  const {
+    eth: [, updateEthL1CustomDestinationBalance],
+    erc20: [, updateErc20L1CustomDestinationBalance]
+  } = useBalance({
+    provider: l1.provider,
+    walletAddress: destinationAddress
+  })
+  const {
+    eth: [, updateEthL2CustomDestinationBalance],
+    erc20: [, updateErc20CustomDestinationL2Balance]
+  } = useBalance({
+    provider: l2.provider,
+    walletAddress: destinationAddress
   })
 
   interface ExecutedMessagesCache {
@@ -151,10 +169,8 @@ export const useArbTokenBridge = (
   const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
   const l2NetworkID = useMemo(() => String(l2.network.id), [l2.network.id])
 
-  const [
-    transactions,
-    { addTransaction, updateTransaction, fetchAndUpdateL1ToL2MsgStatus }
-  ] = useTransactions()
+  const [transactions, { addTransaction, updateTransaction }] =
+    useTransactions()
 
   const depositEth = async ({
     amount,
@@ -216,7 +232,9 @@ export const useArbTokenBridge = (
       tokenAddress: null,
       depositStatus: DepositStatus.L1_PENDING,
       parentChainId: Number(l1NetworkID),
-      childChainId: Number(l2NetworkID)
+      childChainId: Number(l2NetworkID),
+      sourceChainId: Number(l1NetworkID),
+      destinationChainId: Number(l2NetworkID)
     })
 
     addDepositToCache({
@@ -262,11 +280,21 @@ export const useArbTokenBridge = (
 
     try {
       const ethBridger = await EthBridger.fromProvider(l2.provider)
-      const tx = await ethBridger.withdraw({
-        amount,
-        l2Signer,
+
+      const withdrawalRequest = await ethBridger.getWithdrawalRequest({
+        from: walletAddress,
         destinationAddress: walletAddress,
-        from: walletAddress
+        amount
+      })
+
+      const gasLimit = await l2.provider.estimateGas(
+        withdrawalRequest.txRequest
+      )
+
+      const tx = await ethBridger.withdraw({
+        ...withdrawalRequest,
+        l2Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -289,7 +317,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: null,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -321,6 +351,16 @@ export const useArbTokenBridge = (
     }
 
     const erc20Bridger = await Erc20Bridger.fromProvider(l2.provider)
+
+    if (
+      !(await isGatewayRegistered({
+        erc20ParentChainAddress: erc20L1Address,
+        parentChainProvider: l1.provider,
+        childChainProvider: l2.provider
+      }))
+    ) {
+      throw Error('Custom gateway is not registered yet.')
+    }
 
     const tx = await erc20Bridger.approveToken({
       erc20L1Address,
@@ -413,6 +453,16 @@ export const useArbTokenBridge = (
       .timestamp
 
     try {
+      if (
+        !(await isGatewayRegistered({
+          erc20ParentChainAddress: erc20L1Address,
+          parentChainProvider: l1.provider,
+          childChainProvider: l2.provider
+        }))
+      ) {
+        throw Error('Custom gateway is not registered yet.')
+      }
+
       const { symbol, decimals } = await fetchErc20Data({
         address: erc20L1Address,
         provider: l1.provider
@@ -461,7 +511,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l1NetworkID),
+        destinationChainId: Number(l2NetworkID)
       })
 
       addDepositToCache({
@@ -543,11 +595,21 @@ export const useArbTokenBridge = (
         return { symbol, decimals }
       })()
 
-      const tx = await erc20Bridger.withdraw({
-        l2Signer,
+      const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
+        from: walletAddress,
         erc20l1Address: erc20L1Address,
         destinationAddress: destinationAddress ?? walletAddress,
         amount
+      })
+
+      const gasLimit = await l2.provider.estimateGas(
+        withdrawalRequest.txRequest
+      )
+
+      const tx = await erc20Bridger.withdraw({
+        ...withdrawalRequest,
+        l2Signer,
+        overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
       if (txLifecycle?.onTxSubmit) {
@@ -570,7 +632,9 @@ export const useArbTokenBridge = (
         blockNum: null,
         tokenAddress: erc20L1Address,
         parentChainId: Number(l1NetworkID),
-        childChainId: Number(l2NetworkID)
+        childChainId: Number(l2NetworkID),
+        sourceChainId: Number(l2NetworkID),
+        destinationChainId: Number(l1NetworkID)
       })
 
       const receipt = await tx.wait()
@@ -709,8 +773,8 @@ export const useArbTokenBridge = (
       if (isNetwork(l2ChainID).isArbitrumOne) {
         l2Addresses.push(CommonAddress.ArbitrumOne.USDC)
       }
-      if (isNetwork(l2ChainID).isArbitrumGoerli) {
-        l2Addresses.push(CommonAddress.ArbitrumGoerli.USDC)
+      if (isNetwork(l2ChainID).isArbitrumSepolia) {
+        l2Addresses.push(CommonAddress.ArbitrumSepolia.USDC)
       }
 
       for (const tokenAddress in bridgeTokensToAdd) {
@@ -831,15 +895,34 @@ export const useArbTokenBridge = (
       })
       const { l2Address } = bridgeToken
       updateErc20L1Balance([l1AddressLowerCased])
+      if (destinationAddress) {
+        updateErc20L1CustomDestinationBalance([l1AddressLowerCased])
+      }
       if (l2Address) {
         updateErc20L2Balance([l2Address])
+        if (destinationAddress) {
+          updateErc20CustomDestinationL2Balance([l2Address])
+        }
       }
     },
-    [bridgeTokens, setBridgeTokens, updateErc20L1Balance, updateErc20L2Balance]
+    [
+      bridgeTokens,
+      setBridgeTokens,
+      updateErc20L1Balance,
+      updateErc20L2Balance,
+      updateUSDCBalances,
+      updateErc20L1CustomDestinationBalance,
+      updateErc20CustomDestinationL2Balance
+    ]
   )
 
   const updateEthBalances = async () => {
-    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
+    Promise.all([
+      updateEthL1Balance(),
+      updateEthL2Balance(),
+      updateEthL1CustomDestinationBalance(),
+      updateEthL2CustomDestinationBalance()
+    ])
   }
 
   async function triggerOutboxToken({
@@ -971,8 +1054,7 @@ export const useArbTokenBridge = (
     transactions: {
       transactions,
       updateTransaction,
-      addTransaction,
-      fetchAndUpdateL1ToL2MsgStatus
+      addTransaction
     }
   }
 }

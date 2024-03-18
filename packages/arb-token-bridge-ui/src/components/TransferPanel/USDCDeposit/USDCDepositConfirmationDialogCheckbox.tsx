@@ -2,7 +2,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
-import { useChainId } from 'wagmi'
+import { useNetwork } from 'wagmi'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -18,9 +18,11 @@ export function USDCDepositConfirmationDialogCheckbox({
     false,
     false
   ])
-  const externalLinkClassnames = 'arb-hover text-blue-link underline'
-  const chainId = useChainId()
-  const { isTestnet } = isNetwork(chainId)
+  const externalLinkClassnames = 'arb-hover underline'
+  const { chain } = useNetwork()
+  const { isTestnet } = isNetwork(chain?.id ?? 0)
+
+  const destinationNetworkName = isTestnet ? 'Arbitrum Sepolia' : 'Arbitrum One'
 
   function linksOnClickHandler(event: React.MouseEvent<HTMLAnchorElement>) {
     event.stopPropagation()
@@ -41,8 +43,10 @@ export function USDCDepositConfirmationDialogCheckbox({
             label={
               <span className="select-none font-light">
                 I understand that I&apos;ll have to send{' '}
-                <span className="font-medium">a second transaction on L2</span>{' '}
-                and pay another L2 fee to claim my USDC.
+                <span className="font-medium">
+                  a second transaction on {destinationNetworkName}
+                </span>{' '}
+                and pay another {destinationNetworkName} fee to claim my USDC.
               </span>
             }
             checked={checkboxesChecked[0] ?? false}
@@ -62,8 +66,7 @@ export function USDCDepositConfirmationDialogCheckbox({
                 <span className="font-medium">
                   {isTestnet ? '~1 minute' : '~15 minutes'}
                 </span>{' '}
-                before I can claim my USDC on{' '}
-                {isTestnet ? 'Arbitrum Goerli' : 'Arbitrum One'}.
+                before I can claim my USDC on {destinationNetworkName}.
               </span>
             }
             checked={checkboxesChecked[1] ?? false}

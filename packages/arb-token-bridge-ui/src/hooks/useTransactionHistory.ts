@@ -4,11 +4,7 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  isNetwork
-} from '../util/networks'
+import { ChainId, getChains, isNetwork } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -52,6 +48,7 @@ import {
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { Address } from '../util/AddressUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -65,7 +62,7 @@ export type UseTransactionHistoryResult = {
   updatePendingTransaction: (tx: MergedTransaction) => void
 }
 
-export type ChainPair = { parentChain: ChainId; chain: ChainId }
+export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
 
 export type Deposit = Transaction
 
@@ -99,49 +96,25 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-const multiChainFetchList: ChainPair[] = [
-  {
-    parentChain: ChainId.Ethereum,
-    chain: ChainId.ArbitrumOne
-  },
-  {
-    parentChain: ChainId.Ethereum,
-    chain: ChainId.ArbitrumNova
-  },
-  // Testnet
-  {
-    parentChain: ChainId.Goerli,
-    chain: ChainId.ArbitrumGoerli
-  },
-  {
-    parentChain: ChainId.Sepolia,
-    chain: ChainId.ArbitrumSepolia
-  },
-  // Orbit
-  {
-    parentChain: ChainId.ArbitrumOne,
-    chain: ChainId.Xai
-  },
-  {
-    parentChain: ChainId.ArbitrumGoerli,
-    chain: ChainId.XaiTestnet
-  },
-  {
-    parentChain: ChainId.ArbitrumSepolia,
-    chain: ChainId.StylusTestnet
-  },
-  ...getCustomChainsFromLocalStorage().map(chain => {
-    return {
-      parentChain: chain.partnerChainID,
-      chain: chain.chainID
+function getMultiChainFetchList(): ChainPair[] {
+  return getChains().flatMap(chain => {
+    // We only grab child chains because we don't want duplicates and we need the parent chain
+    // Although the type is correct here we default to an empty array for custom networks backwards compatibility
+    const childChainIds = chain.partnerChainIDs ?? []
+    const isParentChain = childChainIds.length > 0
+
+    if (!isParentChain) {
+      // Skip non-parent chains
+      return []
     }
-  }),
-  // Teleport
-  {
-    parentChain: ChainId.Sepolia,
-    chain: ChainId.StylusTestnet
-  }
-]
+
+    // For each destination chain, map to an array of ChainPair objects
+    return childChainIds.map(childChainId => ({
+      parentChainId: chain.chainID,
+      childChainId: childChainId
+    }))
+  })
+}
 
 function isWithdrawalFromSubgraph(
   tx: Withdrawal
@@ -224,9 +197,7 @@ function getTxIdFromTransaction(tx: Transfer) {
 /**
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
-const useTransactionHistoryWithoutStatuses = (
-  address: `0x${string}` | undefined
-) => {
+const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
   const { chain } = useNetwork()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -241,20 +212,18 @@ const useTransactionHistoryWithoutStatuses = (
       }
       if (isSmartContractWallet) {
         // fetch based on the connected network
-        if (chain.id === chainPair.parentChain) {
+        if (chain.id === chainPair.parentChainId) {
           return 'deposits'
         }
-        if (chain.id === chainPair.chain) {
+        if (chain.id === chainPair.childChainId) {
           return 'withdrawals'
         }
         return undefined
       }
       // EOA
-      // fetch all for testnet mode, do not fetch testnets if testnet mode disabled
-      if (isTestnetMode) {
-        return 'all'
-      }
-      return isNetwork(chainPair.parentChain).isTestnet ? undefined : 'all'
+      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+        ? 'all'
+        : undefined
     },
     [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
   )
@@ -265,33 +234,33 @@ const useTransactionHistoryWithoutStatuses = (
     l2ChainId: ChainId.ArbitrumOne,
     pageNumber: 0,
     pageSize: cctpTypeToFetch({
-      parentChain: ChainId.Ethereum,
-      chain: ChainId.ArbitrumOne
+      parentChainId: ChainId.Ethereum,
+      childChainId: ChainId.ArbitrumOne
     })
       ? 1000
       : 0,
     type:
       cctpTypeToFetch({
-        parentChain: ChainId.Ethereum,
-        chain: ChainId.ArbitrumOne
+        parentChainId: ChainId.Ethereum,
+        childChainId: ChainId.ArbitrumOne
       }) ?? 'all'
   })
 
   const cctpTransfersTestnet = useCctpFetching({
     walletAddress: address,
-    l1ChainId: ChainId.Goerli,
-    l2ChainId: ChainId.ArbitrumGoerli,
+    l1ChainId: ChainId.Sepolia,
+    l2ChainId: ChainId.ArbitrumSepolia,
     pageNumber: 0,
     pageSize: cctpTypeToFetch({
-      parentChain: ChainId.Goerli,
-      chain: ChainId.ArbitrumGoerli
+      parentChainId: ChainId.Sepolia,
+      childChainId: ChainId.ArbitrumSepolia
     })
       ? 1000
       : 0,
     type:
       cctpTypeToFetch({
-        parentChain: ChainId.Goerli,
-        chain: ChainId.ArbitrumGoerli
+        parentChainId: ChainId.Sepolia,
+        childChainId: ChainId.ArbitrumSepolia
       }) ?? 'all'
   })
 
@@ -327,24 +296,25 @@ const useTransactionHistoryWithoutStatuses = (
       const fetcherFn = type === 'deposits' ? fetchDeposits : fetchWithdrawals
 
       return Promise.all(
-        multiChainFetchList
+        getMultiChainFetchList()
           .filter(chainPair => {
             if (isSmartContractWallet) {
               // only fetch txs from the connected network
-              return [chainPair.parentChain, chainPair.chain].includes(chain.id)
+              return [chainPair.parentChainId, chainPair.childChainId].includes(
+                chain.id
+              )
             }
-            if (isTestnetMode) {
-              // in testnet mode we fetch all chain pairs
-              return true
-            }
-            // otherwise don't fetch testnet chain pairs
-            return !isNetwork(chainPair.parentChain).isTestnet
+
+            return (
+              isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+            )
           })
           .map(async chainPair => {
             // SCW address is tied to a specific network
             // that's why we need to limit shown txs either to sent or received funds
             // otherwise we'd display funds for a different network, which could be someone else's account
-            const isConnectedToParentChain = chainPair.parentChain === chain.id
+            const isConnectedToParentChain =
+              chainPair.parentChainId === chain.id
 
             const includeSentTxs = shouldIncludeSentTxs({
               type,
@@ -361,8 +331,8 @@ const useTransactionHistoryWithoutStatuses = (
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
-                l1Provider: getProvider(chainPair.parentChain),
-                l2Provider: getProvider(chainPair.chain),
+                l1Provider: getProvider(chainPair.parentChainId),
+                l2Provider: getProvider(chainPair.childChainId),
                 pageNumber: 0,
                 pageSize: 1000
               })
@@ -374,8 +344,8 @@ const useTransactionHistoryWithoutStatuses = (
                 if (
                   typeof prevFailedChainPairs.find(
                     prevPair =>
-                      prevPair.parentChain === chainPair.parentChain &&
-                      prevPair.chain === chainPair.chain
+                      prevPair.parentChainId === chainPair.parentChainId &&
+                      prevPair.childChainId === chainPair.childChainId
                   ) !== 'undefined'
                 ) {
                   // already added
@@ -437,7 +407,7 @@ const useTransactionHistoryWithoutStatuses = (
  * This is done in small batches to safely meet RPC limits.
  */
 export const useTransactionHistory = (
-  address: `0x${string}` | undefined,
+  address: Address | undefined,
   // TODO: look for a solution to this. It's used for now so that useEffect that handles pagination runs only a single instance.
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
@@ -447,7 +417,7 @@ export const useTransactionHistory = (
     useAccountType()
   const { connector } = useAccount()
   // max number of transactions mapped in parallel
-  const MAX_BATCH_SIZE = 10
+  const MAX_BATCH_SIZE = 3
   // Pause fetching after specified number of days. User can resume fetching to get another batch.
   const PAUSE_SIZE_DAYS = 30
 
@@ -470,11 +440,11 @@ export const useTransactionHistory = (
         }
       }
 
-      return address && !isLoadingTxsWithoutStatus
+      return address && !isLoadingTxsWithoutStatus && !isLoadingAccountType
         ? (['complete_tx_list', address, pageNumber, data] as const)
         : null
     },
-    [address, isLoadingTxsWithoutStatus, data]
+    [address, isLoadingTxsWithoutStatus, data, isLoadingAccountType]
   )
 
   const depositsFromCache = useMemo(() => {
@@ -482,15 +452,27 @@ export const useTransactionHistory = (
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
-      .filter(tx =>
-        isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-      )
+      .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
+        const chainPairExists = getMultiChainFetchList().some(chainPair => {
+          return (
+            chainPair.parentChainId === tx.parentChainId &&
+            chainPair.childChainId === tx.childChainId
+          )
+        })
+
+        if (!chainPairExists) {
+          // chain pair doesn't exist in the fetch list but exists in cached transactions
+          // this could happen if user made a transfer with a custom Orbit chain and then removed the network
+          // we don't want to include these txs as it would cause tx history errors
+          return false
+        }
+
         if (isSmartContractWallet) {
           // only include txs for the connected network
           return tx.parentChainId === chain.id
         }
-        return tx
+        return true
       })
   }, [
     address,
@@ -616,47 +598,49 @@ export const useTransactionHistory = (
 
       // tx not found in the new user initiated transaction list
       // look in the paginated historical data
-      if (!txPages) {
-        return
-      }
-
-      let pageNumberToUpdate = 0
-
-      // search cache for the tx to update
-      while (
-        !txPages[pageNumberToUpdate]?.find(oldTx =>
-          isSameTransaction(oldTx, newTx)
-        )
-      ) {
-        pageNumberToUpdate++
-
-        if (pageNumberToUpdate > txPages.length) {
-          // tx not found
+      mutateTxPages(prevTxPages => {
+        if (!prevTxPages) {
           return
         }
-      }
 
-      const oldPageToUpdate = txPages[pageNumberToUpdate]
+        let pageNumberToUpdate = 0
 
-      if (!oldPageToUpdate) {
-        return
-      }
+        // search cache for the tx to update
+        while (
+          !prevTxPages[pageNumberToUpdate]?.find(oldTx =>
+            isSameTransaction(oldTx, newTx)
+          )
+        ) {
+          pageNumberToUpdate++
 
-      // replace the old tx with the new tx
-      const updatedPage = oldPageToUpdate.map(oldTx => {
-        return isSameTransaction(oldTx, newTx) ? newTx : oldTx
-      })
+          if (pageNumberToUpdate > prevTxPages.length) {
+            // tx not found
+            return prevTxPages
+          }
+        }
 
-      // all old pages including the new updated page
-      const newTxPages = [
-        ...txPages.slice(0, pageNumberToUpdate),
-        updatedPage,
-        ...txPages.slice(pageNumberToUpdate + 1)
-      ]
+        const oldPageToUpdate = prevTxPages[pageNumberToUpdate]
 
-      mutateTxPages(newTxPages, false)
+        if (!oldPageToUpdate) {
+          return prevTxPages
+        }
+
+        // replace the old tx with the new tx
+        const updatedPage = oldPageToUpdate.map(oldTx => {
+          return isSameTransaction(oldTx, newTx) ? newTx : oldTx
+        })
+
+        // all old pages including the new updated page
+        const newTxPages = [
+          ...prevTxPages.slice(0, pageNumberToUpdate),
+          updatedPage,
+          ...prevTxPages.slice(pageNumberToUpdate + 1)
+        ]
+
+        return newTxPages
+      }, false)
     },
-    [mutateNewTransactionsData, mutateTxPages, newTransactionsData, txPages]
+    [mutateNewTransactionsData, mutateTxPages, newTransactionsData]
   )
 
   const updatePendingTransaction = useCallback(

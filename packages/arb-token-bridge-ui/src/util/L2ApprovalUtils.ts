@@ -29,6 +29,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'ARB',
       l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
       l2Address: '0xf823C3cD3CeBE0a1fA952ba88Dc9EEf8e0Bf46AD'
+    },
+    {
+      symbol: 'MOON',
+      l1Address: '0xb2490e357980cE57bF5745e181e537a64Eb367B1',
+      l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
   [ChainId.ArbitrumGoerli]: [

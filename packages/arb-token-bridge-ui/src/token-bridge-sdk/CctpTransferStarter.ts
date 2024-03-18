@@ -5,7 +5,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
   TransferProps,
   TransferType
@@ -15,14 +14,10 @@ import { fetchPerMessageBurnLimit, getCctpContracts } from './cctp'
 import { getChainIdFromProvider, getAddressFromSigner } from './utils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
+import { Address } from '../util/AddressUtils'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
-  public transferType: TransferType
-
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
-    this.transferType = 'cctp'
-  }
+  public transferType: TransferType = 'cctp'
 
   public requiresNativeCurrencyApproval = async () => false
 
@@ -79,6 +74,15 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     )
   }
 
+  public async transferEstimateGas() {
+    // for cctp transfers we don't call our native gas estimation methods because we have completely different contracts
+    return {
+      estimatedL1Gas: constants.Zero,
+      estimatedL2Gas: constants.Zero,
+      estimatedL2SubmissionCost: constants.Zero
+    }
+  }
+
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {
     const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
 
@@ -104,9 +108,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
     // burn token on the selected chain to be transferred from cctp contracts to the other chain
 
     // CCTP uses 32 bytes addresses, while EVEM uses 20 bytes addresses
-    const mintRecipient = utils.hexlify(
-      utils.zeroPad(recipient, 32)
-    ) as `0x${string}`
+    const mintRecipient = utils.hexlify(utils.zeroPad(recipient, 32)) as Address
 
     const {
       usdcContractAddress,

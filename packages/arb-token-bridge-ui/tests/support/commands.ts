@@ -45,26 +45,27 @@ export function login({
   url?: string
   query?: { [s: string]: string }
 }) {
+  // if networkName is not specified we connect to default network from config
+  const network =
+    networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig()
+  const networkNameWithDefault = networkName ?? network.networkName
+
   function _startWebApp() {
-    startWebApp(url, query)
+    const sourceChain =
+      networkNameWithDefault === 'mainnet' ? 'ethereum' : networkNameWithDefault
+    startWebApp(url, { ...query, sourceChain })
   }
 
-  // if networkName is not specified we connect to default network from config
-  networkName =
-    networkName ||
-    (networkType === 'L1' ? getL1NetworkConfig() : getL2NetworkConfig())
-      .networkName
-
-  shouldChangeNetwork(networkName).then(changeNetwork => {
+  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
     if (changeNetwork) {
-      cy.changeMetamaskNetwork(networkName).then(() => {
+      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
     } else {
       _startWebApp()
     }
 
-    cy.task('setCurrentNetworkName', networkName)
+    cy.task('setCurrentNetworkName', networkNameWithDefault)
   })
 }
 
@@ -103,7 +104,9 @@ export const logout = () => {
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText(/Agree to Terms and Continue/i)
+    .should('be.visible')
+    .click()
   cy.findByText('Connect a Wallet').should('be.visible')
   cy.findByText('MetaMask').should('be.visible').click()
 }
@@ -111,7 +114,7 @@ export const connectToApp = () => {
 export const openTransactionsPanel = () => {
   cy.waitUntil(
     () =>
-      cy.findByText(/Bridging summary will appear here/i).then(() => {
+      cy.findByText(/Summary/i).then(() => {
         // Open tx history panel
         cy.findByRole('button', { name: /account header button/i })
           .should('be.visible')
@@ -128,17 +131,17 @@ export const openTransactionsPanel = () => {
   )
 }
 
-const goerliRpcUrl = Cypress.env('ETH_GOERLI_RPC_URL')
-const arbGoerliRpcUrl = Cypress.env('ARB_GOERLI_RPC_URL')
-const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
-const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
+const l1RpcUrl = Cypress.env('ETH_SEPOLIA_RPC_URL')
+const l2RpcUrl = Cypress.env('ARB_SEPOLIA_RPC_URL')
+const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
+const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
 const userWallet = new Wallet(Cypress.env('PRIVATE_KEY'))
 const localWallet = new Wallet(Cypress.env('LOCAL_WALLET_PRIVATE_KEY'))
 
 export async function resetCctpAllowance(networkType: 'L1' | 'L2') {
-  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+  const provider = networkType === 'L1' ? l1Provider : l2Provider
   const { USDC, tokenMessengerContractAddress } =
-    networkType === 'L1' ? CommonAddress.Goerli : CommonAddress.ArbitrumGoerli
+    networkType === 'L1' ? CommonAddress.Sepolia : CommonAddress.ArbitrumSepolia
 
   const contract = ERC20__factory.connect(USDC, userWallet.connect(provider))
   const allowance = await contract.allowance(
@@ -154,12 +157,12 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   console.log(`Funding USDC to user wallet (testnet): ${networkType}...`)
   const usdcContractAddress =
     networkType === 'L1'
-      ? CommonAddress.Goerli.USDC
-      : CommonAddress.ArbitrumGoerli.USDC
+      ? CommonAddress.Sepolia.USDC
+      : CommonAddress.ArbitrumSepolia.USDC
 
   const usdcBalance = await getInitialERC20Balance({
     address: userWallet.address,
-    rpcURL: networkType === 'L1' ? goerliRpcUrl : arbGoerliRpcUrl,
+    rpcURL: networkType === 'L1' ? l1RpcUrl : l2RpcUrl,
     tokenAddress: usdcContractAddress,
     multiCallerAddress: MULTICALL_TESTNET_ADDRESS
   })
@@ -167,9 +170,9 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   // Fund only if the balance is less than 0.0001 USDC
   if (usdcBalance && usdcBalance.lt(utils.parseUnits('0.0001', 6))) {
     console.log(`Adding USDC to user wallet (testnet): ${networkType}...`)
-    const goerliProvider = new StaticJsonRpcProvider(goerliRpcUrl)
-    const arbGoerliProvider = new StaticJsonRpcProvider(arbGoerliRpcUrl)
-    const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+    const l1Provider = new StaticJsonRpcProvider(l1RpcUrl)
+    const l2Provider = new StaticJsonRpcProvider(l2RpcUrl)
+    const provider = networkType === 'L1' ? l1Provider : l2Provider
     const contract = new ERC20__factory().connect(localWallet.connect(provider))
     const token = contract.attach(usdcContractAddress)
     await token.deployed()
@@ -181,10 +184,10 @@ export async function fundUserUsdcTestnet(networkType: 'L1' | 'L2') {
   }
 }
 
-async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   console.log(`Funding ETH to user wallet (testnet): ${networkType}...`)
   const address = await userWallet.getAddress()
-  const provider = networkType === 'L1' ? goerliProvider : arbGoerliProvider
+  const provider = networkType === 'L1' ? l1Provider : l2Provider
   const balance = await provider.getBalance(address)
   // Fund only if the balance is less than 0.005 eth
   const amountToTransfer = '0.005'
@@ -197,6 +200,53 @@ async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   }
 }
 
+export const searchAndSelectToken = ({
+  tokenName,
+  tokenAddress
+}: {
+  tokenName: string
+  tokenAddress: string
+}) => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click()
+
+  // open the Select Token popup
+  cy.findByPlaceholderText(/Search by token name/i)
+    .typeRecursively(tokenAddress)
+    .should('be.visible')
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click()
+
+      // Select the USDC token
+      cy.findAllByText(tokenName).first().click()
+
+      // USDC token should be selected now and popup should be closed after selection
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', tokenName)
+    })
+}
+
+export const fillCustomDestinationAddress = () => {
+  // click on advanced settings
+  cy.findByLabelText('advanced settings').should('be.visible').click()
+
+  // unlock custom destination address input
+  cy.findByLabelText('Custom destination input lock')
+    .should('be.visible')
+    .click()
+
+  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+    .should('be.visible')
+    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -204,5 +254,7 @@ Cypress.Commands.addAll({
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress
 })

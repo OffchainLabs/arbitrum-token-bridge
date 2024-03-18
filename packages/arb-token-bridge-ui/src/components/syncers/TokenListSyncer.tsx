@@ -1,12 +1,13 @@
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 import { useAppState } from '../../state'
 import {
   addBridgeTokenListToBridge,
   BRIDGE_TOKEN_LISTS
 } from '../../util/TokenListUtils'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
 
 // Adds whitelisted tokens to the bridge data on app load
 // In the token list we should show later only tokens with positive balances
@@ -15,15 +16,10 @@ const TokenListSyncer = (): JSX.Element => {
     app: { arbTokenBridge, arbTokenBridgeLoaded }
   } = useAppState()
   const { address: walletAddress } = useAccount()
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
 
   useEffect(() => {
-    if (typeof l2Network === 'undefined') {
-      return
-    }
-
     if (!arbTokenBridgeLoaded) {
       return
     }
@@ -39,7 +35,7 @@ const TokenListSyncer = (): JSX.Element => {
       }
 
       return (
-        bridgeTokenList.originChainID === l2Network.id &&
+        bridgeTokenList.originChainID === childChain.id &&
         bridgeTokenList.isDefault
       )
     })
@@ -47,7 +43,7 @@ const TokenListSyncer = (): JSX.Element => {
     tokenListsToSet.forEach(bridgeTokenList => {
       addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
     })
-  }, [walletAddress, l2Network, arbTokenBridgeLoaded])
+  }, [walletAddress, childChain.id, arbTokenBridgeLoaded])
 
   return <></>
 }

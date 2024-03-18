@@ -5,16 +5,18 @@ import {
   fetchTokenListFromURL,
   TokenListWithId
 } from '../util/TokenListUtils'
+import { isNetwork } from '../util/networks'
 
 export function fetchTokenLists(
   forL2ChainId: number
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
+    const { isOrbitChain } = isNetwork(forL2ChainId)
     const requestListArray = BRIDGE_TOKEN_LISTS.filter(
       bridgeTokenList =>
         bridgeTokenList.originChainID === forL2ChainId ||
-        // Always load the Arbitrum Token token list
-        bridgeTokenList.isArbitrumTokenTokenList
+        // Always load the Arbitrum Token token list except from or to Orbit chain
+        (bridgeTokenList.isArbitrumTokenTokenList && !isOrbitChain)
     )
 
     Promise.all(

@@ -13,6 +13,7 @@ import {
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { L1ToL2MessageWaitResult } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { Address } from '../../util/AddressUtils'
 
 export enum WhiteListState {
   VERIFYING,
@@ -63,11 +64,13 @@ export interface MergedTransaction {
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
+  sourceChainId: number
+  destinationChainId: number
   cctpData?: {
     sourceChainId?: CCTPSupportedChainId
-    attestationHash?: `0x${string}` | null
+    attestationHash?: Address | null
     messageBytes?: string | null
-    receiveMessageTransactionHash?: `0x${string}` | null
+    receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
   teleportData?: {
@@ -89,7 +92,6 @@ export type AppState = {
   warningTokens: WarningTokens
   connectionState: number
   selectedToken: ERC20BridgeToken | null
-  isDepositMode: boolean
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null
@@ -104,7 +106,6 @@ export const defaultState: AppState = {
   l2NetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
-  isDepositMode: true,
   arbTokenBridgeLoaded: false
 }
 export const state: AppState = {

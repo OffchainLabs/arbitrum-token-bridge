@@ -40,7 +40,7 @@ export enum StatusLabel {
   FAILURE = 'Failure'
 }
 
-function isDeposit(tx: MergedTransaction) {
+function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal
 }
 
@@ -48,9 +48,9 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
-export function isTxCompleted(tx: MergedTransaction) {
+export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
-    return tx.cctpData?.receiveMessageTransactionHash
+    return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -59,7 +59,10 @@ export function isTxCompleted(tx: MergedTransaction) {
 }
 
 export function isTxPending(tx: MergedTransaction) {
-  if (tx.isCctp && tx.status === 'pending') {
+  if (
+    tx.isCctp &&
+    (tx.status === WithdrawalStatus.UNCONFIRMED || tx.status === 'pending')
+  ) {
     return true
   }
   if (isDeposit(tx)) {
@@ -71,7 +74,7 @@ export function isTxPending(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.UNCONFIRMED
 }
 
-export function isTxClaimable(tx: MergedTransaction) {
+export function isTxClaimable(tx: MergedTransaction): boolean {
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
   }
@@ -81,14 +84,14 @@ export function isTxClaimable(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.CONFIRMED
 }
 
-export function isTxExpired(tx: MergedTransaction) {
+export function isTxExpired(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.EXPIRED
   }
   return tx.status === WithdrawalStatus.EXPIRED
 }
 
-export function isTxFailed(tx: MergedTransaction) {
+export function isTxFailed(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     if (!tx.depositStatus) {
       return false
@@ -100,14 +103,6 @@ export function isTxFailed(tx: MergedTransaction) {
     ].includes(tx.depositStatus)
   }
   return tx.status === WithdrawalStatus.FAILURE
-}
-
-export function getSourceChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.parentChainId : tx.childChainId
-}
-
-export function getDestChainId(tx: MergedTransaction) {
-  return isDeposit(tx) ? tx.childChainId : tx.parentChainId
 }
 
 export function getProvider(chainId: ChainId) {
@@ -408,6 +403,11 @@ export async function getUpdatedCctpTransfer(
   }
 
   const receipt = await getTxReceipt(tx)
+
+  if (!receipt) {
+    return tx
+  }
+
   const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
@@ -418,13 +418,13 @@ export async function getUpdatedCctpTransfer(
   if (receipt.status === 0) {
     return {
       ...txWithTxId,
-      status: 'Failure'
+      status: WithdrawalStatus.FAILURE
     }
   }
   if (tx.cctpData?.receiveMessageTransactionHash) {
     return {
       ...txWithTxId,
-      status: 'Executed'
+      status: WithdrawalStatus.EXECUTED
     }
   }
   if (receipt.blockNumber && !tx.blockNum) {
@@ -447,16 +447,16 @@ export async function getUpdatedCctpTransfer(
       requiredL1BlocksBeforeConfirmation * blockTime
   if (
     // If transaction claim was set to failure, don't reset to Confirmed
-    tx.status !== 'Failure' &&
+    tx.status !== WithdrawalStatus.FAILURE &&
     isConfirmed
   ) {
     return {
       ...txWithTxId,
-      status: 'Confirmed'
+      status: WithdrawalStatus.CONFIRMED
     }
   }
 
-  return tx
+  return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
 }
 
 export async function getUpdatedTeleportTransfer(
@@ -634,5 +634,14 @@ export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
   if (minutesLeft > 0) {
     return formattedMinutesLeft
   }
-  return 'Almost there...'
+  return 'less than a minute'
+}
+
+export function getDestinationNetworkTxId(tx: MergedTransaction) {
+  if (tx.isCctp) {
+    return tx.cctpData?.receiveMessageTransactionHash
+  }
+  return tx.isWithdrawal
+    ? tx.l2ToL1MsgData?.uniqueId.toString()
+    : tx.l1ToL2MsgData?.l2TxID
 }

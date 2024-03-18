@@ -1,6 +1,8 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
+import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { Address } from '../util/AddressUtils'
 
 type Asset = 'erc20' | 'eth'
 type TxType = 'deposit' | 'withdrawal' | 'teleport'
@@ -11,8 +13,8 @@ export type BridgeTransferStatus = `${Chain}_tx_${TxStatus}`
 export type TransferType = `${Asset}_${TxType}` | 'cctp'
 
 export type MergedTransactionCctp = MergedTransaction & {
-  messageBytes: `0x${string}` | null
-  attestationHash: `0x${string}` | null
+  messageBytes: Address | null
+  attestationHash: Address | null
 }
 
 export type BridgeTransfer = {
@@ -30,10 +32,14 @@ export type BridgeTransferStarterProps = {
   destinationChainProvider: Provider
 }
 
+export type TransferEstimateGas = {
+  amount: BigNumber
+  signer: Signer
+}
+
 export type TransferProps = {
   amount: BigNumber
   signer: Signer
-  isSmartContractWallet?: boolean
   destinationAddress?: string
 }
 
@@ -76,7 +82,7 @@ export abstract class BridgeTransferStarter {
 
   public abstract approveNativeCurrency(
     props: ApproveNativeCurrencyProps
-  ): Promise<void>
+  ): Promise<ContractTransaction | void>
 
   public abstract requiresTokenApproval(
     props: RequiresTokenApprovalProps
@@ -89,6 +95,10 @@ export abstract class BridgeTransferStarter {
   public abstract approveToken(
     props: ApproveTokenProps
   ): Promise<ContractTransaction | void>
+
+  public abstract transferEstimateGas(
+    props: TransferEstimateGas
+  ): Promise<GasEstimates>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }
