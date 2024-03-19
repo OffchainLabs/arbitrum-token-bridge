@@ -24,6 +24,12 @@ const App = dynamic(() => import('../components/App/App'), {
   )
 })
 
+export function getServerSideProps() {
+  return {
+    props: {}
+  }
+}
+
 export default function Index() {
   useEffect(() => {
     ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
