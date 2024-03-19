@@ -74,8 +74,8 @@ export interface MergedTransaction {
     receiveMessageTimestamp?: number | null
   }
   teleportData?: {
-    l2Retryable: L1ToL2MessageWaitResult
-    l3Retryable: L1ToL2MessageWaitResult
+    l2Retryable?: L1ToL2MessageWaitResult
+    l3Retryable?: L1ToL2MessageWaitResult
     completed: boolean
   }
 }

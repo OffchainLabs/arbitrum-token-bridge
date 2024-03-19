@@ -7,7 +7,7 @@ import {
   Erc20L1L3Bridger,
   EthBridger,
   EthL1L3Bridger,
-  getChain
+  getL2Network
 } from '@arbitrum/sdk'
 
 export const getAddressFromSigner = async (signer: Signer) => {
@@ -77,7 +77,7 @@ export const getBridger = async ({
   )
 
   if (isTeleport({ sourceChainId, destinationChainId })) {
-    const l3Network = await getChain(destinationChainProvider)
+    const l3Network = await getL2Network(destinationChainProvider)
 
     if (isNativeCurrencyTransfer) {
       return new EthL1L3Bridger(l3Network)

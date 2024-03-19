@@ -6,9 +6,9 @@ import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
-import { getBridgeTransferProperties } from './utils'
 import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
+import { getBridgeTransferProperties } from './utils'
 
 export class BridgeTransferStarterFactory {
   public static async create(

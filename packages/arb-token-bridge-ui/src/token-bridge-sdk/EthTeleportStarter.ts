@@ -1,17 +1,13 @@
-import { EthL1L3Bridger, getChain } from '@arbitrum/sdk'
+import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
+  TransferEstimateGas,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { requiresNativeCurrencyApproval } from './requiresNativeCurrencyApproval'
-import { approveNativeCurrency } from './approveNativeCurrency'
-import { getAddressFromSigner } from './utils'
-import { BigNumber } from 'ethers'
-import { getProvider } from '../components/TransactionHistory/helpers'
 import { getL2ConfigForTeleport } from './teleport'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
@@ -25,20 +21,20 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresNativeCurrencyApprovalProps) {
-    // return requiresNativeCurrencyApproval({
-    //   amount,
-    //   signer,
-    //   destinationChainProvider: this.destinationChainProvider
-    // })
-
     return false
   }
 
-  public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
-    return approveNativeCurrency({
-      signer,
-      destinationChainProvider: this.destinationChainProvider
-    })
+  public async approveNativeCurrency({
+    signer,
+    amount
+  }: ApproveNativeCurrencyProps) {
+    // const ethBridger = await EthBridger.fromProvider(
+    //   this.destinationChainProvider
+    // )
+    // return ethBridger.approveGasToken({
+    //   l1Signer: signer,
+    //   amount
+    // })
   }
 
   public requiresTokenApproval = async () => false
@@ -51,10 +47,12 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
-    const address = await getAddressFromSigner(signer)
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    return undefined
+  }
 
-    const l3Network = await getChain(this.destinationChainProvider)
+  public async transfer({ amount, signer }: TransferProps) {
+    const l3Network = await getL2Network(this.destinationChainProvider)
 
     // get the intermediate L2 chain provider
     const { l2Provider } = await getL2ConfigForTeleport({
@@ -63,36 +61,23 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
     const l1l3Bridger = new EthL1L3Bridger(l3Network)
 
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
-
-    const depositRequest = await l1l3Bridger.getDepositRequest(
-      {
-        amount,
-        to: address,
-        l2TicketGasOverrides: {
-          gasLimit: { percentIncrease: BigNumber.from(5) }
-        },
-        l3TicketGasOverrides: {
-          gasLimit: { percentIncrease: BigNumber.from(5) }
-        }
-      },
-      signer,
+    const depositRequest = await l1l3Bridger.getDepositRequest({
+      l1Signer: signer,
+      amount: amount,
       l2Provider,
-      this.destinationChainProvider
-    )
+      l3Provider: this.destinationChainProvider
+    })
 
-    //@ts-ignore: hardcode the gas limit until we have a solution in sdk
-    depositRequest.txRequest.gasLimit = 1_000_000
-
-    const tx = await l1l3Bridger.executeDepositRequest(depositRequest, signer)
+    const tx = await l1l3Bridger.deposit({
+      ...depositRequest,
+      l1Signer: signer
+    })
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: { ...tx, timestamp: parentChainBlockTimestamp },
+      sourceChainTransaction: { ...tx },
       destinationChainProvider: this.destinationChainProvider
     }
   }

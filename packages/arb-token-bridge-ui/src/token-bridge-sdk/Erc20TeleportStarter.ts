@@ -1,4 +1,4 @@
-import { Erc20L1L3Bridger, getChain } from '@arbitrum/sdk'
+import { Erc20L1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import {
   ApproveNativeCurrencyProps,
   ApproveTokenProps,
@@ -6,12 +6,12 @@ import {
   BridgeTransferStarterProps,
   RequiresNativeCurrencyApprovalProps,
   RequiresTokenApprovalProps,
+  TransferEstimateGas,
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner, percentIncrease } from './utils'
-import { Erc20DepositRequestParams } from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
+import { getAddressFromSigner } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
@@ -29,19 +29,19 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     amount,
     signer
   }: RequiresNativeCurrencyApprovalProps) {
-    // return requiresNativeCurrencyApproval({
-    //   amount,
-    //   signer,
-    //   destinationChainProvider: this.destinationChainProvider
-    // })
-
     return false
   }
 
-  public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
-    // return approveNativeCurrency({
-    //   signer,
-    //   destinationChainProvider: this.destinationChainProvider
+  public async approveNativeCurrency({
+    signer,
+    amount
+  }: ApproveNativeCurrencyProps) {
+    // const ethBridger = await EthBridger.fromProvider(
+    //   this.destinationChainProvider
+    // )
+    // return ethBridger.approveGasToken({
+    //   l1Signer: signer,
+    //   amount
     // })
   }
 
@@ -55,7 +55,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const l3Network = await getChain(this.destinationChainProvider)
+    const l3Network = await getL2Network(this.destinationChainProvider)
 
     const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
@@ -94,23 +94,24 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     // )
   }
 
-  public async approveToken({ signer }: ApproveTokenProps) {
+  public async approveToken({ signer, amount }: ApproveTokenProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
-    const l3Network = await getChain(this.destinationChainProvider)
+    const l3Network = await getL2Network(this.destinationChainProvider)
 
     const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
-    const tx = await l1l3Bridger.approveToken(
-      {
-        erc20L1Address: this.sourceChainErc20Address
-      },
-      signer
-    )
+    return l1l3Bridger.approveToken({
+      erc20L1Address: this.sourceChainErc20Address,
+      l1Signer: signer,
+      amount
+    })
+  }
 
-    return tx
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+    return undefined
   }
 
   public async transfer({ amount, signer }: TransferProps) {
@@ -120,53 +121,32 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await getAddressFromSigner(signer)
-
-    const l3Network = await getChain(this.destinationChainProvider)
-
-    // get the intermediate L2 chain provider
+    // // get the intermediate L2 chain provider
     const { l2Provider } = await getL2ConfigForTeleport({
       destinationChainProvider: this.destinationChainProvider
     })
 
-    const tokenAddress = this.sourceChainErc20Address
-
+    const l3Network = await getL2Network(this.destinationChainProvider)
     const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
-    const depositParams = {
-      erc20L1Address: tokenAddress,
-      amount: amount,
-      to: address,
-      overrides: {}
-    }
-
-    const depositRequest = await l1l3Bridger.getDepositRequest(
-      depositParams as Erc20DepositRequestParams,
-      signer,
+    const depositRequest = await l1l3Bridger.getDepositRequest({
+      l1Signer: signer,
+      erc20L1Address: this.sourceChainErc20Address,
+      amount,
       l2Provider,
-      this.destinationChainProvider
-    )
+      l3Provider: this.destinationChainProvider
+    })
 
-    const parentChainBlockTimestamp = (
-      await this.sourceChainProvider.getBlock('latest')
-    ).timestamp
-
-    //@ts-ignore: hardcode the gas limit until we have a solution in sdk
-    depositRequest.gasLimit = 1_000_000
-
-    const depositTx = await l1l3Bridger.executeDepositRequest(
-      depositRequest,
-      signer
-    )
+    const tx = await l1l3Bridger.deposit({
+      txRequest: depositRequest.txRequest,
+      l1Signer: signer
+    })
 
     return {
       transferType: this.transferType,
       status: 'pending',
       sourceChainProvider: this.sourceChainProvider,
-      sourceChainTransaction: {
-        ...depositTx,
-        timestamp: parentChainBlockTimestamp
-      },
+      sourceChainTransaction: tx,
       destinationChainProvider: this.destinationChainProvider
     }
   }

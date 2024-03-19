@@ -3,9 +3,10 @@ import {
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
-import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
+  EthDepositStatus,
   L1ToL2MessageReader
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
@@ -24,8 +25,8 @@ import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
 import { getTeleportStatusDataFromTxId } from '@/token-bridge-sdk/teleport'
 import {
-  EthDepositStatus as EthTeleportStatus,
-  Erc20DepositStatus as Erc20TeleportStatus
+  Erc20DepositMessages,
+  EthDepositStatus as EthTeleportStatus
 } from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
@@ -483,14 +484,15 @@ export async function getUpdatedTeleportTransfer(
     l3Retryable = status.l3Retryable
     completed = status.completed
   } else {
-    const status = depositStatus as Erc20TeleportStatus
-    l2Retryable = status.bridgeToL2
-    l3Retryable = status.bridgeToL3
+    const status = depositStatus as Erc20DepositMessages
+    l2Retryable = status.l1l2TokenBridge
+    l3Retryable = status.l2l3TokenBridge
     completed = status.completed
   }
 
   // @ts-ignore - check why l2TxReceipt is not in the type
-  const l3TxId = l3Retryable.l2TxReceipt?.transactionHash
+  const l3TxId = await l3Retryable?.getSuccessfulRedeem()?.l2TxReceipt
+    ?.transactionHash
 
   const newDeposit: MergedTransaction = {
     ...tx,
@@ -501,9 +503,9 @@ export async function getUpdatedTeleportTransfer(
     // ideally for teleport it should have 2 separate message-tracker objects
     l1ToL2MsgData: {
       status: l3Retryable
-        ? l3Retryable.status
-        : l2Retryable
-        ? l2Retryable.status
+        ? await l3Retryable.status()
+        : (await l2Retryable.status())
+        ? await l2Retryable.status()
         : L1ToL2MessageStatus.NOT_YET_CREATED,
       l2TxID: l3TxId,
       fetchingUpdate: false,
@@ -514,7 +516,11 @@ export async function getUpdatedTeleportTransfer(
   return {
     ...newDeposit,
     depositStatus: getDepositStatus(newDeposit),
-    teleportData: { l2Retryable, l3Retryable, completed }
+    teleportData: {
+      l2Retryable: await l2Retryable?.getSuccessfulRedeem(),
+      l3Retryable: await l3Retryable?.getSuccessfulRedeem(),
+      completed
+    }
   }
 }
 
