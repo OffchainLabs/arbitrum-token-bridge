@@ -41,7 +41,8 @@ import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
-  isTokenMainnetUSDC
+  isTokenMainnetUSDC,
+  sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
@@ -293,10 +294,12 @@ function TokenBalance({
     return <StyledLoader />
   }
 
+  const tokenSymbol = tokenSymbolOverride ?? forToken.symbol
+
   return (
-    <p aria-label={`${forToken.symbol} balance on ${on}`}>
+    <p>
       <span className="font-light">{prefix}</span>
-      <span>
+      <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}
@@ -838,6 +841,15 @@ export function TransferPanelMain({
                     on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
                     forToken={selectedToken}
                     prefix={selectedToken ? 'Balance: ' : ''}
+                    tokenSymbolOverride={
+                      // we need to send the proper, sanitized token-name to the component
+                      selectedToken?.symbol
+                        ? sanitizeTokenSymbol(selectedToken?.symbol, {
+                            chainId: networks.destinationChain.id,
+                            erc20L1Address: selectedToken?.address
+                          })
+                        : undefined
+                    }
                   />
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
