@@ -687,7 +687,7 @@ export function TransferPanel() {
 
       const signer = isDepositMode ? l1Signer : l2Signer
 
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainProvider,
         destinationChainProvider,
         sourceChainErc20Address
@@ -727,7 +727,8 @@ export function TransferPanel() {
         if (!userConfirmation) return false
 
         await bridgeTransferStarter.approveNativeCurrency({
-          signer
+          signer,
+          amount: amountBigNumber
         })
       }
 

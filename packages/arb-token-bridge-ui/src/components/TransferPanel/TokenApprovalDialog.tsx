@@ -98,13 +98,15 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           signer
         })
       } else {
-        const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
-          sourceChainProvider,
-          destinationChainProvider,
-          sourceChainErc20Address: isDepositMode
-            ? token.address
-            : token.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
-        })
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+          {
+            sourceChainProvider,
+            destinationChainProvider,
+            sourceChainErc20Address: isDepositMode
+              ? token.address
+              : token.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
+          }
+        )
 
         gasEstimate = await bridgeTransferStarter.approveTokenEstimateGas({
           signer
