@@ -49,12 +49,6 @@ export const toolsMenuItems: MenuItem[] = [
     link: 'https://docs.arbitrum.io/for-devs/quickstart-solidity-hardhat',
     description: 'Start building an app on Arbitrum.'
   },
-
-  {
-    title: 'Orbit Deployer',
-    link: 'https://orbit.arbitrum.io/',
-    description: 'Deploy a customizable Orbit chain.'
-  },
   {
     title: 'Arbitrum SDK',
     link: 'https://www.npmjs.com/package/@arbitrum/sdk',
@@ -154,4 +148,16 @@ export const communityMenuItems: MenuItem[] = [
   },
   { title: 'Governance Forum', link: 'https://forum.arbitrum.foundation/' },
   { title: 'Research Forum', link: 'https://research.arbitrum.io/' }
+]
+
+export const orbitMenuItems: MenuItem[] = [
+  {
+    title: 'Orbit Ecosystem',
+    link: 'https://portal.arbitrum.io/orbit/ecosystem'
+  },
+
+  {
+    title: 'Launch Chain',
+    link: 'https://portal.arbitrum.io/orbit/launch'
+  }
 ]

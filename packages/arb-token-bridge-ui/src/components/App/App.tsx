@@ -41,7 +41,6 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
-import { useSyncQueryParamsToTestnetMode } from '../../hooks/useSyncQueryParamsToTestnetMode'
 
 declare global {
   interface Window {
@@ -83,7 +82,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
     // This handles a super weird edge case where, for example:
     //
-    // Your setup is: from Arbitrum Goerli to Goerli, and you have $ARB selected as the token you want to bridge over.
+    // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
     // You then switch your destination network to a network that has $ARB as its native currency.
     // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
     if (
@@ -203,8 +202,6 @@ function AppContent() {
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
   const { openConnectModal } = useConnectModal()
-
-  useSyncQueryParamsToTestnetMode()
 
   useEffect(() => {
     if (tosAccepted && !isConnected) {

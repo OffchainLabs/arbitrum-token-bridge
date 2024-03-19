@@ -11,18 +11,14 @@ describe('sanitizeQueryParams', () => {
 
   beforeAll(() => {
     const mockedOrbitChain_1 = createMockOrbitChain({
-      chainId: 1111,
-      parentChainId: ChainId.ArbitrumGoerli
-    })
-    const mockedOrbitChain_2 = createMockOrbitChain({
       chainId: 2222,
       parentChainId: ChainId.ArbitrumSepolia
     })
-    const mockedOrbitChain_3 = createMockOrbitChain({
+    const mockedOrbitChain_2 = createMockOrbitChain({
       chainId: 3333,
       parentChainId: ChainId.ArbitrumOne
     })
-    const mockedOrbitChain_4 = createMockOrbitChain({
+    const mockedOrbitChain_3 = createMockOrbitChain({
       chainId: 4444,
       parentChainId: ChainId.ArbitrumNova
     })
@@ -33,8 +29,7 @@ describe('sanitizeQueryParams', () => {
           return JSON.stringify([
             mockedOrbitChain_1,
             mockedOrbitChain_2,
-            mockedOrbitChain_3,
-            mockedOrbitChain_4
+            mockedOrbitChain_3
           ])
         }
         return null
@@ -43,7 +38,6 @@ describe('sanitizeQueryParams', () => {
     addCustomNetwork({ customL2Network: mockedOrbitChain_1 })
     addCustomNetwork({ customL2Network: mockedOrbitChain_2 })
     addCustomNetwork({ customL2Network: mockedOrbitChain_3 })
-    addCustomNetwork({ customL2Network: mockedOrbitChain_4 })
   })
 
   afterAll(() => {
@@ -86,15 +80,6 @@ describe('sanitizeQueryParams', () => {
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
       })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
     })
   })
   describe('when `destinationChainId` is valid and `sourceChainId` is invalid', () => {
@@ -109,15 +94,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1234,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 1234,
         destinationChainId: 2222
@@ -157,14 +133,6 @@ describe('sanitizeQueryParams', () => {
         destinationChainId: ChainId.ArbitrumNova
       })
 
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: undefined,
-        destinationChainId: 1111
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: ChainId.ArbitrumGoerli,
-        destinationChainId: 1111
-      })
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: undefined,
         destinationChainId: 2222
@@ -188,15 +156,6 @@ describe('sanitizeQueryParams', () => {
       })
 
       // Orbit chains
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: 1234
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
-      })
-
       const resultWithSepoliaOrbitChain = sanitizeQueryParams({
         sourceChainId: 2222,
         destinationChainId: 1234
@@ -245,15 +204,6 @@ describe('sanitizeQueryParams', () => {
       expect(resultWithSepoliaOrbitChain).toEqual({
         sourceChainId: 2222,
         destinationChainId: ChainId.ArbitrumSepolia
-      })
-
-      const resultWithGoerliOrbitChain = sanitizeQueryParams({
-        sourceChainId: 1111,
-        destinationChainId: undefined
-      })
-      expect(resultWithGoerliOrbitChain).toEqual({
-        sourceChainId: 1111,
-        destinationChainId: ChainId.ArbitrumGoerli
       })
     })
   })
