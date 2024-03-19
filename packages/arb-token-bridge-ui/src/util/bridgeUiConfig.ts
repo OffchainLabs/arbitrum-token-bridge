@@ -56,7 +56,8 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           ...arbitrumBaseConfig.network,
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
-          description: 'Rollup protocol. Secured by operational fraud proofs.'
+          description:
+            'Rollup protocol. The original Arbitrum chain. Secured by functional fraud proofs.'
         }
       }
     case ChainId.ArbitrumSepolia:
@@ -83,7 +84,7 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum Nova',
           logo: '/images/ArbitrumNovaLogo.svg',
           description:
-            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
+            'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
     case ChainId.StylusTestnet:
