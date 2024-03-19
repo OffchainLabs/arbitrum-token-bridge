@@ -21,7 +21,7 @@ import {
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
 
-const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
+export const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
   estimatedL1Gas: constants.Zero,
   // Estimated Child Chain gas, denominated in Wei, represented as a BigNumber

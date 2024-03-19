@@ -16,8 +16,8 @@ Cypress.Keyboard.defaults({
 logCollector()
 
 before(() => {
-  // connect to goerli to avoid connecting to localhost twice and failing
-  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'goerli')
+  // connect to sepolia to avoid connecting to localhost twice and failing
+  cy.setupMetamask(Cypress.env('PRIVATE_KEY'), 'sepolia')
     .task('getNetworkSetupComplete')
     .then(complete => {
       if (!complete) {

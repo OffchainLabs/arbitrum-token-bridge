@@ -11,7 +11,7 @@ import { EthTeleportStarter } from './EthTeleportStarter'
 import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 
 export class BridgeTransferStarterFactory {
-  public static async init(
+  public static async create(
     initProps: BridgeTransferStarterProps
   ): Promise<BridgeTransferStarter> {
     const {
@@ -32,38 +32,22 @@ export class BridgeTransferStarterFactory {
         // return Eth teleport
         console.log('bridge-sdk mode: Eth L1-L3 Teleport')
         return new EthTeleportStarter(initProps)
-      } else {
-        // return Erc20 teleport
-        console.log('bridge-sdk mode: Erc20 L1-L3 Teleport')
-        return new Erc20TeleportStarter(initProps)
       }
+      return new Erc20TeleportStarter(initProps)
     }
 
-    if (isDeposit && isNativeCurrencyTransfer) {
-      // return Eth deposit
-      console.log('bridge-sdk mode: Eth Deposit')
+    // deposits
+    if (isDeposit) {
+      if (!isNativeCurrencyTransfer) {
+        return new Erc20DepositStarter(initProps)
+      }
+
       return new EthDepositStarter(initProps)
     }
-
-    if (!isDeposit && isNativeCurrencyTransfer) {
-      // return Eth withdrawal
-      console.log('bridge-sdk mode: Eth Withdrawal')
-      return new EthWithdrawalStarter(initProps)
-    }
-
-    if (isDeposit && !isNativeCurrencyTransfer) {
-      // return Erc20 deposit
-      console.log('bridge-sdk mode: Erc20 Deposit')
-      return new Erc20DepositStarter(initProps)
-    }
-
-    if (!isDeposit && !isNativeCurrencyTransfer) {
-      // return Erc20 withdrawal
-      console.log('bridge-sdk mode: Erc20 Withdrawal')
+    // withdrawals
+    if (!isNativeCurrencyTransfer) {
       return new Erc20WithdrawalStarter(initProps)
     }
-
-    // else throw an error - chain pair not valid eg. L1-to-L3 transfer,
-    throw Error('bridge-sdk mode: unhandled mode detected')
+    return new EthWithdrawalStarter(initProps)
   }
 }

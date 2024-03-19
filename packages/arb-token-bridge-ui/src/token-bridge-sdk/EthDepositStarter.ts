@@ -41,12 +41,16 @@ export class EthDepositStarter extends BridgeTransferStarter {
     return customFeeTokenAllowanceForInbox.lt(amount)
   }
 
-  public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
+  public async approveNativeCurrency({
+    signer,
+    amount
+  }: ApproveNativeCurrencyProps) {
     const ethBridger = await EthBridger.fromProvider(
       this.destinationChainProvider
     )
     return ethBridger.approveGasToken({
-      l1Signer: signer
+      l1Signer: signer,
+      amount
     })
   }
 

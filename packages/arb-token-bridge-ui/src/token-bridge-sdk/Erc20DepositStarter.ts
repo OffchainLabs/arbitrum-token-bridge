@@ -90,7 +90,10 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
   }
 
-  public async approveNativeCurrency({ signer }: ApproveNativeCurrencyProps) {
+  public async approveNativeCurrency({
+    signer,
+    amount
+  }: ApproveNativeCurrencyProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -100,7 +103,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
     return erc20Bridger.approveGasToken({
       erc20L1Address: this.sourceChainErc20Address,
-      l1Signer: signer
+      l1Signer: signer,
+      amount
     })
   }
 

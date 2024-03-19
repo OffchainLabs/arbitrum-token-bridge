@@ -68,6 +68,7 @@ import {
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { INITIAL_GAS_ESTIMATION_RESULT } from '../../hooks/TransferPanel/useGasSummary'
 
 enum NetworkType {
   l1 = 'l1',
@@ -533,14 +534,10 @@ export function TransferPanelMain({
         }
     > => {
       if (!signer) {
-        return {
-          estimatedL1Gas: constants.Zero,
-          estimatedL2Gas: constants.Zero,
-          estimatedL2SubmissionCost: constants.Zero
-        }
+        return INITIAL_GAS_ESTIMATION_RESULT
       }
 
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.init({
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainProvider: networks.sourceChainProvider,
         destinationChainProvider: networks.destinationChainProvider
       })
@@ -550,7 +547,9 @@ export function TransferPanelMain({
         signer
       })
 
-      return { ...result, estimatedL2SubmissionCost: constants.Zero }
+      return result
+        ? { ...result, estimatedL2SubmissionCost: constants.Zero }
+        : INITIAL_GAS_ESTIMATION_RESULT
     },
     [signer, networks.sourceChainProvider, networks.destinationChainProvider]
   )

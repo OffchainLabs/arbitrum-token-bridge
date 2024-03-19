@@ -34,8 +34,7 @@ const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {
       logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2989.png'
     }
   ],
-  [ChainId.ArbitrumNova]: [],
-  [ChainId.ArbitrumGoerli]: []
+  [ChainId.ArbitrumNova]: []
 }
 
 function find(erc20L2Address: string, l2ChainId: number) {
