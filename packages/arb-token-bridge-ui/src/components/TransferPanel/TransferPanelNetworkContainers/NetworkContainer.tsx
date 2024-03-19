@@ -75,13 +75,11 @@ function TokenBalance({
   forToken,
   balance,
   on,
-  prefix = '',
   tokenSymbolOverride
 }: {
   forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
   balance: BigNumber | null
   on: NetworkType
-  prefix?: string
   tokenSymbolOverride?: string
 }) {
   const isParentChain = on === NetworkType.l1
@@ -96,8 +94,7 @@ function TokenBalance({
 
   return (
     <p aria-label={`${forToken.symbol} balance on ${on}`}>
-      <span className="font-light">{prefix}</span>
-      <span>
+      <span className="tabular-nums">
         {formatAmount(balance, {
           decimals: forToken.decimals
         })}
@@ -136,7 +133,12 @@ function ETHBalance({ chainType }: { chainType: 'source' | 'destination' }) {
     return <StyledLoader />
   }
 
-  return <span>{formatAmount(balance, { symbol: ether.symbol })}</span>
+  return (
+    <p>
+      <span className="tabular-nums">{formatAmount(balance)}</span>{' '}
+      {ether.symbol}
+    </p>
+  )
 }
 NetworkContainer.ETHBalance = ETHBalance
 

@@ -32,11 +32,13 @@ describe('Login Account', () => {
     // Balance: is in a different element so we check for siblings
     cy.findByText(l1ETHbal)
       .should('be.visible')
+      .parent()
       .siblings()
       .contains('Balance: ')
     // Balance: is in a different element so we check for siblings
     cy.findByText(l2ETHbal)
       .should('be.visible')
+      .parent()
       .siblings()
       .contains('Balance: ')
     cy.findByRole('button', { name: /From: Ethereum/i }).should('be.visible')
