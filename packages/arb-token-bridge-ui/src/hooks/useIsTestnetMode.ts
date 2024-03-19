@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useNetworks } from './useNetworks'
 import { ChainId, isNetwork } from '../util/networks'
 
@@ -13,5 +13,8 @@ export const useIsTestnetMode = () => {
     })
   }, [isTestnetMode, setNetworks])
 
-  return [isTestnetMode, toggleTestnetMode] as const
+  return useMemo(
+    () => [isTestnetMode, toggleTestnetMode] as const,
+    [isTestnetMode, toggleTestnetMode]
+  )
 }

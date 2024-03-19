@@ -195,7 +195,7 @@ function getBaseUrl(url: string) {
   }
 }
 
-function AppContent() {
+const AppContent = React.memo(() => {
   const [networks] = useNetworks()
   const { parentChain, childChain } = useNetworksRelationship(networks)
   const { address, isConnected, connector } = useAccount()
@@ -284,7 +284,8 @@ function AppContent() {
       <MainContent />
     </>
   )
-}
+})
+AppContent.displayName = 'AppContent'
 
 // We're doing this as a workaround so users can select their preferred chain on WalletConnect.
 //

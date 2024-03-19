@@ -1029,11 +1029,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain
-          amount={amount}
-          setAmount={setAmount}
-          errorMessage={errorMessage}
-        />
+        <TransferPanelMain errorMessage={errorMessage} />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}
