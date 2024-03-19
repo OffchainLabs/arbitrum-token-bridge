@@ -1,5 +1,5 @@
-import { createClient, configureChains, goerli } from 'wagmi'
-import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
+import { createClient, configureChains } from 'wagmi'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
@@ -32,10 +32,7 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      // goerli & arb goerli are for tx history panel tests
-      goerli,
-      arbitrumGoerli,
-      // sepolia
+      // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
       // Orbit chains
@@ -51,8 +48,6 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      goerli,
-      arbitrumGoerli,
       sepolia,
       arbitrumSepolia,
       stylusTestnet,
@@ -75,8 +70,6 @@ enum TargetChainKey {
   Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
-  Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
   ArbitrumSepolia = 'arbitrum-sepolia'
 }
@@ -105,12 +98,6 @@ function getChainId(targetChainKey: TargetChainKey): number {
 
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
-
-    case TargetChainKey.Goerli:
-      return ChainId.Goerli
-
-    case TargetChainKey.ArbitrumGoerli:
-      return ChainId.ArbitrumGoerli
 
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia

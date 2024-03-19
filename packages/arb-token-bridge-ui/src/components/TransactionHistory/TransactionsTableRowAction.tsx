@@ -103,6 +103,7 @@ export function TransactionsTableRowAction({
       <span className="animate-pulse">Retrying...</span>
     ) : (
       <Button
+        aria-label="Retry transaction"
         variant="primary"
         onClick={handleRedeemRetryable}
         className="w-14 bg-red-400 p-2 text-xs text-black"
