@@ -2,6 +2,7 @@ import { Chain, useAccount } from 'wagmi'
 import { useMemo } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, utils } from 'ethers'
+import { useMedia } from 'react-use'
 
 import { getBridgeUiConfigForChain } from '../../../util/bridgeUiConfig'
 import { getExplorerUrl } from '../../../util/networks'
@@ -161,9 +162,9 @@ function CustomDestinationAddressBanner({ className }: { className: string }) {
   return (
     <div
       style={{
-        backgroundColor: `${color.primary}AA`,
+        backgroundColor: `${color}AA`,
         color: 'white',
-        borderColor: color.primary
+        borderColor: color
       }}
       className={twMerge(
         'w-full rounded-t border-b p-1 text-center text-sm',
@@ -187,23 +188,26 @@ function CustomDestinationAddressBanner({ className }: { className: string }) {
 
 function NetworkContainer({
   network,
+  bgLogoHeight = 58,
   children
 }: {
   network: Chain
+  bgLogoHeight?: number
   children: React.ReactNode
 }) {
   const {
     color,
     network: { logo: networkLogo }
   } = getBridgeUiConfigForChain(network.id)
+  const isSmallScreen = useMedia('(max-width: 639px)')
 
   const backgroundImage = `url(${networkLogo})`
 
   return (
     <div
       style={{
-        backgroundColor: `${color.primary}66`, // 255*40% is 102, = 66 in hex
-        borderColor: color.primary
+        backgroundColor: `${color}66`, // 255*40% is 102, = 66 in hex
+        borderColor: color
       }}
       className={twMerge(
         'relative rounded border transition-colors duration-400'
@@ -212,9 +216,12 @@ function NetworkContainer({
       <CustomDestinationAddressBanner className="custom-address" />
       <div
         className="absolute left-0 top-0 z-0 h-full w-full bg-[length:auto_calc(100%_-_45px)] bg-[-2px_0] bg-no-repeat bg-origin-content p-2 opacity-50 [.custom-address~&]:bg-[-2px_40px]"
-        style={{ backgroundImage }}
+        style={{
+          backgroundImage,
+          backgroundSize: `auto ${bgLogoHeight + (isSmallScreen ? -12 : 0)}px`
+        }}
       />
-      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row lg:p-2">
+      <div className="relative space-y-3.5 bg-contain bg-no-repeat p-3 sm:flex-row">
         {children}
       </div>
     </div>

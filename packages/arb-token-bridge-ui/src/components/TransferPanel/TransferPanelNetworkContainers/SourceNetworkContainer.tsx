@@ -183,7 +183,6 @@ export function SourceNetworkContainer({
   const buttonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-        .primary
     }),
     [networks.sourceChain.id]
   )
@@ -210,12 +209,12 @@ export function SourceNetworkContainer({
   )
 
   return (
-    <NetworkContainer network={networks.sourceChain}>
+    <NetworkContainer network={networks.sourceChain} bgLogoHeight={138}>
       <NetworkContainer.NetworkListboxPlusBalancesContainer>
         <NetworkSelectionContainer
           buttonStyle={buttonStyle}
           buttonClassName={twMerge(
-            'arb-hover flex w-max items-center space-x-1 rounded-full px-3 py-2 text-sm text-white outline-none md:text-2xl lg:px-4 lg:py-3'
+            'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
           )}
           onChange={onChange}
         >

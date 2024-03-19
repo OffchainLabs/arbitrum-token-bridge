@@ -50,12 +50,9 @@ function shouldOpenOneNovaDialog(selectedChainIds: number[]) {
   )
 }
 
-export function SwitchNetworksButton(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement>
-) {
+export function SwitchNetworksButton() {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-
   const disabled = isSmartContractWallet || isLoadingAccountType
 
   const [networks, setNetworks] = useNetworks()
@@ -69,14 +66,13 @@ export function SwitchNetworksButton(
           'group relative flex h-7 w-7 items-center justify-center rounded bg-gray-1 p-1',
           disabled && 'pointer-events-none'
         )}
-        onClick={() => {
+        onClick={() =>
           setNetworks({
             sourceChainId: networks.destinationChain.id,
             destinationChainId: networks.sourceChain.id
           })
-        }}
+        }
         aria-label="Switch Networks"
-        {...props}
       >
         <SwitchNetworkButtonBorderTop />
         {isSmartContractWallet ? (
@@ -376,7 +372,7 @@ export function TransferPanelMain({
   }
 
   return (
-    <div className="flex flex-col pb-6">
+    <div className="flex flex-col pb-6 lg:gap-y-1">
       <SourceNetworkContainer
         setMaxAmount={setMaxAmount}
         loadingMaxAmount={loadingMaxAmount}
