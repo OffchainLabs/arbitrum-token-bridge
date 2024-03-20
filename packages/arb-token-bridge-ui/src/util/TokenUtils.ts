@@ -100,13 +100,18 @@ export async function fetchErc20Data({
   }
 
   try {
+    let name, symbol, decimals
     const erc20 = ERC20__factory.connect(address, provider)
 
-    const [name, symbol, decimals] = await Promise.all([
-      erc20.name(),
-      erc20.symbol(),
-      erc20.decimals()
-    ])
+    try {
+      ;[name, symbol, decimals] = await Promise.all([
+        erc20.name(),
+        erc20.symbol(),
+        erc20.decimals()
+      ])
+    } catch {
+      throw new Error('Failed to fetch the ERC-20 data.')
+    }
 
     const erc20Data: Erc20Data = {
       name: name ?? getDefaultTokenName(address),
