@@ -1,46 +1,16 @@
-import arbitrumStatusJson from '../../../public/__auto-generated-status.json'
+import { useState, useEffect } from 'react'
+import { SiteBannerClient } from './SiteBannerClient'
 
-type ArbitrumStatusResponse = {
-  meta: {
-    timestamp: string
-  }
-  content: {
-    page?: {
-      name: string
-      url: string
-      status: string
-    }
-    activeIncidents?: {
-      name: string
-      started: string
-      status: 'INVESTIGATING' | 'IDENTIFIED' | 'MONITORING' | 'RESOLVED'
-      impact: string
-      url: string
-    }[]
-    activeMaintenances?: {
-      name: string
-      start: string
-      status: string
-      duration: string
-      url: string
-    }[]
-  }
-}
+export const SiteBanner = () => {
+  const [initializeBanner, setInitializeBanner] = useState(false)
 
-const arbitrumStatus = (arbitrumStatusJson as ArbitrumStatusResponse).content
+  useEffect(() => {
+    setInitializeBanner(true)
+  }, [])
 
-export const SiteBanner = ({
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => {
-  const activeIncidentMessage = arbitrumStatus.activeIncidents?.[0]?.name
+  if (!initializeBanner) return null
 
   return (
-    <div
-      className="bg-atmosphere-blue px-4 py-[8px] text-center text-sm font-normal text-white"
-      {...props}
-    >
-      {activeIncidentMessage ?? children}
-    </div>
+    <SiteBannerClient>The Arbitrum Bridge has a new look!</SiteBannerClient>
   )
 }

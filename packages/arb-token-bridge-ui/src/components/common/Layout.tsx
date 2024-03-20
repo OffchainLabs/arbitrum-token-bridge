@@ -56,7 +56,7 @@ export function Layout(props: LayoutProps) {
           <Sidebar />
 
           <main className="grow">
-            <SiteBanner>The Arbitrum Bridge has a new look!</SiteBanner>
+            <SiteBanner />
             {props.children}
           </main>
 
