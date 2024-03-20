@@ -4,6 +4,7 @@ import arbitrumStatusJson from '../../../public/__auto-generated-status.json'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useLocalStorage } from '@uidotdev/usehooks'
 import { createHash } from 'crypto'
+import { twMerge } from 'tailwind-merge'
 
 type ArbitrumStatusResponse = {
   meta: {
@@ -41,38 +42,66 @@ export const generateMessageKey = (message: string) => {
 }
 
 type BannerConfig = {
-  hideIncidentBanner: string | boolean
-  hideInfoBanner: string | boolean
+  incidentBanner: {
+    key: string
+    isHidden: boolean
+  }
+  infoBanner: {
+    key: string
+    isHidden: boolean
+  }
 }
 
 export const SiteBannerClient = ({
   children,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
-  const activeIncidentMessage = arbitrumStatus.activeIncidents?.[0]?.name
-  const activeIncidentMessageKey = generateMessageKey(
-    activeIncidentMessage ?? ''
-  )
+  const incidentMessage = arbitrumStatus.activeIncidents?.[0]?.name || ''
+  const incidentMessageKey = generateMessageKey(incidentMessage)
 
-  const infoMessage = children?.toString() ?? ''
+  const infoMessage = children?.toString() || ''
   const infoMessageKey = generateMessageKey(infoMessage)
 
   const [bannerConfig, setBannerConfig] = useLocalStorage<BannerConfig>(
     'arbitrum:bridge:banner',
     {
-      hideIncidentBanner: false,
-      hideInfoBanner: false
+      incidentBanner: {
+        key: incidentMessageKey,
+        isHidden: false
+      },
+      infoBanner: {
+        key: infoMessageKey,
+        isHidden: false
+      }
     }
   )
 
-  const { hideIncidentBanner, hideInfoBanner } = bannerConfig
-
-  // show the banners if either
+  // show the banners if either:
   // 1. it is not set in local-storage
-  // 2. it is set in local-storage BUT hidden-hash does not correspond to current active incident
-  const showIncidentBanner =
-    !hideIncidentBanner || hideIncidentBanner !== activeIncidentMessageKey
-  const showInfoBanner = !hideInfoBanner || hideInfoBanner !== infoMessageKey
+  // 2. it is set in local-storage BUT the hash does not correspond to current active incident
+  const showIncidentBanner = (() => {
+    if (!incidentMessage) return false
+    if (
+      incidentMessage &&
+      bannerConfig.incidentBanner.key === incidentMessageKey &&
+      bannerConfig.incidentBanner.isHidden
+    ) {
+      return false
+    }
+    return true
+  })()
+
+  const showInfoBanner = (() => {
+    if (!infoMessage) return false
+    if (
+      infoMessage &&
+      bannerConfig.infoBanner.key === infoMessageKey &&
+      bannerConfig.infoBanner.isHidden
+    ) {
+      return false
+    }
+    return true
+  })()
 
   // show the site-banner if either incident or info banner is showing
   const showBanner = showIncidentBanner || showInfoBanner
@@ -82,7 +111,10 @@ export const SiteBannerClient = ({
     if (showIncidentBanner) {
       setBannerConfig(prevBannerConfig => ({
         ...prevBannerConfig,
-        hideIncidentBanner: activeIncidentMessageKey
+        incidentBanner: {
+          key: incidentMessageKey,
+          isHidden: true
+        }
       }))
       return
     }
@@ -90,7 +122,10 @@ export const SiteBannerClient = ({
     // else hide the info-banner
     setBannerConfig(prevBannerConfig => ({
       ...prevBannerConfig,
-      hideInfoBanner: infoMessageKey
+      infoBanner: {
+        key: infoMessageKey,
+        isHidden: true
+      }
     }))
   }
 
@@ -98,11 +133,13 @@ export const SiteBannerClient = ({
     <>
       {showBanner && (
         <div
-          className="flex w-full items-center justify-center whitespace-nowrap bg-atmosphere-blue px-4 py-[8px] text-center text-sm font-normal text-white"
+          className={twMerge(
+            'flex w-full items-center justify-center whitespace-nowrap bg-atmosphere-blue px-4 py-[8px] text-center text-sm font-normal text-white'
+          )}
           {...props}
         >
           <div className="w-full">
-            {showIncidentBanner ? activeIncidentMessage : children}
+            {showIncidentBanner ? incidentMessage : children}
           </div>
 
           <XMarkIcon
