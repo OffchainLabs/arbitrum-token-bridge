@@ -88,11 +88,10 @@ describe('Import token', () => {
           .click()
 
         cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
-        cy.findByLabelText('Arbed CMC List')
-          .as('tokenListToggle')
-          .parent()
-          .click()
-        cy.get('@tokenListToggle').should('be.checked')
+        cy.findByLabelText('Arbed CMC List').click()
+        cy.findByRole('switch', {
+          name: /Arbed CMC List toggle/
+        }).should('have.attr', 'aria-checked', 'true')
       })
     })
 
@@ -116,13 +115,12 @@ describe('Import token', () => {
           .click()
 
         cy.findByText('Arbed CMC List').scrollIntoView().should('be.visible')
-        cy.findByLabelText('Arbed CMC List')
-          .as('tokenListToggle')
-          .parent()
-          .click()
-        cy.get('@tokenListToggle').should('be.checked')
+        cy.findByLabelText('Arbed CMC List').click()
+        cy.findByRole('switch', {
+          name: /Arbed CMC List toggle/
+        }).should('have.attr', 'aria-checked', 'true')
 
-        cy.findByRole('button', { name: 'Back to Select Token' })
+        cy.findByRole('button', { name: /Back to Select Token/ })
           .should('be.visible')
           .click()
 

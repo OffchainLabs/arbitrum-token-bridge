@@ -1,32 +1,34 @@
-import { Dialog as HeadlessUIDialog } from '@headlessui/react'
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
-import { Dialog, UseDialogProps } from '../common/Dialog'
+import { Dialog, DialogProps } from '../common/Dialog'
 import { ExternalLink } from '../common/ExternalLink'
 import { GET_HELP_LINK } from '../../constants'
 
-export function BlockedDialog(props: UseDialogProps & { address: string }) {
+export function BlockedDialog(props: DialogProps & { address: string }) {
   return (
-    <Dialog {...props} isCustom>
-      <div className="px-8 py-8">
-        <HeadlessUIDialog.Title className="flex items-center space-x-2 text-2xl font-medium">
-          <ExclamationCircleIcon className="h-8 w-8" />
-          <span className="uppercase">This wallet address is blocked</span>
-        </HeadlessUIDialog.Title>
-
-        <div className="h-4" />
-
-        <div className="flex flex-col space-y-8 break-words">
-          <span className="text-gray-dark">{props.address.toLowerCase()}</span>
-          <span>This address is affiliated with a blocked activity.</span>
-          <span>
-            If you think this was an error, you can request a review by filing a{' '}
-            <ExternalLink href={GET_HELP_LINK} className="arb-hover underline">
-              support ticket
-            </ExternalLink>
-            .
-          </span>
+    <Dialog
+      {...props}
+      title={
+        <div className="flex flex-row items-center space-x-2">
+          <ExclamationTriangleIcon height={25} width={25} />
+          <span>This wallet address is blocked</span>
         </div>
+      }
+      isFooterHidden={true}
+    >
+      <div className="flex flex-col space-y-4 break-words py-4 text-gray-3">
+        <span>{props.address.toLowerCase()}</span>
+        <span>This address is affiliated with a blocked activity.</span>
+        <span>
+          If you think this was an error, you can request a review by filing a{' '}
+          <ExternalLink
+            href={GET_HELP_LINK}
+            className="arb-hover text-white underline"
+          >
+            support ticket
+          </ExternalLink>
+          .
+        </span>
       </div>
     </Dialog>
   )

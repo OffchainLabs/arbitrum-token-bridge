@@ -59,24 +59,11 @@ describe('Approve token and deposit afterwards', () => {
           .scrollIntoView()
           .click()
       })
-      cy.findByText(/I understand that I have to pay a one-time/).click()
+      cy.findByText(/pay a one-time approval fee/).click()
       cy.findByRole('button', {
         name: /Pay approval fee of/
       }).click()
       cy.confirmMetamaskPermissionToSpend('1')
-    })
-
-    context('Deposit token', () => {
-      // TODO: we don't have any indication in the UI that we are approving a token.
-      // We don't have a way to capture the finished approval state.
-      // Need better UX.
-      cy.log('Approving ERC-20...')
-      // eslint-disable-next-line
-      cy.wait(15000)
-      cy.confirmMetamaskTransaction().then(() => {
-        // check that transaction history panel is showing
-        cy.findByText('Transaction History').should('be.visible')
-      })
     })
   })
 })

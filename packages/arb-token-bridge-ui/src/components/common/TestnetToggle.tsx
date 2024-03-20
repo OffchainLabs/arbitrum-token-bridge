@@ -1,16 +1,14 @@
-import { useCallback } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 import { Switch } from './atoms/Switch'
-import { ChainId, isNetwork } from '../../util/networks'
-import { useNetworks } from '../../hooks/useNetworks'
 
 export const TestnetToggle = ({
   className,
   label,
-  description
+  description,
+  includeToggleStateOnLabel
 }: {
   className?: {
     wrapper?: string
@@ -18,37 +16,23 @@ export const TestnetToggle = ({
   }
   label: string
   description?: string
+  includeToggleStateOnLabel?: boolean
 }) => {
-  const [isTestnetMode, setIsTestnetMode] = useIsTestnetMode()
-  const [{ sourceChain }, setNetworks] = useNetworks()
+  const [isTestnetMode, toggleTestnetMode] = useIsTestnetMode()
 
-  const isSourceChainTestnet = isNetwork(sourceChain.id).isTestnet
-
-  const onChange = useCallback(() => {
-    if (isSourceChainTestnet) {
-      setNetworks({
-        sourceChainId: ChainId.Ethereum,
-        destinationChainId: ChainId.ArbitrumOne
-      })
-    }
-    setTimeout(() => {
-      // this is to ensure it's done after setNetworks
-      // or else it wouldn't work
-      setIsTestnetMode(prevIsTestnetMode => !prevIsTestnetMode)
-    }, 0)
-  }, [isSourceChainTestnet, setIsTestnetMode, setNetworks])
+  const labelText = includeToggleStateOnLabel
+    ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
+    : label
 
   return (
-    <div
-      className={twMerge(!isTestnetMode && 'opacity-60', className?.wrapper)}
-    >
+    <label className={twMerge('cursor-pointer', className?.wrapper)}>
       <Switch
         className={className?.switch}
-        label={label}
+        label={labelText}
         description={description}
         checked={isTestnetMode}
-        onChange={onChange}
+        onChange={toggleTestnetMode}
       />
-    </div>
+    </label>
   )
 }

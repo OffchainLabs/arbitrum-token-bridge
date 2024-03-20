@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import * as Sentry from '@sentry/react'
 import { useAccount, useSigner } from 'wagmi'
 
@@ -19,21 +19,23 @@ import { fetchNativeCurrency } from './useNativeCurrency'
 import { useArbTokenBridge } from './useArbTokenBridge'
 
 export type UseClaimWithdrawalResult = {
-  claim: (tx: MergedTransaction) => Promise<void>
+  claim: () => Promise<void>
   isClaiming: boolean
 }
 
-export function useClaimWithdrawal(): UseClaimWithdrawalResult {
+export function useClaimWithdrawal(
+  tx: MergedTransaction
+): UseClaimWithdrawalResult {
   const {
     eth: { triggerOutbox: ethTriggerOutbox },
     token: { triggerOutbox: erc20TriggerOutbox }
   } = useArbTokenBridge()
   const { address } = useAccount()
-  const { data: signer } = useSigner()
+  const { data: signer } = useSigner({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
 
-  async function claim(tx: MergedTransaction) {
+  const claim = useCallback(async () => {
     if (isClaiming || !tx.isWithdrawal || tx.isCctp) {
       return
     }
@@ -124,7 +126,14 @@ export function useClaimWithdrawal(): UseClaimWithdrawalResult {
     if (isSuccess) {
       setParentChainTxDetailsOfWithdrawalClaimTx(tx, txHash)
     }
-  }
+  }, [
+    arbTokenBridge.eth,
+    arbTokenBridge.token,
+    isClaiming,
+    signer,
+    tx,
+    updatePendingTransaction
+  ])
 
   return { claim, isClaiming }
 }

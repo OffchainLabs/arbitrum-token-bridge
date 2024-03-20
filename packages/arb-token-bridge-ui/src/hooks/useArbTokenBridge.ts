@@ -36,7 +36,8 @@ import {
   fetchErc20L2GatewayAddress,
   getL2ERC20Address,
   l1TokenIsDisabled,
-  isValidErc20
+  isValidErc20,
+  isGatewayRegistered
 } from '../util/TokenUtils'
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
@@ -52,6 +53,7 @@ import {
 import { useNetworks } from './useNetworks'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { BridgeTokenList, fetchTokenListFromURL } from '../util/TokenListUtils'
+import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 
 export const wait = (ms = 0) => {
   return new Promise(res => setTimeout(res, ms))
@@ -129,6 +131,8 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
 
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
+  const { destinationAddress } = useDestinationAddressStore()
+
   const {
     eth: [, updateEthL1Balance],
     erc20: [, updateErc20L1Balance]
@@ -143,9 +147,35 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
     provider: childChainProvider,
     walletAddress
   })
+
+  const {
+    eth: [, updateEthL1CustomDestinationBalance],
+    erc20: [, updateErc20L1CustomDestinationBalance]
+  } = useBalance({
+    provider: parentChainProvider,
+    walletAddress: destinationAddress
+  })
+  const {
+    eth: [, updateEthL2CustomDestinationBalance],
+    erc20: [, updateErc20CustomDestinationL2Balance]
+  } = useBalance({
+    provider: childChainProvider,
+    walletAddress: destinationAddress
+  })
+
   const updateEthBalances = useCallback(async () => {
-    Promise.all([updateEthL1Balance(), updateEthL2Balance()])
-  }, [updateEthL1Balance, updateEthL2Balance])
+    Promise.all([
+      updateEthL1Balance(),
+      updateEthL2Balance(),
+      updateEthL1CustomDestinationBalance(),
+      updateEthL2CustomDestinationBalance()
+    ])
+  }, [
+    updateEthL1Balance,
+    updateEthL1CustomDestinationBalance,
+    updateEthL2Balance,
+    updateEthL2CustomDestinationBalance
+  ])
 
   interface ExecutedMessagesCache {
     [id: string]: boolean
@@ -385,14 +415,23 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       })
       const { l2Address } = bridgeToken
       updateErc20L1Balance([l1AddressLowerCased])
+      if (destinationAddress) {
+        updateErc20L1CustomDestinationBalance([l1AddressLowerCased])
+      }
       if (l2Address) {
         updateErc20L2Balance([l2Address])
+        if (destinationAddress) {
+          updateErc20CustomDestinationL2Balance([l2Address])
+        }
       }
     },
     [
       bridgeTokens,
+      destinationAddress,
       setBridgeTokens,
+      updateErc20CustomDestinationL2Balance,
       updateErc20L1Balance,
+      updateErc20L1CustomDestinationBalance,
       updateErc20L2Balance,
       updateUSDCBalances
     ]
@@ -411,6 +450,16 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       }
 
       const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+
+      if (
+        !(await isGatewayRegistered({
+          erc20ParentChainAddress: erc20L1Address,
+          parentChainProvider,
+          childChainProvider
+        }))
+      ) {
+        throw Error('Custom gateway is not registered yet.')
+      }
 
       const tx = await erc20Bridger.approveToken({
         erc20L1Address,
@@ -528,6 +577,16 @@ export const useArbTokenBridge = (): ArbTokenBridge => {
       ).timestamp
 
       try {
+        if (
+          !(await isGatewayRegistered({
+            erc20ParentChainAddress: erc20L1Address,
+            parentChainProvider,
+            childChainProvider
+          }))
+        ) {
+          throw Error('Custom gateway is not registered yet.')
+        }
+
         const { symbol, decimals } = await fetchErc20Data({
           address: erc20L1Address,
           provider: parentChainProvider

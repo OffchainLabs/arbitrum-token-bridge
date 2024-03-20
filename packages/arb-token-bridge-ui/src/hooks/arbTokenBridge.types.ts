@@ -2,11 +2,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  L1ToL2MessageStatus,
-  L2ToL1MessageStatus as OutgoingMessageState
-} from '@arbitrum/sdk'
-import { L1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
