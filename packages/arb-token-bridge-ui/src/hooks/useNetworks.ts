@@ -11,6 +11,7 @@ import {
 } from '../util/networks'
 import {
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
@@ -59,6 +60,7 @@ export function isSupportedChainId(
   return [
     mainnet.id,
     sepolia.id,
+    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
     arbitrumSepolia.id,
