@@ -103,20 +103,20 @@ export async function fetchErc20Data({
     let name, symbol, decimals
 
     try {
-      try {
-        // try multicaller first
-        const multiCaller = await MultiCaller.fromProvider(provider)
-        const [tokenData] = await multiCaller.getTokenData([address], {
-          name: true,
-          symbol: true,
-          decimals: true
-        })
+      // try multicaller first
+      const multiCaller = await MultiCaller.fromProvider(provider)
+      const [tokenData] = await multiCaller.getTokenData([address], {
+        name: true,
+        symbol: true,
+        decimals: true
+      })
 
-        name = tokenData?.name
-        symbol = tokenData?.symbol
-        decimals = tokenData?.decimals
-      } catch {
-        // fetch data individually if multicaller fails
+      name = tokenData?.name
+      symbol = tokenData?.symbol
+      decimals = tokenData?.decimals
+    } catch {
+      // fetch data individually if multicaller fails
+      try {
         const erc20 = ERC20__factory.connect(address, provider)
 
         ;[name, symbol, decimals] = await Promise.all([
@@ -124,9 +124,9 @@ export async function fetchErc20Data({
           erc20.symbol(),
           erc20.decimals()
         ])
+      } catch (error) {
+        throw new Error('Failed to fetch ERC-20 data.')
       }
-    } catch {
-      throw new Error('Failed to fetch ERC-20 data.')
     }
 
     const erc20Data: Erc20Data = {
