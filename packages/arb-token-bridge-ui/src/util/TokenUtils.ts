@@ -124,7 +124,7 @@ export async function fetchErc20Data({
           erc20.symbol(),
           erc20.decimals()
         ])
-      } catch (error) {
+      } catch {
         throw new Error('Failed to fetch ERC-20 data.')
       }
     }
