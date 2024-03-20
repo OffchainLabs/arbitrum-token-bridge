@@ -66,12 +66,19 @@ export const SiteBannerClient = ({
   )
 
   const { hideIncidentBanner, hideInfoBanner } = bannerConfig
-  const showIncidentBanner = !hideIncidentBanner
-  const showInfoBanner = !hideInfoBanner
+
+  // show the banners if either
+  // 1. it is not set in local-storage
+  // 2. it is set in local-storage BUT hidden-hash does not correspond to current active incident
+  const showIncidentBanner =
+    !hideIncidentBanner || hideIncidentBanner !== activeIncidentMessageKey
+  const showInfoBanner = !hideInfoBanner || hideInfoBanner !== infoMessageKey
+
+  // show the site-banner if either incident or info banner is showing
   const showBanner = showIncidentBanner || showInfoBanner
 
   const closeBanner = () => {
-    // if incident banner is showing then set it as false, which will reveal info-banner
+    // if incident banner is showing, then hide the the banner with the current message hash
     if (showIncidentBanner) {
       setBannerConfig(prevBannerConfig => ({
         ...prevBannerConfig,
@@ -80,7 +87,7 @@ export const SiteBannerClient = ({
       return
     }
 
-    // else set info banner as false
+    // else hide the info-banner
     setBannerConfig(prevBannerConfig => ({
       ...prevBannerConfig,
       hideInfoBanner: infoMessageKey
