@@ -1,6 +1,12 @@
 import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  Erc20L1L3Bridger,
+  EthBridger,
+  EthL1L3Bridger,
+  MultiCaller
+} from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
@@ -253,6 +259,13 @@ export async function getL2ERC20Address({
     destinationChainProvider: l2Provider
   })
 
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    throw new Error('`getL2ERC20Address` is not implemented for the bridger')
+  }
+
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
@@ -272,6 +285,13 @@ export async function l1TokenIsDisabled({
     sourceChainProvider: l1Provider,
     destinationChainProvider: l2Provider
   })
+
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    throw new Error('`l1TokenIsDisabled` is not implemented for the bridger')
+  }
 
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
