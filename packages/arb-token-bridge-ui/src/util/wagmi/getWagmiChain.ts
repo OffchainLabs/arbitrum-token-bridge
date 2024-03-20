@@ -4,6 +4,7 @@ import { mainnet, arbitrum } from 'wagmi/chains'
 import {
   chainToWagmiChain,
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
@@ -40,6 +41,9 @@ export function getWagmiChain(chainId: number): Chain {
     // Testnets
     case ChainId.Sepolia:
       return sepolia
+
+    case ChainId.Holesky:
+      return holesky
 
     case ChainId.ArbitrumSepolia:
       return arbitrumSepolia
