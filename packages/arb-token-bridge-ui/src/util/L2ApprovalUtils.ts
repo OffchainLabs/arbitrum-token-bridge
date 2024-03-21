@@ -35,6 +35,13 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l1Address: '0xb2490e357980cE57bF5745e181e537a64Eb367B1',
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
+  ],
+  [37714555429]: [
+    {
+      symbol: 'CU',
+      l1Address: '0xd781cea0b8D5dDd0aeeD1dF7aC109C974A221B00',
+      l2Address: '0xe267c440dbfb1e185d506c2cc3c44eb21340e046'
+    }
   ]
 }
 
