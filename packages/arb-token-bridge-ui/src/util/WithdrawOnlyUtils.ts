@@ -2,7 +2,10 @@
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
 import { ChainId, isNetwork } from '../util/networks'
-import { isTokenArbitrumOneUSDCe } from './TokenUtils'
+import {
+  isTokenArbitrumOneUSDCe,
+  isTokenArbitrumSepoliaUSDCe
+} from './TokenUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -166,7 +169,8 @@ export function isWithdrawOnlyToken(
 ) {
   // disable USDC.e deposits for Orbit chains
   if (
-    isTokenArbitrumOneUSDCe(parentChainErc20Address) &&
+    (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
+      isTokenArbitrumSepoliaUSDCe(parentChainErc20Address)) &&
     isNetwork(childChainId).isOrbitChain
   ) {
     return true
