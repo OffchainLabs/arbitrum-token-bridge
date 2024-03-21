@@ -846,6 +846,8 @@ export function TransferPanel() {
         destinationChainId: childChain.id
       })
 
+    const timestampCreated = Math.floor(Date.now() / 1000).toString()
+
     const uiCompatibleTransactionObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
       parentChainId: parentChain.id,
@@ -854,7 +856,8 @@ export function TransferPanel() {
       walletAddress: walletAddress!,
       destinationAddress,
       nativeCurrency,
-      amount: amountBigNumber
+      amount: amountBigNumber,
+      timestampCreated
     })
 
     // add transaction to the transaction history
@@ -871,7 +874,8 @@ export function TransferPanel() {
           walletAddress: walletAddress!,
           destinationAddress,
           nativeCurrency,
-          amount: amountBigNumber
+          amount: amountBigNumber,
+          timestampCreated
         })
       )
     }

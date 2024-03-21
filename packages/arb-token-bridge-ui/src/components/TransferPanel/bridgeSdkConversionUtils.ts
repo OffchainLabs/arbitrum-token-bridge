@@ -24,6 +24,7 @@ type SdkToUiConversionProps = {
   destinationAddress?: string
   nativeCurrency: NativeCurrency
   amount: BigNumber
+  timestampCreated: string
 }
 
 export const convertBridgeSdkToMergedTransaction = ({
@@ -77,7 +78,8 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
   walletAddress,
   selectedToken,
   nativeCurrency,
-  amount
+  amount,
+  timestampCreated
 }: SdkToUiConversionProps): Deposit => {
   const transaction =
     bridgeTransfer.sourceChainTransaction as TransactionResponse
@@ -99,7 +101,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     direction: 'deposit',
     type: 'deposit-l1',
     source: 'local_storage_cache',
-    timestampCreated: String(transaction.timestamp),
+    timestampCreated: String(timestampCreated),
     nonce: transaction.nonce
   } as Deposit
 }
