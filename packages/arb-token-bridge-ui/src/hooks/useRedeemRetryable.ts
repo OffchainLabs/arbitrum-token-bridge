@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { TransactionReceipt } from '@ethersproject/providers'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { TransactionReceipt } from '@ethersproject/providers'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'

@@ -20,6 +20,10 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
+import {
+  useArbTokenBridge,
+  useBridgeTokensStore
+} from '../../hooks/useArbTokenBridge'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 
@@ -65,11 +69,12 @@ export function TokenImportDialog({
 }: TokenImportDialogProps): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
-    app: {
-      arbTokenBridge: { bridgeTokens, token },
-      selectedToken
-    }
+    app: { selectedToken }
   } = useAppState()
+  const { bridgeTokens } = useBridgeTokensStore()
+  const {
+    token: { add: addToken, updateTokenData }
+  } = useArbTokenBridge()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -171,10 +176,10 @@ export function TokenImportDialog({
 
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
-      await token.updateTokenData(_token.address)
+      await updateTokenData(_token.address)
       actions.app.setSelectedToken(_token)
     },
-    [token, actions]
+    [updateTokenData, actions]
   )
 
   useEffect(() => {
@@ -258,7 +263,7 @@ export function TokenImportDialog({
   ])
 
   async function storeNewToken(newToken: string) {
-    return token.add(newToken).catch((ex: Error) => {
+    return addToken(newToken).catch((ex: Error) => {
       setStatus(ImportStatus.ERROR)
 
       if (ex.name === 'TokenDisabledError') {

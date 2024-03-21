@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
@@ -9,24 +9,20 @@ import {
   useConnectModal
 } from '@rainbow-me/rainbowkit'
 import merge from 'lodash-es/merge'
-import axios from 'axios'
 import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
+import { useInterval } from 'react-use'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { ConnectionState } from '../../util'
-import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
-import { config, useActions, useAppState } from '../../state'
+import { config, useAppState } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
-import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
-import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { rpcURLs } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -34,13 +30,12 @@ import {
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
-import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useArbTokenBridge } from '../../hooks/useArbTokenBridge'
 
 declare global {
   interface Window {
@@ -56,113 +51,6 @@ const rainbowkitTheme = merge(darkTheme(), {
     body: 'Roboto, sans-serif'
   }
 } as Theme)
-
-const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
-  const actions = useActions()
-  const {
-    app: { selectedToken }
-  } = useAppState()
-  const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  // We want to be sure this fetch is completed by the time we open the USDC modals
-  useCCTPIsBlocked()
-
-  const [tokenBridgeParams, setTokenBridgeParams] =
-    useState<TokenBridgeParams | null>(null)
-
-  useEffect(() => {
-    if (!nativeCurrency.isCustom) {
-      return
-    }
-
-    const selectedTokenAddress = selectedToken?.address.toLowerCase()
-    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
-    // This handles a super weird edge case where, for example:
-    //
-    // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
-    // You then switch your destination network to a network that has $ARB as its native currency.
-    // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
-    if (
-      selectedTokenAddress === nativeCurrency.address ||
-      selectedTokenL2Address === nativeCurrency.address
-    ) {
-      actions.app.setSelectedToken(null)
-    }
-  }, [selectedToken, nativeCurrency])
-
-  // Listen for account and network changes
-  useEffect(() => {
-    // Any time one of those changes
-    setTokenBridgeParams(null)
-    actions.app.setConnectionState(ConnectionState.LOADING)
-
-    const {
-      isArbitrum: isConnectedToArbitrum,
-      isOrbitChain: isConnectedToOrbitChain
-    } = isNetwork(networks.sourceChain.id)
-    const isParentChainEthereum = isNetwork(
-      parentChain.id
-    ).isEthereumMainnetOrTestnet
-
-    actions.app.reset(networks.sourceChain.id)
-    actions.app.setChainIds({
-      l1NetworkChainId: parentChain.id,
-      l2NetworkChainId: childChain.id
-    })
-
-    if (
-      (isParentChainEthereum && isConnectedToArbitrum) ||
-      isConnectedToOrbitChain
-    ) {
-      console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
-    } else {
-      console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
-    }
-
-    setTokenBridgeParams({
-      l1: {
-        network: parentChain,
-        provider: parentChainProvider
-      },
-      l2: {
-        network: childChain,
-        provider: childChainProvider
-      }
-    })
-  }, [
-    networks.sourceChain.id,
-    parentChain.id,
-    childChain.id,
-    parentChain,
-    childChain,
-    parentChainProvider,
-    childChainProvider
-  ])
-
-  useEffect(() => {
-    axios
-      .get(
-        'https://raw.githubusercontent.com/OffchainLabs/arb-token-lists/aff40a59608678cfd9b034dd198011c90b65b8b6/src/WarningList/warningTokens.json'
-      )
-      .then(res => {
-        actions.app.setWarningTokens(res.data)
-      })
-      .catch(err => {
-        console.warn('Failed to fetch warning tokens:', err)
-      })
-  }, [])
-
-  if (!tokenBridgeParams) {
-    return null
-  }
-
-  return <ArbTokenBridgeStoreSync tokenBridgeParams={tokenBridgeParams} />
-}
 
 // connector names: https://github.com/wagmi-dev/wagmi/blob/b17c07443e407a695dfe9beced2148923b159315/docs/pages/core/connectors/_meta.en-US.json#L4
 function getWalletName(connectorName: string): ProviderName {
@@ -202,6 +90,19 @@ function AppContent() {
   const { isBlocked } = useAccountIsBlocked()
   const [tosAccepted] = useLocalStorage<boolean>(TOS_LOCALSTORAGE_KEY, false)
   const { openConnectModal } = useConnectModal()
+  const {
+    app: { selectedToken }
+  } = useAppState()
+
+  const {
+    token: { updateTokenData }
+  } = useArbTokenBridge()
+
+  useInterval(() => {
+    if (selectedToken) {
+      updateTokenData(selectedToken.address)
+    }
+  }, 10_000)
 
   useEffect(() => {
     if (tosAccepted && !isConnected) {
@@ -279,8 +180,6 @@ function AppContent() {
         <HeaderAccountPopover />
       </Header>
       <TokenListSyncer />
-      <BalanceUpdater />
-      <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
     </>
   )

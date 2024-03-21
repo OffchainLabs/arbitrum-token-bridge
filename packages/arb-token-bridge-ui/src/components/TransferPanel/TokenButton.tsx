@@ -4,7 +4,6 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { sanitizeImageSrc } from '../../util'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -19,39 +18,12 @@ import { Transition } from '../common/Transition'
 
 export function TokenButton(): JSX.Element {
   const {
-    app: {
-      selectedToken,
-      arbTokenBridge: { bridgeTokens },
-      arbTokenBridgeLoaded
-    }
+    app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const tokenLogo = useMemo<string | undefined>(() => {
-    const selectedAddress = selectedToken?.address
-    if (!selectedAddress) {
-      return nativeCurrency.logoUrl
-    }
-    if (!arbTokenBridgeLoaded) {
-      return undefined
-    }
-    if (typeof bridgeTokens === 'undefined') {
-      return undefined
-    }
-    const logo = bridgeTokens[selectedAddress]?.logoURI
-    if (logo) {
-      return sanitizeImageSrc(logo)
-    }
-    return undefined
-  }, [
-    nativeCurrency,
-    bridgeTokens,
-    selectedToken?.address,
-    arbTokenBridgeLoaded
-  ])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {

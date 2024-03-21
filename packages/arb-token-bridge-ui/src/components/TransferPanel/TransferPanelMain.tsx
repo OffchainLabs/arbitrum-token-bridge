@@ -714,6 +714,7 @@ export function TransferPanelMain({
     networks.sourceChain,
     networks.destinationChain,
     setNetworks,
+    actions.app,
     openOneNovaTransferDialog
   ])
 
