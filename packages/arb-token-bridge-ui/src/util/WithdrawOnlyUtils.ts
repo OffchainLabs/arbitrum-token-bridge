@@ -164,12 +164,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
  * @param childChainId
  */
 export function isWithdrawOnlyToken(
-  erc20L1Address: string,
+  parentChainErc20Address: string,
   childChainId: number
 ) {
   // disable USDC.e deposits for Orbit chains
   if (
-    isTokenArbitrumOneUSDCe(erc20L1Address) &&
+    isTokenArbitrumOneUSDCe(parentChainErc20Address) &&
     isNetwork(childChainId).isOrbitChain
   ) {
     return true
@@ -177,5 +177,5 @@ export function isWithdrawOnlyToken(
 
   return (withdrawOnlyTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(parentChainErc20Address.toLowerCase())
 }
