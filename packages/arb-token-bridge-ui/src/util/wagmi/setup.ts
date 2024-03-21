@@ -124,7 +124,11 @@ export function getProps(targetChainKey: string | null) {
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
     [
-      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
+      infuraProvider({
+        apiKey:
+          process.env.NEXT_PUBLIC_INFURA_KEY ??
+          process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM!
+      }),
       publicProvider()
     ]
   )
