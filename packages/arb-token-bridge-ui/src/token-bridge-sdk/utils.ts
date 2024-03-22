@@ -1,7 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
-import { isTeleport } from './teleport'
+import { isTeleport as isTeleportTransfer } from './teleport'
 import {
   Erc20Bridger,
   Erc20L1L3Bridger,
@@ -34,21 +34,32 @@ export const getBridgeTransferProperties = async ({
     destinationChainProvider
   )
 
-  const isParentChainEthereum =
+  const isParentChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
+
   const isParentChainArbitrum = isNetwork(sourceChainId).isArbitrum
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
   const isDeposit =
-    isParentChainEthereum || (isParentChainArbitrum && isDestinationChainOrbit)
+    isParentChainEthereumMainnetOrTestnet ||
+    (isParentChainArbitrum && isDestinationChainOrbit)
 
   const isNativeCurrencyTransfer =
     typeof sourceChainErc20Address === 'undefined'
 
+  const isWithdrawal =
+    (isNetwork(sourceChainId).isArbitrum &&
+      isNetwork(destinationChainId).isEthereumMainnetOrTestnet) ||
+    (isNetwork(sourceChainId).isOrbitChain &&
+      isNetwork(destinationChainId).isArbitrum)
+
+  const isTeleport = isTeleportTransfer({ sourceChainId, destinationChainId })
+
   return {
     isDeposit,
     isNativeCurrencyTransfer,
-    isTeleport: isTeleport({ sourceChainId, destinationChainId })
+    isTeleport: isTeleport,
+    isSupported: isDeposit || isWithdrawal || isTeleport
   }
 }
 
@@ -76,7 +87,7 @@ export const getBridger = async ({
     destinationChainProvider
   )
 
-  if (isTeleport({ sourceChainId, destinationChainId })) {
+  if (isTeleportTransfer({ sourceChainId, destinationChainId })) {
     const l3Network = await getL2Network(destinationChainProvider)
 
     if (isNativeCurrencyTransfer) {
