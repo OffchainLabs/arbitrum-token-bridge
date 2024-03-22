@@ -40,6 +40,12 @@ export enum WithdrawalStatus {
   FAILURE = 'Failure'
 }
 
+export type TeleportData = {
+  l2Retryable?: L1ToL2MessageWaitResult
+  l3Retryable?: L1ToL2MessageWaitResult
+  completed: boolean
+}
+
 export interface MergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31
   // should return sender as well, then we can make it non-optional
@@ -73,11 +79,7 @@ export interface MergedTransaction {
     receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
-  teleportData?: {
-    l2Retryable?: L1ToL2MessageWaitResult
-    l3Retryable?: L1ToL2MessageWaitResult
-    completed: boolean
-  }
+  teleportData?: TeleportData
 }
 
 export interface WarningTokens {

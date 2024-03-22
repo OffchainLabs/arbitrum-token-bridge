@@ -10,8 +10,22 @@ import {
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
+import {
+  L1ToL2MessageData,
+  Transaction,
+  TxnStatus
+} from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
+import {
+  getTeleportStatusDataFromTxId,
+  isTeleport
+} from '../../token-bridge-sdk/teleport'
+import {
+  Erc20DepositMessages,
+  EthDepositStatus as EthTeleportStatus
+} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
+import { getProvider } from '../../components/TransactionHistory/helpers'
+import { TeleportData } from '../../state/app/state'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -52,6 +66,18 @@ export const updateAdditionalDepositData = async ({
     isEthDeposit,
     isClassic
   })
+
+  if (
+    isTeleport({
+      sourceChainId: depositTx.parentChainId,
+      destinationChainId: depositTx.childChainId
+    })
+  ) {
+    const { status, timestampResolved, l1ToL2MsgData } =
+      await updateTeleporterDepositStatusData(depositTx)
+
+    return { ...depositTx, status, timestampResolved, l1ToL2MsgData }
+  }
 
   if (isClassic) {
     return updateClassicDepositStatusData({
@@ -263,6 +289,86 @@ const updateClassicDepositStatusData = async ({
   }
 
   return completeDepositTx
+}
+
+export async function updateTeleporterDepositStatusData({
+  assetType,
+  parentChainId,
+  childChainId,
+  txID
+}: {
+  assetType: AssetType
+  parentChainId: number
+  childChainId: number
+  txID: string
+}): Promise<{
+  status?: TxnStatus
+  timestampResolved?: string
+  l1ToL2MsgData: L1ToL2MessageData
+  teleportData: TeleportData
+}> {
+  const isNativeCurrencyTransfer = assetType === AssetType.ETH
+
+  const sourceChainProvider = getProvider(parentChainId)
+  const destinationChainProvider = getProvider(childChainId)
+
+  const depositStatus = await getTeleportStatusDataFromTxId({
+    txId: txID,
+    sourceChainProvider,
+    destinationChainProvider,
+    isNativeCurrencyTransfer
+  })
+
+  let l2Retryable, l3Retryable, completed
+
+  if (isNativeCurrencyTransfer) {
+    const status = depositStatus as EthTeleportStatus
+    l2Retryable = status.l2Retryable
+    l3Retryable = status.l3Retryable
+    completed = status.completed
+  } else {
+    const status = depositStatus as Erc20DepositMessages
+    l2Retryable = status.l1l2TokenBridge
+    l3Retryable = status.l2l3TokenBridge
+    completed = status.completed
+  }
+
+  const destinationChainTxId = l3Retryable?.retryableCreationId
+
+  const destinationChainBlockNumber = destinationChainTxId
+    ? (await destinationChainProvider.getTransaction(destinationChainTxId))
+        .blockNumber
+    : null
+
+  const timestampResolved = destinationChainBlockNumber
+    ? (await destinationChainProvider.getBlock(destinationChainBlockNumber))
+        .timestamp * 1000
+    : null
+
+  return {
+    status: destinationChainTxId ? 'success' : 'pending',
+    timestampResolved: timestampResolved
+      ? String(timestampResolved)
+      : undefined,
+
+    // for now feeding the L3 retryable data inside the deposit status object
+    // ideally for teleport it should have 2 separate message-tracker objects
+    l1ToL2MsgData: {
+      status: l3Retryable
+        ? await l3Retryable.status()
+        : (await l2Retryable.status())
+        ? await l2Retryable.status()
+        : L1ToL2MessageStatus.NOT_YET_CREATED,
+      l2TxID: destinationChainTxId,
+      fetchingUpdate: false,
+      retryableCreationTxID: destinationChainTxId
+    },
+    teleportData: {
+      l2Retryable: await l2Retryable?.getSuccessfulRedeem(),
+      l3Retryable: await l3Retryable?.getSuccessfulRedeem(),
+      completed
+    }
+  }
 }
 
 export const getL1ToL2MessageDataFromL1TxHash = async ({

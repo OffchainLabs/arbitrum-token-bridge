@@ -18,7 +18,10 @@ import {
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import {
+  getL1ToL2MessageDataFromL1TxHash,
+  updateTeleporterDepositStatusData
+} from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
@@ -467,60 +470,22 @@ export async function getUpdatedTeleportTransfer(
     return tx
   }
 
-  const isNativeCurrencyTransfer = tx.assetType === AssetType.ETH
+  const { txId, parentChainId, childChainId, assetType } = tx
 
-  const depositStatus = await getTeleportStatusDataFromTxId({
-    txId: tx.txId,
-    sourceChainProvider: getProvider(tx.parentChainId),
-    destinationChainProvider: getProvider(tx.childChainId),
-    isNativeCurrencyTransfer
-  })
+  const { status, timestampResolved, l1ToL2MsgData, teleportData } =
+    await updateTeleporterDepositStatusData({
+      txID: txId,
+      childChainId,
+      parentChainId,
+      assetType
+    })
 
-  let l2Retryable, l3Retryable, completed
-
-  if (isNativeCurrencyTransfer) {
-    const status = depositStatus as EthTeleportStatus
-    l2Retryable = status.l2Retryable
-    l3Retryable = status.l3Retryable
-    completed = status.completed
-  } else {
-    const status = depositStatus as Erc20DepositMessages
-    l2Retryable = status.l1l2TokenBridge
-    l3Retryable = status.l2l3TokenBridge
-    completed = status.completed
-  }
-
-  // @ts-ignore - check why l2TxReceipt is not in the type
-  const l3TxId = await l3Retryable?.getSuccessfulRedeem()?.l2TxReceipt
-    ?.transactionHash
-
-  const newDeposit: MergedTransaction = {
-    ...tx,
-    status: 'success',
-    resolvedAt: completed ? dayjs().valueOf() : null,
-
-    // for now feeding the L3 retryable data inside the deposit status object
-    // ideally for teleport it should have 2 separate message-tracker objects
-    l1ToL2MsgData: {
-      status: l3Retryable
-        ? await l3Retryable.status()
-        : (await l2Retryable.status())
-        ? await l2Retryable.status()
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
-      l2TxID: l3TxId,
-      fetchingUpdate: false,
-      retryableCreationTxID: l3TxId
-    }
-  }
+  const updatedTx = { ...tx, status, timestampResolved, l1ToL2MsgData }
 
   return {
-    ...newDeposit,
-    depositStatus: getDepositStatus(newDeposit),
-    teleportData: {
-      l2Retryable: await l2Retryable?.getSuccessfulRedeem(),
-      l3Retryable: await l3Retryable?.getSuccessfulRedeem(),
-      completed
-    }
+    ...updatedTx,
+    depositStatus: getDepositStatus(updatedTx),
+    teleportData
   }
 }
 
