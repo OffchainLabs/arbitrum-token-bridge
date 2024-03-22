@@ -18,12 +18,16 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address
     } = initProps
 
-    const { isDeposit, isNativeCurrencyTransfer } =
+    const { isDeposit, isNativeCurrencyTransfer, isSupported } =
       await getBridgeTransferProperties({
         sourceChainProvider,
         destinationChainProvider,
         sourceChainErc20Address
       })
+
+    if (!isSupported) {
+      throw new Error('Unsupported transfer detected')
+    }
 
     // deposits
     if (isDeposit) {

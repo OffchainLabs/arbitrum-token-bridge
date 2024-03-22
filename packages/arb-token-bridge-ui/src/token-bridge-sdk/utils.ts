@@ -26,20 +26,29 @@ export const getBridgeTransferProperties = async ({
     destinationChainProvider
   )
 
-  const isParentChainEthereum =
+  const isParentChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
+
   const isParentChainArbitrum = isNetwork(sourceChainId).isArbitrum
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
   const isDeposit =
-    isParentChainEthereum || (isParentChainArbitrum && isDestinationChainOrbit)
+    isParentChainEthereumMainnetOrTestnet ||
+    (isParentChainArbitrum && isDestinationChainOrbit)
 
   const isNativeCurrencyTransfer =
     typeof sourceChainErc20Address === 'undefined'
 
+  const isWithdrawal =
+    (isNetwork(sourceChainId).isArbitrum &&
+      isNetwork(destinationChainId).isEthereumMainnetOrTestnet) ||
+    (isNetwork(sourceChainId).isOrbitChain &&
+      isNetwork(destinationChainId).isArbitrum)
+
   return {
     isDeposit,
-    isNativeCurrencyTransfer
+    isNativeCurrencyTransfer,
+    isSupported: isDeposit || isWithdrawal
   }
 }
 
