@@ -71,6 +71,7 @@ import {
   convertBridgeSdkToMergedTransaction,
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { useBalance } from '../../hooks/useBalance'
 
 const networkConnectionWarningToast = () =>
@@ -556,8 +557,7 @@ export function TransferPanel() {
     const { isOrbitChain } = isNetwork(childChain.id)
 
     return (
-      isDepositMode &&
-      ((isParentChainEthereum && isConnectedToArbitrum.current) || isOrbitChain)
+      isDepositMode && isParentChainEthereum && isConnectedToArbitrum.current
     )
   }
 
@@ -792,7 +792,8 @@ export function TransferPanel() {
             showDelayInSmartContractTransaction()
           }
           await bridgeTransferStarter.approveToken({
-            signer
+            signer,
+            amount: amountBigNumber
           })
         }
       }
@@ -839,7 +840,12 @@ export function TransferPanel() {
     }
 
     const { transferType, sourceChainTransaction } = bridgeTransfer
-    const isDeposit = transferType.includes('deposit')
+    const isDeposit =
+      transferType.includes('deposit') ||
+      isTeleport({
+        sourceChainId: parentChain.id,
+        destinationChainId: childChain.id
+      })
 
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
 

@@ -1,6 +1,14 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { isNetwork } from '../util/networks'
+import { isTeleport as isTeleportTransfer } from './teleport'
+import {
+  Erc20Bridger,
+  Erc20L1L3Bridger,
+  EthBridger,
+  EthL1L3Bridger,
+  getL2Network
+} from '@arbitrum/sdk'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -45,10 +53,13 @@ export const getBridgeTransferProperties = async ({
     (isNetwork(sourceChainId).isOrbitChain &&
       isNetwork(destinationChainId).isArbitrum)
 
+  const isTeleport = isTeleportTransfer({ sourceChainId, destinationChainId })
+
   return {
     isDeposit,
     isNativeCurrencyTransfer,
-    isSupported: isDeposit || isWithdrawal
+    isTeleport: isTeleport,
+    isSupported: isDeposit || isWithdrawal || isTeleport
   }
 }
 
@@ -58,4 +69,37 @@ export function percentIncrease(
   increase: BigNumber
 ): BigNumber {
   return num.add(num.mul(increase).div(100))
+}
+
+// We cannot hardcode Erc20Bridger anymore in code, especially while dealing with tokens
+// this function returns the Bridger matching the set providers
+export const getBridger = async ({
+  sourceChainProvider,
+  destinationChainProvider,
+  isNativeCurrencyTransfer = false
+}: {
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+  isNativeCurrencyTransfer?: boolean
+}) => {
+  const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
+  const destinationChainId = await getChainIdFromProvider(
+    destinationChainProvider
+  )
+
+  if (isTeleportTransfer({ sourceChainId, destinationChainId })) {
+    const l3Network = await getL2Network(destinationChainProvider)
+
+    if (isNativeCurrencyTransfer) {
+      return new EthL1L3Bridger(l3Network)
+    } else {
+      return new Erc20L1L3Bridger(l3Network)
+    }
+  } else {
+    if (isNativeCurrencyTransfer) {
+      return EthBridger.fromProvider(destinationChainProvider)
+    } else {
+      return Erc20Bridger.fromProvider(destinationChainProvider)
+    }
+  }
 }

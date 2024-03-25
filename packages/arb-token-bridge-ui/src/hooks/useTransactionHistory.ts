@@ -34,6 +34,7 @@ import {
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
+  getUpdatedTeleportTransfer,
   getUpdatedTokenDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
@@ -46,6 +47,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { Address } from '../util/AddressUtils'
 
 export type UseTransactionHistoryResult = {
@@ -95,23 +97,28 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 }
 
 function getMultiChainFetchList(): ChainPair[] {
-  return getChains().flatMap(chain => {
-    // We only grab child chains because we don't want duplicates and we need the parent chain
-    // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    const childChainIds = chain.partnerChainIDs ?? []
-    const isParentChain = childChainIds.length > 0
+  // return getChains().flatMap(chain => {
+  //   // We only grab child chains because we don't want duplicates and we need the parent chain
+  //   // Although the type is correct here we default to an empty array for custom networks backwards compatibility
+  //   const childChainIds = chain.partnerChainIDs ?? []
+  //   const isParentChain = childChainIds.length > 0
 
-    if (!isParentChain) {
-      // Skip non-parent chains
-      return []
-    }
+  //   if (!isParentChain) {
+  //     // Skip non-parent chains
+  //     return []
+  //   }
 
-    // For each destination chain, map to an array of ChainPair objects
-    return childChainIds.map(childChainId => ({
-      parentChainId: chain.chainID,
-      childChainId: childChainId
-    }))
-  })
+  //   // For each destination chain, map to an array of ChainPair objects
+  //   return childChainIds.map(childChainId => ({
+  //     parentChainId: chain.chainID,
+  //     childChainId: childChainId
+  //   }))
+  // })
+
+  // hardcode sepolia/stylus temporarily
+  return [
+    { parentChainId: ChainId.Sepolia, childChainId: ChainId.StylusTestnet }
+  ]
 }
 
 function isWithdrawalFromSubgraph(
@@ -493,7 +500,10 @@ export const useTransactionHistory = (
     ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
-      const dataWithCache = [..._data, ...depositsFromCache]
+      // const dataWithCache = [..._data, ...depositsFromCache]
+
+      // temporary
+      const dataWithCache = [...depositsFromCache]
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
@@ -646,6 +656,17 @@ export const useTransactionHistory = (
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
+        return
+      }
+
+      if (
+        isTeleport({
+          sourceChainId: tx.parentChainId,
+          destinationChainId: tx.childChainId
+        })
+      ) {
+        const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
+        updateCachedTransaction(updatedTeleportTransfer)
         return
       }
 

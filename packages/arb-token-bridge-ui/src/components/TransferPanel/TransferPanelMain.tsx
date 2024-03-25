@@ -470,7 +470,10 @@ export function TransferPanelMain({
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainProvider: networks.sourceChainProvider,
-        destinationChainProvider: networks.destinationChainProvider
+        destinationChainProvider: networks.destinationChainProvider,
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
       })
 
       const result = await bridgeTransferStarter.transferEstimateGas({
@@ -482,7 +485,13 @@ export function TransferPanelMain({
         ? { ...result, estimatedL2SubmissionCost: constants.Zero }
         : INITIAL_GAS_ESTIMATION_RESULT
     },
-    [signer, networks.sourceChainProvider, networks.destinationChainProvider]
+    [
+      signer,
+      networks.sourceChainProvider,
+      networks.destinationChainProvider,
+      selectedToken,
+      isDepositMode
+    ]
   )
 
   const setMaxAmount = useCallback(async () => {
@@ -646,6 +655,14 @@ export function TransferPanelMain({
       // if source chain is Arbitrum Nova, add Arbitrum One to destination
       if (networks.sourceChain.id === ChainId.ArbitrumNova) {
         destinationChainIds.push(ChainId.ArbitrumOne)
+      }
+
+      // temporary patch, remove it later. It should come in partnerChainId from SDK
+      if (
+        networks.sourceChain.id === ChainId.Sepolia &&
+        !destinationChainIds.includes(ChainId.StylusTestnet)
+      ) {
+        destinationChainIds.push(ChainId.StylusTestnet)
       }
 
       return (

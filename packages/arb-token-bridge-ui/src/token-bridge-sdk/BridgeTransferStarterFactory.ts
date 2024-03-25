@@ -6,6 +6,8 @@ import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
+import { EthTeleportStarter } from './EthTeleportStarter'
+import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties } from './utils'
 
 export class BridgeTransferStarterFactory {
@@ -18,7 +20,7 @@ export class BridgeTransferStarterFactory {
       sourceChainErc20Address
     } = initProps
 
-    const { isDeposit, isNativeCurrencyTransfer, isSupported } =
+    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
       await getBridgeTransferProperties({
         sourceChainProvider,
         destinationChainProvider,
@@ -27,6 +29,13 @@ export class BridgeTransferStarterFactory {
 
     if (!isSupported) {
       throw new Error('Unsupported transfer detected')
+    }
+
+    if (isTeleport) {
+      if (isNativeCurrencyTransfer) {
+        return new EthTeleportStarter(initProps)
+      }
+      return new Erc20TeleportStarter(initProps)
     }
 
     // deposits

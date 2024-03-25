@@ -1,6 +1,12 @@
 import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  Erc20L1L3Bridger,
+  EthBridger,
+  EthL1L3Bridger,
+  MultiCaller
+} from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
@@ -9,6 +15,8 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { getBridger, getChainIdFromProvider } from '@/token-bridge-sdk/utils'
+import { isTeleport } from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -269,7 +277,18 @@ export async function getL2ERC20Address({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainProvider: l1Provider,
+    destinationChainProvider: l2Provider
+  })
+
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    throw new Error('`getL2ERC20Address` is not implemented for the bridger')
+  }
+
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
@@ -285,7 +304,18 @@ export async function l1TokenIsDisabled({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<boolean> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainProvider: l1Provider,
+    destinationChainProvider: l2Provider
+  })
+
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    throw new Error('`l1TokenIsDisabled` is not implemented for the bridger')
+  }
+
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
@@ -398,6 +428,13 @@ export async function isGatewayRegistered({
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<boolean> {
+  // todo: temp patch - skip teleport transfers for now
+  const sourceChainId = await getChainIdFromProvider(parentChainProvider)
+  const destinationChainId = await getChainIdFromProvider(childChainProvider)
+  if (isTeleport({ sourceChainId, destinationChainId })) {
+    return true
+  }
+
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
     erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()

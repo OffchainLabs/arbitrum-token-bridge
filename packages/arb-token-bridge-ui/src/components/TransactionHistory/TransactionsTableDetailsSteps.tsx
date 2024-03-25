@@ -27,9 +27,14 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
+import { isTeleport } from '../../token-bridge-sdk/teleport'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
+
+  if (isTeleport(tx)) {
+    return '20 minutes'
+  }
 
   if (tx.isCctp) {
     return isTestnet ? 'a minute' : '10 minutes'
