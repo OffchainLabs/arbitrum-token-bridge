@@ -108,7 +108,7 @@ export const AmountQueryParam = {
 }
 
 // Parse chainId to ChainQueryParam or ChainId for orbit chain
-function encodeChainQueryParam(
+export function encodeChainQueryParam(
   chainId: number | null | undefined
 ): string | undefined {
   if (!chainId) {
@@ -133,7 +133,7 @@ function isValidNumber(value: number | null | undefined): value is number {
 
 // Parse ChainQueryParam/ChainId to ChainId
 // URL accept both chainId and chainQueryParam (string)
-function decodeChainQueryParam(
+export function decodeChainQueryParam(
   value: string | (string | null)[] | null | undefined
   // ChainId type doesn't include custom orbit chain, we need to add number type
 ): ChainId | number | undefined {
