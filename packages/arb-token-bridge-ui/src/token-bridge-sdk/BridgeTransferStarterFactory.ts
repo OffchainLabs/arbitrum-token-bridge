@@ -33,8 +33,6 @@ export class BridgeTransferStarterFactory {
 
     if (isTeleport) {
       if (isNativeCurrencyTransfer) {
-        // return Eth teleport
-        console.log('bridge-sdk mode: Eth L1-L3 Teleport')
         return new EthTeleportStarter(initProps)
       }
       return new Erc20TeleportStarter(initProps)

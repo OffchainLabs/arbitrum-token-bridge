@@ -470,7 +470,10 @@ export function TransferPanelMain({
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainProvider: networks.sourceChainProvider,
-        destinationChainProvider: networks.destinationChainProvider
+        destinationChainProvider: networks.destinationChainProvider,
+        sourceChainErc20Address: isDepositMode
+          ? selectedToken?.address
+          : selectedToken?.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
       })
 
       const result = await bridgeTransferStarter.transferEstimateGas({
@@ -482,7 +485,13 @@ export function TransferPanelMain({
         ? { ...result, estimatedL2SubmissionCost: constants.Zero }
         : INITIAL_GAS_ESTIMATION_RESULT
     },
-    [signer, networks.sourceChainProvider, networks.destinationChainProvider]
+    [
+      signer,
+      networks.sourceChainProvider,
+      networks.destinationChainProvider,
+      selectedToken,
+      isDepositMode
+    ]
   )
 
   const setMaxAmount = useCallback(async () => {

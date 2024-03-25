@@ -15,7 +15,8 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
-import { getBridger } from '@/token-bridge-sdk/utils'
+import { getBridger, getChainIdFromProvider } from '@/token-bridge-sdk/utils'
+import { isTeleport } from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -427,6 +428,13 @@ export async function isGatewayRegistered({
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<boolean> {
+  // todo: temp patch - skip teleport transfers for now
+  const sourceChainId = await getChainIdFromProvider(parentChainProvider)
+  const destinationChainId = await getChainIdFromProvider(childChainProvider)
+  if (isTeleport({ sourceChainId, destinationChainId })) {
+    return true
+  }
+
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
     erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()

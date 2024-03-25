@@ -792,7 +792,8 @@ export function TransferPanel() {
             showDelayInSmartContractTransaction()
           }
           await bridgeTransferStarter.approveToken({
-            signer
+            signer,
+            amount: amountBigNumber
           })
         }
       }

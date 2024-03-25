@@ -1,5 +1,5 @@
 import { BigNumber, constants, utils } from 'ethers'
-import { useAccount } from 'wagmi'
+import { useSigner } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
@@ -9,9 +9,6 @@ import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
@@ -20,6 +17,7 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
+import { BridgeTransferStarterFactory } from '../../token-bridge-sdk/BridgeTransferStarterFactory'
 
 export const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -61,7 +59,8 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { address: walletAddress } = useAccount()
+  const { data: signer } = useSigner()
+
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
@@ -95,14 +94,8 @@ export function useGasSummary(): UseGasSummaryResult {
   )
 
   const estimateGas = useCallback(async () => {
-    if (!walletAddress) {
+    if (!signer) {
       return
-    }
-
-    const estimateGasFunctionParams = {
-      amount: amountDebounced,
-      address: walletAddress,
-      l2Provider: childChainProvider
     }
 
     let estimateGasResult: GasEstimationResult = INITIAL_GAS_ESTIMATION_RESULT
@@ -110,28 +103,22 @@ export function useGasSummary(): UseGasSummaryResult {
     try {
       setGasSummaryStatus('loading')
 
-      if (isDepositMode) {
-        estimateGasResult = token
-          ? await depositTokenEstimateGas({
-              ...estimateGasFunctionParams,
-              l1Provider: parentChainProvider,
-              erc20L1Address: token.address
-            })
-          : await depositEthEstimateGas({
-              ...estimateGasFunctionParams,
-              l1Provider: parentChainProvider
-            })
-      } else {
-        const partialEstimateGasResult = await withdrawInitTxEstimateGas({
-          ...estimateGasFunctionParams,
-          erc20L1Address: token ? token.address : undefined
-        })
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+        sourceChainProvider: networks.sourceChainProvider,
+        destinationChainProvider: networks.destinationChainProvider,
+        sourceChainErc20Address: isDepositMode
+          ? token?.address
+          : token?.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
+      })
 
-        estimateGasResult = {
-          ...partialEstimateGasResult,
-          estimatedL2SubmissionCost: constants.Zero
-        }
-      }
+      const result = await bridgeTransferStarter.transferEstimateGas({
+        amount: amountDebounced,
+        signer
+      })
+
+      estimateGasResult = result
+        ? { ...result, estimatedL2SubmissionCost: constants.Zero }
+        : INITIAL_GAS_ESTIMATION_RESULT
 
       setGasSummary({
         status: 'success',
@@ -150,15 +137,15 @@ export function useGasSummary(): UseGasSummaryResult {
       setGasSummaryStatus('error')
     }
   }, [
-    walletAddress,
     amountDebounced,
-    childChainProvider,
     setGasSummaryStatus,
     isDepositMode,
     parentChainGasPrice,
     childChainGasPrice,
     token,
-    parentChainProvider
+    networks.sourceChainProvider,
+    networks.destinationChainProvider,
+    signer
   ])
 
   useEffect(() => {
