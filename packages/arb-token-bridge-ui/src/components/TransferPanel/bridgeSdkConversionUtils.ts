@@ -37,7 +37,7 @@ export const convertBridgeSdkToMergedTransaction = ({
   nativeCurrency,
   amount
 }: SdkToUiConversionProps): MergedTransaction => {
-  const { transferType, sourceChainTransaction: tx } = bridgeTransfer
+  const { transferType } = bridgeTransfer
   const isDeposit =
     transferType.includes('deposit') ||
     isTeleport({
@@ -88,8 +88,8 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     destination: walletAddress,
     status: 'pending',
     txID: transaction.hash,
-    assetName: nativeCurrency.symbol,
-    assetType: AssetType.ETH,
+    assetName: selectedToken ? AssetType.ERC20 : nativeCurrency.symbol,
+    assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
     l1NetworkID: String(parentChainId),
     l2NetworkID: String(childChainId),
     value: utils.formatUnits(
