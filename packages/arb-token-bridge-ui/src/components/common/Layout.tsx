@@ -56,7 +56,9 @@ export function Layout(props: LayoutProps) {
           <Sidebar />
 
           <main className="grow">
-            <SiteBanner />
+            <SiteBanner expiryDate="2024-04-07 12:00">
+              The Arbitrum Bridge has a new look!
+            </SiteBanner>
             {props.children}
           </main>
 
