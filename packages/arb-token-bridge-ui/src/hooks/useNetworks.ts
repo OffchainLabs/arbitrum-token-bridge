@@ -1,7 +1,7 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
-import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
 import {
@@ -11,6 +11,7 @@ import {
 } from '../util/networks'
 import {
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
@@ -58,11 +59,10 @@ export function isSupportedChainId(
 
   return [
     mainnet.id,
-    goerli.id,
     sepolia.id,
+    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
-    arbitrumGoerli.id,
     arbitrumSepolia.id,
     stylusTestnet.id,
     arbitrumLocal.id,

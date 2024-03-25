@@ -32,15 +32,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           description: 'The OG chain that started it all.'
         }
       }
-    case ChainId.Goerli:
-      return {
-        ...ethereumBaseConfig,
-        network: {
-          ...ethereumBaseConfig.network,
-          name: 'Goerli',
-          description: 'A deprecated Ethereum testnet, use Sepolia instead.'
-        }
-      }
     case ChainId.Sepolia:
       return {
         ...ethereumBaseConfig,
@@ -48,6 +39,15 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           ...ethereumBaseConfig.network,
           name: 'Sepolia',
           description: 'The current recommended Ethereum testnet.'
+        }
+      }
+    case ChainId.Holesky:
+      return {
+        ...ethereumBaseConfig,
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Holesky',
+          description: 'Ethereum testnet.'
         }
       }
     case ChainId.Local:
@@ -66,16 +66,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
           description: 'Rollup protocol. Secured by operational fraud proofs.'
-        }
-      }
-    case ChainId.ArbitrumGoerli:
-      return {
-        ...arbitrumBaseConfig,
-        network: {
-          ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Goerli',
-          description:
-            'A deprecated Arbitrum One testnet, use Arbitrum Sepolia instead.'
         }
       }
     case ChainId.ArbitrumSepolia:

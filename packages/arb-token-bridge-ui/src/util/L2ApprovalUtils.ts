@@ -36,16 +36,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
-  [ChainId.ArbitrumGoerli]: [
+  [37714555429]: [
     {
-      symbol: 'GRT',
-      l1Address: '0x5c946740441C12510a167B447B7dE565C20b9E3C',
-      l2Address: '0x18C924BD5E8b83b47EFaDD632b7178E2Fd36073D'
-    },
-    {
-      symbol: 'ARB',
-      l1Address: '0xECCc8dE9b0a0F1074D8dc6E1092964A3Bc400a41',
-      l2Address: '0xF861378B543525ae0C47d33C90C954Dc774Ac1F9'
+      symbol: 'CU',
+      l1Address: '0xd781cea0b8D5dDd0aeeD1dF7aC109C974A221B00',
+      l2Address: '0xe267c440dbfb1e185d506c2cc3c44eb21340e046'
     }
   ]
 }

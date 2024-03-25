@@ -17,13 +17,6 @@ const L1SubgraphClient = {
     }),
     cache: new InMemoryCache()
   }),
-  ArbitrumGoerli: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
   ArbitrumSepolia: new ApolloClient({
     link: new HttpLink({
       uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/arb-bridge-eth-sepolia',
@@ -42,13 +35,6 @@ const L2SubgraphClient = {
     cache: new InMemoryCache()
   }),
   // ArbitrumNova is unavailable because Subgraph does not support Arbitrum Nova network
-  ArbitrumGoerli: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-goerli',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
   ArbitrumSepolia: new ApolloClient({
     link: new HttpLink({
       uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/layer2-token-gateway-sepolia',
@@ -66,9 +52,6 @@ export function getL1SubgraphClient(l2ChainId: number) {
     case ChainId.ArbitrumNova:
       return L1SubgraphClient.ArbitrumNova
 
-    case ChainId.ArbitrumGoerli:
-      return L1SubgraphClient.ArbitrumGoerli
-
     case ChainId.ArbitrumSepolia:
       return L1SubgraphClient.ArbitrumSepolia
 
@@ -81,9 +64,6 @@ export function getL2SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
     case ChainId.ArbitrumOne:
       return L2SubgraphClient.ArbitrumOne
-
-    case ChainId.ArbitrumGoerli:
-      return L2SubgraphClient.ArbitrumGoerli
 
     case ChainId.ArbitrumSepolia:
       return L2SubgraphClient.ArbitrumSepolia
