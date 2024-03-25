@@ -236,8 +236,9 @@ export const orbitMainnets: {
       rollup: '0x5c6f7a6CC67F35d8d9A02521E69B80915DA13748',
       sequencerInbox: '0x58b38152Dc53Aab5F6c41f33AA543E224a7FF709'
     },
-    explorerUrl: 'https://pmon-explorer.alt.technology',
-    rpcUrl: 'https://pmon.alt.technology',
+    nativeToken: '0xBC9B77acA82f6BE43927076D71cd453b625165B8',
+    explorerUrl: 'https://explorer.pmon.xyz',
+    rpcUrl: 'https://rpc.pmon.xyz',
     isArbitrum: true,
     isCustom: true,
     name: 'PMON Chain',
@@ -272,6 +273,12 @@ export const orbitMainnets: {
         description:
           'Bridge to PMON Chain for strategic, fully on-chain monster battles and start building your ultimate NFT collection.',
         logo: '/images/PolychainMonstersLogo.png'
+      },
+      nativeTokenData: {
+        name: 'Polkamon',
+        symbol: 'PMON',
+        decimals: 18,
+        logoUrl: '/images/PolychainMonstersLogo.png'
       }
     }
   }
