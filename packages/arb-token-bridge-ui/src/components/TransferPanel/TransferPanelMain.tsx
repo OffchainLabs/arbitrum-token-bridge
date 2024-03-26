@@ -762,6 +762,7 @@ export function TransferPanelMain({
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             chainIds={supportedSourceChainIds}
+            selectedChainId={networks.sourceChain.id}
             buttonStyle={sourceChainButtonStyle}
             buttonClassName={twMerge(
               'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
@@ -862,6 +863,7 @@ export function TransferPanelMain({
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
             chainIds={supportedDestinationChainIds}
+            selectedChainId={networks.destinationChain.id}
             buttonStyle={destinationChainButtonStyle}
             buttonClassName={twMerge(
               'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'

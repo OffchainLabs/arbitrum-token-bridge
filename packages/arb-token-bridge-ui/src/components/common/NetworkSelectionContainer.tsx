@@ -28,7 +28,6 @@ import {
 } from './SearchPanel/SearchPanelUtils'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { useNetworks } from '../../hooks/useNetworks'
 import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
 
@@ -91,18 +90,19 @@ function ChainTypeInfoRow({
 
 function NetworkRow({
   chainId,
+  selectedChainId,
   style,
   onClick,
   close
 }: {
   chainId: ChainId
+  selectedChainId: ChainId
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
   const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
-  const [{ sourceChain }] = useNetworks()
 
   function handleClick() {
     onClick(chain)
@@ -118,7 +118,7 @@ function NetworkRow({
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
-        chainId === sourceChain.id && 'bg-white/10' // selected row
+        chainId === selectedChainId && 'bg-white/10' // selected row
       )}
     >
       <NetworkImage
@@ -160,10 +160,12 @@ function AddCustomOrbitChainButton() {
 
 function NetworksPanel({
   chainIds,
+  selectedChainId,
   onNetworkRowClick,
   close
 }: {
   chainIds: ChainId[]
+  selectedChainId: ChainId
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -262,12 +264,13 @@ function NetworksPanel({
           key={networkOrChainTypeName}
           style={style}
           chainId={networkOrChainTypeName}
+          selectedChainId={selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
         />
       )
     },
-    [close, networkRowsWithChainInfoRows, onNetworkRowClick]
+    [close, networkRowsWithChainInfoRows, onNetworkRowClick, selectedChainId]
   )
 
   const onSearchInputChange = useCallback(
@@ -311,6 +314,7 @@ function NetworksPanel({
 export const NetworkSelectionContainer = ({
   children,
   chainIds,
+  selectedChainId,
   buttonClassName,
   buttonStyle,
   disabled = false,
@@ -318,6 +322,7 @@ export const NetworkSelectionContainer = ({
 }: {
   children: React.ReactNode
   chainIds: ChainId[]
+  selectedChainId: ChainId
   buttonClassName: string
   buttonStyle?: CSSProperties
   disabled?: boolean
@@ -367,6 +372,7 @@ export const NetworkSelectionContainer = ({
                       </SearchPanel.PageTitle>
                       <NetworksPanel
                         chainIds={chainIds}
+                        selectedChainId={selectedChainId}
                         close={onClose}
                         onNetworkRowClick={onChange}
                       />
