@@ -225,6 +225,62 @@ export const orbitMainnets: {
         logo: '/images/PopApexLogo.svg'
       }
     }
+  },
+  42001: {
+    chainID: 42001,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0x10B25719f4c0fA1BFF22431438E6b6315059548A',
+      inbox: '0x1285D6cE3604D341b29ccfF300d043af1CDb57e3',
+      outbox: '0x32005e1Ca72cDaAADc2BCFb5E37cc8B2bdb30c60',
+      rollup: '0x5c6f7a6CC67F35d8d9A02521E69B80915DA13748',
+      sequencerInbox: '0x58b38152Dc53Aab5F6c41f33AA543E224a7FF709'
+    },
+    nativeToken: '0xBC9B77acA82f6BE43927076D71cd453b625165B8',
+    explorerUrl: 'https://explorer.pmon.xyz',
+    rpcUrl: 'https://rpc.pmon.xyz',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'PMON Chain',
+    slug: 'pmon-chain',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x38727FfD8aFAdaeF60687D1E623Fd28B58A2B8a8',
+      l1ERC20Gateway: '0x341F7f035f1CBA1E879Df40117f797F88aC703ea',
+      l1GatewayRouter: '0xAE4BAD578fff3377FC5Ebfd4d52d3fdd7FAB3017',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0x50AD12758e5e6320d658B358C731AF6C7FE2b853',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0xed609532adB4B24cd580d042A05ef15d914Bb7b0',
+      l2ERC20Gateway: '0x8624C8046AA1E619528adA4Fa894E431b7CCE139',
+      l2GatewayRouter: '0x1d55e424757817CBd27caD7169FE462d6703c57d',
+      l2Multicall: '0xB019E8B9448138251a9C58af34FcCd276cE733f6',
+      l2ProxyAdmin: '0x8699E41Ed6246708035f7B2E1bf194D9C6Fb7d32',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#FF3369',
+      network: {
+        name: 'PMON Chain',
+        description:
+          'Bridge to PMON Chain for strategic, fully on-chain monster battles and start building your ultimate NFT collection.',
+        logo: '/images/PolychainMonstersLogo.png'
+      },
+      nativeTokenData: {
+        name: 'Polkamon',
+        symbol: 'PMON',
+        decimals: 18,
+        logoUrl: '/images/PolychainMonstersLogo.png'
+      }
+    }
   }
 }
 
