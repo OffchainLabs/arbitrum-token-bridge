@@ -103,22 +103,22 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
+  const balance = useMemo(() => {
+    if (!token) {
+      return ethBalance
+    }
+
+    if (isDepositMode) {
+      return erc20Balances?.[token.address.toLowerCase()]
+    }
+
+    return erc20Balances?.[(token.l2Address ?? token.address).toLowerCase()]
+  }, [erc20Balances, ethBalance, isDepositMode, token])
+
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
       return
     }
-
-    const balance = (() => {
-      if (!token) {
-        return ethBalance
-      }
-
-      if (isDepositMode) {
-        return erc20Balances?.[token.address.toLowerCase()]
-      }
-
-      return erc20Balances?.[(token.l2Address ?? token.address).toLowerCase()]
-    })()
 
     // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
@@ -183,8 +183,7 @@ export function useGasSummary(): UseGasSummaryResult {
     }
   }, [
     walletAddress,
-    erc20Balances,
-    ethBalance,
+    balance,
     token,
     amountDebounced,
     childChainProvider,
