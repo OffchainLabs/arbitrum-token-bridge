@@ -8,7 +8,7 @@ export type TabButtonProps = PropsWithChildren<
 export const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(
   (props, ref) => {
     const tabButtonClassName =
-      'rounded-tl-lg rounded-tr-lg px-8 py-3 transition-colors duration-300 ui-selected:bg-white ui-not-selected:bg-ocl-blue ui-not-selected:text-white ui-not-selected:hover:text-gray-4'
+      'text-white px-3 mr-2 pb-1 ui-selected:border-b-4 ui-selected:border-white ui-not-selected:text-white/80 arb-hover'
 
     return (
       <Tab

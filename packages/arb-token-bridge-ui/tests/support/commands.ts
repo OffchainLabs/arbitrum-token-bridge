@@ -97,14 +97,16 @@ export const logout = () => {
       // resetMetamaskAccount doesn't seem to remove the connected network in CI
       // changeMetamaskNetwork fails if already connected to the desired network
       // as a workaround we switch to another network after all the tests
-      cy.changeMetamaskNetwork('goerli')
+      cy.changeMetamaskNetwork('sepolia')
     })
   })
 }
 
 export const connectToApp = () => {
   // initial modal prompts which come in the web-app
-  cy.findByText('Agree to terms').should('be.visible').click()
+  cy.findByText(/Agree to Terms and Continue/i)
+    .should('be.visible')
+    .click()
   cy.findByText('Connect a Wallet').should('be.visible')
   cy.findByText('MetaMask').should('be.visible').click()
 }
@@ -198,6 +200,53 @@ export async function fundUserWalletEth(networkType: 'L1' | 'L2') {
   }
 }
 
+export const searchAndSelectToken = ({
+  tokenName,
+  tokenAddress
+}: {
+  tokenName: string
+  tokenAddress: string
+}) => {
+  // Click on the ETH dropdown (Select token button)
+  cy.findByRole('button', { name: 'Select Token' })
+    .should('be.visible')
+    .should('have.text', 'ETH')
+    .click()
+
+  // open the Select Token popup
+  cy.findByPlaceholderText(/Search by token name/i)
+    .typeRecursively(tokenAddress)
+    .should('be.visible')
+    .then(() => {
+      // Click on the Add new token button
+      cy.findByRole('button', { name: 'Add New Token' })
+        .should('be.visible')
+        .click()
+
+      // Select the USDC token
+      cy.findAllByText(tokenName).first().click()
+
+      // USDC token should be selected now and popup should be closed after selection
+      cy.findByRole('button', { name: 'Select Token' })
+        .should('be.visible')
+        .should('have.text', tokenName)
+    })
+}
+
+export const fillCustomDestinationAddress = () => {
+  // click on advanced settings
+  cy.findByLabelText('advanced settings').should('be.visible').click()
+
+  // unlock custom destination address input
+  cy.findByLabelText('Custom destination input lock')
+    .should('be.visible')
+    .click()
+
+  cy.findByPlaceholderText(Cypress.env('ADDRESS'))
+    .should('be.visible')
+    .typeRecursively(Cypress.env('CUSTOM_DESTINATION_ADDRESS'))
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -205,5 +254,7 @@ Cypress.Commands.addAll({
   openTransactionsPanel,
   resetCctpAllowance,
   fundUserUsdcTestnet,
-  fundUserWalletEth
+  fundUserWalletEth,
+  searchAndSelectToken,
+  fillCustomDestinationAddress
 })

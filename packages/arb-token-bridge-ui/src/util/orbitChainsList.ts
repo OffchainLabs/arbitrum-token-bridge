@@ -10,10 +10,7 @@ export type NetworkType =
   | 'Arbitrum Testnet'
 
 export type BridgeUiConfig = {
-  color: {
-    primary: `#${string}`
-    secondary: `#${string}`
-  }
+  color: `#${string}`
   network: {
     name: string
     logo: string
@@ -68,10 +65,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
+      color: '#F30019',
       network: {
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
@@ -126,10 +120,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#B16EFF',
-        secondary: '#1E1E1E'
-      },
+      color: '#B16EFF',
       network: {
         name: 'RARI Mainnet',
         description:
@@ -178,10 +169,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F4C7C3',
-        secondary: '#624F7B'
-      },
+      color: '#DF62DD',
       network: {
         name: 'Muster Network',
         description: 'A gaming chain with cheap fees and account abstraction.',
@@ -229,10 +217,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#3E63DD',
-        secondary: '#252631'
-      },
+      color: '#3E63DD',
       network: {
         name: 'Proof of Play Apex',
         description:
@@ -244,54 +229,58 @@ export const orbitMainnets: {
 }
 
 export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
-  47279324479: {
-    chainID: 47279324479,
-    confirmPeriodBlocks: 20,
+  37714555429: {
+    chainID: 37714555429,
+    confirmPeriodBlocks: 150,
     ethBridge: {
-      bridge: '0xf958e56d431eA78C7444Cf6A6184Af732Ae6a8A3',
-      inbox: '0x8b842ad88AAffD63d52EC54f6428fb7ff83060a8',
-      outbox: '0xDfe36Bea935F11260b0159dCA255b6668925d743',
-      rollup: '0x082742561295f6e1b43c4f5d1e2d52d7FfE082f1',
-      sequencerInbox: '0x5fD0cCc5D31748A44b43cf8DFBFA0FAA32665464'
+      bridge: '0x6c7FAC4edC72E86B3388B48979eF37Ecca5027e6',
+      inbox: '0x6396825803B720bc6A43c63caa1DcD7B31EB4dd0',
+      outbox: '0xc7491a559b416540427f9f112C5c98b1412c5d51',
+      rollup: '0xeedE9367Df91913ab149e828BDd6bE336df2c892',
+      sequencerInbox: '0x529a2061A1973be80D315770bA9469F3Da40D938'
     },
-    explorerUrl: 'https://testnet-explorer.xai-chain.net',
-    rpcUrl: 'https://testnet.xai-chain.net/rpc',
+    nativeToken: '0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2',
+    explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
+    rpcUrl: 'https://testnet-v2.xai-chain.net/rpc',
     isArbitrum: true,
     isCustom: true,
-    name: 'Xai Orbit Testnet',
+    name: 'Xai Testnet',
     slug: 'xai-testnet',
-    partnerChainID: 421613,
+    partnerChainID: 421614,
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
-      l1CustomGateway: '0xdBbDc3EE848C05792CC93EA140c59731f920c3F2',
-      l1ERC20Gateway: '0xC033fBAFd978440460d943efe6A3bF6A1a990e80',
-      l1GatewayRouter: '0xCb0Fe28c36a60Cf6254f4dd74c13B0fe98FFE5Db',
-      l1MultiCall: '0x21779e0950A87DDD57E341d54fc12Ab10F6eE167',
-      l1ProxyAdmin: '0xc80853e91f8Ac0AaD6ff939F3861600Ab34Dfe12',
-      l1Weth: '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
-      l1WethGateway: '0x58ea20BE21b971Fa282905EdA74bA46540eEd977',
-      l2CustomGateway: '0xc60622D1FbDD63Cf9c173D1b69715Ef2B725D792',
-      l2ERC20Gateway: '0x47ab2DfD627360fC6ac4Ae2fB9fa6f3539aFfeCc',
-      l2GatewayRouter: '0x75c2848D0B2116d6832Ff3758df09D4209b4b7ce',
-      l2Multicall: '0xE2fBe979bD0df59554Fded36f3A3BF5206f287a2',
-      l2ProxyAdmin: '0x81DeEc20158a367f7039ab3a563C1eB63cc2b3D6',
-      l2Weth: '0xea77c06A6703A781f9442EFa083e21F3F75907F8',
-      l2WethGateway: '0x927b59cCde7a92acDa085514FdEA39f0c4D1a2DC'
+      l1CustomGateway: '0x04e14E04949D49ae9c551ca8Cc3192310Ce65D88',
+      l1ERC20Gateway: '0xCcB451C4Df22addCFe1447c58bC6b2f264Bb1256',
+      l1GatewayRouter: '0x185b868DBBF41554465fcb99C6FAb9383E15f47A',
+      l1MultiCall: '0xA115146782b7143fAdB3065D86eACB54c169d092',
+      l1ProxyAdmin: '0x022c515aEAb29aaFf82e86A10950cE14eA89C9c5',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0xea1ce1CC75C948488515A3058E10aa82da40cE8F',
+      l2ERC20Gateway: '0xD840761a09609394FaFA3404bEEAb312059AC558',
+      l2GatewayRouter: '0x3B8ba769a43f34cdD67a20aF60d08D54C9C8f1AD',
+      l2Multicall: '0x5CBd60Ae5Af80A42FA8b0F20ADF95A8879844984',
+      l2ProxyAdmin: '0x7C1BA251d812fb34aF5C2566040C3C30585aFed9',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
     },
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
+      color: '#F30019',
       network: {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',
         description: 'The testnet for Xai’s gaming chain.'
+      },
+      nativeTokenData: {
+        name: 'Xai',
+        symbol: 'sXAI',
+        decimals: 18,
+        logoUrl: '/images/XaiLogo.svg'
       }
     }
   }
