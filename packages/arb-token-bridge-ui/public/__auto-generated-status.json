@@ -1,29 +1,70 @@
 {
   "meta": {
-    "timestamp": "2024-03-15T13:38:48.451Z"
+    "timestamp": "2024-03-26T18:51:12.029Z"
   },
   "content": {
-    "page": {
-      "name": "Arbitrum",
-      "url": "https://status.arbitrum.io",
-      "status": "UP"
-    },
-    "activeIncidents": [
+    "components": [
       {
-        "name": "We're facing an issue with our API",
-        "started": "Sat Jun 11 2022 18:55:50 GMT+0000 (Coordinated Universal Time)",
-        "status": "INVESTIGATING",
-        "impact": "MAJOROUTAGE",
-        "url": "_some_url"
-      }
-    ],
-    "activeMaintenances": [
+        "id": "clu7nki5530652bdomqgglcbkt",
+        "name": "ARB1 - Sequencer",
+        "description": "",
+        "status": "UNDERMAINTENANCE",
+        "group": {
+          "id": "clu8llhf3128958bhocmy64uxes",
+          "name": "ARB1",
+          "description": ""
+        }
+      },
       {
-        "name": "Database maintenance",
-        "start": "Sat Jun 11 2022 18:55:54 GMT+0000 (Coordinated Universal Time)",
-        "status": "NOTSTARTEDYET",
-        "duration": "60",
-        "url": "_some_url"
+        "id": "clu8llhf3128958bhocmy64uxes",
+        "name": "ARB1",
+        "description": "",
+        "status": "OPERATIONAL",
+        "group": null
+      },
+      {
+        "id": "clu7nldg031401bdomezxod7gb",
+        "name": "ARB1 - Batch Poster",
+        "description": "",
+        "status": "DEGRADEDPERFORMANCE",
+        "group": {
+          "id": "clu8llhf3128958bhocmy64uxes",
+          "name": "ARB1",
+          "description": ""
+        }
+      },
+      {
+        "id": "clu7nlwfh31996bdom40x8nwxq",
+        "name": "ARB1 - Validator",
+        "description": "",
+        "status": "PARTIALOUTAGE",
+        "group": {
+          "id": "clu8llhf3128958bhocmy64uxes",
+          "name": "ARB1",
+          "description": ""
+        }
+      },
+      {
+        "id": "clu7nm9jj32232bdomor0qjqmu",
+        "name": "ARB1 - Feed",
+        "description": "",
+        "status": "MAJOROUTAGE",
+        "group": {
+          "id": "clu8llhf3128958bhocmy64uxes",
+          "name": "ARB1",
+          "description": ""
+        }
+      },
+      {
+        "id": "clu8lz362134590boocbnuduydm",
+        "name": "ARB1 - Arbiscan",
+        "description": "",
+        "status": "DEGRADEDPERFORMANCE",
+        "group": {
+          "id": "clu8llhf3128958bhocmy64uxes",
+          "name": "ARB1",
+          "description": ""
+        }
       }
     ]
   }
