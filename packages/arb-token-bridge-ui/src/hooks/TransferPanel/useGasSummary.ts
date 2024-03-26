@@ -128,9 +128,14 @@ export function useGasSummary(): UseGasSummaryResult {
       ? ethBalance
       : erc20Balances?.[token.address.toLowerCase()]
 
-    // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
       setGasSummaryStatus('loading')
+      return
+    }
+
+    // If user has input an amount over their balance, don't estimate gas
+    if (amountBigNumber.gt(balance)) {
+      setGasSummaryStatus('error')
       return
     }
 
@@ -143,11 +148,6 @@ export function useGasSummary(): UseGasSummaryResult {
     }
 
     if (gasEstimatesError) {
-      setGasSummaryStatus('error')
-      return
-    }
-
-    if (amountBigNumber.gt(balance)) {
       setGasSummaryStatus('error')
       return
     }
