@@ -228,7 +228,7 @@ export const orbitMainnets: {
   },
   42001: {
     chainID: 42001,
-    confirmPeriodBlocks: 40320,
+    confirmPeriodBlocks: 7200,
     ethBridge: {
       bridge: '0x10B25719f4c0fA1BFF22431438E6b6315059548A',
       inbox: '0x1285D6cE3604D341b29ccfF300d043af1CDb57e3',
@@ -242,7 +242,7 @@ export const orbitMainnets: {
     isArbitrum: true,
     isCustom: true,
     name: 'PMON Chain',
-    slug: 'pmon',
+    slug: 'pmon-chain',
     partnerChainID: 42161,
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
