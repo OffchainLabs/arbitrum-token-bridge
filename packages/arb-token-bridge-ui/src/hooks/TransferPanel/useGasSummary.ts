@@ -103,14 +103,28 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
+  const balance: BigNumber | null = useMemo(() => {
+    if (!token) {
+      return ethBalance
+    }
+
+    if (isDepositMode) {
+      return erc20Balances?.[token.address.toLowerCase()] ?? constants.Zero
+    }
+
+    // token that has never been deposited so it doesn't have an l2Address
+    if (!token.l2Address) {
+      return constants.Zero
+    }
+
+    // token withdrawal
+    return erc20Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
+  }, [erc20Balances, ethBalance, isDepositMode, token])
+
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
       return
     }
-
-    const balance = !token
-      ? ethBalance
-      : erc20Balances?.[token.address.toLowerCase()]
 
     // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
@@ -175,8 +189,7 @@ export function useGasSummary(): UseGasSummaryResult {
     }
   }, [
     walletAddress,
-    erc20Balances,
-    ethBalance,
+    balance,
     token,
     amountDebounced,
     childChainProvider,
