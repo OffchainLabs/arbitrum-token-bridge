@@ -111,8 +111,14 @@ export function useGasSummary(): UseGasSummaryResult {
     const balance = !token
       ? ethBalance
       : erc20Balances?.[token.address.toLowerCase()]
+
     // If user has inputed an amount over their balance, don't estimate gas
-    if (!balance || amountDebounced.gt(balance)) {
+    if (!balance) {
+      setGasSummaryStatus('loading')
+      return
+    }
+
+    if (amountDebounced.gt(balance)) {
       setGasSummaryStatus('error')
       return
     }
