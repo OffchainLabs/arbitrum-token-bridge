@@ -112,7 +112,13 @@ export function useGasSummary(): UseGasSummaryResult {
       return erc20Balances?.[token.address.toLowerCase()]
     }
 
-    return erc20Balances?.[(token.l2Address ?? token.address).toLowerCase()]
+    // token that has never been deposited so it doesn't have an l2Address
+    if (!token.l2Address) {
+      return constants.Zero
+    }
+
+    // token withdrawal
+    return erc20Balances?.[token.l2Address.toLowerCase()]
   }, [erc20Balances, ethBalance, isDepositMode, token])
 
   const estimateGas = useCallback(async () => {
