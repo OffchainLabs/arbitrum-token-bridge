@@ -93,7 +93,8 @@ export function TransferPanel() {
     useState<TokenDepositCheckDialogType>('new-token')
   const [importTokenModalStatus, setImportTokenModalStatus] =
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
-  const [showSCWalletTooltip, setShowSCWalletTooltip] = useState(false)
+  const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
+    useState(false)
 
   const {
     app: {
@@ -300,7 +301,7 @@ export function TransferPanel() {
     // a custom 3 second delay to show a tooltip after SC transaction goes through
     // to give a visual feedback to the user that something happened
     await setTimeout(() => {
-      setShowSCWalletTooltip(true)
+      setShowSmartContractWalletTooltip(true)
     }, 3000)
     return true
   }
@@ -348,7 +349,7 @@ export function TransferPanel() {
   const showDelayedSCTxRequest = () =>
     setTimeout(() => {
       setTransferring(false)
-      setShowSCWalletTooltip(true)
+      setShowSmartContractWalletTooltip(true)
     }, 3000)
 
   const transferCctp = async () => {
@@ -1024,13 +1025,13 @@ export function TransferPanel() {
           symbol={selectedToken ? selectedToken.symbol : nativeCurrency.symbol}
         />
 
-        {showSCWalletTooltip && (
+        {showSmartContractWalletTooltip && (
           <Tippy
             placement="bottom-end"
             maxWidth="auto"
-            onClickOutside={() => setShowSCWalletTooltip(false)}
+            onClickOutside={() => setShowSmartContractWalletTooltip(false)}
             theme="orange"
-            visible={showSCWalletTooltip}
+            visible={showSmartContractWalletTooltip}
             content={
               <div className="flex flex-col">
                 <span>
