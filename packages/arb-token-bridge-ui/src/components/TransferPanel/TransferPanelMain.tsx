@@ -13,7 +13,8 @@ import {
   getExplorerUrl,
   getNetworkName,
   getDestinationChainIds,
-  isNetwork
+  isNetwork,
+  getSupportedChainIds
 } from '../../util/networks'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -49,7 +50,6 @@ import {
   USDC_LEARN_MORE_LINK,
   ether
 } from '../../constants'
-import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import {
@@ -73,6 +73,7 @@ import {
   Balances,
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -438,6 +439,7 @@ export function TransferPanelMain({
     }
   }, [nativeCurrency, ethL1Balance, ethL2Balance, erc20L1Balances])
 
+  const [isTestnetMode] = useIsTestnetMode()
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
@@ -634,6 +636,14 @@ export function TransferPanelMain({
 
   useUpdateUSDCTokenData()
 
+  type NetworkListboxProps = {
+    disabled?: boolean
+    label: string
+    options: Chain[]
+    value: Chain
+    onChange: (value: Chain) => void
+  }
+
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
@@ -717,10 +727,32 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
-  const buttonStyle = useMemo(
+  const sourceChainButtonStyle = useMemo(
     () => ({
       backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
     }),
+    [networks.sourceChain.id]
+  )
+
+  const destinationChainButtonStyle = useMemo(
+    () => ({
+      backgroundColor: getBridgeUiConfigForChain(networks.destinationChain.id)
+        .color
+    }),
+    [networks.destinationChain.id]
+  )
+
+  const supportedSourceChainIds = useMemo(
+    () =>
+      getSupportedChainIds({
+        includeMainnets: !isTestnetMode,
+        includeTestnets: isTestnetMode
+      }),
+    [isTestnetMode]
+  )
+
+  const supportedDestinationChainIds = useMemo(
+    () => getDestinationChainIds(networks.sourceChain.id),
     [networks.sourceChain.id]
   )
 
@@ -729,7 +761,8 @@ export function TransferPanelMain({
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
-            buttonStyle={buttonStyle}
+            chainIds={supportedSourceChainIds}
+            buttonStyle={sourceChainButtonStyle}
             buttonClassName={twMerge(
               'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
             )}
@@ -827,7 +860,19 @@ export function TransferPanelMain({
         customAddress={destinationAddress}
       >
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="To:" {...networkListboxProps.to} />
+          <NetworkSelectionContainer
+            chainIds={supportedDestinationChainIds}
+            buttonStyle={destinationChainButtonStyle}
+            buttonClassName={twMerge(
+              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
+            )}
+            disabled={networkListboxProps.to.disabled}
+            onChange={networkListboxProps.to.onChange}
+          >
+            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+              To: {getNetworkName(networks.destinationChain.id)}
+            </span>
+          </NetworkSelectionContainer>
           <BalancesContainer>
             {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (

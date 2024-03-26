@@ -14,7 +14,7 @@ import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
+import { ChainId, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
@@ -159,9 +159,11 @@ function AddCustomOrbitChainButton() {
 }
 
 function NetworksPanel({
+  chainIds,
   onNetworkRowClick,
   close
 }: {
+  chainIds: ChainId[]
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -170,15 +172,6 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-
-  const chainIds = useMemo(
-    () =>
-      getSupportedChainIds({
-        includeMainnets: !isTestnetMode,
-        includeTestnets: isTestnetMode
-      }),
-    [isTestnetMode]
-  )
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -206,17 +199,24 @@ function NetworksPanel({
 
   const isNetworkSearchResult = Array.isArray(networksToShow)
 
-  const networkRowsWithChainInfoRows = useMemo(() => {
-    if (isNetworkSearchResult) {
-      return networksToShow
-    }
-    return [
-      ChainGroupName.core,
-      ...networksToShow.core,
-      ChainGroupName.orbit,
-      ...networksToShow.orbit
-    ]
-  }, [isNetworkSearchResult, networksToShow])
+  const networkRowsWithChainInfoRows: (ChainId | ChainGroupName)[] =
+    useMemo(() => {
+      if (isNetworkSearchResult) {
+        return networksToShow
+      }
+
+      const groupedNetworks = []
+
+      if (networksToShow.core.length > 0) {
+        groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
+      }
+
+      if (networksToShow.orbit.length > 0) {
+        groupedNetworks.push(ChainGroupName.orbit, ...networksToShow.orbit)
+      }
+
+      return groupedNetworks
+    }, [isNetworkSearchResult, networksToShow])
 
   function getRowHeight({ index }: { index: number }) {
     const rowItemOrChainId = networkRowsWithChainInfoRows[index]
@@ -310,13 +310,17 @@ function NetworksPanel({
 
 export const NetworkSelectionContainer = ({
   children,
+  chainIds,
   buttonClassName,
   buttonStyle,
+  disabled = false,
   onChange
 }: {
   children: React.ReactNode
+  chainIds: ChainId[]
   buttonClassName: string
   buttonStyle?: CSSProperties
+  disabled?: boolean
   onChange: (value: Chain) => void
 }) => {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -328,12 +332,12 @@ export const NetworkSelectionContainer = ({
         <>
           <Popover.Button
             style={buttonStyle}
-            disabled={isSmartContractWallet || isLoadingAccountType}
+            disabled={disabled || isSmartContractWallet || isLoadingAccountType}
             className={buttonClassName}
             onClick={onPopoverButtonClick}
           >
             {children}
-            {!isSmartContractWallet && (
+            {!disabled && !isSmartContractWallet && (
               <ChevronDownIcon
                 className={twMerge(
                   'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
@@ -362,6 +366,7 @@ export const NetworkSelectionContainer = ({
                         <SearchPanel.CloseButton onClick={onClose} />
                       </SearchPanel.PageTitle>
                       <NetworksPanel
+                        chainIds={chainIds}
                         close={onClose}
                         onNetworkRowClick={onChange}
                       />
