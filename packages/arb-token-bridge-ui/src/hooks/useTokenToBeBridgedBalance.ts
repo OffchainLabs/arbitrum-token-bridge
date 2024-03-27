@@ -38,6 +38,9 @@ export function useTokenToBeBridgedBalance() {
         ] ?? constants.Zero
       )
     }
+
+    // `ethSourceChainBalance` is the ETH balance at source chain when ETH is selected for bridging,
+    // or the custom gas native currency balance when withdrawing the native currency
     return ethSourceChainBalance
   }
 
@@ -55,6 +58,7 @@ export function useTokenToBeBridgedBalance() {
   const selectedTokenChildChainAddress = selectedToken.l2Address?.toLowerCase()
 
   // token that has never been deposited so it doesn't have an l2Address
+  // this should not happen because user shouldn't be able to select it
   if (!selectedTokenChildChainAddress) {
     return constants.Zero
   }
