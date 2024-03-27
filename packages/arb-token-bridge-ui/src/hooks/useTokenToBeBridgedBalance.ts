@@ -29,16 +29,21 @@ export function useTokenToBeBridgedBalance() {
   })
 
   return useMemo(() => {
-    // check if it involves custom orbit chain
-    if (childChainNativeCurrency.isCustom) {
-      return isDepositMode
-        ? erc20SourceChainBalances?.[
-            childChainNativeCurrency.address.toLowerCase()
-          ] ?? constants.Zero
-        : ethSourceChainBalance
-    }
-
+    // user selected source chain native currency or
+    // user bridging the destination chain's native currency
     if (!selectedToken) {
+      // check if it involves custom orbit chain
+      if (childChainNativeCurrency.isCustom) {
+        if (isDepositMode) {
+          return (
+            erc20SourceChainBalances?.[
+              childChainNativeCurrency.address.toLowerCase()
+            ] ?? constants.Zero
+          )
+        }
+        return ethSourceChainBalance
+      }
+
       return ethSourceChainBalance
     }
 
@@ -46,16 +51,15 @@ export function useTokenToBeBridgedBalance() {
       return constants.Zero
     }
 
-    const selectedTokenParentChainAddress = selectedToken.address.toLowerCase()
-    const selectedTokenChildChainAddress =
-      selectedToken.l2Address?.toLowerCase()
-
     if (isDepositMode) {
       return (
-        erc20SourceChainBalances[selectedTokenParentChainAddress] ??
+        erc20SourceChainBalances[selectedToken.address.toLowerCase()] ??
         constants.Zero
       )
     }
+
+    const selectedTokenChildChainAddress =
+      selectedToken.l2Address?.toLowerCase()
 
     // token that has never been deposited so it doesn't have an l2Address
     if (!selectedTokenChildChainAddress) {
