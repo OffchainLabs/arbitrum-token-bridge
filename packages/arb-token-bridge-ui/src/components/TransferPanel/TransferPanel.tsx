@@ -560,31 +560,6 @@ export function TransferPanel() {
     }
   }
 
-  const depositRequiresChainSwitch = () => {
-    const isSourceChainEthereum = isNetwork(
-      parentChain.id
-    ).isEthereumMainnetOrTestnet
-
-    const { isOrbitChain } = isNetwork(childChain.id)
-
-    return (
-      isDepositMode &&
-      ((isSourceChainEthereum && isConnectedToArbitrum.current) || isOrbitChain)
-    )
-  }
-
-  const withdrawalRequiresChainSwitch = () => {
-    const isConnectedToEthereum =
-      !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
-
-    const { isOrbitChain } = isNetwork(childChain.id)
-
-    return (
-      !isDepositMode &&
-      (isConnectedToEthereum || (isConnectedToArbitrum.current && isOrbitChain))
-    )
-  }
-
   const transfer = async () => {
     const signerUndefinedError = 'Signer is undefined'
 
@@ -645,6 +620,33 @@ export function TransferPanel() {
           `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
         )
         return
+      }
+
+      const depositRequiresChainSwitch = () => {
+        const isSourceChainEthereum = isNetwork(
+          parentChain.id
+        ).isEthereumMainnetOrTestnet
+
+        const { isOrbitChain } = isNetwork(childChain.id)
+
+        return (
+          isDepositMode &&
+          ((isSourceChainEthereum && isConnectedToArbitrum.current) ||
+            isOrbitChain)
+        )
+      }
+
+      const withdrawalRequiresChainSwitch = () => {
+        const isConnectedToEthereum =
+          !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
+
+        const { isOrbitChain } = isNetwork(childChain.id)
+
+        return (
+          !isDepositMode &&
+          (isConnectedToEthereum ||
+            (isConnectedToArbitrum.current && isOrbitChain))
+        )
       }
 
       if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
