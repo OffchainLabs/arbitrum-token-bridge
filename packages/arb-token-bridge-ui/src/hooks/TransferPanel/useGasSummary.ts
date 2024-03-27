@@ -20,7 +20,7 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
-import { useBalance } from '../useBalance'
+import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -63,13 +63,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
-  const {
-    eth: [ethBalance],
-    erc20: [erc20Balances]
-  } = useBalance({
-    provider: networks.sourceChainProvider,
-    walletAddress
-  })
 
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -103,23 +96,7 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
-  const balance: BigNumber | null = useMemo(() => {
-    if (!token) {
-      return ethBalance
-    }
-
-    if (isDepositMode) {
-      return erc20Balances?.[token.address.toLowerCase()] ?? constants.Zero
-    }
-
-    // token that has never been deposited so it doesn't have an l2Address
-    if (!token.l2Address) {
-      return constants.Zero
-    }
-
-    // token withdrawal
-    return erc20Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
-  }, [erc20Balances, ethBalance, isDepositMode, token])
+  const balance = useTokenToBeBridgedBalance()
 
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
