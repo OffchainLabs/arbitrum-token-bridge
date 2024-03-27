@@ -18,7 +18,7 @@ import {
   calculateEstimatedParentChainGasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
 import { useGasEstimates } from './useGasEstimates'
-import { useBalance } from '../useBalance'
+import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -46,13 +46,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
-  const {
-    eth: [ethBalance],
-    erc20: [erc20Balances]
-  } = useBalance({
-    provider: networks.sourceChainProvider,
-    walletAddress
-  })
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
@@ -114,6 +107,8 @@ export function useGasSummary(): UseGasSummaryResult {
     )
   }, [childChainGasPrice, estimateGasResult])
 
+  const balance = useTokenToBeBridgedBalance()
+
   useEffect(() => {
     if (
       !isDepositMode &&
@@ -124,10 +119,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
 
-    const balance = !token
-      ? ethBalance
-      : erc20Balances?.[token.address.toLowerCase()]
-
+    // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
       setGasSummaryStatus('loading')
       return
@@ -158,14 +150,15 @@ export function useGasSummary(): UseGasSummaryResult {
       estimatedChildChainGasFees
     })
   }, [
-    isDepositMode,
+    walletAddress,
+    balance,
     token,
+    childChainProvider,
     setGasSummaryStatus,
+    isDepositMode,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees,
     gasEstimatesError,
-    ethBalance,
-    erc20Balances,
     amountBigNumber
   ])
 
