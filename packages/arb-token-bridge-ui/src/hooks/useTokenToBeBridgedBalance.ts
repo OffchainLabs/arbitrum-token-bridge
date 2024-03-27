@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { constants } from 'ethers'
 
@@ -28,53 +27,40 @@ export function useTokenToBeBridgedBalance() {
     provider: childChainProvider
   })
 
-  return useMemo(() => {
-    // user selected source chain native currency or
-    // user bridging the destination chain's native currency
-    if (!selectedToken) {
-      // check if it involves custom orbit chain
-      if (childChainNativeCurrency.isCustom) {
-        if (isDepositMode) {
-          return (
-            erc20SourceChainBalances?.[
-              childChainNativeCurrency.address.toLowerCase()
-            ] ?? constants.Zero
-          )
-        }
-        return ethSourceChainBalance
-      }
-
-      return ethSourceChainBalance
-    }
-
-    if (!erc20SourceChainBalances) {
-      return constants.Zero
-    }
-
-    if (isDepositMode) {
+  // user selected source chain native currency or
+  // user bridging the destination chain's native currency
+  if (!selectedToken) {
+    // check if user is depositing destination chain's custom native currency to orbit chain
+    if (childChainNativeCurrency.isCustom && isDepositMode) {
       return (
-        erc20SourceChainBalances[selectedToken.address.toLowerCase()] ??
-        constants.Zero
+        erc20SourceChainBalances?.[
+          childChainNativeCurrency.address.toLowerCase()
+        ] ?? constants.Zero
       )
     }
+    return ethSourceChainBalance
+  }
 
-    const selectedTokenChildChainAddress =
-      selectedToken.l2Address?.toLowerCase()
+  if (!erc20SourceChainBalances) {
+    return constants.Zero
+  }
 
-    // token that has never been deposited so it doesn't have an l2Address
-    if (!selectedTokenChildChainAddress) {
-      return constants.Zero
-    }
-
-    // token withdrawal
+  if (isDepositMode) {
     return (
-      erc20SourceChainBalances[selectedTokenChildChainAddress] ?? constants.Zero
+      erc20SourceChainBalances[selectedToken.address.toLowerCase()] ??
+      constants.Zero
     )
-  }, [
-    childChainNativeCurrency,
-    selectedToken,
-    isDepositMode,
-    erc20SourceChainBalances,
-    ethSourceChainBalance
-  ])
+  }
+
+  const selectedTokenChildChainAddress = selectedToken.l2Address?.toLowerCase()
+
+  // token that has never been deposited so it doesn't have an l2Address
+  if (!selectedTokenChildChainAddress) {
+    return constants.Zero
+  }
+
+  // token withdrawal
+  return (
+    erc20SourceChainBalances[selectedTokenChildChainAddress] ?? constants.Zero
+  )
 }
