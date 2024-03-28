@@ -15,7 +15,7 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/generateStatus",
+      "path": "/api/cron/generate-status",
       "schedule": "*/5 * * * *"
     }
   ]

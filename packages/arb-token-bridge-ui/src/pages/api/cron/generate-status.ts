@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -28,7 +29,13 @@ export default async function handler(
       null,
       2
     ) + '\n'
-  fs.writeFileSync('./public/__auto-generated-status.json', resultJson)
+
+  const filePath = path.join(
+    process.cwd(),
+    'public',
+    '__auto-generated-status.json'
+  )
+  fs.writeFileSync(filePath, resultJson)
 
   res.status(200).json({ data: true })
 }
