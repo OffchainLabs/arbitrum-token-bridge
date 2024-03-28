@@ -10,7 +10,9 @@ import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLi
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { NativeCurrencyPrice } from './NativeCurrencyPrice'
+import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
+import { useAppState } from '../../state'
+import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 export type TransferPanelSummaryToken = { symbol: string; address: string }
@@ -18,6 +20,14 @@ export type TransferPanelSummaryToken = { symbol: string; address: string }
 export type TransferPanelSummaryProps = {
   amount: number
   token: ERC20BridgeToken | null
+}
+
+function StyledLoader() {
+  return (
+    <span className="flex">
+      <Loader size="small" />
+    </span>
+  )
 }
 
 function TransferPanelSummaryContainer({
@@ -40,10 +50,16 @@ function TransferPanelSummaryContainer({
 
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
+    app: { selectedToken }
+  } = useAppState()
+
+  const {
     status: gasSummaryStatus,
-    estimatedL1GasFees,
-    estimatedL2GasFees
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
   } = useGasSummary()
+
+  const gasSummaryLoading = gasSummaryStatus === 'loading'
 
   const [networks] = useNetworks()
   const {
@@ -54,10 +70,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isDepositMode
   } = useNetworksRelationship(networks)
 
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
   const parentChainNativeCurrency = useNativeCurrency({
     provider: parentChainProvider
   })
+
+  const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
 
   const [{ amount }] = useArbQueryParams()
 
@@ -73,20 +93,48 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
 
   const sameNativeCurrency = useMemo(
     // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
-    () => nativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
-    [nativeCurrency, parentChainNativeCurrency]
+    () =>
+      childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [childChainNativeCurrency, parentChainNativeCurrency]
   )
 
-  const estimatedTotalGasFees = useMemo(
-    () => estimatedL1GasFees + estimatedL2GasFees,
-    [estimatedL1GasFees, estimatedL2GasFees]
-  )
+  const differentNativeCurrencyAndDepositMode =
+    !sameNativeCurrency && isDepositMode
+
+  const showChildChainNativeCurrencyAsGasFee =
+    !sameNativeCurrency && (selectedToken || !isDepositMode)
+
+  const estimatedTotalGasFees = useMemo(() => {
+    if (
+      gasSummaryStatus === 'loading' ||
+      typeof estimatedChildChainGasFees == 'undefined' ||
+      typeof estimatedParentChainGasFees == 'undefined'
+    ) {
+      return undefined
+    }
+
+    return estimatedParentChainGasFees + estimatedChildChainGasFees
+  }, [
+    gasSummaryStatus,
+    estimatedChildChainGasFees,
+    estimatedParentChainGasFees
+  ])
 
   if (gasSummaryStatus === 'unavailable') {
     return (
       <TransferPanelSummaryContainer>
         <div className="flex flex-row justify-between text-sm lg:text-base">
           Gas estimates are not available for this action.
+        </div>
+      </TransferPanelSummaryContainer>
+    )
+  }
+
+  if (gasSummaryStatus === 'insufficientBalance') {
+    return (
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm lg:text-base">
+          Gas estimates will be displayed after entering a valid amount.
         </div>
       </TransferPanelSummaryContainer>
     )
@@ -102,21 +150,35 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
-          {!sameNativeCurrency && isDepositMode && (
+          {gasSummaryLoading && <StyledLoader />}
+          {!gasSummaryLoading && differentNativeCurrencyAndDepositMode && (
             <span className="tabular-nums">
-              {formatAmount(estimatedL1GasFees, {
+              {formatAmount(estimatedParentChainGasFees, {
                 symbol: parentChainNativeCurrency.symbol
-              })}
-              {' + '}
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+              {selectedToken && ' and '}
             </span>
           )}
-          <span className="tabular-nums">
-            {formatAmount(
-              sameNativeCurrency ? estimatedTotalGasFees : estimatedL2GasFees
-            )}
-          </span>{' '}
-          <span>{nativeCurrency.symbol}</span>{' '}
-          <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
+          {!gasSummaryLoading &&
+            showChildChainNativeCurrencyAsGasFee &&
+            formatAmount(estimatedChildChainGasFees, {
+              symbol: childChainNativeCurrency.symbol
+            })}
+          {!gasSummaryLoading && sameNativeCurrency && (
+            <span className="tabular-nums">
+              {formatAmount(estimatedTotalGasFees, {
+                symbol: childChainNativeCurrency.symbol
+              })}{' '}
+              <NativeCurrencyPrice
+                amount={estimatedTotalGasFees}
+                showBrackets
+              />
+            </span>
+          )}{' '}
         </span>
       </div>
 
@@ -136,7 +198,9 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
             isParentChain={!isDepositMode}
           />{' '}
           {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
-          <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          {isBridgingEth && (
+            <NativeCurrencyPrice amount={Number(amount)} showBrackets />
+          )}
         </span>
       </div>
     </TransferPanelSummaryContainer>

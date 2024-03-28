@@ -29,7 +29,7 @@ import { TransferPanelMain } from './TransferPanelMain'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   fetchErc20Allowance,
-  fetchErc20L1GatewayAddress,
+  fetchErc20ParentChainGatewayAddress,
   fetchErc20L2GatewayAddress,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -338,10 +338,10 @@ export function TransferPanel() {
       throw new Error('l2 network does not use custom fee token')
     }
 
-    const l1Gateway = await fetchErc20L1GatewayAddress({
-      erc20L1Address: selectedToken.address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
+    const l1Gateway = await fetchErc20ParentChainGatewayAddress({
+      erc20ParentChainAddress: selectedToken.address,
+      parentChainProvider,
+      childChainProvider
     })
 
     const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
@@ -352,7 +352,7 @@ export function TransferPanel() {
     })
 
     const estimatedL2GasFees = utils.parseUnits(
-      String(gasSummary.estimatedL2GasFees),
+      String(gasSummary.estimatedChildChainGasFees),
       nativeCurrency.decimals
     )
 
@@ -755,10 +755,10 @@ export function TransferPanel() {
             }
           }
 
-          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-            erc20L1Address: selectedToken.address,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
+          const l1GatewayAddress = await fetchErc20ParentChainGatewayAddress({
+            erc20ParentChainAddress: selectedToken.address,
+            parentChainProvider,
+            childChainProvider
           })
 
           const allowanceForL1Gateway = await fetchErc20Allowance({

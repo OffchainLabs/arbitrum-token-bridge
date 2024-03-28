@@ -16,8 +16,8 @@ import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
 import { approveTokenEstimateGas } from '../../util/TokenApprovalUtils'
 import { getCctpContracts } from '@/token-bridge-sdk/cctp'
 import {
-  fetchErc20L1GatewayAddress,
-  fetchErc20L2GatewayAddress
+  fetchErc20L2GatewayAddress,
+  fetchErc20ParentChainGatewayAddress
 } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -144,10 +144,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       }
       if (isDepositMode) {
         setContractAddress(
-          await fetchErc20L1GatewayAddress({
-            erc20L1Address: token.address,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
+          await fetchErc20ParentChainGatewayAddress({
+            erc20ParentChainAddress: token.address,
+            parentChainProvider,
+            childChainProvider
           })
         )
         return

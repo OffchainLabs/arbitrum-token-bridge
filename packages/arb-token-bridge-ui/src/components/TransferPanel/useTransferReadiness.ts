@@ -20,10 +20,7 @@ import {
   getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
-import {
-  GasEstimationStatus,
-  UseGasSummaryResult
-} from '../../hooks/TransferPanel/useGasSummary'
+import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -32,13 +29,25 @@ function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
   options: { isSmartContractWallet: boolean; isDepositMode: boolean }
 ) {
+  const { estimatedParentChainGasFees, estimatedChildChainGasFees } = gasSummary
+
+  if (
+    typeof estimatedParentChainGasFees === 'undefined' ||
+    typeof estimatedChildChainGasFees === 'undefined'
+  ) {
+    return {
+      estimatedL1GasFees: 0,
+      estimatedL2GasFees: 0
+    }
+  }
+
   // For smart contract wallets, the relayer pays the gas fees
   if (options.isSmartContractWallet) {
     if (options.isDepositMode) {
       // The L2 fee is paid in callvalue and needs to come from the smart contract wallet for retryable cost estimation to succeed
       return {
         estimatedL1GasFees: 0,
-        estimatedL2GasFees: gasSummary.estimatedL2GasFees
+        estimatedL2GasFees: estimatedChildChainGasFees
       }
     }
 
@@ -49,8 +58,8 @@ function sanitizeEstimatedGasFees(
   }
 
   return {
-    estimatedL1GasFees: gasSummary.estimatedL1GasFees,
-    estimatedL2GasFees: gasSummary.estimatedL2GasFees
+    estimatedL1GasFees: estimatedParentChainGasFees,
+    estimatedL2GasFees: estimatedChildChainGasFees
   }
 }
 
@@ -98,7 +107,7 @@ export function useTransferReadiness({
   gasSummary
 }: {
   amount: string
-  gasSummary: UseGasSummaryResult & { status: GasEstimationStatus }
+  gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
   const {
     app: { selectedToken }
@@ -303,6 +312,9 @@ export function useTransferReadiness({
         return notReady({
           errorMessage: TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
         })
+
+      case 'insufficientBalance':
+        return notReady()
 
       case 'success': {
         const { estimatedL1GasFees, estimatedL2GasFees } =
