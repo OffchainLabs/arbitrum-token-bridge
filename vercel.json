@@ -12,5 +12,11 @@
         "Referrer-Policy": "origin-when-cross-origin"
       }
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/generateStatus",
+      "schedule": "*/5 * * * *"
+    }
   ]
 }
