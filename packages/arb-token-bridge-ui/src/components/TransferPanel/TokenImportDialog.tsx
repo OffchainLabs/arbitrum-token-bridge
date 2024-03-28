@@ -90,7 +90,10 @@ export function TokenImportDialog({
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()
   const [isDialogVisible, setIsDialogVisible] = useState(false)
-  const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
+  const {
+    data: tokenAddressOnParentChain,
+    isLoading: isParentChainAddressLoading
+  } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
   })
@@ -119,18 +122,23 @@ export function TokenImportDialog({
   }, [status])
 
   const getL1TokenDataFromL1Address = useCallback(async () => {
-    if (!l1Address || !walletAddress) {
+    if (!tokenAddressOnParentChain || !walletAddress) {
       return
     }
 
-    const erc20Params = { address: l1Address, provider: parentChainProvider }
+    const erc20Params = {
+      address: tokenAddressOnParentChain,
+      provider: parentChainProvider
+    }
 
     if (!(await isValidErc20(erc20Params))) {
-      throw new Error(`${l1Address} is not a valid ERC-20 token`)
+      throw new Error(
+        `${tokenAddressOnParentChain} is not a valid ERC-20 token`
+      )
     }
 
     return fetchErc20Data(erc20Params)
-  }, [parentChainProvider, walletAddress, l1Address])
+  }, [parentChainProvider, walletAddress, tokenAddressOnParentChain])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
@@ -171,7 +179,7 @@ export function TokenImportDialog({
 
   const selectToken = useCallback(
     async (_token: ERC20BridgeToken) => {
-      await token.updateTokenData(_token.address)
+      await token.updateTokenData(_token.address.toLowerCase())
       actions.app.setSelectedToken(_token)
     },
     [token, actions]
@@ -186,17 +194,17 @@ export function TokenImportDialog({
       return
     }
 
-    if (!isL1AddressLoading && !l1Address) {
+    if (!isParentChainAddressLoading && !tokenAddressOnParentChain) {
       setStatus(ImportStatus.ERROR)
       return
     }
 
-    if (l1Address) {
-      const searchResult1 = searchForTokenInLists(l1Address)
+    if (tokenAddressOnParentChain) {
+      const searchResult = searchForTokenInLists(tokenAddressOnParentChain)
 
-      if (searchResult1.found) {
-        setStatus(searchResult1.status)
-        setTokenToImport(searchResult1.token)
+      if (searchResult.found) {
+        setStatus(searchResult.status)
+        setTokenToImport(searchResult.token)
 
         return
       }
@@ -220,9 +228,9 @@ export function TokenImportDialog({
     tokenAddress,
     bridgeTokens,
     getL1TokenDataFromL1Address,
-    isL1AddressLoading,
+    isParentChainAddressLoading,
     isOpen,
-    l1Address,
+    tokenAddressOnParentChain,
     searchForTokenInLists
   ])
 
@@ -231,11 +239,11 @@ export function TokenImportDialog({
       return
     }
 
-    if (isL1AddressLoading && !l1Address) {
+    if (isParentChainAddressLoading && !tokenAddressOnParentChain) {
       return
     }
 
-    const foundToken = tokensFromUser[l1Address || tokenAddress]
+    const foundToken = tokensFromUser[tokenAddressOnParentChain || tokenAddress]
 
     if (typeof foundToken === 'undefined') {
       return
@@ -247,10 +255,10 @@ export function TokenImportDialog({
       selectToken(foundToken)
     }
   }, [
-    isL1AddressLoading,
+    isParentChainAddressLoading,
     tokenAddress,
     isOpen,
-    l1Address,
+    tokenAddressOnParentChain,
     onClose,
     selectToken,
     selectedToken,
@@ -278,28 +286,31 @@ export function TokenImportDialog({
 
     setIsImportingToken(true)
 
-    if (!l1Address) {
+    if (!tokenAddressOnParentChain) {
       return
     }
 
-    if (typeof bridgeTokens[l1Address] !== 'undefined') {
+    if (typeof bridgeTokens[tokenAddressOnParentChain] !== 'undefined') {
       // Token is already added to the bridge
       onClose(true)
       selectToken(tokenToImport!)
     } else {
       // Token is not added to the bridge, so we add it
-      storeNewToken(l1Address).catch(() => {
+      storeNewToken(tokenAddressOnParentChain).catch(() => {
         setStatus(ImportStatus.ERROR)
       })
     }
 
     // do not allow import of withdraw-only tokens at deposit mode
-    if (isDepositMode && isWithdrawOnlyToken(l1Address, childChain.id)) {
+    if (
+      isDepositMode &&
+      isWithdrawOnlyToken(tokenAddressOnParentChain, childChain.id)
+    ) {
       openTransferDisabledDialog()
       return
     }
 
-    if (isTransferDisabledToken(l1Address, childChain.id)) {
+    if (isTransferDisabledToken(tokenAddressOnParentChain, childChain.id)) {
       openTransferDisabledDialog()
       return
     }

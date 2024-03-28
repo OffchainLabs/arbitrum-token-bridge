@@ -3,6 +3,7 @@ import { schema, TokenList } from '@uniswap/token-lists'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { ImageProps } from 'next/image'
+
 import UniswapLogo from '@/images/lists/uniswap.png'
 import GeminiLogo from '@/images/lists/gemini.png'
 import CMCLogo from '@/images/lists/cmc.png'
@@ -12,6 +13,9 @@ import { ArbTokenBridge } from '../hooks/arbTokenBridge.types'
 import { ChainId } from './networks'
 
 export const SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID = 0
+
+export const isArbitrumTokenList = (listId: number) =>
+  listId === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
 
 export interface BridgeTokenList {
   id: number
@@ -189,15 +193,28 @@ export const validateTokenList = (tokenList: TokenList) => {
   return validate(tokenList)
 }
 
-export const addBridgeTokenListToBridge = (
-  bridgeTokenList: BridgeTokenList,
+export const addBridgeTokenListToBridge = ({
+  bridgeTokenList,
+  arbTokenBridge,
+  parentChainId,
+  childChainId
+}: {
+  bridgeTokenList: BridgeTokenList
   arbTokenBridge: ArbTokenBridge
-) => {
+  parentChainId: ChainId
+  childChainId: ChainId
+}) => {
   fetchTokenListFromURL(bridgeTokenList.url).then(
     ({ isValid, data: tokenList }) => {
       if (!isValid) return
+      if (!tokenList) return
 
-      arbTokenBridge.token.addTokensFromList(tokenList!, bridgeTokenList.id)
+      arbTokenBridge.token.addTokensFromList({
+        arbTokenList: tokenList,
+        listId: bridgeTokenList.id,
+        parentChainId,
+        childChainId
+      })
     }
   )
 }
