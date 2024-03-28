@@ -1,7 +1,7 @@
 import fs from 'fs'
 import axios from 'axios'
 
-const STATUS_URL = 'https://arbitrum-internal.instatus.com/v2/components.json'
+const STATUS_URL = 'https://status.arbitrum.io/v2/components.json'
 
 async function main() {
   const _statusSummary = (await axios.get(STATUS_URL)).data
