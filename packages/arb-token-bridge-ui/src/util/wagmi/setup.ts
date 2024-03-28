@@ -1,9 +1,9 @@
-import { createClient, configureChains } from 'wagmi'
+import { providers } from 'ethers'
+import { createClient, configureChains, Chain, ChainProviderFn } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
-import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
   sepolia,
@@ -14,7 +14,7 @@ import {
   localL2Network as arbitrumLocal
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
+import { ChainId, chainIdToInfuraKey, rpcURLs } from '../networks'
 import { getCustomChainsFromLocalStorage } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
@@ -117,20 +117,59 @@ function getChains(targetChainKey: TargetChainKey) {
   return [...target, ...others]
 }
 
+function infuraProvider<TChain extends Chain>(): ChainProviderFn<
+  TChain,
+  providers.InfuraProvider,
+  providers.InfuraWebSocketProvider
+> {
+  return function (chain) {
+    // Retrieve the API key for the current chain's network
+    const infuraKey = chainIdToInfuraKey(chain.id)
+
+    if (!infuraKey) return null
+
+    // Continue with the rest of the function...
+    return {
+      chain: {
+        ...chain,
+        rpcUrls: {
+          ...chain.rpcUrls,
+          default: {
+            http: [rpcURLs[chain.id]]
+          }
+        }
+      } as TChain,
+      provider: () => {
+        const provider = new providers.InfuraProvider(
+          {
+            chainId: chain.id,
+            name: chain.network,
+            ensAddress: chain.contracts?.ensRegistry?.address
+          },
+          infuraKey
+        )
+        return Object.assign(provider)
+      },
+      webSocketProvider: () =>
+        new providers.InfuraWebSocketProvider(
+          {
+            chainId: chain.id,
+            name: chain.network,
+            ensAddress: chain.contracts?.ensRegistry?.address
+          },
+          infuraKey
+        )
+    }
+  }
+}
+
 export function getProps(targetChainKey: string | null) {
   const { chains, provider } = configureChains(
     // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      infuraProvider({
-        apiKey:
-          process.env.NEXT_PUBLIC_INFURA_KEY ??
-          process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM!
-      }),
-      publicProvider()
-    ]
+    [infuraProvider(), publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({

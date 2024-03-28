@@ -143,44 +143,50 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
-function chainIdToInfuraUrl(chainId: ChainId) {
-  let infuraKey, baseUrl
+export function chainIdToInfuraKey(chainId: ChainId) {
   const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
 
   switch (chainId) {
     case ChainId.Ethereum:
-      infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM
+      return process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM || defaultInfuraKey
+    case ChainId.Sepolia:
+      return process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA || defaultInfuraKey
+    case ChainId.ArbitrumOne:
+      return process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE || defaultInfuraKey
+    case ChainId.ArbitrumSepolia:
+      return (
+        process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA || defaultInfuraKey
+      )
+
+    default:
+      return defaultInfuraKey
+  }
+}
+
+function chainIdToInfuraUrl(chainId: ChainId) {
+  let baseUrl
+  const infuraKey = chainIdToInfuraKey(chainId)
+
+  switch (chainId) {
+    case ChainId.Ethereum:
       baseUrl = 'https://mainnet.infura.io/v3/'
       break
     case ChainId.Sepolia:
-      infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA
       baseUrl = 'https://sepolia.infura.io/v3/'
       break
     case ChainId.ArbitrumOne:
-      infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE
       baseUrl = 'https://arbitrum-mainnet.infura.io/v3/'
       break
     case ChainId.ArbitrumSepolia:
-      infuraKey = process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA
       baseUrl = 'https://arbitrum-sepolia.infura.io/v3/'
       break
     default:
-      infuraKey = undefined
-      baseUrl = undefined
-  }
-
-  if (!baseUrl) {
-    return undefined
+      return undefined
   }
 
   if (!infuraKey) {
-    if (!defaultInfuraKey) {
-      // neither network-specific or default key was found
-      return undefined
-    }
-
-    // if no network-specific key is found, set the default key
-    infuraKey = defaultInfuraKey
+    // neither network-specific or default key was found
+    return undefined
   }
 
   return baseUrl + infuraKey
