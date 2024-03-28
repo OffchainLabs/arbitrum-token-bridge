@@ -18,7 +18,8 @@
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
-    "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix"
+    "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
+    "generateStatus": "yarn workspace arb-token-bridge-ui generateStatus"
   },
   "keywords": [],
   "author": "",
