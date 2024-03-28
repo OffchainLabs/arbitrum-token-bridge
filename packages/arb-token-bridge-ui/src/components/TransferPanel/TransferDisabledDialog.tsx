@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -17,6 +19,7 @@ export const useTransferDisabledDialogStore =
   }))
 
 export function TransferDisabledDialog() {
+  const [networks] = useNetworks()
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -26,7 +29,10 @@ export function TransferDisabledDialog() {
     isOpen: isOpenTransferDisabledDialog,
     closeDialog: closeTransferDisabledDialog
   } = useTransferDisabledDialogStore()
-  const unsupportedToken = selectedToken?.symbol
+  const unsupportedToken = sanitizeTokenSymbol(selectedToken?.symbol ?? '', {
+    erc20L1Address: selectedToken?.address,
+    chainId: networks.sourceChain.id
+  })
 
   const onClose = () => {
     setSelectedToken(null)
