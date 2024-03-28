@@ -27,15 +27,6 @@ export const getChains = () => {
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
 
-export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error('Infura API key not provided')
-}
-
-const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
-
 export type ChainWithRpcUrl = L2Network & {
   rpcUrl: string
   slug?: string
@@ -152,6 +143,55 @@ export enum ChainId {
   StylusTestnet = 23011913
 }
 
+export function chainIdToInfuraKey(chainId: ChainId) {
+  const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
+
+  switch (chainId) {
+    case ChainId.Ethereum:
+      return process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM || defaultInfuraKey
+    case ChainId.Sepolia:
+      return process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA || defaultInfuraKey
+    case ChainId.ArbitrumOne:
+      return process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE || defaultInfuraKey
+    case ChainId.ArbitrumSepolia:
+      return (
+        process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA || defaultInfuraKey
+      )
+
+    default:
+      return defaultInfuraKey
+  }
+}
+
+function chainIdToInfuraUrl(chainId: ChainId) {
+  let baseUrl
+  const infuraKey = chainIdToInfuraKey(chainId)
+
+  switch (chainId) {
+    case ChainId.Ethereum:
+      baseUrl = 'https://mainnet.infura.io/v3/'
+      break
+    case ChainId.Sepolia:
+      baseUrl = 'https://sepolia.infura.io/v3/'
+      break
+    case ChainId.ArbitrumOne:
+      baseUrl = 'https://arbitrum-mainnet.infura.io/v3/'
+      break
+    case ChainId.ArbitrumSepolia:
+      baseUrl = 'https://arbitrum-sepolia.infura.io/v3/'
+      break
+    default:
+      return undefined
+  }
+
+  if (!infuraKey) {
+    // neither network-specific or default key was found
+    return undefined
+  }
+
+  return baseUrl + infuraKey
+}
+
 export const supportedCustomOrbitParentChains = [
   ChainId.Sepolia,
   ChainId.Holesky,
@@ -162,19 +202,25 @@ export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    fallback: MAINNET_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Ethereum)
   }),
   // L1 Testnets
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
-    fallback: SEPOLIA_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Sepolia)
   }),
   [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
   // L2
-  [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
+  [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
+    fallback: 'https://arb1.arbitrum.io/rpc'
+  }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
+  [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
+    fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+  }),
   // Orbit Testnets
   [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
 }
