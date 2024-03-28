@@ -13,12 +13,10 @@ import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
-import {
-  calculateEstimatedChildChainGasFees,
-  calculateEstimatedParentChainGasFees
-} from '../../components/TransferPanel/TransferPanelMainUtils'
-import { useGasEstimates } from './useGasEstimates'
+import { calculateEstimatedParentChainGasFees } from '../../components/TransferPanel/TransferPanelMainUtils'
+import { TransferType, useGasEstimates } from './useGasEstimates'
 import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
+import { DepositGasEstimates } from '../arbTokenBridge.types'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -31,6 +29,7 @@ export type GasEstimationStatus =
   | 'success'
   | 'error'
   | 'unavailable'
+  | 'insufficientBalance'
 
 export type UseGasSummaryResult = {
   status: GasEstimationStatus
@@ -59,6 +58,7 @@ export function useGasSummary(): UseGasSummaryResult {
       return constants.Zero
     }
     const amountSafe = debouncedAmount || '0'
+
     const decimals = token ? token.decimals : nativeCurrency.decimals
 
     return utils.parseUnits(amountSafe, decimals)
@@ -78,7 +78,7 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
-      txType: isDepositMode ? 'deposit' : 'withdrawal',
+      txType: isDepositMode ? TransferType.deposit : TransferType.withdrawal,
       walletAddress,
       childChainProvider,
       parentChainProvider: isDepositMode ? parentChainProvider : undefined,
@@ -97,15 +97,30 @@ export function useGasSummary(): UseGasSummaryResult {
   }, [estimateGasResult, parentChainGasPrice])
 
   const estimatedChildChainGasFees = useMemo(() => {
-    if (!estimateGasResult?.estimatedChildChainGas) {
+    if (!estimateGasResult) {
       return
     }
-    return calculateEstimatedChildChainGasFees(
-      estimateGasResult.estimatedChildChainGas,
-      childChainGasPrice,
-      estimateGasResult.estimatedChildChainSubmissionCost
+    if (
+      isDepositMode &&
+      'estimatedChildChainSubmissionCost' in estimateGasResult
+    ) {
+      return parseFloat(
+        utils.formatEther(
+          estimateGasResult.estimatedChildChainGas
+            .mul(childChainGasPrice)
+            .add(
+              (estimateGasResult as DepositGasEstimates)
+                .estimatedChildChainSubmissionCost
+            )
+        )
+      )
+    }
+    return parseFloat(
+      utils.formatEther(
+        estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
+      )
     )
-  }, [childChainGasPrice, estimateGasResult])
+  }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
   const balance = useTokenToBeBridgedBalance()
 
@@ -127,7 +142,7 @@ export function useGasSummary(): UseGasSummaryResult {
 
     // If user has input an amount over their balance, don't estimate gas
     if (amountBigNumber.gt(balance)) {
-      setGasSummaryStatus('error')
+      setGasSummaryStatus('insufficientBalance')
       return
     }
 

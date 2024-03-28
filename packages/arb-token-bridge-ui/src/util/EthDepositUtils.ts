@@ -1,11 +1,11 @@
 import { EthBridger, getL2Network } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 
-import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
 import { DepositTxEstimateGasParams } from './TokenDepositUtils'
 
-function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): GasEstimates {
+function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): DepositGasEstimates {
   return {
     // todo(spsjvc): properly estimate these values
     //

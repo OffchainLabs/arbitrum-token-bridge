@@ -8,17 +8,3 @@ export function calculateEstimatedParentChainGasFees(
     utils.formatEther(estimatedParentChainGas.mul(parentChainGasPrice))
   )
 }
-
-export function calculateEstimatedChildChainGasFees(
-  estimatedChildChainGas: BigNumber,
-  childChainGasPrice: BigNumber,
-  estimatedChildChainSubmissionCost: BigNumber
-) {
-  return parseFloat(
-    utils.formatEther(
-      estimatedChildChainGas
-        .mul(childChainGasPrice)
-        .add(estimatedChildChainSubmissionCost)
-    )
-  )
-}

@@ -48,16 +48,6 @@ function TransferPanelSummaryContainer({
   )
 }
 
-function TransferPanelSummaryUnavailable() {
-  return (
-    <TransferPanelSummaryContainer>
-      <div className="flex flex-row justify-between text-sm lg:text-base">
-        Gas estimates are not available for this action.
-      </div>
-    </TransferPanelSummaryContainer>
-  )
-}
-
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const {
     app: { selectedToken }
@@ -131,7 +121,23 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   ])
 
   if (gasSummaryStatus === 'unavailable') {
-    return <TransferPanelSummaryUnavailable />
+    return (
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm lg:text-base">
+          Gas estimates are not available for this action.
+        </div>
+      </TransferPanelSummaryContainer>
+    )
+  }
+
+  if (gasSummaryStatus === 'insufficientBalance') {
+    return (
+      <TransferPanelSummaryContainer>
+        <div className="flex flex-row justify-between text-sm lg:text-base">
+          Gas estimates will be displayed after entering a valid amount.
+        </div>
+      </TransferPanelSummaryContainer>
+    )
   }
 
   return (

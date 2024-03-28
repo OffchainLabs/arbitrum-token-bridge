@@ -8,7 +8,7 @@ import {
   fetchErc20Allowance,
   fetchErc20ParentChainGatewayAddress
 } from './TokenUtils'
-import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -16,7 +16,7 @@ async function fetchTokenFallbackGasEstimates({
 }: {
   inboxAddress: string
   parentChainProvider: Provider
-}): Promise<GasEstimates> {
+}): Promise<DepositGasEstimates> {
   const l1BaseFee = await parentChainProvider.getGasPrice()
   const inbox = Inbox__factory.connect(inboxAddress, parentChainProvider)
 
@@ -94,7 +94,7 @@ type DepositTokenEstimateGasParams = Required<DepositTxEstimateGasParams>
 
 export async function depositTokenEstimateGas(
   params: DepositTokenEstimateGasParams
-): Promise<GasEstimates> {
+): Promise<DepositGasEstimates> {
   const {
     amount,
     address,

@@ -1,6 +1,6 @@
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
 import { L2ToL1TransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
 
@@ -19,7 +19,6 @@ export async function withdrawInitTxEstimateGas({
   erc20L1Address?: string
 }): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
-  const estimatedChildChainSubmissionCost = constants.Zero
 
   // For the withdrawal init tx, there's no gas fee paid on L1 separately
   // unless we break down part of the L2 gas fee into L2 tx fee + L1 batch posting fee for that tx
@@ -58,8 +57,7 @@ export async function withdrawInitTxEstimateGas({
 
     return {
       estimatedParentChainGas,
-      estimatedChildChainGas,
-      estimatedChildChainSubmissionCost
+      estimatedChildChainGas
     }
   } catch (error) {
     Sentry.captureException(error)
@@ -91,8 +89,7 @@ export async function withdrawInitTxEstimateGas({
       // https://arbiscan.io/tx/0xb9c866257b6f8861c2323ae902f681f7ffa313c3a3b93347f1ecaa0aa5c9b59e
       estimatedChildChainGas: isToken
         ? BigNumber.from(1_400_000)
-        : BigNumber.from(800_000),
-      estimatedChildChainSubmissionCost
+        : BigNumber.from(800_000)
     }
   }
 }

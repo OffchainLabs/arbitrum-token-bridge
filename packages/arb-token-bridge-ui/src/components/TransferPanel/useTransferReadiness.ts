@@ -313,6 +313,9 @@ export function useTransferReadiness({
           errorMessage: TransferReadinessRichErrorMessage.GAS_ESTIMATION_FAILURE
         })
 
+      case 'insufficientBalance':
+        return notReady()
+
       case 'success': {
         const { estimatedL1GasFees, estimatedL2GasFees } =
           sanitizeEstimatedGasFees(gasSummary, {
