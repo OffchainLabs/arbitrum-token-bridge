@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 type ArbitrumStatusResponse = {
   meta: {
     timestamp: string
+    source: 'api' | 'cache'
   }
   content: {
     components?: {
@@ -41,20 +42,25 @@ export default async function handler(
     return
   }
 
-  const currentTime = dayjs()
-
-  if (cachedResult !== null && currentTime.diff(originalTime, 'minutes') < 5) {
+  // return the cached result if it's less than 1 minute old
+  if (cachedResult !== null && dayjs().diff(originalTime, 'minutes') < 1) {
     res.status(200).json({ data: cachedResult })
     return
   }
 
+  // fetch the status summary if the cached result is older than 1 minute
   const _statusSummary = (await axios.get(STATUS_URL)).data
   const resultJson = {
     meta: {
+      source: 'api',
       timestamp: new Date().toISOString()
     },
     content: _statusSummary
   }
-  cachedResult = resultJson
-  res.status(200).json({ data: resultJson })
+  cachedResult = {
+    ...resultJson,
+    meta: { ...resultJson.meta, source: 'cache' }
+  }
+
+  res.status(200).json({ data: resultJson as ArbitrumStatusResponse })
 }
