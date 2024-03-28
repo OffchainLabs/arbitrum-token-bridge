@@ -13,7 +13,11 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
-export type TransferPanelSummaryToken = { symbol: string; address: string }
+export type TransferPanelSummaryToken = {
+  symbol: string
+  address: string
+  l2Address?: string
+}
 
 export type TransferPanelSummaryProps = {
   amount: number

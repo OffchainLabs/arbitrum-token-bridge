@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import { Chain, useAccount } from 'wagmi'
+import { Chain, useAccount, useSigner } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
@@ -33,8 +33,6 @@ import { useBalance } from '../../hooks/useBalance'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -68,7 +66,9 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
+import { INITIAL_GAS_ESTIMATION_RESULT } from '../../hooks/TransferPanel/useGasSummary'
 import {
   Balances,
   useSelectedTokenBalances
@@ -359,6 +359,7 @@ export function TransferPanelMain({
     app: { selectedToken }
   } = useAppState()
   const { address: walletAddress } = useAccount()
+  const { data: signer } = useSigner()
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -463,33 +464,25 @@ export function TransferPanelMain({
           estimatedL2SubmissionCost: BigNumber
         }
     > => {
-      if (!walletAddress) {
-        return {
-          estimatedL1Gas: constants.Zero,
-          estimatedL2Gas: constants.Zero,
-          estimatedL2SubmissionCost: constants.Zero
-        }
+      if (!signer) {
+        return INITIAL_GAS_ESTIMATION_RESULT
       }
 
-      if (isDepositMode) {
-        const result = await depositEthEstimateGas({
-          amount: weiValue,
-          address: walletAddress,
-          l1Provider: parentChainProvider,
-          l2Provider: childChainProvider
-        })
-        return result
-      }
-
-      const result = await withdrawInitTxEstimateGas({
-        amount: weiValue,
-        address: walletAddress,
-        l2Provider: childChainProvider
+      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+        sourceChainProvider: networks.sourceChainProvider,
+        destinationChainProvider: networks.destinationChainProvider
       })
 
-      return { ...result, estimatedL2SubmissionCost: constants.Zero }
+      const result = await bridgeTransferStarter.transferEstimateGas({
+        amount: weiValue,
+        signer
+      })
+
+      return result
+        ? { ...result, estimatedL2SubmissionCost: constants.Zero }
+        : INITIAL_GAS_ESTIMATION_RESULT
     },
-    [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
+    [signer, networks.sourceChainProvider, networks.destinationChainProvider]
   )
 
   const setMaxAmount = useCallback(async () => {
