@@ -8,6 +8,7 @@ module.exports = {
         gradient:
           'linear-gradient(90deg, rgba(40, 160, 240, 0.5) 1.46%, rgba(239, 130, 32, 0.5) 98.51%)',
         gradientCctp: 'linear-gradient(95deg, #77E8CB 0%, #A199F7 100%)',
+        gradientCelebration: 'linear-gradient(to right, #1B4ADD6F, #E573106F)',
         highlight:
           'linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.1) 75%, rgba(255, 255, 255, 0))'
       },
