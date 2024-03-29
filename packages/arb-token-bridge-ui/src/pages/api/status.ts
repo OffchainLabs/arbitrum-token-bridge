@@ -6,7 +6,7 @@ export type ArbitrumStatusResponse = {
     timestamp: string
   }
   content: {
-    components?: {
+    components: {
       id: string
       name: string
       description: string
@@ -46,7 +46,7 @@ export default async function handler(
       content: statusSummary
     }
 
-    res.setHeader('Cache-Control', `max-age=0, s-maxage=${5 * 60}`) // cache response for 5 minutes
+    res.setHeader('Cache-Control', `max-age=0, s-maxage=${10 * 60}`) // cache response for 10 minutes
     res.status(200).json({ data: resultJson as ArbitrumStatusResponse })
   } catch (error: any) {
     res.status(500).json({
