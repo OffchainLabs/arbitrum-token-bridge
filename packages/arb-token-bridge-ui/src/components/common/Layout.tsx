@@ -6,7 +6,7 @@ import EclipseBottom from '@/images/eclipse_bottom.png'
 
 import { Sidebar } from '../Sidebar'
 import { Toast } from './atoms/Toast'
-import { SiteBanner, SiteBannerArbiscanIncident } from './SiteBanner'
+import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
 
