@@ -27,6 +27,15 @@ export default async function handler(
   }>
 ) {
   try {
+    // allow cross-origin requests for this API to be accessible by Portal also
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Origin', '*.arbitrum.io')
+    res.setHeader('Access-Control-Allow-Methods', 'GET')
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    )
+
     // validate method
     if (req.method !== 'GET') {
       res
