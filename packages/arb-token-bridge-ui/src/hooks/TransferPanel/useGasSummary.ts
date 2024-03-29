@@ -1,5 +1,5 @@
 import { BigNumber, constants, utils } from 'ethers'
-import { useSigner } from 'wagmi'
+import { useAccount, useSigner } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAppState } from '../../state'
@@ -17,7 +17,8 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
-import { BridgeTransferStarterFactory } from '../../token-bridge-sdk/BridgeTransferStarterFactory'
+import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 export const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -60,6 +61,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { data: signer } = useSigner()
+  const { address: walletAddress } = useAccount()
 
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
@@ -93,8 +95,21 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
+  const balance = useTokenToBeBridgedBalance()
+
   const estimateGas = useCallback(async () => {
     if (!signer) {
+      return
+    }
+
+    // If user has inputed an amount over their balance, don't estimate gas
+    if (!balance) {
+      setGasSummaryStatus('loading')
+      return
+    }
+
+    if (amountDebounced.gt(balance)) {
+      setGasSummaryStatus('error')
       return
     }
 
@@ -137,15 +152,16 @@ export function useGasSummary(): UseGasSummaryResult {
       setGasSummaryStatus('error')
     }
   }, [
+    signer,
+    balance,
+    token,
     amountDebounced,
     setGasSummaryStatus,
     isDepositMode,
     parentChainGasPrice,
     childChainGasPrice,
-    token,
     networks.sourceChainProvider,
-    networks.destinationChainProvider,
-    signer
+    networks.destinationChainProvider
   ])
 
   useEffect(() => {

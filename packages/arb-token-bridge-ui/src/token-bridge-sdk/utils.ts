@@ -34,29 +34,33 @@ export const getBridgeTransferProperties = async ({
     destinationChainProvider
   )
 
-  const isParentChainEthereumMainnetOrTestnet =
+  const isSourceChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
+  const isDestinationChainEthereumMainnetOrTestnet =
+    isNetwork(destinationChainId).isEthereumMainnetOrTestnet
 
-  const isParentChainArbitrum = isNetwork(sourceChainId).isArbitrum
+  const isSourceChainArbitrum = isNetwork(sourceChainId).isArbitrum
+  const isDestinationChainArbitrum = isNetwork(destinationChainId).isArbitrum
+
+  const isSourceChainOrbit = isNetwork(sourceChainId).isOrbitChain
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
   const isDeposit =
-    isParentChainEthereumMainnetOrTestnet ||
-    (isParentChainArbitrum && isDestinationChainOrbit)
+    isSourceChainEthereumMainnetOrTestnet ||
+    (isSourceChainArbitrum && isDestinationChainOrbit)
+
+  const isWithdrawal =
+    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) ||
+    (isSourceChainOrbit && isDestinationChainArbitrum)
+
+  const isTeleport = isTeleportTransfer({ sourceChainId, destinationChainId })
 
   const isNativeCurrencyTransfer =
     typeof sourceChainErc20Address === 'undefined'
 
-  const isWithdrawal =
-    (isNetwork(sourceChainId).isArbitrum &&
-      isNetwork(destinationChainId).isEthereumMainnetOrTestnet) ||
-    (isNetwork(sourceChainId).isOrbitChain &&
-      isNetwork(destinationChainId).isArbitrum)
-
-  const isTeleport = isTeleportTransfer({ sourceChainId, destinationChainId })
-
   return {
     isDeposit,
+    isWithdrawal,
     isNativeCurrencyTransfer,
     isTeleport: isTeleport,
     isSupported: isDeposit || isWithdrawal || isTeleport

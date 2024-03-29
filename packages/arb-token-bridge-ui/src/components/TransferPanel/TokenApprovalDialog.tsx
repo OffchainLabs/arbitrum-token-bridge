@@ -107,7 +107,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             destinationChainProvider,
             sourceChainErc20Address: isDepositMode
               ? token.address
-              : token.l2Address // todo: what happens when l2Address is undefined? ie. token has never been deployed.
+              : token.l2Address
           }
         )
 
