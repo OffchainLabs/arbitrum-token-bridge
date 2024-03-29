@@ -2,9 +2,6 @@ import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export type ArbitrumStatusResponse = {
-  meta: {
-    timestamp: string
-  }
   content: {
     components: {
       id: string
