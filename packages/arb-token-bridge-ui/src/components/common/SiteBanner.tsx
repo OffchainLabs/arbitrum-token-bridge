@@ -77,16 +77,14 @@ export const SiteBanner = ({
   const showInfoBanner =
     !expiryDate || (expiryDate && dayjs().isBefore(dayjs(expiryDate)))
 
-  // show banner only if we have an active incident or active info banner
-  const showBanner = showArbiscanIncidentBanner || showInfoBanner
-
-  if (!showBanner) return null
-
+  // arbiscan banner always takes priority
   if (showArbiscanIncidentBanner) {
     return <SiteBannerArbiscanIncident />
   }
 
-  if (!showInfoBanner) return null
+  if (!showInfoBanner) {
+    return null
+  }
 
   return (
     <div
