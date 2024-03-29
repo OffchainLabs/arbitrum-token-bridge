@@ -1,28 +1,9 @@
 import dayjs from 'dayjs'
+import { useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
-import arbitrumStatusJson from '../../../public/__auto-generated-status.json'
 import { ExternalLink } from './ExternalLink'
-
-type ArbitrumStatusResponse = {
-  meta: {
-    timestamp: string
-  }
-  content: {
-    components?: {
-      id: string
-      name: string
-      description: string
-      status:
-        | 'UNDERMAINTENANCE'
-        | 'OPERATIONAL'
-        | 'DEGRADEDPERFORMANCE'
-        | 'PARTIALOUTAGE'
-        | 'MAJOROUTAGE'
-    }[]
-  }
-}
-
-const arbitrumStatus = (arbitrumStatusJson as ArbitrumStatusResponse).content
+import { ArbitrumStatusResponse } from '../../pages/api/status'
+import { getAPIBaseUrl } from '../../util'
 
 const generateArbiscanIncidentMessage = () => {
   return (
@@ -49,9 +30,31 @@ export const SiteBanner = ({
   expiryDate,
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { expiryDate?: string }) => {
+  const [arbitrumStatus, setArbitrumStatus] = useState<
+    ArbitrumStatusResponse | undefined
+  >()
+
+  useEffect(() => {
+    const fetchSetArbitrumStatus = async () => {
+      try {
+        const response = await fetch(`${getAPIBaseUrl()}/api/status`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        const _arbitrumStatus: ArbitrumStatusResponse = (await response.json())
+          .data
+        setArbitrumStatus(_arbitrumStatus)
+      } catch (e) {
+        // error fetching status
+        console.error(e)
+      }
+    }
+    fetchSetArbitrumStatus()
+  }, [])
+
   // show incident-banner if there is an active incident
   const showArbiscanIncidentBanner =
-    (arbitrumStatus.components || []).findIndex(
+    (arbitrumStatus?.content.components || []).findIndex(
       component =>
         component.name.toLowerCase().includes('arbiscan') &&
         component.status !== 'OPERATIONAL'
