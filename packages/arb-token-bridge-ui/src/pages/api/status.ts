@@ -43,7 +43,18 @@ export default async function handler(
       meta: {
         timestamp: new Date().toISOString()
       },
-      content: statusSummary
+      content: {
+        ...statusSummary,
+        components: [
+          ...statusSummary.components,
+          {
+            id: 'arbiscan',
+            name: 'Arbiscan',
+            description: 'Arbiscan API',
+            status: 'UNDERMAINTENANCE'
+          }
+        ]
+      }
     }
 
     res.setHeader('Cache-Control', `max-age=0, s-maxage=${10 * 60}`) // cache response for 10 minutes
