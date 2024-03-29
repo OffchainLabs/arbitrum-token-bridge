@@ -1,8 +1,11 @@
-import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { ExternalLink } from './ExternalLink'
 import { ArbitrumStatusResponse } from '../../pages/api/status'
 import { getAPIBaseUrl } from '../../util'
+import {
+  getCurrentDateInEasternTime,
+  parseDateInEasternTime
+} from '../../util/DateUtils'
 
 const SiteBannerArbiscanIncident = () => {
   return (
@@ -42,7 +45,7 @@ function isComponentOperational({ status }: { status: string }) {
 
 export const SiteBanner = ({
   children,
-  expiryDate,
+  expiryDate, // date in Eastern time
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { expiryDate?: string }) => {
   const [arbitrumStatus, setArbitrumStatus] = useState<ArbitrumStatusResponse>({
@@ -75,7 +78,11 @@ export const SiteBanner = ({
 
   // show info-banner till expiry date if provided
   const showInfoBanner =
-    !expiryDate || (expiryDate && dayjs().isBefore(dayjs(expiryDate)))
+    !expiryDate ||
+    (expiryDate &&
+      getCurrentDateInEasternTime().isBefore(
+        parseDateInEasternTime(expiryDate)
+      ))
 
   // arbiscan banner always takes priority
   if (showArbiscanIncidentBanner) {
