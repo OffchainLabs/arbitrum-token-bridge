@@ -1,5 +1,4 @@
 import axios from 'axios'
-import Cors from 'cors'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export type ArbitrumStatusResponse = {
@@ -16,29 +15,6 @@ export type ArbitrumStatusResponse = {
         | 'MAJOROUTAGE'
     }[]
   }
-}
-
-// Initializing the cors middleware
-// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
-const cors = Cors({
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-})
-
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result)
-      }
-
-      return resolve(result)
-    })
-  })
 }
 
 const STATUS_URL = 'https://status.arbitrum.io/v2/components.json'
@@ -59,9 +35,6 @@ export default async function handler(
       return
     }
 
-    // Run the middleware
-    await runMiddleware(req, res, cors)
-
     const statusSummary = (await axios.get(STATUS_URL)).data
     const resultJson = {
       meta: {
@@ -71,6 +44,13 @@ export default async function handler(
     }
 
     res.setHeader('Cache-Control', `max-age=0, s-maxage=${10 * 60}`) // cache response for 10 minutes
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS'
+    )
+    res.setHeader('Content-Type', 'application/json')
+
     res.status(200).json({ data: resultJson as ArbitrumStatusResponse })
   } catch (error: any) {
     res.status(500).json({
