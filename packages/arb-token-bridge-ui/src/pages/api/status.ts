@@ -43,15 +43,16 @@ export default async function handler(
       content: statusSummary
     }
 
-    res.setHeader('Cache-Control', `max-age=0, s-maxage=${10 * 60}`) // cache response for 10 minutes
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS'
-    )
-    res.setHeader('Content-Type', 'application/json')
+    return new Response(JSON.stringify(resultJson), {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    })
 
-    res.status(200).json({ data: resultJson as ArbitrumStatusResponse })
+    // res.status(200).json({ data: resultJson as ArbitrumStatusResponse })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',
