@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cors from 'cors'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export type ArbitrumStatusResponse = {
@@ -17,6 +18,26 @@ export type ArbitrumStatusResponse = {
   }
 }
 
+// Initializing the cors middleware
+// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+const cors = Cors({
+  methods: ['POST', 'GET', 'HEAD']
+})
+
+// Helper method to wait for a middleware to execute before continuing
+// And to throw an error when an error happens in a middleware
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result)
+      }
+
+      return resolve(result)
+    })
+  })
+}
+
 const STATUS_URL = 'https://status.arbitrum.io/v2/components.json'
 
 export default async function handler(
@@ -27,18 +48,6 @@ export default async function handler(
   }>
 ) {
   try {
-    // allow cross-origin requests for this API to be accessible by Portal also
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      '*.arbitrum.io,*.vercel.app,http://localhost:3000/'
-    )
-    res.setHeader('Access-Control-Allow-Methods', 'GET')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
-
     // validate method
     if (req.method !== 'GET') {
       res
@@ -46,6 +55,9 @@ export default async function handler(
         .send({ message: `invalid_method: ${req.method}`, data: undefined })
       return
     }
+
+    // Run the middleware
+    await runMiddleware(req, res, cors)
 
     const statusSummary = (await axios.get(STATUS_URL)).data
     const resultJson = {
