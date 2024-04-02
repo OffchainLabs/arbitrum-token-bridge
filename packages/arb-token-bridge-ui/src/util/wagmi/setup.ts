@@ -16,7 +16,7 @@ import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
-import { infuraProvider } from '../infura'
+import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainID)
@@ -122,13 +122,15 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [infuraProvider(), publicProvider()]
+    [customInfuraProvider(), publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({
     ...appInfo,
     chains
   })
+
+  console.log({ chains })
 
   const connectors = connectorsForWallets([
     ...wallets,

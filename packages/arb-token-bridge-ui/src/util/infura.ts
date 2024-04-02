@@ -1,9 +1,11 @@
 import { providers } from 'ethers'
 import { Chain, ChainProviderFn } from 'wagmi'
 
-import { ChainId, rpcURLs } from './networks'
+import { ChainId } from './networks'
 
-export function infuraProvider<TChain extends Chain>(): ChainProviderFn<
+// custom implementation based on https://github.com/wevm/wagmi/blob/wagmi%400.12.13/packages/core/src/providers/infura.ts
+// with multiple infura keys support
+export function customInfuraProvider<TChain extends Chain>(): ChainProviderFn<
   TChain,
   providers.InfuraProvider,
   providers.InfuraWebSocketProvider
@@ -21,7 +23,7 @@ export function infuraProvider<TChain extends Chain>(): ChainProviderFn<
         rpcUrls: {
           ...chain.rpcUrls,
           default: {
-            http: [rpcURLs[chain.id]]
+            http: [`${chain.rpcUrls.infura.http[0]}/${infuraKey}`]
           }
         }
       } as TChain,
@@ -70,30 +72,18 @@ export function chainIdToInfuraKey(chainId: ChainId) {
 }
 
 export function chainIdToInfuraUrl(chainId: ChainId) {
-  let baseUrl
   const infuraKey = chainIdToInfuraKey(chainId)
 
   switch (chainId) {
     case ChainId.Ethereum:
-      baseUrl = 'https://mainnet.infura.io/v3/'
-      break
+      return `https://mainnet.infura.io/v3/${infuraKey}`
     case ChainId.Sepolia:
-      baseUrl = 'https://sepolia.infura.io/v3/'
-      break
+      return `https://sepolia.infura.io/v3/${infuraKey}`
     case ChainId.ArbitrumOne:
-      baseUrl = 'https://arbitrum-mainnet.infura.io/v3/'
-      break
+      return `https://arbitrum-mainnet.infura.io/v3/${infuraKey}`
     case ChainId.ArbitrumSepolia:
-      baseUrl = 'https://arbitrum-sepolia.infura.io/v3/'
-      break
+      return `https://arbitrum-sepolia.infura.io/v3/${infuraKey}`
     default:
       return undefined
   }
-
-  if (!infuraKey) {
-    // neither network-specific or default key was found
-    return undefined
-  }
-
-  return baseUrl + infuraKey
 }
