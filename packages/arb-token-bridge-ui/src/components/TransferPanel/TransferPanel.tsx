@@ -624,29 +624,31 @@ export function TransferPanel() {
       }
 
       const depositRequiresChainSwitch = () => {
-        const isSourceChainEthereum = isNetwork(
+        const isParentChainEthereum = isNetwork(
           parentChain.id
         ).isEthereumMainnetOrTestnet
 
-        const { isOrbitChain } = isNetwork(childChain.id)
-
         return (
           isDepositMode &&
-          ((isSourceChainEthereum && isConnectedToArbitrum.current) ||
-            isOrbitChain)
+          isParentChainEthereum &&
+          (isConnectedToArbitrum.current || isConnectedToOrbitChain.current)
         )
       }
 
       const withdrawalRequiresChainSwitch = () => {
+        const isParentChainEthereum = isNetwork(
+          parentChain.id
+        ).isEthereumMainnetOrTestnet
+
+        const isChildChainOrbitChain = isNetwork(childChain.id).isOrbitChain
+
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
 
-        const { isOrbitChain } = isNetwork(childChain.id)
-
         return (
           !isDepositMode &&
-          (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isOrbitChain))
+          ((isConnectedToEthereum && isParentChainEthereum) ||
+            (isConnectedToArbitrum.current && isChildChainOrbitChain))
         )
       }
 
@@ -867,7 +869,10 @@ export function TransferPanel() {
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
 
     const isDeposit =
-      transferType === 'eth_deposit' || transferType === 'erc20_deposit'
+      transferType === 'eth_deposit' ||
+      transferType === 'erc20_deposit' ||
+      transferType === 'eth_teleport' ||
+      transferType === 'erc20_teleport'
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,

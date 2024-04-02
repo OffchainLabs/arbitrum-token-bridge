@@ -88,7 +88,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     destination: walletAddress,
     status: 'pending',
     txID: transaction.hash,
-    assetName: selectedToken ? AssetType.ERC20 : nativeCurrency.symbol,
+    assetName: selectedToken ? selectedToken.symbol : nativeCurrency.symbol,
     assetType: selectedToken ? AssetType.ERC20 : AssetType.ETH,
     l1NetworkID: String(parentChainId),
     l2NetworkID: String(childChainId),
