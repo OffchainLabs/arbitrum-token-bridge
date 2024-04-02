@@ -130,8 +130,6 @@ export function getProps(targetChainKey: string | null) {
     chains
   })
 
-  console.log({ chains })
-
   const connectors = connectorsForWallets([
     ...wallets,
     {
