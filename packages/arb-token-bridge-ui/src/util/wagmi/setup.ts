@@ -127,6 +127,7 @@ function infuraProvider<TChain extends Chain>(): ChainProviderFn<
     const infuraKey = chainIdToInfuraKey(chain.id)
 
     if (!infuraKey) return null
+    if (!chain.rpcUrls.infura?.http[0]) return null
 
     // Continue with the rest of the function...
     return {
