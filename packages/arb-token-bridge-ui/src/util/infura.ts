@@ -1,6 +1,7 @@
-import { Chain, ChainProviderFn } from 'wagmi'
-import { ChainId, rpcURLs } from './networks'
 import { providers } from 'ethers'
+import { Chain, ChainProviderFn } from 'wagmi'
+
+import { ChainId, rpcURLs } from './networks'
 
 export function infuraProvider<TChain extends Chain>(): ChainProviderFn<
   TChain,
