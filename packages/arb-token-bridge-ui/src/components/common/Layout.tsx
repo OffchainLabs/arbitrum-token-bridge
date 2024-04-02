@@ -6,7 +6,7 @@ import EclipseBottom from '@/images/eclipse_bottom.png'
 
 import { Sidebar } from '../Sidebar'
 import { Toast } from './atoms/Toast'
-import { SiteBanner, SiteBannerArbiscanIncident } from './SiteBanner'
+import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -56,8 +56,9 @@ export function Layout(props: LayoutProps) {
           <Sidebar />
 
           <main className="grow">
-            <SiteBanner>The Arbitrum Bridge has a new look!</SiteBanner>
-            {/* <SiteBannerArbiscanIncident /> */}
+            <SiteBanner expiryDate="2024-04-07 12:00">
+              The Arbitrum Bridge has a new look!
+            </SiteBanner>
             {props.children}
           </main>
 
