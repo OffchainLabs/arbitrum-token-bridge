@@ -3,7 +3,6 @@ import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
-import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
   sepolia,
@@ -14,10 +13,10 @@ import {
   localL2Network as arbitrumLocal
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../networks'
+import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
+import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainID)
@@ -123,10 +122,7 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
-      publicProvider()
-    ]
+    [customInfuraProvider(), publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({
