@@ -1,5 +1,4 @@
-import { providers } from 'ethers'
-import { createClient, configureChains, Chain, ChainProviderFn } from 'wagmi'
+import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
@@ -14,10 +13,10 @@ import {
   localL2Network as arbitrumLocal
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId, chainIdToInfuraKey, rpcURLs } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../networks'
+import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
+import { infuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainID)
@@ -115,53 +114,6 @@ function getChains(targetChainKey: TargetChainKey) {
   const others = chainList.filter(chain => chain.id !== targetChainId)
 
   return [...target, ...others]
-}
-
-function infuraProvider<TChain extends Chain>(): ChainProviderFn<
-  TChain,
-  providers.InfuraProvider,
-  providers.InfuraWebSocketProvider
-> {
-  return function (chain) {
-    // Retrieve the API key for the current chain's network
-    const infuraKey = chainIdToInfuraKey(chain.id)
-
-    if (!infuraKey) return null
-    if (!chain.rpcUrls.infura?.http[0]) return null
-
-    // Continue with the rest of the function...
-    return {
-      chain: {
-        ...chain,
-        rpcUrls: {
-          ...chain.rpcUrls,
-          default: {
-            http: [rpcURLs[chain.id]]
-          }
-        }
-      } as TChain,
-      provider: () => {
-        const provider = new providers.InfuraProvider(
-          {
-            chainId: chain.id,
-            name: chain.network,
-            ensAddress: chain.contracts?.ensRegistry?.address
-          },
-          infuraKey
-        )
-        return Object.assign(provider)
-      },
-      webSocketProvider: () =>
-        new providers.InfuraWebSocketProvider(
-          {
-            chainId: chain.id,
-            name: chain.network,
-            ensAddress: chain.contracts?.ensRegistry?.address
-          },
-          infuraKey
-        )
-    }
-  }
 }
 
 export function getProps(targetChainKey: string | null) {

@@ -9,6 +9,7 @@ import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntiti
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { chainIdToInfuraUrl } from './infura'
 
 export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
@@ -141,55 +142,6 @@ export enum ChainId {
   ArbitrumLocal = 412346,
   // Orbit
   StylusTestnet = 23011913
-}
-
-export function chainIdToInfuraKey(chainId: ChainId) {
-  const defaultInfuraKey = process.env.NEXT_PUBLIC_INFURA_KEY
-
-  switch (chainId) {
-    case ChainId.Ethereum:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_ETHEREUM || defaultInfuraKey
-    case ChainId.Sepolia:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_SEPOLIA || defaultInfuraKey
-    case ChainId.ArbitrumOne:
-      return process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_ONE || defaultInfuraKey
-    case ChainId.ArbitrumSepolia:
-      return (
-        process.env.NEXT_PUBLIC_INFURA_KEY_ARBITRUM_SEPOLIA || defaultInfuraKey
-      )
-
-    default:
-      return defaultInfuraKey
-  }
-}
-
-function chainIdToInfuraUrl(chainId: ChainId) {
-  let baseUrl
-  const infuraKey = chainIdToInfuraKey(chainId)
-
-  switch (chainId) {
-    case ChainId.Ethereum:
-      baseUrl = 'https://mainnet.infura.io/v3/'
-      break
-    case ChainId.Sepolia:
-      baseUrl = 'https://sepolia.infura.io/v3/'
-      break
-    case ChainId.ArbitrumOne:
-      baseUrl = 'https://arbitrum-mainnet.infura.io/v3/'
-      break
-    case ChainId.ArbitrumSepolia:
-      baseUrl = 'https://arbitrum-sepolia.infura.io/v3/'
-      break
-    default:
-      return undefined
-  }
-
-  if (!infuraKey) {
-    // neither network-specific or default key was found
-    return undefined
-  }
-
-  return baseUrl + infuraKey
 }
 
 export const supportedCustomOrbitParentChains = [
