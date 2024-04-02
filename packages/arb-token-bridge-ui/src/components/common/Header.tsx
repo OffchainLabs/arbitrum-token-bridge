@@ -7,8 +7,6 @@ import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
-import { SidebarMenu } from '../Sidebar/SidebarMenu'
-import { SidebarFooter } from '../Sidebar/SidebarFooter'
 
 function onMobileMenuOpen() {
   document.body.classList.add('overflow-hidden', 'menu-open')
@@ -72,8 +70,6 @@ function HeaderMobile({ children }: { children: React.ReactNode }) {
       </Disclosure.Button>
       {children}
       {/* Mobile menu panel */}
-      <SidebarMenu menuItemClickCallback={close} className="px-4" />
-      <SidebarFooter className="px-[35px] pb-6" />
     </div>
   )
 }
