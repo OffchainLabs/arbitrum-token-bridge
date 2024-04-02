@@ -11,6 +11,16 @@
         "Access-Control-Allow-Methods": "GET",
         "Referrer-Policy": "origin-when-cross-origin"
       }
+    },
+    {
+      "src": "/api/status",
+      "headers": {
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Referrer-Policy": "origin-when-cross-origin"
+      }
     }
   ]
 }
