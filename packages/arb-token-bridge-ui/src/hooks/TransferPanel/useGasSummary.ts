@@ -20,6 +20,7 @@ import {
   calculateEstimatedL2GasFees,
   calculateEstimatedL1GasFees
 } from '../../components/TransferPanel/TransferPanelMainUtils'
+import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 
 const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
   // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
@@ -62,6 +63,7 @@ export function useGasSummary(): UseGasSummaryResult {
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { address: walletAddress } = useAccount()
+
   const [{ amount }] = useArbQueryParams()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
@@ -94,8 +96,21 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
+  const balance = useTokenToBeBridgedBalance()
+
   const estimateGas = useCallback(async () => {
     if (!walletAddress) {
+      return
+    }
+
+    // If user has inputed an amount over their balance, don't estimate gas
+    if (!balance) {
+      setGasSummaryStatus('loading')
+      return
+    }
+
+    if (amountDebounced.gt(balance)) {
+      setGasSummaryStatus('error')
       return
     }
 
@@ -151,13 +166,14 @@ export function useGasSummary(): UseGasSummaryResult {
     }
   }, [
     walletAddress,
+    balance,
+    token,
     amountDebounced,
     childChainProvider,
     setGasSummaryStatus,
     isDepositMode,
     parentChainGasPrice,
     childChainGasPrice,
-    token,
     parentChainProvider
   ])
 
