@@ -7,36 +7,51 @@ import {
   parseDateInEasternTime
 } from '../../util/DateUtils'
 
-const SiteBannerArbiscanIncident = () => {
+const SiteBannerArbiscanIncident = ({
+  type
+}: {
+  type: 'arbitrum-one' | 'arbitrum-nova'
+}) => {
+  const explorerUrl =
+    type === 'arbitrum-nova'
+      ? 'https://nova.arbiscan.io/'
+      : 'https://arbiscan.io/'
+  const explorerTitle = type === 'arbitrum-nova' ? 'Nova Arbiscan' : 'Arbiscan'
+  const alternativeExplorerUrl =
+    type === 'arbitrum-nova' ? '' : 'https://www.oklink.com/arbitrum'
+
   return (
     <div className="bg-orange-dark px-4 py-[8px] text-center text-sm font-normal text-white">
       <div className="w-full">
         <p>
-          <ExternalLink className="underline" href="https://arbiscan.io/">
-            Arbiscan
+          <ExternalLink className="underline" href={explorerUrl}>
+            {explorerTitle}
           </ExternalLink>{' '}
           is temporarily facing some issues while showing the latest data.
-          Arbitrum chains are still live and running. If you need an alternative
-          block explorer, you can visit{' '}
-          <ExternalLink
-            className="underline"
-            href="https://www.oklink.com/arbitrum"
-          >
-            OKLink
-          </ExternalLink>
-          .
+          Arbitrum chains are still live and running.
+          {alternativeExplorerUrl ? (
+            <>
+              If you need an alternative block explorer, you can visit{' '}
+              <ExternalLink className="underline" href={alternativeExplorerUrl}>
+                OKLink
+              </ExternalLink>
+              .
+            </>
+          ) : null}
         </p>
       </div>
     </div>
   )
 }
 
-function isComponentArbiscan({ name }: { name: string }) {
+function isComponentArbiscanOne({ name }: { name: string }) {
   const componentNameLowercased = name.toLowerCase()
-  return (
-    componentNameLowercased === 'arb1 - arbiscan' ||
-    componentNameLowercased === 'nova - arbiscan'
-  )
+  return componentNameLowercased === 'arb1 - arbiscan'
+}
+
+function isComponentArbiscanNova({ name }: { name: string }) {
+  const componentNameLowercased = name.toLowerCase()
+  return componentNameLowercased === 'nova - arbiscan'
 }
 
 function isComponentOperational({ status }: { status: string }) {
@@ -71,9 +86,13 @@ export const SiteBanner = ({
   }, [])
 
   // show incident-banner if there is an active incident
-  const showArbiscanIncidentBanner = arbitrumStatus.content.components.some(
+  const showArbiscanOneIncidentBanner = arbitrumStatus.content.components.some(
     component =>
-      isComponentArbiscan(component) && !isComponentOperational(component)
+      isComponentArbiscanOne(component) && !isComponentOperational(component)
+  )
+  const showArbiscanNovaIncidentBanner = arbitrumStatus.content.components.some(
+    component =>
+      isComponentArbiscanNova(component) && !isComponentOperational(component)
   )
 
   // show info-banner till expiry date if provided
@@ -85,8 +104,12 @@ export const SiteBanner = ({
       ))
 
   // arbiscan banner always takes priority
-  if (showArbiscanIncidentBanner) {
-    return <SiteBannerArbiscanIncident />
+  if (showArbiscanOneIncidentBanner || showArbiscanNovaIncidentBanner) {
+    return (
+      <SiteBannerArbiscanIncident
+        type={showArbiscanNovaIncidentBanner ? 'arbitrum-nova' : 'arbitrum-one'}
+      />
+    )
   }
 
   if (!showInfoBanner) {
