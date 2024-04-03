@@ -78,10 +78,9 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
-      txType: isDepositMode ? TransferType.deposit : TransferType.withdrawal,
       walletAddress,
-      childChainProvider,
-      parentChainProvider: isDepositMode ? parentChainProvider : undefined,
+      sourceChainProvider: networks.sourceChainProvider,
+      destinationChainProvider: networks.destinationChainProvider,
       amount: amountBigNumber,
       tokenParentChainAddress: token ? token.address : undefined
     })

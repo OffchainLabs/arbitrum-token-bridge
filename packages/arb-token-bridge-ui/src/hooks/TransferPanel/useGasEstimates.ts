@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { Provider } from '@ethersproject/providers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import useSWR from 'swr'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
@@ -7,6 +7,31 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { Address } from '../../util/AddressUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
+import { isNetwork } from '../../util/networks'
+
+async function isDepositMode({
+  sourceChainProvider,
+  destinationChainProvider
+}: {
+  sourceChainProvider: StaticJsonRpcProvider
+  destinationChainProvider: StaticJsonRpcProvider
+}) {
+  const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
+  const destinationChainId = (await destinationChainProvider.getNetwork())
+    .chainId
+
+  const {
+    isEthereumMainnetOrTestnet: isSourceChainEthereum,
+    isArbitrum: isSourceChainArbitrum
+  } = isNetwork(sourceChainId)
+  const { isOrbitChain: isDestinationChainOrbit } =
+    isNetwork(destinationChainId)
+
+  const isDepositMode =
+    isSourceChainEthereum || (isSourceChainArbitrum && isDestinationChainOrbit)
+
+  return isDepositMode
+}
 
 export enum TransferType {
   'deposit',
@@ -15,39 +40,40 @@ export enum TransferType {
 
 async function fetcher([
   walletAddress,
-  txType,
-  parentChainProvider,
-  childChainProvider,
+  sourceChainProvider,
+  destinationChainProvider,
   tokenParentChainAddress,
   amount
 ]: [
   walletAddress: Address,
-  txType: TransferType,
-  parentChainProvider: Provider | undefined,
-  childChainProvider: Provider,
+  sourceChainProvider: StaticJsonRpcProvider,
+  destinationChainProvider: StaticJsonRpcProvider,
   tokenParentChainAddress: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates> {
-  const isDeposit =
-    txType === TransferType.deposit &&
-    typeof parentChainProvider !== 'undefined'
+  const isDeposit = await isDepositMode({
+    sourceChainProvider,
+    destinationChainProvider
+  })
 
   const estimateGasFunctionParams = {
     amount,
     address: walletAddress,
-    childChainProvider
+    childChainProvider: isDeposit
+      ? destinationChainProvider
+      : sourceChainProvider
   }
 
   if (isDeposit) {
     return typeof tokenParentChainAddress === 'string'
       ? await depositTokenEstimateGas({
           ...estimateGasFunctionParams,
-          parentChainProvider,
+          parentChainProvider: sourceChainProvider,
           erc20L1Address: tokenParentChainAddress
         })
       : await depositEthEstimateGas({
           ...estimateGasFunctionParams,
-          parentChainProvider
+          parentChainProvider: sourceChainProvider
         })
   }
 
@@ -59,16 +85,14 @@ async function fetcher([
 
 export function useGasEstimates({
   walletAddress,
-  txType,
-  parentChainProvider,
-  childChainProvider,
+  sourceChainProvider,
+  destinationChainProvider,
   tokenParentChainAddress,
   amount
 }: {
   walletAddress: Address | undefined
-  txType: TransferType
-  parentChainProvider?: Provider
-  childChainProvider: Provider
+  sourceChainProvider: StaticJsonRpcProvider
+  destinationChainProvider: StaticJsonRpcProvider
   tokenParentChainAddress?: string
   amount: BigNumber
 }): {
@@ -80,9 +104,8 @@ export function useGasEstimates({
       ? null
       : [
           walletAddress,
-          txType,
-          parentChainProvider,
-          childChainProvider,
+          sourceChainProvider,
+          destinationChainProvider,
           tokenParentChainAddress,
           amount,
           'gasEstimates'
