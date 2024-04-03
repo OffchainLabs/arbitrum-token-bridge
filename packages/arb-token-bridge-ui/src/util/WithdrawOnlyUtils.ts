@@ -153,6 +153,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0xA35b1B31Ce002FBF2058D22F30f95D405200A15b',
       l2Address: '0xaade6e725879375ba2b0ca608cfb26399d50a7ce'
+    },
+    {
+      symbol: 'ezETH',
+      l2CustomAddr: '0x2416092f143378750bb29b79eD961ab195CcEea5',
+      l1Address: '0xbf5495efe5db9ce00f80364c8b423567e58d2110',
+      l2Address: '0x6c2b260b7e4c4853a1227d9320c50e0b09917fa8'
     }
   ],
   [ChainId.ArbitrumNova]: []
