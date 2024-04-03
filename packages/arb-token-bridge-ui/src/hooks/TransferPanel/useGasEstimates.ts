@@ -33,11 +33,6 @@ async function isDepositMode({
   return isDepositMode
 }
 
-export enum TransferType {
-  'deposit',
-  'withdrawal'
-}
-
 async function fetcher([
   walletAddress,
   sourceChainProvider,

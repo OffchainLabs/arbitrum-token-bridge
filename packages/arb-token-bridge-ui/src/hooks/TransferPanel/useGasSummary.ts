@@ -14,7 +14,7 @@ import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { calculateEstimatedParentChainGasFees } from '../../components/TransferPanel/TransferPanelMainUtils'
-import { TransferType, useGasEstimates } from './useGasEstimates'
+import { useGasEstimates } from './useGasEstimates'
 import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
 
