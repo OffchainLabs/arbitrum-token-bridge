@@ -45,8 +45,10 @@ export function getCctpSubgraphClient(chainId: number) {
 // L1 Subgraphs
 
 const L1SubgraphClient = {
+  // mainnet
   ArbitrumOne: createSubgraphClient('arb-bridge-eth-arb-one'),
   ArbitrumNova: createSubgraphClient('arb-bridge-eth-arb-nova'),
+  // testnet
   ArbitrumSepolia: createSubgraphClient('arb-bridge-eth-arb-sep')
 }
 
@@ -69,7 +71,10 @@ export function getL1SubgraphClient(l2ChainId: number) {
 // L2 Subgraphs
 
 const L2SubgraphClient = {
+  // mainnet
+  // note that arbitrum nova is not supported
   ArbitrumOne: createSubgraphClient('child-token-gateway-arb-one'),
+  // testnet
   ArbitrumSepolia: createSubgraphClient('child-token-gateway-arb-sep')
 }
 
