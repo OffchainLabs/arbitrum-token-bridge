@@ -6,7 +6,13 @@ export const CommonAddress = {
   ArbitrumOne: {
     USDC: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     'USDC.e': '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-    tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a'
+    tokenMessengerContractAddress: '0x19330d10d9cc8751218eaf51e8885d058642e08a',
+
+    CU: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
+  },
+  // Xai Mainnet
+  660279: {
+    CU: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
   },
   Sepolia: {
     USDC: '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',
