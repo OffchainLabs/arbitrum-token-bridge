@@ -133,7 +133,6 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
 
-    // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
       setGasSummaryStatus('loading')
       return
