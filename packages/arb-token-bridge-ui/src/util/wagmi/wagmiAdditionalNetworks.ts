@@ -19,6 +19,12 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
       public: {
         http: [chain.rpcUrl]
       }
+    },
+    blockExplorers: {
+      default: {
+        name: 'Block Explorer',
+        url: chain.explorerUrl
+      }
     }
   }
 }

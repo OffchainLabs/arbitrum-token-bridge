@@ -297,6 +297,12 @@ type SanitizeTokenOptions = {
   chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
 
+export const isTokenArbitrumOneCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.CU.toLowerCase()
+
+export const isTokenXaiMainnetCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress[660279].CU.toLowerCase()
+
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
 
@@ -351,6 +357,11 @@ export function sanitizeTokenSymbol(
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
     return 'USDC'
+  }
+
+  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+    if (isArbitrumOne) return 'CU'
+    return 'wCU'
   }
 
   return tokenSymbol
