@@ -3,7 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 import { ChainId } from '../../../util/networks'
 import { Address } from '../../../util/AddressUtils'
-import { CctpSubgraphClient } from '../createSubgraphClient.util'
+
+import { getCctpSubgraphClient } from '../createSubgraphClient.util'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
@@ -138,15 +139,13 @@ export default async function handler(
       return
     }
 
-    const l1Subgraph =
+    const l2ChainId =
       l1ChainId === ChainId.Ethereum
-        ? CctpSubgraphClient.Ethereum
-        : CctpSubgraphClient.Sepolia
+        ? ChainId.ArbitrumOne
+        : ChainId.ArbitrumSepolia
 
-    const l2Subgraph =
-      l1ChainId === ChainId.Ethereum
-        ? CctpSubgraphClient.ArbitrumOne
-        : CctpSubgraphClient.ArbitrumSepolia
+    const l1Subgraph = getCctpSubgraphClient(l1ChainId)
+    const l2Subgraph = getCctpSubgraphClient(l2ChainId)
 
     const messagesSentQuery = gql(`{
       messageSents(
