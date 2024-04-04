@@ -334,10 +334,12 @@ export async function updateTeleporterDepositStatusData({
   }
 
   const destinationChainTxId = l3Retryable?.retryableCreationId
+  const destinationChainTx = destinationChainTxId
+    ? await destinationChainProvider.getTransaction(destinationChainTxId)
+    : null
 
-  const destinationChainBlockNumber = destinationChainTxId
-    ? (await destinationChainProvider.getTransaction(destinationChainTxId))
-        .blockNumber
+  const destinationChainBlockNumber = destinationChainTx
+    ? destinationChainTx.blockNumber
     : null
 
   const timestampResolved = destinationChainBlockNumber
