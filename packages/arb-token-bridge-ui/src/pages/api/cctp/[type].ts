@@ -1,22 +1,9 @@
-import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
+import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { ChainId } from '../../../util/networks'
 import { Address } from '../../../util/AddressUtils'
-
-const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
-if (!subgraphUrl) {
-  console.warn('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
-}
-
-export function getSubgraphClient(subgraph: string) {
-  return new ApolloClient({
-    link: new HttpLink({
-      uri: `${subgraphUrl}${subgraph}`,
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
+import { CctpSubgraphClient } from '../createSubgraphClient.util'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
@@ -151,12 +138,15 @@ export default async function handler(
       return
     }
 
-    const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-sepolia'
-    )
-    const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-sepolia'
-    )
+    const l1Subgraph =
+      l1ChainId === ChainId.Ethereum
+        ? CctpSubgraphClient.Ethereum
+        : CctpSubgraphClient.Sepolia
+
+    const l2Subgraph =
+      l1ChainId === ChainId.Ethereum
+        ? CctpSubgraphClient.ArbitrumOne
+        : CctpSubgraphClient.ArbitrumSepolia
 
     const messagesSentQuery = gql(`{
       messageSents(
