@@ -41,6 +41,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { AccountMenuItem } from '../Sidebar/AccountMenuItem'
 
 declare global {
   interface Window {
@@ -276,7 +277,7 @@ function AppContent() {
   return (
     <>
       <Header>
-        <HeaderAccountPopover />
+        <AccountMenuItem />
       </Header>
       <TokenListSyncer />
       <BalanceUpdater />

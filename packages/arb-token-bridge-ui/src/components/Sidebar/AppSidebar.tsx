@@ -1,5 +1,7 @@
 'use client'
+import { Sidebar } from '@offchainlabs/cobalt'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { usePostHog } from 'posthog-js/react'
 
 // Dynamically import the Sidebar component with SSR disabled
@@ -10,5 +12,9 @@ const DynamicSidebar = dynamic(
 
 export const AppSidebar = () => {
   const posthog = usePostHog()
-  return <DynamicSidebar logger={posthog} activeMenu="Bridge" />
+  return (
+    <div className="sm:hidden">
+      <DynamicSidebar logger={posthog} activeMenu="Bridge" />
+    </div>
+  )
 }

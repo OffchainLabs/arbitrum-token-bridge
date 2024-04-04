@@ -7,6 +7,7 @@ import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
+import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 
 function onMobileMenuOpen() {
   document.body.classList.add('overflow-hidden', 'menu-open')
@@ -37,24 +38,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
         <div className="hidden sm:flex">{children}</div>
       </div>
-      <Disclosure>
-        {({ open }) => (
-          <>
-            {!open && (
-              <Disclosure.Button
-                className="sm:hidden"
-                aria-label="Menu Toggle Button"
-                onClick={onMobileMenuOpen}
-              >
-                <Bars3Icon className="h-8 w-8 stroke-1 text-white" />
-              </Disclosure.Button>
-            )}
-            <Disclosure.Panel>
-              <HeaderMobile>{children}</HeaderMobile>
-            </Disclosure.Panel>
-          </>
-        )}
-      </Disclosure>
+      <AppMobileSidebar>{children}</AppMobileSidebar>
     </header>
   )
 }
