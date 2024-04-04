@@ -12,6 +12,8 @@ function createSubgraphClient(subgraph: string) {
   })
 }
 
+// CCTP Subgraphs
+
 const CctpSubgraphClient = {
   // mainnet
   Ethereum: createSubgraphClient('cctp-ethereum'),
@@ -37,5 +39,49 @@ export function getCctpSubgraphClient(chainId: number) {
 
     default:
       throw new Error(`[getCctpSubgraphClient] unsupported chain: ${chainId}`)
+  }
+}
+
+// L1 Subgraphs
+
+const L1SubgraphClient = {
+  ArbitrumOne: createSubgraphClient('arb-bridge-eth-arb-one'),
+  ArbitrumNova: createSubgraphClient('arb-bridge-eth-arb-nova'),
+  ArbitrumSepolia: createSubgraphClient('arb-bridge-eth-arb-sep')
+}
+
+export function getL1SubgraphClient(l2ChainId: number) {
+  switch (l2ChainId) {
+    case ChainId.ArbitrumOne:
+      return L1SubgraphClient.ArbitrumOne
+
+    case ChainId.ArbitrumNova:
+      return L1SubgraphClient.ArbitrumNova
+
+    case ChainId.ArbitrumSepolia:
+      return L1SubgraphClient.ArbitrumSepolia
+
+    default:
+      throw new Error(`[getL1SubgraphClient] unsupported chain: ${l2ChainId}`)
+  }
+}
+
+// L2 Subgraphs
+
+const L2SubgraphClient = {
+  ArbitrumOne: createSubgraphClient('child-token-gateway-arb-one'),
+  ArbitrumSepolia: createSubgraphClient('child-token-gateway-arb-sep')
+}
+
+export function getL2SubgraphClient(l2ChainId: number) {
+  switch (l2ChainId) {
+    case ChainId.ArbitrumOne:
+      return L2SubgraphClient.ArbitrumOne
+
+    case ChainId.ArbitrumSepolia:
+      return L2SubgraphClient.ArbitrumSepolia
+
+    default:
+      throw new Error(`[getL2SubgraphClient] unsupported chain: ${l2ChainId}`)
   }
 }
