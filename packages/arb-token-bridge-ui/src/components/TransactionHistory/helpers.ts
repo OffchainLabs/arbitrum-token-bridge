@@ -26,11 +26,6 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { getTeleportStatusDataFromTxId } from '@/token-bridge-sdk/teleport'
-import {
-  Erc20DepositMessages,
-  EthDepositStatus as EthTeleportStatus
-} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'

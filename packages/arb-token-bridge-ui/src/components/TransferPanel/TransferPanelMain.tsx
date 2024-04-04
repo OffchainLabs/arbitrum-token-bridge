@@ -657,14 +657,6 @@ export function TransferPanelMain({
         destinationChainIds.push(ChainId.ArbitrumOne)
       }
 
-      // temporary patch, remove it later. It should come in partnerChainId from SDK
-      if (
-        networks.sourceChain.id === ChainId.Sepolia &&
-        !destinationChainIds.includes(ChainId.StylusTestnet)
-      ) {
-        destinationChainIds.push(ChainId.StylusTestnet)
-      }
-
       return (
         destinationChainIds
           // remove self
