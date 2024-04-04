@@ -12,6 +12,7 @@ const SiteBannerArbiscanIncident = ({
 }: {
   type: 'arbitrum-one' | 'arbitrum-nova'
 }) => {
+  const chainName = type === 'arbitrum-one' ? 'Arbitrum One' : 'Arbitrum Nova'
   const explorerUrl =
     type === 'arbitrum-nova'
       ? 'https://nova.arbiscan.io/'
@@ -27,13 +28,13 @@ const SiteBannerArbiscanIncident = ({
           <ExternalLink className="underline" href={explorerUrl}>
             {explorerTitle}
           </ExternalLink>{' '}
-          is temporarily facing some issues while showing the latest data.
-          Arbitrum chains are still live and running.
+          is temporarily facing some issues while showing the latest data.{' '}
+          {chainName} is still live and running.{' '}
           {alternativeExplorerUrl ? (
             <>
               If you need an alternative block explorer, you can visit{' '}
               <ExternalLink className="underline" href={alternativeExplorerUrl}>
-                OKLink
+                here
               </ExternalLink>
               .
             </>
@@ -104,7 +105,7 @@ export const SiteBanner = ({
   if (showArbiscanOneIncidentBanner || showArbiscanNovaIncidentBanner) {
     return (
       <SiteBannerArbiscanIncident
-        type={showArbiscanNovaIncidentBanner ? 'arbitrum-nova' : 'arbitrum-one'}
+        type={showArbiscanOneIncidentBanner ? 'arbitrum-one' : 'arbitrum-nova'}
       />
     )
   }
