@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { ExternalLink } from './ExternalLink'
 import { ArbitrumStatusResponse } from '../../pages/api/status'
 import { getAPIBaseUrl } from '../../util'
-
-dayjs.extend(utc)
 
 const SiteBannerArbiscanIncident = ({
   type
