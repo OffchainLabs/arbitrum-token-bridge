@@ -452,8 +452,19 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  const validDestinationChainIds =
+  let validDestinationChainIds =
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+
+  // to enable l1-l3 transfers, get the grand-children chain id's for the given chain (if found) and add them to the list
+  let orbitChainIds: ChainId[] = []
+  validDestinationChainIds.forEach(chainId => {
+    const orbitChains =
+      chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+    orbitChainIds = [...orbitChainIds, ...orbitChains]
+  })
+
+  // add orbit-chains are also a part of the valid destination id's
+  validDestinationChainIds = [...validDestinationChainIds, ...orbitChainIds]
 
   if (parentChainId) {
     // always make parent chain the first element
