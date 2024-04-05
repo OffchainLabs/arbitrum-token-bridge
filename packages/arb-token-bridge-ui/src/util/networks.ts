@@ -432,7 +432,7 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainID] = chain.explorerUrl
 }
 
-function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
+export function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
   return !chain.isArbitrum
 }
 

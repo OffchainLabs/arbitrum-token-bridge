@@ -4,7 +4,7 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId, getChains, isNetwork } from '../util/networks'
+import { ChainId, getChains, isL1Chain, isNetwork } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -97,28 +97,44 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 }
 
 function getMultiChainFetchList(): ChainPair[] {
-  // return getChains().flatMap(chain => {
-  //   // We only grab child chains because we don't want duplicates and we need the parent chain
-  //   // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-  //   const childChainIds = chain.partnerChainIDs ?? []
-  //   const isParentChain = childChainIds.length > 0
+  const allChains = getChains()
 
-  //   if (!isParentChain) {
-  //     // Skip non-parent chains
-  //     return []
-  //   }
+  return getChains().flatMap(chain => {
+    // We only grab child chains because we don't want duplicates and we need the parent chain
+    // Although the type is correct here we default to an empty array for custom networks backwards compatibility
+    let childChainIds = chain.partnerChainIDs ?? []
+    const isParentChain = childChainIds.length > 0
 
-  //   // For each destination chain, map to an array of ChainPair objects
-  //   return childChainIds.map(childChainId => ({
-  //     parentChainId: chain.chainID,
-  //     childChainId: childChainId
-  //   }))
-  // })
+    // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
+    if (isL1Chain(chain)) {
+      let l3ChildrenChainIds: number[] = []
+      childChainIds.forEach(l2ChildChainId => {
+        const l2ChildChain = allChains.find(
+          chain => chain.chainID === l2ChildChainId
+        )
+        if (l2ChildChain) {
+          l3ChildrenChainIds = [
+            ...l3ChildrenChainIds,
+            ...(l2ChildChain.partnerChainIDs ?? [])
+          ]
+        }
+      })
 
-  // hardcode sepolia/stylus temporarily
-  return [
-    { parentChainId: ChainId.Sepolia, childChainId: ChainId.StylusTestnet }
-  ]
+      // add L3 children to the list of child chains
+      childChainIds = [...childChainIds, ...l3ChildrenChainIds]
+    }
+
+    if (!isParentChain) {
+      // Skip non-parent chains
+      return []
+    }
+
+    // For each destination chain, map to an array of ChainPair objects
+    return childChainIds.map(childChainId => ({
+      parentChainId: chain.chainID,
+      childChainId: childChainId
+    }))
+  })
 }
 
 function isWithdrawalFromSubgraph(
