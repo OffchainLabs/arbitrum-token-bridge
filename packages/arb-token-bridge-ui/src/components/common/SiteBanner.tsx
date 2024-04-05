@@ -12,20 +12,22 @@ const SiteBannerArbiscanIncident = ({
 }: {
   type: 'arbitrum-one' | 'arbitrum-nova'
 }) => {
-  const chainName = type === 'arbitrum-one' ? 'Arbitrum One' : 'Arbitrum Nova'
-  const explorerUrl =
-    type === 'arbitrum-nova'
-      ? 'https://nova.arbiscan.io/'
-      : 'https://arbiscan.io/'
-  const explorerTitle = type === 'arbitrum-nova' ? 'Nova Arbiscan' : 'Arbiscan'
-  const alternativeExplorerUrl =
-    type === 'arbitrum-nova' ? '' : 'https://www.oklink.com/arbitrum'
+  const isArbitrumOne = type === 'arbitrum-one'
+
+  const chainName = isArbitrumOne ? 'Arbitrum One' : 'Arbitrum Nova'
+  const explorerUrl = isArbitrumOne
+    ? 'https://arbiscan.io/'
+    : 'https://nova.arbiscan.io/'
+  const explorerTitle = isArbitrumOne ? 'Arbiscan' : 'Nova Arbiscan'
+  const alternativeExplorerUrl = isArbitrumOne
+    ? 'https://www.oklink.com/arbitrum'
+    : ''
 
   return (
     <div className="bg-orange-dark px-4 py-[8px] text-center text-sm font-normal text-white">
       <div className="w-full">
         <p>
-          <ExternalLink className="underline" href={explorerUrl}>
+          <ExternalLink className="arb-hover underline" href={explorerUrl}>
             {explorerTitle}
           </ExternalLink>{' '}
           is temporarily facing some issues while showing the latest data.{' '}
@@ -33,7 +35,10 @@ const SiteBannerArbiscanIncident = ({
           {alternativeExplorerUrl ? (
             <>
               If you need an alternative block explorer, you can visit{' '}
-              <ExternalLink className="underline" href={alternativeExplorerUrl}>
+              <ExternalLink
+                className="arb-hover underline"
+                href={alternativeExplorerUrl}
+              >
                 here
               </ExternalLink>
               .
