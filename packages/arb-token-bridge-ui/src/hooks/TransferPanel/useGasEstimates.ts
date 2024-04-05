@@ -25,7 +25,7 @@ async function fetcher([
   const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
   const destinationChainId = (await destinationChainProvider.getNetwork())
     .chainId
-  const isDeposit = await isDepositMode({ sourceChainId, destinationChainId })
+  const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
 
   const estimateGasFunctionParams = {
     amount,
