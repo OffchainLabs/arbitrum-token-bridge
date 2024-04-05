@@ -7,7 +7,7 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { Address } from '../../util/AddressUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { isNetwork } from '../../util/networks'
+import { isDepositModeByChainIds } from '../useNetworksRelationship'
 
 async function isDepositMode({
   sourceChainProvider,
@@ -20,17 +20,7 @@ async function isDepositMode({
   const destinationChainId = (await destinationChainProvider.getNetwork())
     .chainId
 
-  const {
-    isEthereumMainnetOrTestnet: isSourceChainEthereum,
-    isArbitrum: isSourceChainArbitrum
-  } = isNetwork(sourceChainId)
-  const { isOrbitChain: isDestinationChainOrbit } =
-    isNetwork(destinationChainId)
-
-  const isDepositMode =
-    isSourceChainEthereum || (isSourceChainArbitrum && isDestinationChainOrbit)
-
-  return isDepositMode
+  return isDepositModeByChainIds({ sourceChainId, destinationChainId })
 }
 
 async function fetcher([
