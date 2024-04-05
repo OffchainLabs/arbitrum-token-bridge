@@ -57,9 +57,19 @@ export function EstimatedGas({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
   const isSourceChain = chainType === 'source'
   const isParentChain = isSourceChain
     ? networks.sourceChain.id === parentChain.id
@@ -70,7 +80,8 @@ export function EstimatedGas({
     estimatedL2GasFees
   } = useGasSummary()
   const parentChainName = getNetworkName(parentChain.id)
-  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
+  const isBridgingEth =
+    selectedToken === null && !childChainNativeCurrency.isCustom
   const showPrice = useMemo(
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
@@ -136,7 +147,9 @@ export function EstimatedGas({
         >
           <span className="text-right">
             {formatAmount(estimatedGasFee, {
-              symbol: nativeCurrency.symbol
+              symbol: isParentChain
+                ? parentChainNativeCurrency.symbol
+                : childChainNativeCurrency.symbol
             })}
           </span>
 
