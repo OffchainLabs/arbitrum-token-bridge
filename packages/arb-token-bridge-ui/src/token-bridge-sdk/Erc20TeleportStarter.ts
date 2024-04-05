@@ -38,13 +38,20 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     signer,
     amount
   }: ApproveNativeCurrencyProps) {
-    // const ethBridger = await EthBridger.fromProvider(
-    //   this.destinationChainProvider
-    // )
-    // return ethBridger.approveGasToken({
-    //   l1Signer: signer,
-    //   amount
-    // })
+    // get the intermediate L2 chain provider
+    const { l2Provider } = await getL2ConfigForTeleport({
+      destinationChainProvider: this.destinationChainProvider
+    })
+
+    const l3Network = await getL2Network(this.destinationChainProvider)
+
+    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+
+    return l1l3Bridger.approveFeeToken({
+      l1Signer: signer,
+      l2Provider,
+      amount
+    })
   }
 
   public requiresTokenApproval = async ({
