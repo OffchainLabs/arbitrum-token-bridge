@@ -2,10 +2,10 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 
 import { ChainId } from '../../util/networks'
 
-function createSubgraphClient(subgraph: string) {
+function createClient(subgraphId: string) {
   return new ApolloClient({
     link: new HttpLink({
-      uri: `${process.env.SUBGRAPH_BASE_URL}/${subgraph}/version/latest`,
+      uri: `https://gateway-arbitrum.network.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/subgraphs/id/${subgraphId}`,
       fetch
     }),
     cache: new InMemoryCache()
@@ -16,11 +16,11 @@ function createSubgraphClient(subgraph: string) {
 
 const CctpSubgraphClient = {
   // mainnet
-  Ethereum: createSubgraphClient('cctp-ethereum'),
-  ArbitrumOne: createSubgraphClient('cctp-arb-one'),
+  Ethereum: createClient('E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1'),
+  ArbitrumOne: createClient('9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW'),
   // testnet
-  Sepolia: createSubgraphClient('cctp-sepolia'),
-  ArbitrumSepolia: createSubgraphClient('cctp-arb-sep')
+  Sepolia: createClient('4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5'),
+  ArbitrumSepolia: createClient('4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB')
 }
 
 export function getCctpSubgraphClient(chainId: number) {
@@ -46,10 +46,10 @@ export function getCctpSubgraphClient(chainId: number) {
 
 const L1SubgraphClient = {
   // mainnet
-  ArbitrumOne: createSubgraphClient('arb-bridge-eth-arb-one'),
-  ArbitrumNova: createSubgraphClient('arb-bridge-eth-arb-nova'),
+  ArbitrumOne: createClient('F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4'),
+  ArbitrumNova: createClient('6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp'),
   // testnet
-  ArbitrumSepolia: createSubgraphClient('arb-bridge-eth-arb-sep')
+  ArbitrumSepolia: createClient('GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9')
 }
 
 export function getL1SubgraphClient(l2ChainId: number) {
@@ -73,9 +73,9 @@ export function getL1SubgraphClient(l2ChainId: number) {
 const L2SubgraphClient = {
   // mainnet
   // note that arbitrum nova is not supported
-  ArbitrumOne: createSubgraphClient('child-token-gateway-arb-one'),
+  ArbitrumOne: createClient('9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj'),
   // testnet
-  ArbitrumSepolia: createSubgraphClient('child-token-gateway-arb-sep')
+  ArbitrumSepolia: createClient('AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw')
 }
 
 export function getL2SubgraphClient(l2ChainId: number) {
