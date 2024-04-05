@@ -17,8 +17,16 @@ function createClient(uri: string) {
 }
 
 function createGraphNetworkClient(subgraphId: string) {
+  const graphNetworkApiKey = process.env.GRAPH_NETWORK_API_KEY
+
+  if (typeof graphNetworkApiKey === 'undefined') {
+    throw new Error(
+      `[createGraphNetworkClient] missing "GRAPH_NETWORK_API_KEY" env variable"`
+    )
+  }
+
   return createClient(
-    `https://gateway-arbitrum.network.thegraph.com/api/${process.env.GRAPH_NETWORK_API_KEY}/subgraphs/id/${subgraphId}`
+    `https://gateway-arbitrum.network.thegraph.com/api/${graphNetworkApiKey}/subgraphs/id/${subgraphId}`
   )
 }
 
