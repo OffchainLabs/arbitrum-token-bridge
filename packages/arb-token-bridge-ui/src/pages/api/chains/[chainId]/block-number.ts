@@ -7,31 +7,31 @@ import {
   getL2SubgraphClient
 } from '../../../../util/SubgraphUtils'
 
-function getSubgraphClient(chain: string) {
-  switch (chain) {
-    case 'ethereum':
+function getSubgraphClient(chainId: number) {
+  switch (chainId) {
+    case ChainId.Ethereum:
       // it's the same whether we do arb1 or nova
       return getL1SubgraphClient(ChainId.ArbitrumOne)
 
-    case 'sepolia':
+    case ChainId.Sepolia:
       return getL1SubgraphClient(ChainId.ArbitrumSepolia)
 
-    case 'arbitrum-one':
+    case ChainId.ArbitrumOne:
       return getL2SubgraphClient(ChainId.ArbitrumOne)
 
-    case 'arbitrum-sepolia':
+    case ChainId.ArbitrumSepolia:
       return getL2SubgraphClient(ChainId.ArbitrumSepolia)
 
     default:
-      throw new Error(`[getSubgraphClient] unsupported chain: ${chain}`)
+      throw new Error(`[getSubgraphClient] unsupported chain id: ${chainId}`)
   }
 }
 
 export default async function handler(
-  req: NextApiRequest & { query: { chain: string } },
+  req: NextApiRequest & { query: { chainId: string } },
   res: NextApiResponse<{ data: number } | { message: string }>
 ) {
-  const { chain } = req.query
+  const { chainId } = req.query
 
   // validate method
   if (req.method !== 'GET') {
@@ -48,7 +48,7 @@ export default async function handler(
           }
         }
       }
-    } = await getSubgraphClient(chain).query({
+    } = await getSubgraphClient(Number(chainId)).query({
       query: gql`
         {
           _meta {
