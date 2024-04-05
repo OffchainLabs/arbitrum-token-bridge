@@ -6,7 +6,7 @@ import {
   FetchWithdrawalsFromSubgraphResult,
   fetchWithdrawalsFromSubgraph
 } from './fetchWithdrawalsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
+import { fetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { fetchTokenWithdrawalsFromEventLogs } from './fetchTokenWithdrawalsFromEventLogs'
 import { fetchL2Gateways } from '../fetchL2Gateways'
 import { Withdrawal } from '../../hooks/useTransactionHistory'
@@ -53,8 +53,7 @@ export async function fetchWithdrawals({
     // if toBlock hasn't been provided by the user
 
     // fetch the latest L2 block number thorough subgraph
-    const latestSubgraphBlockNumber = await tryFetchLatestSubgraphBlockNumber(
-      'L2',
+    const latestSubgraphBlockNumber = await fetchLatestSubgraphBlockNumber(
       l2ChainID
     )
     toBlock = latestSubgraphBlockNumber
