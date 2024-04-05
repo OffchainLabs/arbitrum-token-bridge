@@ -1,28 +1,8 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useMemo } from 'react'
 import { Chain } from 'wagmi'
-import { isNetwork } from '../util/networks'
 import { UseNetworksState } from './useNetworks'
-
-export function isDepositModeByChainIds({
-  sourceChainId,
-  destinationChainId
-}: {
-  sourceChainId: number
-  destinationChainId: number
-}) {
-  const {
-    isEthereumMainnetOrTestnet: isSourceChainEthereum,
-    isArbitrum: isSourceChainArbitrum
-  } = isNetwork(sourceChainId)
-  const { isOrbitChain: isDestinationChainOrbit } =
-    isNetwork(destinationChainId)
-
-  const isDepositMode =
-    isSourceChainEthereum || (isSourceChainArbitrum && isDestinationChainOrbit)
-
-  return isDepositMode
-}
+import { isDepositMode } from '../util/isDepositMode'
 
 type UseNetworksRelationshipState = {
   childChain: Chain
@@ -38,18 +18,18 @@ export function useNetworksRelationship({
   destinationChainProvider
 }: UseNetworksState): UseNetworksRelationshipState {
   return useMemo(() => {
-    const isDepositMode = isDepositModeByChainIds({
+    const _isDepositMode = isDepositMode({
       sourceChainId: sourceChain.id,
       destinationChainId: destinationChain.id
     })
 
-    if (isDepositMode) {
+    if (_isDepositMode) {
       return {
         childChain: destinationChain,
         childChainProvider: destinationChainProvider,
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
-        isDepositMode
+        isDepositMode: _isDepositMode
       }
     }
 
@@ -58,7 +38,7 @@ export function useNetworksRelationship({
       childChainProvider: sourceChainProvider,
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
-      isDepositMode
+      isDepositMode: _isDepositMode
     }
   }, [
     sourceChain,

@@ -7,21 +7,7 @@ import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { Address } from '../../util/AddressUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { isDepositModeByChainIds } from '../useNetworksRelationship'
-
-async function isDepositMode({
-  sourceChainProvider,
-  destinationChainProvider
-}: {
-  sourceChainProvider: StaticJsonRpcProvider
-  destinationChainProvider: StaticJsonRpcProvider
-}) {
-  const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
-  const destinationChainId = (await destinationChainProvider.getNetwork())
-    .chainId
-
-  return isDepositModeByChainIds({ sourceChainId, destinationChainId })
-}
+import { isDepositMode } from '../../util/isDepositMode'
 
 async function fetcher([
   walletAddress,
@@ -36,10 +22,10 @@ async function fetcher([
   tokenParentChainAddress: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates> {
-  const isDeposit = await isDepositMode({
-    sourceChainProvider,
-    destinationChainProvider
-  })
+  const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
+  const destinationChainId = (await destinationChainProvider.getNetwork())
+    .chainId
+  const isDeposit = await isDepositMode({ sourceChainId, destinationChainId })
 
   const estimateGasFunctionParams = {
     amount,
