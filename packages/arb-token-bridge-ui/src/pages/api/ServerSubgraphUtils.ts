@@ -2,25 +2,47 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 
 import { ChainId } from '../../util/networks'
 
-function createClient(subgraphId: string) {
+/**
+ * Determines whether to use The Graph Network or The Graph Hosted Service.
+ */
+const useGraphNetwork = Boolean(
+  parseInt(process.env.GRAPH_NETWORK_ENABLED ?? '0')
+)
+
+function createClient(uri: string) {
   return new ApolloClient({
-    link: new HttpLink({
-      uri: `https://gateway-arbitrum.network.thegraph.com/api/${process.env.SUBGRAPH_API_KEY}/subgraphs/id/${subgraphId}`,
-      fetch
-    }),
+    link: new HttpLink({ uri, fetch }),
     cache: new InMemoryCache()
   })
+}
+
+function createGraphNetworkClient(subgraphId: string) {
+  return createClient(
+    `https://gateway-arbitrum.network.thegraph.com/api/${process.env.GRAPH_NETWORK_API_KEY}/subgraphs/id/${subgraphId}`
+  )
+}
+
+function createGraphHostedServiceClient(subgraphName: string) {
+  return createClient(`https://api.thegraph.com/subgraphs/name/${subgraphName}`)
 }
 
 // CCTP Subgraphs
 
 const CctpSubgraphClient = {
   // mainnet
-  Ethereum: createClient('E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1'),
-  ArbitrumOne: createClient('9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW'),
+  Ethereum: useGraphNetwork
+    ? createGraphNetworkClient('E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1')
+    : createGraphHostedServiceClient('chrstph-dvx/cctp-mainnet'),
+  ArbitrumOne: useGraphNetwork
+    ? createGraphNetworkClient('9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW')
+    : createGraphHostedServiceClient('chrstph-dvx/cctp-arb-one'),
   // testnet
-  Sepolia: createClient('4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5'),
-  ArbitrumSepolia: createClient('4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB')
+  Sepolia: useGraphNetwork
+    ? createGraphNetworkClient('4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5')
+    : createGraphHostedServiceClient('chrstph-dvx/cctp-sepolia'),
+  ArbitrumSepolia: useGraphNetwork
+    ? createGraphNetworkClient('4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB')
+    : createGraphHostedServiceClient('chrstph-dvx/cctp-arb-sepolia')
 }
 
 export function getCctpSubgraphClient(chainId: number) {
@@ -46,10 +68,16 @@ export function getCctpSubgraphClient(chainId: number) {
 
 const L1SubgraphClient = {
   // mainnet
-  ArbitrumOne: createClient('F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4'),
-  ArbitrumNova: createClient('6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp'),
+  ArbitrumOne: useGraphNetwork
+    ? createGraphNetworkClient('F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4')
+    : createGraphHostedServiceClient('gvladika/arb-bridge-eth-nitro'),
+  ArbitrumNova: useGraphNetwork
+    ? createGraphNetworkClient('6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp')
+    : createGraphHostedServiceClient('gvladika/arb-bridge-eth-nova'),
   // testnet
-  ArbitrumSepolia: createClient('GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9')
+  ArbitrumSepolia: useGraphNetwork
+    ? createGraphNetworkClient('GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9')
+    : createGraphHostedServiceClient('fionnachan/arb-bridge-eth-sepolia')
 }
 
 export function getL1SubgraphClient(l2ChainId: number) {
@@ -73,9 +101,13 @@ export function getL1SubgraphClient(l2ChainId: number) {
 const L2SubgraphClient = {
   // mainnet
   // note that arbitrum nova is not supported
-  ArbitrumOne: createClient('9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj'),
+  ArbitrumOne: useGraphNetwork
+    ? createGraphNetworkClient('9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj')
+    : createGraphHostedServiceClient('gvladika/layer2-token-gateway-arb1'),
   // testnet
-  ArbitrumSepolia: createClient('AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw')
+  ArbitrumSepolia: useGraphNetwork
+    ? createGraphNetworkClient('AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw')
+    : createGraphHostedServiceClient('fionnachan/layer2-token-gateway-sepolia')
 }
 
 export function getL2SubgraphClient(l2ChainId: number) {
