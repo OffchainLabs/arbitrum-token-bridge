@@ -13,7 +13,6 @@ import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
-import { calculateEstimatedParentChainGasFees } from '../../components/TransferPanel/TransferPanelMainUtils'
 import { useGasEstimates } from './useGasEstimates'
 import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
@@ -89,9 +88,10 @@ export function useGasSummary(): UseGasSummaryResult {
     if (!estimateGasResult?.estimatedParentChainGas) {
       return
     }
-    return calculateEstimatedParentChainGasFees(
-      estimateGasResult.estimatedParentChainGas,
-      parentChainGasPrice
+    return parseFloat(
+      utils.formatEther(
+        estimateGasResult.estimatedParentChainGas.mul(parentChainGasPrice)
+      )
     )
   }, [estimateGasResult, parentChainGasPrice])
 
