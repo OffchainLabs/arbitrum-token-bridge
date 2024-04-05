@@ -159,6 +159,18 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x2416092f143378750bb29b79eD961ab195CcEea5',
       l1Address: '0xbf5495efe5db9ce00f80364c8b423567e58d2110',
       l2Address: '0x6c2b260b7e4c4853a1227d9320c50e0b09917fa8'
+    },
+    {
+      symbol: 'USDe',
+      l2CustomAddr: '0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34',
+      l1Address: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+      l2Address: '0x1FefA878e65998482C743eE2deDB907E4D9c8c34'
+    },
+    {
+      symbol: 'sUSDe',
+      l2CustomAddr: '0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2',
+      l1Address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
+      l2Address: '0x292CbA96fce24f6802dBdA021ED2B05481a3eEdF'
     }
   ],
   [ChainId.ArbitrumNova]: []
