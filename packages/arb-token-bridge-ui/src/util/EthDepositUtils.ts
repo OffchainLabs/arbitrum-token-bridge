@@ -45,8 +45,8 @@ export type DepositEthEstimateGasParams = Omit<
 
 export async function depositEthEstimateGas(
   params: DepositEthEstimateGasParams
-) {
-  const { address, parentChainProvider, childChainProvider } = params
+): Promise<DepositGasEstimates> {
+  const { amount, address, parentChainProvider, childChainProvider } = params
   const ethBridger = await EthBridger.fromProvider(childChainProvider)
 
   const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
@@ -57,9 +57,7 @@ export async function depositEthEstimateGas(
 
   // todo: update this when we support custom destination addresses for eth deposits
   const depositRequest = await ethBridger.getDepositRequest({
-    // amount is not needed because it won't revert if 0
-    // but some token contracts revert if 0 so we need amount for token gas estimation
-    amount: BigNumber.from(0),
+    amount,
     from: address
   })
 
