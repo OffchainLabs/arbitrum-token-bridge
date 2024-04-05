@@ -13,10 +13,9 @@ module.exports = {
       {
         source: '/api/status',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'false' },
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'https://portal.arbitrum.io/'
+            value: 'https://portal.arbitrum.io'
           },
           {
             key: 'Access-Control-Allow-Methods',

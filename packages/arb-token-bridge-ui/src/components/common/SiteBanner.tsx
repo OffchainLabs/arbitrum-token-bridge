@@ -18,7 +18,7 @@ const SiteBannerArbiscanIncident = ({
   const explorerTitle = isArbitrumOne ? 'Arbiscan' : 'Nova Arbiscan'
   const alternativeExplorerUrl = isArbitrumOne
     ? 'https://www.oklink.com/arbitrum'
-    : ''
+    : false
 
   return (
     <div className="bg-orange-dark px-4 py-[8px] text-center text-sm font-normal text-white">
@@ -103,13 +103,12 @@ export const SiteBanner = ({
     !expiryDate ||
     (expiryDate && dayjs.utc().isBefore(dayjs(expiryDate).utc(true)))
 
-  // arbiscan banner always takes priority
-  if (showArbiscanOneIncidentBanner || showArbiscanNovaIncidentBanner) {
-    return (
-      <SiteBannerArbiscanIncident
-        type={showArbiscanOneIncidentBanner ? 'arbitrum-one' : 'arbitrum-nova'}
-      />
-    )
+  if (showArbiscanOneIncidentBanner) {
+    return <SiteBannerArbiscanIncident type="arbitrum-one" />
+  }
+
+  if (showArbiscanNovaIncidentBanner) {
+    return <SiteBannerArbiscanIncident type="arbitrum-nova" />
   }
 
   if (!showInfoBanner) {
