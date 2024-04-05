@@ -108,7 +108,7 @@ function TotalGasFees() {
    *  ERC20 deposit: L2->Xai
    *  x ETH and x XAI
    *
-   *  XAI/ERC20 withdrawal: L3->L2
+   *  Custom gas token/ERC20 withdrawal: L3->L2
    *  only show child chain native currency
    *  x XAI
    */
