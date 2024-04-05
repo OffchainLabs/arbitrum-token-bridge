@@ -150,35 +150,39 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
-          {gasSummaryLoading && <StyledLoader />}
-          {!gasSummaryLoading && differentNativeCurrencyAndDepositMode && (
-            <span className="tabular-nums">
-              {formatAmount(estimatedParentChainGasFees, {
-                symbol: parentChainNativeCurrency.symbol
-              })}{' '}
-              <NativeCurrencyPrice
-                amount={estimatedTotalGasFees}
-                showBrackets
-              />
-              {selectedToken && ' and '}
-            </span>
+          {gasSummaryLoading ? (
+            <StyledLoader />
+          ) : (
+            <>
+              {differentNativeCurrencyAndDepositMode && (
+                <span className="tabular-nums">
+                  {formatAmount(estimatedParentChainGasFees, {
+                    symbol: parentChainNativeCurrency.symbol
+                  })}{' '}
+                  <NativeCurrencyPrice
+                    amount={estimatedTotalGasFees}
+                    showBrackets
+                  />
+                  {selectedToken && ' and '}
+                </span>
+              )}
+              {showChildChainNativeCurrencyAsGasFee &&
+                formatAmount(estimatedChildChainGasFees, {
+                  symbol: childChainNativeCurrency.symbol
+                })}
+              {sameNativeCurrency && (
+                <span className="tabular-nums">
+                  {formatAmount(estimatedTotalGasFees, {
+                    symbol: childChainNativeCurrency.symbol
+                  })}{' '}
+                  <NativeCurrencyPrice
+                    amount={estimatedTotalGasFees}
+                    showBrackets
+                  />
+                </span>
+              )}
+            </>
           )}
-          {!gasSummaryLoading &&
-            showChildChainNativeCurrencyAsGasFee &&
-            formatAmount(estimatedChildChainGasFees, {
-              symbol: childChainNativeCurrency.symbol
-            })}
-          {!gasSummaryLoading && sameNativeCurrency && (
-            <span className="tabular-nums">
-              {formatAmount(estimatedTotalGasFees, {
-                symbol: childChainNativeCurrency.symbol
-              })}{' '}
-              <NativeCurrencyPrice
-                amount={estimatedTotalGasFees}
-                showBrackets
-              />
-            </span>
-          )}{' '}
         </span>
       </div>
 
