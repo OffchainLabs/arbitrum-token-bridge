@@ -5,9 +5,12 @@ import { ChainId } from '../../util/networks'
 /**
  * Determines whether to use The Graph Network or The Graph Hosted Service.
  */
-const useGraphNetwork = Boolean(
-  parseInt(process.env.GRAPH_NETWORK_ENABLED ?? '0')
-)
+const graphNetworkEnabled = process.env.GRAPH_NETWORK_ENABLED === 'true'
+
+/**
+ * The API key to be usd for calls to The Graph Network.
+ */
+const graphNetworkApiKey = process.env.GRAPH_NETWORK_API_KEY
 
 function createClient(uri: string) {
   return new ApolloClient({
@@ -17,8 +20,6 @@ function createClient(uri: string) {
 }
 
 function createGraphNetworkClient(subgraphId: string) {
-  const graphNetworkApiKey = process.env.GRAPH_NETWORK_API_KEY
-
   if (typeof graphNetworkApiKey === 'undefined') {
     throw new Error(
       `[createGraphNetworkClient] missing "GRAPH_NETWORK_API_KEY" env variable"`
@@ -38,17 +39,17 @@ function createGraphHostedServiceClient(subgraphName: string) {
 
 const CctpSubgraphClient = {
   // mainnet
-  Ethereum: useGraphNetwork
+  Ethereum: graphNetworkEnabled
     ? createGraphNetworkClient('E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1')
     : createGraphHostedServiceClient('chrstph-dvx/cctp-mainnet'),
-  ArbitrumOne: useGraphNetwork
+  ArbitrumOne: graphNetworkEnabled
     ? createGraphNetworkClient('9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW')
     : createGraphHostedServiceClient('chrstph-dvx/cctp-arb-one'),
   // testnet
-  Sepolia: useGraphNetwork
+  Sepolia: graphNetworkEnabled
     ? createGraphNetworkClient('4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5')
     : createGraphHostedServiceClient('chrstph-dvx/cctp-sepolia'),
-  ArbitrumSepolia: useGraphNetwork
+  ArbitrumSepolia: graphNetworkEnabled
     ? createGraphNetworkClient('4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB')
     : createGraphHostedServiceClient('chrstph-dvx/cctp-arb-sepolia')
 }
@@ -76,14 +77,14 @@ export function getCctpSubgraphClient(chainId: number) {
 
 const L1SubgraphClient = {
   // mainnet
-  ArbitrumOne: useGraphNetwork
+  ArbitrumOne: graphNetworkEnabled
     ? createGraphNetworkClient('F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4')
     : createGraphHostedServiceClient('gvladika/arb-bridge-eth-nitro'),
-  ArbitrumNova: useGraphNetwork
+  ArbitrumNova: graphNetworkEnabled
     ? createGraphNetworkClient('6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp')
     : createGraphHostedServiceClient('gvladika/arb-bridge-eth-nova'),
   // testnet
-  ArbitrumSepolia: useGraphNetwork
+  ArbitrumSepolia: graphNetworkEnabled
     ? createGraphNetworkClient('GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9')
     : createGraphHostedServiceClient('fionnachan/arb-bridge-eth-sepolia')
 }
@@ -109,11 +110,11 @@ export function getL1SubgraphClient(l2ChainId: number) {
 const L2SubgraphClient = {
   // mainnet
   // note that arbitrum nova is not supported
-  ArbitrumOne: useGraphNetwork
+  ArbitrumOne: graphNetworkEnabled
     ? createGraphNetworkClient('9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj')
     : createGraphHostedServiceClient('gvladika/layer2-token-gateway-arb1'),
   // testnet
-  ArbitrumSepolia: useGraphNetwork
+  ArbitrumSepolia: graphNetworkEnabled
     ? createGraphNetworkClient('AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw')
     : createGraphHostedServiceClient('fionnachan/layer2-token-gateway-sepolia')
 }
