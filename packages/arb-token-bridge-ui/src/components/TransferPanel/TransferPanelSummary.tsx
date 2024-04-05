@@ -30,6 +30,110 @@ function StyledLoader() {
   )
 }
 
+function TotalGasFees() {
+  const {
+    app: { selectedToken }
+  } = useAppState()
+
+  const {
+    status: gasSummaryStatus,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
+  } = useGasSummary()
+
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
+
+  const gasSummaryLoading = gasSummaryStatus === 'loading'
+
+  const sameNativeCurrency = useMemo(
+    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
+    () =>
+      childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
+    [childChainNativeCurrency, parentChainNativeCurrency]
+  )
+
+  const estimatedTotalGasFees = useMemo(() => {
+    if (
+      gasSummaryStatus === 'loading' ||
+      typeof estimatedChildChainGasFees == 'undefined' ||
+      typeof estimatedParentChainGasFees == 'undefined'
+    ) {
+      return undefined
+    }
+
+    return estimatedParentChainGasFees + estimatedChildChainGasFees
+  }, [
+    gasSummaryStatus,
+    estimatedChildChainGasFees,
+    estimatedParentChainGasFees
+  ])
+
+  if (gasSummaryLoading) {
+    return <StyledLoader />
+  }
+
+  /**
+   * Same Native Currencies between Parent and Child chains
+   * 1. ETH/ER20 deposit: L1->L2
+   * 2. ETH/ERC20 withdrawal: L2->L1
+   * 3. ETH/ER20 deposit: L2->L3 (ETH as gas token)
+   * 4. ETH/ERC20 withdrawal: L3 (ETH as gas token)->L2
+   *
+   * x ETH
+   */
+  if (sameNativeCurrency) {
+    return (
+      <span className="tabular-nums">
+        {formatAmount(estimatedTotalGasFees, {
+          symbol: childChainNativeCurrency.symbol
+        })}{' '}
+        <NativeCurrencyPrice amount={estimatedTotalGasFees} showBrackets />
+      </span>
+    )
+  }
+  /** Different Native Currencies between Parent and Child chains
+   *
+   *  Custom gas token deposit: L2->Xai
+   *  x ETH
+   *
+   *  ERC20 deposit: L2->Xai
+   *  x ETH and x XAI
+   *
+   *  XAI/ERC20 withdrawal: L3->L2
+   *  only show child chain native currency
+   *  x XAI
+   */
+  return (
+    <>
+      {isDepositMode && (
+        <span className="tabular-nums">
+          {formatAmount(estimatedParentChainGasFees, {
+            symbol: parentChainNativeCurrency.symbol
+          })}{' '}
+          <NativeCurrencyPrice
+            amount={estimatedParentChainGasFees}
+            showBrackets
+          />
+          {selectedToken && ' and '}
+        </span>
+      )}
+      {(selectedToken || !isDepositMode) &&
+        formatAmount(estimatedChildChainGasFees, {
+          symbol: childChainNativeCurrency.symbol
+        })}
+    </>
+  )
+}
+
 function TransferPanelSummaryContainer({
   children,
   className = ''
@@ -49,32 +153,14 @@ function TransferPanelSummaryContainer({
 }
 
 export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
-
-  const {
-    status: gasSummaryStatus,
-    estimatedParentChainGasFees,
-    estimatedChildChainGasFees
-  } = useGasSummary()
-
-  const gasSummaryLoading = gasSummaryStatus === 'loading'
+  const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
-  })
-  const parentChainNativeCurrency = useNativeCurrency({
-    provider: parentChainProvider
   })
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
@@ -90,35 +176,6 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
     isTokenNativeUSDC(token?.address) &&
     isDepositMode &&
     (isDestinationChainArbitrumOne || isDestinationChainArbitrumSepolia)
-
-  const sameNativeCurrency = useMemo(
-    // we'll have to change this if we ever have L4s that are built on top of L3s with a custom fee token
-    () =>
-      childChainNativeCurrency.isCustom === parentChainNativeCurrency.isCustom,
-    [childChainNativeCurrency, parentChainNativeCurrency]
-  )
-
-  const differentNativeCurrencyAndDepositMode =
-    !sameNativeCurrency && isDepositMode
-
-  const showChildChainNativeCurrencyAsGasFee =
-    !sameNativeCurrency && (selectedToken || !isDepositMode)
-
-  const estimatedTotalGasFees = useMemo(() => {
-    if (
-      gasSummaryStatus === 'loading' ||
-      typeof estimatedChildChainGasFees == 'undefined' ||
-      typeof estimatedParentChainGasFees == 'undefined'
-    ) {
-      return undefined
-    }
-
-    return estimatedParentChainGasFees + estimatedChildChainGasFees
-  }, [
-    gasSummaryStatus,
-    estimatedChildChainGasFees,
-    estimatedParentChainGasFees
-  ])
 
   if (gasSummaryStatus === 'unavailable') {
     return (
@@ -150,39 +207,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         <span className="text-left">You will pay in gas fees:</span>
 
         <span className="font-medium">
-          {gasSummaryLoading ? (
-            <StyledLoader />
-          ) : (
-            <>
-              {differentNativeCurrencyAndDepositMode && (
-                <span className="tabular-nums">
-                  {formatAmount(estimatedParentChainGasFees, {
-                    symbol: parentChainNativeCurrency.symbol
-                  })}{' '}
-                  <NativeCurrencyPrice
-                    amount={estimatedTotalGasFees}
-                    showBrackets
-                  />
-                  {selectedToken && ' and '}
-                </span>
-              )}
-              {showChildChainNativeCurrencyAsGasFee &&
-                formatAmount(estimatedChildChainGasFees, {
-                  symbol: childChainNativeCurrency.symbol
-                })}
-              {sameNativeCurrency && (
-                <span className="tabular-nums">
-                  {formatAmount(estimatedTotalGasFees, {
-                    symbol: childChainNativeCurrency.symbol
-                  })}{' '}
-                  <NativeCurrencyPrice
-                    amount={estimatedTotalGasFees}
-                    showBrackets
-                  />
-                </span>
-              )}
-            </>
-          )}
+          <TotalGasFees />
         </span>
       </div>
 
