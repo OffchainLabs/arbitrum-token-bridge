@@ -503,16 +503,16 @@ export function TransferPanelMain({
       setLoadingMaxAmount(false)
     }
   }, [
-    selectedToken,
-    customFeeTokenBalances.l1,
     nativeCurrency,
-    isDepositMode,
     ethL1Balance,
     ethL2Balance,
-    selectedTokenBalances,
+    isDepositMode,
+    selectedToken,
     setAmount,
+    selectedTokenBalances,
     estimatedParentChainGasFees,
-    estimatedChildChainGasFees
+    estimatedChildChainGasFees,
+    customFeeTokenBalances
   ])
 
   // whenever the user changes the `amount` input, it should update the amount in browser query params as well
