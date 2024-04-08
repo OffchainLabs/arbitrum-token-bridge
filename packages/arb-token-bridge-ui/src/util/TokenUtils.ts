@@ -228,19 +228,22 @@ export async function getL1ERC20Address({
 }
 
 /*
- Retrieves the L1 gateway of an ERC-20 token using its L1 address.
+ Retrieves the parent chain gateway of an ERC-20 token using its parent chain address.
 */
-export async function fetchErc20L1GatewayAddress({
-  erc20L1Address,
-  l1Provider,
-  l2Provider
+export async function fetchErc20ParentChainGatewayAddress({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
 }: {
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.getL1GatewayAddress(erc20L1Address, l1Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+  return erc20Bridger.getL1GatewayAddress(
+    erc20ParentChainAddress,
+    parentChainProvider
+  )
 }
 
 /*
@@ -293,6 +296,12 @@ type SanitizeTokenOptions = {
   erc20L1Address?: string | null // token address on L1
   chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
+
+export const isTokenArbitrumOneCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.CU.toLowerCase()
+
+export const isTokenXaiMainnetCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress[660279].CU.toLowerCase()
 
 export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
   tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
@@ -348,6 +357,11 @@ export function sanitizeTokenSymbol(
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
     return 'USDC'
+  }
+
+  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+    if (isArbitrumOne) return 'CU'
+    return 'wCU'
   }
 
   return tokenSymbol

@@ -1,26 +1,26 @@
 import { EthBridger, getL2Network } from '@arbitrum/sdk'
-import { Provider } from '@ethersproject/providers'
 import { BigNumber, constants } from 'ethers'
 
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { fetchErc20Allowance } from './TokenUtils'
+import { DepositTxEstimateGasParams } from './TokenDepositUtils'
 
-async function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): Promise<DepositGasEstimates> {
+function fetchFallbackGasEstimatesForOrbitChainWithCustomFeeToken(): DepositGasEstimates {
   return {
     // todo(spsjvc): properly estimate these values
     //
     // this hardcoding is only necessary for Orbit chains that have a custom fee token (where estimation may fail due to low allowance)
-    estimatedL1Gas: BigNumber.from(100_000),
-    estimatedL2Gas: BigNumber.from(0),
-    estimatedL2SubmissionCost: BigNumber.from(0)
+    estimatedParentChainGas: BigNumber.from(100_000),
+    estimatedChildChainGas: constants.Zero,
+    estimatedChildChainSubmissionCost: constants.Zero
   }
 }
 
 async function customFeeTokenAllowanceIsInsufficient(
   params: DepositEthEstimateGasParams
 ) {
-  const { amount, address, l1Provider, l2Provider } = params
-  const l2Network = await getL2Network(l2Provider)
+  const { amount, address, parentChainProvider, childChainProvider } = params
+  const l2Network = await getL2Network(childChainProvider)
 
   if (typeof l2Network.nativeToken === 'undefined') {
     throw new Error(
@@ -30,7 +30,7 @@ async function customFeeTokenAllowanceIsInsufficient(
 
   const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
     address: l2Network.nativeToken,
-    provider: l1Provider,
+    provider: parentChainProvider,
     owner: address,
     spender: l2Network.ethBridge.inbox
   })
@@ -38,19 +38,17 @@ async function customFeeTokenAllowanceIsInsufficient(
   return customFeeTokenAllowanceForInbox.lt(amount)
 }
 
-export type DepositEthEstimateGasParams = {
-  amount: BigNumber
-  address: string
-  l1Provider: Provider
-  l2Provider: Provider
-}
+export type DepositEthEstimateGasParams = Omit<
+  DepositTxEstimateGasParams,
+  'erc20L1Address'
+>
 
 export async function depositEthEstimateGas(
   params: DepositEthEstimateGasParams
 ): Promise<DepositGasEstimates> {
-  const { amount, address, l1Provider, l2Provider } = params
+  const { amount, address, parentChainProvider, childChainProvider } = params
+  const ethBridger = await EthBridger.fromProvider(childChainProvider)
 
-  const ethBridger = await EthBridger.fromProvider(l2Provider)
   const customFeeToken = typeof ethBridger.nativeToken !== 'undefined'
 
   if (customFeeToken && (await customFeeTokenAllowanceIsInsufficient(params))) {
@@ -63,11 +61,13 @@ export async function depositEthEstimateGas(
     from: address
   })
 
-  const estimatedL1Gas = await l1Provider.estimateGas(depositRequest.txRequest)
+  const estimatedParentChainGas = await parentChainProvider.estimateGas(
+    depositRequest.txRequest
+  )
 
   return {
-    estimatedL1Gas,
-    estimatedL2Gas: constants.Zero,
-    estimatedL2SubmissionCost: constants.Zero
+    estimatedParentChainGas,
+    estimatedChildChainGas: constants.Zero,
+    estimatedChildChainSubmissionCost: constants.Zero
   }
 }

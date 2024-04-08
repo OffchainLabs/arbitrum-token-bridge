@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -27,6 +28,7 @@ if (
   registerLocalNetwork()
 }
 
+dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
