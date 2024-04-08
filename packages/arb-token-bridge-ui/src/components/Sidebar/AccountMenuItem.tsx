@@ -1,24 +1,18 @@
 import {
   MenuItem,
   MenuItemExpandable,
-  MenuItemContent,
-  MenuItemHeader
+  MenuItemContent
 } from '@offchainlabs/cobalt'
 import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard, useMedia } from 'react-use'
-import { Popover } from '@headlessui/react'
 import {
-  ChevronDownIcon,
   ArrowTopRightOnSquareIcon,
   ArrowLeftOnRectangleIcon,
   DocumentTextIcon,
-  DocumentDuplicateIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { Resolution } from '@unstoppabledomains/resolution'
 import BoringAvatar from 'boring-avatars'
-import { twMerge } from 'tailwind-merge'
 import {
   useAccount,
   useDisconnect,
@@ -28,13 +22,11 @@ import {
   useProvider
 } from 'wagmi'
 
-import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { getExplorerUrl } from '../../util/networks'
 import { useAppContextActions } from '../App/AppContext'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useAccountType } from '../../hooks/useAccountType'
 import { SafeImage } from '../common/SafeImage'
 
 type UDInfo = { name: string | null }
@@ -82,17 +74,10 @@ export const AccountMenuItem = ({}) => {
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
   const { chain } = useNetwork()
-  const [{ sourceChain }] = useNetworks()
-  const { isTestnet } = isNetwork(sourceChain.id)
-  const [, copyToClipboard] = useCopyToClipboard()
-  const isSmallScreen = useMedia('(max-width: 639px)')
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()
 
-  const [showCopied, setShowCopied] = useState(false)
   const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
   const { data: ensName } = useEnsName({
     address,
@@ -125,12 +110,6 @@ export const AccountMenuItem = ({}) => {
     return shortenAddress(address)
   }, [address])
 
-  function copy(value: string) {
-    setShowCopied(true)
-    copyToClipboard(value)
-    setTimeout(() => setShowCopied(false), 1000)
-  }
-
   function openTransactionHistory() {
     openTransactionHistoryPanel()
     trackEvent('Open Transaction History Click', { pageElement: 'Header' })
@@ -138,7 +117,8 @@ export const AccountMenuItem = ({}) => {
 
   return (
     <MenuItemExpandable
-      title={ensName ?? accountShort}
+      title={ensName ?? udInfo.name ?? accountShort}
+      // @ts-expect-error - will be fixed in next cobalt release
       Icon={
         <SafeImage
           src={ensAvatar || undefined}
@@ -153,11 +133,13 @@ export const AccountMenuItem = ({}) => {
           Icon={<DocumentTextIcon className="h-[18px] w-[18px]" />}
           onClick={openTransactionHistory}
         />
-        <MenuItem
-          title="Explorer"
-          Icon={<ArrowTopRightOnSquareIcon className="h-[18px] w-[18px]" />}
-          href={`${getExplorerUrl(chain.id)}/address/${address}`}
-        />
+        {chain && (
+          <MenuItem
+            title="Explorer"
+            Icon={<ArrowTopRightOnSquareIcon className="h-[18px] w-[18px]" />}
+            href={`${getExplorerUrl(chain.id)}/address/${address}`}
+          />
+        )}
         <MenuItem
           title="Settings"
           Icon={<Cog6ToothIcon className="h-[18px] w-[18px]" />}

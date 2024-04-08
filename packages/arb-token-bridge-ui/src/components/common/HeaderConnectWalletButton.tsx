@@ -1,7 +1,6 @@
 import { PlusCircleIcon } from '@heroicons/react/24/outline'
 import { MenuItem } from '@offchainlabs/cobalt'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { twMerge } from 'tailwind-merge'
 
 export function HeaderConnectWalletButton() {
   return (

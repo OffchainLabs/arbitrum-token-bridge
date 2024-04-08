@@ -18,8 +18,7 @@
     "prettier:check": "./node_modules/.bin/prettier --check .",
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
-    "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "reboot": "rm -rf node_modules && rm -rf ./packages/arb-token-bridge-ui/node_modules && rm -rf ./packages/arb-token-bridge-ui/build && yarn && yarn dev"
+    "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix"
   },
   "keywords": [],
   "author": "",

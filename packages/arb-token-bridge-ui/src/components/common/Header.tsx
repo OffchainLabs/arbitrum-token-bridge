@@ -1,29 +1,24 @@
 import React from 'react'
-import { Disclosure } from '@headlessui/react'
 import Image from 'next/image'
 import { twMerge } from 'tailwind-merge'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
-
-function onMobileMenuOpen() {
-  document.body.classList.add('overflow-hidden', 'menu-open')
-}
-function onMobileMenuClose() {
-  document.body.classList.remove('overflow-hidden', 'menu-open')
-}
+import { AccountMenuItem } from '../Sidebar/AccountMenuItem'
+import { useAccount } from 'wagmi'
+import { HeaderConnectWalletButton } from './HeaderConnectWalletButton'
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
+  const { isConnected } = useAccount()
 
   return (
     <header
       className={twMerge(
-        'sticky top-0 z-10 flex h-12 w-full justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
+        'sticky right-0 top-0 z-10 flex h-12 w-full items-center justify-center bg-black/70 px-4 backdrop-blur sm:relative sm:h-16 sm:px-6 sm:backdrop-blur-none [body.menu-open_&]:fixed',
         isTestnet
           ? 'sm:border-b sm:border-white sm:bg-white/20'
           : 'sm:bg-transparent'
@@ -36,24 +31,11 @@ export function Header({ children }: { children?: React.ReactNode }) {
           alt="Arbitrum"
         />
         {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
-        <div className="hidden sm:flex">{children}</div>
+        <div className="absolute top-4 hidden sm:flex">{children}</div>
       </div>
-      <AppMobileSidebar>{children}</AppMobileSidebar>
+      <AppMobileSidebar>
+        {isConnected ? <AccountMenuItem /> : <HeaderConnectWalletButton />}
+      </AppMobileSidebar>
     </header>
-  )
-}
-
-function HeaderMobile({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="fixed left-0 top-0 flex h-screen w-full flex-col items-center gap-1 overflow-auto bg-black font-normal sm:hidden">
-      <Disclosure.Button
-        className="flex h-12 w-full shrink-0 justify-end px-4 pt-3 sm:hidden"
-        onClick={onMobileMenuClose}
-      >
-        <XMarkIcon className="h-[32px] w-[32px] text-white" />
-      </Disclosure.Button>
-      {children}
-      {/* Mobile menu panel */}
-    </div>
   )
 }
