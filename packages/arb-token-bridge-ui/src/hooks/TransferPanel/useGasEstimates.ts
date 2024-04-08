@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import useSWR from 'swr'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
@@ -8,27 +7,28 @@ import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
 import { Address } from '../../util/AddressUtils'
 import { depositEthEstimateGas } from '../../util/EthDepositUtils'
 import { isDepositMode } from '../../util/isDepositMode'
+import { getProviderForChainId } from '../useNetworks'
 
 async function fetcher([
   walletAddress,
-  sourceChainProvider,
-  destinationChainProvider,
+  sourceChainId,
+  destinationChainId,
   tokenParentChainAddress,
   amount
 ]: [
   walletAddress: Address,
-  sourceChainProvider: StaticJsonRpcProvider,
-  destinationChainProvider: StaticJsonRpcProvider,
+  sourceChainId: number,
+  destinationChainId: number,
   tokenParentChainAddress: string | undefined,
-  amount: BigNumber
+  amount: string
 ]): Promise<GasEstimates | DepositGasEstimates> {
-  const sourceChainId = (await sourceChainProvider.getNetwork()).chainId
-  const destinationChainId = (await destinationChainProvider.getNetwork())
-    .chainId
   const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
 
+  const sourceChainProvider = getProviderForChainId(sourceChainId)
+  const destinationChainProvider = getProviderForChainId(destinationChainId)
+
   const estimateGasFunctionParams = {
-    amount,
+    amount: BigNumber.from(amount),
     address: walletAddress,
     childChainProvider: isDeposit
       ? destinationChainProvider
@@ -56,14 +56,14 @@ async function fetcher([
 
 export function useGasEstimates({
   walletAddress,
-  sourceChainProvider,
-  destinationChainProvider,
+  sourceChainId,
+  destinationChainId,
   tokenParentChainAddress,
   amount
 }: {
   walletAddress: Address | undefined
-  sourceChainProvider: StaticJsonRpcProvider
-  destinationChainProvider: StaticJsonRpcProvider
+  sourceChainId: number
+  destinationChainId: number
   tokenParentChainAddress?: string
   amount: BigNumber
 }): {
@@ -75,10 +75,10 @@ export function useGasEstimates({
       ? null
       : [
           walletAddress,
-          sourceChainProvider,
-          destinationChainProvider,
+          sourceChainId,
+          destinationChainId,
           tokenParentChainAddress,
-          amount,
+          amount.toString(), // BigNumber is not serializable
           'gasEstimates'
         ],
     fetcher,
