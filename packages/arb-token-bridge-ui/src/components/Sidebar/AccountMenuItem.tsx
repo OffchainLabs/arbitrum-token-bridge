@@ -118,7 +118,6 @@ export const AccountMenuItem = ({}) => {
   return (
     <MenuItemExpandable
       title={ensName ?? udInfo.name ?? accountShort}
-      // @ts-expect-error - will be fixed in next cobalt release
       Icon={
         <SafeImage
           src={ensAvatar || undefined}
