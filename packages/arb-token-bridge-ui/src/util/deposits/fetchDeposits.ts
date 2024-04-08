@@ -1,10 +1,10 @@
 import { Provider } from '@ethersproject/providers'
 import { utils } from 'ethers'
+
 import {
   fetchDepositsFromSubgraph,
   FetchDepositsFromSubgraphResult
 } from './fetchDepositsFromSubgraph'
-import { tryFetchLatestSubgraphBlockNumber } from '../SubgraphUtils'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { defaultErc20Decimals } from '../../defaults'
@@ -47,23 +47,6 @@ export const fetchDeposits = async ({
 
   if (!fromBlock) {
     fromBlock = 0
-  }
-
-  if (!toBlock) {
-    // if toBlock hasn't been provided by the user
-
-    // fetch the latest L1 block number thorough subgraph first
-    let latestL1BlockNumber = await tryFetchLatestSubgraphBlockNumber(
-      'L1',
-      l2ChainId
-    )
-
-    // if the previous call returns 0, then fetch the latest block on-chain
-    if (!latestL1BlockNumber) {
-      latestL1BlockNumber = await l1Provider.getBlockNumber()
-    }
-
-    toBlock = latestL1BlockNumber
   }
 
   let depositsFromSubgraph: FetchDepositsFromSubgraphResult[] = []

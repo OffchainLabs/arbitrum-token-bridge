@@ -1,6 +1,8 @@
 import fetch from 'cross-fetch'
-import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
+
 import { ChainId } from './networks'
+import { getAPIBaseUrl } from '.'
 
 const L1SubgraphClient = {
   ArbitrumOne: new ApolloClient({
@@ -73,52 +75,18 @@ export function getL2SubgraphClient(l2ChainId: number) {
   }
 }
 
-// TODO: Codegen types
-type FetchBlockNumberFromSubgraphQueryResult = {
-  data: {
-    _meta: {
-      block: {
-        number: number
-      }
+export const fetchLatestSubgraphBlockNumber = async (
+  chainId: number
+): Promise<number> => {
+  const response = await fetch(
+    `${getAPIBaseUrl()}/api/chains/${chainId}/block-number`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     }
-  }
-}
+  )
 
-export const fetchBlockNumberFromSubgraph = async (
-  chainType: 'L1' | 'L2',
-  l2ChainId: number
-): Promise<number> => {
-  const subgraphClient =
-    chainType === 'L2'
-      ? getL2SubgraphClient(l2ChainId)
-      : getL1SubgraphClient(l2ChainId)
-
-  const queryResult: FetchBlockNumberFromSubgraphQueryResult =
-    await subgraphClient.query({
-      query: gql`
-        {
-          _meta {
-            block {
-              number
-            }
-          }
-        }
-      `
-    })
-
-  return queryResult.data._meta.block.number
-}
-
-export const tryFetchLatestSubgraphBlockNumber = async (
-  chainType: 'L1' | 'L2',
-  l2ChainID: number
-): Promise<number> => {
-  try {
-    return await fetchBlockNumberFromSubgraph(chainType, l2ChainID)
-  } catch (error) {
-    // In case the subgraph is not supported or down, fall back to fetching everything through event logs
-    return 0
-  }
+  return ((await response.json()) as { data: number }).data
 }
 
 export const shouldIncludeSentTxs = ({
