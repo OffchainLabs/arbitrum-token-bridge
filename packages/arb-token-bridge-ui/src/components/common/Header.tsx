@@ -33,9 +33,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         {isTestnet && <span className="grow font-medium">TESTNET MODE</span>}
         <div className="absolute top-4 hidden sm:flex">{children}</div>
       </div>
-      <AppMobileSidebar>
-        {isConnected ? <AccountMenuItem /> : <HeaderConnectWalletButton />}
-      </AppMobileSidebar>
+      <AppMobileSidebar />
     </header>
   )
 }
