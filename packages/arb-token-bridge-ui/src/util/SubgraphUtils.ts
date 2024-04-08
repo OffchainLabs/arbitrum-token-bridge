@@ -75,17 +75,6 @@ export function getL2SubgraphClient(l2ChainId: number) {
   }
 }
 
-// TODO: Codegen types
-type FetchBlockNumberFromSubgraphQueryResult = {
-  data: {
-    _meta: {
-      block: {
-        number: number
-      }
-    }
-  }
-}
-
 export const fetchLatestSubgraphBlockNumber = async (
   chainId: number
 ): Promise<number> => {
