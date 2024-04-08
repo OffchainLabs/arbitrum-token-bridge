@@ -156,7 +156,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   const { status: gasSummaryStatus } = useGasSummary()
 
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
+  const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
 
   const childChainNativeCurrency = useNativeCurrency({
@@ -217,8 +217,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         )}
       >
         <span>
-          You will receive on{' '}
-          {getNetworkName(isDepositMode ? childChain.id : parentChain.id)}:
+          You will receive on {getNetworkName(networks.destinationChain.id)}:
         </span>
         <span className="font-medium">
           <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
