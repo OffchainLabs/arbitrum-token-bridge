@@ -13,15 +13,21 @@ const graphNetworkEnabled = process.env.GRAPH_NETWORK_ENABLED === 'true'
 const graphNetworkApiKey = process.env.GRAPH_NETWORK_API_KEY
 
 type GraphNetworkSubgraphId =
-  | 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1'
-  | '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW'
-  | '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5'
-  | '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB'
-  | 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4'
-  | '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp'
-  | 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9'
-  | '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj'
-  | 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw'
+  // CCTP Mainnet Subgraphs
+  | 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1' // CCTP Ethereum
+  | '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW' // CCTP Arbitrum One
+  // CCTP Testnet Subgraphs
+  | '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5' // CCTP Sepolia
+  | '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB' // CCTP Arbitrum Sepolia
+  // L1 Mainnet Subgraphs
+  | 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4' // L1 Arbitrum One
+  | '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp' // L1 Arbitrum Nova
+  // L1 Testnet Subgraphs
+  | 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9' // L1 Arbitrum Sepolia
+  // L2 Mainnet Subgraphs
+  | '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj' // L2 Arbitrum One
+  // L2 Testnet Subgraphs
+  | 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw' // L2 Arbitrum Sepolia
 
 type GraphHostedServiceSubgraphName =
   // CCTP Mainnet Subgraphs
