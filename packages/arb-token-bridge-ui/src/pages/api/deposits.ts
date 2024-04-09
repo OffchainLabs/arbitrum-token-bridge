@@ -2,27 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
 import { getL1SubgraphClient } from '../../api-utils/ServerSubgraphUtils'
-
-export type FetchDepositsFromSubgraphResult = {
-  receiver: string
-  sender: string
-  sequenceNumber: string
-  timestamp: string
-  transactionHash: string
-  type: 'EthDeposit' | 'TokenDeposit'
-  isClassic: boolean
-  id: string
-  ethValue: string
-  tokenAmount?: string
-  blockCreatedAt: string
-  l1Token?: {
-    symbol: string
-    decimals: number
-    id: string
-    name: string
-    registeredAtBlock: string
-  }
-}
+import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {

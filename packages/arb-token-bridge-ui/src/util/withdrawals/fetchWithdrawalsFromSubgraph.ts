@@ -1,6 +1,25 @@
 import { getL2SubgraphClient } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
-import { FetchWithdrawalsFromSubgraphResult } from '../../pages/api/withdrawals'
+
+export type FetchWithdrawalsFromSubgraphResult = {
+  id: string
+  type: 'EthWithdrawal' | 'TokenWithdrawal'
+  sender: string
+  receiver: string
+  ethValue: string
+  l1Token?: {
+    id: string
+  }
+  tokenAmount: string
+  isClassic: boolean
+  l2BlockTimestamp: string
+  l2TxHash: string
+  l2BlockNum: string
+  direction: 'withdrawal'
+  source: 'subgraph'
+  parentChainId: number
+  childChainId: number
+}
 
 /**
  * Fetches initiated withdrawals (ETH + Token) from subgraph in range of [fromBlock, toBlock] and pageParams.
