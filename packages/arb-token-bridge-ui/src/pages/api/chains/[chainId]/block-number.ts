@@ -5,7 +5,7 @@ import { ChainId } from '../../../../util/networks'
 import {
   getL1SubgraphClient,
   getL2SubgraphClient
-} from '../../../../util/SubgraphUtils'
+} from '../../../../api-utils/ServerSubgraphUtils'
 
 function getSubgraphClient(chainId: number) {
   switch (chainId) {
