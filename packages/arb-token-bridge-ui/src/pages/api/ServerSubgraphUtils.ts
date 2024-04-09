@@ -47,7 +47,7 @@ type GraphHostedServiceSubgraphName =
   | 'fionnachan/layer2-token-gateway-sepolia'
 
 type ReadableSubgraphIdentifier =
-  | 'cctp-mainnet'
+  | 'cctp-ethereum'
   | 'cctp-arbitrum-one'
   | 'cctp-sepolia'
   | 'cctp-arbitrum-sepolia'
@@ -65,7 +65,7 @@ const subgraphs: Record<
   }
 > = {
   // CCTP Mainnet Subgraphs
-  'cctp-mainnet': {
+  'cctp-ethereum': {
     graphNetworkSubgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1',
     graphHostedServiceSubgraphName: 'chrstph-dvx/cctp-mainnet'
   },
@@ -157,7 +157,7 @@ function createSubgraphClient(identifier: ReadableSubgraphIdentifier) {
 export function getCctpSubgraphClient(chainId: number) {
   switch (chainId) {
     case ChainId.Ethereum:
-      return createSubgraphClient('cctp-mainnet')
+      return createSubgraphClient('cctp-ethereum')
 
     case ChainId.ArbitrumOne:
       return createSubgraphClient('cctp-arbitrum-one')
