@@ -3,7 +3,6 @@ import React from 'react'
 import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
-import '@offchainlabs/cobalt/dist/style.css'
 
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
