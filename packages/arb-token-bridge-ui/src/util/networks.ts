@@ -9,6 +9,7 @@ import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntiti
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
 import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { chainIdToInfuraUrl } from './infura'
 
 export const getChains = () => {
   const chains = Object.values(arbitrumSdkChains)
@@ -26,15 +27,6 @@ export const getChains = () => {
 }
 
 export const customChainLocalStorageKey = 'arbitrum:custom:chains'
-
-export const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
-
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error('Infura API key not provided')
-}
-
-const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 export type ChainWithRpcUrl = L2Network & {
   rpcUrl: string
@@ -162,19 +154,25 @@ export const rpcURLs: { [chainId: number]: string } = {
   // L1
   [ChainId.Ethereum]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
-    fallback: MAINNET_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Ethereum)
   }),
   // L1 Testnets
   [ChainId.Sepolia]: loadEnvironmentVariableWithFallback({
     env: process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL,
-    fallback: SEPOLIA_INFURA_RPC_URL
+    fallback: chainIdToInfuraUrl(ChainId.Sepolia)
   }),
   [ChainId.Holesky]: 'https://ethereum-holesky-rpc.publicnode.com',
   // L2
-  [ChainId.ArbitrumOne]: 'https://arb1.arbitrum.io/rpc',
+  [ChainId.ArbitrumOne]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumOne),
+    fallback: 'https://arb1.arbitrum.io/rpc'
+  }),
   [ChainId.ArbitrumNova]: 'https://nova.arbitrum.io/rpc',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia-rollup.arbitrum.io/rpc',
+  [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
+    env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
+    fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
+  }),
   // Orbit Testnets
   [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
 }
