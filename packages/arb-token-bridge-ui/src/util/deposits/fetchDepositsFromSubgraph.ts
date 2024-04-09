@@ -49,13 +49,13 @@ export const fetchDepositsFromSubgraph = async ({
   sender?: string
   receiver?: string
   fromBlock: number
-  toBlock: number
+  toBlock?: number
   l2ChainId: number
   pageSize?: number
   pageNumber?: number
   searchString?: string
 }): Promise<FetchDepositsFromSubgraphResult[]> => {
-  if (fromBlock >= toBlock) {
+  if (toBlock && fromBlock >= toBlock) {
     // if fromBlock > toBlock or both are equal / 0
     return []
   }

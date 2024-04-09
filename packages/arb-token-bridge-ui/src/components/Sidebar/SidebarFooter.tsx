@@ -18,7 +18,7 @@ export const SidebarFooter = ({ className }: { className?: string }) => {
       <div className="flex flex-nowrap items-center gap-[8px] text-white/60">
         <ExternalLink
           className="cursor-pointer text-xs text-white/60"
-          href="https://bridge.arbitrum.io/tos"
+          href="https://arbitrum.io/tos"
         >
           ToS
         </ExternalLink>
