@@ -1,26 +1,6 @@
 import { getL1SubgraphClient } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
-
-export type FetchDepositsFromSubgraphResult = {
-  receiver: string
-  sender: string
-  sequenceNumber: string
-  timestamp: string
-  transactionHash: string
-  type: 'EthDeposit' | 'TokenDeposit'
-  isClassic: boolean
-  id: string
-  ethValue: string
-  tokenAmount?: string
-  blockCreatedAt: string
-  l1Token?: {
-    symbol: string
-    decimals: number
-    id: string
-    name: string
-    registeredAtBlock: string
-  }
-}
+import { FetchDepositsFromSubgraphResult } from '../../pages/api/deposits'
 
 /**
  * Fetches initiated deposits (ETH + Tokens) from subgraph in range of [fromBlock, toBlock] and pageParams.
