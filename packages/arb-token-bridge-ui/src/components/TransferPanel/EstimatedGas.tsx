@@ -11,7 +11,7 @@ import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { Loader } from '../common/atoms/Loader'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { NativeCurrencyPrice } from './NativeCurrencyPrice'
+import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
 function getGasFeeTooltip(chainId: ChainId) {
@@ -60,17 +60,17 @@ export function EstimatedGas({
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const isBridgingEth = useIsBridgingEth(nativeCurrency)
   const isSourceChain = chainType === 'source'
   const isParentChain = isSourceChain
     ? networks.sourceChain.id === parentChain.id
     : networks.destinationChain.id === parentChain.id
+  const parentChainName = getNetworkName(parentChain.id)
   const {
     status: gasSummaryStatus,
-    estimatedL1GasFees,
-    estimatedL2GasFees
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees
   } = useGasSummary()
-  const parentChainName = getNetworkName(parentChain.id)
-  const isBridgingEth = selectedToken === null && !nativeCurrency.isCustom
   const showPrice = useMemo(
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
@@ -79,11 +79,23 @@ export function EstimatedGas({
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
-    if (!isDepositMode && !isParentChain) {
-      return estimatedL1GasFees + estimatedL2GasFees
+    if (
+      !isDepositMode &&
+      !isParentChain &&
+      typeof estimatedParentChainGasFees !== 'undefined' &&
+      typeof estimatedChildChainGasFees !== 'undefined'
+    ) {
+      return estimatedParentChainGasFees + estimatedChildChainGasFees
     }
-    return isParentChain ? estimatedL1GasFees : estimatedL2GasFees
-  }, [estimatedL1GasFees, estimatedL2GasFees, isDepositMode, isParentChain])
+    return isParentChain
+      ? estimatedParentChainGasFees
+      : estimatedChildChainGasFees
+  }, [
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees,
+    isDepositMode,
+    isParentChain
+  ])
 
   const layerGasFeeTooltipContent = useMemo(
     () =>
@@ -122,7 +134,8 @@ export function EstimatedGas({
           <InformationCircleIcon className="h-3 w-3" />
         </Tooltip>
       </div>
-      {gasSummaryStatus === 'loading' ? (
+      {gasSummaryStatus === 'loading' ||
+      typeof estimatedGasFee === 'undefined' ? (
         <>
           {showPrice && <span />}
           <StyledLoader />
@@ -140,7 +153,7 @@ export function EstimatedGas({
             })}
           </span>
 
-          <NativeCurrencyPrice amount={estimatedGasFee} />
+          {showPrice && <NativeCurrencyPrice amount={estimatedGasFee} />}
         </div>
       )}
     </div>
