@@ -1,6 +1,6 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 
-import { ChainId } from '../../util/networks'
+import { ChainId } from '../util/networks'
 
 /**
  * Determines whether to use The Graph Network or The Graph Hosted Service.

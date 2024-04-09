@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
-import { getL1SubgraphClient } from './ServerSubgraphUtils'
+import { getL1SubgraphClient } from '../../api-utils/ServerSubgraphUtils'
 
 export type FetchDepositsFromSubgraphResult = {
   receiver: string

@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
 import { Address } from '../../../util/AddressUtils'
 
-import { getCctpSubgraphClient } from '../ServerSubgraphUtils'
+import { getCctpSubgraphClient } from '../../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {

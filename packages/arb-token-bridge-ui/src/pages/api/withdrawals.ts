@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
-import { getL2SubgraphClient } from './ServerSubgraphUtils'
+import { getL2SubgraphClient } from '../../api-utils/ServerSubgraphUtils'
 
 export type FetchWithdrawalsFromSubgraphResult = {
   id: string
