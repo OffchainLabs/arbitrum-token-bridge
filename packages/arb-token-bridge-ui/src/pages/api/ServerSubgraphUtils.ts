@@ -148,7 +148,7 @@ function createSubgraphClient(identifier: ReadableSubgraphIdentifier) {
       `[createSubgraphClient] failed to create client for subgraph "${graphNetworkSubgraphId}" on the graph network`
     )
     console.warn(
-      `[createSubgraphClient] falling back to subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service`
+      `[createSubgraphClient] falling back to subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service\n`
     )
     return createGraphHostedServiceClient(graphNetworkSubgraphId)
   }
