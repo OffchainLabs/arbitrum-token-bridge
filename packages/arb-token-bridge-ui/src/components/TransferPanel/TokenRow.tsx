@@ -329,6 +329,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   return (
     <span className="flex items-center whitespace-nowrap text-sm text-white/70">
       {balance ? (
+        // TODO: token is null for native currency and it defaults to 18 decimals. We should pass correct decimals here.
         formatAmount(balance, {
           decimals: token?.decimals,
           symbol

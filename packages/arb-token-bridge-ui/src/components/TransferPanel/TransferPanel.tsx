@@ -351,9 +351,8 @@ export function TransferPanel() {
       spender: l1Gateway
     })
 
-    const estimatedL2GasFees = utils.parseUnits(
-      String(gasSummary.estimatedL2GasFees),
-      nativeCurrency.decimals
+    const estimatedL2GasFees = utils.parseEther(
+      String(gasSummary.estimatedL2GasFees)
     )
 
     // We want to bridge a certain amount of an ERC-20 token, but the retryable fees on the chain will be paid in the custom fee token

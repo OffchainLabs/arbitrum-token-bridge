@@ -301,6 +301,7 @@ function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
+          // TODO: we only should do that for L1 and L2 chains (no Orbit), Orbit chains are always 18 decimal based
           decimals: forToken.decimals
         })}
       </span>{' '}
