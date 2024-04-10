@@ -71,7 +71,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
-import { countDecimals } from '../../util/NumberUtils'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -179,10 +179,7 @@ export function TransferPanel() {
         ? selectedToken.decimals
         : nativeCurrency.decimals
 
-      const correctDecimalsAmount =
-        countDecimals(newAmount) > decimals
-          ? Number(newAmount).toFixed(decimals)
-          : newAmount
+      const correctDecimalsAmount = truncateExtraDecimals(newAmount, decimals)
 
       setQueryParams({ amount: correctDecimalsAmount })
     },
