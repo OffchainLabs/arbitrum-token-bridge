@@ -21,7 +21,7 @@ export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
   const { isConnected } = useAccount()
 
   return (
-    <div className="sm:hidden">
+    <div className="flex flex-col justify-center sm:hidden">
       <DynamicMobileSidebar logger={posthog} activeMenu="Bridge">
         {isConnected ? (
           <AccountMenuItem />
