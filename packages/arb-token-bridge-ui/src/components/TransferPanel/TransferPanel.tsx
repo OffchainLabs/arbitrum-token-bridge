@@ -71,6 +71,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { countDecimals } from '../../util/NumberUtils'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -145,6 +146,8 @@ export function TransferPanel() {
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
@@ -172,9 +175,18 @@ export function TransferPanel() {
 
   const setAmount = useCallback(
     (newAmount: string) => {
-      setQueryParams({ amount: newAmount })
+      const decimals = selectedToken
+        ? selectedToken.decimals
+        : nativeCurrency.decimals
+
+      const correctDecimalsAmount =
+        countDecimals(newAmount) > decimals
+          ? Number(newAmount).toFixed(decimals)
+          : newAmount
+
+      setQueryParams({ amount: correctDecimalsAmount })
     },
-    [setQueryParams]
+    [nativeCurrency, selectedToken, setQueryParams]
   )
 
   const [tokenImportDialogProps] = useDialog()
@@ -192,8 +204,6 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
-
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
