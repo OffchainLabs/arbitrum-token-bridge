@@ -60,7 +60,12 @@ export function useGasSummary(): UseGasSummaryResult {
 
     const decimals = token ? token.decimals : nativeCurrency.decimals
 
-    return utils.parseUnits(amountSafe, decimals)
+    try {
+      // if amount has more decimals than token's decimals, it will throw an error
+      return utils.parseUnits(amountSafe, decimals)
+    } catch (error) {
+      return constants.Zero
+    }
   }, [debouncedAmount, token, nativeCurrency])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
