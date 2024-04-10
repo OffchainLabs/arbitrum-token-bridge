@@ -5,16 +5,15 @@ import { useNativeCurrency } from './useNativeCurrency'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
-import { useAppState } from '../state'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
 
 /**
- * `TokenToBridge` means native currency or ERC20 token user wants to bridge
+ * Balance of the child chain's native currency or ERC20 token user selected for bridging
  */
-export function useTokenToBeBridgedBalance() {
+export function useBalanceOnSourceChain(
+  selectedToken: ERC20BridgeToken | null
+) {
   const { address: walletAddress } = useAccount()
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)

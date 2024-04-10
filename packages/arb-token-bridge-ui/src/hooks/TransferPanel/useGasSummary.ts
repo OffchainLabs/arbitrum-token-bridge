@@ -14,7 +14,7 @@ import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { useGasEstimates } from './useGasEstimates'
-import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
+import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
@@ -121,7 +121,7 @@ export function useGasSummary(): UseGasSummaryResult {
     )
   }, [childChainGasPrice, estimateGasResult, isDepositMode])
 
-  const balance = useTokenToBeBridgedBalance()
+  const balance = useBalanceOnSourceChain(token)
 
   useEffect(() => {
     if (
