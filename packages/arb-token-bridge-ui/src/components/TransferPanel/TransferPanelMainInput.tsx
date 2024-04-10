@@ -1,6 +1,6 @@
 import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
@@ -10,6 +10,9 @@ import { useDestinationAddressStore } from './AdvancedSettings'
 import { useBalance } from '../../hooks/useBalance'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useAppState } from '../../state'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { countDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -104,6 +107,35 @@ function MaxButton(props: MaxButtonProps) {
   )
 }
 
+function TransferPanelInputField(
+  props: React.InputHTMLAttributes<HTMLInputElement>
+) {
+  const { value = '', onChange, ...rest } = props
+  const setAmount = useSetInputAmount()
+  const decimals = useSelectedTokenDecimals()
+
+  useEffect(() => {
+    if (countDecimals(String(value)) > decimals) {
+      setAmount(String(value))
+    }
+  }, [value, decimals, setAmount])
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      placeholder="Enter amount"
+      className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+      value={value}
+      onChange={event => {
+        onChange?.(event)
+        setAmount(event.target.value)
+      }}
+      {...rest}
+    />
+  )
+}
+
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | React.ReactNode
@@ -112,7 +144,7 @@ export type TransferPanelMainInputProps =
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, ...rest } = props
+  const { errorMessage, maxButtonProps, ...rest } = props
 
   return (
     <>
@@ -131,14 +163,7 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             errorMessage ? 'border-brick' : 'border-white/30'
           )}
         >
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="Enter amount"
-            className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={value}
-            {...rest}
-          />
+          <TransferPanelInputField {...rest} />
           <MaxButton {...maxButtonProps} />
         </div>
       </div>
