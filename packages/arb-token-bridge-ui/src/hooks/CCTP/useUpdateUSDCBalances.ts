@@ -7,7 +7,7 @@ import { useNetworksRelationship } from '../useNetworksRelationship'
 import { Address } from '../../util/AddressUtils'
 import { isNetwork } from '../../util/networks'
 
-function getL1AddressFromAddress(
+function getParentAddressFromAddress(
   address: string | undefined,
   childChainId: number
 ) {
@@ -62,7 +62,7 @@ export function useUpdateUSDCBalances({
 
   const updateUSDCBalances = useCallback(
     (address: Address | string | undefined) => {
-      const l1Address = getL1AddressFromAddress(address, childChain.id)
+      const l1Address = getParentAddressFromAddress(address, childChain.id)
 
       updateErc20L1Balance([l1Address.toLowerCase()])
       if (isTokenMainnetUSDC(l1Address)) {
