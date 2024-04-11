@@ -5,21 +5,37 @@ import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { Address } from '../../util/AddressUtils'
+import { isNetwork } from '../../util/networks'
 
-function getL1AddressFromAddress(address: string) {
+function getL1AddressFromAddress(
+  address: string | undefined,
+  childChainId: number
+) {
+  const { isOrbitChain, isTestnet } = isNetwork(childChainId)
+
+  const parentChainUsdcAddressTestnet = isOrbitChain
+    ? CommonAddress.ArbitrumSepolia.USDC
+    : CommonAddress.Sepolia.USDC
+
+  const parentChainUsdcAddressMainnet = isOrbitChain
+    ? CommonAddress.ArbitrumOne.USDC
+    : CommonAddress.Ethereum.USDC
+
   switch (address) {
     case CommonAddress.Sepolia.USDC:
     case CommonAddress.ArbitrumSepolia.USDC:
     case CommonAddress.ArbitrumSepolia['USDC.e']:
-      return CommonAddress.Sepolia.USDC
+      return parentChainUsdcAddressTestnet
 
     case CommonAddress.Ethereum.USDC:
     case CommonAddress.ArbitrumOne.USDC:
     case CommonAddress.ArbitrumOne['USDC.e']:
-      return CommonAddress.Ethereum.USDC
+      return parentChainUsdcAddressMainnet
 
     default:
-      return CommonAddress.Ethereum.USDC
+      return isTestnet
+        ? parentChainUsdcAddressTestnet
+        : parentChainUsdcAddressMainnet
   }
 }
 
@@ -29,7 +45,7 @@ export function useUpdateUSDCBalances({
   walletAddress: string | undefined
 }) {
   const [networks] = useNetworks()
-  const { parentChainProvider, childChainProvider } =
+  const { parentChainProvider, childChainProvider, childChain } =
     useNetworksRelationship(networks)
   const {
     erc20: [, updateErc20L1Balance]
@@ -45,8 +61,8 @@ export function useUpdateUSDCBalances({
   })
 
   const updateUSDCBalances = useCallback(
-    (address: Address | string) => {
-      const l1Address = getL1AddressFromAddress(address)
+    (address: Address | string | undefined) => {
+      const l1Address = getL1AddressFromAddress(address, childChain.id)
 
       updateErc20L1Balance([l1Address.toLowerCase()])
       if (isTokenMainnetUSDC(l1Address)) {
@@ -61,7 +77,7 @@ export function useUpdateUSDCBalances({
         ])
       }
     },
-    [updateErc20L1Balance, updateErc20L2Balance]
+    [updateErc20L1Balance, updateErc20L2Balance, childChain.id]
   )
 
   return { updateUSDCBalances }
