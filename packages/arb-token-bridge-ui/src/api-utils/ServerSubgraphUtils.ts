@@ -150,7 +150,7 @@ function createSubgraphClient(identifier: ReadableSubgraphIdentifier) {
     console.warn(
       `[createSubgraphClient] falling back to subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service\n`
     )
-    return createGraphHostedServiceClient(graphNetworkSubgraphId)
+    return createGraphHostedServiceClient(graphHostedServiceSubgraphName)
   }
 }
 
