@@ -134,14 +134,22 @@ function createGraphHostedServiceClient(subgraphName: string) {
 }
 
 function createSubgraphClient(identifier: ReadableSubgraphIdentifier) {
+  console.log(`[createSubgraphClient] identifier=${identifier}`)
+
   const { graphNetworkSubgraphId, graphHostedServiceSubgraphName } =
     subgraphs[identifier]
 
   if (!graphNetworkEnabled) {
+    console.log(
+      `[createSubgraphClient] using subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service\n`
+    )
     return createGraphHostedServiceClient(graphHostedServiceSubgraphName)
   }
 
   try {
+    console.log(
+      `[createSubgraphClient] using subgraph "${graphNetworkSubgraphId}" on the graph network`
+    )
     return createGraphNetworkClient(graphNetworkSubgraphId)
   } catch (err) {
     console.warn(
