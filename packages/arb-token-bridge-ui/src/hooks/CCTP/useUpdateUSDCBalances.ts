@@ -58,13 +58,18 @@ export function useUpdateUSDCBalances({
 
     // we don't have native USDC addresses for Orbit chains, we need to fetch it
     if (!childChainUsdcAddress) {
-      childChainUsdcAddress = (
-        await getL2ERC20Address({
-          erc20L1Address: parentChainUsdcAddress,
-          l1Provider: parentChainProvider,
-          l2Provider: childChainProvider
-        })
-      ).toLowerCase()
+      try {
+        childChainUsdcAddress = (
+          await getL2ERC20Address({
+            erc20L1Address: parentChainUsdcAddress,
+            l1Provider: parentChainProvider,
+            l2Provider: childChainProvider
+          })
+        ).toLowerCase()
+      } catch {
+        // could be never bridged before
+        return
+      }
     }
 
     updateErc20L2Balance([childChainUsdcAddress])

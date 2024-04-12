@@ -569,15 +569,20 @@ export function TokenSearch({
         await updateUSDCBalances()
 
         // if an Orbit chain is selected we need to fetch its USDC address
-        const childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
-          ? (
-              await getL2ERC20Address({
-                erc20L1Address: _token.address,
-                l1Provider: parentChainProvider,
-                l2Provider: childChainProvider
-              })
-            ).toLowerCase()
-          : undefined
+        let childChainUsdcAddress
+        try {
+          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
+            ? (
+                await getL2ERC20Address({
+                  erc20L1Address: _token.address,
+                  l1Provider: parentChainProvider,
+                  l2Provider: childChainProvider
+                })
+              ).toLowerCase()
+            : undefined
+        } catch {
+          // could be never bridged before
+        }
 
         setSelectedToken({
           name: 'USD Coin',
