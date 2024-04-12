@@ -72,7 +72,7 @@ export async function fetchWithdrawalsFromSubgraph({
   )
 
   if (!hasL2Subgraph(Number(l2ChainId))) {
-    throw new Error('Subgraph not available for this network')
+    throw new Error(`L2 subgraph not available for network: ${l2ChainId}`)
   }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
