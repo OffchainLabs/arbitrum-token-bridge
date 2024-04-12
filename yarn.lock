@@ -1297,6 +1297,11 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
+"@ledgerhq/connect-kit-loader@^1.0.1":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/connect-kit-loader/-/connect-kit-loader-1.1.8.tgz#6cc32191660dd9d6e8f89047af09b0f201e30190"
+  integrity sha512-mDJsOucVW8m3Lk2fdQst+P74SgiKebvq1iBk4sXLbADQOwhL9bWGaArvO+tW7jPJZwEfSPWBdHcHoYi11XAwZw==
+
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
@@ -1505,10 +1510,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/cobalt@0.3.0-alpha.6":
-  version "0.3.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0-alpha.6.tgz#4237ad4196bbe6dd54ce1104988947a7d58339f7"
-  integrity sha512-ixFrTi0MM8/WpTaM/9CeHVtYo8LSNRgTHNGZSJfiweKcDrSMkrUyTOhr2ce/qXckJb6SsoQXRq5TnjTvXcNUWg==
+"@offchainlabs/cobalt@0.3.0-alpha.8":
+  version "0.3.0-alpha.8"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0-alpha.8.tgz#68f569e4a1df86793ddd2553cca16b32125a0cb2"
+  integrity sha512-5qZ75iO6FwFWzq4wKXPLXfOV75wMlW5dL5tVwf/D+89QD1LcGAxefqxTPDC+SD4xi35D/PO82faX2OES7XhxvA==
 
 "@pkgr/utils@^2.3.1":
   version "2.4.1"
