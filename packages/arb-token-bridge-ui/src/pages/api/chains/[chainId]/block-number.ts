@@ -4,7 +4,8 @@ import { gql } from '@apollo/client'
 import { ChainId } from '../../../../util/networks'
 import {
   getL1SubgraphClient,
-  getL2SubgraphClient
+  getL2SubgraphClient,
+  getSourceFromSubgraphClient
 } from '../../../../api-utils/ServerSubgraphUtils'
 
 function getSubgraphClient(chainId: number) {
@@ -29,7 +30,9 @@ function getSubgraphClient(chainId: number) {
 
 export default async function handler(
   req: NextApiRequest & { query: { chainId: string } },
-  res: NextApiResponse<{ data: number } | { message: string }>
+  res: NextApiResponse<
+    { data: number; meta?: { source: string | null } } | { message: string }
+  >
 ) {
   const { chainId } = req.query
 
@@ -40,6 +43,8 @@ export default async function handler(
   }
 
   try {
+    const subgraphClient = getSubgraphClient(Number(chainId))
+
     const result: {
       data: {
         _meta: {
@@ -48,7 +53,7 @@ export default async function handler(
           }
         }
       }
-    } = await getSubgraphClient(Number(chainId)).query({
+    } = await subgraphClient.query({
       query: gql`
         {
           _meta {
@@ -60,7 +65,10 @@ export default async function handler(
       `
     })
 
-    res.status(200).json({ data: result.data._meta.block.number })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: result.data._meta.block.number
+    })
   } catch (error) {
     res.status(200).json({ data: 0 })
   }
