@@ -1,8 +1,4 @@
-import {
-  MenuItem,
-  MenuItemExpandable,
-  MenuItemContent
-} from '@offchainlabs/cobalt'
+import { MenuItem, MenuItemExpandable } from '@offchainlabs/cobalt'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowTopRightOnSquareIcon,
@@ -126,30 +122,28 @@ export const AccountMenuItem = ({}) => {
         />
       }
     >
-      <MenuItemContent>
+      <MenuItem
+        title="Transactions"
+        Icon={<DocumentTextIcon className="h-[18px] w-[18px]" />}
+        onClick={openTransactionHistory}
+      />
+      {chain && (
         <MenuItem
-          title="Transactions"
-          Icon={<DocumentTextIcon className="h-[18px] w-[18px]" />}
-          onClick={openTransactionHistory}
+          title="Explorer"
+          Icon={<ArrowTopRightOnSquareIcon className="h-[18px] w-[18px]" />}
+          href={`${getExplorerUrl(chain.id)}/address/${address}`}
         />
-        {chain && (
-          <MenuItem
-            title="Explorer"
-            Icon={<ArrowTopRightOnSquareIcon className="h-[18px] w-[18px]" />}
-            href={`${getExplorerUrl(chain.id)}/address/${address}`}
-          />
-        )}
-        <MenuItem
-          title="Settings"
-          Icon={<Cog6ToothIcon className="h-[18px] w-[18px]" />}
-          onClick={() => setQueryParams({ settingsOpen: true })}
-        />
-        <MenuItem
-          title="Disconnect"
-          Icon={<ArrowLeftOnRectangleIcon className="h-[18px] w-[18px]" />}
-          onClick={() => disconnect()}
-        />
-      </MenuItemContent>
+      )}
+      <MenuItem
+        title="Settings"
+        Icon={<Cog6ToothIcon className="h-[18px] w-[18px]" />}
+        onClick={() => setQueryParams({ settingsOpen: true })}
+      />
+      <MenuItem
+        title="Disconnect"
+        Icon={<ArrowLeftOnRectangleIcon className="h-[18px] w-[18px]" />}
+        onClick={() => disconnect()}
+      />
     </MenuItemExpandable>
   )
 }
