@@ -72,7 +72,9 @@ export function useUpdateUSDCBalances({
       }
     }
 
-    updateErc20L2Balance([childChainUsdcAddress])
+    if (childChainUsdcAddress) {
+      updateErc20L2Balance([childChainUsdcAddress])
+    }
   }, [
     childChainProvider,
     parentChain.id,
