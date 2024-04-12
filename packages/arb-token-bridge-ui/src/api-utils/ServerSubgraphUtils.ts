@@ -3,16 +3,19 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { ChainId } from '../util/networks'
 
 /**
- * Determines whether to use The Graph Network or The Graph Hosted Service.
+ * Determines whether to use The Graph Network over The Graph Hosted Service.
  */
-const graphNetworkEnabled = process.env.GRAPH_NETWORK_ENABLED === 'true'
+const theGraphNetworkEnabled = process.env.THE_GRAPH_NETWORK_ENABLED === 'true'
 
 /**
- * The API key to be usd for calls to The Graph Network.
+ * The API key to be used for calls to The Graph Network.
  */
-const graphNetworkApiKey = process.env.GRAPH_NETWORK_API_KEY
+const theGraphNetworkApiKey = process.env.THE_GRAPH_NETWORK_API_KEY
 
-type GraphNetworkSubgraphId =
+/**
+ * Identifiers for subgraphs on The Graph Network.
+ */
+type TheGraphNetworkSubgraphId =
   // CCTP Mainnet Subgraphs
   | 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1' // CCTP Ethereum
   | '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW' // CCTP Arbitrum One
@@ -29,7 +32,10 @@ type GraphNetworkSubgraphId =
   // L2 Testnet Subgraphs
   | 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw' // L2 Arbitrum Sepolia
 
-type GraphHostedServiceSubgraphName =
+/**
+ * Names for subgraphs on The Graph Hosted Service.
+ */
+type TheGraphHostedServiceSubgraphName =
   // CCTP Mainnet Subgraphs
   | 'chrstph-dvx/cctp-mainnet'
   | 'chrstph-dvx/cctp-arb-one'
@@ -46,6 +52,9 @@ type GraphHostedServiceSubgraphName =
   // L2 Testnet Subgraphs
   | 'fionnachan/layer2-token-gateway-sepolia'
 
+/**
+ *
+ */
 type ReadableSubgraphIdentifier =
   | 'cctp-ethereum'
   | 'cctp-arbitrum-one'
@@ -60,51 +69,51 @@ type ReadableSubgraphIdentifier =
 const subgraphs: Record<
   ReadableSubgraphIdentifier,
   {
-    graphNetworkSubgraphId: GraphNetworkSubgraphId
-    graphHostedServiceSubgraphName: GraphHostedServiceSubgraphName
+    subgraphId: TheGraphNetworkSubgraphId
+    subgraphName: TheGraphHostedServiceSubgraphName
   }
 > = {
   // CCTP Mainnet Subgraphs
   'cctp-ethereum': {
-    graphNetworkSubgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1',
-    graphHostedServiceSubgraphName: 'chrstph-dvx/cctp-mainnet'
+    subgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1',
+    subgraphName: 'chrstph-dvx/cctp-mainnet'
   },
   'cctp-arbitrum-one': {
-    graphNetworkSubgraphId: '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW',
-    graphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-one'
+    subgraphId: '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW',
+    subgraphName: 'chrstph-dvx/cctp-arb-one'
   },
   // CCTP Testnet Subgraphs
   'cctp-sepolia': {
-    graphNetworkSubgraphId: '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5',
-    graphHostedServiceSubgraphName: 'chrstph-dvx/cctp-sepolia'
+    subgraphId: '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5',
+    subgraphName: 'chrstph-dvx/cctp-sepolia'
   },
   'cctp-arbitrum-sepolia': {
-    graphNetworkSubgraphId: '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB',
-    graphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-sepolia'
+    subgraphId: '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB',
+    subgraphName: 'chrstph-dvx/cctp-arb-sepolia'
   },
   // L1 Mainnet Subgraphs
   'l1-arbitrum-one': {
-    graphNetworkSubgraphId: 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4',
-    graphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nitro'
+    subgraphId: 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4',
+    subgraphName: 'gvladika/arb-bridge-eth-nitro'
   },
   'l1-arbitrum-nova': {
-    graphNetworkSubgraphId: '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp',
-    graphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nova'
+    subgraphId: '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp',
+    subgraphName: 'gvladika/arb-bridge-eth-nova'
   },
   // L1 Testnet Subgraphs
   'l1-arbitrum-sepolia': {
-    graphNetworkSubgraphId: 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9',
-    graphHostedServiceSubgraphName: 'fionnachan/arb-bridge-eth-sepolia'
+    subgraphId: 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9',
+    subgraphName: 'fionnachan/arb-bridge-eth-sepolia'
   },
   // L2 Mainnet Subgraphs
   'l2-arbitrum-one': {
-    graphNetworkSubgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj',
-    graphHostedServiceSubgraphName: 'gvladika/layer2-token-gateway-arb1'
+    subgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj',
+    subgraphName: 'gvladika/layer2-token-gateway-arb1'
   },
   // L2 Testnet Subgraphs
   'l2-arbitrum-sepolia': {
-    graphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
-    graphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-sepolia'
+    subgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
+    subgraphName: 'fionnachan/layer2-token-gateway-sepolia'
   }
 }
 
@@ -116,14 +125,17 @@ function createApolloClient(uri: string) {
 }
 
 function createGraphNetworkClient(subgraphId: string) {
-  if (typeof graphNetworkApiKey === 'undefined' || graphNetworkApiKey === '') {
+  if (
+    typeof theGraphNetworkApiKey === 'undefined' ||
+    theGraphNetworkApiKey === ''
+  ) {
     throw new Error(
       `[createGraphNetworkClient] missing "GRAPH_NETWORK_API_KEY" env variable"`
     )
   }
 
   return createApolloClient(
-    `https://gateway-arbitrum.network.thegraph.com/api/${graphNetworkApiKey}/subgraphs/id/${subgraphId}`
+    `https://gateway-arbitrum.network.thegraph.com/api/${theGraphNetworkApiKey}/subgraphs/id/${subgraphId}`
   )
 }
 
@@ -136,29 +148,28 @@ function createGraphHostedServiceClient(subgraphName: string) {
 function createSubgraphClient(identifier: ReadableSubgraphIdentifier) {
   console.log(`[createSubgraphClient] identifier=${identifier}`)
 
-  const { graphNetworkSubgraphId, graphHostedServiceSubgraphName } =
-    subgraphs[identifier]
+  const { subgraphId, subgraphName } = subgraphs[identifier]
 
-  if (!graphNetworkEnabled) {
+  if (!theGraphNetworkEnabled) {
     console.log(
-      `[createSubgraphClient] using subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service\n`
+      `[createSubgraphClient] using subgraph "${subgraphName}" on the graph hosted service\n`
     )
-    return createGraphHostedServiceClient(graphHostedServiceSubgraphName)
+    return createGraphHostedServiceClient(subgraphName)
   }
 
   try {
     console.log(
-      `[createSubgraphClient] using subgraph "${graphNetworkSubgraphId}" on the graph network`
+      `[createSubgraphClient] using subgraph "${subgraphId}" on the graph network`
     )
-    return createGraphNetworkClient(graphNetworkSubgraphId)
+    return createGraphNetworkClient(subgraphId)
   } catch (err) {
     console.warn(
-      `[createSubgraphClient] failed to create client for subgraph "${graphNetworkSubgraphId}" on the graph network`
+      `[createSubgraphClient] failed to create client for subgraph "${subgraphId}" on the graph network`
     )
     console.warn(
-      `[createSubgraphClient] falling back to subgraph "${graphHostedServiceSubgraphName}" on the graph hosted service\n`
+      `[createSubgraphClient] falling back to subgraph "${subgraphName}" on the graph hosted service\n`
     )
-    return createGraphHostedServiceClient(graphHostedServiceSubgraphName)
+    return createGraphHostedServiceClient(subgraphName)
   }
 }
 
