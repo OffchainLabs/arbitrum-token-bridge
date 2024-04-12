@@ -19,7 +19,7 @@ const BalanceUpdater = (): JSX.Element => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      updateUSDCBalances(selectedToken?.address)
+      updateUSDCBalances()
 
       if (selectedToken) {
         latestTokenBridge?.current?.token?.updateTokenData(

@@ -402,7 +402,7 @@ export function TransferPanelMain({
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
     ) {
-      updateUSDCBalances(selectedToken.address)
+      updateUSDCBalances()
       return
     }
 
