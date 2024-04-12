@@ -1,4 +1,9 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  NormalizedCacheObject
+} from '@apollo/client'
 
 import { ChainId } from '../util/networks'
 
@@ -170,4 +175,16 @@ export function getL2SubgraphClient(l2ChainId: number) {
     default:
       throw new Error(`[getL2SubgraphClient] unsupported chain: ${l2ChainId}`)
   }
+}
+
+export function getSourceFromSubgraphClient(
+  subgraphClient: ApolloClient<NormalizedCacheObject>
+): string | null {
+  const uri = (subgraphClient.link as any).options?.uri
+
+  if (typeof uri === 'undefined') {
+    return null
+  }
+
+  return new URL(uri).origin
 }

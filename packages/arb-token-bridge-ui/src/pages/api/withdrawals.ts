@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
 
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import { getL2SubgraphClient } from '../../api-utils/ServerSubgraphUtils'
+import {
+  getL2SubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
@@ -19,6 +22,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
 }
 
 type WithdrawalResponse = {
+  meta?: { source: string | null }
   data: FetchWithdrawalsFromSubgraphResult[]
   message?: string // in case of any error
 }
@@ -160,7 +164,10 @@ export default async function handler(
         }
       })
 
-    res.status(200).json({ data: transactions })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: transactions
+    })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',

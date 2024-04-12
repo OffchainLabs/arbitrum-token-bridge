@@ -4,7 +4,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { ChainId } from '../../../util/networks'
 import { Address } from '../../../util/AddressUtils'
 
-import { getCctpSubgraphClient } from '../../../api-utils/ServerSubgraphUtils'
+import {
+  getCctpSubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
@@ -57,6 +60,9 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
 
 export type Response =
   | {
+      meta?: {
+        source: string | null
+      }
       data: {
         pending: PendingCCTPTransfer[]
         completed: CompletedCCTPTransfer[]
@@ -244,6 +250,9 @@ export default async function handler(
     )
 
     res.status(200).json({
+      meta: {
+        source: getSourceFromSubgraphClient(l1Subgraph)
+      },
       data: {
         pending,
         completed
