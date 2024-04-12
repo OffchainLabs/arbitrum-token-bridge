@@ -57,20 +57,30 @@ export function EstimatedGas({
     app: { selectedToken }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChain, isDepositMode } =
-    useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const isBridgingEth = useIsBridgingEth(nativeCurrency)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
+  const childChainNativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
   const isSourceChain = chainType === 'source'
   const isParentChain = isSourceChain
     ? networks.sourceChain.id === parentChain.id
     : networks.destinationChain.id === parentChain.id
-  const parentChainName = getNetworkName(parentChain.id)
   const {
     status: gasSummaryStatus,
     estimatedParentChainGasFees,
     estimatedChildChainGasFees
   } = useGasSummary()
+  const parentChainName = getNetworkName(parentChain.id)
+  const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
   const showPrice = useMemo(
     () => isBridgingEth && !isNetwork(childChain.id).isTestnet,
     [isBridgingEth, childChain.id]
@@ -149,7 +159,9 @@ export function EstimatedGas({
         >
           <span className="text-right">
             {formatAmount(estimatedGasFee, {
-              symbol: nativeCurrency.symbol
+              symbol: isParentChain
+                ? parentChainNativeCurrency.symbol
+                : childChainNativeCurrency.symbol
             })}
           </span>
 

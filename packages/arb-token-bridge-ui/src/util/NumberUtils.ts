@@ -115,3 +115,13 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
     }) + suffix
   )
 }
+
+export const truncateExtraDecimals = (amount: string, decimals: number) => {
+  const decimalPart = amount.split('.')[1]
+
+  if (typeof decimalPart === 'undefined') {
+    return amount
+  }
+
+  return `${amount.split('.')[0]}.${decimalPart.slice(0, decimals)}`
+}
