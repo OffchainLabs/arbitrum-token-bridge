@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
-import { getL1SubgraphClient } from '../../util/SubgraphUtils'
+import {
+  getL1SubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
@@ -18,6 +22,7 @@ type NextApiRequestWithDepositParams = NextApiRequest & {
 }
 
 type DepositsResponse = {
+  meta?: { source: string | null }
   data: FetchDepositsFromSubgraphResult[]
   message?: string // in case of any error
 }
@@ -137,7 +142,10 @@ export default async function handler(
     const transactions: FetchDepositsFromSubgraphResult[] =
       subgraphResult.data.deposits
 
-    res.status(200).json({ data: transactions })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: transactions
+    })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',
