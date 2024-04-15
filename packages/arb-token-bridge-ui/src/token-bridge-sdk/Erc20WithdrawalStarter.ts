@@ -11,7 +11,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import {
-  fetchErc20L1GatewayAddress,
+  fetchErc20ParentChainGatewayAddress,
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
@@ -99,11 +99,13 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-      erc20L1Address: destinationChainErc20Address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
-    })
+    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
+      {
+        erc20ParentChainAddress: destinationChainErc20Address,
+        parentChainProvider: this.sourceChainProvider,
+        childChainProvider: this.destinationChainProvider
+      }
+    )
 
     const contract = ERC20__factory.connect(
       destinationChainErc20Address,
@@ -111,7 +113,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
 
     return contract.estimateGas.approve(
-      l1GatewayAddress,
+      parentChainGatewayAddress,
       amount ?? constants.MaxUint256,
       {
         from: address
@@ -167,7 +169,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       amount,
       address,
       erc20L1Address: tokenAddress,
-      l2Provider: this.sourceChainProvider
+      childChainProvider: this.sourceChainProvider
     })
   }
 
