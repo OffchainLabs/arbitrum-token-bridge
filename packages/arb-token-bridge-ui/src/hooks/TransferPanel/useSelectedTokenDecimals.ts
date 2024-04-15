@@ -14,8 +14,5 @@ export function useSelectedTokenDecimals() {
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  return useMemo(
-    () => (selectedToken ? selectedToken.decimals : nativeCurrency.decimals),
-    [nativeCurrency, selectedToken]
-  )
+  return selectedToken ? selectedToken.decimals : nativeCurrency.decimals
 }
