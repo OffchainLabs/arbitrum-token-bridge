@@ -8,11 +8,9 @@ import { useNetworks } from './useNetworks'
 import { ERC20BridgeToken } from './arbTokenBridge.types'
 
 /**
- * Balance of the child chain's native currency or ERC20 token user selected for bridging
+ * Balance of the child chain's native currency or ERC20 token
  */
-export function useBalanceOnSourceChain(
-  selectedToken: ERC20BridgeToken | null
-) {
+export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
@@ -28,7 +26,7 @@ export function useBalanceOnSourceChain(
 
   // user selected source chain native currency or
   // user bridging the destination chain's native currency
-  if (!selectedToken) {
+  if (!token) {
     // check if user is depositing destination chain's custom native currency to orbit chain
     if (childChainNativeCurrency.isCustom && isDepositMode) {
       return (
@@ -49,21 +47,18 @@ export function useBalanceOnSourceChain(
 
   if (isDepositMode) {
     return (
-      erc20SourceChainBalances[selectedToken.address.toLowerCase()] ??
-      constants.Zero
+      erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero
     )
   }
 
-  const selectedTokenChildChainAddress = selectedToken.l2Address?.toLowerCase()
+  const tokenChildChainAddress = token.l2Address?.toLowerCase()
 
   // token that has never been deposited so it doesn't have an l2Address
   // this should not happen because user shouldn't be able to select it
-  if (!selectedTokenChildChainAddress) {
+  if (!tokenChildChainAddress) {
     return constants.Zero
   }
 
   // token withdrawal
-  return (
-    erc20SourceChainBalances[selectedTokenChildChainAddress] ?? constants.Zero
-  )
+  return erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero
 }
