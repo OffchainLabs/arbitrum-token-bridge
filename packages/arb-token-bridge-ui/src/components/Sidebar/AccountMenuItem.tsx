@@ -11,7 +11,7 @@ import { SafeImage } from '../common/SafeImage'
 import { useAccountMenu } from '../../hooks/useAccountMenu'
 import { CustomBoringAvatar } from '../common/CustomBoringAvatar'
 
-export const AccountMenuItem = ({}) => {
+export const AccountMenuItem = () => {
   const {
     address,
     accountShort,
@@ -27,6 +27,7 @@ export const AccountMenuItem = ({}) => {
   return (
     <MenuItemExpandable
       title={ensName ?? udInfo.name ?? accountShort}
+      isMobile
       Icon={
         <SafeImage
           src={ensAvatar || undefined}
@@ -39,23 +40,27 @@ export const AccountMenuItem = ({}) => {
         title="Transactions"
         Icon={<DocumentTextIcon className="h-[18px] w-[18px]" />}
         onClick={openTransactionHistory}
+        isMobile
       />
       {chain && (
         <MenuItem
           title="Explorer"
           Icon={<ArrowTopRightOnSquareIcon className="h-[18px] w-[18px]" />}
           href={`${getExplorerUrl(chain.id)}/address/${address}`}
+          isMobile
         />
       )}
       <MenuItem
         title="Settings"
         Icon={<Cog6ToothIcon className="h-[18px] w-[18px]" />}
         onClick={() => setQueryParams({ settingsOpen: true })}
+        isMobile
       />
       <MenuItem
         title="Disconnect"
         Icon={<ArrowLeftOnRectangleIcon className="h-[18px] w-[18px]" />}
         onClick={() => disconnect()}
+        isMobile
       />
     </MenuItemExpandable>
   )

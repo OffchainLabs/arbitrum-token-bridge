@@ -977,9 +977,9 @@
     "@hapi/hoek" "^9.0.0"
 
 "@headlessui/react@^1.7.12":
-  version "1.7.18"
-  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.7.18.tgz#30af4634d2215b2ca1aa29d07f33d02bea82d9d7"
-  integrity sha512-4i5DOrzwN4qSgNsL4Si61VMkUcWbcSKueUV7sFhpHzQcSShdlHENE5+QBntMSRvHt8NyoFO2AGG8si9lq+w4zQ==
+  version "1.7.19"
+  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.7.19.tgz#91c78cf5fcb254f4a0ebe96936d48421caf75f40"
+  integrity sha512-Ll+8q3OlMJfJbAKM/+/Y2q6PPYbryqNTXDbryx7SXLIDamkF6iQFbriYHga0dY44PvDhvvBWCx1Xj4U5+G4hOw==
   dependencies:
     "@tanstack/react-virtual" "^3.0.0-beta.60"
     client-only "^0.0.1"
@@ -1297,6 +1297,11 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
+"@ledgerhq/connect-kit-loader@^1.0.1":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/connect-kit-loader/-/connect-kit-loader-1.1.8.tgz#6cc32191660dd9d6e8f89047af09b0f201e30190"
+  integrity sha512-mDJsOucVW8m3Lk2fdQst+P74SgiKebvq1iBk4sXLbADQOwhL9bWGaArvO+tW7jPJZwEfSPWBdHcHoYi11XAwZw==
+
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.4.tgz#b2ac626d6cb9c8718ab459166d4bb405b8ffa78b"
@@ -1505,10 +1510,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/cobalt@0.3.0-alpha.10":
-  version "0.3.0-alpha.10"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0-alpha.10.tgz#861559a7512505adf3609a2f492a9c2c22713a65"
-  integrity sha512-4pACPnzYv9cP5Pd/w3CzZP423qyVgy8YDBpToO0BcKa2dqZ/oLARXrHHuXIWgWDcOJdKlq5sLbF9FUopM5cS9g==
+"@offchainlabs/cobalt@0.3.0-alpha.11":
+  version "0.3.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0-alpha.11.tgz#34d8160f2fecfa47195cc72f474d7e8dd9d7c95a"
+  integrity sha512-qw53oVtzccqAl7DyiP5+7TstImkp8miRHO2u9uMuPo/vl9QyVP2491NC4GM5q83kNLI7YVknPje4TiNva54j4g==
 
 "@pkgr/utils@^2.3.1":
   version "2.4.1"
@@ -1938,16 +1943,16 @@
     use-sync-external-store "^1.2.0"
 
 "@tanstack/react-virtual@^3.0.0-beta.60":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.2.1.tgz#58ac9af23ff08b5f05a6dfe6a59deac2f9451508"
-  integrity sha512-i9Nt0ssIh2bSjomJZlr6Iq5usT/9+ewo2/fKHRNk6kjVKS8jrhXbnO8NEawarCuBx/efv0xpoUUKKGxa0cQb4Q==
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.3.0.tgz#5a282efc1ed8da3d4e9e0f9b0c512f735d6c4b5f"
+  integrity sha512-QFxmTSZBniq15S0vSZ55P4ToXquMXwJypPXyX/ux7sYo6a2FX3/zWoRLLc4eIOGWTjvzqcIVNKhcuFb+OZL3aQ==
   dependencies:
-    "@tanstack/virtual-core" "3.2.1"
+    "@tanstack/virtual-core" "3.3.0"
 
-"@tanstack/virtual-core@3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.2.1.tgz#b3e4214b8f462054501d80e8777068faa139bd06"
-  integrity sha512-nO0d4vRzsmpBQCJYyClNHPPoUMI4nXNfrm6IcCRL33ncWMoNVpURh9YebEHPw8KrtsP2VSJIHE4gf4XFGk1OGg==
+"@tanstack/virtual-core@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.3.0.tgz#1bf72d51f269c5a0e3ac872c6b57116767f42c25"
+  integrity sha512-A0004OAa1FcUkPHeeGoKgBrAgjH+uHdDPrw1L7RpkwnODYqRvoilqsHPs8cyTjMg1byZBbiNpQAq2TlFLIaQag==
 
 "@testing-library/cypress@^9.0.0":
   version "9.0.0"

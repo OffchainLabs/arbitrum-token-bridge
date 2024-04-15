@@ -33,6 +33,7 @@ export const AppMobileSidebar: React.FC<React.PropsWithChildren> = () => {
                 onClick={openConnectModal}
                 Icon={<PlusCircleIcon className="h-[24px] w-[24px] stroke-1" />}
                 className="border-lime-dark bg-lime-dark py-3"
+                isMobile
               />
             )}
           </ConnectButton.Custom>
