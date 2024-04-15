@@ -332,7 +332,9 @@ export const NetworkSelectionContainer = ({
             className={buttonClassName}
             onClick={onPopoverButtonClick}
           >
-            {children}
+            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+              {children}
+            </span>
             {!isSmartContractWallet && (
               <ChevronDownIcon
                 className={twMerge(
