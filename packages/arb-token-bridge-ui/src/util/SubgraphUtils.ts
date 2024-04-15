@@ -1,77 +1,26 @@
-import fetch from 'cross-fetch'
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
-
 import { ChainId } from './networks'
 import { getAPIBaseUrl } from '.'
 
-const L1SubgraphClient = {
-  ArbitrumOne: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  ArbitrumNova: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  ArbitrumSepolia: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/arb-bridge-eth-sepolia',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
-
-const L2SubgraphClient = {
-  ArbitrumOne: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-arb1',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  // ArbitrumNova is unavailable because Subgraph does not support Arbitrum Nova network
-  ArbitrumSepolia: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/fionnachan/layer2-token-gateway-sepolia',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
-
-export function getL1SubgraphClient(l2ChainId: number) {
+export function hasL1Subgraph(l2ChainId: number) {
   switch (l2ChainId) {
     case ChainId.ArbitrumOne:
-      return L1SubgraphClient.ArbitrumOne
-
     case ChainId.ArbitrumNova:
-      return L1SubgraphClient.ArbitrumNova
-
     case ChainId.ArbitrumSepolia:
-      return L1SubgraphClient.ArbitrumSepolia
+      return true
 
     default:
-      throw new Error(`[getL1SubgraphClient] Unsupported network: ${l2ChainId}`)
+      return false
   }
 }
 
-export function getL2SubgraphClient(l2ChainId: number) {
+export function hasL2Subgraph(l2ChainId: number) {
   switch (l2ChainId) {
     case ChainId.ArbitrumOne:
-      return L2SubgraphClient.ArbitrumOne
-
     case ChainId.ArbitrumSepolia:
-      return L2SubgraphClient.ArbitrumSepolia
+      return true
 
     default:
-      throw new Error(`[getL2SubgraphClient] Unsupported network: ${l2ChainId}`)
+      return false
   }
 }
 

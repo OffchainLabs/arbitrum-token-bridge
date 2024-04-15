@@ -16,6 +16,7 @@ import { useNativeCurrency } from '../useNativeCurrency'
 import { useGasEstimates } from './useGasEstimates'
 import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -60,7 +61,9 @@ export function useGasSummary(): UseGasSummaryResult {
 
     const decimals = token ? token.decimals : nativeCurrency.decimals
 
-    return utils.parseUnits(amountSafe, decimals)
+    const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
+
+    return utils.parseUnits(correctDecimalsAmount, decimals)
   }, [debouncedAmount, token, nativeCurrency])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
