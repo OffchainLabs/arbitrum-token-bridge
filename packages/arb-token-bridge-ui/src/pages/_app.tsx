@@ -47,8 +47,7 @@ Sentry.init({
         // Ignore events related to failed `eth_getBalance` calls
         event.message.match(/eth_getBalance/i) ||
         // Ignore events related to failed walletConnect calls
-        // Attempt to connect to relay via `transportOpen` has stalled
-        event.message.match(/Attempt to connect to relay via `transportOpen`/i)
+        event.message.match(/Attempt to connect to relay via/i)
       ) {
         return null
       }
