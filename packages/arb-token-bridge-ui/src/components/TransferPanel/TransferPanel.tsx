@@ -851,7 +851,8 @@ export function TransferPanel() {
                 }
               },
               onTxError
-            }
+            },
+            destinationAddress
           })
         }
       } else {
@@ -989,7 +990,8 @@ export function TransferPanel() {
                 }
               },
               onTxError
-            }
+            },
+            destinationAddress
           })
         }
       }
