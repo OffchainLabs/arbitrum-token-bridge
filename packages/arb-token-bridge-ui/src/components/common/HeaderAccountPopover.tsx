@@ -1,87 +1,41 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useCopyToClipboard, useMedia } from 'react-use'
 import { Popover } from '@headlessui/react'
 import {
-  ChevronDownIcon,
-  ArrowTopRightOnSquareIcon,
   ArrowLeftOnRectangleIcon,
-  DocumentTextIcon,
+  ArrowTopRightOnSquareIcon,
+  ChevronDownIcon,
+  Cog6ToothIcon,
   DocumentDuplicateIcon,
-  Cog6ToothIcon
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
-import { JsonRpcProvider } from '@ethersproject/providers'
-import { Resolution } from '@unstoppabledomains/resolution'
-import BoringAvatar from 'boring-avatars'
+import { useState } from 'react'
+import { useCopyToClipboard, useMedia } from 'react-use'
 import { twMerge } from 'tailwind-merge'
-import {
-  useAccount,
-  useDisconnect,
-  useEnsAvatar,
-  useEnsName,
-  useNetwork,
-  useProvider
-} from 'wagmi'
 
-import { Transition } from './Transition'
+import { useAccountType } from '../../hooks/useAccountType'
+import { useNetworks } from '../../hooks/useNetworks'
+import { getExplorerUrl, isNetwork } from '../../util/networks'
+import { useAccountMenu } from '../../hooks/useAccountMenu'
 import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
-import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { useAppContextActions } from '../App/AppContext'
-import { trackEvent } from '../../util/AnalyticsUtils'
-import { shortenAddress } from '../../util/CommonUtils'
-import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import { useNetworks } from '../../hooks/useNetworks'
-import { useAccountType } from '../../hooks/useAccountType'
-
-type UDInfo = { name: string | null }
-const udInfoDefaults: UDInfo = { name: null }
-
-function CustomBoringAvatar({ size, name }: { size: number; name?: string }) {
-  return (
-    <BoringAvatar
-      size={size}
-      name={name?.toLowerCase()}
-      variant="beam"
-      colors={['#11365E', '#EDD75A', '#73B06F', '#0C8F8F', '#405059']}
-    />
-  )
-}
-
-async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
-  const UDresolution = Resolution.fromEthersProvider({
-    uns: {
-      // TODO => remove Layer2 config when UD lib supports our use case
-      // Layer2 (polygon) is required in the object type but we only want to use Layer1
-      // This is a hack to only support Ethereum Mainnet UD names
-      // https://github.com/unstoppabledomains/resolution/issues/229
-      locations: {
-        Layer1: {
-          network: 'mainnet',
-          provider
-        },
-        Layer2: {
-          network: 'mainnet',
-          provider
-        }
-      }
-    }
-  })
-  try {
-    return await UDresolution.reverse(address)
-  } catch (error) {
-    return null
-  }
-}
+import { Transition } from './Transition'
+import { CustomBoringAvatar } from './CustomBoringAvatar'
 
 export function HeaderAccountPopover({
   isCorrectNetworkConnected = true
 }: {
   isCorrectNetworkConnected?: boolean // is the app connected to a correct network? if no, then show limited options in the menu
 }) {
-  const l1Provider = useProvider({ chainId: 1 })
-  const { address } = useAccount()
-  const { disconnect } = useDisconnect()
-  const { chain } = useNetwork()
+  const {
+    address,
+    accountShort,
+    ensName,
+    ensAvatar,
+    openTransactionHistory,
+    disconnect,
+    udInfo,
+    chain,
+    setQueryParams
+  } = useAccountMenu()
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
   const [, copyToClipboard] = useCopyToClipboard()
@@ -89,51 +43,12 @@ export function HeaderAccountPopover({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const { openTransactionHistoryPanel } = useAppContextActions()
-  const [, setQueryParams] = useArbQueryParams()
-
   const [showCopied, setShowCopied] = useState(false)
-  const [udInfo, setUDInfo] = useState<UDInfo>(udInfoDefaults)
-  const { data: ensName } = useEnsName({
-    address,
-    chainId: 1
-  })
-
-  const { data: ensAvatar } = useEnsAvatar({
-    address,
-    chainId: 1
-  })
-
-  useEffect(() => {
-    if (!address) return
-    async function resolveUdName() {
-      const udName = await tryLookupUDName(
-        l1Provider as JsonRpcProvider,
-        address as string
-      )
-
-      setUDInfo({ name: udName })
-    }
-    resolveUdName()
-  }, [address, l1Provider])
-
-  const accountShort = useMemo(() => {
-    if (typeof address === 'undefined') {
-      return ''
-    }
-
-    return shortenAddress(address)
-  }, [address])
 
   function copy(value: string) {
     setShowCopied(true)
     copyToClipboard(value)
     setTimeout(() => setShowCopied(false), 1000)
-  }
-
-  function openTransactionHistory() {
-    openTransactionHistoryPanel()
-    trackEvent('Open Transaction History Click', { pageElement: 'Header' })
   }
 
   const headerItemsClassName =
