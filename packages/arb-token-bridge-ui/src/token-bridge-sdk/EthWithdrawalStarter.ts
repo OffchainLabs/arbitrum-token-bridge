@@ -36,7 +36,7 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     return withdrawInitTxEstimateGas({
       amount,
       address,
-      l2Provider: this.sourceChainProvider
+      childChainProvider: this.sourceChainProvider
     })
   }
 

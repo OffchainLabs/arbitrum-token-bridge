@@ -14,7 +14,7 @@ import {
 } from './BridgeTransferStarter'
 import {
   fetchErc20Allowance,
-  fetchErc20L1GatewayAddress
+  fetchErc20ParentChainGatewayAddress
 } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
@@ -54,17 +54,19 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const l1Gateway = await fetchErc20L1GatewayAddress({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
-    })
+    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
+      {
+        erc20ParentChainAddress: this.sourceChainErc20Address,
+        parentChainProvider: this.sourceChainProvider,
+        childChainProvider: this.destinationChainProvider
+      }
+    )
 
     const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
       address: l2Network.nativeToken,
       provider: this.sourceChainProvider,
       owner: address,
-      spender: l1Gateway
+      spender: parentChainGatewayAddress
     })
 
     const gasSummary = await this.transferEstimateGas({ amount, signer })
@@ -73,9 +75,9 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const estimatedDestinationChainGasFeeEth = parseFloat(
       utils.formatEther(
-        gasSummary.estimatedL2Gas
+        gasSummary.estimatedChildChainGas
           .mul(destinationChainGasPrice)
-          .add(gasSummary.estimatedL2SubmissionCost)
+          .add(gasSummary.estimatedChildChainSubmissionCost)
       )
     )
     const estimatedDestinationChainGasFee = utils.parseUnits(
@@ -118,17 +120,19 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
-    })
+    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
+      {
+        erc20ParentChainAddress: this.sourceChainErc20Address,
+        parentChainProvider: this.sourceChainProvider,
+        childChainProvider: this.destinationChainProvider
+      }
+    )
 
     const allowanceForL1Gateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: address,
-      spender: l1GatewayAddress
+      spender: parentChainGatewayAddress
     })
 
     return allowanceForL1Gateway.lt(amount)
@@ -141,11 +145,13 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-      erc20L1Address: this.sourceChainErc20Address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
-    })
+    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
+      {
+        erc20ParentChainAddress: this.sourceChainErc20Address,
+        parentChainProvider: this.sourceChainProvider,
+        childChainProvider: this.destinationChainProvider
+      }
+    )
 
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
@@ -153,7 +159,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
 
     return contract.estimateGas.approve(
-      l1GatewayAddress,
+      parentChainGatewayAddress,
       amount ?? constants.MaxUint256,
       {
         from: address
@@ -187,8 +193,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       amount,
       address,
       erc20L1Address: this.sourceChainErc20Address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
+      parentChainProvider: this.sourceChainProvider,
+      childChainProvider: this.destinationChainProvider
     })
   }
 

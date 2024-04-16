@@ -70,8 +70,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
     return depositEthEstimateGas({
       amount,
       address,
-      l1Provider: this.sourceChainProvider,
-      l2Provider: this.destinationChainProvider
+      parentChainProvider: this.sourceChainProvider,
+      childChainProvider: this.destinationChainProvider
     })
   }
 

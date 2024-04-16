@@ -1,7 +1,10 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
-import { GasEstimates } from '../hooks/arbTokenBridge.types'
+import {
+  GasEstimates,
+  DepositGasEstimates
+} from '../hooks/arbTokenBridge.types'
 import { Address } from '../util/AddressUtils'
 
 type Asset = 'erc20' | 'eth'
@@ -99,7 +102,7 @@ export abstract class BridgeTransferStarter {
 
   public abstract transferEstimateGas(
     props: TransferEstimateGas
-  ): Promise<GasEstimates | undefined>
+  ): Promise<GasEstimates | DepositGasEstimates | undefined>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }

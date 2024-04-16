@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -27,6 +28,7 @@ if (
   registerLocalNetwork()
 }
 
+dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
@@ -43,7 +45,9 @@ Sentry.init({
         // Ignore events related to failed `eth_gasPrice` calls
         event.message.match(/eth_gasPrice/i) ||
         // Ignore events related to failed `eth_getBalance` calls
-        event.message.match(/eth_getBalance/i)
+        event.message.match(/eth_getBalance/i) ||
+        // Ignore events related to failed walletConnect calls
+        event.message.match(/Attempt to connect to relay via/i)
       ) {
         return null
       }

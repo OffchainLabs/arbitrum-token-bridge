@@ -74,6 +74,7 @@ import {
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -124,6 +125,8 @@ export function TransferPanel() {
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
@@ -150,9 +153,15 @@ export function TransferPanel() {
 
   const setAmount = useCallback(
     (newAmount: string) => {
-      setQueryParams({ amount: newAmount })
+      const decimals = selectedToken
+        ? selectedToken.decimals
+        : nativeCurrency.decimals
+
+      const correctDecimalsAmount = truncateExtraDecimals(newAmount, decimals)
+
+      setQueryParams({ amount: correctDecimalsAmount })
     },
-    [setQueryParams]
+    [nativeCurrency, selectedToken, setQueryParams]
   )
 
   const [tokenImportDialogProps] = useDialog()
@@ -196,8 +205,6 @@ export function TransferPanel() {
     provider: childChainProvider,
     walletAddress: l2WalletAddress
   })
-
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [isCctp, setIsCctp] = useState(false)
 
