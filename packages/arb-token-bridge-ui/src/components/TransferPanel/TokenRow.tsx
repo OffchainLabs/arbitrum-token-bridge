@@ -4,8 +4,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
-import { constants } from 'ethers'
-import { Chain, useAccount } from 'wagmi'
+import { Chain } from 'wagmi'
 
 import { Loader } from '../common/atoms/Loader'
 import { useAppState } from '../../state'
@@ -25,7 +24,6 @@ import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -33,6 +31,7 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
+import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -141,33 +140,11 @@ interface TokenRowProps {
 }
 
 function useTokenInfo(token: ERC20BridgeToken | null) {
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChain,
-    parentChainProvider,
-    isDepositMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, parentChain, isDepositMode } =
+    useNetworksRelationship(networks)
   const chainId = isDepositMode ? parentChain.id : childChain.id
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress
-  })
-
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress
-  })
 
   const name = useMemo(() => {
     if (token) {
@@ -199,35 +176,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
     return token.logoURI
   }, [token, nativeCurrency])
 
-  const balance = useMemo(() => {
-    if (!token) {
-      if (nativeCurrency.isCustom) {
-        return isDepositMode
-          ? erc20L1Balances?.[nativeCurrency.address]
-          : ethL2Balance
-      }
-
-      return isDepositMode ? ethL1Balance : ethL2Balance
-    }
-
-    if (isDepositMode) {
-      return erc20L1Balances?.[token.address.toLowerCase()]
-    }
-
-    if (!token.l2Address) {
-      return constants.Zero
-    }
-
-    return erc20L2Balances?.[token.l2Address.toLowerCase()] ?? constants.Zero
-  }, [
-    ethL1Balance,
-    erc20L1Balances,
-    ethL2Balance,
-    erc20L2Balances,
-    isDepositMode,
-    nativeCurrency,
-    token
-  ])
+  const balance = useBalanceOnSourceChain(token)
 
   const isArbitrumToken = useMemo(() => {
     if (!token) {
