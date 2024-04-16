@@ -1505,10 +1505,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/cobalt@0.3.0-alpha.12":
-  version "0.3.0-alpha.12"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0-alpha.12.tgz#3b8c3b727fe76e3310a2b99e9dab4a0bdf442f2a"
-  integrity sha512-EBFir2YoG3ld0IyzvTrD3rWhyUmpedPSNzZlKT842U4PvtKm62NwL9ToygF++NBeLSXZpIa32U3S+WaP+jZygw==
+"@offchainlabs/cobalt@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.0.tgz#387f2d184fb6a7ab8a64aedea564066c46ada6a8"
+  integrity sha512-xsNTUImv+7b3/B51uFzt2uNAYGny+CNGbqoY3Wl54aIeUu5DXqgt6hn+8Uu+RZXuHywj64FXc+DF+cqesJt6jQ==
 
 "@pkgr/utils@^2.3.1":
   version "2.4.1"
