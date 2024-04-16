@@ -27,5 +27,8 @@
   ],
   "devDependencies": {
     "audit-ci": "^6.3.0"
+  },
+  "resolutions": {
+    "@walletconnect/core": "2.9.1"
   }
 }
