@@ -44,7 +44,6 @@ export function useGasSummary(): UseGasSummaryResult {
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
-  const { data: signer } = useSigner()
   const { address: walletAddress } = useAccount()
 
   const [{ amount }] = useArbQueryParams()
@@ -166,7 +165,7 @@ export function useGasSummary(): UseGasSummaryResult {
       estimatedChildChainGasFees
     })
   }, [
-    signer,
+    walletAddress,
     balance,
     token,
     childChainProvider,
