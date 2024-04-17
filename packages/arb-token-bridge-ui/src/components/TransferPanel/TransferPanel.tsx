@@ -634,12 +634,10 @@ export function TransferPanel() {
           parentChain.id
         ).isEthereumMainnetOrTestnet
 
-        const { isOrbitChain } = isNetwork(childChain.id)
-
         return (
           isDepositMode &&
           ((isSourceChainEthereum && isConnectedToArbitrum.current) ||
-            isOrbitChain)
+            isConnectedToOrbitChain.current)
         )
       }
 
@@ -647,12 +645,12 @@ export function TransferPanel() {
         const isConnectedToEthereum =
           !isConnectedToArbitrum.current && !isConnectedToOrbitChain.current
 
-        const { isOrbitChain } = isNetwork(childChain.id)
+        const { isOrbitChain: isSourceChainOrbit } = isNetwork(childChain.id)
 
         return (
           !isDepositMode &&
           (isConnectedToEthereum ||
-            (isConnectedToArbitrum.current && isOrbitChain))
+            (isConnectedToArbitrum.current && isSourceChainOrbit))
         )
       }
 
