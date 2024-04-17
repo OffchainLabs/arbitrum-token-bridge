@@ -141,8 +141,8 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
 
     return {
-      estimatedL1Gas: depositRequest.feeTokenAmount,
-      estimatedL2Gas: constants.Zero
+      estimatedParentChainGas: depositRequest.feeTokenAmount,
+      estimatedChildChainGas: constants.Zero
     }
   }
 
