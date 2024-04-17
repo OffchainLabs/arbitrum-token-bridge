@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge'
 import Image from 'next/image'
 import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { Sidebar } from '../Sidebar'
+import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
 
@@ -53,10 +53,12 @@ export function Layout(props: LayoutProps) {
       />
       <div className="relative flex flex-col sm:min-h-screen">
         <div className="flex flex-row">
-          <Sidebar />
+          <AppSidebar />
 
           <main className="grow">
-            <SiteBanner>The Arbitrum Bridge has a new look!</SiteBanner>
+            <SiteBanner expiryDate="2024-04-07 12:00">
+              The Arbitrum Bridge has a new look!
+            </SiteBanner>
             {props.children}
           </main>
 

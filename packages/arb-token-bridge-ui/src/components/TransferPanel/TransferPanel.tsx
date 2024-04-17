@@ -29,7 +29,7 @@ import { TransferPanelMain } from './TransferPanelMain'
 import { tokenRequiresApprovalOnL2 } from '../../util/L2ApprovalUtils'
 import {
   fetchErc20Allowance,
-  fetchErc20L1GatewayAddress,
+  fetchErc20ParentChainGatewayAddress,
   fetchErc20L2GatewayAddress,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC,
@@ -71,6 +71,7 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
 
 const isAllowedL2 = async ({
   l1TokenAddress,
@@ -145,6 +146,8 @@ export function TransferPanel() {
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
   const { isEOA, isSmartContractWallet } = useAccountType()
 
   const { data: l1Signer } = useSigner({
@@ -172,9 +175,15 @@ export function TransferPanel() {
 
   const setAmount = useCallback(
     (newAmount: string) => {
-      setQueryParams({ amount: newAmount })
+      const decimals = selectedToken
+        ? selectedToken.decimals
+        : nativeCurrency.decimals
+
+      const correctDecimalsAmount = truncateExtraDecimals(newAmount, decimals)
+
+      setQueryParams({ amount: correctDecimalsAmount })
     },
-    [setQueryParams]
+    [nativeCurrency, selectedToken, setQueryParams]
   )
 
   const [tokenImportDialogProps] = useDialog()
@@ -192,8 +201,6 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
-
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const [allowance, setAllowance] = useState<BigNumber | null>(null)
   const [isCctp, setIsCctp] = useState(false)
@@ -338,10 +345,10 @@ export function TransferPanel() {
       throw new Error('l2 network does not use custom fee token')
     }
 
-    const l1Gateway = await fetchErc20L1GatewayAddress({
-      erc20L1Address: selectedToken.address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider
+    const l1Gateway = await fetchErc20ParentChainGatewayAddress({
+      erc20ParentChainAddress: selectedToken.address,
+      parentChainProvider,
+      childChainProvider
     })
 
     const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
@@ -352,7 +359,7 @@ export function TransferPanel() {
     })
 
     const estimatedL2GasFees = utils.parseUnits(
-      String(gasSummary.estimatedL2GasFees),
+      String(gasSummary.estimatedChildChainGasFees),
       nativeCurrency.decimals
     )
 
@@ -755,10 +762,10 @@ export function TransferPanel() {
             }
           }
 
-          const l1GatewayAddress = await fetchErc20L1GatewayAddress({
-            erc20L1Address: selectedToken.address,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
+          const l1GatewayAddress = await fetchErc20ParentChainGatewayAddress({
+            erc20ParentChainAddress: selectedToken.address,
+            parentChainProvider,
+            childChainProvider
           })
 
           const allowanceForL1Gateway = await fetchErc20Allowance({

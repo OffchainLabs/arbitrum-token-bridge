@@ -10,6 +10,7 @@
     "@headlessui/react": "^1.7.8",
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.18",
+    "@offchainlabs/cobalt": "0.3.0",
     "@rainbow-me/rainbowkit": "^0.12.16",
     "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.73.0",
