@@ -1,4 +1,5 @@
 import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
+import { constants } from 'ethers'
 import {
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
@@ -48,7 +49,29 @@ export class EthTeleportStarter extends BridgeTransferStarter {
   }
 
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
-    return undefined
+    // get the intermediate L2 chain provider
+    const { l2Provider } = await getL2ConfigForTeleport({
+      destinationChainProvider: this.destinationChainProvider
+    })
+
+    const l3Network = await getL2Network(this.destinationChainProvider)
+    const l1l3Bridger = new EthL1L3Bridger(l3Network)
+
+    const depositRequest = await l1l3Bridger.getDepositRequest({
+      l1Signer: signer,
+      amount: amount,
+      l2Provider,
+      l3Provider: this.destinationChainProvider
+    })
+
+    const estimatedParentChainGas = await this.sourceChainProvider.estimateGas(
+      depositRequest.txRequest
+    )
+
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas: constants.Zero
+    }
   }
 
   public async transfer({ amount, signer }: TransferProps) {
