@@ -4,7 +4,7 @@ import { useSigner } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { getProviderForChainId } from '../useNetworks'
-import { BridgeTransferStarterFactory } from '../../token-bridge-sdk/BridgeTransferStarterFactory'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 async function fetcher([
   signer,

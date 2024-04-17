@@ -60,7 +60,6 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
-import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import {
