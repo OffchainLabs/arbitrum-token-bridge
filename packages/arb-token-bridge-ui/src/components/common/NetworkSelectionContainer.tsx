@@ -1,4 +1,3 @@
-import { Popover } from '@headlessui/react'
 import {
   CSSProperties,
   useCallback,
@@ -12,24 +11,23 @@ import { useDebounce } from '@uidotdev/usehooks'
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, isNetwork } from '../../util/networks'
-import { useAccountType } from '../../hooks/useAccountType'
+import {
+  ChainId,
+  isNetwork,
+  getSupportedChainIds,
+  getDestinationChainIds
+} from '../../util/networks'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import {
-  panelWrapperClassnames,
-  onPopoverButtonClick,
-  onPopoverClose
-} from './SearchPanel/SearchPanelUtils'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
+import { Dialog, UseDialogProps } from './Dialog'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -311,79 +309,50 @@ function NetworksPanel({
   )
 }
 
-export const NetworkSelectionContainer = ({
-  children,
-  chainIds,
-  selectedChainId,
-  buttonClassName,
-  buttonStyle,
-  disabled = false,
-  onChange
-}: {
-  children: React.ReactNode
-  chainIds: ChainId[]
-  selectedChainId: ChainId
-  buttonClassName: string
-  buttonStyle?: CSSProperties
-  disabled?: boolean
-  onChange: (value: Chain) => void
-}) => {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+export const NetworkSelectionContainer = (
+  props: UseDialogProps & {
+    type: 'source' | 'destination'
+    onChange: (value: Chain) => void
+  }
+) => {
+  const [isTestnetMode] = useIsTestnetMode()
+  const [networks] = useNetworks()
+
+  const isSource = props.type === 'source'
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const supportedChainIds = useMemo(() => {
+    if (isSource) {
+      return getSupportedChainIds({
+        includeMainnets: !isTestnetMode,
+        includeTestnets: isTestnetMode
+      })
+    }
+    return getDestinationChainIds(networks.sourceChain.id)
+  }, [isSource, isTestnetMode, networks.sourceChain.id])
 
   return (
-    <Popover className="relative w-max">
-      {({ open }) => (
-        <>
-          <Popover.Button
-            style={buttonStyle}
-            disabled={disabled || isSmartContractWallet || isLoadingAccountType}
-            className={buttonClassName}
-            onClick={onPopoverButtonClick}
-          >
-            {children}
-            {!disabled && !isSmartContractWallet && (
-              <ChevronDownIcon
-                className={twMerge(
-                  'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
-                  open ? '-rotate-180' : 'rotate-0'
-                )}
-              />
-            )}
-          </Popover.Button>
-
-          <Transition
-            className="fixed left-0 top-0 z-50 sm:absolute sm:top-[54px]"
-            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
-            options={{ unmountOnLeave: false }}
-            afterLeave={onPopoverClose}
-          >
-            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
-              {({ close }) => {
-                function onClose() {
-                  onPopoverClose()
-                  close()
-                }
-                return (
-                  <SearchPanel>
-                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
-                      <SearchPanel.PageTitle title="Select Network">
-                        <SearchPanel.CloseButton onClick={onClose} />
-                      </SearchPanel.PageTitle>
-                      <NetworksPanel
-                        chainIds={chainIds}
-                        selectedChainId={selectedChainId}
-                        close={onClose}
-                        onNetworkRowClick={onChange}
-                      />
-                    </SearchPanel.MainPage>
-                  </SearchPanel>
-                )
-              }}
-            </Popover.Panel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+    <Dialog
+      {...props}
+      onClose={() => props.onClose(false)}
+      title={`Select ${isSource ? 'source' : 'destination'} network`}
+      actionButtonProps={{ hidden: true }}
+      isFooterHidden={true}
+      className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+    >
+      <SearchPanel>
+        <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
+          <NetworksPanel
+            chainIds={supportedChainIds}
+            selectedChainId={selectedChainId}
+            close={() => props.onClose(false)}
+            onNetworkRowClick={props.onChange}
+          />
+        </SearchPanel.MainPage>
+      </SearchPanel>
+    </Dialog>
   )
 }
