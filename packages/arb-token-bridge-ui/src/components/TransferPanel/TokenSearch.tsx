@@ -17,7 +17,8 @@ import {
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneUSDCe
+  isTokenArbitrumOneUSDCe,
+  getL2ERC20Address
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -535,7 +536,7 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, parentChainProvider, isDepositMode } =
+  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
@@ -574,12 +575,30 @@ export function TokenSearch({
           return
         }
 
-        updateUSDCBalances(lowercasedTokenAddress)
+        await updateUSDCBalances()
+
+        // if an Orbit chain is selected we need to fetch its USDC address
+        let childChainUsdcAddress
+        try {
+          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
+            ? (
+                await getL2ERC20Address({
+                  erc20L1Address: _token.address,
+                  l1Provider: parentChainProvider,
+                  l2Provider: childChainProvider
+                })
+              ).toLowerCase()
+            : undefined
+        } catch {
+          // could be never bridged before
+        }
+
         setSelectedToken({
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
           address: lowercasedTokenAddress,
+          l2Address: childChainUsdcAddress,
           decimals: 6,
           listIds: new Set()
         })

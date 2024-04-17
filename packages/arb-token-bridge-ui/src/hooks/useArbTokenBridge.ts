@@ -41,7 +41,6 @@ import {
 import { getL2NativeToken } from '../util/L2NativeUtils'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { isNetwork } from '../util/networks'
-import { useUpdateUSDCBalances } from './CCTP/useUpdateUSDCBalances'
 import { useNativeCurrency } from './useNativeCurrency'
 import { useTransactionHistory } from './useTransactionHistory'
 import { DepositStatus, WithdrawalStatus } from '../state/app/state'
@@ -157,10 +156,6 @@ export const useArbTokenBridge = (
   }
 
   const nativeCurrency = useNativeCurrency({ provider: l2.provider })
-
-  const { updateUSDCBalances } = useUpdateUSDCBalances({
-    walletAddress
-  })
 
   const [executedMessagesCache, setExecutedMessagesCache] =
     useLocalStorage<ExecutedMessagesCache>(
@@ -895,8 +890,6 @@ export const useArbTokenBridge = (
 
   const updateTokenData = useCallback(
     async (l1Address: string) => {
-      updateUSDCBalances(l1Address)
-
       if (typeof bridgeTokens === 'undefined') {
         return
       }
@@ -929,7 +922,6 @@ export const useArbTokenBridge = (
       setBridgeTokens,
       updateErc20L1Balance,
       updateErc20L2Balance,
-      updateUSDCBalances,
       updateErc20L1CustomDestinationBalance,
       updateErc20CustomDestinationL2Balance
     ]

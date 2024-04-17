@@ -5,16 +5,13 @@ import { useNativeCurrency } from './useNativeCurrency'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
-import { useAppState } from '../state'
+import { ERC20BridgeToken } from './arbTokenBridge.types'
 
 /**
- * `TokenToBridge` means native currency or ERC20 token user wants to bridge
+ * Balance of the child chain's native currency or ERC20 token
  */
-export function useTokenToBeBridgedBalance() {
+export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
   const { address: walletAddress } = useAccount()
-  const {
-    app: { selectedToken }
-  } = useAppState()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
@@ -29,7 +26,7 @@ export function useTokenToBeBridgedBalance() {
 
   // user selected source chain native currency or
   // user bridging the destination chain's native currency
-  if (!selectedToken) {
+  if (!token) {
     // check if user is depositing destination chain's custom native currency to orbit chain
     if (childChainNativeCurrency.isCustom && isDepositMode) {
       return (
@@ -50,21 +47,18 @@ export function useTokenToBeBridgedBalance() {
 
   if (isDepositMode) {
     return (
-      erc20SourceChainBalances[selectedToken.address.toLowerCase()] ??
-      constants.Zero
+      erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero
     )
   }
 
-  const selectedTokenChildChainAddress = selectedToken.l2Address?.toLowerCase()
+  const tokenChildChainAddress = token.l2Address?.toLowerCase()
 
   // token that has never been deposited so it doesn't have an l2Address
   // this should not happen because user shouldn't be able to select it
-  if (!selectedTokenChildChainAddress) {
+  if (!tokenChildChainAddress) {
     return constants.Zero
   }
 
   // token withdrawal
-  return (
-    erc20SourceChainBalances[selectedTokenChildChainAddress] ?? constants.Zero
-  )
+  return erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero
 }

@@ -45,7 +45,9 @@ Sentry.init({
         // Ignore events related to failed `eth_gasPrice` calls
         event.message.match(/eth_gasPrice/i) ||
         // Ignore events related to failed `eth_getBalance` calls
-        event.message.match(/eth_getBalance/i)
+        event.message.match(/eth_getBalance/i) ||
+        // Ignore events related to failed walletConnect calls
+        event.message.match(/Attempt to connect to relay via/i)
       ) {
         return null
       }
