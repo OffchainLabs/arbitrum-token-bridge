@@ -11,7 +11,7 @@ const DynamicSidebar = dynamic(
 export const AppSidebar = () => {
   const posthog = usePostHog()
   return (
-    <div className="z-20 hidden font-normal sm:flex">
+    <div className="sticky top-0 z-20 hidden h-full font-normal sm:flex">
       <DynamicSidebar logger={posthog} activeMenu="Bridge" />
     </div>
   )
