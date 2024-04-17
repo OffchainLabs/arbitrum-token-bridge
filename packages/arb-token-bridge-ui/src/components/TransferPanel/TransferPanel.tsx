@@ -722,7 +722,7 @@ export function TransferPanel() {
 
       if (!signer) throw Error('Signer not connected!')
 
-      if (isWithdrawal && selectedToken?.address && !sourceChainErc20Address) {
+      if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
         /* 
         just a fail-safe - since our types allow for an optional `selectedToken?.l2Address`, we can theoretically end up with a case
         where user is trying to make an ERC-20 withdrawal but passing `sourceChainErc20Address` as undefined, ending up with
