@@ -722,6 +722,18 @@ export function TransferPanel() {
 
       if (!signer) throw Error('Signer not connected!')
 
+      if (isWithdrawal && selectedToken?.address && !sourceChainErc20Address) {
+        /* 
+        just a fail-safe - since our types allow for an optional `selectedToken?.l2Address`, we can theoretically end up with a case
+        where user is trying to make an ERC-20 withdrawal but passing `sourceChainErc20Address` as undefined, ending up with
+        the SDK to initialize wrongly and make an ETH withdrawal instead. To summarize:
+        - if it's a withdrawal
+        - if a token is selected
+        - but the token's L2 address is not found (ie. sourceChainErc20Address)
+      */
+        Error('Source chain token address not found for ERC-20 withdrawal.')
+      }
+
       // SCW transfers are not enabled for ETH transfers yet
       if (isNativeCurrencyTransfer && isSmartContractWallet) {
         console.error(
