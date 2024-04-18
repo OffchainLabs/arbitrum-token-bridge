@@ -763,10 +763,14 @@ export function TransferPanel() {
         const userConfirmation = await customFeeTokenApproval()
         if (!userConfirmation) return false
 
-        await bridgeTransferStarter.approveNativeCurrency({
+        const approvalTx = await bridgeTransferStarter.approveNativeCurrency({
           signer,
           amount: amountBigNumber
         })
+
+        if (approvalTx) {
+          await approvalTx.wait()
+        }
       }
 
       // checks for the selected token
@@ -829,9 +833,14 @@ export function TransferPanel() {
           if (isSmartContractWallet && isWithdrawal) {
             showDelayInSmartContractTransaction()
           }
-          await bridgeTransferStarter.approveToken({
-            signer
+          const approvalTx = await bridgeTransferStarter.approveToken({
+            signer,
+            amount: amountBigNumber
           })
+
+          if (approvalTx) {
+            await approvalTx.wait()
+          }
         }
       }
 
