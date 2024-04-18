@@ -4,7 +4,13 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId, getChains, isL1Chain, isNetwork } from '../util/networks'
+import {
+  ChainId,
+  getChains,
+  getOrbitChainIdsFromArbitrumChainIdForTeleport,
+  isL1Chain,
+  isNetwork
+} from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -108,14 +114,16 @@ function getMultiChainFetchList(): ChainPair[] {
     // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
     if (isL1Chain(chain)) {
       let l3ChildrenChainIds: number[] = []
+
       childChainIds.forEach(l2ChildChainId => {
         const l2ChildChain = allChains.find(
           chain => chain.chainID === l2ChildChainId
         )
+
         if (l2ChildChain) {
           l3ChildrenChainIds = [
             ...l3ChildrenChainIds,
-            ...(l2ChildChain.partnerChainIDs ?? [])
+            ...getOrbitChainIdsFromArbitrumChainIdForTeleport([l2ChildChainId])
           ]
         }
       })
@@ -516,10 +524,7 @@ export const useTransactionHistory = (
     ([, , _page, _data]) => {
       // we get cached data and dedupe here because we need to ensure _data never mutates
       // otherwise, if we added a new tx to cache, it would return a new reference and cause the SWR key to update, resulting in refetching
-      // const dataWithCache = [..._data, ...depositsFromCache]
-
-      // temporary
-      const dataWithCache = [...depositsFromCache]
+      const dataWithCache = [..._data, ...depositsFromCache]
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)

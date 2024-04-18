@@ -440,6 +440,27 @@ function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
   return chain.isArbitrum
 }
 
+export function getOrbitChainIdsFromArbitrumChainIdForTeleport(
+  arbitrumChainIds: ChainId[] // l2 chain id
+): ChainId[] {
+  // whitelist of orbit chains that are valid for teleportation
+  const orbitChainIdsValidForTeleportation: number[] = [ChainId.StylusTestnet]
+
+  const allChains = getChains()
+  let orbitChainIds: ChainId[] = []
+
+  arbitrumChainIds.forEach(chainId => {
+    const orbitChains =
+      allChains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+    orbitChainIds = [...orbitChainIds, ...orbitChains]
+  })
+
+  // finally filter out the white-listed child orbit chains that are valid for teleportation
+  return orbitChainIds.filter(orbitChainId =>
+    orbitChainIdsValidForTeleportation.includes(orbitChainId)
+  )
+}
+
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   const chains = getChains()
   const arbitrumSdkChain = chains.find(chain => chain.chainID === chainId)
@@ -456,15 +477,14 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
   // to enable l1-l3 transfers, get the grand-children chain id's for the given chain (if found) and add them to the list
-  let orbitChainIds: ChainId[] = []
-  validDestinationChainIds.forEach(chainId => {
-    const orbitChains =
-      chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
-    orbitChainIds = [...orbitChainIds, ...orbitChains]
-  })
+  const orbitChainIdsValidForTeleportation =
+    getOrbitChainIdsFromArbitrumChainIdForTeleport(validDestinationChainIds)
 
   // add orbit-chains are also a part of the valid destination id's
-  validDestinationChainIds = [...validDestinationChainIds, ...orbitChainIds]
+  validDestinationChainIds = [
+    ...validDestinationChainIds,
+    ...orbitChainIdsValidForTeleportation
+  ]
 
   if (parentChainId) {
     // always make parent chain the first element
