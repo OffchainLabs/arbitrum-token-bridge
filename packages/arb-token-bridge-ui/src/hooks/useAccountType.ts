@@ -1,5 +1,5 @@
 import { useAccount, useProvider } from 'wagmi'
-import { useEffect, useState } from 'react'
+import useSWR from 'swr'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 
@@ -12,20 +12,17 @@ type Result = {
 export function useAccountType(): Result {
   const { address } = useAccount()
   const provider = useProvider()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSmartContractWallet, setIsSmartContractWallet] = useState(false)
 
-  useEffect(() => {
-    setIsLoading(true)
-    async function getAccountType() {
-      if (address && provider) {
-        const isSmartContract = await addressIsSmartContract(address, provider)
-        setIsSmartContractWallet(isSmartContract)
-        setIsLoading(false)
-      }
+  const { data: isSmartContractWallet = false, isLoading } = useSWR(
+    address ? [address, provider, 'useAccountType'] : null,
+    ([_address, _provider]) => addressIsSmartContract(_address, _provider),
+    {
+      revalidateIfStale: false,
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
+      errorRetryInterval: 3_000
     }
-    getAccountType()
-  }, [address, provider])
+  )
 
   // By default, assume it's an EOA
   return {

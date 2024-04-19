@@ -1,7 +1,6 @@
 import { Provider } from '@ethersproject/providers'
 
 import { getAPIBaseUrl } from '.'
-import { getProviderForChainId } from '../hooks/useNetworks'
 
 export type Address = `0x${string}`
 
@@ -9,17 +8,7 @@ export async function addressIsSmartContract(
   address: string,
   provider: Provider
 ) {
-  try {
-    console.log(
-      'xxxx calling addressIsSmartContract',
-      address,
-      provider,
-      (await provider.getCode(address)).length > 2
-    )
-    return (await provider.getCode(address)).length > 2
-  } catch (_) {
-    return false
-  }
+  return (await provider.getCode(address)).length > 2
 }
 
 export async function addressIsDenylisted(address: string) {
