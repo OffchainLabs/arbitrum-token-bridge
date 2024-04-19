@@ -115,6 +115,8 @@ function TransferPanelInputField(
   const decimals = useSelectedTokenDecimals()
 
   useEffect(() => {
+    // if number of decimals of query param value is greater than token decimals,
+    // truncate the decimals and update the amount query param value
     if (countDecimals(String(value)) > decimals) {
       setAmount(String(value))
     }
