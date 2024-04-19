@@ -8,13 +8,11 @@ export async function addressIsSmartContract(
   address: string,
   provider: Provider
 ) {
-  console.log(
-    'XXXX',
-    address,
-    provider,
-    (await provider.getCode(address)).length > 2
-  )
-  return (await provider.getCode(address)).length > 2
+  try {
+    return (await provider.getCode(address)).length > 2
+  } catch (_) {
+    return false
+  }
 }
 
 export async function addressIsDenylisted(address: string) {
