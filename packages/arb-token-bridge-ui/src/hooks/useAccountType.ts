@@ -12,8 +12,7 @@ type Result = {
 
 export function useAccountType(): Result {
   const { address } = useAccount()
-  const [networks] = useNetworks()
-  const { sourceChainProvider } = networks
+  const [{ sourceChainProvider }] = useNetworks()
 
   const { data: isSmartContractWallet = false, isLoading } = useSWRImmutable(
     address ? [address, sourceChainProvider, 'useAccountType'] : null,
