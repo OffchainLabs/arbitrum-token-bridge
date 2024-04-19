@@ -8,6 +8,12 @@ export async function addressIsSmartContract(
   address: string,
   provider: Provider
 ) {
+  console.log(
+    'XXXX',
+    address,
+    provider,
+    (await provider.getCode(address)).length > 2
+  )
   return (await provider.getCode(address)).length > 2
 }
 
