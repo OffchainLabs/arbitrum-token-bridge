@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowsUpDownIcon,
+  ArrowDownIcon,
+  ChevronDownIcon
+} from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
 import { Chain, useAccount } from 'wagmi'
@@ -41,7 +45,6 @@ import {
   USDC_LEARN_MORE_LINK,
   ether
 } from '../../constants'
-import { NetworkListbox, NetworkListboxProps } from './NetworkListbox'
 import { OneNovaTransferDialog } from './OneNovaTransferDialog'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import {
@@ -66,10 +69,51 @@ import {
   Balances,
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 
 enum NetworkType {
   l1 = 'l1',
   l2 = 'l2'
+}
+
+function NetworkButton({
+  type,
+  onClick
+}: {
+  type: 'source' | 'destination'
+  onClick: () => void
+}) {
+  const [networks] = useNetworks()
+  const { isSmartContractWallet, isLoading } = useAccountType()
+
+  const isSource = type === 'source'
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const hasOneOrLessChain =
+    !isSource && getDestinationChainIds(networks.sourceChain.id).length <= 1
+
+  const disabled = hasOneOrLessChain || isSmartContractWallet || isLoading
+
+  return (
+    <button
+      style={{
+        backgroundColor: getBridgeUiConfigForChain(selectedChainId).color
+      }}
+      className={twMerge(
+        'arb-hover flex w-max items-center gap-1 rounded px-3 py-2 text-sm text-white opacity-90 outline-none md:gap-2 md:text-2xl'
+      )}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
+        From: {getNetworkName(selectedChainId)}
+      </span>
+      {!disabled && <ChevronDownIcon width={16} />}
+    </button>
+  )
 }
 
 export function SwitchNetworksButton(
@@ -351,6 +395,13 @@ export function TransferPanelMain({
 
   const { address: walletAddress } = useAccount()
 
+  const [sourceNetworkSelectionDialogProps, openSourceNetworkSelectionDialog] =
+    useDialog()
+  const [
+    destinationNetworkSelectionDialogProps,
+    openDestinationNetworkSelectionDialog
+  ] = useDialog()
+
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
@@ -429,6 +480,7 @@ export function TransferPanelMain({
     }
   }, [nativeCurrency, ethL1Balance, ethL2Balance, erc20L1Balances])
 
+  const [isTestnetMode] = useIsTestnetMode()
   const [loadingMaxAmount, setLoadingMaxAmount] = useState(false)
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
@@ -573,6 +625,14 @@ export function TransferPanelMain({
 
   useUpdateUSDCTokenData()
 
+  type NetworkListboxProps = {
+    disabled?: boolean
+    label: string
+    options: Chain[]
+    value: Chain
+    onChange: (value: Chain) => void
+  }
+
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
@@ -656,28 +716,14 @@ export function TransferPanelMain({
     openOneNovaTransferDialog
   ])
 
-  const buttonStyle = useMemo(
-    () => ({
-      backgroundColor: getBridgeUiConfigForChain(networks.sourceChain.id).color
-    }),
-    [networks.sourceChain.id]
-  )
-
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
-          <NetworkSelectionContainer
-            buttonStyle={buttonStyle}
-            buttonClassName={twMerge(
-              'arb-hover flex w-max items-center gap-1 md:gap-2 rounded px-3 py-2 text-sm text-white outline-none md:text-2xl'
-            )}
-            onChange={networkListboxProps.from.onChange}
-          >
-            <span className="max-w-[220px] truncate text-sm leading-[1.1] md:max-w-[250px] md:text-xl">
-              From: {getNetworkName(networks.sourceChain.id)}
-            </span>
-          </NetworkSelectionContainer>
+          <NetworkButton
+            type="source"
+            onClick={openSourceNetworkSelectionDialog}
+          />
           <BalancesContainer>
             <TokenBalance
               on={isDepositMode ? NetworkType.l1 : NetworkType.l2}
@@ -742,7 +788,7 @@ export function TransferPanelMain({
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
-              {getNetworkName(childChain.id)} account, as you’ll need it to
+              {getNetworkName(childChain.id)} account, as you&apos;ll need it to
               power transactions.
               <br />
               <ExternalLink
@@ -766,7 +812,10 @@ export function TransferPanelMain({
         customAddress={destinationAddress}
       >
         <NetworkListboxPlusBalancesContainer>
-          <NetworkListbox label="To:" {...networkListboxProps.to} />
+          <NetworkButton
+            type="destination"
+            onClick={openDestinationNetworkSelectionDialog}
+          />
           <BalancesContainer>
             {destinationAddressOrWalletAddress &&
               utils.isAddress(destinationAddressOrWalletAddress) && (
@@ -842,6 +891,16 @@ export function TransferPanelMain({
         {...oneNovaTransferDialogProps}
         destinationChainId={oneNovaTransferDestinationNetworkId}
         amount={amount}
+      />
+      <NetworkSelectionContainer
+        {...sourceNetworkSelectionDialogProps}
+        type="source"
+        onChange={networkListboxProps.from.onChange}
+      />
+      <NetworkSelectionContainer
+        {...destinationNetworkSelectionDialogProps}
+        type="destination"
+        onChange={networkListboxProps.to.onChange}
       />
     </div>
   )

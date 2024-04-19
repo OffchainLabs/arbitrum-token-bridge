@@ -1,4 +1,3 @@
-import { Popover } from '@headlessui/react'
 import {
   CSSProperties,
   useCallback,
@@ -12,25 +11,23 @@ import { useDebounce } from '@uidotdev/usehooks'
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
-import { useAccountType } from '../../hooks/useAccountType'
+import {
+  ChainId,
+  isNetwork,
+  getSupportedChainIds,
+  getDestinationChainIds
+} from '../../util/networks'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
 import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
 import { TestnetToggle } from './TestnetToggle'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
-import {
-  panelWrapperClassnames,
-  onPopoverButtonClick,
-  onPopoverClose
-} from './SearchPanel/SearchPanelUtils'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { useNetworks } from '../../hooks/useNetworks'
-import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
+import { Dialog, UseDialogProps } from './Dialog'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -91,18 +88,19 @@ function ChainTypeInfoRow({
 
 function NetworkRow({
   chainId,
+  selectedChainId,
   style,
   onClick,
   close
 }: {
   chainId: ChainId
+  selectedChainId: ChainId
   style: CSSProperties
   onClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
   const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
   const chain = getWagmiChain(chainId)
-  const [{ sourceChain }] = useNetworks()
 
   function handleClick() {
     onClick(chain)
@@ -118,7 +116,7 @@ function NetworkRow({
       aria-label={`Switch to ${network.name}`}
       className={twMerge(
         'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
-        chainId === sourceChain.id && 'bg-white/10' // selected row
+        chainId === selectedChainId && 'bg-white/10' // selected row
       )}
     >
       <NetworkImage
@@ -159,9 +157,13 @@ function AddCustomOrbitChainButton() {
 }
 
 function NetworksPanel({
+  chainIds,
+  selectedChainId,
   onNetworkRowClick,
   close
 }: {
+  chainIds: ChainId[]
+  selectedChainId: ChainId
   onNetworkRowClick: (value: Chain) => void
   close: (focusableElement?: HTMLElement) => void
 }) {
@@ -170,15 +172,6 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-
-  const chainIds = useMemo(
-    () =>
-      getSupportedChainIds({
-        includeMainnets: !isTestnetMode,
-        includeTestnets: isTestnetMode
-      }),
-    [isTestnetMode]
-  )
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
@@ -206,17 +199,24 @@ function NetworksPanel({
 
   const isNetworkSearchResult = Array.isArray(networksToShow)
 
-  const networkRowsWithChainInfoRows = useMemo(() => {
-    if (isNetworkSearchResult) {
-      return networksToShow
-    }
-    return [
-      ChainGroupName.core,
-      ...networksToShow.core,
-      ChainGroupName.orbit,
-      ...networksToShow.orbit
-    ]
-  }, [isNetworkSearchResult, networksToShow])
+  const networkRowsWithChainInfoRows: (ChainId | ChainGroupName)[] =
+    useMemo(() => {
+      if (isNetworkSearchResult) {
+        return networksToShow
+      }
+
+      const groupedNetworks = []
+
+      if (networksToShow.core.length > 0) {
+        groupedNetworks.push(ChainGroupName.core, ...networksToShow.core)
+      }
+
+      if (networksToShow.orbit.length > 0) {
+        groupedNetworks.push(ChainGroupName.orbit, ...networksToShow.orbit)
+      }
+
+      return groupedNetworks
+    }, [isNetworkSearchResult, networksToShow])
 
   function getRowHeight({ index }: { index: number }) {
     const rowItemOrChainId = networkRowsWithChainInfoRows[index]
@@ -262,12 +262,13 @@ function NetworksPanel({
           key={networkOrChainTypeName}
           style={style}
           chainId={networkOrChainTypeName}
+          selectedChainId={selectedChainId}
           onClick={onNetworkRowClick}
           close={close}
         />
       )
     },
-    [close, networkRowsWithChainInfoRows, onNetworkRowClick]
+    [close, networkRowsWithChainInfoRows, onNetworkRowClick, selectedChainId]
   )
 
   const onSearchInputChange = useCallback(
@@ -308,71 +309,50 @@ function NetworksPanel({
   )
 }
 
-export const NetworkSelectionContainer = ({
-  children,
-  buttonClassName,
-  buttonStyle,
-  onChange
-}: {
-  children: React.ReactNode
-  buttonClassName: string
-  buttonStyle?: CSSProperties
-  onChange: (value: Chain) => void
-}) => {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+export const NetworkSelectionContainer = (
+  props: UseDialogProps & {
+    type: 'source' | 'destination'
+    onChange: (value: Chain) => void
+  }
+) => {
+  const [isTestnetMode] = useIsTestnetMode()
+  const [networks] = useNetworks()
+
+  const isSource = props.type === 'source'
+
+  const selectedChainId = isSource
+    ? networks.sourceChain.id
+    : networks.destinationChain.id
+
+  const supportedChainIds = useMemo(() => {
+    if (isSource) {
+      return getSupportedChainIds({
+        includeMainnets: !isTestnetMode,
+        includeTestnets: isTestnetMode
+      })
+    }
+    return getDestinationChainIds(networks.sourceChain.id)
+  }, [isSource, isTestnetMode, networks.sourceChain.id])
 
   return (
-    <Popover className="relative w-max">
-      {({ open }) => (
-        <>
-          <Popover.Button
-            style={buttonStyle}
-            disabled={isSmartContractWallet || isLoadingAccountType}
-            className={buttonClassName}
-            onClick={onPopoverButtonClick}
-          >
-            {children}
-            {!isSmartContractWallet && (
-              <ChevronDownIcon
-                className={twMerge(
-                  'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
-                  open ? '-rotate-180' : 'rotate-0'
-                )}
-              />
-            )}
-          </Popover.Button>
-
-          <Transition
-            className="fixed left-0 top-0 z-50 sm:absolute sm:top-[54px]"
-            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
-            options={{ unmountOnLeave: false }}
-            afterLeave={onPopoverClose}
-          >
-            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
-              {({ close }) => {
-                function onClose() {
-                  onPopoverClose()
-                  close()
-                }
-                return (
-                  <SearchPanel>
-                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
-                      <SearchPanel.PageTitle title="Select Network">
-                        <SearchPanel.CloseButton onClick={onClose} />
-                      </SearchPanel.PageTitle>
-                      <NetworksPanel
-                        close={onClose}
-                        onNetworkRowClick={onChange}
-                      />
-                    </SearchPanel.MainPage>
-                  </SearchPanel>
-                )
-              }}
-            </Popover.Panel>
-          </Transition>
-        </>
-      )}
-    </Popover>
+    <Dialog
+      {...props}
+      onClose={() => props.onClose(false)}
+      title={`Select ${isSource ? 'source' : 'destination'} network`}
+      actionButtonProps={{ hidden: true }}
+      isFooterHidden={true}
+      className="h-screen overflow-hidden md:h-[calc(100vh_-_200px)] md:max-h-[900px] md:max-w-[500px]"
+    >
+      <SearchPanel>
+        <SearchPanel.MainPage className="flex h-full max-w-[500px] flex-col py-4">
+          <NetworksPanel
+            chainIds={supportedChainIds}
+            selectedChainId={selectedChainId}
+            close={() => props.onClose(false)}
+            onNetworkRowClick={props.onChange}
+          />
+        </SearchPanel.MainPage>
+      </SearchPanel>
+    </Dialog>
   )
 }
