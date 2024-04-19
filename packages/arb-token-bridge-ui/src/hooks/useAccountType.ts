@@ -1,5 +1,5 @@
 import { useAccount, useProvider } from 'wagmi'
-import useSWRImmutable from 'swr/immutable'
+import { useEffect, useState } from 'react'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
 
@@ -12,11 +12,20 @@ type Result = {
 export function useAccountType(): Result {
   const { address } = useAccount()
   const provider = useProvider()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSmartContractWallet, setIsSmartContractWallet] = useState(false)
 
-  const { data: isSmartContractWallet = false, isLoading } = useSWRImmutable(
-    address ? [address, provider, 'useAccountType'] : null,
-    ([_address, _provider]) => addressIsSmartContract(_address, _provider)
-  )
+  useEffect(() => {
+    setIsLoading(true)
+    async function getAccountType() {
+      if (address && provider) {
+        const isSmartContract = await addressIsSmartContract(address, provider)
+        setIsSmartContractWallet(isSmartContract)
+        setIsLoading(false)
+      }
+    }
+    getAccountType()
+  }, [address, provider])
 
   // By default, assume it's an EOA
   return {
