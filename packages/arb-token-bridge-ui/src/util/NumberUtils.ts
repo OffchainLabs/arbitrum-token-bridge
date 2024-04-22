@@ -116,6 +116,20 @@ export const formatAmount = <T extends number | BigNumber | undefined>(
   )
 }
 
+export const countDecimals = (num: number | string) => {
+  if (Math.floor(Number(num)) === Number(num)) {
+    return 0
+  }
+
+  const decimalPart = String(num).split('.')[1]
+
+  if (typeof decimalPart === 'undefined') {
+    return 0
+  }
+
+  return decimalPart.length
+}
+
 export const truncateExtraDecimals = (amount: string, decimals: number) => {
   const decimalPart = amount.split('.')[1]
 
