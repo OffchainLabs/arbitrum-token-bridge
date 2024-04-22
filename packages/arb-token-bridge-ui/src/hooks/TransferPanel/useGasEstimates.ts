@@ -1,11 +1,12 @@
 import { BigNumber, Signer } from 'ethers'
+import { useMemo } from 'react'
 import useSWR from 'swr'
-import { useAccount, useSigner } from 'wagmi'
+import { useSigner } from 'wagmi'
 import { Provider } from '@ethersproject/providers'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
-import { useNetworks } from '../useNetworks'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { getProviderForChainId } from '../useNetworks'
 
 async function fetcher([
   signer,
@@ -33,11 +34,13 @@ async function fetcher([
 }
 
 export function useGasEstimates({
+  walletAddress,
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
   amount
 }: {
+  walletAddress?: string
   sourceChainId: number
   destinationChainId: number
   sourceChainErc20Address?: string
@@ -46,9 +49,16 @@ export function useGasEstimates({
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
 } {
-  const { address: walletAddress } = useAccount()
   const { data: signer } = useSigner()
-  const [{ sourceChainProvider, destinationChainProvider }] = useNetworks()
+
+  const sourceChainProvider = useMemo(
+    () => getProviderForChainId(sourceChainId),
+    [sourceChainId]
+  )
+  const destinationChainProvider = useMemo(
+    () => getProviderForChainId(destinationChainId),
+    [destinationChainId]
+  )
 
   const { data: gasEstimates, error } = useSWR(
     typeof signer === 'undefined'

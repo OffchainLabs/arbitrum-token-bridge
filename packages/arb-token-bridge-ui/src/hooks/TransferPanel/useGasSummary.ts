@@ -78,6 +78,7 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
+      walletAddress,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
