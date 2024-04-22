@@ -1,6 +1,7 @@
 import { EthBridger } from '@arbitrum/sdk'
 import { BigNumber } from 'ethers'
 import {
+  ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   RequiresNativeCurrencyApprovalProps,
@@ -39,6 +40,18 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.
     return customFeeTokenAllowanceForInbox.lt(amount)
+  }
+
+  public async approveNativeCurrencyEstimateGas({
+    signer,
+    amount
+  }: ApproveNativeCurrencyEstimateGasProps) {
+    const ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
+    const txRequest = ethBridger.getApproveGasTokenRequest({ amount })
+
+    return signer.estimateGas(txRequest)
   }
 
   public async approveNativeCurrency({

@@ -630,13 +630,13 @@ export function TransferPanel() {
       }
 
       const depositRequiresChainSwitch = () => {
-        const isSourceChainEthereum = isNetwork(
+        const isParentChainEthereum = isNetwork(
           parentChain.id
         ).isEthereumMainnetOrTestnet
 
         return (
           isDepositMode &&
-          ((isSourceChainEthereum && isConnectedToArbitrum.current) ||
+          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
             isConnectedToOrbitChain.current)
         )
       }

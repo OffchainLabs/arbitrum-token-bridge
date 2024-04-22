@@ -16,6 +16,10 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     return false
   }
 
+  public async approveNativeCurrencyEstimateGas() {
+    // no-op
+  }
+
   public async approveNativeCurrency() {
     // no-op
   }

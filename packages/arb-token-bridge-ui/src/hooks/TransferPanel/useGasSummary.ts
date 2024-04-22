@@ -83,7 +83,7 @@ export function useGasSummary(): UseGasSummaryResult {
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
-      tokenParentChainAddress: isDepositMode ? token?.address : token?.l2Address
+      sourceChainErc20Address: isDepositMode ? token?.address : token?.l2Address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {

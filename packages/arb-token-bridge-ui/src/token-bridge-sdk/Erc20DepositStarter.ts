@@ -2,6 +2,7 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
+  ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -92,6 +93,27 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
   }
 
+  public async approveNativeCurrencyEstimateGas({
+    signer,
+    amount
+  }: ApproveNativeCurrencyEstimateGasProps) {
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    const erc20Bridger = await Erc20Bridger.fromProvider(
+      this.destinationChainProvider
+    )
+
+    const txRequest = await erc20Bridger.getApproveGasTokenRequest({
+      erc20L1Address: this.sourceChainErc20Address,
+      l1Provider: this.sourceChainProvider,
+      amount
+    })
+
+    return signer.estimateGas(txRequest)
+  }
+
   public async approveNativeCurrency({
     signer,
     amount
@@ -167,7 +189,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
   }
 
-  public async approveToken({ signer }: ApproveTokenProps) {
+  public async approveToken({ signer, amount }: ApproveTokenProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -175,11 +197,11 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
-    const tx = await erc20Bridger.approveToken({
+    return erc20Bridger.approveToken({
       erc20L1Address: this.sourceChainErc20Address,
-      l1Signer: signer
+      l1Signer: signer,
+      amount: amount ?? constants.MaxUint256
     })
-    await tx.wait()
   }
 
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {

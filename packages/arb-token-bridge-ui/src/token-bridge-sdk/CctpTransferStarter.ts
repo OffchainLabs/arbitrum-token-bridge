@@ -21,6 +21,10 @@ export class CctpTransferStarter extends BridgeTransferStarter {
 
   public requiresNativeCurrencyApproval = async () => false
 
+  public async approveNativeCurrencyEstimateGas() {
+    // no-op
+  }
+
   public approveNativeCurrency = async () => {
     return
   }

@@ -9,13 +9,13 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { shortenAddress } from '../../util/CommonUtils'
 import { NoteBox } from '../common/NoteBox'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -31,8 +31,8 @@ export function CustomFeeTokenApprovalDialog(
   const { selectedToken } = app
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const { sourceChainProvider, destinationChainProvider } = networks
+  const { parentChain, parentChainProvider } = useNetworksRelationship(networks)
   const { isEthereumMainnet } = isNetwork(parentChain.id)
 
   const { data: l1Signer } = useSigner({ chainId: parentChain.id })
@@ -60,19 +60,39 @@ export function CustomFeeTokenApprovalDialog(
 
     async function getEstimatedGas() {
       if (l1Signer) {
-        setEstimatedGas(
-          await approveCustomFeeTokenEstimateGas({
-            erc20L1Address: selectedToken?.address,
-            l1Signer,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
-          })
+        /*
+         Note:
+          1. we do not consider CCTP case here, since we are not using it with custom fee token approval
+          2. we are assuming deposits only (withdrawals will return `requiresNativeCurrencyApproval` as false)        
+          These will need to be supported on a case-by-case basis later, with checks like in `TokenApprovalDialogue.tsx`
+        */
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+          {
+            sourceChainProvider,
+            destinationChainProvider,
+            sourceChainErc20Address: selectedToken?.address
+          }
         )
+
+        const estimatedGas =
+          await bridgeTransferStarter.approveNativeCurrencyEstimateGas({
+            signer: l1Signer
+          })
+
+        if (estimatedGas) {
+          setEstimatedGas(estimatedGas)
+        }
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, selectedToken, l1Signer, childChainProvider, parentChainProvider])
+  }, [
+    isOpen,
+    selectedToken,
+    l1Signer,
+    sourceChainProvider,
+    destinationChainProvider
+  ])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
