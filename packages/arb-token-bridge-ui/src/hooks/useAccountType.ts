@@ -1,7 +1,8 @@
-import { useAccount, useProvider } from 'wagmi'
+import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
+import { useNetworks } from './useNetworks'
 
 type Result = {
   isEOA: boolean
@@ -11,10 +12,10 @@ type Result = {
 
 export function useAccountType(): Result {
   const { address } = useAccount()
-  const provider = useProvider()
+  const [{ sourceChainProvider }] = useNetworks()
 
   const { data: isSmartContractWallet = false, isLoading } = useSWRImmutable(
-    address ? [address, provider, 'useAccountType'] : null,
+    address ? [address, sourceChainProvider, 'useAccountType'] : null,
     ([_address, _provider]) => addressIsSmartContract(_address, _provider)
   )
 
