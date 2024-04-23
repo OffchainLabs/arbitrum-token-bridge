@@ -20,7 +20,7 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
-const percentIncreaseForRetryableGasFluctuation = BigNumber.from(30)
+// https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
 const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
@@ -77,16 +77,9 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
 
-    console.log('Gas estimates', gasEstimates)
-
-    console.log('Gas price', destinationChainGasPrice)
-
     const estimatedDestinationChainGasFeeEth = parseFloat(
       utils.formatEther(
-        percentIncrease(
-          gasEstimates.estimatedChildChainGas,
-          percentIncreaseForRetryableGasFluctuation
-        )
+        gasEstimates.estimatedChildChainGas
           .mul(
             percentIncrease(
               destinationChainGasPrice,
@@ -99,11 +92,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const estimatedDestinationChainGasFee = utils.parseUnits(
       String(estimatedDestinationChainGasFeeEth),
       await nativeCurrency.decimals()
-    )
-
-    console.log(
-      customFeeTokenAllowanceForL1Gateway.toString(),
-      estimatedDestinationChainGasFee.toString()
     )
 
     // We want to bridge a certain amount of an ERC-20 token, but the Retryable fees on the destination chain will be paid in the custom fee token
@@ -163,10 +151,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const estimatedDestinationChainGasFeeEth = parseFloat(
       utils.formatEther(
-        percentIncrease(
-          gasEstimates.estimatedChildChainGas,
-          percentIncreaseForRetryableGasFluctuation
-        )
+        gasEstimates.estimatedChildChainGas
           .mul(
             percentIncrease(
               destinationChainGasPrice,
@@ -300,11 +285,9 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       retryableGasOverrides: {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
         // the 30% gas limit increase should cover the difference
-        gasLimit: { percentIncrease: percentIncreaseForRetryableGasFluctuation }
+        gasLimit: { percentIncrease: BigNumber.from(30) }
       }
     })
-
-    console.log('Deposit request', depositRequest)
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
