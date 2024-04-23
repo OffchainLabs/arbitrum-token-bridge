@@ -17,6 +17,8 @@ import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
+import { percentIncrease } from '@/token-bridge-sdk/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -107,7 +109,12 @@ export function useGasSummary(): UseGasSummaryResult {
       return parseFloat(
         utils.formatEther(
           estimateGasResult.estimatedChildChainGas
-            .mul(childChainGasPrice)
+            .mul(
+              percentIncrease(
+                childChainGasPrice,
+                DEFAULT_GAS_PRICE_PERCENT_INCREASE
+              )
+            )
             .add(
               (estimateGasResult as DepositGasEstimates)
                 .estimatedChildChainSubmissionCost

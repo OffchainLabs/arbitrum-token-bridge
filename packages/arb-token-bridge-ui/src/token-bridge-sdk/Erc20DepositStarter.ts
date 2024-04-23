@@ -21,7 +21,7 @@ import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
-const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
+export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
 
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
