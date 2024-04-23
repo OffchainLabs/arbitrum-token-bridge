@@ -20,7 +20,9 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
-const percentIncreaseForRetryableGasFluctuation = BigNumber.from(100)
+const percentIncreaseForRetryableGasFluctuation = BigNumber.from(30)
+const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
+
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
 
@@ -75,13 +77,22 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
 
+    console.log('Gas estimates', gasEstimates)
+
+    console.log('Gas price', destinationChainGasPrice)
+
     const estimatedDestinationChainGasFeeEth = parseFloat(
       utils.formatEther(
         percentIncrease(
           gasEstimates.estimatedChildChainGas,
           percentIncreaseForRetryableGasFluctuation
         )
-          .mul(destinationChainGasPrice)
+          .mul(
+            percentIncrease(
+              destinationChainGasPrice,
+              DEFAULT_GAS_PRICE_PERCENT_INCREASE
+            )
+          )
           .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
     )
@@ -156,7 +167,12 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
           gasEstimates.estimatedChildChainGas,
           percentIncreaseForRetryableGasFluctuation
         )
-          .mul(destinationChainGasPrice)
+          .mul(
+            percentIncrease(
+              destinationChainGasPrice,
+              DEFAULT_GAS_PRICE_PERCENT_INCREASE
+            )
+          )
           .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
     )
@@ -287,6 +303,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
         gasLimit: { percentIncrease: percentIncreaseForRetryableGasFluctuation }
       }
     })
+
+    console.log('Deposit request', depositRequest)
 
     const gasLimit = await this.sourceChainProvider.estimateGas(
       depositRequest.txRequest
