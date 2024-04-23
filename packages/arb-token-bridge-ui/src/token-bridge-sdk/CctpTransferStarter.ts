@@ -5,7 +5,6 @@ import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__fact
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
-  BridgeTransferStarterProps,
   RequiresTokenApprovalProps,
   TransferProps,
   TransferType
@@ -18,14 +17,13 @@ import { TokenMessengerAbi } from '../util/cctp/TokenMessengerAbi'
 import { Address } from '../util/AddressUtils'
 
 export class CctpTransferStarter extends BridgeTransferStarter {
-  public transferType: TransferType
-
-  constructor(props: BridgeTransferStarterProps) {
-    super(props)
-    this.transferType = 'cctp'
-  }
+  public transferType: TransferType = 'cctp'
 
   public requiresNativeCurrencyApproval = async () => false
+
+  public async approveNativeCurrencyEstimateGas() {
+    // no-op
+  }
 
   public approveNativeCurrency = async () => {
     return
@@ -78,6 +76,11 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       tokenMessengerContractAddress,
       amount ?? constants.MaxInt256
     )
+  }
+
+  public async transferEstimateGas() {
+    // for cctp transfers we don't call our native gas estimation methods because we have completely different contracts
+    return undefined
   }
 
   public async transfer({ signer, amount, destinationAddress }: TransferProps) {

@@ -1,6 +1,10 @@
 import { Provider } from '@ethersproject/providers'
 import { BigNumber, ContractTransaction, Signer } from 'ethers'
 import { MergedTransaction } from '../state/app/state'
+import {
+  GasEstimates,
+  DepositGasEstimates
+} from '../hooks/arbTokenBridge.types'
 import { Address } from '../util/AddressUtils'
 
 type Asset = 'erc20' | 'eth'
@@ -31,10 +35,14 @@ export type BridgeTransferStarterProps = {
   destinationChainProvider: Provider
 }
 
+export type TransferEstimateGas = {
+  amount: BigNumber
+  signer: Signer
+}
+
 export type TransferProps = {
   amount: BigNumber
   signer: Signer
-  isSmartContractWallet?: boolean
   destinationAddress?: string
 }
 
@@ -43,8 +51,14 @@ export type RequiresNativeCurrencyApprovalProps = {
   signer: Signer
 }
 
+export type ApproveNativeCurrencyEstimateGasProps = {
+  signer: Signer
+  amount?: BigNumber
+}
+
 export type ApproveNativeCurrencyProps = {
   signer: Signer
+  amount: BigNumber
 }
 
 export type RequiresTokenApprovalProps = {
@@ -75,9 +89,13 @@ export abstract class BridgeTransferStarter {
     props: RequiresNativeCurrencyApprovalProps
   ): Promise<boolean>
 
+  public abstract approveNativeCurrencyEstimateGas(
+    props: ApproveNativeCurrencyEstimateGasProps
+  ): Promise<BigNumber | void>
+
   public abstract approveNativeCurrency(
     props: ApproveNativeCurrencyProps
-  ): Promise<void>
+  ): Promise<ContractTransaction | void>
 
   public abstract requiresTokenApproval(
     props: RequiresTokenApprovalProps
@@ -85,11 +103,15 @@ export abstract class BridgeTransferStarter {
 
   public abstract approveTokenEstimateGas(
     props: ApproveTokenProps
-  ): Promise<BigNumber>
+  ): Promise<BigNumber | void>
 
   public abstract approveToken(
     props: ApproveTokenProps
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction | void>
+
+  public abstract transferEstimateGas(
+    props: TransferEstimateGas
+  ): Promise<GasEstimates | DepositGasEstimates | undefined>
 
   public abstract transfer(props: TransferProps): Promise<BridgeTransfer>
 }

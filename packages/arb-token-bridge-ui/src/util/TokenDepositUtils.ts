@@ -52,7 +52,7 @@ async function fetchTokenFallbackGasEstimates({
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedChildChainGas: BigNumber.from(100_000),
+    estimatedChildChainGas: BigNumber.from(105_000),
     estimatedChildChainSubmissionCost
   }
 }

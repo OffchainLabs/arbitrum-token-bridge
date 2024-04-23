@@ -1,56 +1,35 @@
-import { BigNumber } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
+import { useMemo } from 'react'
 import useSWR from 'swr'
+import { useSigner } from 'wagmi'
+import { Provider } from '@ethersproject/providers'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
-import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
-import { Address } from '../../util/AddressUtils'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { isDepositMode } from '../../util/isDepositMode'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '../useNetworks'
 
 async function fetcher([
-  walletAddress,
-  sourceChainId,
-  destinationChainId,
-  tokenParentChainAddress,
+  signer,
+  sourceChainProvider,
+  destinationChainProvider,
+  sourceChainErc20Address,
   amount
 ]: [
-  walletAddress: Address,
-  sourceChainId: number,
-  destinationChainId: number,
-  tokenParentChainAddress: string | undefined,
-  amount: string
-]): Promise<GasEstimates | DepositGasEstimates> {
-  const isDeposit = isDepositMode({ sourceChainId, destinationChainId })
+  signer: Signer,
+  sourceChainProvider: Provider,
+  destinationChainProvider: Provider,
+  sourceChainErc20Address: string | undefined,
+  amount: BigNumber
+]): Promise<GasEstimates | DepositGasEstimates | undefined> {
+  const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+    sourceChainProvider,
+    destinationChainProvider,
+    sourceChainErc20Address
+  })
 
-  const sourceChainProvider = getProviderForChainId(sourceChainId)
-  const destinationChainProvider = getProviderForChainId(destinationChainId)
-
-  const estimateGasFunctionParams = {
-    amount: BigNumber.from(amount),
-    address: walletAddress,
-    childChainProvider: isDeposit
-      ? destinationChainProvider
-      : sourceChainProvider
-  }
-
-  if (isDeposit) {
-    return typeof tokenParentChainAddress === 'string'
-      ? await depositTokenEstimateGas({
-          ...estimateGasFunctionParams,
-          parentChainProvider: sourceChainProvider,
-          erc20L1Address: tokenParentChainAddress
-        })
-      : await depositEthEstimateGas({
-          ...estimateGasFunctionParams,
-          parentChainProvider: sourceChainProvider
-        })
-  }
-
-  return await withdrawInitTxEstimateGas({
-    ...estimateGasFunctionParams,
-    erc20L1Address: tokenParentChainAddress
+  return await bridgeTransferStarter.transferEstimateGas({
+    amount,
+    signer
   })
 }
 
@@ -58,30 +37,53 @@ export function useGasEstimates({
   walletAddress,
   sourceChainId,
   destinationChainId,
-  tokenParentChainAddress,
+  sourceChainErc20Address,
   amount
 }: {
-  walletAddress: Address | undefined
+  walletAddress?: string
   sourceChainId: number
   destinationChainId: number
-  tokenParentChainAddress?: string
+  sourceChainErc20Address?: string
   amount: BigNumber
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
 } {
+  const { data: signer } = useSigner()
+
+  const sourceChainProvider = useMemo(
+    () => getProviderForChainId(sourceChainId),
+    [sourceChainId]
+  )
+  const destinationChainProvider = useMemo(
+    () => getProviderForChainId(destinationChainId),
+    [destinationChainId]
+  )
+
   const { data: gasEstimates, error } = useSWR(
-    typeof walletAddress === 'undefined'
+    typeof signer === 'undefined'
       ? null
       : [
           walletAddress,
           sourceChainId,
           destinationChainId,
-          tokenParentChainAddress,
+          sourceChainErc20Address,
           amount.toString(), // BigNumber is not serializable
           'gasEstimates'
         ],
-    fetcher,
+    () => {
+      if (typeof signer === 'undefined' || signer === null) {
+        return undefined
+      }
+
+      return fetcher([
+        signer,
+        sourceChainProvider,
+        destinationChainProvider,
+        sourceChainErc20Address,
+        amount
+      ])
+    },
     {
       refreshInterval: 30_000,
       shouldRetryOnError: true,
