@@ -350,7 +350,6 @@ export function TransferPanelMain({
   } = useAppState()
 
   const { address: walletAddress } = useAccount()
-  const { data: signer } = useSigner()
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()

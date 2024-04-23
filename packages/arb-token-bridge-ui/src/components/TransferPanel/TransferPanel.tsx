@@ -720,7 +720,9 @@ export function TransferPanel() {
         - if a token is selected
         - but the token's L2 address is not found (ie. sourceChainErc20Address)
       */
-        Error('Source chain token address not found for ERC-20 withdrawal.')
+        throw Error(
+          'Source chain token address not found for ERC-20 withdrawal.'
+        )
       }
 
       // SCW transfers are not enabled for ETH transfers yet
