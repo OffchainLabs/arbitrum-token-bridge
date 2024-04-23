@@ -35,6 +35,12 @@ export type BridgeTransferStarterProps = {
   destinationChainProvider: Provider
 }
 
+export type BridgeTransferStarterPropsWithChainIds = {
+  sourceChainId: number
+  sourceChainErc20Address?: string
+  destinationChainId: number
+}
+
 export type TransferEstimateGas = {
   amount: BigNumber
   signer: Signer

@@ -1,6 +1,11 @@
 import { BigNumber, Signer } from 'ethers'
-import { Provider } from '@ethersproject/providers'
-import { isNetwork } from '../util/networks'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
+import { ChainId, isNetwork, rpcURLs } from '../util/networks'
+import {
+  BridgeTransferStarterProps,
+  BridgeTransferStarterPropsWithChainIds
+} from './BridgeTransferStarter'
+import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -12,19 +17,20 @@ export const getChainIdFromProvider = async (provider: Provider) => {
   return network.chainId
 }
 
-export const getBridgeTransferProperties = async ({
-  sourceChainProvider,
-  destinationChainProvider,
-  sourceChainErc20Address
-}: {
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
-  sourceChainErc20Address?: string
-}) => {
-  const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
-  const destinationChainId = await getChainIdFromProvider(
-    destinationChainProvider
-  )
+export const getBridgeTransferProperties = async (
+  props: BridgeTransferStarterProps | BridgeTransferStarterPropsWithChainIds
+) => {
+  // if we are passing the chain ids directly, we dont need additional RPC calls to fetch them
+  let sourceChainId: number, destinationChainId: number
+  if (isBridgeTransferStarterPropsWithChainIds(props)) {
+    sourceChainId = props.sourceChainId
+    destinationChainId = props.destinationChainId
+  } else {
+    sourceChainId = await getChainIdFromProvider(props.sourceChainProvider)
+    destinationChainId = await getChainIdFromProvider(
+      props.destinationChainProvider
+    )
+  }
 
   const isSourceChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
@@ -46,7 +52,7 @@ export const getBridgeTransferProperties = async ({
     (isSourceChainOrbit && isDestinationChainArbitrum)
 
   const isNativeCurrencyTransfer =
-    typeof sourceChainErc20Address === 'undefined'
+    typeof props.sourceChainErc20Address === 'undefined'
 
   return {
     isDeposit,
@@ -62,4 +68,19 @@ export function percentIncrease(
   increase: BigNumber
 ): BigNumber {
   return num.add(num.mul(increase).div(100))
+}
+
+export function isBridgeTransferStarterPropsWithChainIds(
+  props: any
+): props is BridgeTransferStarterPropsWithChainIds {
+  return (
+    typeof props.sourceChainId === 'number' &&
+    typeof props.destinationChainId === 'number'
+  )
+}
+
+export function getProvider(chainId: ChainId) {
+  const rpcUrl =
+    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
+  return new StaticJsonRpcProvider(rpcUrl)
 }
