@@ -51,6 +51,11 @@ export type RequiresNativeCurrencyApprovalProps = {
   signer: Signer
 }
 
+export type ApproveNativeCurrencyEstimateGasProps = {
+  signer: Signer
+  amount?: BigNumber
+}
+
 export type ApproveNativeCurrencyProps = {
   signer: Signer
   amount?: BigNumber
@@ -83,6 +88,10 @@ export abstract class BridgeTransferStarter {
   public abstract requiresNativeCurrencyApproval(
     props: RequiresNativeCurrencyApprovalProps
   ): Promise<boolean>
+
+  public abstract approveNativeCurrencyEstimateGas(
+    props: ApproveNativeCurrencyEstimateGasProps
+  ): Promise<BigNumber | void>
 
   public abstract approveNativeCurrency(
     props: ApproveNativeCurrencyProps

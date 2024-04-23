@@ -12,11 +12,11 @@ import {
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
-import { useNativeCurrency } from '../useNativeCurrency'
 import { useGasEstimates } from './useGasEstimates'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -48,10 +48,10 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
+  const decimals = useSelectedTokenDecimals()
 
   const amountBigNumber = useMemo(() => {
     if (isNaN(Number(debouncedAmount))) {
@@ -59,12 +59,10 @@ export function useGasSummary(): UseGasSummaryResult {
     }
     const amountSafe = debouncedAmount || '0'
 
-    const decimals = token ? token.decimals : nativeCurrency.decimals
-
     const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
 
     return utils.parseUnits(correctDecimalsAmount, decimals)
-  }, [debouncedAmount, token, nativeCurrency])
+  }, [debouncedAmount, decimals])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
@@ -80,10 +78,11 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
+      walletAddress,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
-      tokenParentChainAddress: isDepositMode ? token?.address : token?.l2Address
+      sourceChainErc20Address: isDepositMode ? token?.address : token?.l2Address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {

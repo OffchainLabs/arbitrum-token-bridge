@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -74,7 +74,7 @@ import {
 import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
-import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -149,20 +149,9 @@ export function TransferPanel() {
 
   // Link the amount state directly to the amount in query params -  no need of useState
   // Both `amount` getter and setter will internally be using `useArbQueryParams` functions
-  const [{ amount }, setQueryParams] = useArbQueryParams()
+  const [{ amount }] = useArbQueryParams()
 
-  const setAmount = useCallback(
-    (newAmount: string) => {
-      const decimals = selectedToken
-        ? selectedToken.decimals
-        : nativeCurrency.decimals
-
-      const correctDecimalsAmount = truncateExtraDecimals(newAmount, decimals)
-
-      setQueryParams({ amount: correctDecimalsAmount })
-    },
-    [nativeCurrency, selectedToken, setQueryParams]
-  )
+  const setAmount = useSetInputAmount()
 
   const [tokenImportDialogProps] = useDialog()
   const [tokenCheckDialogProps, openTokenCheckDialog] = useDialog()
@@ -631,13 +620,13 @@ export function TransferPanel() {
       }
 
       const depositRequiresChainSwitch = () => {
-        const isSourceChainEthereum = isNetwork(
+        const isParentChainEthereum = isNetwork(
           parentChain.id
         ).isEthereumMainnetOrTestnet
 
         return (
           isDepositMode &&
-          ((isSourceChainEthereum && isConnectedToArbitrum.current) ||
+          ((isParentChainEthereum && isConnectedToArbitrum.current) ||
             isConnectedToOrbitChain.current)
         )
       }
@@ -732,7 +721,9 @@ export function TransferPanel() {
         - if a token is selected
         - but the token's L2 address is not found (ie. sourceChainErc20Address)
       */
-        Error('Source chain token address not found for ERC-20 withdrawal.')
+        throw Error(
+          'Source chain token address not found for ERC-20 withdrawal.'
+        )
       }
 
       // SCW transfers are not enabled for ETH transfers yet
@@ -983,11 +974,7 @@ export function TransferPanel() {
           'sm:rounded sm:border'
         )}
       >
-        <TransferPanelMain
-          amount={amount}
-          setAmount={setAmount}
-          errorMessage={errorMessage}
-        />
+        <TransferPanelMain amount={amount} errorMessage={errorMessage} />
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}

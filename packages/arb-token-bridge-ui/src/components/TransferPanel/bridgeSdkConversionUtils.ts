@@ -78,6 +78,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
   walletAddress,
   selectedToken,
   nativeCurrency,
+  destinationAddress,
   amount,
   timestampCreated
 }: SdkToUiConversionProps): Deposit => {
@@ -85,7 +86,7 @@ export const convertBridgeSdkToPendingDepositTransaction = ({
     bridgeTransfer.sourceChainTransaction as TransactionResponse
   return {
     sender: walletAddress!,
-    destination: walletAddress,
+    destination: destinationAddress ?? walletAddress,
     status: 'pending',
     txID: transaction.hash,
     assetName: selectedToken ? selectedToken.symbol : nativeCurrency.symbol,

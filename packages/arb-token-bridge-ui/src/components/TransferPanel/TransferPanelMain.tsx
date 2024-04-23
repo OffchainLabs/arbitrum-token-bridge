@@ -66,6 +66,7 @@ import {
   Balances,
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 enum NetworkType {
   l1 = 'l1',
@@ -328,17 +329,16 @@ function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain({
   amount,
-  setAmount,
   errorMessage
 }: {
   amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
@@ -350,7 +350,6 @@ export function TransferPanelMain({
   } = useAppState()
 
   const { address: walletAddress } = useAccount()
-  const { data: signer } = useSigner()
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
@@ -722,9 +721,6 @@ export function TransferPanelMain({
             }}
             errorMessage={errorMessageElement}
             value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
           />
 
           {showUSDCSpecificInfo && (
