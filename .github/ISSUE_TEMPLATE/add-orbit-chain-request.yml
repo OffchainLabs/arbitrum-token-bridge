@@ -72,6 +72,8 @@ body:
     attributes:
       label: Native token address
       placeholder: ex. 0x0000000000000000000000000000000000000000
+    validations:
+      required: false
   - type: input
     id: native-token-name
     attributes:
