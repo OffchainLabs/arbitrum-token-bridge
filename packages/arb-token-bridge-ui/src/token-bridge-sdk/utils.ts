@@ -60,14 +60,3 @@ export function percentIncrease(
 ): BigNumber {
   return num.add(num.mul(increase).div(100))
 }
-
-export function isBridgeTransferStarterPropsWithChainIds(
-  props: BridgeTransferStarterProps | BridgeTransferStarterPropsWithChainIds
-): props is BridgeTransferStarterPropsWithChainIds {
-  const anyProps = props as any
-
-  return (
-    typeof anyProps.sourceChainId === 'number' &&
-    typeof anyProps.destinationChainId === 'number'
-  )
-}
