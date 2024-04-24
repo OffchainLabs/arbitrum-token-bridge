@@ -2,27 +2,27 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
+import { ChildToParentMessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
 
 import {
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt,
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt,
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt
+} from '@arbitrum/sdk/dist/lib/message/ParentTransaction'
 import {
-  L2ContractTransaction,
-  L2TransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L2Transaction'
+  ChildContractTransaction,
+  ChildTransactionReceipt
+} from '@arbitrum/sdk/dist/lib/message/ChildTransaction'
 
 import {
   NewTransaction,
   Transaction,
-  L1ToL2MessageData
+  ParentToChildMessageData
 } from './useTransactions'
 
 export { OutgoingMessageState }
@@ -42,19 +42,19 @@ export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
   onTxError: (error: any) => void
 }>
 
-export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt
+export type ParentEthDepositTransactionLifecycle = TransactionLifecycle<
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt
 >
 
-export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
+export type ParentContractCallTransactionLifecycle = TransactionLifecycle<
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt
 >
 
-export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
-  L2ContractTransaction,
-  L2TransactionReceipt
+export type ChildContractCallTransactionLifecycle = TransactionLifecycle<
+  ChildContractTransaction,
+  ChildTransactionReceipt
 >
 
 export enum NodeBlockDeadlineStatusTypes {
@@ -67,12 +67,12 @@ export type NodeBlockDeadlineStatus =
   | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
   | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
-export type L2ToL1EventResult = L2ToL1TransactionEvent
+export type ChildToParentEventResult = ChildToParentTransactionEvent
 
-export type L2ToL1EventResultPlus = L2ToL1EventResult & {
+export type ChildToParentEventResultPlus = ChildToParentEventResult & {
   sender?: string
   destinationAddress?: string
-  l2TxHash?: string
+  childTxHash?: string
   type: AssetType
   value: BigNumber
   tokenAddress?: string
@@ -98,7 +98,7 @@ export interface BridgeToken {
   name: string
   symbol: string
   address: string
-  l2Address?: string
+  childAddress?: string
   logoURI?: string
   listIds: Set<number> // no listID indicates added by user
   isL2Native?: boolean
@@ -109,7 +109,7 @@ export interface ERC20BridgeToken extends BridgeToken {
   decimals: number
 }
 
-export interface L2TokenData {
+export interface ChildTokenData {
   balance: BigNumber
   contract: StandardArbERC20
 }
@@ -143,51 +143,51 @@ export type DepositGasEstimates = GasEstimates & {
 export interface ArbTokenBridgeEth {
   deposit: (params: {
     amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
+    parentSigner: Signer
+    txLifecycle?: ParentEthDepositTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   withdraw: (params: {
     amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    childSigner: Signer
+    txLifecycle?: ChildContractCallTransactionLifecycle
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) => Promise<void | ContractReceipt>
 }
 
 export interface ArbTokenBridgeToken {
-  add: (erc20L1orL2Address: string) => Promise<void>
+  add: (erc20ParentOrChildAddress: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
-  updateTokenData: (l1Address: string) => Promise<void>
+  updateTokenData: (parentAddress: string) => Promise<void>
   approve: (params: {
-    erc20L1Address: string
-    l1Signer: Signer
+    erc20ParentAddress: string
+    parentSigner: Signer
   }) => Promise<void>
-  approveL2: (params: {
-    erc20L1Address: string
-    l2Signer: Signer
+  approveChild: (params: {
+    erc20ParentAddress: string
+    childSigner: Signer
   }) => Promise<void>
   deposit: (params: {
-    erc20L1Address: string
+    erc20ParentAddress: string
     amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
+    parentSigner: Signer
+    txLifecycle?: ParentContractCallTransactionLifecycle
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   withdraw: (params: {
-    erc20L1Address: string
+    erc20ParentAddress: string
     amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
+    childSigner: Signer
+    txLifecycle?: ChildContractCallTransactionLifecycle
     destinationAddress?: string
   }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
-    event: L2ToL1EventResultPlus
-    l1Signer: Signer
+    event: ChildToParentEventResultPlus
+    parentSigner: Signer
   }) => Promise<void | ContractReceipt>
 }
 
@@ -196,7 +196,7 @@ export interface TransactionActions {
   updateTransaction: (
     txReceipt: TransactionReceipt,
     tx?: ethers.ContractTransaction,
-    l1ToL2MsgData?: L1ToL2MessageData
+    parentToChildMsgData?: ParentToChildMessageData
   ) => void
 }
 

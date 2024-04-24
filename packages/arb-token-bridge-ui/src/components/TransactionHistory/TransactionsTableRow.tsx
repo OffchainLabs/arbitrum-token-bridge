@@ -136,14 +136,14 @@ export function TransactionsTableRow({
   useInterval(() => setTxRelativeTime(dayjs(tx.createdAt).fromNow()), 10_000)
 
   const tokenSymbol = sanitizeTokenSymbol(tx.asset, {
-    erc20L1Address: tx.tokenAddress,
+    erc20ParentAddress: tx.tokenAddress,
     chainId: tx.sourceChainId
   })
 
   const isError = useMemo(() => {
     if (tx.isCctp || !tx.isWithdrawal) {
       if (
-        tx.depositStatus === DepositStatus.L1_FAILURE ||
+        tx.depositStatus === DepositStatus.PARENT_FAILURE ||
         tx.depositStatus === DepositStatus.EXPIRED
       ) {
         return true

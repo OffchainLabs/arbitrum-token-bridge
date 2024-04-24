@@ -6,8 +6,8 @@ import {
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
-  L1ToL2MessageData,
-  L2ToL1MessageData,
+  ParentToChildMessageData,
+  ChildToParentMessageData,
   TxnType
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
@@ -21,11 +21,11 @@ export enum WhiteListState {
 }
 
 export enum DepositStatus {
-  L1_PENDING = 1,
-  L1_FAILURE = 2,
-  L2_PENDING = 3,
-  L2_SUCCESS = 4,
-  L2_FAILURE = 5,
+  PARENT_PENDING = 1,
+  PARENT_FAILURE = 2,
+  CHILD_PENDING = 3,
+  CHILD_SUCCESS = 4,
+  CHILD_FAILURE = 5,
   CREATION_FAILED = 6,
   EXPIRED = 7,
   CCTP_DEFAULT_STATE = 8 // Cctp only relies on tx.status
@@ -58,8 +58,8 @@ export interface MergedTransaction {
   tokenAddress: string | null
   isCctp?: boolean
   nodeBlockDeadline?: NodeBlockDeadlineStatus
-  l1ToL2MsgData?: L1ToL2MessageData
-  l2ToL1MsgData?: L2ToL1MessageData
+  parentToChildMsgData?: ParentToChildMessageData
+  childToParentMsgData?: ChildToParentMessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
@@ -87,8 +87,8 @@ export type AppState = {
   connectionState: number
   selectedToken: ERC20BridgeToken | null
   verifying: WhiteListState
-  l1NetworkChainId: number | null
-  l2NetworkChainId: number | null
+  parentNetworkChainId: number | null
+  childNetworkChainId: number | null
   arbTokenBridgeLoaded: boolean
 }
 
@@ -96,8 +96,8 @@ export const defaultState: AppState = {
   arbTokenBridge: {} as ArbTokenBridge,
   warningTokens: {} as WarningTokens,
   connectionState: ConnectionState.LOADING,
-  l1NetworkChainId: null,
-  l2NetworkChainId: null,
+  parentNetworkChainId: null,
+  childNetworkChainId: null,
   verifying: WhiteListState.ALLOWED,
   selectedToken: null,
   arbTokenBridgeLoaded: false

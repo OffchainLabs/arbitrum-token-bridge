@@ -1,26 +1,27 @@
 import {
-  L1TransactionReceipt,
-  L1ToL2MessageStatus,
+  ParentTransactionReceipt,
+  ParentToChildMessageStatus,
   EthDepositStatus
 } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  L1ToL2MessageReader,
-  L1ToL2MessageReaderClassic
-} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+  ParentToChildMessageReader,
+  ParentToChildMessageReaderClassic
+} from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
 import { Provider } from '@ethersproject/providers'
+
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
-  l1Provider,
-  l2Provider
+  parentProvider,
+  childProvider
 }: {
   depositTx: Transaction
-  l1Provider: Provider
-  l2Provider: Provider
+  parentProvider: Provider
+  childProvider: Provider
 }): Promise<Transaction> => {
   // 1. for all the fetched txns, fetch the transaction receipts and update their exact status
   // 2. on the basis of those, finally calculate the status of the transaction
@@ -33,7 +34,7 @@ export const updateAdditionalDepositData = async ({
   } else if (depositTx.blockNumber) {
     // if timestamp not in subgraph, fallback to onchain data
     timestampCreated = String(
-      (await l1Provider.getBlock(depositTx.blockNumber)).timestamp * 1000
+      (await parentProvider.getBlock(depositTx.blockNumber)).timestamp * 1000
     )
   }
 
@@ -45,21 +46,22 @@ export const updateAdditionalDepositData = async ({
 
   const isEthDeposit = depositTx.assetType === AssetType.ETH
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-    depositTxId: depositTx.txID,
-    l1Provider,
-    l2Provider,
-    isEthDeposit,
-    isClassic
-  })
+  const { parentToChildMsg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: depositTx.txID,
+      parentProvider,
+      childProvider,
+      isEthDeposit,
+      isClassic
+    })
 
   if (isClassic) {
     return updateClassicDepositStatusData({
       depositTx,
-      l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReaderClassic,
+      parentToChildMsg: parentToChildMsg as ParentToChildMessageReaderClassic,
       isEthDeposit,
       timestampCreated,
-      l2Provider
+      childProvider
     })
   }
 
@@ -67,8 +69,8 @@ export const updateAdditionalDepositData = async ({
   if (isEthDeposit) {
     return updateETHDepositStatusData({
       depositTx,
-      ethDepositMessage: l1ToL2Msg as EthDepositMessage,
-      l2Provider,
+      ethDepositMessage: parentToChildMsg as EthDepositMessage,
+      childProvider,
       timestampCreated
     })
   }
@@ -76,23 +78,23 @@ export const updateAdditionalDepositData = async ({
   // finally, else if the transaction is not ETH ie. it's a ERC20 token deposit
   return updateTokenDepositStatusData({
     depositTx,
-    l1ToL2Msg: l1ToL2Msg as L1ToL2MessageReader,
+    parentToChildMsg: parentToChildMsg as ParentToChildMessageReader,
     timestampCreated,
-    l1Provider,
-    l2Provider
+    parentProvider,
+    childProvider
   })
 }
 
 const updateETHDepositStatusData = async ({
   depositTx,
+  childProvider,
   ethDepositMessage,
-  l2Provider,
   timestampCreated
 }: {
   depositTx: Transaction
+  childProvider: Provider
   ethDepositMessage: EthDepositMessage
   timestampCreated: string
-  l2Provider: Provider
 }): Promise<Transaction> => {
   // from the eth-deposit-message, extract more things like retryableCreationTxID, status, etc
 
@@ -101,14 +103,14 @@ const updateETHDepositStatusData = async ({
   const status = await ethDepositMessage.status()
   const isDeposited = status === EthDepositStatus.DEPOSITED
 
-  const retryableCreationTxID = ethDepositMessage.l2DepositTxHash
+  const retryableCreationTxID = ethDepositMessage.chainDepositTxHash
 
-  const l2BlockNum = isDeposited
-    ? (await l2Provider.getTransaction(retryableCreationTxID)).blockNumber
+  const childBlockNum = isDeposited
+    ? (await childProvider.getTransaction(retryableCreationTxID)).blockNumber
     : null
 
-  const timestampResolved = l2BlockNum
-    ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
+  const timestampResolved = childBlockNum
+    ? (await childProvider.getBlock(childBlockNum)).timestamp * 1000
     : null
 
   // return the data to populate on UI
@@ -119,13 +121,13 @@ const updateETHDepositStatusData = async ({
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       status: isDeposited
-        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
+        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+        : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
-      // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.l2DepositTxHash : undefined,
+      // Only show `childTxID` after the deposit is confirmed
+      childTxID: isDeposited ? ethDepositMessage.chainDepositTxHash : undefined,
       fetchingUpdate: false
     }
   }
@@ -135,16 +137,16 @@ const updateETHDepositStatusData = async ({
 
 const updateTokenDepositStatusData = async ({
   depositTx,
-  l1ToL2Msg,
-  timestampCreated,
-  l1Provider,
-  l2Provider
+  parentProvider,
+  childProvider,
+  parentToChildMsg,
+  timestampCreated
 }: {
   depositTx: Transaction
+  parentProvider: Provider
+  childProvider: Provider
+  parentToChildMsg: ParentToChildMessageReader
   timestampCreated: string
-  l1Provider: Provider
-  l2Provider: Provider
-  l1ToL2Msg: L1ToL2MessageReader
 }): Promise<Transaction> => {
   const updatedDepositTx = {
     ...depositTx,
@@ -156,47 +158,48 @@ const updateTokenDepositStatusData = async ({
   if (!assetName && tokenAddress) {
     const { symbol } = await fetchErc20Data({
       address: tokenAddress,
-      provider: l1Provider
+      provider: parentProvider
     })
     updatedDepositTx.assetName = symbol
   }
 
-  if (!l1ToL2Msg) return updatedDepositTx
+  if (!parentToChildMsg) return updatedDepositTx
 
-  // get the status data of `l1ToL2Msg`, if it is redeemed - `getSuccessfulRedeem` also returns its l2TxReceipt
-  const res = await l1ToL2Msg.getSuccessfulRedeem()
+  // get the status data of `parentToChildMsg`, if it is redeemed - `getSuccessfulRedeem` also returns its childTxReceipt
+  const res = await parentToChildMsg.getSuccessfulRedeem()
 
-  const l2TxID =
-    res.status === L1ToL2MessageStatus.REDEEMED
-      ? res.l2TxReceipt.transactionHash
+  const childTxID =
+    res.status === ParentToChildMessageStatus.REDEEMED
+      ? res.chainTxReceipt.transactionHash
       : undefined
 
-  const l1ToL2MsgData = {
+  const parentToChildMsgData = {
     status: res.status,
-    l2TxID,
+    childTxID,
     fetchingUpdate: false,
-    retryableCreationTxID: l1ToL2Msg.retryableCreationId
+    retryableCreationTxID: parentToChildMsg.retryableCreationId
   }
 
-  const isDeposited = l1ToL2MsgData.status === L1ToL2MessageStatus.REDEEMED
+  const isDeposited =
+    parentToChildMsgData.status === ParentToChildMessageStatus.REDEEMED
 
-  const l2BlockNum = isDeposited
-    ? (await l2Provider.getTransaction(l1ToL2Msg.retryableCreationId))
+  const childBlockNum = isDeposited
+    ? (await childProvider.getTransaction(parentToChildMsg.retryableCreationId))
         .blockNumber
     : null
 
-  const timestampResolved = l2BlockNum
-    ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
+  const timestampResolved = childBlockNum
+    ? (await childProvider.getBlock(childBlockNum)).timestamp * 1000
     : null
 
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
-    status: l1ToL2Msg.retryableCreationId ? 'success' : 'pending', // TODO :handle other cases here
+    status: parentToChildMsg.retryableCreationId ? 'success' : 'pending', // TODO :handle other cases here
     timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData
+    parentToChildMsgData
   }
 
   return completeDepositTx
@@ -204,101 +207,105 @@ const updateTokenDepositStatusData = async ({
 
 const updateClassicDepositStatusData = async ({
   depositTx,
-  l1ToL2Msg,
+  childProvider,
+  parentToChildMsg,
   isEthDeposit,
-  timestampCreated,
-  l2Provider
+  timestampCreated
 }: {
   depositTx: Transaction
-  timestampCreated: string
-  l2Provider: Provider
+  childProvider: Provider
+  parentToChildMsg: ParentToChildMessageReaderClassic
   isEthDeposit: boolean
-  l1ToL2Msg: L1ToL2MessageReaderClassic
+  timestampCreated: string
 }): Promise<Transaction> => {
   const updatedDepositTx = {
     ...depositTx,
     timestampCreated
   }
 
-  const status = await l1ToL2Msg.status()
+  const status = await parentToChildMsg.status()
 
   const isCompletedEthDeposit =
-    isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+    isEthDeposit &&
+    status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
 
-  const l2TxID = (() => {
+  const childTxID = (() => {
     if (isCompletedEthDeposit) {
-      return l1ToL2Msg.retryableCreationId
+      return parentToChildMsg.retryableCreationId
     }
 
-    if (status === L1ToL2MessageStatus.REDEEMED) {
-      return l1ToL2Msg.l2TxHash
+    if (status === ParentToChildMessageStatus.REDEEMED) {
+      return parentToChildMsg.chainTxHash
     }
 
     return undefined
   })()
 
-  const l1ToL2MsgData = {
+  const parentToChildMsgData = {
     status,
-    l2TxID,
+    childTxID,
     fetchingUpdate: false,
-    retryableCreationTxID: l1ToL2Msg.retryableCreationId
+    retryableCreationTxID: parentToChildMsg.retryableCreationId
   }
 
-  const l2BlockNum = l2TxID
-    ? (await l2Provider.getTransaction(l2TxID)).blockNumber
+  const childBlockNum = childTxID
+    ? (await childProvider.getTransaction(childTxID)).blockNumber
     : null
 
-  const timestampResolved = l2BlockNum
-    ? (await l2Provider.getBlock(l2BlockNum)).timestamp * 1000
+  const timestampResolved = childBlockNum
+    ? (await childProvider.getBlock(childBlockNum)).timestamp * 1000
     : null
 
   const completeDepositTx: Transaction = {
     ...updatedDepositTx,
-    status: l2TxID ? 'success' : 'pending', // TODO :handle other cases here
+    status: childTxID ? 'success' : 'pending', // TODO :handle other cases here
     timestampCreated,
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,
-    l1ToL2MsgData
+    parentToChildMsgData
   }
 
   return completeDepositTx
 }
 
-export const getL1ToL2MessageDataFromL1TxHash = async ({
+export const getParentToChildMessageDataFromParentTxHash = async ({
   depositTxId,
+  parentProvider,
+  childProvider,
   isEthDeposit,
-  l1Provider,
-  l2Provider,
   isClassic // optional: if we already know if tx is classic (eg. through subgraph) then no need to re-check in this fn
 }: {
   depositTxId: string
-  l1Provider: Provider
+  parentProvider: Provider
+  childProvider: Provider
   isEthDeposit: boolean
-  l2Provider: Provider
   isClassic?: boolean
 }): Promise<{
   isClassic?: boolean
-  l1ToL2Msg?:
-    | L1ToL2MessageReaderClassic
+  parentToChildMsg?:
+    | ParentToChildMessageReaderClassic
     | EthDepositMessage
-    | L1ToL2MessageReader
+    | ParentToChildMessageReader
 }> => {
-  // fetch L1 transaction receipt
-  const depositTxReceipt = await l1Provider.getTransactionReceipt(depositTxId)
+  // fetch parent transaction receipt
+  const depositTxReceipt = await parentProvider.getTransactionReceipt(
+    depositTxId
+  )
 
   // TODO: Handle tx not found
   if (!depositTxReceipt) {
     return {}
   }
 
-  const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
+  const parentTxReceipt = new ParentTransactionReceipt(depositTxReceipt)
 
   const getClassicDepositMessage = async () => {
-    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2MessagesClassic(l2Provider)
+    const [parentToChildMsg] =
+      await parentTxReceipt.getParentToChildMessagesClassic(childProvider)
     return {
       isClassic: true,
-      l1ToL2Msg: l1ToL2Msg
+      parentToChildMsg
     }
   }
 
@@ -306,22 +313,27 @@ export const getL1ToL2MessageDataFromL1TxHash = async ({
     // post-nitro handling
     if (isEthDeposit) {
       // nitro eth deposit
-      const [ethDepositMessage] = await l1TxReceipt.getEthDeposits(l2Provider)
+      const [ethDepositMessage] = await parentTxReceipt.getEthDeposits(
+        childProvider
+      )
       return {
         isClassic: false,
-        l1ToL2Msg: ethDepositMessage
+        parentToChildMsg: ethDepositMessage
       }
     }
 
     // Else, nitro token deposit
-    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+    const [parentToChildMsg] = await parentTxReceipt.getParentToChildMessages(
+      childProvider
+    )
     return {
       isClassic: false,
-      l1ToL2Msg
+      parentToChildMsg
     }
   }
 
-  const safeIsClassic = isClassic ?? (await l1TxReceipt.isClassic(l2Provider)) // if it is unknown whether the transaction isClassic or not, fetch the result
+  const safeIsClassic =
+    isClassic ?? (await parentTxReceipt.isClassic(childProvider)) // if it is unknown whether the transaction isClassic or not, fetch the result
 
   if (safeIsClassic) {
     // classic (pre-nitro) deposit - both eth + token

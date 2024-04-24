@@ -170,7 +170,7 @@ export const TransactionsTableDetailsSteps = ({
 
   const isSourceChainDepositFailure =
     typeof tx.depositStatus !== 'undefined' &&
-    [DepositStatus.CREATION_FAILED, DepositStatus.L1_FAILURE].includes(
+    [DepositStatus.CREATION_FAILED, DepositStatus.PARENT_FAILURE].includes(
       tx.depositStatus
     )
 

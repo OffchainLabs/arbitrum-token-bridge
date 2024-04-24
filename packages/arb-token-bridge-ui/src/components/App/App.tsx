@@ -79,7 +79,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     }
 
     const selectedTokenAddress = selectedToken?.address.toLowerCase()
-    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
+    const selectedTokenChildAddress = selectedToken?.childAddress?.toLowerCase()
     // This handles a super weird edge case where, for example:
     //
     // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
@@ -87,7 +87,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
     if (
       selectedTokenAddress === nativeCurrency.address ||
-      selectedTokenL2Address === nativeCurrency.address
+      selectedTokenChildAddress === nativeCurrency.address
     ) {
       actions.app.setSelectedToken(null)
     }
@@ -109,8 +109,8 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
 
     actions.app.reset(networks.sourceChain.id)
     actions.app.setChainIds({
-      l1NetworkChainId: parentChain.id,
-      l2NetworkChainId: childChain.id
+      parentNetworkChainId: parentChain.id,
+      childNetworkChainId: childChain.id
     })
 
     if (
@@ -118,18 +118,18 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       isConnectedToOrbitChain
     ) {
       console.info('Withdrawal mode detected:')
-      actions.app.setConnectionState(ConnectionState.L2_CONNECTED)
+      actions.app.setConnectionState(ConnectionState.CHILD_CONNECTED)
     } else {
       console.info('Deposit mode detected:')
-      actions.app.setConnectionState(ConnectionState.L1_CONNECTED)
+      actions.app.setConnectionState(ConnectionState.PARENT_CONNECTED)
     }
 
     setTokenBridgeParams({
-      l1: {
+      parent: {
         network: parentChain,
         provider: parentChainProvider
       },
-      l2: {
+      child: {
         network: childChain,
         provider: childChainProvider
       }

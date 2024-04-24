@@ -65,7 +65,7 @@ export function TokenSymbolWithExplorerLink({
     return (
       tokenSymbolOverride ??
       sanitizeTokenSymbol(token.symbol, {
-        erc20L1Address: token.address,
+        erc20ParentAddress: token.address,
         chainId: chain.id
       })
     )
@@ -84,7 +84,7 @@ export function TokenSymbolWithExplorerLink({
     explorerLink: chain.blockExplorers
       ? chain.blockExplorers.default.url
       : undefined,
-    tokenAddress: isParentChain ? token.address : token.l2Address
+    tokenAddress: isParentChain ? token.address : token.childAddress
   })
 
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import {
-  addCustomNetwork,
+  addCustomArbitrumNetwork,
   constants as arbitrumSdkConstants
 } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -271,7 +271,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomNetwork({ customL2Network: customChain })
+      addCustomArbitrumNetwork(customChain)
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes

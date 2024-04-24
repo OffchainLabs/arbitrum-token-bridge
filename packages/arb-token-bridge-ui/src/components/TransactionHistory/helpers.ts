@@ -3,11 +3,11 @@ import {
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
-import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { EthDepositStatus, ParentToChildMessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  L1ToL2MessageReader
-} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+  ParentToChildMessageReader
+} from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
 
 import {
   DepositStatus,
@@ -17,7 +17,7 @@ import {
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import { getParentToChildMessageDataFromParentTxHash } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
@@ -48,7 +48,7 @@ export function isTxCompleted(tx: MergedTransaction): boolean {
     return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
   if (isDeposit(tx)) {
-    return tx.depositStatus === DepositStatus.L2_SUCCESS
+    return tx.depositStatus === DepositStatus.CHILD_SUCCESS
   }
   return tx.status === WithdrawalStatus.EXECUTED
 }
@@ -62,8 +62,8 @@ export function isTxPending(tx: MergedTransaction) {
   }
   if (isDeposit(tx)) {
     return (
-      tx.depositStatus === DepositStatus.L1_PENDING ||
-      tx.depositStatus === DepositStatus.L2_PENDING
+      tx.depositStatus === DepositStatus.PARENT_PENDING ||
+      tx.depositStatus === DepositStatus.CHILD_PENDING
     )
   }
   return tx.status === WithdrawalStatus.UNCONFIRMED
@@ -93,8 +93,8 @@ export function isTxFailed(tx: MergedTransaction): boolean {
     }
     return [
       DepositStatus.CREATION_FAILED,
-      DepositStatus.L1_FAILURE,
-      DepositStatus.L2_FAILURE
+      DepositStatus.PARENT_FAILURE,
+      DepositStatus.CHILD_FAILURE
     ].includes(tx.depositStatus)
   }
   return tx.status === WithdrawalStatus.FAILURE
@@ -261,14 +261,15 @@ export async function getUpdatedEthDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: true,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
-  })
+  const { parentToChildMsg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: true,
+      parentProvider: getProvider(tx.parentChainId),
+      childProvider: getProvider(tx.childChainId)
+    })
 
-  if (!l1ToL2Msg) {
+  if (!parentToChildMsg) {
     const receipt = await getTxReceipt(tx)
 
     if (!receipt || receipt.status !== 0) {
@@ -277,25 +278,30 @@ export async function getUpdatedEthDeposit(
     }
 
     // failure
-    return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
+    return {
+      ...tx,
+      status: 'failure',
+      depositStatus: DepositStatus.PARENT_FAILURE
+    }
   }
 
-  const status = await l1ToL2Msg?.status()
+  const status = await parentToChildMsg?.status()
   const isDeposited = status === EthDepositStatus.DEPOSITED
 
   const newDeposit: MergedTransaction = {
     ...tx,
     status: 'success',
     resolvedAt: isDeposited ? dayjs().valueOf() : null,
-    l1ToL2MsgData: {
+    parentToChildMsgData: {
       fetchingUpdate: false,
       status: isDeposited
-        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).l2DepositTxHash,
-      // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited
-        ? (l1ToL2Msg as EthDepositMessage).l2DepositTxHash
+        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+        : ParentToChildMessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: (parentToChildMsg as EthDepositMessage)
+        .chainDepositTxHash,
+      // Only show `childTxID` after the deposit is confirmed
+      childTxID: isDeposited
+        ? (parentToChildMsg as EthDepositMessage).chainDepositTxHash
         : undefined
     }
   }
@@ -318,15 +324,16 @@ export async function getUpdatedTokenDeposit(
     return tx
   }
 
-  const { l1ToL2Msg } = await getL1ToL2MessageDataFromL1TxHash({
-    depositTxId: tx.txId,
-    isEthDeposit: false,
-    l1Provider: getProvider(tx.parentChainId),
-    l2Provider: getProvider(tx.childChainId)
-  })
-  const _l1ToL2Msg = l1ToL2Msg as L1ToL2MessageReader
+  const { parentToChildMsg } =
+    await getParentToChildMessageDataFromParentTxHash({
+      depositTxId: tx.txId,
+      isEthDeposit: false,
+      parentProvider: getProvider(tx.parentChainId),
+      childProvider: getProvider(tx.childChainId)
+    })
+  const _parentToChildMsg = parentToChildMsg as ParentToChildMessageReader
 
-  if (!l1ToL2Msg) {
+  if (!parentToChildMsg) {
     const receipt = await getTxReceipt(tx)
 
     if (!receipt || receipt.status !== 0) {
@@ -335,14 +342,18 @@ export async function getUpdatedTokenDeposit(
     }
 
     // failure
-    return { ...tx, status: 'failure', depositStatus: DepositStatus.L1_FAILURE }
+    return {
+      ...tx,
+      status: 'failure',
+      depositStatus: DepositStatus.PARENT_FAILURE
+    }
   }
 
-  const res = await _l1ToL2Msg.getSuccessfulRedeem()
+  const res = await _parentToChildMsg.getSuccessfulRedeem()
 
-  const l2TxID = (() => {
-    if (res.status === L1ToL2MessageStatus.REDEEMED) {
-      return res.l2TxReceipt.transactionHash
+  const childTxID = (() => {
+    if (res.status === ParentToChildMessageStatus.REDEEMED) {
+      return res.chainTxReceipt.transactionHash
     } else {
       return undefined
     }
@@ -350,14 +361,16 @@ export async function getUpdatedTokenDeposit(
 
   const newDeposit: MergedTransaction = {
     ...tx,
-    status: _l1ToL2Msg.retryableCreationId ? 'success' : tx.status,
+    status: _parentToChildMsg.retryableCreationId ? 'success' : tx.status,
     resolvedAt:
-      res.status === L1ToL2MessageStatus.REDEEMED ? dayjs().valueOf() : null,
-    l1ToL2MsgData: {
+      res.status === ParentToChildMessageStatus.REDEEMED
+        ? dayjs().valueOf()
+        : null,
+    parentToChildMsgData: {
       status: res.status,
-      l2TxID,
+      childTxID,
       fetchingUpdate: false,
-      retryableCreationTxID: _l1ToL2Msg.retryableCreationId
+      retryableCreationTxID: _parentToChildMsg.retryableCreationId
     }
   }
 
@@ -403,7 +416,7 @@ export async function getUpdatedCctpTransfer(
     return tx
   }
 
-  const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
+  const requiredParentBlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
   const blockTime = getBlockTime(tx.parentChainId)
@@ -439,7 +452,7 @@ export async function getUpdatedCctpTransfer(
   const isConfirmed =
     tx.createdAt &&
     dayjs().diff(tx.createdAt, 'second') >
-      requiredL1BlocksBeforeConfirmation * blockTime
+      requiredParentBlocksBeforeConfirmation * blockTime
   if (
     // If transaction claim was set to failure, don't reset to Confirmed
     tx.status !== WithdrawalStatus.FAILURE &&
@@ -458,13 +471,13 @@ export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
   if (isDeposit(tx)) {
     switch (tx.depositStatus) {
       case DepositStatus.CREATION_FAILED:
-      case DepositStatus.L1_FAILURE:
-      case DepositStatus.L2_FAILURE:
+      case DepositStatus.PARENT_FAILURE:
+      case DepositStatus.CHILD_FAILURE:
         return StatusLabel.FAILURE
       case DepositStatus.EXPIRED:
         return StatusLabel.EXPIRED
-      case DepositStatus.L1_PENDING:
-      case DepositStatus.L2_PENDING:
+      case DepositStatus.PARENT_PENDING:
+      case DepositStatus.CHILD_PENDING:
         return StatusLabel.PENDING
       default:
         return StatusLabel.SUCCESS
@@ -578,6 +591,6 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
   return tx.isWithdrawal
-    ? tx.l2ToL1MsgData?.uniqueId.toString()
-    : tx.l1ToL2MsgData?.l2TxID
+    ? tx.childToParentMsgData?.uniqueId.toString()
+    : tx.parentToChildMsgData?.childTxID
 }

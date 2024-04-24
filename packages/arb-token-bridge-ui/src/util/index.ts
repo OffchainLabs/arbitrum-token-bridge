@@ -1,7 +1,7 @@
 export enum ConnectionState {
   LOADING,
-  L1_CONNECTED,
-  L2_CONNECTED,
+  PARENT_CONNECTED,
+  CHILD_CONNECTED,
   NETWORK_ERROR
 }
 

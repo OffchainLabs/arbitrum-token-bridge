@@ -39,8 +39,8 @@ export function DepositCountdown({
   const whenCreated = dayjs(createdAt)
 
   if (
-    depositStatus === DepositStatus.L1_PENDING ||
-    depositStatus === DepositStatus.L2_PENDING
+    depositStatus === DepositStatus.PARENT_PENDING ||
+    depositStatus === DepositStatus.CHILD_PENDING
   ) {
     // Subtract the diff from the initial deposit time
     const minutesRemaining =

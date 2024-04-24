@@ -207,21 +207,24 @@ export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
 }
 
 /**
- * Retrieves the L1 address of an ERC-20 token using its L2 address.
- * @param erc20L2Address
- * @param l2Provider
+ * Retrieves the parent address of an ERC-20 token using its child address.
+ * @param erc20ChildAddress
+ * @param childProvider
  * @returns
  */
-export async function getL1ERC20Address({
-  erc20L2Address,
-  l2Provider
+export async function getParentERC20Address({
+  erc20ChildAddress,
+  childProvider
 }: {
-  erc20L2Address: string
-  l2Provider: Provider
+  erc20ChildAddress: string
+  childProvider: Provider
 }): Promise<string | null> {
   try {
-    const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-    return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2Provider)
+    const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+    return await erc20Bridger.getParentERC20Address(
+      erc20ChildAddress,
+      childProvider
+    )
   } catch (error) {
     return null
   }
@@ -231,69 +234,69 @@ export async function getL1ERC20Address({
  Retrieves the parent chain gateway of an ERC-20 token using its parent chain address.
 */
 export async function fetchErc20ParentChainGatewayAddress({
-  erc20ParentChainAddress,
-  parentChainProvider,
-  childChainProvider
+  erc20ParentAddress,
+  parentProvider,
+  childProvider
 }: {
-  erc20ParentChainAddress: string
-  parentChainProvider: Provider
-  childChainProvider: Provider
+  erc20ParentAddress: string
+  parentProvider: Provider
+  childProvider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-  return erc20Bridger.getL1GatewayAddress(
-    erc20ParentChainAddress,
-    parentChainProvider
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  return erc20Bridger.getL1GatewayAddress(erc20ParentAddress, parentProvider)
+}
+
+/*
+ Retrieves the child gateway of an ERC-20 token using its parent address.
+*/
+export async function fetchErc20ChildGatewayAddress({
+  erc20ParentAddress,
+  childProvider
+}: {
+  erc20ParentAddress: string
+  childProvider: Provider
+}): Promise<string> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  return erc20Bridger.getL2GatewayAddress(erc20ParentAddress, childProvider)
+}
+
+/*
+ Retrieves the child address of an ERC-20 token using its parent address.
+*/
+export async function getChildERC20Address({
+  erc20ParentAddress,
+  parentProvider,
+  childProvider
+}: {
+  erc20ParentAddress: string
+  parentProvider: Provider
+  childProvider: Provider
+}): Promise<string> {
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  return await erc20Bridger.getChildERC20Address(
+    erc20ParentAddress,
+    parentProvider
   )
-}
-
-/*
- Retrieves the L2 gateway of an ERC-20 token using its L1 address.
-*/
-export async function fetchErc20L2GatewayAddress({
-  erc20L1Address,
-  l2Provider
-}: {
-  erc20L1Address: string
-  l2Provider: Provider
-}): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2Provider)
-}
-
-/*
- Retrieves the L2 address of an ERC-20 token using its L1 address.
-*/
-export async function getL2ERC20Address({
-  erc20L1Address,
-  l1Provider,
-  l2Provider
-}: {
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-}): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
 /*
  Retrieves data about whether an ERC-20 token is disabled on the router.
  */
-export async function l1TokenIsDisabled({
-  erc20L1Address,
-  l1Provider,
-  l2Provider
+export async function parentTokenIsDisabled({
+  erc20ParentAddress,
+  parentProvider,
+  childProvider
 }: {
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
+  erc20ParentAddress: string
+  parentProvider: Provider
+  childProvider: Provider
 }): Promise<boolean> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(childProvider)
+  return erc20Bridger.parentTokenIsDisabled(erc20ParentAddress, parentProvider)
 }
 
 type SanitizeTokenOptions = {
-  erc20L1Address?: string | null // token address on L1
+  erc20ParentAddress?: string | null // token address on the parent chain
   chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
 
@@ -342,24 +345,24 @@ export function sanitizeTokenSymbol(
   tokenSymbol: string,
   options: SanitizeTokenOptions
 ) {
-  if (!options.erc20L1Address) {
+  if (!options.erc20ParentAddress) {
     return tokenSymbol
   }
 
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
-    isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address) ||
-    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
+    isTokenMainnetUSDC(options.erc20ParentAddress) ||
+    isTokenArbitrumOneUSDCe(options.erc20ParentAddress) ||
+    isTokenSepoliaUSDC(options.erc20ParentAddress) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20ParentAddress)
   ) {
     // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
     return 'USDC'
   }
 
-  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+  if (isTokenArbitrumOneCU(options.erc20ParentAddress)) {
     if (isArbitrumOne) return 'CU'
     return 'wCU'
   }
@@ -372,17 +375,17 @@ export function sanitizeTokenName(
   tokenName: string,
   options: SanitizeTokenOptions
 ) {
-  if (!options.erc20L1Address) {
+  if (!options.erc20ParentAddress) {
     return tokenName
   }
 
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
-    isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
-    isTokenSepoliaUSDC(options.erc20L1Address) ||
-    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
+    isTokenMainnetUSDC(options.erc20ParentAddress) ||
+    isTokenArbitrumOneUSDCe(options.erc20ParentAddress) ||
+    isTokenSepoliaUSDC(options.erc20ParentAddress) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20ParentAddress)
   ) {
     // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
     if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
@@ -414,7 +417,7 @@ export async function isGatewayRegistered({
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
-    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
+    erc20Bridger.childChain.tokenBridge.l1ERC20Gateway.toLowerCase()
 
   const parentChainGatewayAddressFromParentGatewayRouter = (
     await erc20Bridger.getL1GatewayAddress(
@@ -432,7 +435,7 @@ export async function isGatewayRegistered({
   }
 
   const tokenChildChainAddressFromParentGatewayRouter = (
-    await erc20Bridger.getL2ERC20Address(
+    await erc20Bridger.getChildERC20Address(
       erc20ParentChainAddress,
       parentChainProvider
     )
