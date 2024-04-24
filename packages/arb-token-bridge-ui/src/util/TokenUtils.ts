@@ -5,7 +5,8 @@ import {
   Erc20L1L3Bridger,
   EthBridger,
   EthL1L3Bridger,
-  MultiCaller
+  MultiCaller,
+  getL2Network
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
@@ -16,7 +17,7 @@ import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
 import { getBridger, getChainIdFromProvider } from '@/token-bridge-sdk/utils'
-import { isTeleport } from '../token-bridge-sdk/teleport'
+import { getL2ConfigForTeleport, isTeleport } from '@/token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -269,7 +270,7 @@ export async function fetchErc20L2GatewayAddress({
 }
 
 /*
- Retrieves the L2 address of an ERC-20 token using its L1 address.
+ Retrieves the L2/L3 address of an ERC-20 token using its L1 address.
 */
 export async function getL2ERC20Address({
   erc20L1Address,
@@ -280,19 +281,43 @@ export async function getL2ERC20Address({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<string> {
-  const erc20Bridger = await getBridger({
-    sourceChainProvider: l1Provider,
-    destinationChainProvider: l2Provider
-  })
-
   if (
-    erc20Bridger instanceof EthL1L3Bridger ||
-    erc20Bridger instanceof EthBridger
+    isTeleport({
+      sourceChainId: await getChainIdFromProvider(l1Provider),
+      destinationChainId: await getChainIdFromProvider(l2Provider)
+    })
   ) {
-    throw new Error('`getL2ERC20Address` is not implemented for the bridger')
+    return await getL3ERC20Address({
+      erc20L1Address,
+      l1Provider,
+      l3Provider: l2Provider // the l2 provider passed to `getL2ERC20Address` is actually the l3 provider
+    })
   }
 
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
+}
+
+export async function getL3ERC20Address({
+  erc20L1Address,
+  l1Provider,
+  l3Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+  l3Provider: Provider
+}): Promise<string> {
+  const l3Network = await getL2Network(l3Provider)
+  const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+
+  const { l2Provider } = await getL2ConfigForTeleport({
+    destinationChainProvider: l3Provider
+  })
+  return await l1l3Bridger.getL3ERC20Address(
+    erc20L1Address,
+    l1Provider,
+    l2Provider // this is the actual l2 provider
+  )
 }
 
 /*
