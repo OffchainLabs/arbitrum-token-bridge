@@ -81,7 +81,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       spender: l1TeleporterAddress
     })
 
-    return amount.gte(allowanceForTeleporter)
+    return allowanceForTeleporter.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {

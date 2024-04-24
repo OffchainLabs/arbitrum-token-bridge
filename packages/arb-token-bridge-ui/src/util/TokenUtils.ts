@@ -16,8 +16,11 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
-import { getBridger, getChainIdFromProvider } from '@/token-bridge-sdk/utils'
-import { getL2ConfigForTeleport, isTeleport } from '@/token-bridge-sdk/teleport'
+import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import {
+  getL2ConfigForTeleport,
+  isTeleport
+} from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
