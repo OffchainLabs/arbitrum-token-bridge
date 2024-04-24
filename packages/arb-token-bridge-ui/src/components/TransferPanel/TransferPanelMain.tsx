@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowsUpDownIcon, ArrowDownIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
 import { BigNumber, constants, utils } from 'ethers'
-import { Chain, useAccount, useSigner } from 'wagmi'
+import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
