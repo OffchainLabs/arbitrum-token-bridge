@@ -17,6 +17,7 @@ import {
 } from '../../hooks/useTransactions'
 import { fetchErc20Data } from '../TokenUtils'
 import {
+  getL2ConfigForTeleport,
   getTeleportStatusDataFromTxId,
   isTeleport
 } from '../../token-bridge-sdk/teleport'
@@ -73,10 +74,16 @@ export const updateAdditionalDepositData = async ({
       destinationChainId: depositTx.childChainId
     })
   ) {
-    const { status, timestampResolved, l1ToL2MsgData } =
+    const { status, timestampResolved, l1ToL2MsgData, teleportData } =
       await updateTeleporterDepositStatusData(depositTx)
 
-    return { ...depositTx, status, timestampResolved, l1ToL2MsgData }
+    return {
+      ...depositTx,
+      status,
+      timestampResolved,
+      l1ToL2MsgData,
+      teleportData
+    }
   }
 
   if (isClassic) {
@@ -319,7 +326,7 @@ export async function updateTeleporterDepositStatusData({
     isNativeCurrencyTransfer
   })
 
-  let l2Retryable, l3Retryable, completed
+  let l2Retryable, l3Retryable, completed, l2TxHash
 
   if (isNativeCurrencyTransfer) {
     const status = depositStatus as EthTeleportStatus
@@ -347,6 +354,29 @@ export async function updateTeleporterDepositStatusData({
         .timestamp * 1000
     : null
 
+  // extract the l2 transaction details, if any
+  const { l2ChainId, l2Provider } = await getL2ConfigForTeleport({
+    destinationChainProvider
+  })
+  const sourceChainTxReceipt = await sourceChainProvider.getTransactionReceipt(
+    txID
+  )
+
+  if (sourceChainTxReceipt) {
+    const l1l2Message = (
+      await new L1TransactionReceipt(sourceChainTxReceipt).getL1ToL2Messages(
+        l2Provider
+      )
+    )?.[0]
+    const l1l2Redeem = l1l2Message
+      ? await l1l2Message.getSuccessfulRedeem()
+      : undefined
+
+    if (l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED) {
+      l2TxHash = l1l2Redeem.l2TxReceipt.transactionHash
+    }
+  }
+
   return {
     status: destinationChainTxId ? 'success' : 'pending',
     timestampResolved: timestampResolved
@@ -368,7 +398,9 @@ export async function updateTeleporterDepositStatusData({
     teleportData: {
       l2Retryable: await l2Retryable?.getSuccessfulRedeem(),
       l3Retryable: await l3Retryable?.getSuccessfulRedeem(),
-      completed
+      completed,
+      l2ChainId,
+      l2TxHash
     }
   }
 }

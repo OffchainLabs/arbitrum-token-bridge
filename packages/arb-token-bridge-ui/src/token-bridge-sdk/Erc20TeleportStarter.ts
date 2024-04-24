@@ -140,6 +140,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       l1Signer: signer,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
+      l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
     })
@@ -170,6 +171,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       to: destinationAddress ?? address,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
+      l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
     })

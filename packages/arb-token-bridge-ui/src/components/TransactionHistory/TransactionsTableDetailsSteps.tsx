@@ -197,6 +197,8 @@ export const TransactionsTableDetailsSteps = ({
     return `Funds arrived on ${networkName}`
   }, [tx, isDestinationChainFailure])
 
+  const isTeleportTx = isTeleport(tx)
+
   return (
     <div className="flex flex-col text-xs">
       {/* First step when transfer is initiated */}
@@ -214,6 +216,32 @@ export const TransactionsTableDetailsSteps = ({
           </ExternalLink>
         }
       />
+
+      {isTeleportTx && tx.teleportData && (
+        <Step
+          pending={!tx.teleportData?.l2TxHash}
+          done={!!tx.teleportData?.l2TxHash}
+          failure={isSourceChainDepositFailure}
+          text={
+            !tx.teleportData?.l2TxHash
+              ? `Waiting for funds to arrive on ${getNetworkName(
+                  tx.teleportData.l2ChainId
+                )}`
+              : `Funds arrived on ${getNetworkName(tx.teleportData.l2ChainId)}`
+          }
+          endItem={
+            tx.teleportData.l2TxHash && (
+              <ExternalLink
+                href={`${getExplorerUrl(tx.teleportData.l2ChainId)}/tx/${
+                  tx.teleportData.l2TxHash
+                }`}
+              >
+                <ArrowTopRightOnSquareIcon height={12} />
+              </ExternalLink>
+            )
+          }
+        />
+      )}
 
       {/* Pending transfer showing the remaining time */}
       <Step

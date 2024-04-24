@@ -44,6 +44,8 @@ export type TeleportData = {
   l2Retryable?: L1ToL2MessageWaitResult
   l3Retryable?: L1ToL2MessageWaitResult
   completed: boolean
+  l2ChainId: number
+  l2TxHash?: string
 }
 
 export interface MergedTransaction {

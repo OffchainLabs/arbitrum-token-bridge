@@ -3,6 +3,7 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { TeleportData } from '../state/app/state'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -100,6 +101,7 @@ export interface Transaction extends TransactionBase {
   parentChainId: number
   childChainId: number
   nonce?: number
+  teleportData?: TeleportData
 }
 
 export interface NewTransaction extends TransactionBase {

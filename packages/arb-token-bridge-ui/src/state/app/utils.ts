@@ -97,7 +97,8 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
     sourceChainId: Number(tx.l1NetworkID),
-    destinationChainId: Number(tx.l2NetworkID)
+    destinationChainId: Number(tx.l2NetworkID),
+    teleportData: tx.teleportData
   }
 }
 
