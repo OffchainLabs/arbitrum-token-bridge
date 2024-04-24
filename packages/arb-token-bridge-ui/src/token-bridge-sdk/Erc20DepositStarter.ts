@@ -264,7 +264,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    return await depositTokenEstimateGas({
+    return depositTokenEstimateGas({
       amount,
       address,
       erc20L1Address: this.sourceChainErc20Address,
