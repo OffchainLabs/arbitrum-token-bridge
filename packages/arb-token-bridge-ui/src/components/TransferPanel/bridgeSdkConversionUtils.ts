@@ -13,7 +13,6 @@ import {
 import { Deposit } from '../../hooks/useTransactionHistory'
 import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 type SdkToUiConversionProps = {
   bridgeTransfer: BridgeTransfer
@@ -39,11 +38,10 @@ export const convertBridgeSdkToMergedTransaction = ({
 }: SdkToUiConversionProps): MergedTransaction => {
   const { transferType } = bridgeTransfer
   const isDeposit =
-    transferType.includes('deposit') ||
-    isTeleport({
-      sourceChainId: Number(parentChainId),
-      destinationChainId: Number(childChainId)
-    })
+    transferType === 'eth_deposit' ||
+    transferType === 'erc20_deposit' ||
+    transferType === 'eth_teleport' ||
+    transferType === 'erc20_teleport'
 
   return {
     sender: walletAddress!,

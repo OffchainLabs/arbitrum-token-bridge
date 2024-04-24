@@ -38,6 +38,10 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     // })
   }
 
+  public async approveNativeCurrencyEstimateGas() {
+    // no-op
+  }
+
   public requiresTokenApproval = async () => false
 
   public approveTokenEstimateGas = async () => {

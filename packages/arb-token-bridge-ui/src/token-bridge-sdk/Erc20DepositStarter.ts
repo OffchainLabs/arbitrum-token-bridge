@@ -20,6 +20,9 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
 
+// https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
+export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
+
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
 
@@ -70,15 +73,20 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       spender: parentChainGatewayAddress
     })
 
-    const gasSummary = await this.transferEstimateGas({ amount, signer })
+    const gasEstimates = await this.transferEstimateGas({ amount, signer })
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
 
     const estimatedDestinationChainGasFeeEth = parseFloat(
       utils.formatEther(
-        gasSummary.estimatedChildChainGas
-          .mul(destinationChainGasPrice)
-          .add(gasSummary.estimatedChildChainSubmissionCost)
+        gasEstimates.estimatedChildChainGas
+          .mul(
+            percentIncrease(
+              destinationChainGasPrice,
+              DEFAULT_GAS_PRICE_PERCENT_INCREASE
+            )
+          )
+          .add(gasEstimates.estimatedChildChainSubmissionCost)
       )
     )
     const estimatedDestinationChainGasFee = utils.parseUnits(
@@ -125,10 +133,44 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
+
+    const l2Network = erc20Bridger.l2Network
+
+    if (typeof l2Network.nativeToken === 'undefined') {
+      throw Error('Network does not have a custom native token')
+    }
+
+    const nativeCurrency = ERC20__factory.connect(
+      l2Network.nativeToken,
+      this.sourceChainProvider
+    )
+
+    const gasEstimates = await this.transferEstimateGas({ amount, signer })
+    const destinationChainGasPrice =
+      await this.destinationChainProvider.getGasPrice()
+
+    const estimatedDestinationChainGasFeeEth = parseFloat(
+      utils.formatEther(
+        gasEstimates.estimatedChildChainGas
+          .mul(
+            percentIncrease(
+              destinationChainGasPrice,
+              DEFAULT_GAS_PRICE_PERCENT_INCREASE
+            )
+          )
+          .add(gasEstimates.estimatedChildChainSubmissionCost)
+      )
+    )
+
+    const estimatedDestinationChainGasFee = utils.parseUnits(
+      String(estimatedDestinationChainGasFeeEth),
+      await nativeCurrency.decimals()
+    )
+
     return erc20Bridger.approveGasToken({
       erc20L1Address: this.sourceChainErc20Address,
       l1Signer: signer,
-      amount
+      amount: estimatedDestinationChainGasFee
     })
   }
 
@@ -150,14 +192,14 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       }
     )
 
-    const allowanceForL1Gateway = await fetchErc20Allowance({
+    const allowanceForParentChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: address,
       spender: parentChainGatewayAddress
     })
 
-    return allowanceForL1Gateway.lt(amount)
+    return allowanceForParentChainGateway.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {

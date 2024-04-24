@@ -58,7 +58,7 @@ export type ApproveNativeCurrencyEstimateGasProps = {
 
 export type ApproveNativeCurrencyProps = {
   signer: Signer
-  amount?: BigNumber
+  amount: BigNumber
 }
 
 export type RequiresTokenApprovalProps = {

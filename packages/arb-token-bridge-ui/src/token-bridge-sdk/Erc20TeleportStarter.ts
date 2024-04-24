@@ -54,6 +54,10 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
   }
 
+  public async approveNativeCurrencyEstimateGas() {
+    // no-op
+  }
+
   public requiresTokenApproval = async ({
     amount,
     signer
