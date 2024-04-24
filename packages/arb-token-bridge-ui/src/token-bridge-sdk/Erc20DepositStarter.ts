@@ -1,5 +1,5 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { BigNumber, Signer, constants, utils } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveNativeCurrencyEstimateGasProps,
@@ -19,7 +19,6 @@ import {
 } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositTokenEstimateGas } from '../util/TokenDepositUtils'
-import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 
 // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L33
 export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
@@ -29,7 +28,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
   private erc20Bridger: Erc20Bridger | undefined
   private sourceChainGatewayAddress: string | undefined
-  private gasEstimates: DepositGasEstimates | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -39,17 +37,22 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     }
   }
 
-  private getBridger = async () => {
-    if (this.erc20Bridger) return this.erc20Bridger
+  private async getBridger() {
+    if (this.erc20Bridger) {
+      return this.erc20Bridger
+    }
 
     this.erc20Bridger = await Erc20Bridger.fromProvider(
       this.destinationChainProvider
     )
+
     return this.erc20Bridger
   }
 
-  private getSourceChainGatewayAddress = async () => {
-    if (this.sourceChainGatewayAddress) return this.sourceChainGatewayAddress
+  private async getSourceChainGatewayAddress() {
+    if (this.sourceChainGatewayAddress) {
+      return this.sourceChainGatewayAddress
+    }
 
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
@@ -255,23 +258,19 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
   }
 
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
-    if (this.gasEstimates) return this.gasEstimates // if gas-estimate is fetched before, don't recalculate (saves RPC calls)
-
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
 
     const address = await getAddressFromSigner(signer)
 
-    this.gasEstimates = await depositTokenEstimateGas({
+    return await depositTokenEstimateGas({
       amount,
       address,
       erc20L1Address: this.sourceChainErc20Address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider
     })
-
-    return this.gasEstimates
   }
 
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
