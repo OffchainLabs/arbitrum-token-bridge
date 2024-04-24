@@ -682,8 +682,8 @@ export const useTransactionHistory = (
 
       if (
         isTeleport({
-          sourceChainId: tx.parentChainId,
-          destinationChainId: tx.childChainId
+          sourceChainId: tx.sourceChainId,
+          destinationChainId: tx.destinationChainId
         })
       ) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)

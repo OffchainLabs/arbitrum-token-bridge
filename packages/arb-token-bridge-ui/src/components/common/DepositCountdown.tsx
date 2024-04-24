@@ -13,7 +13,7 @@ function getMinutesRemainingText(minutesRemaining: number): string {
 }
 
 function getEstimatedDepositDurationInMinutes(tx: MergedTransaction) {
-  const { parentChainId, childChainId } = tx
+  const { parentChainId, sourceChainId, destinationChainId } = tx
   if (!parentChainId) {
     return 15
   }
@@ -22,8 +22,8 @@ function getEstimatedDepositDurationInMinutes(tx: MergedTransaction) {
 
   if (
     isTeleport({
-      sourceChainId: parentChainId,
-      destinationChainId: childChainId
+      sourceChainId: sourceChainId,
+      destinationChainId: destinationChainId
     })
   ) {
     return 20 // assuming 15 L2 + 5 Orbit // not sure tho
