@@ -13,8 +13,8 @@ async function fetcher([
   amount
 ]: [
   signer: Signer,
-  sourceChainProvider: number,
-  destinationChainProvider: number,
+  sourceChainId: number,
+  destinationChainId: number,
   sourceChainErc20Address: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
