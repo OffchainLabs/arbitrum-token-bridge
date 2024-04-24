@@ -19,7 +19,10 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   return cacheKey
 }
 
-function withCache(key: string, value: BridgeTransferStarter) {
+function withCache(
+  key: string,
+  value: BridgeTransferStarter
+): BridgeTransferStarter {
   cache[key] = value
   return value
 }
