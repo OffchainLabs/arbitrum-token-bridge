@@ -9,6 +9,18 @@ import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 import { getBridgeTransferProperties } from './utils'
 import { getProviderForChainId } from '../hooks/useNetworks'
 
+function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
+  let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
+
+  if (props.sourceChainErc20Address) {
+    cacheKey += `-sourceErc20:${props.sourceChainErc20Address}`
+  }
+
+  return cacheKey
+}
+
+const cache: { [key: string]: BridgeTransferStarter } = {}
+
 export class BridgeTransferStarterFactory {
   public static create(
     props: BridgeTransferStarterPropsWithChainIds
@@ -32,18 +44,33 @@ export class BridgeTransferStarterFactory {
       throw new Error('Unsupported transfer detected')
     }
 
+    const cacheKey = getCacheKey(props)
+    const cacheValue = cache[cacheKey]
+
+    if (typeof cacheValue !== 'undefined') {
+      return cacheValue
+    }
+
     // deposits
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {
-        return new Erc20DepositStarter(initProps)
+        const starter = new Erc20DepositStarter(initProps)
+        cache[cacheKey] = starter
+        return starter
       }
 
-      return new EthDepositStarter(initProps)
+      const starter = new EthDepositStarter(initProps)
+      cache[cacheKey] = starter
+      return starter
     }
     // withdrawals
     if (!isNativeCurrencyTransfer) {
-      return new Erc20WithdrawalStarter(initProps)
+      const starter = new Erc20WithdrawalStarter(initProps)
+      cache[cacheKey] = starter
+      return starter
     }
-    return new EthWithdrawalStarter(initProps)
+    const starter = new EthWithdrawalStarter(initProps)
+    cache[cacheKey] = starter
+    return starter
   }
 }
