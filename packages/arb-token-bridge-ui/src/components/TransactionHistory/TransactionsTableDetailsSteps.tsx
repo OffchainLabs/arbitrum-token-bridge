@@ -217,6 +217,28 @@ export const TransactionsTableDetailsSteps = ({
         }
       />
 
+      {/* Pending transfer showing the remaining time */}
+      <Step
+        pending={isTxPending(tx)}
+        done={!isTxPending(tx) && !isSourceChainDepositFailure}
+        text={`Wait ~${getTransferDurationText(tx)}`}
+        endItem={
+          isTxPending(tx) && (
+            <div>
+              {tx.isCctp && <>{cctpRemainingTime}</>}
+              {!tx.isCctp &&
+                (tx.isWithdrawal ? (
+                  <WithdrawalCountdown tx={tx} />
+                ) : (
+                  <DepositCountdown tx={tx} />
+                ))}
+              <span> remaining</span>
+            </div>
+          )
+        }
+      />
+
+      {/* show mid transaction step for teleport tx */}
       {isTeleportTx && tx.teleportData && (
         <Step
           pending={!tx.teleportData?.l2TxHash}
@@ -242,27 +264,6 @@ export const TransactionsTableDetailsSteps = ({
           }
         />
       )}
-
-      {/* Pending transfer showing the remaining time */}
-      <Step
-        pending={isTxPending(tx)}
-        done={!isTxPending(tx) && !isSourceChainDepositFailure}
-        text={`Wait ~${getTransferDurationText(tx)}`}
-        endItem={
-          isTxPending(tx) && (
-            <div>
-              {tx.isCctp && <>{cctpRemainingTime}</>}
-              {!tx.isCctp &&
-                (tx.isWithdrawal ? (
-                  <WithdrawalCountdown tx={tx} />
-                ) : (
-                  <DepositCountdown tx={tx} />
-                ))}
-              <span> remaining</span>
-            </div>
-          )
-        }
-      />
 
       {/* If claiming is required we show this step */}
       {needsToClaimTransfer(tx) && (
