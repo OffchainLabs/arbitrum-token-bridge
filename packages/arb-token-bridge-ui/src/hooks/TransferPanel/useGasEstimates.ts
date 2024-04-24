@@ -21,8 +21,8 @@ async function fetcher([
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
   const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
     sourceChainId,
-    destinationChainId,
-    sourceChainErc20Address
+    sourceChainErc20Address,
+    destinationChainId
   })
 
   return await bridgeTransferStarter.transferEstimateGas({

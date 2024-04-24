@@ -9,10 +9,10 @@ import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 import {
   getBridgeTransferProperties,
-  getProvider,
   isBridgeTransferStarterPropsWithChainIds
 } from './utils'
 import { Provider } from '@ethersproject/providers'
+import { getProviderForChainId } from '../hooks/useNetworks'
 
 export class BridgeTransferStarterFactory {
   public static async create(
@@ -23,8 +23,8 @@ export class BridgeTransferStarterFactory {
     // it is helpful when `BridgeTransferStarterFactory.create` is being called multiple times, like to poll for gas estimates in UI (useGasEstimates.ts)
     let sourceChainProvider: Provider, destinationChainProvider: Provider
     if (isBridgeTransferStarterPropsWithChainIds(props)) {
-      sourceChainProvider = getProvider(props.sourceChainId)
-      destinationChainProvider = getProvider(props.destinationChainId)
+      sourceChainProvider = getProviderForChainId(props.sourceChainId)
+      destinationChainProvider = getProviderForChainId(props.destinationChainId)
     } else {
       sourceChainProvider = props.sourceChainProvider
       destinationChainProvider = props.destinationChainProvider

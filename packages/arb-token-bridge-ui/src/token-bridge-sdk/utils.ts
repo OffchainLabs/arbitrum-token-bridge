@@ -1,11 +1,11 @@
 import { BigNumber, Signer } from 'ethers'
-import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
-import { ChainId, isNetwork, rpcURLs } from '../util/networks'
+import { Provider } from '@ethersproject/providers'
+
+import { isNetwork } from '../util/networks'
 import {
   BridgeTransferStarterProps,
   BridgeTransferStarterPropsWithChainIds
 } from './BridgeTransferStarter'
-import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -77,10 +77,4 @@ export function isBridgeTransferStarterPropsWithChainIds(
     typeof props.sourceChainId === 'number' &&
     typeof props.destinationChainId === 'number'
   )
-}
-
-export function getProvider(chainId: ChainId) {
-  const rpcUrl =
-    rpcURLs[chainId] ?? getWagmiChain(chainId).rpcUrls.default.http[0]
-  return new StaticJsonRpcProvider(rpcUrl)
 }
