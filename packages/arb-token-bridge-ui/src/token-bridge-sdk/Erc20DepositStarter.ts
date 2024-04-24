@@ -27,7 +27,6 @@ export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
 
-  private address: string | undefined
   private erc20Bridger: Erc20Bridger | undefined
   private sourceChainGatewayAddress: string | undefined
   private gasEstimates: DepositGasEstimates | undefined
@@ -38,13 +37,6 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
-  }
-
-  private getAddress = async (signer: Signer) => {
-    if (this.address) return this.address
-
-    this.address = await getAddressFromSigner(signer)
-    return this.address
   }
 
   private getBridger = async () => {
@@ -86,7 +78,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await this.getAddress(signer)
+    const address = await getAddressFromSigner(signer)
 
     const erc20Bridger = await this.getBridger()
     const l2Network = erc20Bridger.l2Network
@@ -215,7 +207,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await this.getAddress(signer)
+    const address = await getAddressFromSigner(signer)
 
     const allowanceForParentChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
@@ -232,7 +224,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await this.getAddress(signer)
+    const address = await getAddressFromSigner(signer)
 
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
@@ -269,7 +261,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await this.getAddress(signer)
+    const address = await getAddressFromSigner(signer)
 
     this.gasEstimates = await depositTokenEstimateGas({
       amount,
@@ -287,7 +279,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const address = await this.getAddress(signer)
+    const address = await getAddressFromSigner(signer)
 
     const tokenAddress = this.sourceChainErc20Address
 
