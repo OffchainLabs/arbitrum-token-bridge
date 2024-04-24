@@ -22,6 +22,7 @@ import { addressIsSmartContract } from '../util/AddressUtils'
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
 
+  private sourceChainGatewayAddress: string | undefined
   private destinationChainErc20Address: string | undefined
 
   constructor(props: BridgeTransferStarterProps) {
@@ -30,6 +31,20 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
+  }
+
+  private async getSourceChainGatewayAddress(): Promise<string> {
+    const destinationChainErc20Address =
+      await this.getDestinationChainErc20Address()
+
+    const sourceChainGatewayAddress = await fetchErc20L2GatewayAddress({
+      erc20L1Address: destinationChainErc20Address,
+      l2Provider: this.sourceChainProvider
+    })
+
+    this.sourceChainGatewayAddress = sourceChainGatewayAddress
+
+    return this.sourceChainGatewayAddress
   }
 
   private async getDestinationChainErc20Address(): Promise<string> {
@@ -93,11 +108,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
         this.sourceChainProvider
       )
 
-      const gatewayAddress = await fetchErc20L2GatewayAddress({
-        erc20L1Address: destinationChainErc20Address,
-        l2Provider: this.sourceChainProvider
-      })
-
+      const gatewayAddress = await this.getSourceChainGatewayAddress()
       const allowance = await token.allowance(address, gatewayAddress)
 
       return allowance.lt(amount)
@@ -111,17 +122,10 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address =
-      await this.getDestinationChainErc20Address()
-
     const address = await getAddressFromSigner(signer)
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
 
-    const gatewayAddress = await fetchErc20L2GatewayAddress({
-      erc20L1Address: destinationChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    const contract = await ERC20__factory.connect(
+    const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       signer
     )
@@ -140,15 +144,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address =
-      await this.getDestinationChainErc20Address()
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
 
-    const gatewayAddress = await fetchErc20L2GatewayAddress({
-      erc20L1Address: destinationChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    const contract = await ERC20__factory.connect(
+    const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       signer
     )
