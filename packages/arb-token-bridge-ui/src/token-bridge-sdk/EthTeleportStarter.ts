@@ -10,6 +10,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
+import { getAddressFromSigner } from './utils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -78,7 +79,9 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+    const address = await getAddressFromSigner(signer)
+
     const l3Network = await getL2Network(this.destinationChainProvider)
 
     // get the intermediate L2 chain provider
@@ -90,6 +93,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
+      to: destinationAddress ?? address,
       amount: amount,
       l2Provider,
       l3Provider: this.destinationChainProvider

@@ -150,10 +150,12 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ amount, signer }: TransferProps) {
+  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
+
+    const address = await getAddressFromSigner(signer)
 
     // // get the intermediate L2 chain provider
     const { l2Provider } = await getL2ConfigForTeleport({
@@ -165,6 +167,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
+      to: destinationAddress ?? address,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
       l2Provider,
