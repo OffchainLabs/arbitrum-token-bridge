@@ -12,11 +12,13 @@ import {
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
-import { useNativeCurrency } from '../useNativeCurrency'
 import { useGasEstimates } from './useGasEstimates'
 import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
 import { DepositGasEstimates } from '../arbTokenBridge.types'
 import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
+import { percentIncrease } from '@/token-bridge-sdk/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
@@ -48,10 +50,10 @@ export function useGasSummary(): UseGasSummaryResult {
 
   const [{ amount }] = useArbQueryParams()
   const debouncedAmount = useDebounce(amount, 300)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
+  const decimals = useSelectedTokenDecimals()
 
   const amountBigNumber = useMemo(() => {
     if (isNaN(Number(debouncedAmount))) {
@@ -59,12 +61,10 @@ export function useGasSummary(): UseGasSummaryResult {
     }
     const amountSafe = debouncedAmount || '0'
 
-    const decimals = token ? token.decimals : nativeCurrency.decimals
-
     const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
 
     return utils.parseUnits(correctDecimalsAmount, decimals)
-  }, [debouncedAmount, token, nativeCurrency])
+  }, [debouncedAmount, decimals])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
@@ -84,7 +84,7 @@ export function useGasSummary(): UseGasSummaryResult {
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
-      tokenParentChainAddress: token ? token.address : undefined
+      sourceChainErc20Address: isDepositMode ? token?.address : token?.l2Address
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
@@ -109,7 +109,12 @@ export function useGasSummary(): UseGasSummaryResult {
       return parseFloat(
         utils.formatEther(
           estimateGasResult.estimatedChildChainGas
-            .mul(childChainGasPrice)
+            .mul(
+              percentIncrease(
+                childChainGasPrice,
+                DEFAULT_GAS_PRICE_PERCENT_INCREASE
+              )
+            )
             .add(
               (estimateGasResult as DepositGasEstimates)
                 .estimatedChildChainSubmissionCost

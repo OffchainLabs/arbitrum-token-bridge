@@ -15,7 +15,11 @@ import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 
-export type TransferPanelSummaryToken = { symbol: string; address: string }
+export type TransferPanelSummaryToken = {
+  symbol: string
+  address: string
+  l2Address?: string
+}
 
 export type TransferPanelSummaryProps = {
   amount: number
