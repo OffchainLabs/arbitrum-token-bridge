@@ -19,6 +19,11 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   return cacheKey
 }
 
+function withCache(key: string, value: BridgeTransferStarter) {
+  cache[key] = value
+  return value
+}
+
 const cache: { [key: string]: BridgeTransferStarter } = {}
 
 export class BridgeTransferStarterFactory {
@@ -54,23 +59,14 @@ export class BridgeTransferStarterFactory {
     // deposits
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {
-        const starter = new Erc20DepositStarter(initProps)
-        cache[cacheKey] = starter
-        return starter
+        return withCache(cacheKey, new Erc20DepositStarter(initProps))
       }
-
-      const starter = new EthDepositStarter(initProps)
-      cache[cacheKey] = starter
-      return starter
+      return withCache(cacheKey, new EthDepositStarter(initProps))
     }
     // withdrawals
     if (!isNativeCurrencyTransfer) {
-      const starter = new Erc20WithdrawalStarter(initProps)
-      cache[cacheKey] = starter
-      return starter
+      return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
     }
-    const starter = new EthWithdrawalStarter(initProps)
-    cache[cacheKey] = starter
-    return starter
+    return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }
 }
