@@ -704,10 +704,10 @@ export function TransferPanel() {
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =
-        await getBridgeTransferProperties({
-          sourceChainProvider,
-          destinationChainProvider,
-          sourceChainErc20Address
+        getBridgeTransferProperties({
+          sourceChainId,
+          sourceChainErc20Address,
+          destinationChainId
         })
 
       if (!signer) throw Error('Signer not connected!')
