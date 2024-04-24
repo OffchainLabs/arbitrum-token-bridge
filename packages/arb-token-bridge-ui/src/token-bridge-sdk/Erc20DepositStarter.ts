@@ -212,14 +212,14 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const allowanceForParentChainGateway = await fetchErc20Allowance({
+    const allowanceForSourceChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: address,
       spender: await this.getSourceChainGatewayAddress()
     })
 
-    return allowanceForParentChainGateway.lt(amount)
+    return allowanceForSourceChainGateway.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
