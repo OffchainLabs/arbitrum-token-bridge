@@ -71,10 +71,12 @@ export function percentIncrease(
 }
 
 export function isBridgeTransferStarterPropsWithChainIds(
-  props: any
+  props: BridgeTransferStarterProps | BridgeTransferStarterPropsWithChainIds
 ): props is BridgeTransferStarterPropsWithChainIds {
+  const anyProps = props as any
+
   return (
-    typeof props.sourceChainId === 'number' &&
-    typeof props.destinationChainId === 'number'
+    typeof anyProps.sourceChainId === 'number' &&
+    typeof anyProps.destinationChainId === 'number'
   )
 }
