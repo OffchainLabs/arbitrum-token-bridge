@@ -239,23 +239,25 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* show mid transaction step for teleport tx */}
-      {isTeleportTx && tx.teleportData && (
+      {isTeleportTx && tx.l2ToL3MsgData?.l2ChainId && (
         <Step
-          pending={!tx.teleportData?.l2TxHash}
-          done={!!tx.teleportData?.l2TxHash}
+          pending={!tx.l1ToL2MsgData?.l2TxID}
+          done={!!tx.l1ToL2MsgData?.l2TxID}
           failure={isSourceChainDepositFailure}
           text={
-            !tx.teleportData?.l2TxHash
+            !tx.l1ToL2MsgData?.l2TxID
               ? `Waiting for funds to arrive on ${getNetworkName(
-                  tx.teleportData.l2ChainId
+                  tx.l2ToL3MsgData.l2ChainId
                 )}`
-              : `Funds arrived on ${getNetworkName(tx.teleportData.l2ChainId)}`
+              : `Funds arrived on ${getNetworkName(
+                  tx.l2ToL3MsgData?.l2ChainId
+                )}`
           }
           endItem={
-            tx.teleportData.l2TxHash && (
+            tx.l1ToL2MsgData?.l2TxID && (
               <ExternalLink
-                href={`${getExplorerUrl(tx.teleportData.l2ChainId)}/tx/${
-                  tx.teleportData.l2TxHash
+                href={`${getExplorerUrl(tx.l2ToL3MsgData?.l2ChainId)}/tx/${
+                  tx.l1ToL2MsgData.l2TxID
                 }`}
               >
                 <ArrowTopRightOnSquareIcon height={12} />

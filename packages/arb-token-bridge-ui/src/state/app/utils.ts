@@ -11,6 +11,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { L1ToL2MessageWaitResult } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -47,7 +48,22 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     return DepositStatus.L1_PENDING
   }
 
-  // l1 succeeded...
+  // for teleport txn
+  // only check for terminal cases here, rest fallback to l1ToL2MsgData
+  const { l2ToL3MsgData } = tx
+  if (l2ToL3MsgData) {
+    switch (l2ToL3MsgData.status) {
+      case L1ToL2MessageStatus.CREATION_FAILED:
+        return DepositStatus.CREATION_FAILED
+      case L1ToL2MessageStatus.EXPIRED:
+        return DepositStatus.EXPIRED
+      case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+        return DepositStatus.L2_FAILURE
+      case L1ToL2MessageStatus.REDEEMED:
+        return DepositStatus.L2_SUCCESS
+    }
+  }
+
   const { l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
@@ -69,6 +85,15 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     case L1ToL2MessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
+}
+
+export const isRetryableTicketFailed = (
+  retryableTicket: L1ToL2MessageWaitResult
+) => {
+  return (
+    retryableTicket.status === L1ToL2MessageStatus.CREATION_FAILED ||
+    retryableTicket.status === L1ToL2MessageStatus.EXPIRED
+  )
 }
 
 export const transformDeposit = (tx: Transaction): MergedTransaction => {
@@ -93,12 +118,12 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     tokenAddress: tx.tokenAddress || null,
     l1ToL2MsgData: tx.l1ToL2MsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
+    l2ToL3MsgData: tx.l2ToL3MsgData,
     depositStatus: getDepositStatus(tx),
     parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
     sourceChainId: Number(tx.l1NetworkID),
-    destinationChainId: Number(tx.l2NetworkID),
-    teleportData: tx.teleportData
+    destinationChainId: Number(tx.l2NetworkID)
   }
 }
 

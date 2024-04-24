@@ -8,11 +8,11 @@ import {
 import {
   L1ToL2MessageData,
   L2ToL1MessageData,
+  L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
-import { L1ToL2MessageWaitResult } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Address } from '../../util/AddressUtils'
 
 export enum WhiteListState {
@@ -40,14 +40,6 @@ export enum WithdrawalStatus {
   FAILURE = 'Failure'
 }
 
-export type TeleportData = {
-  l2Retryable?: L1ToL2MessageWaitResult
-  l3Retryable?: L1ToL2MessageWaitResult
-  completed: boolean
-  l2ChainId: number
-  l2TxHash?: string
-}
-
 export interface MergedTransaction {
   // TODO: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/master/packages/arb-token-bridge-ui/src/util/withdrawals/helpers.ts#L31
   // should return sender as well, then we can make it non-optional
@@ -69,6 +61,7 @@ export interface MergedTransaction {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number
@@ -81,7 +74,6 @@ export interface MergedTransaction {
     receiveMessageTransactionHash?: Address | null
     receiveMessageTimestamp?: number | null
   }
-  teleportData?: TeleportData
 }
 
 export interface WarningTokens {

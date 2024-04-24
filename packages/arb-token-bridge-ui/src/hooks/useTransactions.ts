@@ -3,7 +3,6 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { TeleportData } from '../state/app/state'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -70,6 +69,15 @@ export interface L1ToL2MessageData {
   fetchingUpdate: boolean
 }
 
+export interface L2ToL3MessageData {
+  status: L1ToL2MessageStatus
+  retryableCreationTxID?: string
+  l3TxID?: string
+  fetchingUpdate: boolean
+  l2ChainId: number
+  completed: boolean
+}
+
 export type L2ToL1MessageData = {
   uniqueId: BigNumber
 }
@@ -101,7 +109,7 @@ export interface Transaction extends TransactionBase {
   parentChainId: number
   childChainId: number
   nonce?: number
-  teleportData?: TeleportData
+  l2ToL3MsgData?: L2ToL3MessageData
 }
 
 export interface NewTransaction extends TransactionBase {

@@ -26,6 +26,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { isTeleport } from '../../token-bridge-sdk/teleport'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -467,7 +468,7 @@ export async function getUpdatedTeleportTransfer(
 
   const { txId, parentChainId, childChainId, assetType } = tx
 
-  const { status, timestampResolved, l1ToL2MsgData, teleportData } =
+  const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
     await updateTeleporterDepositStatusData({
       txID: txId,
       childChainId,
@@ -475,12 +476,17 @@ export async function getUpdatedTeleportTransfer(
       assetType
     })
 
-  const updatedTx = { ...tx, status, timestampResolved, l1ToL2MsgData }
+  const updatedTx = {
+    ...tx,
+    status,
+    timestampResolved,
+    l1ToL2MsgData,
+    l2ToL3MsgData
+  }
 
   return {
     ...updatedTx,
-    depositStatus: getDepositStatus(updatedTx),
-    teleportData
+    depositStatus: getDepositStatus(updatedTx)
   }
 }
 
@@ -607,6 +613,16 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
   if (tx.isCctp) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
+
+  if (
+    isTeleport({
+      sourceChainId: tx.sourceChainId,
+      destinationChainId: tx.destinationChainId
+    })
+  ) {
+    return tx.l2ToL3MsgData?.l3TxID
+  }
+
   return tx.isWithdrawal
     ? tx.l2ToL1MsgData?.uniqueId.toString()
     : tx.l1ToL2MsgData?.l2TxID

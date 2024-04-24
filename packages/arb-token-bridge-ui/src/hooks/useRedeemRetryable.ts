@@ -41,6 +41,7 @@ export function useRedeemRetryable(
         throw 'Signer is undefined'
       }
 
+      // teleporter-todo: handle here
       const retryableTicket = await getRetryableTicket({
         l1TxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
