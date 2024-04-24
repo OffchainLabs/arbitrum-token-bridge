@@ -17,20 +17,11 @@ export const getChainIdFromProvider = async (provider: Provider) => {
   return network.chainId
 }
 
-export const getBridgeTransferProperties = async (
-  props: BridgeTransferStarterProps | BridgeTransferStarterPropsWithChainIds
+export const getBridgeTransferProperties = (
+  props: BridgeTransferStarterPropsWithChainIds
 ) => {
-  // if we are passing the chain ids directly, we dont need additional RPC calls to fetch them
-  let sourceChainId: number, destinationChainId: number
-  if (isBridgeTransferStarterPropsWithChainIds(props)) {
-    sourceChainId = props.sourceChainId
-    destinationChainId = props.destinationChainId
-  } else {
-    sourceChainId = await getChainIdFromProvider(props.sourceChainProvider)
-    destinationChainId = await getChainIdFromProvider(
-      props.destinationChainProvider
-    )
-  }
+  const sourceChainId = props.sourceChainId
+  const destinationChainId = props.destinationChainId
 
   const isSourceChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
