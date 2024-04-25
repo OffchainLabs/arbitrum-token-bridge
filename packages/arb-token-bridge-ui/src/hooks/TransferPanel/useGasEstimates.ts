@@ -1,30 +1,28 @@
 import { BigNumber, Signer } from 'ethers'
-import { useMemo } from 'react'
 import useSWR from 'swr'
 import { useSigner } from 'wagmi'
-import { Provider } from '@ethersproject/providers'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { getProviderForChainId } from '../useNetworks'
 
 async function fetcher([
   signer,
-  sourceChainProvider,
-  destinationChainProvider,
+  sourceChainId,
+  destinationChainId,
   sourceChainErc20Address,
   amount
 ]: [
   signer: Signer,
-  sourceChainProvider: Provider,
-  destinationChainProvider: Provider,
+  sourceChainId: number,
+  destinationChainId: number,
   sourceChainErc20Address: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
+  // use chainIds to initialize the bridgeTransferStarter to save RPC calls
   const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
-    sourceChainProvider,
-    destinationChainProvider,
-    sourceChainErc20Address
+    sourceChainId,
+    sourceChainErc20Address,
+    destinationChainId
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
@@ -51,15 +49,6 @@ export function useGasEstimates({
 } {
   const { data: signer } = useSigner()
 
-  const sourceChainProvider = useMemo(
-    () => getProviderForChainId(sourceChainId),
-    [sourceChainId]
-  )
-  const destinationChainProvider = useMemo(
-    () => getProviderForChainId(destinationChainId),
-    [destinationChainId]
-  )
-
   const { data: gasEstimates, error } = useSWR(
     typeof signer === 'undefined'
       ? null
@@ -78,8 +67,8 @@ export function useGasEstimates({
 
       return fetcher([
         signer,
-        sourceChainProvider,
-        destinationChainProvider,
+        sourceChainId,
+        destinationChainId,
         sourceChainErc20Address,
         amount
       ])

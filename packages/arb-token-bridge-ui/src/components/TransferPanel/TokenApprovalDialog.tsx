@@ -40,7 +40,12 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const { ethToUSD } = useETHPrice()
 
   const [networks] = useNetworks()
-  const { sourceChainProvider, destinationChainProvider } = networks
+  const {
+    sourceChain,
+    destinationChain,
+    sourceChainProvider,
+    destinationChainProvider
+  } = networks
   const {
     childChainProvider,
     parentChain,
@@ -103,11 +108,11 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
       } else {
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
-            sourceChainProvider,
-            destinationChainProvider,
+            sourceChainId: sourceChain.id,
             sourceChainErc20Address: isDepositMode
               ? token.address
-              : token.l2Address
+              : token.l2Address,
+            destinationChainId: destinationChain.id
           }
         )
 
@@ -131,7 +136,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     walletAddress,
     token?.address,
     token?.l2Address,
+    sourceChain,
     sourceChainProvider,
+    destinationChain,
     destinationChainProvider,
     chainId
   ])

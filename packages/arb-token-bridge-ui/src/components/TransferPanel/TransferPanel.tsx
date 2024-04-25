@@ -672,6 +672,7 @@ export function TransferPanel() {
       }
 
       const sourceChainId = latestNetworks.current.sourceChain.id
+      const destinationChainId = latestNetworks.current.destinationChain.id
       const connectedChainId = networks.sourceChain.id
       const sourceChainEqualsConnectedChain = sourceChainId === connectedChainId
 
@@ -698,22 +699,22 @@ export function TransferPanel() {
       const signer = isDepositMode ? l1Signer : l2Signer
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
-        sourceChainProvider,
-        destinationChainProvider,
-        sourceChainErc20Address
+        sourceChainId,
+        sourceChainErc20Address,
+        destinationChainId
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =
-        await getBridgeTransferProperties({
-          sourceChainProvider,
-          destinationChainProvider,
-          sourceChainErc20Address
+        getBridgeTransferProperties({
+          sourceChainId,
+          sourceChainErc20Address,
+          destinationChainId
         })
 
       if (!signer) throw Error('Signer not connected!')
 
       if (isWithdrawal && selectedToken && !sourceChainErc20Address) {
-        /* 
+        /*
         just a fail-safe - since our types allow for an optional `selectedToken?.l2Address`, we can theoretically end up with a case
         where user is trying to make an ERC-20 withdrawal but passing `sourceChainErc20Address` as undefined, ending up with
         the SDK to initialize wrongly and make an ETH withdrawal instead. To summarize:

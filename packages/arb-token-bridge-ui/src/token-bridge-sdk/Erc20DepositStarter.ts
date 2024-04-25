@@ -26,6 +26,9 @@ export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
 
+  private erc20Bridger: Erc20Bridger | undefined
+  private sourceChainGatewayAddress: string | undefined
+
   constructor(props: BridgeTransferStarterProps) {
     super(props)
 
@@ -33,6 +36,42 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
   }
+
+  private async getBridger() {
+    if (this.erc20Bridger) {
+      return this.erc20Bridger
+    }
+
+    this.erc20Bridger = await Erc20Bridger.fromProvider(
+      this.destinationChainProvider
+    )
+
+    return this.erc20Bridger
+  }
+
+  private async getSourceChainGatewayAddress() {
+    if (this.sourceChainGatewayAddress) {
+      return this.sourceChainGatewayAddress
+    }
+
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    this.sourceChainGatewayAddress = await fetchErc20ParentChainGatewayAddress({
+      erc20ParentChainAddress: this.sourceChainErc20Address,
+      parentChainProvider: this.sourceChainProvider,
+      childChainProvider: this.destinationChainProvider
+    })
+
+    return this.sourceChainGatewayAddress
+  }
+
+  /**
+   *
+   * Erc20DepositStarter methods
+   *
+   */
 
   public async requiresNativeCurrencyApproval({
     amount,
@@ -44,9 +83,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const erc20Bridger = await this.getBridger()
     const l2Network = erc20Bridger.l2Network
 
     if (typeof l2Network.nativeToken === 'undefined') {
@@ -58,22 +95,16 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
-      {
-        erc20ParentChainAddress: this.sourceChainErc20Address,
-        parentChainProvider: this.sourceChainProvider,
-        childChainProvider: this.destinationChainProvider
-      }
-    )
-
-    const customFeeTokenAllowanceForL1Gateway = await fetchErc20Allowance({
-      address: l2Network.nativeToken,
-      provider: this.sourceChainProvider,
-      owner: address,
-      spender: parentChainGatewayAddress
-    })
+    const customFeeTokenAllowanceForSourceChainGateway =
+      await fetchErc20Allowance({
+        address: l2Network.nativeToken,
+        provider: this.sourceChainProvider,
+        owner: address,
+        spender: await this.getSourceChainGatewayAddress()
+      })
 
     const gasEstimates = await this.transferEstimateGas({ amount, signer })
+
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
 
@@ -96,7 +127,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     // We want to bridge a certain amount of an ERC-20 token, but the Retryable fees on the destination chain will be paid in the custom fee token
     // We have to check if the native-token spending allowance is enough to cover the fees
-    return customFeeTokenAllowanceForL1Gateway.lt(
+    return customFeeTokenAllowanceForSourceChainGateway.lt(
       estimatedDestinationChainGasFee
     )
   }
@@ -109,9 +140,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const erc20Bridger = await this.getBridger()
 
     const txRequest = await erc20Bridger.getApproveGasTokenRequest({
       erc20L1Address: this.sourceChainErc20Address,
@@ -130,9 +159,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const erc20Bridger = await this.getBridger()
 
     const l2Network = erc20Bridger.l2Network
 
@@ -146,6 +173,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     )
 
     const gasEstimates = await this.transferEstimateGas({ amount, signer })
+
     const destinationChainGasPrice =
       await this.destinationChainProvider.getGasPrice()
 
@@ -184,22 +212,14 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
-      {
-        erc20ParentChainAddress: this.sourceChainErc20Address,
-        parentChainProvider: this.sourceChainProvider,
-        childChainProvider: this.destinationChainProvider
-      }
-    )
-
-    const allowanceForParentChainGateway = await fetchErc20Allowance({
+    const allowanceForSourceChainGateway = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
       provider: this.sourceChainProvider,
       owner: address,
-      spender: parentChainGatewayAddress
+      spender: await this.getSourceChainGatewayAddress()
     })
 
-    return allowanceForParentChainGateway.lt(amount)
+    return allowanceForSourceChainGateway.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {
@@ -209,21 +229,13 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress(
-      {
-        erc20ParentChainAddress: this.sourceChainErc20Address,
-        parentChainProvider: this.sourceChainProvider,
-        childChainProvider: this.destinationChainProvider
-      }
-    )
-
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       this.sourceChainProvider
     )
 
     return contract.estimateGas.approve(
-      parentChainGatewayAddress,
+      await this.getSourceChainGatewayAddress(),
       amount ?? constants.MaxUint256,
       {
         from: address
@@ -236,9 +248,8 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const erc20Bridger = await Erc20Bridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const erc20Bridger = await this.getBridger()
+
     return erc20Bridger.approveToken({
       erc20L1Address: this.sourceChainErc20Address,
       l1Signer: signer,
@@ -268,18 +279,13 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     }
 
     const address = await getAddressFromSigner(signer)
-
-    const tokenAddress = this.sourceChainErc20Address
-
-    const erc20Bridger = await Erc20Bridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const erc20Bridger = await this.getBridger()
 
     const depositRequest = await erc20Bridger.getDepositRequest({
       l1Provider: this.sourceChainProvider,
       l2Provider: this.destinationChainProvider,
       from: address,
-      erc20L1Address: tokenAddress,
+      erc20L1Address: this.sourceChainErc20Address,
       destinationAddress,
       amount,
       retryableGasOverrides: {
