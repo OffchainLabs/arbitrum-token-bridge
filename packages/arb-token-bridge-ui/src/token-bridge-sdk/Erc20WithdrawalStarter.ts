@@ -216,7 +216,6 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       destinationAddress: destinationAddress ?? address,
       amount,
       overrides: {
-        // same as in WithdrawalUtils.ts, needs to be cleaned up and moved to the SDK
         gasLimit: percentIncrease(
           await this.sourceChainProvider.estimateGas(txRequest),
           BigNumber.from(30)
