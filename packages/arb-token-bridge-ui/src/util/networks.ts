@@ -444,7 +444,11 @@ export function getOrbitChainIdsFromArbitrumChainIdForTeleport(
   arbitrumChainIds: ChainId[] // l2 chain id
 ): ChainId[] {
   // whitelist of orbit chains that are valid for teleportation
-  const orbitChainIdsValidForTeleportation: number[] = [ChainId.StylusTestnet]
+  const orbitChainIdsValidForTeleportation: number[] = [
+    ChainId.StylusTestnet,
+    1380012617, // Rari (mainnet)
+    70700 // PopApex (mainnet)
+  ]
 
   const allChains = getChains()
   let orbitChainIds: ChainId[] = []
