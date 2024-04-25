@@ -689,19 +689,21 @@ export function TransferPanel() {
         return networkConnectionWarningToast()
       }
 
-      const sourceChainProvider = latestNetworks.current.sourceChainProvider
-      const destinationChainProvider =
-        latestNetworks.current.destinationChainProvider
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address
+
+      const destinationChainErc20Address = isDepositMode
+        ? selectedToken?.l2Address
+        : selectedToken?.address
 
       const signer = isDepositMode ? l1Signer : l2Signer
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
-        destinationChainId
+        destinationChainId,
+        destinationChainErc20Address
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =

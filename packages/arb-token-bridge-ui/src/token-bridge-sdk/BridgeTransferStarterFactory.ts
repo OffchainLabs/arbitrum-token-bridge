@@ -18,6 +18,10 @@ function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
     cacheKey += `-sourceErc20:${props.sourceChainErc20Address}`
   }
 
+  if (props.destinationChainErc20Address) {
+    cacheKey += `-destinationErc20:${props.destinationChainErc20Address}`
+  }
+
   return cacheKey
 }
 
@@ -44,7 +48,8 @@ export class BridgeTransferStarterFactory {
     const initProps = {
       sourceChainProvider,
       destinationChainProvider,
-      sourceChainErc20Address: props.sourceChainErc20Address
+      sourceChainErc20Address: props.sourceChainErc20Address,
+      destinationChainErc20Address: props.destinationChainErc20Address
     }
 
     const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =

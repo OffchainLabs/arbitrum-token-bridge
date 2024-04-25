@@ -112,7 +112,10 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
             sourceChainErc20Address: isDepositMode
               ? token.address
               : token.l2Address,
-            destinationChainId: destinationChain.id
+            destinationChainId: destinationChain.id,
+            destinationChainErc20Address: isDepositMode
+              ? token.l2Address
+              : token.address
           }
         )
 
