@@ -53,13 +53,7 @@ export function TransactionsTableRowAction({
 
   const handleRedeemRetryable = useCallback(async () => {
     try {
-      console.log(
-        '>>>> is connected to correct network for action',
-        isConnectedToCorrectNetworkForAction
-      )
       if (!isConnectedToCorrectNetworkForAction) {
-        console.log('>>>> switching to ', getChainIdForRedeemingRetryable(tx))
-
         await switchNetworkAsync?.(getChainIdForRedeemingRetryable(tx))
       }
 

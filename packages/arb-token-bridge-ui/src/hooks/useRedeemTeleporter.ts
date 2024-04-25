@@ -53,14 +53,7 @@ export function useRedeemTeleporter(
       // 2. then, ensure that the user is connected to the proper providers and signers
       // 3. then, we can call the same redeem logic we have on any of the Retryables and update the tx accordingly
 
-      console.log('>>> Redeeming retryable for ', tx)
-
       const isFirstRetryableBeingRedeemed = firstRetryableRequiresRedeem(tx)
-
-      console.log(
-        '>>> isFirstRetryableBeingRedeemed ',
-        isFirstRetryableBeingRedeemed
-      )
 
       let sourceChainTxHash, retryableCreationId, sourceChainProvider
 
@@ -78,13 +71,6 @@ export function useRedeemTeleporter(
         }
       }
 
-      console.log(
-        '>>> sourceChainTxHash, retryableCreationId, sourceChainProvider ',
-        sourceChainTxHash,
-        retryableCreationId,
-        sourceChainProvider
-      )
-
       if (!sourceChainTxHash || !sourceChainProvider) {
         throw 'Could not find redemption details'
       }
@@ -95,10 +81,6 @@ export function useRedeemTeleporter(
         sourceChainProvider,
         destinationChainSigner: signer
       })
-
-      console.log('>>> retryableTicket details found ', retryableTicket)
-
-      console.log('>>> REDEEMING <<< ')
 
       const reedemTx = await retryableTicket.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
       await reedemTx.wait()
@@ -112,8 +94,6 @@ export function useRedeemTeleporter(
           'Redemption failed; status is not REDEEMED. Please try again later.'
         )
       }
-
-      console.log('>>> redemption succeeded ? ', isSuccess)
 
       const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
         status: L1ToL2MessageStatus.REDEEMED
@@ -139,11 +119,6 @@ export function useRedeemTeleporter(
               fetchingUpdate: false
             } as L2ToL3MessageData
           }
-
-      console.log(
-        '>>> final updates to be made in the transaction ? ',
-        updatesInTx
-      )
 
       updatePendingTransaction({
         ...tx,
