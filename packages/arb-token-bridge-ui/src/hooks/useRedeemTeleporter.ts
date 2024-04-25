@@ -123,8 +123,16 @@ export function useRedeemTeleporter(
       updatePendingTransaction({
         ...tx,
         ...updatesInTx,
-        resolvedAt: isSuccess ? dayjs().valueOf() : null,
-        depositStatus: isSuccess ? DepositStatus.L2_SUCCESS : tx.depositStatus
+        resolvedAt:
+          isSuccess && !isFirstRetryableBeingRedeemed
+            ? dayjs().valueOf()
+            : null,
+        depositStatus:
+          isSuccess && !isFirstRetryableBeingRedeemed
+            ? DepositStatus.L2_SUCCESS // 2nd retryable redeemed, full success
+            : isSuccess
+            ? DepositStatus.L2_PENDING // 1st retryable redeemed, partial success
+            : tx.depositStatus
       })
 
       // track in analytics

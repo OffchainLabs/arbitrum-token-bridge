@@ -49,9 +49,15 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
   }
 
   // for teleport txn
-  // only check for terminal cases here, rest fallback to l1ToL2MsgData
-  const { l2ToL3MsgData } = tx
-  if (l2ToL3MsgData) {
+  if (
+    isTeleport({
+      sourceChainId: tx.parentChainId,
+      destinationChainId: tx.childChainId
+    }) &&
+    tx.l1ToL2MsgData &&
+    tx.l2ToL3MsgData
+  ) {
+    const { l2ToL3MsgData, l1ToL2MsgData } = tx
     switch (l2ToL3MsgData.status) {
       case L1ToL2MessageStatus.CREATION_FAILED:
         return DepositStatus.CREATION_FAILED
@@ -61,6 +67,16 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
         return DepositStatus.L2_FAILURE
       case L1ToL2MessageStatus.REDEEMED:
         return DepositStatus.L2_SUCCESS
+    }
+    switch (l1ToL2MsgData.status) {
+      case L1ToL2MessageStatus.CREATION_FAILED:
+        return DepositStatus.CREATION_FAILED
+      case L1ToL2MessageStatus.EXPIRED:
+        return DepositStatus.EXPIRED
+      case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+        return DepositStatus.L2_FAILURE
+      case L1ToL2MessageStatus.REDEEMED:
+        return DepositStatus.L2_PENDING // tx is still pending if l1ToL2MsgData is redeemed
     }
   }
 

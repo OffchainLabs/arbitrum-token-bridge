@@ -345,9 +345,7 @@ export async function updateTeleporterDepositStatusData({
       fetchingUpdate: false,
       l2ChainId,
       completed: false
-    },
-    isL1ToL2TxFailed = false,
-    isL2ToL3TxFailed = false
+    }
 
   if (isNativeCurrencyTransfer) {
     const status = depositStatus as EthTeleportStatus
@@ -374,8 +372,6 @@ export async function updateTeleporterDepositStatusData({
       fetchingUpdate: false,
       retryableCreationTxID: l2Retryable.retryableCreationId
     }
-
-    isL1ToL2TxFailed = isRetryableTicketFailed(l1l2Redeem.status)
   }
 
   // extract the l3 transaction details, if any
@@ -394,8 +390,6 @@ export async function updateTeleporterDepositStatusData({
       retryableCreationTxID: l3Retryable.retryableCreationId,
       completed
     }
-
-    isL2ToL3TxFailed = isRetryableTicketFailed(l2L3Redeem.status)
   }
 
   // extract other misc data
@@ -411,11 +405,7 @@ export async function updateTeleporterDepositStatusData({
     : null
 
   return {
-    status: l3TxHash
-      ? 'success'
-      : isL1ToL2TxFailed || isL2ToL3TxFailed
-      ? 'failure'
-      : 'pending',
+    status: l2Retryable ? 'success' : 'failure',
     timestampResolved: timestampResolved
       ? String(timestampResolved)
       : undefined,

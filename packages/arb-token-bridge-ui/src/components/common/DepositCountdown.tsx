@@ -26,7 +26,7 @@ function getEstimatedDepositDurationInMinutes(tx: MergedTransaction) {
       destinationChainId: destinationChainId
     })
   ) {
-    return 20 // assuming 15 L2 + 5 Orbit // not sure tho
+    return isTestnet ? 11 : 20 // assuming 15 L2 + 5 Orbit, otherwise 10 L2 + 1 Orbit
   }
 
   // this covers orbit chains

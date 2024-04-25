@@ -31,12 +31,16 @@ import {
 } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  firstRetryableRequiresRedeem,
+  getChainIdForRedeemingRetryable
+} from '../../util/RetryableUtils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
 
   if (isTeleport(tx)) {
-    return '20 minutes'
+    return isTestnet ? '11 minutes' : '20 minutes' // 10+1 or 15+5
   }
 
   if (tx.isCctp) {
@@ -113,7 +117,7 @@ const Step = ({
         {!done && !failure && (
           <div
             className={twMerge(
-              'ml-[2px] h-[15px] w-[15px] rounded-full border',
+              'ml-[2px] h-[15px] w-[15px] shrink-0 rounded-full border',
               borderColorClassName
             )}
           />
@@ -182,6 +186,8 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
+  const isTeleportTx = isTeleport(tx)
+
   const isDestinationChainFailure =
     !isSourceChainDepositFailure && isTxFailed(tx)
 
@@ -192,15 +198,21 @@ export const TransactionsTableDetailsSteps = ({
       return `Transaction expired on ${networkName}`
     }
     if (isDepositReadyToRedeem(tx)) {
+      // if the first leg of the teleport tx failed, we need to redeem the retryable ticket
+      if (isTeleportTx && firstRetryableRequiresRedeem(tx)) {
+        return `Transaction failed on ${getChainIdForRedeemingRetryable(
+          tx
+        )}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
+      }
+
+      // else it's a normal deposit or final leg of teleport tx where we can use destination chain id
       return `Transaction failed on ${networkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
     }
     if (isDestinationChainFailure) {
       return `Transaction failed on ${networkName}.`
     }
     return `Funds arrived on ${networkName}`
-  }, [tx, isDestinationChainFailure])
-
-  const isTeleportTx = isTeleport(tx)
+  }, [tx, isDestinationChainFailure, isTeleportTx])
 
   return (
     <div className="flex flex-col text-xs">
@@ -251,7 +263,12 @@ export const TransactionsTableDetailsSteps = ({
             isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
           }
           text={
-            !tx.l1ToL2MsgData?.l2TxID
+            tx.l1ToL2MsgData?.status &&
+            isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
+              ? `Transaction failed on ${getNetworkName(
+                  tx.l2ToL3MsgData?.l2ChainId
+                )}`
+              : !tx.l1ToL2MsgData?.l2TxID
               ? `Waiting for funds to arrive on ${getNetworkName(
                   tx.l2ToL3MsgData.l2ChainId
                 )}`
