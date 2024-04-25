@@ -39,10 +39,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@^3.3.3":
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-3.3.3.tgz#9a49e753b9deeee6336f6a43acb0669961b91128"
-  integrity sha512-Fe/+h2gs78Efl94U7yXkYAN+FQLLAxDGj+kv6+CXbnUytso+PBvKgNj1e4YPwgtWLlDomdcOXFt/yaP4VKsrBQ==
+"@arbitrum/sdk@4.0.0-alpha.0":
+  version "4.0.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@arbitrum/sdk/-/sdk-4.0.0-alpha.0.tgz#91615a56d0eb91cbecaf017bb82ba26c12e7a5f6"
+  integrity sha512-SlGKfdP4r/S0xZXmF9L+FR3f73EoB6UwPzVqBNyC0gTVhht1qCEMuQTy3gTtCcawrompH2RMKiOUmbdIKOf89w==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
@@ -1290,6 +1290,11 @@
   dependencies:
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
+
+"@ledgerhq/connect-kit-loader@^1.0.1":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/connect-kit-loader/-/connect-kit-loader-1.1.8.tgz#6cc32191660dd9d6e8f89047af09b0f201e30190"
+  integrity sha512-mDJsOucVW8m3Lk2fdQst+P74SgiKebvq1iBk4sXLbADQOwhL9bWGaArvO+tW7jPJZwEfSPWBdHcHoYi11XAwZw==
 
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.4"

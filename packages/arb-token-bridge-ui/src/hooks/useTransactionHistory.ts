@@ -2,6 +2,7 @@ import { useAccount, useNetwork } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { getChildrenForNetwork } from '@arbitrum/sdk'
 import dayjs from 'dayjs'
 
 import { ChainId, getChains, isNetwork } from '../util/networks'
@@ -95,10 +96,13 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
 }
 
 function getMultiChainFetchList(): ChainPair[] {
+  console.log('chains: ', getChains())
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    const childChainIds = chain.partnerChainIDs ?? []
+    const childChainIds = getChildrenForNetwork(chain.chainId).map(
+      childChain => childChain.chainId
+    )
     const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
@@ -108,7 +112,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
     // For each destination chain, map to an array of ChainPair objects
     return childChainIds.map(childChainId => ({
-      parentChainId: chain.chainID,
+      parentChainId: chain.chainId,
       childChainId: childChainId
     }))
   })

@@ -50,7 +50,7 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     const ethBridger = await EthBridger.fromProvider(this.sourceChainProvider)
     const tx = await ethBridger.withdraw({
       amount,
-      l2Signer: signer,
+      childSigner: signer,
       destinationAddress: address,
       from: address
     })

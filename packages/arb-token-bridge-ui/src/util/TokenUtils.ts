@@ -221,7 +221,7 @@ export async function getL1ERC20Address({
 }): Promise<string | null> {
   try {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-    return await erc20Bridger.getL1ERC20Address(erc20L2Address, l2Provider)
+    return await erc20Bridger.getParentERC20Address(erc20L2Address, l2Provider)
   } catch (error) {
     return null
   }
@@ -273,7 +273,7 @@ export async function getL2ERC20Address({
   l2Provider: Provider
 }): Promise<string> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
+  return await erc20Bridger.getChildERC20Address(erc20L1Address, l1Provider)
 }
 
 /*
@@ -289,7 +289,7 @@ export async function l1TokenIsDisabled({
   l2Provider: Provider
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+  return erc20Bridger.parentTokenIsDisabled(erc20L1Address, l1Provider)
 }
 
 type SanitizeTokenOptions = {
@@ -414,7 +414,7 @@ export async function isGatewayRegistered({
 }): Promise<boolean> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
-    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
+    erc20Bridger.childChain.tokenBridge.l1ERC20Gateway.toLowerCase()
 
   const parentChainGatewayAddressFromParentGatewayRouter = (
     await erc20Bridger.getL1GatewayAddress(
@@ -432,7 +432,7 @@ export async function isGatewayRegistered({
   }
 
   const tokenChildChainAddressFromParentGatewayRouter = (
-    await erc20Bridger.getL2ERC20Address(
+    await erc20Bridger.getChildERC20Address(
       erc20ParentChainAddress,
       parentChainProvider
     )

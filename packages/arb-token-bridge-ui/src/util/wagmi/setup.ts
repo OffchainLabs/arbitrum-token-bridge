@@ -19,10 +19,10 @@ import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 const wagmiOrbitChains = getOrbitChains().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 
 const chainList = isTestingEnvironment

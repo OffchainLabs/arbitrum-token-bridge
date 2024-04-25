@@ -6,11 +6,11 @@ import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
 import { MaxUint256 } from '@ethersproject/constants'
-import { EthBridger, Erc20Bridger, L2ToL1Message } from '@arbitrum/sdk'
-import { L1EthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/L1Transaction'
+import { EthBridger, Erc20Bridger, ChildToParentMessage } from '@arbitrum/sdk'
+import { ParentEthDepositTransaction } from '@arbitrum/sdk/dist/lib/message/ParentTransaction'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 import dayjs from 'dayjs'
 
@@ -55,7 +55,7 @@ export const wait = (ms = 0) => {
 }
 
 function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
+  event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
 }
@@ -189,14 +189,14 @@ export const useArbTokenBridge = (
       from: walletAddress
     })
 
-    let tx: L1EthDepositTransaction
+    let tx: ParentEthDepositTransaction
 
     try {
       const gasLimit = await l1.provider.estimateGas(depositRequest.txRequest)
 
       tx = await ethBridger.deposit({
         amount,
-        l1Signer,
+        parentSigner: l1Signer,
         overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
       })
 
@@ -288,7 +288,7 @@ export const useArbTokenBridge = (
 
       const tx = await ethBridger.withdraw({
         ...withdrawalRequest,
-        l2Signer,
+        childSigner: l2Signer,
         overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
@@ -358,8 +358,8 @@ export const useArbTokenBridge = (
     }
 
     const tx = await erc20Bridger.approveToken({
-      erc20L1Address,
-      l1Signer
+      erc20ParentAddress: erc20L1Address,
+      parentSigner: l1Signer
     })
 
     const { symbol } = await fetchErc20Data({
@@ -464,10 +464,10 @@ export const useArbTokenBridge = (
       })
 
       const depositRequest = await erc20Bridger.getDepositRequest({
-        l1Provider: l1.provider,
-        l2Provider: l2.provider,
+        parentProvider: l1.provider,
+        childProvider: l2.provider,
         from: walletAddress,
-        erc20L1Address,
+        erc20ParentAddress: erc20L1Address,
         destinationAddress,
         amount,
         retryableGasOverrides: {
@@ -481,7 +481,7 @@ export const useArbTokenBridge = (
 
       const tx = await erc20Bridger.deposit({
         ...depositRequest,
-        l1Signer,
+        parentSigner: l1Signer,
         overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
       })
 
@@ -592,7 +592,7 @@ export const useArbTokenBridge = (
 
       const withdrawalRequest = await erc20Bridger.getWithdrawalRequest({
         from: walletAddress,
-        erc20l1Address: erc20L1Address,
+        erc20ParentAddress: erc20L1Address,
         destinationAddress: destinationAddress ?? walletAddress,
         amount
       })
@@ -603,7 +603,7 @@ export const useArbTokenBridge = (
 
       const tx = await erc20Bridger.withdraw({
         ...withdrawalRequest,
-        l2Signer,
+        childSigner: l2Signer,
         overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(30)) }
       })
 
@@ -936,7 +936,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider
@@ -992,7 +992,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider

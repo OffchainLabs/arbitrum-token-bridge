@@ -111,16 +111,16 @@ export async function depositTokenEstimateGas(
       )
 
       return fetchTokenFallbackGasEstimates({
-        inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        inboxAddress: erc20Bridger.childChain.ethBridge.inbox,
         parentChainProvider
       })
     }
 
     const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
       amount,
-      erc20L1Address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider,
+      erc20ParentAddress: erc20L1Address,
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider,
       from: address,
       retryableGasOverrides: {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
@@ -138,7 +138,7 @@ export async function depositTokenEstimateGas(
     Sentry.captureException(error)
 
     return fetchTokenFallbackGasEstimates({
-      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      inboxAddress: erc20Bridger.childChain.ethBridge.inbox,
       parentChainProvider
     })
   }

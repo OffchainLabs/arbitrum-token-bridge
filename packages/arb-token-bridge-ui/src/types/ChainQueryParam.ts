@@ -71,11 +71,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       const orbitChain = orbitChains[chainId]
 
       if (customChain) {
-        return customChain.chainID
+        return customChain.chainId
       }
 
       if (orbitChain) {
-        return orbitChain.slug ?? orbitChain.chainID
+        return orbitChain.slug ?? orbitChain.chainId
       }
 
       throw new Error(
@@ -116,7 +116,7 @@ export function getChainForChainKeyQueryParam(
       const orbitChain = getOrbitChains().find(
         chain =>
           chain.slug === chainKeyQueryParam ??
-          chain.chainID === Number(chainKeyQueryParam)
+          chain.chainId === Number(chainKeyQueryParam)
       )
 
       if (orbitChain) {

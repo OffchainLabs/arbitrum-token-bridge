@@ -1,4 +1,3 @@
-import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
@@ -25,7 +24,7 @@ export const orbitMainnets: {
   [key: number]: OrbitChainConfig
 } = {
   660279: {
-    chainID: 660279,
+    chainId: 660279,
     confirmPeriodBlocks: 45818,
     ethBridge: {
       bridge: '0x7dd8A76bdAeBE3BBBaCD7Aa87f1D4FDa1E60f94f',
@@ -37,12 +36,10 @@ export const orbitMainnets: {
     nativeToken: '0x4Cb9a7AE498CEDcBb5EAe9f25736aE7d428C9D66',
     explorerUrl: 'https://explorer.xai-chain.net',
     rpcUrl: 'https://xai-chain.net/rpc',
-    isArbitrum: true,
     isCustom: true,
     name: 'Xai',
     slug: 'xai',
-    partnerChainID: 42161,
-    partnerChainIDs: [],
+    parentChainId: 42161,
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0xb15A0826d65bE4c2fDd961b72636168ee70Af030',
@@ -60,10 +57,6 @@ export const orbitMainnets: {
       l2Weth: '0x0000000000000000000000000000000000000000',
       l2WethGateway: '0x0000000000000000000000000000000000000000'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#F30019',
       network: {
@@ -81,7 +74,7 @@ export const orbitMainnets: {
     }
   },
   1380012617: {
-    chainID: 1380012617,
+    chainId: 1380012617,
     confirmPeriodBlocks: 45818,
     ethBridge: {
       bridge: '0x255f80Ef2F09FCE0944faBb292b8510F01316Cf0',
@@ -92,12 +85,10 @@ export const orbitMainnets: {
     },
     explorerUrl: 'https://mainnet.explorer.rarichain.org',
     rpcUrl: 'https://mainnet.rpc.rarichain.org/http',
-    isArbitrum: true,
     isCustom: true,
     name: 'RARI Mainnet',
     slug: 'rari-mainnet',
-    partnerChainID: 42161,
-    partnerChainIDs: [],
+    parentChainId: 42161,
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0x8bE956aB42274056ef4471BEb211b33e258b7324',
@@ -115,10 +106,6 @@ export const orbitMainnets: {
       l2Weth: '0xf037540e51D71b2D2B1120e8432bA49F29EDFBD0',
       l2WethGateway: '0xd0C21F7960ea9835E7B2E636548f4deDD9E2309C'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#B16EFF',
       network: {
@@ -130,7 +117,8 @@ export const orbitMainnets: {
     }
   },
   4078: {
-    chainID: 4078,
+    chainId: 4078,
+    parentChainId: 0,
     confirmPeriodBlocks: 7200,
     ethBridge: {
       bridge: '0xB0EC3C1368AF7d9C2CAE6B7f8E022Cc14d59D2b1',
@@ -141,13 +129,10 @@ export const orbitMainnets: {
     },
     explorerUrl: 'https://muster-explorer.alt.technology',
     rpcUrl: 'https://muster.alt.technology',
-    isArbitrum: true,
-    isCustom: true,
     name: 'Muster',
     slug: 'muster',
-    partnerChainID: 42161,
-    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
+    isCustom: true,
     tokenBridge: {
       l1CustomGateway: '0x6085B32d97be137cC2D6447DcB3BF684C0835D2F',
       l1ERC20Gateway: '0x6551eF99126253B7a838Cf46340030C8eD5342c2',
@@ -164,10 +149,6 @@ export const orbitMainnets: {
       l2Weth: '0x869Bf8814d77106323745758135b999D34C79a87',
       l2WethGateway: '0xB6145BFd3fA9D270871037238003c66B984787f4'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#DF62DD',
       network: {
@@ -178,7 +159,7 @@ export const orbitMainnets: {
     }
   },
   70700: {
-    chainID: 70700,
+    chainId: 70700,
     confirmPeriodBlocks: 40320,
     ethBridge: {
       bridge: '0x074fFD20C6D8865752C997f4980Cf70F2a3Fbac6',
@@ -189,13 +170,10 @@ export const orbitMainnets: {
     },
     explorerUrl: 'https://explorer.apex.proofofplay.com',
     rpcUrl: 'https://rpc.apex.proofofplay.com',
-    isArbitrum: true,
-    isCustom: true,
     name: 'Proof of Play Apex',
     slug: 'pop-apex',
-    partnerChainID: 42161,
-    partnerChainIDs: [],
-    retryableLifetimeSeconds: 604800,
+    parentChainId: 42161,
+    isCustom: true,
     tokenBridge: {
       l1CustomGateway: '0x653f8D34a86207569069164d45a031eE552A4729',
       l1ERC20Gateway: '0x298eb8d9f2F046AC60c01535fad40320CCdeB7c0',
@@ -212,10 +190,6 @@ export const orbitMainnets: {
       l2Weth: '0x77684A04145a5924eFCE0D92A7c4a2A2E8C359de',
       l2WethGateway: '0x6e965dd667cb08f09DE8285317f012Ac889507b4'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#3E63DD',
       network: {
@@ -227,7 +201,7 @@ export const orbitMainnets: {
     }
   },
   42001: {
-    chainID: 42001,
+    chainId: 42001,
     confirmPeriodBlocks: 7200,
     ethBridge: {
       bridge: '0x10B25719f4c0fA1BFF22431438E6b6315059548A',
@@ -239,13 +213,10 @@ export const orbitMainnets: {
     nativeToken: '0xBC9B77acA82f6BE43927076D71cd453b625165B8',
     explorerUrl: 'https://explorer.pmon.xyz',
     rpcUrl: 'https://rpc.pmon.xyz',
-    isArbitrum: true,
-    isCustom: true,
     name: 'PMON Chain',
     slug: 'pmon-chain',
-    partnerChainID: 42161,
-    partnerChainIDs: [],
-    retryableLifetimeSeconds: 604800,
+    parentChainId: 42161,
+    isCustom: true,
     tokenBridge: {
       l1CustomGateway: '0x38727FfD8aFAdaeF60687D1E623Fd28B58A2B8a8',
       l1ERC20Gateway: '0x341F7f035f1CBA1E879Df40117f797F88aC703ea',
@@ -262,10 +233,6 @@ export const orbitMainnets: {
       l2Weth: '0x0000000000000000000000000000000000000000',
       l2WethGateway: '0x0000000000000000000000000000000000000000'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#FF3369',
       network: {
@@ -286,7 +253,7 @@ export const orbitMainnets: {
 
 export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
   37714555429: {
-    chainID: 37714555429,
+    chainId: 37714555429,
     confirmPeriodBlocks: 150,
     ethBridge: {
       bridge: '0x6c7FAC4edC72E86B3388B48979eF37Ecca5027e6',
@@ -298,13 +265,11 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     nativeToken: '0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2',
     explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
     rpcUrl: 'https://testnet-v2.xai-chain.net/rpc',
-    isArbitrum: true,
-    isCustom: true,
     name: 'Xai Testnet',
     slug: 'xai-testnet',
-    partnerChainID: 421614,
-    partnerChainIDs: [],
+    parentChainId: 421614,
     retryableLifetimeSeconds: 604800,
+    isCustom: true,
     tokenBridge: {
       l1CustomGateway: '0x04e14E04949D49ae9c551ca8Cc3192310Ce65D88',
       l1ERC20Gateway: '0xCcB451C4Df22addCFe1447c58bC6b2f264Bb1256',
@@ -321,10 +286,6 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       l2Weth: '0x0000000000000000000000000000000000000000',
       l2WethGateway: '0x0000000000000000000000000000000000000000'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#F30019',
       network: {
@@ -341,7 +302,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     }
   },
   53457: {
-    chainID: 53457,
+    chainId: 53457,
     confirmPeriodBlocks: 150,
     ethBridge: {
       bridge: '0x154c820EBaA49D169c33252ECc735623f9d49F82',
@@ -353,12 +314,10 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     nativeToken: '0x87cC76c08eF625d46eeC9183bA2977B34E16CDfe',
     explorerUrl: 'https://dodochain-testnet-explorer.alt.technology',
     rpcUrl: 'https://dodochain-testnet.alt.technology',
-    isArbitrum: true,
     isCustom: true,
     name: 'DODOchain Testnet',
     slug: 'dodochain-testnet',
-    partnerChainID: 421614,
-    partnerChainIDs: [],
+    parentChainId: 421614,
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
       l1CustomGateway: '0x7Db96d1E021EBd86753318e52407E5be60D8Ea40',
@@ -376,10 +335,6 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       l2Weth: '0x0000000000000000000000000000000000000000',
       l2WethGateway: '0x0000000000000000000000000000000000000000'
     },
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 1800000,
-    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
       color: '#B88B1E',
       network: {

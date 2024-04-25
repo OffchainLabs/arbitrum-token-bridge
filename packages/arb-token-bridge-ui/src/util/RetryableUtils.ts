@@ -1,6 +1,6 @@
 import {
-  L1TransactionReceipt,
-  L1ToL2MessageWriter as IL1ToL2MessageWriter
+  ParentTransactionReceipt,
+  ParentToChildMessageWriter as IParentToChildMessageWriter
 } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
@@ -33,16 +33,16 @@ export async function getRetryableTicket({
   retryableCreationId,
   l1Provider,
   l2Signer
-}: GetRetryableTicketParams): Promise<IL1ToL2MessageWriter> {
+}: GetRetryableTicketParams): Promise<IParentToChildMessageWriter> {
   if (!retryableCreationId) {
     throw new Error("Error: Couldn't find retryable ticket creation id")
   }
 
-  const l1TxReceipt = new L1TransactionReceipt(
+  const l1TxReceipt = new ParentTransactionReceipt(
     await l1Provider.getTransactionReceipt(l1TxHash)
   )
 
-  const retryableTicket = (await l1TxReceipt.getL1ToL2Messages(l2Signer))
+  const retryableTicket = (await l1TxReceipt.getParentToChildMessages(l2Signer))
     // Find message with the matching id
     .find(m => m.retryableCreationId === retryableCreationId)
 
@@ -67,8 +67,8 @@ export const getRetryableTicketExpiration = async ({
 
   try {
     const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
-    const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+    const l1TxReceipt = new ParentTransactionReceipt(depositTxReceipt)
+    const [l1ToL2Msg] = await l1TxReceipt.getParentToChildMessages(l2Provider)
 
     const now = dayjs()
 

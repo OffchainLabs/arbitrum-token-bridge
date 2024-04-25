@@ -215,8 +215,8 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
 
     const tx = await erc20Bridger.withdraw({
-      l2Signer: signer,
-      erc20l1Address: tokenAddress,
+      childSigner: signer,
+      erc20ParentAddress: tokenAddress,
       destinationAddress: destinationAddress ?? address,
       amount
     })

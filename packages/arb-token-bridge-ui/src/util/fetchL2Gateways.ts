@@ -1,5 +1,5 @@
 import { Provider } from '@ethersproject/providers'
-import { getL2Network } from '@arbitrum/sdk'
+import { getArbitrumNetwork } from '@arbitrum/sdk'
 
 import {
   l2ArbReverseGatewayAddresses,
@@ -15,17 +15,17 @@ import {
  * @param l2Provider Provider for the L2 network
  */
 export async function fetchL2Gateways(l2Provider: Provider) {
-  const l2Network = await getL2Network(l2Provider)
+  const l2Network = await getArbitrumNetwork(l2Provider)
 
   /* configure gateway addresses for fetching withdrawals */
   const { l2ERC20Gateway, l2CustomGateway, l2WethGateway } =
     l2Network.tokenBridge
   const gatewaysToUse = [l2ERC20Gateway, l2CustomGateway, l2WethGateway]
-  const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainID]
-  const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainID]
-  const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainID]
-  const l2LptGateway = l2LptGatewayAddresses[l2Network.chainID]
-  const l2MoonGateway = l2MoonGatewayAddresses[l2Network.chainID]
+  const l2ArbReverseGateway = l2ArbReverseGatewayAddresses[l2Network.chainId]
+  const l2DaiGateway = l2DaiGatewayAddresses[l2Network.chainId]
+  const l2wstETHGateway = l2wstETHGatewayAddresses[l2Network.chainId]
+  const l2LptGateway = l2LptGatewayAddresses[l2Network.chainId]
+  const l2MoonGateway = l2MoonGatewayAddresses[l2Network.chainId]
 
   if (l2ArbReverseGateway) {
     gatewaysToUse.push(l2ArbReverseGateway)

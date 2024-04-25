@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
 import {
-  addCustomNetwork,
+  addCustomArbitrumNetwork,
   constants as arbitrumSdkConstants
 } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
@@ -181,7 +181,7 @@ async function mapOrbitConfigToOrbitChain(
   const confirmPeriodBlocks =
     (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
   return {
-    chainID: data.chainInfo.chainId,
+    chainId: data.chainInfo.chainId,
     confirmPeriodBlocks,
     ethBridge: {
       bridge: data.coreContracts.bridge,
@@ -194,15 +194,9 @@ async function mapOrbitConfigToOrbitChain(
     explorerUrl: data.chainInfo.explorerUrl,
     isCustom: true,
     name: data.chainInfo.chainName,
-    partnerChainID: data.chainInfo.parentChainId,
-    partnerChainIDs: [],
+    parentChainId: data.chainInfo.parentChainId,
     retryableLifetimeSeconds: 604800,
-    nitroGenesisBlock: 0,
-    nitroGenesisL1Block: 0,
-    depositTimeout: 900000,
-    blockTime: arbitrumSdkConstants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     nativeToken: data.chainInfo.nativeToken,
-    isArbitrum: true,
     tokenBridge: {
       l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
       l1ERC20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
@@ -271,7 +265,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomNetwork({ customL2Network: customChain })
+      addCustomArbitrumNetwork(customChain)
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
@@ -333,20 +327,20 @@ export const AddCustomChain = () => {
             <tbody>
               {customChains.map(customChain => (
                 <tr
-                  key={customChain.chainID}
+                  key={customChain.chainId}
                   className="border-b border-gray-dark"
                 >
                   <th className="max-w-[100px] truncate py-3 text-sm font-normal">
                     {customChain.name}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {customChain.chainID}
+                    {customChain.chainId}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {getNetworkName(customChain.partnerChainID)}
+                    {getNetworkName(customChain.parentChainId)}
                   </th>
                   <th className="py-3 text-sm font-normal">
-                    {customChain.partnerChainID}
+                    {customChain.parentChainId}
                   </th>
                   <th className="py-3">
                     <Popover className="relative">
@@ -359,10 +353,10 @@ export const AddCustomChain = () => {
                             className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
                             onClick={() => {
                               removeCustomChainFromLocalStorage(
-                                customChain.chainID
+                                customChain.chainId
                               )
                               removeOrbitConfigFromLocalStorage(
-                                customChain.chainID
+                                customChain.chainId
                               )
                               // reload to apply changes
                               location.reload()
@@ -375,7 +369,7 @@ export const AddCustomChain = () => {
                             href={`data:text/json;charset=utf-8,${encodeURIComponent(
                               JSON.stringify(
                                 getOrbitConfigFromLocalStorageById(
-                                  customChain.chainID
+                                  customChain.chainId
                                 )
                               )
                             )}`}

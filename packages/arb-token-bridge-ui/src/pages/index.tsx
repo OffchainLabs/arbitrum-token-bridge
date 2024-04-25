@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { addCustomNetwork } from '@arbitrum/sdk'
+import { addCustomArbitrumNetwork } from '@arbitrum/sdk'
 
 import { AppConnectionFallbackContainer } from '../components/App/AppConnectionFallbackContainer'
 import { Loader } from '../components/common/atoms/Loader'
@@ -29,7 +29,7 @@ export default function Index() {
     ;[...getOrbitChains(), ...getCustomChainsFromLocalStorage()].forEach(
       chain => {
         try {
-          addCustomNetwork({ customL2Network: chain })
+          addCustomArbitrumNetwork(chain)
           mapCustomChainToNetworkData(chain)
         } catch (_) {
           // already added

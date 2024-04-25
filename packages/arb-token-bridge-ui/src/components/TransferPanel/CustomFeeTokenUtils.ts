@@ -42,8 +42,8 @@ export async function approveCustomFeeTokenForGatewayEstimateGas(params: {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
 
   const txRequest = await erc20Bridger.getApproveGasTokenRequest({
-    erc20L1Address,
-    l1Provider
+    erc20ParentAddress: erc20L1Address,
+    parentProvider: l1Provider
   })
 
   return l1Signer.estimateGas(txRequest)
