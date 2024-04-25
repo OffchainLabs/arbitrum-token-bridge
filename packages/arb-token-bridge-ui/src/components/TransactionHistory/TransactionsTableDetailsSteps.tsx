@@ -257,7 +257,7 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* show mid transaction step for teleport tx */}
-      {isTeleportTx && tx.l2ToL3MsgData?.l2ChainId && (
+      {isTeleportTx && (
         <Step
           pending={!tx.l1ToL2MsgData?.l2TxID}
           done={!!tx.l1ToL2MsgData?.l2TxID}
@@ -271,9 +271,11 @@ export const TransactionsTableDetailsSteps = ({
               ? `Transaction failed on ${getNetworkName(
                   getChainIdForRedeemingRetryable(tx)
                 )}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
-              : `Funds arrived on ${getNetworkName(
+              : tx.l2ToL3MsgData?.l2ChainId
+              ? `Funds arrived on ${getNetworkName(
                   tx.l2ToL3MsgData?.l2ChainId
                 )}`
+              : ''
           }
           endItem={
             tx.l1ToL2MsgData?.status &&
@@ -285,7 +287,8 @@ export const TransactionsTableDetailsSteps = ({
                 address={address}
               />
             ) : (
-              tx.l1ToL2MsgData?.l2TxID && (
+              tx.l1ToL2MsgData?.l2TxID &&
+              tx.l2ToL3MsgData?.l2ChainId && (
                 <ExternalLink
                   href={`${getExplorerUrl(tx.l2ToL3MsgData?.l2ChainId)}/tx/${
                     tx.l1ToL2MsgData.l2TxID
