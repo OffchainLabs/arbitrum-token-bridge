@@ -141,16 +141,6 @@ export type DepositGasEstimates = GasEstimates & {
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (params: {
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
@@ -163,28 +153,6 @@ export interface ArbTokenBridgeToken {
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
-  approve: (params: {
-    erc20L1Address: string
-    l1Signer: Signer
-  }) => Promise<void>
-  approveL2: (params: {
-    erc20L1Address: string
-    l2Signer: Signer
-  }) => Promise<void>
-  deposit: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
