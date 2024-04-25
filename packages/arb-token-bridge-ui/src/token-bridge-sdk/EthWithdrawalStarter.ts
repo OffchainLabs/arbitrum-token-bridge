@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers'
 import { EthBridger } from '@arbitrum/sdk'
 import {
   BridgeTransferStarter,
@@ -5,7 +6,7 @@ import {
   TransferProps,
   TransferType
 } from './BridgeTransferStarter'
-import { getAddressFromSigner } from './utils'
+import { getAddressFromSigner, percentIncrease } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 
 export class EthWithdrawalStarter extends BridgeTransferStarter {
@@ -46,13 +47,23 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
 
   public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
-
     const ethBridger = await EthBridger.fromProvider(this.sourceChainProvider)
-    const tx = await ethBridger.withdraw({
+
+    const request = await ethBridger.getWithdrawalRequest({
       amount,
-      childSigner: signer,
       destinationAddress: address,
       from: address
+    })
+
+    const tx = await ethBridger.withdraw({
+      ...request,
+      childSigner: signer,
+      overrides: {
+        gasLimit: percentIncrease(
+          await this.sourceChainProvider.estimateGas(request.txRequest),
+          BigNumber.from(30)
+        )
+      }
     })
 
     return {
