@@ -16,15 +16,27 @@ import { fetchErc20Allowance } from '../util/TokenUtils'
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
 
+  private ethBridger: EthBridger | undefined
+
+  private async getBridger(): Promise<EthBridger> {
+    if (this.ethBridger) {
+      return this.ethBridger
+    }
+
+    this.ethBridger = await EthBridger.fromProvider(
+      this.destinationChainProvider
+    )
+
+    return this.ethBridger
+  }
+
   public async requiresNativeCurrencyApproval({
     amount,
     signer
   }: RequiresNativeCurrencyApprovalProps) {
     const address = await getAddressFromSigner(signer)
+    const ethBridger = await this.getBridger()
 
-    const ethBridger = await EthBridger.fromProvider(
-      this.destinationChainProvider
-    )
     const { childChain } = ethBridger
 
     if (typeof childChain.nativeToken === 'undefined') {
@@ -46,9 +58,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     signer,
     amount
   }: ApproveNativeCurrencyEstimateGasProps) {
-    const ethBridger = await EthBridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const ethBridger = await this.getBridger()
     const txRequest = ethBridger.getApproveGasTokenRequest({ amount })
 
     return signer.estimateGas(txRequest)
@@ -58,9 +68,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
     signer,
     amount
   }: ApproveNativeCurrencyProps) {
-    const ethBridger = await EthBridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const ethBridger = await this.getBridger()
     return ethBridger.approveGasToken({
       parentSigner: signer,
       amount
@@ -90,10 +98,7 @@ export class EthDepositStarter extends BridgeTransferStarter {
 
   public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
-
-    const ethBridger = await EthBridger.fromProvider(
-      this.destinationChainProvider
-    )
+    const ethBridger = await this.getBridger()
 
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
