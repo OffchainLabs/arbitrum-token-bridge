@@ -42,7 +42,8 @@ export class BridgeTransferStarterFactory {
     const initProps = {
       sourceChainProvider,
       destinationChainProvider,
-      sourceChainErc20Address: props.sourceChainErc20Address
+      sourceChainErc20Address: props.sourceChainErc20Address,
+      destinationChainErc20Address: props.destinationChainErc20Address
     }
 
     const { isDeposit, isNativeCurrencyTransfer, isSupported } =

@@ -10,19 +10,22 @@ async function fetcher([
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
+  destinationChainErc20Address,
   amount
 ]: [
   signer: Signer,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
+  destinationChainErc20Address: string | undefined,
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
   const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
     sourceChainId,
     sourceChainErc20Address,
-    destinationChainId
+    destinationChainId,
+    destinationChainErc20Address
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
@@ -36,12 +39,14 @@ export function useGasEstimates({
   sourceChainId,
   destinationChainId,
   sourceChainErc20Address,
+  destinationChainErc20Address,
   amount
 }: {
   walletAddress?: string
   sourceChainId: number
   destinationChainId: number
   sourceChainErc20Address?: string
+  destinationChainErc20Address?: string
   amount: BigNumber
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
@@ -57,6 +62,7 @@ export function useGasEstimates({
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
+          destinationChainErc20Address,
           amount.toString(), // BigNumber is not serializable
           'gasEstimates'
         ],
@@ -70,6 +76,7 @@ export function useGasEstimates({
         sourceChainId,
         destinationChainId,
         sourceChainErc20Address,
+        destinationChainErc20Address,
         amount
       ])
     },
