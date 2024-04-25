@@ -1,8 +1,9 @@
-import { ArbitrumNetwork, addCustomArbitrumNetwork } from '@arbitrum/sdk'
 import {
-  networks as arbitrumNetworks,
+  ArbitrumNetwork,
+  addCustomArbitrumNetwork,
   getChildrenForNetwork
-} from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+} from '@arbitrum/sdk'
+import { networks as arbitrumNetworks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'

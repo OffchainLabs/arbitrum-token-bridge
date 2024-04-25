@@ -1,13 +1,11 @@
 import {
   ParentTransactionReceipt,
   ParentToChildMessageStatus,
-  EthDepositStatus
-} from '@arbitrum/sdk'
-import {
-  EthDepositMessage,
+  EthDepositStatus,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic
-} from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
+} from '@arbitrum/sdk'
+import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
 import { Provider } from '@ethersproject/providers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
