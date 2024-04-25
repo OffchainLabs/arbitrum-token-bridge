@@ -1,6 +1,5 @@
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
-import { shortenTxHash } from '../../../src/util/CommonUtils'
 import { Transaction } from '../../../src/hooks/useTransactions'
 import { AssetType } from '../../../src/hooks/arbTokenBridge.types'
 
@@ -32,7 +31,7 @@ function mockClassicDepositTransaction(
     timestampResolved: dateYearAgo.toISOString(),
     l1ToL2MsgData: {
       fetchingUpdate: false,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      status: ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: undefined,
       l2TxID: undefined
     },
