@@ -41,12 +41,11 @@ export function useRedeemRetryable(
         throw 'Signer is undefined'
       }
 
-      // teleporter-todo: handle here
       const retryableTicket = await getRetryableTicket({
-        l1TxHash: tx.txId,
+        sourceChainTxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: getProviderForChainId(tx.parentChainId),
-        l2Signer: signer
+        sourceChainProvider: getProviderForChainId(tx.parentChainId),
+        destinationChainSigner: signer
       })
 
       const reedemTx = await retryableTicket.redeem()

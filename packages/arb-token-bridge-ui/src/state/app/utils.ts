@@ -11,7 +11,7 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
-import { L1ToL2MessageWaitResult } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { isTeleport } from '../../token-bridge-sdk/teleport'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -88,11 +88,12 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
 }
 
 export const isRetryableTicketFailed = (
-  retryableTicket: L1ToL2MessageWaitResult
+  retryableTicketStatus: L1ToL2MessageStatus
 ) => {
   return (
-    retryableTicket.status === L1ToL2MessageStatus.CREATION_FAILED ||
-    retryableTicket.status === L1ToL2MessageStatus.EXPIRED
+    retryableTicketStatus === L1ToL2MessageStatus.CREATION_FAILED ||
+    retryableTicketStatus === L1ToL2MessageStatus.EXPIRED ||
+    retryableTicketStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
   )
 }
 
@@ -249,6 +250,12 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
+  if (isTeleport(tx)) {
+    return (
+      tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 ||
+      tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+    )
+  }
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 

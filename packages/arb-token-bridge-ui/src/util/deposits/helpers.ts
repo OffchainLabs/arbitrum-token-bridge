@@ -78,14 +78,6 @@ export const updateAdditionalDepositData = async ({
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
       await updateTeleporterDepositStatusData(depositTx)
 
-    console.log('oyyeeee', {
-      ...depositTx,
-      status,
-      timestampResolved,
-      l1ToL2MsgData,
-      l2ToL3MsgData
-    })
-
     return {
       ...depositTx,
       status,
@@ -383,7 +375,7 @@ export async function updateTeleporterDepositStatusData({
       retryableCreationTxID: l2Retryable.retryableCreationId
     }
 
-    isL1ToL2TxFailed = isRetryableTicketFailed(l1l2Redeem)
+    isL1ToL2TxFailed = isRetryableTicketFailed(l1l2Redeem.status)
   }
 
   // extract the l3 transaction details, if any
@@ -403,7 +395,7 @@ export async function updateTeleporterDepositStatusData({
       completed
     }
 
-    isL2ToL3TxFailed = isRetryableTicketFailed(l2L3Redeem)
+    isL2ToL3TxFailed = isRetryableTicketFailed(l2L3Redeem.status)
   }
 
   // extract other misc data

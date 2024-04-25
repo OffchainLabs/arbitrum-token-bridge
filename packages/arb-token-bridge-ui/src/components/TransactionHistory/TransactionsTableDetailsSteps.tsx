@@ -25,7 +25,10 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
-import { isDepositReadyToRedeem } from '../../state/app/utils'
+import {
+  isDepositReadyToRedeem,
+  isRetryableTicketFailed
+} from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 
@@ -243,7 +246,10 @@ export const TransactionsTableDetailsSteps = ({
         <Step
           pending={!tx.l1ToL2MsgData?.l2TxID}
           done={!!tx.l1ToL2MsgData?.l2TxID}
-          failure={isSourceChainDepositFailure}
+          failure={
+            tx.l1ToL2MsgData?.status &&
+            isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
+          }
           text={
             !tx.l1ToL2MsgData?.l2TxID
               ? `Waiting for funds to arrive on ${getNetworkName(
