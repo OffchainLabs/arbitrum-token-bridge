@@ -27,7 +27,6 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
 
   private sourceChainGatewayAddress: string | undefined
-  private destinationChainErc20Address: string | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
