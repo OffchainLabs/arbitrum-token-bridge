@@ -203,9 +203,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const { estimatedChildChainGas } = await this.transferEstimateGas({
-      amount,
-      signer
+    const { txRequest } = await erc20Bridger.getWithdrawalRequest({
+      from: address,
+      erc20l1Address: destinationChainErc20Address,
+      destinationAddress: destinationAddress ?? address,
+      amount
     })
 
     const tx = await erc20Bridger.withdraw({
@@ -214,7 +216,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       destinationAddress: destinationAddress ?? address,
       amount,
       overrides: {
-        gasLimit: percentIncrease(estimatedChildChainGas, BigNumber.from(20))
+        // same as in WithdrawalUtils.ts, needs to be cleaned up and moved to the SDK
+        gasLimit: percentIncrease(
+          await this.sourceChainProvider.estimateGas(txRequest),
+          BigNumber.from(30)
+        )
       }
     })
 
