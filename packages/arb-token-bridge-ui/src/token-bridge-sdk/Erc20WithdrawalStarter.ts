@@ -1,5 +1,5 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveTokenProps,
@@ -14,7 +14,11 @@ import {
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
-import { getAddressFromSigner, getChainIdFromProvider } from './utils'
+import {
+  getAddressFromSigner,
+  getChainIdFromProvider,
+  percentIncrease
+} from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
@@ -199,11 +203,19 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
+    const { estimatedChildChainGas } = await this.transferEstimateGas({
+      amount,
+      signer
+    })
+
     const tx = await erc20Bridger.withdraw({
       l2Signer: signer,
       erc20l1Address: destinationChainErc20Address,
       destinationAddress: destinationAddress ?? address,
-      amount
+      amount,
+      overrides: {
+        gasLimit: percentIncrease(estimatedChildChainGas, BigNumber.from(20))
+      }
     })
 
     return {
