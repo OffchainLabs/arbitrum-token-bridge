@@ -28,29 +28,24 @@ export enum ChainId {
 }
 
 type L1Network = {
-  isArbitrum: false
   chainId: ChainId
   blockTime: number
 }
 
 const l1Networks: { [chainId: number]: L1Network } = {
   [ChainId.Ethereum]: {
-    isArbitrum: false,
     chainId: ChainId.Ethereum,
-    blockTime: 10
+    blockTime: 14
   },
   [ChainId.Sepolia]: {
-    isArbitrum: false,
     chainId: ChainId.Sepolia,
-    blockTime: 10
+    blockTime: 12
   },
   [ChainId.Holesky]: {
-    isArbitrum: false,
     chainId: ChainId.Holesky,
-    blockTime: 10
+    blockTime: 12
   },
   [ChainId.Local]: {
-    isArbitrum: false,
     chainId: ChainId.Local,
     blockTime: 10
   }
@@ -276,8 +271,7 @@ export const l2MoonGatewayAddresses: { [chainId: number]: string } = {
 
 const defaultL1Network: L1Network = {
   blockTime: 10,
-  chainId: 1337,
-  isArbitrum: false
+  chainId: 1337
 }
 
 const defaultL2Network: ArbitrumNetwork = {

@@ -3,11 +3,12 @@ import {
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
-import { EthDepositStatus, ParentToChildMessageStatus } from '@arbitrum/sdk'
 import {
-  EthDepositMessage,
+  EthDepositStatus,
+  ParentToChildMessageStatus,
   ParentToChildMessageReader
-} from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
+} from '@arbitrum/sdk'
+import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
 
 import {
   DepositStatus,
