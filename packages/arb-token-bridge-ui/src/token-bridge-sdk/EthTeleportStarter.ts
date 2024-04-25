@@ -98,13 +98,13 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       amount: amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
-      l3Provider: this.destinationChainProvider,
+      l3Provider: this.destinationChainProvider
       // l2TicketGasOverrides: {
       //   gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
+      // },
+      // l3TicketGasOverrides: {
+      //   gasLimit: { base: BigNumber.from(0) } // fail the deposit on l3
       // }
-      l3TicketGasOverrides: {
-        gasLimit: { base: BigNumber.from(0) } // fail the deposit on l3
-      }
     })
 
     const tx = await l1l3Bridger.deposit({

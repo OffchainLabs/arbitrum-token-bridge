@@ -108,7 +108,13 @@ export function useRedeemTeleporter(
               status,
               retryableCreationTxID: retryableTicket.retryableCreationId,
               fetchingUpdate: false
-            } as L1ToL2MessageData
+            } as L1ToL2MessageData,
+            l2ToL3MsgData: {
+              ...tx.l2ToL3MsgData,
+              status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2, // 2nd retryable needs to be manually redeemed
+              fetchingUpdate: false
+            } as L2ToL3MessageData,
+            depositStatus: DepositStatus.L2_PENDING
           }
         : {
             l2ToL3MsgData: {
@@ -117,22 +123,15 @@ export function useRedeemTeleporter(
               status,
               retryableCreationTxID: retryableTicket.retryableCreationId,
               fetchingUpdate: false
-            } as L2ToL3MessageData
+            } as L2ToL3MessageData,
+            depositStatus: DepositStatus.L2_SUCCESS, // 2nd retryable redeemed, full success
+            resolvedAt: dayjs().valueOf()
           }
 
-      updatePendingTransaction({
+      await updatePendingTransaction({
+        // we need to use `await` here so that we get next retryable data fetched before updating the tx
         ...tx,
-        ...updatesInTx,
-        resolvedAt:
-          isSuccess && !isFirstRetryableBeingRedeemed
-            ? dayjs().valueOf()
-            : null,
-        depositStatus:
-          isSuccess && !isFirstRetryableBeingRedeemed
-            ? DepositStatus.L2_SUCCESS // 2nd retryable redeemed, full success
-            : isSuccess
-            ? DepositStatus.L2_PENDING // 1st retryable redeemed, partial success
-            : tx.depositStatus
+        ...updatesInTx
       })
 
       // track in analytics

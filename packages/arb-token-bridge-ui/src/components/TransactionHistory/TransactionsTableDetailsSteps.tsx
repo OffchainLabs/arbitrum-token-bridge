@@ -33,14 +33,15 @@ import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableRequiresRedeem,
-  getChainIdForRedeemingRetryable
+  getChainIdForRedeemingRetryable,
+  secondRetryableRequiresRedeem
 } from '../../util/RetryableUtils'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
 
   if (isTeleport(tx)) {
-    return isTestnet ? '11 minutes' : '20 minutes' // 10+1 or 15+5
+    return isTestnet ? '10 minutes' : '15 minutes' // 10+1 or 15+5
   }
 
   if (tx.isCctp) {
@@ -140,6 +141,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
+  const isTeleportTx = isTeleport(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -153,7 +155,10 @@ const LastStepEndItem = ({
     )
   }
 
-  if (isDepositReadyToRedeem(tx)) {
+  if (
+    (!isTeleportTx && isDepositReadyToRedeem(tx)) ||
+    (isTeleportTx && secondRetryableRequiresRedeem(tx))
+  ) {
     return (
       <TransactionsTableRowAction
         type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
@@ -187,9 +192,11 @@ export const TransactionsTableDetailsSteps = ({
     )
 
   const isTeleportTx = isTeleport(tx)
+  const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
-  const isDestinationChainFailure =
-    !isSourceChainDepositFailure && isTxFailed(tx)
+  const isDestinationChainFailure = isTeleportTx
+    ? secondRetryableRequiresRedeem(tx)
+    : !isSourceChainDepositFailure && isTxFailed(tx)
 
   const destinationChainTxText = useMemo(() => {
     const networkName = getNetworkName(tx.destinationChainId)
@@ -197,15 +204,11 @@ export const TransactionsTableDetailsSteps = ({
     if (isTxExpired(tx)) {
       return `Transaction expired on ${networkName}`
     }
-    if (isDepositReadyToRedeem(tx)) {
-      // if the first leg of the teleport tx failed, we need to redeem the retryable ticket
-      if (isTeleportTx && firstRetryableRequiresRedeem(tx)) {
-        return `Transaction failed on ${getChainIdForRedeemingRetryable(
-          tx
-        )}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
-      }
+    if (isTeleportTx && firstRetryableRequiresRedeem(tx)) {
+      return `Funds arrived on ${networkName}`
+    }
 
-      // else it's a normal deposit or final leg of teleport tx where we can use destination chain id
+    if (isDepositReadyToRedeem(tx)) {
       return `Transaction failed on ${networkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
     }
     if (isDestinationChainFailure) {
@@ -266,27 +269,42 @@ export const TransactionsTableDetailsSteps = ({
             tx.l1ToL2MsgData?.status &&
             isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
               ? `Transaction failed on ${getNetworkName(
-                  tx.l2ToL3MsgData?.l2ChainId
-                )}`
-              : !tx.l1ToL2MsgData?.l2TxID
-              ? `Waiting for funds to arrive on ${getNetworkName(
-                  tx.l2ToL3MsgData.l2ChainId
-                )}`
+                  getChainIdForRedeemingRetryable(tx)
+                )}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
               : `Funds arrived on ${getNetworkName(
                   tx.l2ToL3MsgData?.l2ChainId
                 )}`
           }
           endItem={
-            tx.l1ToL2MsgData?.l2TxID && (
-              <ExternalLink
-                href={`${getExplorerUrl(tx.l2ToL3MsgData?.l2ChainId)}/tx/${
-                  tx.l1ToL2MsgData.l2TxID
-                }`}
-              >
-                <ArrowTopRightOnSquareIcon height={12} />
-              </ExternalLink>
+            tx.l1ToL2MsgData?.status &&
+            isRetryableTicketFailed(tx.l1ToL2MsgData?.status) ? (
+              <TransactionsTableRowAction
+                type="deposits"
+                isError={true}
+                tx={tx}
+                address={address}
+              />
+            ) : (
+              tx.l1ToL2MsgData?.l2TxID && (
+                <ExternalLink
+                  href={`${getExplorerUrl(tx.l2ToL3MsgData?.l2ChainId)}/tx/${
+                    tx.l1ToL2MsgData.l2TxID
+                  }`}
+                >
+                  <ArrowTopRightOnSquareIcon height={12} />
+                </ExternalLink>
+              )
             )
           }
+        />
+      )}
+
+      {/* Show second leg of teleport transfer waiting time */}
+      {isTeleportTx && (
+        <Step
+          pending={!tx.l2ToL3MsgData?.retryableCreationTxID}
+          done={!!tx.l2ToL3MsgData?.retryableCreationTxID}
+          text={`Wait ~${isTestnetTx ? '1 minute' : '5 minutes'}`}
         />
       )}
 
