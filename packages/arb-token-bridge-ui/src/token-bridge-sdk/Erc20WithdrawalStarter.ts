@@ -203,7 +203,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const { txRequest } = await erc20Bridger.getWithdrawalRequest({
+    const request = await erc20Bridger.getWithdrawalRequest({
       from: address,
       erc20l1Address: destinationChainErc20Address,
       destinationAddress: destinationAddress ?? address,
@@ -211,13 +211,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     })
 
     const tx = await erc20Bridger.withdraw({
+      ...request,
       l2Signer: signer,
-      erc20l1Address: destinationChainErc20Address,
-      destinationAddress: destinationAddress ?? address,
-      amount,
       overrides: {
         gasLimit: percentIncrease(
-          await this.sourceChainProvider.estimateGas(txRequest),
+          await this.sourceChainProvider.estimateGas(request.txRequest),
           BigNumber.from(30)
         )
       }
