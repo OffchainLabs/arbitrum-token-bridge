@@ -208,7 +208,7 @@ export function USDCDepositConfirmationDialog(props: Props) {
                     childChain.id
                   )}/token/${usdceTokenDestinationAddress}`}
                 >
-                  Bridged USDC (USDC.e)
+                  Wrapped USDC (USDC.e)
                 </ExternalLink>{' '}
                 on {destinationNetworkName} using Arbitrum&apos;s native bridge.
               </p>
