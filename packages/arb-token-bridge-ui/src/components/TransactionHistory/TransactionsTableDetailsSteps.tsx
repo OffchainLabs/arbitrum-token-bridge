@@ -275,7 +275,7 @@ export const TransactionsTableDetailsSteps = ({
               ? `Funds arrived on ${getNetworkName(
                   tx.l2ToL3MsgData?.l2ChainId
                 )}`
-              : ''
+              : 'Funds arrived on intermediate chain' // till the time we don't have information for l2ChainId
           }
           endItem={
             tx.l1ToL2MsgData?.status &&
