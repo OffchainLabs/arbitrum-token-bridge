@@ -57,13 +57,13 @@ export function useRedeemRetryable(
       const redeemReceipt =
         (await retryableTicket.getSuccessfulRedeem()) as unknown as {
           status: ParentToChildMessageStatus.REDEEMED
-          l2TxReceipt: TransactionReceipt
+          chainTxReceipt: TransactionReceipt
         }
 
       updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+          l2TxID: redeemReceipt.chainTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false
