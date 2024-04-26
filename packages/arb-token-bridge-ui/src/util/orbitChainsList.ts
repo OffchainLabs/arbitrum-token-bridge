@@ -351,7 +351,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       sequencerInbox: '0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc'
     },
     nativeToken: '0xAC716E87b0853C0712674e8E3a8435a489F276b4',
-    explorerUrl: 'https://dodochain-testnet-explorer.alt.technology',
+    explorerUrl: 'https://testnet-scan.dodochain.com',
     rpcUrl: 'https://dodochain-testnet.alt.technology',
     isArbitrum: true,
     isCustom: true,
