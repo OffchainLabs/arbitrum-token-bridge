@@ -344,13 +344,13 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     chainID: 53457,
     confirmPeriodBlocks: 150,
     ethBridge: {
-      bridge: '0x154c820EBaA49D169c33252ECc735623f9d49F82',
-      inbox: '0xBcE081D3415504721E2D5DB0493573bf06218Bf9',
-      outbox: '0x535Cff9BCd2bf563Cad48786A4f14Ff57a22f661',
-      rollup: '0x82B2B35d4F6AAA163a4Af5e9659b61BA9Eee65Df',
-      sequencerInbox: '0xd023f8c70CC08D8Abc1958FC3899Fa2a5cA02722'
+      bridge: '0xC0856971702b02A5576219540BD92DAE79a79288',
+      inbox: '0xD62ef8d8c71d190417C6CE71f65795696C069f09',
+      outbox: '0xaEB5Fe2f7003881c3a8EBAE9664E8607f3935d53',
+      rollup: '0xBc4cc964eF0ea5792a398F9E738edf368A34f003',
+      sequencerInbox: '0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc'
     },
-    nativeToken: '0x87cC76c08eF625d46eeC9183bA2977B34E16CDfe',
+    nativeToken: '0xAC716E87b0853C0712674e8E3a8435a489F276b4',
     explorerUrl: 'https://dodochain-testnet-explorer.alt.technology',
     rpcUrl: 'https://dodochain-testnet.alt.technology',
     isArbitrum: true,
@@ -361,9 +361,9 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
-      l1CustomGateway: '0x7Db96d1E021EBd86753318e52407E5be60D8Ea40',
-      l1ERC20Gateway: '0x1b645dd3fAB8375fa7088bF987fDf6734d9D81F4',
-      l1GatewayRouter: '0x4020eAFF99C8390F5db4e74FfC30607b5a94d7b4',
+      l1CustomGateway: '0xeCa856BE0041184eeda8F2c98896AC4693b168EA',
+      l1ERC20Gateway: '0xf57F874845CD652e69f69f020A4d46F4e427bb43',
+      l1GatewayRouter: '0xE3661c8313B35BA310Ad89e113561F3C983dC761',
       l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
       l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
       l1Weth: '0x0000000000000000000000000000000000000000',
