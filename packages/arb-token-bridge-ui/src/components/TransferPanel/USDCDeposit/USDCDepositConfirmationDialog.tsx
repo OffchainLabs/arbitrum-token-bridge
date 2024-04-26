@@ -40,7 +40,7 @@ enum SelectedTabName {
   Cctp = 'cctp'
 }
 
-const defaultSelectedTabName: SelectedTabName = SelectedTabName.Bridged
+const defaultSelectedTabName: SelectedTabName = SelectedTabName.Cctp
 
 export function USDCDepositConfirmationDialog(props: Props) {
   const {
@@ -127,49 +127,44 @@ export function USDCDepositConfirmationDialog(props: Props) {
         >
           <Tab.List className="flex border-b border-gray-dark">
             <TabButton
-              aria-label="Arbitrum's bridge (USDC.e)"
-              onClick={() => setSelectedTabName(SelectedTabName.Bridged)}
-            >
-              Arbitrum&apos;s bridge (USDC.e)
-            </TabButton>
-            <TabButton
-              aria-label="Third party (USDC)"
-              onClick={() => setSelectedTabName(SelectedTabName.ThirdParty)}
-            >
-              Third party (USDC)
-            </TabButton>
-            <TabButton
-              aria-label="Circle (USDC)"
+              aria-label="Native USDC"
               onClick={() => setSelectedTabName(SelectedTabName.Cctp)}
             >
-              Circle (USDC)
+              Native USDC
+            </TabButton>
+            <TabButton
+              aria-label="Native USDC (Third Party Bridge)"
+              onClick={() => setSelectedTabName(SelectedTabName.ThirdParty)}
+            >
+              Native USDC (Third Party Bridge)
+            </TabButton>
+            <TabButton
+              aria-label="Wrapped USDC (USDC.e)"
+              onClick={() => setSelectedTabName(SelectedTabName.Bridged)}
+            >
+              Wrapped USDC (USDC.e)
             </TabButton>
           </Tab.List>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4">
-              <p className="font-light">
-                Receive{' '}
-                <ExternalLink
-                  className="arb-hover underline"
-                  href={`${getExplorerUrl(
-                    childChain.id
-                  )}/token/${usdceTokenDestinationAddress}`}
-                >
-                  Bridged USDC (USDC.e)
-                </ExternalLink>{' '}
-                on {destinationNetworkName} using Arbitrum&apos;s native bridge.
-              </p>
-
-              <div className="flex flex-col space-y-4">
-                <USDCDepositConfirmationDialogCheckbox
-                  onChange={checked => {
-                    setAllCheckboxesChecked(checked)
-                  }}
-                />
-              </div>
+              <CctpTabContent destinationChainId={childChain.id}>
+                <div className="flex flex-col space-y-4">
+                  <USDCDepositConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                    isBridgingNativeUSDC
+                  />
+                </div>
+              </CctpTabContent>
+              <SecurityNotGuaranteed />
             </div>
-            <SecurityGuaranteed />
           </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
@@ -205,23 +200,28 @@ export function USDCDepositConfirmationDialog(props: Props) {
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4">
-              <CctpTabContent destinationChainId={childChain.id}>
-                <div className="flex flex-col space-y-4">
-                  <USDCDepositConfirmationDialogCheckbox
-                    onAllCheckboxesCheched={() => {
-                      setAllCheckboxesChecked(true)
-                    }}
-                    onChange={checked => {
-                      if (!checked) {
-                        setAllCheckboxesChecked(false)
-                      }
-                    }}
-                    isBridgingNativeUSDC
-                  />
-                </div>
-              </CctpTabContent>
-              <SecurityNotGuaranteed />
+              <p className="font-light">
+                Receive{' '}
+                <ExternalLink
+                  className="arb-hover underline"
+                  href={`${getExplorerUrl(
+                    childChain.id
+                  )}/token/${usdceTokenDestinationAddress}`}
+                >
+                  Bridged USDC (USDC.e)
+                </ExternalLink>{' '}
+                on {destinationNetworkName} using Arbitrum&apos;s native bridge.
+              </p>
+
+              <div className="flex flex-col space-y-4">
+                <USDCDepositConfirmationDialogCheckbox
+                  onChange={checked => {
+                    setAllCheckboxesChecked(checked)
+                  }}
+                />
+              </div>
             </div>
+            <SecurityGuaranteed />
           </Tab.Panel>
         </Tab.Group>
       </div>

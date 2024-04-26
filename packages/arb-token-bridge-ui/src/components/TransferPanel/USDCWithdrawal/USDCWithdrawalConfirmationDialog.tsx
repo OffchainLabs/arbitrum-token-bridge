@@ -31,7 +31,7 @@ enum SelectedTabName {
   Cctp = 'cctp'
 }
 
-const defaultSelectedTabName: SelectedTabName = SelectedTabName.ThirdParty
+const defaultSelectedTabName: SelectedTabName = SelectedTabName.Cctp
 
 export function USDCWithdrawalConfirmationDialog(
   props: UseDialogProps & { amount: string }
@@ -94,18 +94,38 @@ export function USDCWithdrawalConfirmationDialog(
         <Tab.Group>
           <Tab.List className="flex border-b border-gray-dark">
             <TabButton
-              aria-label="Third party (USDC)"
-              onClick={() => setSelectedTabName(SelectedTabName.ThirdParty)}
-            >
-              Third party (USDC)
-            </TabButton>
-            <TabButton
-              aria-label="Circle (USDC)"
+              aria-label="Native USDC"
               onClick={() => setSelectedTabName(SelectedTabName.Cctp)}
             >
-              Circle (USDC)
+              Native USDC
+            </TabButton>
+            <TabButton
+              aria-label="Native USDC (Third Party Bridge)"
+              onClick={() => setSelectedTabName(SelectedTabName.ThirdParty)}
+            >
+              Native USDC (Third Party Bridge)
             </TabButton>
           </Tab.List>
+
+          <Tab.Panel className="flex flex-col space-y-4 py-4">
+            <div className="flex flex-col space-y-4">
+              <CctpTabContent destinationChainId={parentChain.id}>
+                <div className="flex flex-col space-y-4">
+                  <USDCWithdrawalConfirmationDialogCheckbox
+                    onAllCheckboxesCheched={() => {
+                      setAllCheckboxesChecked(true)
+                    }}
+                    onChange={checked => {
+                      if (!checked) {
+                        setAllCheckboxesChecked(false)
+                      }
+                    }}
+                  />
+                </div>
+              </CctpTabContent>
+              <SecurityNotGuaranteed />
+            </div>
+          </Tab.Panel>
 
           <Tab.Panel className="flex flex-col space-y-4 py-4">
             <div className="flex flex-col space-y-4 font-light">
@@ -136,26 +156,6 @@ export function USDCWithdrawalConfirmationDialog(
               selectedNonCanonicalToken={tokenSymbol}
             />
             <SecurityNotGuaranteed />
-          </Tab.Panel>
-
-          <Tab.Panel className="flex flex-col space-y-4 py-4">
-            <div className="flex flex-col space-y-4">
-              <CctpTabContent destinationChainId={parentChain.id}>
-                <div className="flex flex-col space-y-4">
-                  <USDCWithdrawalConfirmationDialogCheckbox
-                    onAllCheckboxesCheched={() => {
-                      setAllCheckboxesChecked(true)
-                    }}
-                    onChange={checked => {
-                      if (!checked) {
-                        setAllCheckboxesChecked(false)
-                      }
-                    }}
-                  />
-                </div>
-              </CctpTabContent>
-              <SecurityNotGuaranteed />
-            </div>
           </Tab.Panel>
         </Tab.Group>
       </div>
