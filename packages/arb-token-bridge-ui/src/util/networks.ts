@@ -440,6 +440,8 @@ function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
   return chain.isArbitrum
 }
 
+// given an Arbitrum chain id, it will get all the valid, whitelisted Orbit chain id's that are valid for teleportation
+// eg. Given "Arbitrum Sepolia" => [Stylus]
 export function getOrbitChainIdsFromArbitrumChainIdForTeleport(
   arbitrumChainIds: ChainId[] // l2 chain id
 ): ChainId[] {

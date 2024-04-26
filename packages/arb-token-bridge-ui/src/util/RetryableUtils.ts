@@ -105,10 +105,10 @@ export const getRetryableTicketExpiration = async ({
   }
 }
 
+// utilities for teleporter transactions
 export const firstRetryableRequiresRedeem = (tx: MergedTransaction) => {
   return tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
 }
-
 export const secondRetryableRequiresRedeem = (tx: MergedTransaction) => {
   return tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
 }
