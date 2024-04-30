@@ -1,6 +1,5 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
-import { IArbToken__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IArbToken__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
@@ -11,6 +10,7 @@ import {
   getL2ERC20Address
 } from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { addressIsSmartContract } from './AddressUtils'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -55,11 +55,11 @@ async function fetchTokenFallbackGasEstimates({
     l1Provider: parentChainProvider,
     l2Provider: childChainProvider
   })
-  const childChainToken = IArbToken__factory.connect(
+
+  const isFirstTimeTokenBridging = !addressIsSmartContract(
     childChainTokenAddress,
     childChainProvider
   )
-  const isFirstTimeTokenBridging = !(await childChainToken.deployed())
 
   if (isFirstTimeTokenBridging) {
     return {
