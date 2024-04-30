@@ -6,24 +6,22 @@ import * as Sentry from '@sentry/react'
 
 import {
   fetchErc20Allowance,
-  fetchErc20ParentChainGatewayAddress
+  fetchErc20ParentChainGatewayAddress,
+  getL2ERC20Address
 } from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
-import { isNetwork } from './networks'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
+  erc20L1Address,
   parentChainProvider,
   childChainProvider
 }: {
   inboxAddress: string
+  erc20L1Address: string
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<DepositGasEstimates> {
-  const isOrbitTransfer = isNetwork(
-    (await childChainProvider.getNetwork()).chainId
-  ).isOrbitChain
-
   const l1BaseFee = await parentChainProvider.getGasPrice()
   const inbox = Inbox__factory.connect(inboxAddress, parentChainProvider)
 
@@ -51,13 +49,19 @@ async function fetchTokenFallbackGasEstimates({
   // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
   const estimatedParentChainGas = BigNumber.from(240_000)
 
-  if (isOrbitTransfer) {
+  const isFirstTimeTokenDeposit = !!(await getL2ERC20Address({
+    erc20L1Address,
+    l1Provider: parentChainProvider,
+    l2Provider: childChainProvider
+  }))
+
+  if (isFirstTimeTokenDeposit) {
     return {
       estimatedParentChainGas,
-      // Values set by looking at a couple of different Orbit deposits
-      // Hardcode the gas limit for orbit transfers to be 8x of normal transfers
+      // Values set by looking at a couple of different Orbit deposits, hardcode the gas limit to be ~6x,
       // https://explorer.xai-chain.net/tx/0x9b069c244e6c1ebb3eebfe9f653eb4c9fcb171ab56c68770509c86c16bb078a0
-      estimatedChildChainGas: BigNumber.from(840_000),
+      // https://explorer.xai-chain.net/tx/0x68203e316c690878e35a8aa77db32108cd9afcc02eb7488ce3d2869a87e84492
+      estimatedChildChainGas: BigNumber.from(600_000),
       estimatedChildChainSubmissionCost
     }
   }
@@ -130,6 +134,7 @@ export async function depositTokenEstimateGas(
 
       return fetchTokenFallbackGasEstimates({
         inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        erc20L1Address,
         parentChainProvider,
         childChainProvider
       })
@@ -158,6 +163,7 @@ export async function depositTokenEstimateGas(
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      erc20L1Address,
       parentChainProvider,
       childChainProvider
     })
