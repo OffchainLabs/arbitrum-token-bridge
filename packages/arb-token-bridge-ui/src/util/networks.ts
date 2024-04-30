@@ -67,6 +67,8 @@ export function getBaseChainIdByChainId({
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  if (typeof localStorage === 'undefined') return [] // required so that it does not fail test-runners
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
