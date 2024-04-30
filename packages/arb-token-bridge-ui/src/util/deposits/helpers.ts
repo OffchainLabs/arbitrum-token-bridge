@@ -320,18 +320,12 @@ export async function updateTeleporterDepositStatusData({
   const sourceChainProvider = getProvider(parentChainId)
   const destinationChainProvider = getProvider(childChainId)
 
-  const depositStatus = await getTeleportStatusDataFromTxId({
-    txId: txID,
-    sourceChainProvider,
-    destinationChainProvider,
-    isNativeCurrencyTransfer
-  })
-
   const { l2ChainId } = await getL2ConfigForTeleport({
     destinationChainProvider
   })
 
-  let l2Retryable,
+  let depositStatus: Erc20DepositMessages | EthTeleportStatus | undefined,
+    l2Retryable,
     l3Retryable,
     completed,
     l2TxHash,
@@ -346,6 +340,18 @@ export async function updateTeleporterDepositStatusData({
       l2ChainId,
       completed: false
     }
+
+  try {
+    depositStatus = await getTeleportStatusDataFromTxId({
+      txId: txID,
+      sourceChainProvider,
+      destinationChainProvider,
+      isNativeCurrencyTransfer
+    })
+  } catch (e) {
+    // in case fetching teleport status fails (happens when you fetch before l1 confirmation), return the default data
+    console.log('Error fetching teleporter status for', txID)
+  }
 
   if (isNativeCurrencyTransfer) {
     const status = depositStatus as EthTeleportStatus
