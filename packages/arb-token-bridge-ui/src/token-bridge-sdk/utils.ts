@@ -39,8 +39,9 @@ export const getBridgeTransferProperties = (
     (isSourceChainArbitrum && isDestinationChainOrbit)
 
   const isWithdrawal =
-    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) ||
-    (isSourceChainOrbit && isDestinationChainArbitrum)
+    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) || //  l2 arbitrum chains to l1
+    (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
+    (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
 
   const isNativeCurrencyTransfer =
     typeof props.sourceChainErc20Address === 'undefined'
