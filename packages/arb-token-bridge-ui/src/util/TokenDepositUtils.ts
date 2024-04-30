@@ -9,14 +9,21 @@ import {
   fetchErc20ParentChainGatewayAddress
 } from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
+import { isNetwork } from './networks'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
-  parentChainProvider
+  parentChainProvider,
+  childChainProvider
 }: {
   inboxAddress: string
   parentChainProvider: Provider
+  childChainProvider: Provider
 }): Promise<DepositGasEstimates> {
+  const isOrbitTransfer = isNetwork(
+    (await childChainProvider.getNetwork()).chainId
+  ).isOrbitChain
+
   const l1BaseFee = await parentChainProvider.getGasPrice()
   const inbox = Inbox__factory.connect(inboxAddress, parentChainProvider)
 
@@ -52,7 +59,9 @@ async function fetchTokenFallbackGasEstimates({
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedChildChainGas: BigNumber.from(105_000),
+    estimatedChildChainGas: isOrbitTransfer
+      ? BigNumber.from(840_000) // Hardcode the gas limit for orbit transfers to be 8x of normal transfers eg. https://testnet-explorer-v2.xai-chain.net/tx/0x1929ef973a4a266f7d2bab7b29b2d85895fb5df28d6e5678e0a29d454c614f6e
+      : BigNumber.from(105_000),
     estimatedChildChainSubmissionCost
   }
 }
@@ -112,7 +121,8 @@ export async function depositTokenEstimateGas(
 
       return fetchTokenFallbackGasEstimates({
         inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
-        parentChainProvider
+        parentChainProvider,
+        childChainProvider
       })
     }
 
@@ -139,7 +149,8 @@ export async function depositTokenEstimateGas(
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
-      parentChainProvider
+      parentChainProvider,
+      childChainProvider
     })
   }
 }
