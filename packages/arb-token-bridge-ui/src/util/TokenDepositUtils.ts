@@ -64,23 +64,23 @@ async function fetchTokenFallbackGasEstimates({
   if (isFirstTimeTokenBridging) {
     return {
       estimatedParentChainGas,
-      // Values set by looking at a couple of different Orbit deposits, hardcode the gas limit to be ~6x,
+      // Values set by looking at a couple of different ERC-20 deposits, with added buffer to account for the 30% gas limit increase (see `depositTokenEstimateGas`)
       // https://explorer.xai-chain.net/tx/0x9b069c244e6c1ebb3eebfe9f653eb4c9fcb171ab56c68770509c86c16bb078a0
       // https://explorer.xai-chain.net/tx/0x68203e316c690878e35a8aa77db32108cd9afcc02eb7488ce3d2869a87e84492
-      estimatedChildChainGas: BigNumber.from(600_000),
+      estimatedChildChainGas: BigNumber.from(800_000),
       estimatedChildChainSubmissionCost
     }
   }
 
   return {
     estimatedParentChainGas,
-    // Values set by looking at a couple of different ERC-20 deposits
+    // Values set by looking at a couple of different ERC-20 deposits, with added buffer to account for the 30% gas limit increase (see `depositTokenEstimateGas`)
     // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
     // https://arbiscan.io/tx/0xd2ba11ebc51f546abc2ddda715507948d097e5707fd1dc37c239cc4cf28cc6ed
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedChildChainGas: BigNumber.from(105_000),
+    estimatedChildChainGas: BigNumber.from(150_000),
     estimatedChildChainSubmissionCost
   }
 }
