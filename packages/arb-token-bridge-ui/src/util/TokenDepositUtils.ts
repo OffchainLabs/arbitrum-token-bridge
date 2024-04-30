@@ -1,5 +1,6 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
+import { IArbToken__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IArbToken__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
@@ -49,13 +50,18 @@ async function fetchTokenFallbackGasEstimates({
   // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
   const estimatedParentChainGas = BigNumber.from(240_000)
 
-  const isFirstTimeTokenDeposit = !(await getL2ERC20Address({
+  const childChainTokenAddress = await getL2ERC20Address({
     erc20L1Address,
     l1Provider: parentChainProvider,
     l2Provider: childChainProvider
-  }))
+  })
+  const childChainToken = IArbToken__factory.connect(
+    childChainTokenAddress,
+    childChainProvider
+  )
+  const isFirstTimeTokenBridging = !(await childChainToken.deployed())
 
-  if (isFirstTimeTokenDeposit) {
+  if (isFirstTimeTokenBridging) {
     return {
       estimatedParentChainGas,
       // Values set by looking at a couple of different Orbit deposits, hardcode the gas limit to be ~6x,
