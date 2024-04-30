@@ -1,7 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
-import { Provider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { isNetwork } from '../util/networks'
+import { ChainId, isNetwork, rpcURLs } from '../util/networks'
 import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 import { isTeleport as isTeleportTransfer } from './teleport'
 import {
@@ -11,6 +11,13 @@ import {
   EthL1L3Bridger,
   getL2Network
 } from '@arbitrum/sdk'
+
+export function getProvider(chainId: ChainId) {
+  // we use this variant of `getProvider` in sdk because this doesn't require any UI dependency
+  // the `getProvider` in UI uses `getWagmiChain` relying on `localstorage`, and fails test runners
+  const rpcUrl = rpcURLs[chainId]
+  return new StaticJsonRpcProvider(rpcUrl)
+}
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()

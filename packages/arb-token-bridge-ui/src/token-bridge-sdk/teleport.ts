@@ -1,7 +1,7 @@
 // utils for teleport type transactions
 
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
-import { getProvider } from '../components/TransactionHistory/helpers'
+import { getProvider } from './utils'
 import { isNetwork } from '../util/networks'
 import { Provider } from '@ethersproject/providers'
 
