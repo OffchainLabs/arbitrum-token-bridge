@@ -49,7 +49,7 @@ async function fetchTokenFallbackGasEstimates({
   // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
   const estimatedParentChainGas = BigNumber.from(240_000)
 
-  const isFirstTimeTokenDeposit = !!(await getL2ERC20Address({
+  const isFirstTimeTokenDeposit = !(await getL2ERC20Address({
     erc20L1Address,
     l1Provider: parentChainProvider,
     l2Provider: childChainProvider
