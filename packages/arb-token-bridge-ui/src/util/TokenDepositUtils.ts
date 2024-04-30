@@ -56,10 +56,10 @@ async function fetchTokenFallbackGasEstimates({
     l2Provider: childChainProvider
   })
 
-  const isFirstTimeTokenBridging = !addressIsSmartContract(
+  const isFirstTimeTokenBridging = !(await addressIsSmartContract(
     childChainTokenAddress,
     childChainProvider
-  )
+  ))
 
   if (isFirstTimeTokenBridging) {
     return {
