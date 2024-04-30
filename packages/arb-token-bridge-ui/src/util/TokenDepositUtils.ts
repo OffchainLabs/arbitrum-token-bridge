@@ -43,25 +43,34 @@ async function fetchTokenFallbackGasEstimates({
       l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
     )
 
+  // Values set by looking at a couple of different ERC-20 deposits
+  // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+  // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
+  // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
+  // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
+  // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
+  const estimatedParentChainGas = BigNumber.from(240_000)
+
+  if (isOrbitTransfer) {
+    return {
+      estimatedParentChainGas,
+      // Values set by looking at a couple of different Orbit ERC-20 deposits
+      // Hardcode the gas limit for orbit transfers to be 8x of normal transfers
+      // eg. https://testnet-explorer-v2.xai-chain.net/tx/0x1929ef973a4a266f7d2bab7b29b2d85895fb5df28d6e5678e0a29d454c614f6e
+      estimatedChildChainGas: BigNumber.from(840_000),
+      estimatedChildChainSubmissionCost
+    }
+  }
+
   return {
+    estimatedParentChainGas,
     // Values set by looking at a couple of different ERC-20 deposits
-    //
-    // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
-    // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
-    // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
-    // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
-    // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
-    estimatedParentChainGas: BigNumber.from(240_000),
-    // Values set by looking at a couple of different ERC-20 deposits
-    //
     // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
     // https://arbiscan.io/tx/0xd2ba11ebc51f546abc2ddda715507948d097e5707fd1dc37c239cc4cf28cc6ed
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedChildChainGas: isOrbitTransfer
-      ? BigNumber.from(840_000) // Hardcode the gas limit for orbit transfers to be 8x of normal transfers eg. https://testnet-explorer-v2.xai-chain.net/tx/0x1929ef973a4a266f7d2bab7b29b2d85895fb5df28d6e5678e0a29d454c614f6e
-      : BigNumber.from(105_000),
+    estimatedChildChainGas: BigNumber.from(105_000),
     estimatedChildChainSubmissionCost
   }
 }
