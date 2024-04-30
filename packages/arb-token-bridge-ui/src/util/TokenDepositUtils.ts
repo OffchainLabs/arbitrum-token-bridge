@@ -56,7 +56,8 @@ async function fetchTokenFallbackGasEstimates({
       estimatedParentChainGas,
       // Values set by looking at a couple of different Orbit ERC-20 deposits
       // Hardcode the gas limit for orbit transfers to be 8x of normal transfers
-      // eg. https://testnet-explorer-v2.xai-chain.net/tx/0x1929ef973a4a266f7d2bab7b29b2d85895fb5df28d6e5678e0a29d454c614f6e
+      // https://arbiscan.io/tx/0xd7823c4137a0c76461c7d83e08ae3b52cadc619ebdc9fc04ad73ba50dc5c4cc2
+      // https://arbiscan.io/tx/0x11299b874ef810fd9786e9c4f3910314b34106912f0d8477162e1e9fdfc69404
       estimatedChildChainGas: BigNumber.from(840_000),
       estimatedChildChainSubmissionCost
     }
