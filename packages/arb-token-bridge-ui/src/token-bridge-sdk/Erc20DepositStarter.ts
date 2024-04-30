@@ -267,7 +267,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     return depositTokenEstimateGas({
       amount,
       address,
-      erc20L1Address: this.sourceChainErc20Address,
+      parentChainErc20Address: this.sourceChainErc20Address,
       parentChainProvider: this.sourceChainProvider,
       childChainProvider: this.destinationChainProvider
     })
