@@ -2,10 +2,7 @@ import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { isNetwork } from '../util/networks'
-import {
-  BridgeTransferStarterProps,
-  BridgeTransferStarterPropsWithChainIds
-} from './BridgeTransferStarter'
+import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -39,8 +36,9 @@ export const getBridgeTransferProperties = (
     (isSourceChainArbitrum && isDestinationChainOrbit)
 
   const isWithdrawal =
-    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) ||
-    (isSourceChainOrbit && isDestinationChainArbitrum)
+    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) || //  l2 arbitrum chains to l1
+    (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
+    (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
 
   const isNativeCurrencyTransfer =
     typeof props.sourceChainErc20Address === 'undefined'
