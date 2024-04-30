@@ -14,12 +14,12 @@ import { addressIsSmartContract } from './AddressUtils'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
-  erc20L1Address,
+  parentChainErc20Address,
   parentChainProvider,
   childChainProvider
 }: {
   inboxAddress: string
-  erc20L1Address: string
+  parentChainErc20Address: string
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<DepositGasEstimates> {
@@ -51,7 +51,7 @@ async function fetchTokenFallbackGasEstimates({
   const estimatedParentChainGas = BigNumber.from(240_000)
 
   const childChainTokenAddress = await getL2ERC20Address({
-    erc20L1Address,
+    erc20L1Address: parentChainErc20Address,
     l1Provider: parentChainProvider,
     l2Provider: childChainProvider
   })
@@ -89,19 +89,19 @@ async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
   const {
     amount,
     address,
-    erc20L1Address,
+    parentChainErc20Address,
     parentChainProvider,
     childChainProvider
   } = params
 
   const l1Gateway = await fetchErc20ParentChainGatewayAddress({
-    erc20ParentChainAddress: erc20L1Address,
+    erc20ParentChainAddress: parentChainErc20Address,
     parentChainProvider,
     childChainProvider
   })
 
   const allowanceForL1Gateway = await fetchErc20Allowance({
-    address: erc20L1Address,
+    address: parentChainErc20Address,
     provider: parentChainProvider,
     owner: address,
     spender: l1Gateway
@@ -113,7 +113,7 @@ async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
 export type DepositTxEstimateGasParams = {
   amount: BigNumber
   address: string
-  erc20L1Address?: string
+  parentChainErc20Address?: string
   parentChainProvider: Provider
   childChainProvider: Provider
 }
@@ -126,7 +126,7 @@ export async function depositTokenEstimateGas(
   const {
     amount,
     address,
-    erc20L1Address,
+    parentChainErc20Address,
     parentChainProvider,
     childChainProvider
   } = params
@@ -135,12 +135,12 @@ export async function depositTokenEstimateGas(
   try {
     if (await allowanceIsInsufficient(params)) {
       console.warn(
-        `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
+        `Gateway allowance for "${parentChainErc20Address}" is too low, falling back to hardcoded values.`
       )
 
       return fetchTokenFallbackGasEstimates({
         inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
-        erc20L1Address,
+        parentChainErc20Address,
         parentChainProvider,
         childChainProvider
       })
@@ -148,7 +148,7 @@ export async function depositTokenEstimateGas(
 
     const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
       amount,
-      erc20L1Address,
+      erc20L1Address: parentChainErc20Address,
       l1Provider: parentChainProvider,
       l2Provider: childChainProvider,
       from: address,
@@ -169,7 +169,7 @@ export async function depositTokenEstimateGas(
 
     return fetchTokenFallbackGasEstimates({
       inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
-      erc20L1Address,
+      parentChainErc20Address,
       parentChainProvider,
       childChainProvider
     })
