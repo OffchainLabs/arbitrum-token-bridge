@@ -10,19 +10,17 @@ import { shortenAddress } from '../../../src/util/CommonUtils'
 // common function for this cctp deposit
 const confirmAndApproveCctpDeposit = () => {
   cy.findByRole('tab', {
-    name: "Arbitrum's bridge (USDC.e)",
+    name: 'Native USDC',
     selected: true
   }).should('exist')
   cy.findByRole('tab', {
-    name: 'Third party (USDC)',
+    name: 'Native USDC (Third Party Bridge)',
     selected: false
   }).should('exist')
   cy.findByRole('tab', {
-    name: 'Circle (USDC)',
+    name: 'Wrapped USDC (USDC.e)',
     selected: false
-  })
-    .should('exist')
-    .click()
+  }).should('exist')
 
   // By default, confirm button is disabled
   cy.findByRole('button', {
