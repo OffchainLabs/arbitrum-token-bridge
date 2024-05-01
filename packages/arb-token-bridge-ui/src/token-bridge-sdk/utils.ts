@@ -96,16 +96,12 @@ export const getBridger = async ({
   if (isTeleportTransfer({ sourceChainId, destinationChainId })) {
     const l3Network = await getL2Network(destinationChainProvider)
 
-    if (isNativeCurrencyTransfer) {
-      return new EthL1L3Bridger(l3Network)
-    } else {
-      return new Erc20L1L3Bridger(l3Network)
-    }
-  } else {
-    if (isNativeCurrencyTransfer) {
-      return EthBridger.fromProvider(destinationChainProvider)
-    } else {
-      return Erc20Bridger.fromProvider(destinationChainProvider)
-    }
+    return isNativeCurrencyTransfer
+      ? new EthL1L3Bridger(l3Network)
+      : new Erc20L1L3Bridger(l3Network)
   }
+
+  return isNativeCurrencyTransfer
+    ? EthBridger.fromProvider(destinationChainProvider)
+    : Erc20Bridger.fromProvider(destinationChainProvider)
 }
