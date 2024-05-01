@@ -2,11 +2,9 @@ import { Erc20L1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { constants } from 'ethers'
 import {
-  ApproveNativeCurrencyProps,
   ApproveTokenProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
-  RequiresNativeCurrencyApprovalProps,
   RequiresTokenApprovalProps,
   TransferEstimateGas,
   TransferProps,
@@ -27,31 +25,12 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     }
   }
 
-  public async requiresNativeCurrencyApproval({
-    amount,
-    signer
-  }: RequiresNativeCurrencyApprovalProps) {
+  public async requiresNativeCurrencyApproval() {
     return false
   }
 
-  public async approveNativeCurrency({
-    signer,
-    amount
-  }: ApproveNativeCurrencyProps) {
-    // get the intermediate L2 chain provider
-    const { l2Provider } = await getL2ConfigForTeleport({
-      destinationChainProvider: this.destinationChainProvider
-    })
-
-    const l3Network = await getL2Network(this.destinationChainProvider)
-
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
-
-    return l1l3Bridger.approveFeeToken({
-      l1Signer: signer,
-      l2Provider,
-      amount
-    })
+  public async approveNativeCurrency() {
+    // no-op
   }
 
   public async approveNativeCurrencyEstimateGas() {

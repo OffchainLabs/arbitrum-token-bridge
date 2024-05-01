@@ -680,12 +680,7 @@ export const useTransactionHistory = (
         return
       }
 
-      if (
-        isTeleport({
-          sourceChainId: tx.sourceChainId,
-          destinationChainId: tx.destinationChainId
-        })
-      ) {
+      if (isTeleport(tx)) {
         const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
         updateCachedTransaction(updatedTeleportTransfer)
         return

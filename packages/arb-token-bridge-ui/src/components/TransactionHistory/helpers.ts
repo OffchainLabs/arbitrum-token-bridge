@@ -614,12 +614,7 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
 
-  if (
-    isTeleport({
-      sourceChainId: tx.sourceChainId,
-      destinationChainId: tx.destinationChainId
-    })
-  ) {
+  if (isTeleport(tx)) {
     return tx.l2ToL3MsgData?.l3TxID
   }
 

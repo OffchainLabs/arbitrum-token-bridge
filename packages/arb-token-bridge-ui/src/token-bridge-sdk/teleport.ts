@@ -12,11 +12,11 @@ export const isTeleport = ({
   sourceChainId: number
   destinationChainId: number
 }) => {
-  const isBaseChainEthereum =
+  const isSourceChainEthereum =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
-  return isBaseChainEthereum && isDestinationChainOrbit
+  return isSourceChainEthereum && isDestinationChainOrbit
 }
 
 export const getL2ConfigForTeleport = async ({

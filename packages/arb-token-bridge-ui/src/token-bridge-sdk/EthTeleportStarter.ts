@@ -1,10 +1,8 @@
 import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
-import { BigNumber, constants } from 'ethers'
+import { constants } from 'ethers'
 import {
-  ApproveNativeCurrencyProps,
   BridgeTransferStarter,
   BridgeTransferStarterProps,
-  RequiresNativeCurrencyApprovalProps,
   TransferEstimateGas,
   TransferProps,
   TransferType
@@ -19,24 +17,12 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     super(props)
   }
 
-  public async requiresNativeCurrencyApproval({
-    amount,
-    signer
-  }: RequiresNativeCurrencyApprovalProps) {
+  public async requiresNativeCurrencyApproval() {
     return false
   }
 
-  public async approveNativeCurrency({
-    signer,
-    amount
-  }: ApproveNativeCurrencyProps) {
-    // const ethBridger = await EthBridger.fromProvider(
-    //   this.destinationChainProvider
-    // )
-    // return ethBridger.approveGasToken({
-    //   l1Signer: signer,
-    //   amount
-    // })
+  public async approveNativeCurrency() {
+    // no-op
   }
 
   public async approveNativeCurrencyEstimateGas() {
