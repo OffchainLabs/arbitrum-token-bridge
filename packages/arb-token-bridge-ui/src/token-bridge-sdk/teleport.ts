@@ -1,7 +1,7 @@
 // utils for teleport type transactions
 
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
-import { getProvider } from './utils'
+import { getProviderForChainId } from './utils'
 import { isNetwork } from '../util/networks'
 import { Provider } from '@ethersproject/providers'
 
@@ -26,7 +26,7 @@ export const getL2ConfigForTeleport = async ({
 }) => {
   const l3Network = await getL2Network(destinationChainProvider)
   const l2ChainId = l3Network.partnerChainID
-  const l2Provider = getProvider(l2ChainId)
+  const l2Provider = getProviderForChainId(l2ChainId)
   return { l2ChainId, l2Provider }
 }
 

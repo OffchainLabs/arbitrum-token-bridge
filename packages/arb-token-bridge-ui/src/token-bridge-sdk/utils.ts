@@ -12,13 +12,6 @@ import {
   getL2Network
 } from '@arbitrum/sdk'
 
-export function getProvider(chainId: ChainId) {
-  // we use this variant of `getProvider` in sdk because this doesn't require any UI dependency
-  // the `getProvider` in UI uses `getWagmiChain` relying on `localstorage`, and fails test runners
-  const rpcUrl = rpcURLs[chainId]
-  return new StaticJsonRpcProvider(rpcUrl)
-}
-
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
   return address
@@ -104,4 +97,27 @@ export const getBridger = async ({
   return isNativeCurrencyTransfer
     ? EthBridger.fromProvider(destinationChainProvider)
     : Erc20Bridger.fromProvider(destinationChainProvider)
+}
+
+const getProviderForChainCache: {
+  [chainId: number]: StaticJsonRpcProvider
+} = {
+  // start with empty cache
+}
+
+function createProviderWithCache(chainId: ChainId) {
+  const rpcUrl = rpcURLs[chainId]
+  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
+  getProviderForChainCache[chainId] = provider
+  return provider
+}
+
+export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
+  const cachedProvider = getProviderForChainCache[chainId]
+
+  if (typeof cachedProvider !== 'undefined') {
+    return cachedProvider
+  }
+
+  return createProviderWithCache(chainId)
 }
