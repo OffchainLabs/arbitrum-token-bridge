@@ -273,7 +273,7 @@ export async function fetchErc20L2GatewayAddress({
 }
 
 /*
- Retrieves the L2/L3 address of an ERC-20 token using its L1 address.
+ Retrieves the L2 address of an ERC-20 token using its L1 address.
 */
 export async function getL2ERC20Address({
   erc20L1Address,
@@ -284,21 +284,6 @@ export async function getL2ERC20Address({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<string> {
-  // Since this `getL2ERC20Address` function is being used extensively in UI, we have enhanced this function to also give L3 address if asked for
-  if (
-    isTeleport({
-      sourceChainId: await getChainIdFromProvider(l1Provider),
-      destinationChainId: await getChainIdFromProvider(l2Provider)
-    })
-  ) {
-    return await getL3ERC20Address({
-      erc20L1Address,
-      l1Provider,
-      l3Provider: l2Provider // the l2 provider passed to `getL2ERC20Address` is actually the l3 provider
-    })
-  }
-
-  // else, normally return the L2 address
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
@@ -474,13 +459,14 @@ export async function isGatewayRegistered({
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<boolean> {
-  // temporary patch - skip teleport transfers for now
+  // skip teleport transfers because there is no custom gateway there
   const sourceChainId = await getChainIdFromProvider(parentChainProvider)
   const destinationChainId = await getChainIdFromProvider(childChainProvider)
   if (isTeleport({ sourceChainId, destinationChainId })) {
     return true
   }
 
+  // for normal transfers, check for custom gateways
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
     erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
