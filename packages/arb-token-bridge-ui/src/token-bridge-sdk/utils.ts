@@ -57,7 +57,7 @@ export const getBridgeTransferProperties = (
     isDeposit,
     isWithdrawal,
     isNativeCurrencyTransfer,
-    isTeleport: isTeleport,
+    isTeleport,
     isSupported: isDeposit || isWithdrawal || isTeleport
   }
 }

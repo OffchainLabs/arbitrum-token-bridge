@@ -1,6 +1,6 @@
 import { Erc20L1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -11,11 +11,13 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { fetchErc20Allowance } from '../util/TokenUtils'
-import { getAddressFromSigner } from './utils'
+import { getAddressFromSigner, percentIncrease } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_teleport'
+
+  private l1l3Bridger: Erc20L1L3Bridger | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -23,6 +25,17 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
+  }
+
+  private async getBridger() {
+    if (this.l1l3Bridger) {
+      return this.l1l3Bridger
+    }
+
+    const l3Network = await getL2Network(this.destinationChainProvider)
+    this.l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+
+    return this.l1l3Bridger
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -47,9 +60,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     const l1TeleporterAddress = l1l3Bridger.teleporterAddresses.l1Teleporter
 
@@ -69,8 +80,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     }
     const address = await getAddressFromSigner(signer)
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
     const l1TeleporterAddress = l1l3Bridger.teleporterAddresses.l1Teleporter
 
     const contract = ERC20__factory.connect(
@@ -91,9 +101,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     return l1l3Bridger.approveToken({
       erc20L1Address: this.sourceChainErc20Address,
@@ -112,8 +120,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       destinationChainProvider: this.destinationChainProvider
     })
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
@@ -124,9 +131,27 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       l3Provider: this.destinationChainProvider
     })
 
-    return {
-      estimatedParentChainGas: depositRequest.feeTokenAmount, //  not sure, because depositRequest.feeTokenAmount returns 0
-      estimatedChildChainGas: constants.Zero
+    try {
+      const estimatedParentChainGas =
+        await this.sourceChainProvider.estimateGas(depositRequest.txRequest)
+      return {
+        estimatedParentChainGas: percentIncrease(
+          estimatedParentChainGas,
+          BigNumber.from(5)
+        ),
+        estimatedChildChainGas: constants.Zero
+      }
+    } catch (e) {
+      console.warn(
+        'Error while estimating gas, falling back to hardcoded values.',
+        e
+      )
+      return {
+        // fallback estimates
+        // https://sepolia.etherscan.io/tx/0x894321f07217d4add560e3c011fbcea672c79eb8b5e7d5332a1657e1d21ca8c4
+        estimatedParentChainGas: BigNumber.from(380_000),
+        estimatedChildChainGas: constants.Zero
+      }
     }
   }
 
@@ -142,8 +167,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       destinationChainProvider: this.destinationChainProvider
     })
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-    const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
