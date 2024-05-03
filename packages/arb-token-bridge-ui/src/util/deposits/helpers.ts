@@ -27,7 +27,6 @@ import {
   EthDepositStatus as EthTeleportStatus
 } from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 import { getProvider } from '../../components/TransactionHistory/helpers'
-import { isRetryableTicketFailed } from '../../state/app/utils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -324,99 +323,106 @@ export async function updateTeleporterDepositStatusData({
     destinationChainProvider
   })
 
-  let depositStatus: Erc20DepositMessages | EthTeleportStatus | undefined,
-    l2Retryable,
-    l3Retryable,
-    completed,
-    l2TxHash,
-    l3TxHash,
-    l1ToL2MsgData: L1ToL2MessageData = {
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      fetchingUpdate: false
-    },
-    l2ToL3MsgData: L2ToL3MessageData = {
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      fetchingUpdate: false,
-      l2ChainId,
-      completed: false
-    }
-
   try {
-    depositStatus = await getTeleportStatusDataFromTxId({
+    const depositStatus = await getTeleportStatusDataFromTxId({
       txId: txID,
       sourceChainProvider,
       destinationChainProvider,
       isNativeCurrencyTransfer
     })
+
+    let l2Retryable: L1ToL2MessageReader | undefined,
+      l3Retryable: L1ToL2MessageReader | undefined,
+      l3TxHash: string | undefined,
+      l1ToL2MsgData: L1ToL2MessageData = {
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        fetchingUpdate: false
+      },
+      l2ToL3MsgData: L2ToL3MessageData = {
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        fetchingUpdate: false,
+        l2ChainId
+      }
+
+    if (isNativeCurrencyTransfer) {
+      const status = depositStatus as EthTeleportStatus
+      l2Retryable = status.l2Retryable
+      l3Retryable = status.l3Retryable
+    } else {
+      const status = depositStatus as Erc20DepositMessages
+      l2Retryable = status.l1l2TokenBridge
+      l3Retryable = status.l2l3TokenBridge
+    }
+
+    // extract the l2 transaction details, if any
+    if (l2Retryable) {
+      const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
+
+      l1ToL2MsgData = {
+        ...l1ToL2MsgData,
+        status: await l2Retryable.status(),
+        l2TxID:
+          l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED
+            ? l1l2Redeem.l2TxReceipt.transactionHash
+            : undefined,
+        fetchingUpdate: false,
+        retryableCreationTxID: l2Retryable.retryableCreationId
+      }
+    }
+
+    // extract the l3 transaction details, if any
+    if (l3Retryable) {
+      const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
+      if (l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED) {
+        l3TxHash = l2L3Redeem.l2TxReceipt.transactionHash
+      }
+      l2ToL3MsgData = {
+        ...l2ToL3MsgData,
+        status: l3Retryable
+          ? await l3Retryable.status()
+          : L1ToL2MessageStatus.NOT_YET_CREATED,
+        l3TxID: l3TxHash,
+        fetchingUpdate: false,
+        retryableCreationTxID: l3Retryable.retryableCreationId
+      }
+    }
+
+    // extract other misc data
+    const destinationChainTx = l3TxHash
+      ? await destinationChainProvider.getTransactionReceipt(l3TxHash)
+      : null
+    const destinationChainBlockNumber = destinationChainTx
+      ? destinationChainTx.blockNumber
+      : null
+    const timestampResolved = destinationChainBlockNumber
+      ? (await destinationChainProvider.getBlock(destinationChainBlockNumber))
+          .timestamp * 1000
+      : null
+
+    return {
+      status: l2Retryable ? 'success' : 'failure',
+      timestampResolved: timestampResolved
+        ? String(timestampResolved)
+        : undefined,
+      l1ToL2MsgData,
+      l2ToL3MsgData
+    }
   } catch (e) {
     // in case fetching teleport status fails (happens when you fetch before l1 confirmation), return the default data
-    console.log('Error fetching teleporter status for', txID)
-  }
+    console.log('Error fetching status for teleporter tx', txID)
 
-  if (isNativeCurrencyTransfer) {
-    const status = depositStatus as EthTeleportStatus
-    l2Retryable = status.l2Retryable
-    l3Retryable = status.l3Retryable
-    completed = status.completed
-  } else {
-    const status = depositStatus as Erc20DepositMessages
-    l2Retryable = status.l1l2TokenBridge
-    l3Retryable = status.l2l3TokenBridge
-    completed = status.completed
-  }
-
-  // extract the l2 transaction details, if any
-  if (l2Retryable) {
-    const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
-    if (l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED) {
-      l2TxHash = l1l2Redeem.l2TxReceipt.transactionHash
+    return {
+      status: 'pending',
+      l1ToL2MsgData: {
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        fetchingUpdate: false
+      },
+      l2ToL3MsgData: {
+        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        fetchingUpdate: false,
+        l2ChainId
+      }
     }
-    l1ToL2MsgData = {
-      ...l1ToL2MsgData,
-      status: await l2Retryable.status(),
-      l2TxID: l2TxHash,
-      fetchingUpdate: false,
-      retryableCreationTxID: l2Retryable.retryableCreationId
-    }
-  }
-
-  // extract the l3 transaction details, if any
-  if (l3Retryable) {
-    const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
-    if (l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED) {
-      l3TxHash = l2L3Redeem.l2TxReceipt.transactionHash
-    }
-    l2ToL3MsgData = {
-      ...l2ToL3MsgData,
-      status: l3Retryable
-        ? await l3Retryable.status()
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
-      l3TxID: l3TxHash,
-      fetchingUpdate: false,
-      retryableCreationTxID: l3Retryable.retryableCreationId,
-      completed
-    }
-  }
-
-  // extract other misc data
-  const destinationChainTx = l3TxHash
-    ? await destinationChainProvider.getTransactionReceipt(l3TxHash)
-    : null
-  const destinationChainBlockNumber = destinationChainTx
-    ? destinationChainTx.blockNumber
-    : null
-  const timestampResolved = destinationChainBlockNumber
-    ? (await destinationChainProvider.getBlock(destinationChainBlockNumber))
-        .timestamp * 1000
-    : null
-
-  return {
-    status: l2Retryable ? 'success' : 'failure',
-    timestampResolved: timestampResolved
-      ? String(timestampResolved)
-      : undefined,
-    l1ToL2MsgData,
-    l2ToL3MsgData
   }
 }
 

@@ -75,7 +75,6 @@ export interface L2ToL3MessageData {
   l3TxID?: string
   fetchingUpdate: boolean
   l2ChainId: number
-  completed: boolean
 }
 
 export type L2ToL1MessageData = {
