@@ -442,31 +442,9 @@ function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
   return chain.isArbitrum
 }
 
-// given an Arbitrum chain id, it will get all the valid, whitelisted Orbit chain id's that are valid for teleportation
-// eg. Given "Arbitrum Sepolia" => [Stylus]
-export function getOrbitChainIdsFromArbitrumChainIdForTeleport(
-  arbitrumChainIds: ChainId[] // l2 chain id
-): ChainId[] {
-  // whitelist of orbit chains that are valid for teleportation
-  const orbitChainIdsValidForTeleportation: number[] = [
-    ChainId.StylusTestnet,
-    1380012617, // Rari (mainnet)
-    70700 // PopApex (mainnet)
-  ]
-
-  const allChains = getChains()
-  let orbitChainIds: ChainId[] = []
-
-  arbitrumChainIds.forEach(chainId => {
-    const orbitChains =
-      allChains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
-    orbitChainIds = [...orbitChainIds, ...orbitChains]
-  })
-
-  // finally filter out the white-listed child orbit chains that are valid for teleportation
-  return orbitChainIds.filter(orbitChainId =>
-    orbitChainIdsValidForTeleportation.includes(orbitChainId)
-  )
+export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
+  [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
+  [ChainId.Sepolia]: [ChainId.StylusTestnet]
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
@@ -484,14 +462,10 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   let validDestinationChainIds =
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
-  // to enable l1-l3 transfers, get the grand-children chain id's for the given chain (if found) and add them to the list
-  const orbitChainIdsValidForTeleportation =
-    getOrbitChainIdsFromArbitrumChainIdForTeleport(validDestinationChainIds)
-
   // add orbit-chains are also a part of the valid destination id's
   validDestinationChainIds = [
     ...validDestinationChainIds,
-    ...orbitChainIdsValidForTeleportation
+    ...(TELEPORT_ALLOWLIST[chainId] || [])
   ]
 
   if (parentChainId) {

@@ -2,7 +2,7 @@
 
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { getProviderForChainId } from './utils'
-import { isNetwork } from '../util/networks'
+import { TELEPORT_ALLOWLIST, isNetwork } from '../util/networks'
 import { Provider } from '@ethersproject/providers'
 
 export const isTeleport = ({
@@ -16,7 +16,10 @@ export const isTeleport = ({
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
   const isDestinationChainOrbit = isNetwork(destinationChainId).isOrbitChain
 
-  return isSourceChainEthereum && isDestinationChainOrbit
+  const isAllowed =
+    TELEPORT_ALLOWLIST[sourceChainId]?.includes(destinationChainId)
+
+  return isSourceChainEthereum && isDestinationChainOrbit && isAllowed
 }
 
 export const getL2ConfigForTeleport = async ({
