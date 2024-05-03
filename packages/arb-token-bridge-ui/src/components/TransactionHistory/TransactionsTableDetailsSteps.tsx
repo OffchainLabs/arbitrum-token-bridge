@@ -25,17 +25,14 @@ import {
 } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
-import {
-  isDepositReadyToRedeem,
-  isRetryableTicketFailed
-} from '../../state/app/utils'
+import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableRequiresRedeem,
-  getChainIdForRedeemingRetryable,
   secondRetryableRequiresRedeem
 } from '../../util/RetryableUtils'
+import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -67,7 +64,7 @@ function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
 }
 
-const Step = ({
+export const Step = ({
   done = false,
   claimable = false,
   pending = false,
@@ -192,7 +189,6 @@ export const TransactionsTableDetailsSteps = ({
     )
 
   const isTeleportTx = isTeleport(tx)
-  const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
   const isDestinationChainFailure = isTeleportTx
     ? secondRetryableRequiresRedeem(tx)
@@ -256,59 +252,8 @@ export const TransactionsTableDetailsSteps = ({
         }
       />
 
-      {/* show mid transaction step for teleport tx */}
-      {isTeleportTx && (
-        <Step
-          pending={!tx.l1ToL2MsgData?.l2TxID}
-          done={!!tx.l1ToL2MsgData?.l2TxID}
-          failure={
-            tx.l1ToL2MsgData?.status &&
-            isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
-          }
-          text={
-            tx.l1ToL2MsgData?.status &&
-            isRetryableTicketFailed(tx.l1ToL2MsgData?.status)
-              ? `Transaction failed on ${getNetworkName(
-                  getChainIdForRedeemingRetryable(tx)
-                )}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
-              : tx.l2ToL3MsgData?.l2ChainId
-              ? `Funds arrived on ${getNetworkName(
-                  tx.l2ToL3MsgData?.l2ChainId
-                )}`
-              : 'Funds arrived on intermediate chain' // till the time we don't have information for l2ChainId
-          }
-          endItem={
-            tx.l1ToL2MsgData?.status &&
-            isRetryableTicketFailed(tx.l1ToL2MsgData?.status) ? (
-              <TransactionsTableRowAction
-                type="deposits"
-                isError={true}
-                tx={tx}
-                address={address}
-              />
-            ) : (
-              tx.l1ToL2MsgData?.l2TxID &&
-              tx.l2ToL3MsgData?.l2ChainId && (
-                <ExternalLink
-                  href={`${getExplorerUrl(tx.l2ToL3MsgData?.l2ChainId)}/tx/${
-                    tx.l1ToL2MsgData.l2TxID
-                  }`}
-                >
-                  <ArrowTopRightOnSquareIcon height={12} />
-                </ExternalLink>
-              )
-            )
-          }
-        />
-      )}
-
-      {/* Show second leg of teleport transfer waiting time */}
-      {isTeleportTx && (
-        <Step
-          pending={!tx.l2ToL3MsgData?.retryableCreationTxID}
-          done={!!tx.l2ToL3MsgData?.retryableCreationTxID}
-          text={`Wait ~${isTestnetTx ? '1 minute' : '5 minutes'}`}
-        />
+      {isTeleport(tx) && (
+        <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
       )}
 
       {/* If claiming is required we show this step */}
