@@ -1,5 +1,5 @@
 import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
@@ -8,7 +8,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
-import { getAddressFromSigner } from './utils'
+import { getAddressFromSigner, percentIncrease } from './utils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -56,13 +56,27 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       l3Provider: this.destinationChainProvider
     })
 
-    const estimatedParentChainGas = await this.sourceChainProvider.estimateGas(
-      depositRequest.txRequest
-    )
-
-    return {
-      estimatedParentChainGas,
-      estimatedChildChainGas: constants.Zero
+    try {
+      const estimatedParentChainGas =
+        await this.sourceChainProvider.estimateGas(depositRequest.txRequest)
+      return {
+        estimatedParentChainGas: percentIncrease(
+          estimatedParentChainGas,
+          BigNumber.from(5)
+        ),
+        estimatedChildChainGas: constants.Zero
+      }
+    } catch (e) {
+      console.warn(
+        'Error while estimating gas, falling back to hardcoded values.',
+        e
+      )
+      return {
+        // fallback estimates
+        // https://sepolia.etherscan.io/tx/0xdf2f688ea2ec3c87104e42de4008c3ebd113e14b7179cee165a1d26ade5a0487
+        estimatedParentChainGas: BigNumber.from(120_000),
+        estimatedChildChainGas: constants.Zero
+      }
     }
   }
 
