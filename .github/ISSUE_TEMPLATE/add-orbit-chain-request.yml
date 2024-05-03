@@ -1,0 +1,238 @@
+name: Add Orbit Chain Request
+description: File a request to add your Orbit chain to the bridge
+title: "[feat]: "
+labels: ["feat", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide all the necessary config information
+  - type: input
+    id: chain-id
+    attributes:
+      label: Chain ID
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Chain name
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Chain description
+      description: |
+        A short chain description that will be visible in the networks dropdown. Please make sure this is no longer than 130 characters.
+      placeholder: ex. An amazing chain that does amazing things.
+    validations:
+      required: true
+  - type: input
+    id: brand-color
+    attributes:
+      label: Brand color
+      description: The primary hex code color of your chain.
+      placeholder: ex. "#FFFFFF"
+    validations:
+      required: true
+  - type: input
+    id: chain-logo
+    attributes:
+      label: Chain logo
+      description: Link to the chain logo file.
+    validations:
+      required: true
+  - type: input
+    id: rpc-url
+    attributes:
+      label: RPC URL
+    validations:
+      required: true
+  - type: input
+    id: explorer-url
+    attributes:
+      label: Explorer URL
+    validations:
+      required: true
+  - type: input
+    id: parent-chain-id
+    attributes:
+      label: Parent chain ID
+      placeholder: ex. 42161
+    validations:
+      required: true
+  
+  - type: markdown
+    attributes:
+      value: |
+        Native token information - only fill this if you are using a native token other than ETH
+  - type: input
+    id: native-token-address
+    attributes:
+      label: Native token address
+      placeholder: ex. 0x0000000000000000000000000000000000000000
+    validations:
+      required: false
+  - type: input
+    id: native-token-name
+    attributes:
+      label: Native token name
+      placeholder: ex. Ether
+    validations:
+      required: false           
+  - type: input
+    id: native-token-symbol
+    attributes:
+      label: Native token symbol
+      placeholder: ex. ETH
+    validations:
+      required: false
+  - type: input
+    id: native-token-logo
+    attributes:
+      label: Native token logo
+      description: Link to the native token logo file.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        Chain config and contract addresses
+  - type: input
+    id: confirmPeriodBlocks
+    attributes:
+      label: confirmPeriodBlocks
+      placeholder: ex. 45818
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ETH bridge contract addresses
+  - type: input
+    id: bridge
+    attributes:
+      label: bridge
+    validations:
+      required: true    
+  - type: input
+    id: inbox
+    attributes:
+      label: inbox
+    validations:
+      required: true
+  - type: input
+    id: outbox
+    attributes:
+      label: outbox
+    validations:
+      required: true
+  - type: input
+    id: rollup
+    attributes:
+      label: rollup
+    validations:
+      required: true
+  - type: input
+    id: sequencerInbox
+    attributes:
+      label: sequencerInbox
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Token bridge contract addresses (parent chain)
+  - type: input
+    id: parent-customGateway
+    attributes:
+      label: customGateway
+    validations:
+      required: true
+  - type: input
+    id: parent-ERC20Gateway
+    attributes:
+      label: ERC20Gateway
+    validations:
+      required: true
+  - type: input
+    id: parent-gatewayRouter
+    attributes:
+      label: gatewayRouter
+    validations:
+      required: true
+  - type: input
+    id: parent-multicall
+    attributes:
+      label: multicall
+    validations:
+      required: true
+  - type: input
+    id: parent-proxyAdmin
+    attributes:
+      label: proxyAdmin
+    validations:
+      required: true
+  - type: input
+    id: parent-weth
+    attributes:
+      label: weth
+    validations:
+      required: true
+  - type: input
+    id: parent-wethGateway
+    attributes:
+      label: wethGateway
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Token bridge contract addresses (Orbit chain)
+  - type: input
+    id: child-customGateway
+    attributes:
+      label: customGateway
+    validations:
+      required: true
+  - type: input
+    id: child-ERC20Gateway
+    attributes:
+      label: ERC20Gateway
+    validations:
+      required: true
+  - type: input
+    id: child-gatewayRouter
+    attributes:
+      label: gatewayRouter
+    validations:
+      required: true
+  - type: input
+    id: child-multicall
+    attributes:
+      label: multicall
+    validations:
+      required: true
+  - type: input
+    id: child-proxyAdmin
+    attributes:
+      label: proxyAdmin
+    validations:
+      required: true
+  - type: input
+    id: child-weth
+    attributes:
+      label: weth
+    validations:
+      required: true
+  - type: input
+    id: child-wethGateway
+    attributes:
+      label: wethGateway
+    validations:
+      required: true
