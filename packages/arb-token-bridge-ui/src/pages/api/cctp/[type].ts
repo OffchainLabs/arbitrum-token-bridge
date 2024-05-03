@@ -1,22 +1,13 @@
-import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
+import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { ChainId } from '../../../util/networks'
 import { Address } from '../../../util/AddressUtils'
 
-const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
-if (!subgraphUrl) {
-  console.warn('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
-}
-
-export function getSubgraphClient(subgraph: string) {
-  return new ApolloClient({
-    link: new HttpLink({
-      uri: `${subgraphUrl}${subgraph}`,
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
+import {
+  getCctpSubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
@@ -69,6 +60,9 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
 
 export type Response =
   | {
+      meta?: {
+        source: string | null
+      }
       data: {
         pending: PendingCCTPTransfer[]
         completed: CompletedCCTPTransfer[]
@@ -151,12 +145,13 @@ export default async function handler(
       return
     }
 
-    const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-mainnet' : 'cctp-sepolia'
-    )
-    const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Ethereum ? 'cctp-arb-one' : 'cctp-arb-sepolia'
-    )
+    const l2ChainId =
+      l1ChainId === ChainId.Ethereum
+        ? ChainId.ArbitrumOne
+        : ChainId.ArbitrumSepolia
+
+    const l1Subgraph = getCctpSubgraphClient(l1ChainId)
+    const l2Subgraph = getCctpSubgraphClient(l2ChainId)
 
     const messagesSentQuery = gql(`{
       messageSents(
@@ -255,6 +250,9 @@ export default async function handler(
     )
 
     res.status(200).json({
+      meta: {
+        source: getSourceFromSubgraphClient(l1Subgraph)
+      },
       data: {
         pending,
         completed

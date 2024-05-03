@@ -1,9 +1,8 @@
-import { createClient, configureChains, goerli } from 'wagmi'
-import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
+import { createClient, configureChains } from 'wagmi'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
 import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
-import { infuraProvider } from 'wagmi/providers/infura'
 
 import {
   sepolia,
@@ -11,13 +10,14 @@ import {
   arbitrumSepolia,
   stylusTestnet,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../networks'
+import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
+import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainID)
@@ -32,12 +32,10 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      // goerli & arb goerli are for tx history panel tests
-      goerli,
-      arbitrumGoerli,
-      // sepolia
+      // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
+      holesky,
       // Orbit chains
       stylusTestnet,
       ...wagmiOrbitChains,
@@ -51,10 +49,9 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      goerli,
-      arbitrumGoerli,
       sepolia,
       arbitrumSepolia,
+      holesky,
       stylusTestnet,
       ...wagmiOrbitChains,
       ...customChains
@@ -75,8 +72,6 @@ enum TargetChainKey {
   Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
-  Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
   ArbitrumSepolia = 'arbitrum-sepolia'
 }
@@ -106,12 +101,6 @@ function getChainId(targetChainKey: TargetChainKey): number {
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
 
-    case TargetChainKey.Goerli:
-      return ChainId.Goerli
-
-    case TargetChainKey.ArbitrumGoerli:
-      return ChainId.ArbitrumGoerli
-
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia
 
@@ -136,10 +125,7 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [
-      infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY! }),
-      publicProvider()
-    ]
+    [customInfuraProvider(), publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({

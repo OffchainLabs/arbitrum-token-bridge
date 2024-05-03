@@ -1,29 +1,20 @@
 import { ChainId, getCustomChainFromLocalStorageById } from './networks'
 import { orbitChains, BridgeUiConfig } from './orbitChainsList'
 
-export function getBridgeUiConfigForChain(
-  chainId: number,
-  { variant }: { variant?: 'light' | 'dark' } = {}
-): BridgeUiConfig {
+export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
   type BaseBridgeUiConfig = Omit<BridgeUiConfig, 'network'> & {
     network: Omit<BridgeUiConfig['network'], 'name'>
   }
 
   const ethereumBaseConfig: BaseBridgeUiConfig = {
-    color: {
-      primary: '#454A75',
-      secondary: '#1A1C33'
-    },
+    color: '#454A75',
     network: {
       logo: '/images/EthereumLogo.svg'
     }
   }
 
   const arbitrumBaseConfig: BaseBridgeUiConfig = {
-    color: {
-      primary: '#1B4ADD',
-      secondary: '#001A6B'
-    },
+    color: '#1B4ADD',
     network: {
       logo: '/images/ArbitrumLogo.svg'
     }
@@ -41,15 +32,6 @@ export function getBridgeUiConfigForChain(
           description: 'The OG chain that started it all.'
         }
       }
-    case ChainId.Goerli:
-      return {
-        ...ethereumBaseConfig,
-        network: {
-          ...ethereumBaseConfig.network,
-          name: 'Goerli',
-          description: 'A deprecated Ethereum testnet, use Sepolia instead.'
-        }
-      }
     case ChainId.Sepolia:
       return {
         ...ethereumBaseConfig,
@@ -57,6 +39,15 @@ export function getBridgeUiConfigForChain(
           ...ethereumBaseConfig.network,
           name: 'Sepolia',
           description: 'The current recommended Ethereum testnet.'
+        }
+      }
+    case ChainId.Holesky:
+      return {
+        ...ethereumBaseConfig,
+        network: {
+          ...ethereumBaseConfig.network,
+          name: 'Holesky',
+          description: 'Ethereum testnet.'
         }
       }
     case ChainId.Local:
@@ -75,17 +66,7 @@ export function getBridgeUiConfigForChain(
           name: 'Arbitrum One',
           logo: '/images/ArbitrumOneLogo.svg',
           description:
-            'Rollup protocol. Permissionless validation, secured by operational fraud proofs.'
-        }
-      }
-    case ChainId.ArbitrumGoerli:
-      return {
-        ...arbitrumBaseConfig,
-        network: {
-          ...arbitrumBaseConfig.network,
-          name: 'Arbitrum Goerli',
-          description:
-            'A deprecated Arbitrum One testnet, use Arbitrum Sepolia instead.'
+            'Rollup protocol. The original Arbitrum chain. Secured by functional fraud proofs.'
         }
       }
     case ChainId.ArbitrumSepolia:
@@ -107,23 +88,17 @@ export function getBridgeUiConfigForChain(
       }
     case ChainId.ArbitrumNova:
       return {
-        color: {
-          primary: '#E57310',
-          secondary: '#743600'
-        },
+        color: '#E57310',
         network: {
           name: 'Arbitrum Nova',
           logo: '/images/ArbitrumNovaLogo.svg',
           description:
-            'AnyTrust protocol. High scale and low fee. Secured by a trust-minimized Data Availability Committee (DAC).'
+            'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
     case ChainId.StylusTestnet:
       return {
-        color: {
-          primary: '#E3066E',
-          secondary: '#7E0028'
-        },
+        color: '#E3066E',
         network: {
           name: 'Stylus Testnet',
           logo: '/images/StylusLogo.svg',
@@ -141,16 +116,10 @@ export function getBridgeUiConfigForChain(
       }
 
       return {
-        color: {
-          primary: '#12AAFF',
-          secondary: '#0C4260'
-        },
+        color: '#12AAFF',
         network: {
           name: customChain ? customChain.name : 'Unknown',
-          logo:
-            variant === 'light'
-              ? '/images/OrbitLogoWhite.svg'
-              : '/images/OrbitLogo.svg'
+          logo: '/images/OrbitLogo.svg'
         }
       }
     }

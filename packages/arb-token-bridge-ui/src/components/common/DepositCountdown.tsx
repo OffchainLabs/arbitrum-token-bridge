@@ -12,16 +12,12 @@ function getMinutesRemainingText({
   unknownCompletionTime: boolean
 }): string {
   if (minutesRemaining <= 1) {
-    if (minutesRemaining <= 0) {
-      return 'Almost there...'
-    }
-
-    return 'Less than a minute...'
+    return 'Less than a minute'
   }
 
   const prefix = unknownCompletionTime ? 'up to ' : '~'
 
-  return `${prefix}${minutesRemaining} mins remaining`
+  return `${prefix}${minutesRemaining} minutes`
 }
 
 function getEstimatedDepositDurationInMinutes(

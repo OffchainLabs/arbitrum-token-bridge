@@ -2,68 +2,107 @@ import { Erc20Bridger } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
+import * as Sentry from '@sentry/react'
 
+import {
+  fetchErc20Allowance,
+  fetchErc20ParentChainGatewayAddress,
+  getL2ERC20Address
+} from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
-import { fetchErc20Allowance, fetchErc20L1GatewayAddress } from './TokenUtils'
+import { addressIsSmartContract } from './AddressUtils'
 
-async function fetchFallbackGasEstimates({
+async function fetchTokenFallbackGasEstimates({
   inboxAddress,
-  l1Provider
+  parentChainErc20Address,
+  parentChainProvider,
+  childChainProvider
 }: {
   inboxAddress: string
-  l1Provider: Provider
+  parentChainErc20Address: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
 }): Promise<DepositGasEstimates> {
-  const l1BaseFee = await l1Provider.getGasPrice()
-  const inbox = Inbox__factory.connect(inboxAddress, l1Provider)
+  const l1BaseFee = await parentChainProvider.getGasPrice()
+  const inbox = Inbox__factory.connect(inboxAddress, parentChainProvider)
 
-  const estimatedL2SubmissionCost = await inbox.calculateRetryableSubmissionFee(
-    // Values set by looking at a couple of L1 gateways
-    //
-    // L1 LPT Gateway: 324
-    // L1 DAI Gateway: 324
-    // L1 Standard Gateway (APE): 740
-    // L1 Custom Gateway (USDT): 324
-    // L1 WETH Gateway: 324
-    BigNumber.from(1_000),
-    // We do the same percent increase in the SDK
-    //
-    // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
-    l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
-  )
+  const estimatedChildChainSubmissionCost =
+    await inbox.calculateRetryableSubmissionFee(
+      // Values set by looking at a couple of L1 gateways
+      //
+      // L1 LPT Gateway: 324
+      // L1 DAI Gateway: 324
+      // L1 Standard Gateway (APE): 740
+      // L1 Custom Gateway (USDT): 324
+      // L1 WETH Gateway: 324
+      BigNumber.from(1_000),
+      // We do the same percent increase in the SDK
+      //
+      // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/message/L1ToL2MessageGasEstimator.ts#L132
+      l1BaseFee.add(l1BaseFee.mul(BigNumber.from(3)))
+    )
+
+  // Values set by looking at a couple of different ERC-20 deposits
+  // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
+  // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
+  // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
+  // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
+  // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
+  const estimatedParentChainGas = BigNumber.from(240_000)
+
+  const childChainTokenAddress = await getL2ERC20Address({
+    erc20L1Address: parentChainErc20Address,
+    l1Provider: parentChainProvider,
+    l2Provider: childChainProvider
+  })
+
+  const isFirstTimeTokenBridging = !(await addressIsSmartContract(
+    childChainTokenAddress,
+    childChainProvider
+  ))
+
+  if (isFirstTimeTokenBridging) {
+    return {
+      estimatedParentChainGas,
+      // Values set by looking at a couple of different ERC-20 deposits, with added buffer to account for the 30% gas limit increase (see `depositTokenEstimateGas`)
+      // https://explorer.xai-chain.net/tx/0x9b069c244e6c1ebb3eebfe9f653eb4c9fcb171ab56c68770509c86c16bb078a0
+      // https://explorer.xai-chain.net/tx/0x68203e316c690878e35a8aa77db32108cd9afcc02eb7488ce3d2869a87e84492
+      estimatedChildChainGas: BigNumber.from(800_000),
+      estimatedChildChainSubmissionCost
+    }
+  }
 
   return {
-    // Values set by looking at a couple of different ERC-20 deposits
-    //
-    // https://etherscan.io/tx/0x5c0ab94413217d54641ba5faa0c614c6dd5f97efcc7a6ca25df9c376738dfa34
-    // https://etherscan.io/tx/0x0049a5a171b891c5826ba47e77871fa6bae6eb57fcaf474a97d62ab07a815a2c
-    // https://etherscan.io/tx/0xb11bffdfbe4bc6fb4328c390d4cdf73bc863dbaaef057afb59cd83dfd6dc210c
-    // https://etherscan.io/tx/0x194ab69d3d2b5730b37e8bad1473f8bc54ded7a2ad3708d131ef13c09168d67e
-    // https://etherscan.io/tx/0xc4789d3f13e0efb011dfa88eef89b4b715d8c32366977eae2d3b85f13b3aa6c5
-    estimatedL1Gas: BigNumber.from(240_000),
-    // Values set by looking at a couple of different ERC-20 deposits
-    //
+    estimatedParentChainGas,
+    // Values set by looking at a couple of different ERC-20 deposits, with added buffer to account for the 30% gas limit increase (see `depositTokenEstimateGas`)
     // https://arbiscan.io/tx/0x483206b0ed4e8a23b14de070f6c552120d0b9bc6ed028f4feae33c4ca832f2bc
     // https://arbiscan.io/tx/0xd2ba11ebc51f546abc2ddda715507948d097e5707fd1dc37c239cc4cf28cc6ed
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    estimatedL2Gas: BigNumber.from(100_000),
-    estimatedL2SubmissionCost
+    estimatedChildChainGas: BigNumber.from(150_000),
+    estimatedChildChainSubmissionCost
   }
 }
 
 async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
-  const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
+  const {
+    amount,
+    address,
+    parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  } = params
 
-  const l1Gateway = await fetchErc20L1GatewayAddress({
-    erc20L1Address,
-    l1Provider,
-    l2Provider
+  const l1Gateway = await fetchErc20ParentChainGatewayAddress({
+    erc20ParentChainAddress: parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
   })
 
   const allowanceForL1Gateway = await fetchErc20Allowance({
-    address: erc20L1Address,
-    provider: l1Provider,
+    address: parentChainErc20Address,
+    provider: parentChainProvider,
     owner: address,
     spender: l1Gateway
   })
@@ -71,46 +110,68 @@ async function allowanceIsInsufficient(params: DepositTokenEstimateGasParams) {
   return allowanceForL1Gateway.lt(amount)
 }
 
-export type DepositTokenEstimateGasParams = {
+export type DepositTxEstimateGasParams = {
   amount: BigNumber
   address: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
+  parentChainErc20Address?: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
 }
+
+type DepositTokenEstimateGasParams = Required<DepositTxEstimateGasParams>
 
 export async function depositTokenEstimateGas(
   params: DepositTokenEstimateGasParams
 ): Promise<DepositGasEstimates> {
-  const { amount, address, erc20L1Address, l1Provider, l2Provider } = params
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-
-  if (await allowanceIsInsufficient(params)) {
-    console.warn(
-      `Gateway allowance for "${erc20L1Address}" is too low, falling back to hardcoded values.`
-    )
-
-    return fetchFallbackGasEstimates({
-      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
-      l1Provider
-    })
-  }
-
-  const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
+  const {
     amount,
-    erc20L1Address,
-    l1Provider,
-    l2Provider,
-    from: address,
-    retryableGasOverrides: {
-      // temp hardcoded value for v2.2.4
-      gasLimit: { base: BigNumber.from(300_000) }
-    }
-  })
+    address,
+    parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  } = params
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
 
-  return {
-    estimatedL1Gas: await l1Provider.estimateGas(txRequest),
-    estimatedL2Gas: retryableData.gasLimit,
-    estimatedL2SubmissionCost: retryableData.maxSubmissionCost
+  try {
+    if (await allowanceIsInsufficient(params)) {
+      console.warn(
+        `Gateway allowance for "${parentChainErc20Address}" is too low, falling back to hardcoded values.`
+      )
+
+      return fetchTokenFallbackGasEstimates({
+        inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        parentChainErc20Address,
+        parentChainProvider,
+        childChainProvider
+      })
+    }
+
+    const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
+      amount,
+      erc20L1Address: parentChainErc20Address,
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider,
+      from: address,
+      retryableGasOverrides: {
+        // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
+        // the 30% gas limit increase should cover the difference
+        gasLimit: { percentIncrease: BigNumber.from(30) }
+      }
+    })
+
+    return {
+      estimatedParentChainGas: await parentChainProvider.estimateGas(txRequest),
+      estimatedChildChainGas: retryableData.gasLimit,
+      estimatedChildChainSubmissionCost: retryableData.maxSubmissionCost
+    }
+  } catch (error) {
+    Sentry.captureException(error)
+
+    return fetchTokenFallbackGasEstimates({
+      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      parentChainErc20Address,
+      parentChainProvider,
+      childChainProvider
+    })
   }
 }

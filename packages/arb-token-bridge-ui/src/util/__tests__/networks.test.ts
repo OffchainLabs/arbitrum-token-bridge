@@ -7,7 +7,7 @@ import {
 } from '../networks'
 import { orbitTestnets } from '../orbitChainsList'
 
-const xaiTestnetChainId = 47279324479
+const xaiTestnetChainId = 37714555429
 
 beforeAll(() => {
   const xaiTestnet = orbitTestnets[xaiTestnetChainId]
@@ -84,11 +84,6 @@ describe('getBaseChainIdByChainId', () => {
       ).toBe(ChainId.Ethereum)
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.Goerli
-        })
-      ).toBe(ChainId.Goerli)
-      expect(
-        getBaseChainIdByChainId({
           chainId: ChainId.Sepolia
         })
       ).toBe(ChainId.Sepolia)
@@ -114,11 +109,6 @@ describe('getBaseChainIdByChainId', () => {
       ).toBe(ChainId.Ethereum)
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.ArbitrumGoerli
-        })
-      ).toBe(ChainId.Goerli)
-      expect(
-        getBaseChainIdByChainId({
           chainId: ChainId.ArbitrumSepolia
         })
       ).toBe(ChainId.Sepolia)
@@ -136,7 +126,7 @@ describe('getBaseChainIdByChainId', () => {
         getBaseChainIdByChainId({
           chainId: xaiTestnetChainId
         })
-      ).toBe(ChainId.Goerli)
+      ).toBe(ChainId.Sepolia)
 
       expect(
         getBaseChainIdByChainId({
@@ -172,12 +162,6 @@ describe('getSupportedChainIds', () => {
     })
     it('should return a list of chain ids that does not include Testnets', () => {
       expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
-        ChainId.Goerli
-      )
-      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
-        ChainId.ArbitrumGoerli
-      )
-      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
         ChainId.Sepolia
       )
       expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
@@ -209,12 +193,6 @@ describe('getSupportedChainIds', () => {
     it('should return a list of chain ids that includes Testnets', () => {
       expect(
         getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
-      ).toContain(ChainId.Goerli)
-      expect(
-        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
-      ).toContain(ChainId.ArbitrumGoerli)
-      expect(
-        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
       ).toContain(ChainId.Sepolia)
       expect(
         getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
@@ -243,12 +221,6 @@ describe('getSupportedChainIds', () => {
       )
     })
     it('should return a list of chain ids that includes Testnets', () => {
-      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
-        ChainId.Goerli
-      )
-      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
-        ChainId.ArbitrumGoerli
-      )
       expect(getSupportedChainIds({ includeTestnets: true })).toContain(
         ChainId.Sepolia
       )

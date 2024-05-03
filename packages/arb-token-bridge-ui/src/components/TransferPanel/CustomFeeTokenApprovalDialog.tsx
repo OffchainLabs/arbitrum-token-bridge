@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSigner } from 'wagmi'
-import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { BigNumber, constants, utils } from 'ethers'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -10,11 +9,13 @@ import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
 import { useGasPrice } from '../../hooks/useGasPrice'
-import { approveCustomFeeTokenEstimateGas } from './CustomFeeTokenUtils'
 import { NativeCurrencyErc20 } from '../../hooks/useNativeCurrency'
 import { useAppState } from '../../state'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { shortenAddress } from '../../util/CommonUtils'
+import { NoteBox } from '../common/NoteBox'
+import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 
 export type CustomFeeTokenApprovalDialogProps = UseDialogProps & {
   customFeeToken: NativeCurrencyErc20
@@ -30,8 +31,8 @@ export function CustomFeeTokenApprovalDialog(
   const { selectedToken } = app
 
   const [networks] = useNetworks()
-  const { childChainProvider, parentChain, parentChainProvider } =
-    useNetworksRelationship(networks)
+  const { sourceChain, destinationChain } = networks
+  const { parentChain, parentChainProvider } = useNetworksRelationship(networks)
   const { isEthereumMainnet } = isNetwork(parentChain.id)
 
   const { data: l1Signer } = useSigner({ chainId: parentChain.id })
@@ -59,28 +60,39 @@ export function CustomFeeTokenApprovalDialog(
 
     async function getEstimatedGas() {
       if (l1Signer) {
-        setEstimatedGas(
-          await approveCustomFeeTokenEstimateGas({
-            erc20L1Address: selectedToken?.address,
-            l1Signer,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
-          })
+        /*
+         Note:
+          1. we do not consider CCTP case here, since we are not using it with custom fee token approval
+          2. we are assuming deposits only (withdrawals will return `requiresNativeCurrencyApproval` as false)
+          These will need to be supported on a case-by-case basis later, with checks like in `TokenApprovalDialogue.tsx`
+        */
+        const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
+          {
+            sourceChainId: sourceChain.id,
+            sourceChainErc20Address: selectedToken?.address,
+            destinationChainId: destinationChain.id,
+            destinationChainErc20Address: selectedToken?.l2Address
+          }
         )
+
+        const estimatedGas =
+          await bridgeTransferStarter.approveNativeCurrencyEstimateGas({
+            signer: l1Signer
+          })
+
+        if (estimatedGas) {
+          setEstimatedGas(estimatedGas)
+        }
       }
     }
 
     getEstimatedGas()
-  }, [isOpen, selectedToken, l1Signer, childChainProvider, parentChainProvider])
+  }, [isOpen, selectedToken, l1Signer, sourceChain, destinationChain])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)
 
     setChecked(false)
-  }
-
-  if (!customFeeToken) {
-    return null
   }
 
   return (
@@ -91,24 +103,22 @@ export function CustomFeeTokenApprovalDialog(
       actionButtonTitle={`Pay approval fee of ${approvalFeeText}`}
       actionButtonProps={{ disabled: !checked }}
     >
-      <div className="flex flex-col space-y-6 md:max-w-[490px]">
-        <div className="flex flex-row items-center space-x-4">
+      <div className="flex flex-col space-y-4 py-4">
+        <div className="flex flex-row items-center space-x-3">
           <SafeImage
             src={customFeeToken.logoUrl}
             alt={`${customFeeToken.name} logo`}
-            className="h-8 w-8 grow-0 rounded-full"
+            className="h-6 w-6 grow-0"
             fallback={
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ocl-blue text-sm font-medium text-white">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full border border-white/30 bg-gray-dark text-sm font-medium">
                 ?
               </div>
             }
           />
           <div className="flex flex-col">
-            <div className="flex items-center space-x-2">
-              <span className="text-base font-medium text-gray-900">
-                {customFeeToken.symbol}
-              </span>
-              <span className="text-xs text-gray-500">
+            <div className="flex items-center space-x-1">
+              <span className="text-base">{customFeeToken.symbol}</span>
+              <span className="text-xs text-white/70">
                 {customFeeToken.name}
               </span>
             </div>
@@ -116,9 +126,9 @@ export function CustomFeeTokenApprovalDialog(
               href={`${getExplorerUrl(parentChain.id)}/token/${
                 customFeeToken.address
               }`}
-              className="text-xs text-blue-link underline"
+              className="arb-hover text-xs underline"
             >
-              {customFeeToken.address}
+              {shortenAddress(customFeeToken.address)}
             </ExternalLink>
           </div>
         </div>
@@ -138,7 +148,7 @@ export function CustomFeeTokenApprovalDialog(
             <span className="font-light">
               I understand that I have to pay a one-time{' '}
               <span className="font-medium">
-                approval fee of {approvalFeeText}*
+                approval fee of {approvalFeeText}
               </span>{' '}
               for this.
             </span>
@@ -147,11 +157,8 @@ export function CustomFeeTokenApprovalDialog(
           onChange={setChecked}
         />
 
-        <div className="flex flex-col md:max-w-[490px]">
-          <div
-            className={`flex flex-row items-center space-x-2 rounded-lg bg-cyan px-2 py-3`}
-          >
-            <InformationCircleIcon className="h-6 w-6 text-cyan-dark" />
+        <div className="flex flex-col">
+          <NoteBox>
             {selectedToken ? (
               <span className="text-sm font-light text-cyan-dark">
                 After approval, you&apos;ll see additional prompts related to
@@ -165,7 +172,7 @@ export function CustomFeeTokenApprovalDialog(
                 <span className="font-medium">{customFeeToken.symbol}</span>.
               </span>
             )}
-          </div>
+          </NoteBox>
         </div>
       </div>
     </Dialog>

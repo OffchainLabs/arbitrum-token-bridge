@@ -10,10 +10,7 @@ export type NetworkType =
   | 'Arbitrum Testnet'
 
 export type BridgeUiConfig = {
-  color: {
-    primary: `#${string}`
-    secondary: `#${string}`
-  }
+  color: `#${string}`
   network: {
     name: string
     logo: string
@@ -69,10 +66,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
-      },
+      color: '#F30019',
       network: {
         name: 'Xai',
         logo: '/images/XaiLogo.svg',
@@ -128,10 +122,7 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#B16EFF',
-        secondary: '#1E1E1E'
-      },
+      color: '#B16EFF',
       network: {
         name: 'RARI Mainnet',
         description:
@@ -180,70 +171,231 @@ export const orbitMainnets: {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F4C7C3',
-        secondary: '#624F7B'
-      },
+      color: '#DF62DD',
       network: {
         name: 'Muster Network',
         description: 'A gaming chain with cheap fees and account abstraction.',
         logo: '/images/MusterLogo.svg'
       }
     }
-  }
-}
-
-export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
-  47279324479: {
-    chainID: 47279324479,
-    confirmPeriodBlocks: 20,
+  },
+  70700: {
+    chainID: 70700,
+    confirmPeriodBlocks: 40320,
     ethBridge: {
-      bridge: '0xf958e56d431eA78C7444Cf6A6184Af732Ae6a8A3',
-      inbox: '0x8b842ad88AAffD63d52EC54f6428fb7ff83060a8',
-      outbox: '0xDfe36Bea935F11260b0159dCA255b6668925d743',
-      rollup: '0x082742561295f6e1b43c4f5d1e2d52d7FfE082f1',
-      sequencerInbox: '0x5fD0cCc5D31748A44b43cf8DFBFA0FAA32665464'
+      bridge: '0x074fFD20C6D8865752C997f4980Cf70F2a3Fbac6',
+      inbox: '0xC3874bE54E3f25BBC6B4fB582654fd9294f485a1',
+      outbox: '0x0cD85675897B7020d7121e63AB250d3F47ff3Ff2',
+      rollup: '0x65AD139061B3f6DDb16170a07b925337ddf42407',
+      sequencerInbox: '0xa58F38102579dAE7C584850780dDA55744f67DF1'
     },
-    explorerUrl: 'https://testnet-explorer.xai-chain.net',
-    rpcUrl: 'https://testnet.xai-chain.net/rpc',
+    explorerUrl: 'https://explorer.apex.proofofplay.com',
+    rpcUrl: 'https://rpc.apex.proofofplay.com',
     isArbitrum: true,
     isCustom: true,
-    name: 'Xai Orbit Testnet',
-    slug: 'xai-testnet',
-    partnerChainID: 421613,
+    name: 'Proof of Play Apex',
+    slug: 'pop-apex',
+    partnerChainID: 42161,
     partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     tokenBridge: {
-      l1CustomGateway: '0xdBbDc3EE848C05792CC93EA140c59731f920c3F2',
-      l1ERC20Gateway: '0xC033fBAFd978440460d943efe6A3bF6A1a990e80',
-      l1GatewayRouter: '0xCb0Fe28c36a60Cf6254f4dd74c13B0fe98FFE5Db',
-      l1MultiCall: '0x21779e0950A87DDD57E341d54fc12Ab10F6eE167',
-      l1ProxyAdmin: '0xc80853e91f8Ac0AaD6ff939F3861600Ab34Dfe12',
-      l1Weth: '0xe39Ab88f8A4777030A534146A9Ca3B52bd5D43A3',
-      l1WethGateway: '0x58ea20BE21b971Fa282905EdA74bA46540eEd977',
-      l2CustomGateway: '0xc60622D1FbDD63Cf9c173D1b69715Ef2B725D792',
-      l2ERC20Gateway: '0x47ab2DfD627360fC6ac4Ae2fB9fa6f3539aFfeCc',
-      l2GatewayRouter: '0x75c2848D0B2116d6832Ff3758df09D4209b4b7ce',
-      l2Multicall: '0xE2fBe979bD0df59554Fded36f3A3BF5206f287a2',
-      l2ProxyAdmin: '0x81DeEc20158a367f7039ab3a563C1eB63cc2b3D6',
-      l2Weth: '0xea77c06A6703A781f9442EFa083e21F3F75907F8',
-      l2WethGateway: '0x927b59cCde7a92acDa085514FdEA39f0c4D1a2DC'
+      l1CustomGateway: '0x653f8D34a86207569069164d45a031eE552A4729',
+      l1ERC20Gateway: '0x298eb8d9f2F046AC60c01535fad40320CCdeB7c0',
+      l1GatewayRouter: '0x2f883c5997Cf60B4d52a2fD4039918E1f9D1147c',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0xCC6f49cff395c4d160C61112522700dcB007c41d',
+      l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      l1WethGateway: '0xEB2Ae03709f63CEa9E5eC6ab25C1838c4A5634BA',
+      l2CustomGateway: '0x1a4ba648Ddc0E726085A847178eBff204411EB1A',
+      l2ERC20Gateway: '0x7aEdD5a2F3bBd4841711D017Edf90d611aD96a9e',
+      l2GatewayRouter: '0x33e59640CD7E5C5E8D43fd46d995efDdDd0Fc930',
+      l2Multicall: '0xEB4150a4F26Cf3563B3a86965E269C8873D48527',
+      l2ProxyAdmin: '0x518e5FA773118b779a6231303f5593A10D3B3c84',
+      l2Weth: '0x77684A04145a5924eFCE0D92A7c4a2A2E8C359de',
+      l2WethGateway: '0x6e965dd667cb08f09DE8285317f012Ac889507b4'
     },
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: {
-        primary: '#F30019',
-        secondary: '#87000E'
+      color: '#3E63DD',
+      network: {
+        name: 'Proof of Play Apex',
+        description:
+          "Apex is the first chain in Proof of Play's Multichain, powering the popular Pirate Nation game.",
+        logo: '/images/PopApexLogo.svg'
+      }
+    }
+  },
+  42001: {
+    chainID: 42001,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0x10B25719f4c0fA1BFF22431438E6b6315059548A',
+      inbox: '0x1285D6cE3604D341b29ccfF300d043af1CDb57e3',
+      outbox: '0x32005e1Ca72cDaAADc2BCFb5E37cc8B2bdb30c60',
+      rollup: '0x5c6f7a6CC67F35d8d9A02521E69B80915DA13748',
+      sequencerInbox: '0x58b38152Dc53Aab5F6c41f33AA543E224a7FF709'
+    },
+    nativeToken: '0xBC9B77acA82f6BE43927076D71cd453b625165B8',
+    explorerUrl: 'https://explorer.pmon.xyz',
+    rpcUrl: 'https://rpc.pmon.xyz',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'PMON Chain',
+    slug: 'pmon-chain',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x38727FfD8aFAdaeF60687D1E623Fd28B58A2B8a8',
+      l1ERC20Gateway: '0x341F7f035f1CBA1E879Df40117f797F88aC703ea',
+      l1GatewayRouter: '0xAE4BAD578fff3377FC5Ebfd4d52d3fdd7FAB3017',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0x50AD12758e5e6320d658B358C731AF6C7FE2b853',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0xed609532adB4B24cd580d042A05ef15d914Bb7b0',
+      l2ERC20Gateway: '0x8624C8046AA1E619528adA4Fa894E431b7CCE139',
+      l2GatewayRouter: '0x1d55e424757817CBd27caD7169FE462d6703c57d',
+      l2Multicall: '0xB019E8B9448138251a9C58af34FcCd276cE733f6',
+      l2ProxyAdmin: '0x8699E41Ed6246708035f7B2E1bf194D9C6Fb7d32',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#FF3369',
+      network: {
+        name: 'PMON Chain',
+        description:
+          'Bridge to PMON Chain for strategic, fully on-chain monster battles and start building your ultimate NFT collection.',
+        logo: '/images/PolychainMonstersLogo.png'
       },
+      nativeTokenData: {
+        name: 'Polkamon',
+        symbol: 'PMON',
+        decimals: 18,
+        logoUrl: '/images/PolychainMonstersLogo.png'
+      }
+    }
+  }
+}
+
+export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
+  37714555429: {
+    chainID: 37714555429,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0x6c7FAC4edC72E86B3388B48979eF37Ecca5027e6',
+      inbox: '0x6396825803B720bc6A43c63caa1DcD7B31EB4dd0',
+      outbox: '0xc7491a559b416540427f9f112C5c98b1412c5d51',
+      rollup: '0xeedE9367Df91913ab149e828BDd6bE336df2c892',
+      sequencerInbox: '0x529a2061A1973be80D315770bA9469F3Da40D938'
+    },
+    nativeToken: '0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2',
+    explorerUrl: 'https://testnet-explorer-v2.xai-chain.net',
+    rpcUrl: 'https://testnet-v2.xai-chain.net/rpc',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'Xai Testnet',
+    slug: 'xai-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x04e14E04949D49ae9c551ca8Cc3192310Ce65D88',
+      l1ERC20Gateway: '0xCcB451C4Df22addCFe1447c58bC6b2f264Bb1256',
+      l1GatewayRouter: '0x185b868DBBF41554465fcb99C6FAb9383E15f47A',
+      l1MultiCall: '0xA115146782b7143fAdB3065D86eACB54c169d092',
+      l1ProxyAdmin: '0x022c515aEAb29aaFf82e86A10950cE14eA89C9c5',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0xea1ce1CC75C948488515A3058E10aa82da40cE8F',
+      l2ERC20Gateway: '0xD840761a09609394FaFA3404bEEAb312059AC558',
+      l2GatewayRouter: '0x3B8ba769a43f34cdD67a20aF60d08D54C9C8f1AD',
+      l2Multicall: '0x5CBd60Ae5Af80A42FA8b0F20ADF95A8879844984',
+      l2ProxyAdmin: '0x7C1BA251d812fb34aF5C2566040C3C30585aFed9',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#F30019',
       network: {
         name: 'Xai Testnet',
         logo: '/images/XaiLogo.svg',
         description: 'The testnet for Xai’s gaming chain.'
       },
-      depositTimeMinutes: 1
+      depositTimeMinutes: 1,
+      nativeTokenData: {
+        name: 'Xai',
+        symbol: 'sXAI',
+        decimals: 18,
+        logoUrl: '/images/XaiLogo.svg'
+      }
+    }
+  },
+  53457: {
+    chainID: 53457,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0xC0856971702b02A5576219540BD92DAE79a79288',
+      inbox: '0xD62ef8d8c71d190417C6CE71f65795696C069f09',
+      outbox: '0xaEB5Fe2f7003881c3a8EBAE9664E8607f3935d53',
+      rollup: '0xBc4cc964eF0ea5792a398F9E738edf368A34f003',
+      sequencerInbox: '0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc'
+    },
+    nativeToken: '0xAC716E87b0853C0712674e8E3a8435a489F276b4',
+    explorerUrl: 'https://testnet-scan.dodochain.com',
+    rpcUrl: 'https://dodochain-testnet.alt.technology',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'DODOchain Testnet',
+    slug: 'dodochain-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xeCa856BE0041184eeda8F2c98896AC4693b168EA',
+      l1ERC20Gateway: '0xf57F874845CD652e69f69f020A4d46F4e427bb43',
+      l1GatewayRouter: '0xE3661c8313B35BA310Ad89e113561F3C983dC761',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0x6B8C4aD57806fB4563031B79348bcC4CC3bBa7D5',
+      l2ERC20Gateway: '0xBb94635f882f03f7641B742F5e3070e6B5108b71',
+      l2GatewayRouter: '0x14De2d9c4C7F5ad2d134Eb746207653797693C0D',
+      l2Multicall: '0xF6Fd6C87C4cac9A4BF4b6fF4efa4B06bdbbe5D51',
+      l2ProxyAdmin: '0x80C5A0C4004B4130b823AfE8D97aAeA3fBFf3fCc',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#B88B1E',
+      network: {
+        name: 'DODOchain Testnet',
+        logo: '/images/DODOchain.png',
+        description: 'An Omni-Trading Layer3 Powered by Arbitrum Orbit.'
+      },
+      nativeTokenData: {
+        name: 'Berd',
+        symbol: 'BERD',
+        decimals: 18,
+        logoUrl: ''
+      }
     }
   }
 }

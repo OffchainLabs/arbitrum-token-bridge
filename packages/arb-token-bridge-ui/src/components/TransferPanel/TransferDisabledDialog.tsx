@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
+import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useNetworks } from '../../hooks/useNetworks'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -17,6 +19,7 @@ export const useTransferDisabledDialogStore =
   }))
 
 export function TransferDisabledDialog() {
+  const [networks] = useNetworks()
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -26,7 +29,10 @@ export function TransferDisabledDialog() {
     isOpen: isOpenTransferDisabledDialog,
     closeDialog: closeTransferDisabledDialog
   } = useTransferDisabledDialogStore()
-  const unsupportedToken = selectedToken?.symbol
+  const unsupportedToken = sanitizeTokenSymbol(selectedToken?.symbol ?? '', {
+    erc20L1Address: selectedToken?.address,
+    chainId: networks.sourceChain.id
+  })
 
   const onClose = () => {
     setSelectedToken(null)
@@ -41,15 +47,19 @@ export function TransferDisabledDialog() {
       actionButtonTitle="Close"
       isOpen={isOpenTransferDisabledDialog}
       onClose={onClose}
-      className="md:max-w-[628px]"
     >
-      <p>
-        Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
-        has a custom bridge solution that is incompatible with the canonical
-        Arbitrum bridge. For more information please contact{' '}
-        <span className="font-medium">{unsupportedToken}</span>
-        &apos;s developer team directly or explore their docs.
-      </p>
+      <div className="flex flex-col space-y-4 py-4">
+        <p>
+          Unfortunately, <span className="font-medium">{unsupportedToken}</span>{' '}
+          has a custom bridge solution that is incompatible with the canonical
+          Arbitrum bridge.
+        </p>
+        <p>
+          For more information please contact{' '}
+          <span className="font-medium">{unsupportedToken}</span>
+          &apos;s developer team directly or explore their docs.
+        </p>
+      </div>
     </Dialog>
   )
 }

@@ -2,11 +2,7 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import {
-  L1ToL2MessageStatus,
-  L2ToL1MessageStatus as OutgoingMessageState
-} from '@arbitrum/sdk'
-import { L1ToL2MessageReader } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
@@ -136,25 +132,15 @@ export interface AddressToDecimals {
 }
 
 export type GasEstimates = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
+  estimatedParentChainGas: BigNumber
+  estimatedChildChainGas: BigNumber
 }
 
 export type DepositGasEstimates = GasEstimates & {
-  estimatedL2SubmissionCost: BigNumber
+  estimatedChildChainSubmissionCost: BigNumber
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (params: {
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
@@ -167,28 +153,6 @@ export interface ArbTokenBridgeToken {
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
-  approve: (params: {
-    erc20L1Address: string
-    l1Signer: Signer
-  }) => Promise<void>
-  approveL2: (params: {
-    erc20L1Address: string
-    l2Signer: Signer
-  }) => Promise<void>
-  deposit: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer

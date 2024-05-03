@@ -19,6 +19,12 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
       public: {
         http: [chain.rpcUrl]
       }
+    },
+    blockExplorers: {
+      default: {
+        name: 'Block Explorer',
+        url: chain.explorerUrl
+      }
     }
   }
 }
@@ -32,6 +38,28 @@ export const sepolia: Chain = {
     default: {
       http: [rpcURLs[ChainId.Sepolia]!]
     }
+  }
+}
+
+export const holesky: Chain = {
+  id: ChainId.Holesky,
+  name: 'Holesky',
+  network: 'holesky',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Etherscan',
+      url: explorerUrls[ChainId.Holesky]!
+    },
+    default: { name: 'Etherscan', url: explorerUrls[ChainId.Holesky]! }
   }
 }
 
