@@ -27,6 +27,7 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -37,7 +38,10 @@ function getTransferDurationText(tx: MergedTransaction) {
 
   if (!tx.isWithdrawal) {
     if (isOrbitChain) {
-      return 'a minute'
+      const { depositTimeMinutes } = getBridgeUiConfigForChain(tx.childChainId)
+      return depositTimeMinutes
+        ? `${depositTimeMinutes} minute${depositTimeMinutes > 1 ? 's' : ''}`
+        : '15 minutes'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
   }
