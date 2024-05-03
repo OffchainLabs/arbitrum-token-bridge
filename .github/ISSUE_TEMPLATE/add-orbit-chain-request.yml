@@ -1,12 +1,12 @@
 name: Add Orbit Chain Request
-description: File a request to add your Orbit chain to the bridge
+description: File a request to have your Orbit chain added to the bridge
 title: "[feat]: "
 labels: ["feat", "triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Please provide all the necessary config information
+        Please provide all the necessary config information. You can get all contract addresses by running [getAllContracts](https://github.com/OffchainLabs/arbitrum-orbit-sdk/blob/feat-add-verification-scripts/examples/verify-rollup/README.md#get-all-contracts).
   - type: input
     id: chain-id
     attributes:
@@ -111,7 +111,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ETH bridge contract addresses
+        Rollup contract addresses
   - type: input
     id: bridge
     attributes:
