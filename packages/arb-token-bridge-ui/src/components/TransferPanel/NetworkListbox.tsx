@@ -70,7 +70,7 @@ export function NetworkListbox({
                         size={20}
                       />
                     </div>
-                    <span className="max-w-[140px] truncate">
+                    <span className="max-w-[150px] truncate">
                       {getNetworkName(option.id)}
                     </span>
                   </Listbox.Option>

@@ -1,5 +1,5 @@
 import { Erc20Bridger } from '@arbitrum/sdk'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveTokenProps,
@@ -14,7 +14,11 @@ import {
   fetchErc20L2GatewayAddress,
   getL1ERC20Address
 } from '../util/TokenUtils'
-import { getAddressFromSigner, getChainIdFromProvider } from './utils'
+import {
+  getAddressFromSigner,
+  getChainIdFromProvider,
+  percentIncrease
+} from './utils'
 import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
@@ -22,12 +26,51 @@ import { addressIsSmartContract } from '../util/AddressUtils'
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
 
+  private sourceChainGatewayAddress: string | undefined
+
   constructor(props: BridgeTransferStarterProps) {
     super(props)
 
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
+  }
+
+  private async getSourceChainGatewayAddress(): Promise<string> {
+    const destinationChainErc20Address =
+      await this.getDestinationChainErc20Address()
+
+    const sourceChainGatewayAddress = await fetchErc20L2GatewayAddress({
+      erc20L1Address: destinationChainErc20Address,
+      l2Provider: this.sourceChainProvider
+    })
+
+    this.sourceChainGatewayAddress = sourceChainGatewayAddress
+
+    return this.sourceChainGatewayAddress
+  }
+
+  private async getDestinationChainErc20Address(): Promise<string> {
+    if (this.destinationChainErc20Address) {
+      return this.destinationChainErc20Address
+    }
+
+    if (!this.sourceChainErc20Address) {
+      throw Error('Erc20 token address not found')
+    }
+
+    const destinationChainErc20Address = await getL1ERC20Address({
+      erc20L2Address: this.sourceChainErc20Address,
+      l2Provider: this.sourceChainProvider
+    })
+
+    if (!destinationChainErc20Address) {
+      throw Error('Erc20 token not found on parent chain')
+    }
+
+    this.destinationChainErc20Address = destinationChainErc20Address
+
+    return this.destinationChainErc20Address
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -51,14 +94,8 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    if (!destinationChainErc20Address) {
-      throw Error('Erc20 token not found on parent chain')
-    }
+    const destinationChainErc20Address =
+      await this.getDestinationChainErc20Address()
 
     const address = await getAddressFromSigner(signer)
 
@@ -74,11 +111,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
         this.sourceChainProvider
       )
 
-      const gatewayAddress = await fetchErc20L2GatewayAddress({
-        erc20L1Address: destinationChainErc20Address,
-        l2Provider: this.sourceChainProvider
-      })
-
+      const gatewayAddress = await this.getSourceChainGatewayAddress()
       const allowance = await token.allowance(address, gatewayAddress)
 
       return allowance.lt(amount)
@@ -92,25 +125,10 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    if (!destinationChainErc20Address) {
-      throw Error(
-        `Erc20 token not found on parent chain for ${this.sourceChainErc20Address}`
-      )
-    }
-
     const address = await getAddressFromSigner(signer)
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
 
-    const gatewayAddress = await fetchErc20L2GatewayAddress({
-      erc20L1Address: destinationChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    const contract = await ERC20__factory.connect(
+    const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       signer
     )
@@ -129,23 +147,9 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const destinationChainErc20Address = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
+    const gatewayAddress = await this.getSourceChainGatewayAddress()
 
-    if (!destinationChainErc20Address) {
-      throw Error(
-        `Erc20 token not found on parent chain for ${this.sourceChainErc20Address}`
-      )
-    }
-
-    const gatewayAddress = await fetchErc20L2GatewayAddress({
-      erc20L1Address: destinationChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    const contract = await ERC20__factory.connect(
+    const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       signer
     )
@@ -162,23 +166,15 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const tokenAddress = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    if (!tokenAddress) {
-      throw Error(
-        `Erc20 token not found on parent chain for ${this.sourceChainErc20Address}`
-      )
-    }
+    const destinationChainErc20Address =
+      await this.getDestinationChainErc20Address()
 
     const address = (await getAddressFromSigner(signer)) as `0x${string}`
 
     return withdrawInitTxEstimateGas({
       amount,
       address,
-      erc20L1Address: tokenAddress,
+      erc20L1Address: destinationChainErc20Address,
       childChainProvider: this.sourceChainProvider
     })
   }
@@ -188,16 +184,8 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    const tokenAddress = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainErc20Address,
-      l2Provider: this.sourceChainProvider
-    })
-
-    if (!tokenAddress) {
-      throw Error(
-        `Erc20 token not found on parent chain for ${this.sourceChainErc20Address}`
-      )
-    }
+    const destinationChainErc20Address =
+      await this.getDestinationChainErc20Address()
 
     const address = await getAddressFromSigner(signer)
 
@@ -214,11 +202,22 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       this.sourceChainProvider
     )
 
-    const tx = await erc20Bridger.withdraw({
-      l2Signer: signer,
-      erc20l1Address: tokenAddress,
+    const request = await erc20Bridger.getWithdrawalRequest({
+      from: address,
+      erc20l1Address: destinationChainErc20Address,
       destinationAddress: destinationAddress ?? address,
       amount
+    })
+
+    const tx = await erc20Bridger.withdraw({
+      ...request,
+      l2Signer: signer,
+      overrides: {
+        gasLimit: percentIncrease(
+          await this.sourceChainProvider.estimateGas(request.txRequest),
+          BigNumber.from(30)
+        )
+      }
     })
 
     return {

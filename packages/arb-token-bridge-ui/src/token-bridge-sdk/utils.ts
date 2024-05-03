@@ -1,6 +1,8 @@
 import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
+
 import { isNetwork } from '../util/networks'
+import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()
@@ -12,19 +14,11 @@ export const getChainIdFromProvider = async (provider: Provider) => {
   return network.chainId
 }
 
-export const getBridgeTransferProperties = async ({
-  sourceChainProvider,
-  destinationChainProvider,
-  sourceChainErc20Address
-}: {
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
-  sourceChainErc20Address?: string
-}) => {
-  const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
-  const destinationChainId = await getChainIdFromProvider(
-    destinationChainProvider
-  )
+export const getBridgeTransferProperties = (
+  props: BridgeTransferStarterPropsWithChainIds
+) => {
+  const sourceChainId = props.sourceChainId
+  const destinationChainId = props.destinationChainId
 
   const isSourceChainEthereumMainnetOrTestnet =
     isNetwork(sourceChainId).isEthereumMainnetOrTestnet
@@ -42,11 +36,12 @@ export const getBridgeTransferProperties = async ({
     (isSourceChainArbitrum && isDestinationChainOrbit)
 
   const isWithdrawal =
-    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) ||
-    (isSourceChainOrbit && isDestinationChainArbitrum)
+    (isSourceChainArbitrum && isDestinationChainEthereumMainnetOrTestnet) || //  l2 arbitrum chains to l1
+    (isSourceChainOrbit && isDestinationChainEthereumMainnetOrTestnet) || // l2 orbit chains to l1
+    (isSourceChainOrbit && isDestinationChainArbitrum) // l3 orbit chains to l1
 
   const isNativeCurrencyTransfer =
-    typeof sourceChainErc20Address === 'undefined'
+    typeof props.sourceChainErc20Address === 'undefined'
 
   return {
     isDeposit,

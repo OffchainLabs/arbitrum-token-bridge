@@ -31,7 +31,7 @@ export function CustomFeeTokenApprovalDialog(
   const { selectedToken } = app
 
   const [networks] = useNetworks()
-  const { sourceChainProvider, destinationChainProvider } = networks
+  const { sourceChain, destinationChain } = networks
   const { parentChain, parentChainProvider } = useNetworksRelationship(networks)
   const { isEthereumMainnet } = isNetwork(parentChain.id)
 
@@ -63,14 +63,15 @@ export function CustomFeeTokenApprovalDialog(
         /*
          Note:
           1. we do not consider CCTP case here, since we are not using it with custom fee token approval
-          2. we are assuming deposits only (withdrawals will return `requiresNativeCurrencyApproval` as false)        
+          2. we are assuming deposits only (withdrawals will return `requiresNativeCurrencyApproval` as false)
           These will need to be supported on a case-by-case basis later, with checks like in `TokenApprovalDialogue.tsx`
         */
         const bridgeTransferStarter = await BridgeTransferStarterFactory.create(
           {
-            sourceChainProvider,
-            destinationChainProvider,
-            sourceChainErc20Address: selectedToken?.address
+            sourceChainId: sourceChain.id,
+            sourceChainErc20Address: selectedToken?.address,
+            destinationChainId: destinationChain.id,
+            destinationChainErc20Address: selectedToken?.l2Address
           }
         )
 
@@ -86,13 +87,7 @@ export function CustomFeeTokenApprovalDialog(
     }
 
     getEstimatedGas()
-  }, [
-    isOpen,
-    selectedToken,
-    l1Signer,
-    sourceChainProvider,
-    destinationChainProvider
-  ])
+  }, [isOpen, selectedToken, l1Signer, sourceChain, destinationChain])
 
   function closeWithReset(confirmed: boolean) {
     props.onClose(confirmed)

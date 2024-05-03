@@ -9,13 +9,13 @@ import { shortenAddress } from '../../../src/util/CommonUtils'
 // common function for this cctp withdrawal
 export const confirmAndApproveCctpWithdrawal = () => {
   cy.findByRole('tab', {
-    name: 'Third party (USDC)',
+    name: 'Native USDC',
     selected: true
-  })
+  }).should('exist')
   cy.findByRole('tab', {
-    name: 'Circle (USDC)',
+    name: 'Native USDC (Third Party Bridge)',
     selected: false
-  }).click()
+  }).should('exist')
 
   // By default, confirm button is disabled
   cy.findByRole('button', {

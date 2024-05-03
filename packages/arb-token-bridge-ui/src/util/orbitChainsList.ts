@@ -339,6 +339,61 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         logoUrl: '/images/XaiLogo.svg'
       }
     }
+  },
+  53457: {
+    chainID: 53457,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0xC0856971702b02A5576219540BD92DAE79a79288',
+      inbox: '0xD62ef8d8c71d190417C6CE71f65795696C069f09',
+      outbox: '0xaEB5Fe2f7003881c3a8EBAE9664E8607f3935d53',
+      rollup: '0xBc4cc964eF0ea5792a398F9E738edf368A34f003',
+      sequencerInbox: '0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc'
+    },
+    nativeToken: '0xAC716E87b0853C0712674e8E3a8435a489F276b4',
+    explorerUrl: 'https://testnet-scan.dodochain.com',
+    rpcUrl: 'https://dodochain-testnet.alt.technology',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'DODOchain Testnet',
+    slug: 'dodochain-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xeCa856BE0041184eeda8F2c98896AC4693b168EA',
+      l1ERC20Gateway: '0xf57F874845CD652e69f69f020A4d46F4e427bb43',
+      l1GatewayRouter: '0xE3661c8313B35BA310Ad89e113561F3C983dC761',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0x6B8C4aD57806fB4563031B79348bcC4CC3bBa7D5',
+      l2ERC20Gateway: '0xBb94635f882f03f7641B742F5e3070e6B5108b71',
+      l2GatewayRouter: '0x14De2d9c4C7F5ad2d134Eb746207653797693C0D',
+      l2Multicall: '0xF6Fd6C87C4cac9A4BF4b6fF4efa4B06bdbbe5D51',
+      l2ProxyAdmin: '0x80C5A0C4004B4130b823AfE8D97aAeA3fBFf3fCc',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#B88B1E',
+      network: {
+        name: 'DODOchain Testnet',
+        logo: '/images/DODOchain.png',
+        description: 'An Omni-Trading Layer3 Powered by Arbitrum Orbit.'
+      },
+      nativeTokenData: {
+        name: 'Berd',
+        symbol: 'BERD',
+        decimals: 18,
+        logoUrl: ''
+      }
+    }
   }
 }
 
