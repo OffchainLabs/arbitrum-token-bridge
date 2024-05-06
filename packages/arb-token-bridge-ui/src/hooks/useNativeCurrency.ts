@@ -12,10 +12,12 @@ export type NativeCurrencyBase = {
   symbol: string
   decimals: number
   logoUrl?: string
+  l2Address?: undefined
 }
 
 export type NativeCurrencyEther = NativeCurrencyBase & {
   isCustom: false
+  address?: undefined
 }
 
 export type NativeCurrencyErc20 = NativeCurrencyBase & {
@@ -28,7 +30,7 @@ export type NativeCurrencyErc20 = NativeCurrencyBase & {
 
 export type NativeCurrency = NativeCurrencyEther | NativeCurrencyErc20
 
-const nativeCurrencyEther: NativeCurrencyEther = {
+export const nativeCurrencyEther: NativeCurrencyEther = {
   ...ether,
   logoUrl: ETHER_TOKEN_LOGO,
   isCustom: false

@@ -1,5 +1,5 @@
 import { EthBridger } from '@arbitrum/sdk'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import {
   ApproveNativeCurrencyEstimateGasProps,
   ApproveNativeCurrencyProps,
@@ -12,6 +12,8 @@ import {
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { depositEthEstimateGas } from '../util/EthDepositUtils'
 import { fetchErc20Allowance } from '../util/TokenUtils'
+import { IWETH9__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IWETH9__factory'
+import { Erc20DepositStarter } from './Erc20DepositStarter'
 
 export class EthDepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_deposit'
@@ -28,6 +30,47 @@ export class EthDepositStarter extends BridgeTransferStarter {
     )
 
     return this.ethBridger
+  }
+
+  private isTransferToCustomGasTokenChain() {
+    if (!this.ethBridger) {
+      return false
+    }
+
+    const nativeToken = this.ethBridger.l2Network.nativeToken
+    return nativeToken && nativeToken !== constants.AddressZero
+  }
+
+  private wrapAndDepositWeth = async ({ amount, signer }: TransferProps) => {
+    const wethContract = IWETH9__factory.connect(
+      '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+      signer
+    )
+    const wethTx = await wethContract.deposit({ value: amount })
+
+    await wethTx.wait()
+
+    const erc20Bridger = new Erc20DepositStarter({
+      sourceChainProvider: this.sourceChainProvider,
+      sourceChainErc20Address: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+      destinationChainProvider: this.destinationChainProvider
+    })
+
+    const requiresApproval = await erc20Bridger.requiresTokenApproval({
+      amount,
+      signer
+    })
+
+    if (requiresApproval) {
+      await erc20Bridger.approveToken({ signer, amount })
+    }
+
+    const tx = await erc20Bridger.transfer({ amount, signer })
+
+    return {
+      ...tx,
+      transferType: this.transferType
+    }
   }
 
   public async requiresNativeCurrencyApproval({
@@ -88,6 +131,10 @@ export class EthDepositStarter extends BridgeTransferStarter {
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     const address = await getAddressFromSigner(signer)
 
+    if (this.isTransferToCustomGasTokenChain()) {
+    }
+
+    // TODO: estimate gas for wrapping + transfer
     return depositEthEstimateGas({
       amount,
       address,
@@ -99,6 +146,13 @@ export class EthDepositStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
+
+    if (this.isTransferToCustomGasTokenChain()) {
+      // We are sending ETH to a chain with the native token other than ETH.
+      // We have to take a different route where we wrap it and send WETH instead.
+      console.log('Wrap + deposit eth')
+      return this.wrapAndDepositWeth({ amount, signer })
+    }
 
     const depositRequest = await ethBridger.getDepositRequest({
       amount,
@@ -114,6 +168,8 @@ export class EthDepositStarter extends BridgeTransferStarter {
       l1Signer: signer,
       overrides: { gasLimit: percentIncrease(gasLimit, BigNumber.from(5)) }
     })
+
+    console.log('here-0')
 
     return {
       transferType: this.transferType,

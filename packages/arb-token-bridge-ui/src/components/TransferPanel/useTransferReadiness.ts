@@ -8,7 +8,8 @@ import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneNativeUSDC
+  isTokenArbitrumOneNativeUSDC,
+  isERC20BridgeToken
 } from '../../util/TokenUtils'
 import { useAppContextState } from '../App/AppContext'
 import { useDestinationAddressStore } from './AdvancedSettings'
@@ -110,7 +111,7 @@ export function useTransferReadiness({
   gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
   const {
-    app: { selectedToken }
+    app: { selectedToken, isNativeCurrencyForParentChain }
   } = useAppState()
   const {
     layout: { isTransferring }
@@ -121,7 +122,11 @@ export function useTransferReadiness({
 
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const nativeCurrency = useNativeCurrency({
+    provider: isNativeCurrencyForParentChain
+      ? parentChainProvider
+      : childChainProvider
+  })
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
@@ -143,7 +148,7 @@ export function useTransferReadiness({
   )
 
   const selectedTokenL1BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
+    if (!isERC20BridgeToken(selectedToken)) {
       return null
     }
 
@@ -157,7 +162,7 @@ export function useTransferReadiness({
   }, [selectedToken, erc20L1Balances])
 
   const selectedTokenL2BalanceFloat = useMemo(() => {
-    if (!selectedToken) {
+    if (!isERC20BridgeToken(selectedToken)) {
       return null
     }
 
@@ -232,7 +237,7 @@ export function useTransferReadiness({
     }
 
     // ERC-20
-    if (selectedToken) {
+    if (isERC20BridgeToken(selectedToken)) {
       const selectedTokenIsWithdrawOnly = isWithdrawOnlyToken(
         selectedToken.address,
         childChain.id

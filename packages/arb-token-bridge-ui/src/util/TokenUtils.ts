@@ -9,6 +9,12 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { Token } from '../state/app/state'
+import {
+  NativeCurrencyErc20,
+  NativeCurrencyEther
+} from '../hooks/useNativeCurrency'
+import { ether } from '../constants'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -456,4 +462,23 @@ export async function isGatewayRegistered({
     tokenChildChainAddressFromParentGatewayRouter ===
     tokenChildChainAddressFromChildChainGateway
   )
+}
+
+export function isERC20BridgeToken(
+  token: Token | NativeCurrencyErc20
+): token is ERC20BridgeToken {
+  if (!token) {
+    return false
+  }
+  return typeof (token as ERC20BridgeToken).address !== 'undefined'
+}
+
+export function isEther(
+  token: Token | NativeCurrencyErc20
+): token is NativeCurrencyEther {
+  if (!token) {
+    return false
+  }
+  const _token = token as NativeCurrencyEther
+  return _token.name === ether.name && _token.symbol === ether.symbol
 }

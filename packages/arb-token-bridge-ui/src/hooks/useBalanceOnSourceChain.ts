@@ -5,12 +5,13 @@ import { useNativeCurrency } from './useNativeCurrency'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
-import { ERC20BridgeToken } from './arbTokenBridge.types'
+import { Token } from '../state/app/state'
+import { isEther } from '../util/TokenUtils'
 
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
-export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
+export function useBalanceOnSourceChain(token: Token) {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
@@ -38,6 +39,10 @@ export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
 
     // `ethSourceChainBalance` is the ETH balance at source chain when ETH is selected for bridging,
     // or the custom gas native currency balance when withdrawing the native currency
+    return ethSourceChainBalance
+  }
+
+  if (isEther(token)) {
     return ethSourceChainBalance
   }
 
