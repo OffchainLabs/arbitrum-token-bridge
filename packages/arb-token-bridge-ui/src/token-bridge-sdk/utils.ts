@@ -73,21 +73,18 @@ export function percentIncrease(
 // We cannot hardcode Erc20Bridger anymore in code, especially while dealing with tokens
 // this function returns the Bridger matching the set providers
 export const getBridger = async ({
-  sourceChainProvider,
-  destinationChainProvider,
+  sourceChainId,
+  destinationChainId,
   isNativeCurrencyTransfer = false
 }: {
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
+  sourceChainId: number
+  destinationChainId: number
   isNativeCurrencyTransfer?: boolean
 }) => {
-  const sourceChainId = await getChainIdFromProvider(sourceChainProvider)
-  const destinationChainId = await getChainIdFromProvider(
-    destinationChainProvider
-  )
+  const destinationChainProvider = getProviderForChainId(destinationChainId)
 
   if (isTeleportTransfer({ sourceChainId, destinationChainId })) {
-    const l3Network = await getL2Network(destinationChainProvider)
+    const l3Network = await getL2Network(destinationChainId)
 
     return isNativeCurrencyTransfer
       ? new EthL1L3Bridger(l3Network)

@@ -47,14 +47,16 @@ export function TransactionsTableRowAction({
 
   const isRedeeming = isRetryableRedeeming || isTeleporterRedeeming
 
+  const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
+
   const isConnectedToCorrectNetworkForAction = isDepositReadyToRedeem(tx)
-    ? chain?.id === getChainIdForRedeemingRetryable(tx) // for redemption actions, we can have different chain id
+    ? chain?.id === chainIdForRedeemingRetryable // for redemption actions, we can have different chain id
     : chain?.id === tx.destinationChainId // for claims, we need to be on the destination chain
 
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(getChainIdForRedeemingRetryable(tx))
+        await switchNetworkAsync?.(chainIdForRedeemingRetryable)
       }
 
       if (isTeleport(tx)) {
@@ -71,6 +73,7 @@ export function TransactionsTableRowAction({
   }, [
     tx,
     isConnectedToCorrectNetworkForAction,
+    chainIdForRedeemingRetryable,
     redeem,
     switchNetworkAsync,
     teleporterRedeem

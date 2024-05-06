@@ -880,15 +880,9 @@ export function TransferPanel() {
       })
     }
 
-    const { transferType, sourceChainTransaction } = bridgeTransfer
+    const { sourceChainTransaction } = bridgeTransfer
 
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
-
-    const isDeposit =
-      transferType === 'eth_deposit' ||
-      transferType === 'erc20_deposit' ||
-      transferType === 'eth_teleport' ||
-      transferType === 'erc20_teleport'
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
@@ -906,7 +900,7 @@ export function TransferPanel() {
     addPendingTransaction(txHistoryCompatibleObject)
 
     // if deposit, add to local cache
-    if (isDeposit) {
+    if (isDepositMode) {
       addDepositToCache(
         convertBridgeSdkToPendingDepositTransaction({
           bridgeTransfer,

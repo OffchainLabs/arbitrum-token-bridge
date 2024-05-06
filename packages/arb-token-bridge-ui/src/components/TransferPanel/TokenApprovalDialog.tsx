@@ -162,14 +162,19 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
 
       if (
         isTeleport({
-          sourceChainId: sourceChainProvider.network.chainId,
-          destinationChainId: destinationChainProvider.network.chainId
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id
         })
       ) {
-        const l1L3Bridger = (await getBridger({
-          sourceChainProvider,
-          destinationChainProvider
-        })) as Erc20L1L3Bridger
+        const l1L3Bridger = await getBridger({
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id
+        })
+
+        if (!(l1L3Bridger instanceof Erc20L1L3Bridger)) {
+          throw new Error('Error initializing L1L3Bridger.')
+        }
+
         setContractAddress(l1L3Bridger.teleporterAddresses.l1Teleporter)
         return
       }
@@ -198,7 +203,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isCctp,
     isDepositMode,
     parentChainProvider,
-    token?.address
+    token?.address,
+    sourceChain.id,
+    destinationChain.id
   ])
 
   function closeWithReset(confirmed: boolean) {

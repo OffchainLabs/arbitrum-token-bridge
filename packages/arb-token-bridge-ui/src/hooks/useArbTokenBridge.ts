@@ -325,7 +325,7 @@ export const useArbTokenBridge = (
         l2Address = await getL3ERC20Address({
           erc20L1Address: l1Address,
           l1Provider: l1.provider,
-          l3Provider: l2.provider
+          l3Provider: l2.provider // in case of teleport transfer, the l2.provider is actually the l3 provider
         })
       } else {
         l2Address = await getL2ERC20Address({

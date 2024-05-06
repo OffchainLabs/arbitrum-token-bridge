@@ -37,10 +37,6 @@ import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDeta
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
 
-  if (isTeleport(tx)) {
-    return isTestnet ? '10 minutes' : '15 minutes' // 10+1 or 15+5
-  }
-
   if (tx.isCctp) {
     return isTestnet ? 'a minute' : '10 minutes'
   }

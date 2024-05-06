@@ -27,14 +27,14 @@ export function useRedeemTeleporter(
   tx: MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
+  const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
+
   const { data: signer } = useSigner({
-    chainId: getChainIdForRedeemingRetryable(tx)
+    chainId: chainIdForRedeemingRetryable
   })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
-  const redeemerNetworkName = getNetworkName(
-    getChainIdForRedeemingRetryable(tx)
-  )
+  const redeemerNetworkName = getNetworkName(chainIdForRedeemingRetryable)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 

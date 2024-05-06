@@ -325,8 +325,8 @@ export async function l1TokenIsDisabled({
   l2Provider: Provider
 }): Promise<boolean> {
   const erc20Bridger = await getBridger({
-    sourceChainProvider: l1Provider,
-    destinationChainProvider: l2Provider
+    sourceChainId: await getChainIdFromProvider(l1Provider),
+    destinationChainId: await getChainIdFromProvider(l2Provider)
   })
 
   if (
