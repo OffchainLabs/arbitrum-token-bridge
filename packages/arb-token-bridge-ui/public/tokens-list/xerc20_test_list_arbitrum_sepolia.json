@@ -1,0 +1,31 @@
+{
+  "name": "xERC20",
+  "timestamp": "2024-03-19T20:15:55.036Z",
+  "version": { "major": 2, "minor": 0, "patch": 0 },
+  "tokens": [
+    {
+      "chainId": 421614,
+      "address": "0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd",
+      "name": "XERC20 NN",
+      "symbol": "XERC20NN",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/34498/standard/Design_uten_navn_%2865%29.png?1705265190",
+      "extensions": {
+        "bridgeInfo": {
+          "11155111": {
+            "tokenAddress": "0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd",
+            "originBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE",
+            "destBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE"
+          }
+        }
+      }
+    }
+  ],
+  "logoURI": "https://support.coingecko.com/hc/article_attachments/4499575478169/CoinGecko_logo.png",
+  "tags": {
+    "sourceList": {
+      "name": "Source list url",
+      "description": "https:____tokens.uniswap.org replace __ with forwardslash"
+    }
+  }
+}
