@@ -20,13 +20,13 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
   const l2TxID = tx.l1ToL2MsgData?.l2TxID
-  const isFirstRetryableSucceeded = !!l2TxID // if l2-txId is present, then first retryable succeeded
+  const isFirstRetryableSucceeded = typeof l2TxID !== 'undefined' // if l2-txId is present, then first retryable succeeded
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const firstRetryableStatus = tx.l1ToL2MsgData?.status
   const isFirstRetryableFailed =
     firstRetryableStatus && isRetryableTicketFailed(firstRetryableStatus)
   const secondRetryableCreated = !!tx.l2ToL3MsgData?.retryableCreationTxID
-  const isFirstRetryableWaitingTimeOver =
+  const isFirstRetryableResolved =
     isFirstRetryableSucceeded || isFirstRetryableFailed
 
   const firstTransactionText = useMemo(() => {
@@ -85,16 +85,13 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     <>
       {/* show waiting time for first leg of teleporter tx */}
       <Step
-        pending={!isFirstRetryableWaitingTimeOver}
-        done={isFirstRetryableWaitingTimeOver}
+        pending={!isFirstRetryableResolved}
+        done={isFirstRetryableResolved}
         text={`Wait ~${firstRetryableWaitingDuration}`}
         endItem={
-          !isFirstRetryableWaitingTimeOver && (
+          !isFirstRetryableResolved && (
             <div>
-              <DepositCountdown
-                tx={tx}
-                considerOnlyFirstTransactionForTeleport={true}
-              />
+              <DepositCountdown tx={tx} firstTxOnly={true} />
               <span> remaining</span>
             </div>
           )

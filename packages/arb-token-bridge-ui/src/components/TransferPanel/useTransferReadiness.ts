@@ -25,7 +25,7 @@ import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -134,14 +134,10 @@ export function useTransferReadiness({
   } = useBalance({ provider: childChainProvider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
-  const isTeleportMode = useMemo(
-    () =>
-      isTeleport({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      }),
-    [networks.sourceChain.id, networks.destinationChain.id]
-  )
+  const isTeleportMode = useTeleportMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const ethL1BalanceFloat = useMemo(
     () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),

@@ -14,7 +14,7 @@ function getMinutesRemainingText(minutesRemaining: number): string {
 
 function getEstimatedDepositDurationInMinutes(
   tx: MergedTransaction,
-  considerOnlyFirstTransactionForTeleport?: boolean
+  firstTxOnly?: boolean
 ) {
   const { parentChainId, sourceChainId, destinationChainId } = tx
   if (!parentChainId) {
@@ -29,7 +29,7 @@ function getEstimatedDepositDurationInMinutes(
       destinationChainId: destinationChainId
     })
   ) {
-    if (considerOnlyFirstTransactionForTeleport) {
+    if (firstTxOnly) {
       return isTestnet ? 10 : 15
     }
     return isTestnet ? 11 : 20 // assuming 10 L2 + 1 Orbit, otherwise  15 L2 + 5 Orbit,
@@ -45,10 +45,10 @@ function getEstimatedDepositDurationInMinutes(
 
 export function DepositCountdown({
   tx,
-  considerOnlyFirstTransactionForTeleport
+  firstTxOnly
 }: {
   tx: MergedTransaction
-  considerOnlyFirstTransactionForTeleport?: boolean // teleport has 2 txns, this flag will give us estimate of only 1st tx, else it will give consolidated duration
+  firstTxOnly?: boolean // teleport has 2 txns, this flag will give us estimate of only 1st tx, else it will give consolidated duration
 }): JSX.Element | null {
   const now = dayjs()
   const createdAt = tx.createdAt
@@ -61,10 +61,8 @@ export function DepositCountdown({
   ) {
     // Subtract the diff from the initial deposit time
     const minutesRemaining =
-      getEstimatedDepositDurationInMinutes(
-        tx,
-        considerOnlyFirstTransactionForTeleport
-      ) - now.diff(whenCreated, 'minutes')
+      getEstimatedDepositDurationInMinutes(tx, firstTxOnly) -
+      now.diff(whenCreated, 'minutes')
     return (
       <span className="whitespace-nowrap">
         {getMinutesRemainingText(minutesRemaining)}

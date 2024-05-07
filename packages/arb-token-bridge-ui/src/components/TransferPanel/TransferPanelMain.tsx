@@ -67,7 +67,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -364,14 +364,10 @@ export function TransferPanelMain({
     ? destinationAddressOrWalletAddress
     : walletAddress
 
-  const isTeleportMode = useMemo(
-    () =>
-      isTeleport({
-        sourceChainId: networks.sourceChain.id,
-        destinationChainId: networks.destinationChain.id
-      }),
-    [networks.sourceChain.id, networks.destinationChain.id]
-  )
+  const isTeleportMode = useTeleportMode({
+    sourceChainId: networks.sourceChain.id,
+    destinationChainId: networks.destinationChain.id
+  })
 
   const {
     eth: [ethL1Balance],
