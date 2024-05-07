@@ -113,7 +113,9 @@ function getMultiChainFetchList(): ChainPair[] {
     if (isL1Chain(chain)) {
       const teleportAllowList = TELEPORT_ALLOWLIST[chain.chainID] || []
       teleportAllowList.forEach(chainId => {
-        childChainIds.push(chainId)
+        if (chainId && !childChainIds.includes(chainId)) {
+          childChainIds.push(chainId)
+        }
       })
     }
 
