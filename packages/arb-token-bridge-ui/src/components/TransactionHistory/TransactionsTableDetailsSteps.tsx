@@ -42,7 +42,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   }
 
   if (!tx.isWithdrawal) {
-    if (isOrbitChain) {
+    if (isOrbitChain && !isTeleport(tx)) {
       return 'a minute'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
