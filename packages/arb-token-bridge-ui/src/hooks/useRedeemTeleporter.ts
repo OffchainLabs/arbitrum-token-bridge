@@ -76,10 +76,10 @@ export function useRedeemTeleporter(
       }
 
       const retryableTicket = await getRetryableTicket({
-        sourceChainTxHash,
+        parentChainTxHash: sourceChainTxHash,
         retryableCreationId,
-        sourceChainProvider,
-        destinationChainSigner: signer
+        parentChainProvider: sourceChainProvider,
+        childChainSigner: signer
       })
 
       const reedemTx = await retryableTicket.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
@@ -111,8 +111,7 @@ export function useRedeemTeleporter(
             } as L1ToL2MessageData,
             l2ToL3MsgData: {
               ...tx.l2ToL3MsgData,
-              status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2, // 2nd retryable needs to be manually redeemed
-              fetchingUpdate: false
+              status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 // 2nd retryable needs to be manually redeemed
             } as L2ToL3MessageData,
             depositStatus: DepositStatus.L2_PENDING
           }
@@ -121,8 +120,7 @@ export function useRedeemTeleporter(
               ...tx.l2ToL3MsgData,
               l3TxID: redeemReceipt.l2TxReceipt.transactionHash,
               status,
-              retryableCreationTxID: retryableTicket.retryableCreationId,
-              fetchingUpdate: false
+              retryableCreationTxID: retryableTicket.retryableCreationId
             } as L2ToL3MessageData,
             depositStatus: DepositStatus.L2_SUCCESS, // 2nd retryable redeemed, full success
             resolvedAt: dayjs().valueOf()

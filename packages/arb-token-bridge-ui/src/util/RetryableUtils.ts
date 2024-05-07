@@ -11,16 +11,16 @@ import { MergedTransaction } from '../state/app/state'
 import { isTeleport } from '../token-bridge-sdk/teleport'
 
 type GetRetryableTicketParams = {
-  sourceChainTxHash: string
+  parentChainTxHash: string
   retryableCreationId?: string
-  sourceChainProvider: Provider
-  destinationChainSigner: Signer
+  parentChainProvider: Provider
+  childChainSigner: Signer
 }
 
 type GetRetryableTicketExpirationParams = {
-  sourceChainTxHash: string
-  sourceChainProvider: JsonRpcProvider
-  destinationChainProvider: JsonRpcProvider
+  parentChainTxHash: string
+  parentChainProvider: JsonRpcProvider
+  childChainProvider: JsonRpcProvider
 }
 
 type RetryableTicketExpirationResponse = {
@@ -32,21 +32,21 @@ type RetryableTicketExpirationResponse = {
 }
 
 export async function getRetryableTicket({
-  sourceChainTxHash,
+  parentChainTxHash,
   retryableCreationId,
-  sourceChainProvider,
-  destinationChainSigner
+  parentChainProvider,
+  childChainSigner
 }: GetRetryableTicketParams): Promise<IL1ToL2MessageWriter> {
   if (!retryableCreationId) {
     throw new Error("Error: Couldn't find retryable ticket creation id")
   }
 
-  const sourceChainTxReceipt = new L1TransactionReceipt(
-    await sourceChainProvider.getTransactionReceipt(sourceChainTxHash)
+  const parentChainTxReceipt = new L1TransactionReceipt(
+    await parentChainProvider.getTransactionReceipt(parentChainTxHash)
   )
 
   const retryableTicket = (
-    await sourceChainTxReceipt.getL1ToL2Messages(destinationChainSigner)
+    await parentChainTxReceipt.getL1ToL2Messages(childChainSigner)
   )
     // Find message with the matching id
     .find(m => m.retryableCreationId === retryableCreationId)
@@ -59,9 +59,9 @@ export async function getRetryableTicket({
 }
 
 export const getRetryableTicketExpiration = async ({
-  sourceChainTxHash,
-  sourceChainProvider,
-  destinationChainProvider
+  parentChainTxHash,
+  parentChainProvider,
+  childChainProvider
 }: GetRetryableTicketExpirationParams): Promise<RetryableTicketExpirationResponse> => {
   let isLoading = true,
     isLoadingError = false,
@@ -71,12 +71,12 @@ export const getRetryableTicketExpiration = async ({
   let expirationDate = 0
 
   try {
-    const depositTxReceipt = await sourceChainProvider.getTransactionReceipt(
-      sourceChainTxHash
+    const depositTxReceipt = await parentChainProvider.getTransactionReceipt(
+      parentChainTxHash
     )
-    const sourceChainTxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const [message] = await sourceChainTxReceipt.getL1ToL2Messages(
-      destinationChainProvider
+    const parentChainTxReceipt = new L1TransactionReceipt(depositTxReceipt)
+    const [message] = await parentChainTxReceipt.getL1ToL2Messages(
+      childChainProvider
     )
 
     const now = dayjs()
@@ -121,9 +121,9 @@ export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   if (isTeleport(tx)) {
     chainIdForRedeemingRetryable = firstRetryableRequiresRedeem(tx)
       ? tx.l2ToL3MsgData?.l2ChainId
-      : tx.destinationChainId
+      : tx.childChainId
   } else {
-    chainIdForRedeemingRetryable = tx.destinationChainId
+    chainIdForRedeemingRetryable = tx.childChainId
   }
 
   if (!chainIdForRedeemingRetryable) {

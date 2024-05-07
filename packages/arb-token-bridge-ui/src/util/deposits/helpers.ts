@@ -340,7 +340,6 @@ export async function updateTeleporterDepositStatusData({
       },
       l2ToL3MsgData: L2ToL3MessageData = {
         status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        fetchingUpdate: false,
         l2ChainId
       }
 
@@ -382,7 +381,6 @@ export async function updateTeleporterDepositStatusData({
           ? await l3Retryable.status()
           : L1ToL2MessageStatus.NOT_YET_CREATED,
         l3TxID: l3TxHash,
-        fetchingUpdate: false,
         retryableCreationTxID: l3Retryable.retryableCreationId
       }
     }
@@ -419,7 +417,6 @@ export async function updateTeleporterDepositStatusData({
       },
       l2ToL3MsgData: {
         status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        fetchingUpdate: false,
         l2ChainId
       }
     }
