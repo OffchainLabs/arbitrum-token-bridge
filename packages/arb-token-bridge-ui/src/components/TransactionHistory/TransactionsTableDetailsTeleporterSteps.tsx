@@ -8,6 +8,7 @@ import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { Step } from './TransactionsTableDetailsSteps'
+import { DepositCountdown } from '../common/DepositCountdown'
 
 export const TransactionsTableDetailsTeleporterSteps = ({
   tx,
@@ -90,7 +91,10 @@ export const TransactionsTableDetailsTeleporterSteps = ({
         endItem={
           !isFirstRetryableWaitingTimeOver && (
             <div>
-              {firstRetryableWaitingDuration}
+              <DepositCountdown
+                tx={tx}
+                considerOnlyFirstTransactionForTeleport={true}
+              />
               <span> remaining</span>
             </div>
           )
