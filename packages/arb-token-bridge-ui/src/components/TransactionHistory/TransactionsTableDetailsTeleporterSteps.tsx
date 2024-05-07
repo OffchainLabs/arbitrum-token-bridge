@@ -25,6 +25,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const isFirstRetryableFailed =
     firstRetryableStatus && isRetryableTicketFailed(firstRetryableStatus)
   const secondRetryableCreated = !!tx.l2ToL3MsgData?.retryableCreationTxID
+  const isFirstRetryableWaitingTimeOver =
+    isFirstRetryableSucceeded || isFirstRetryableFailed
 
   const firstTransactionText = useMemo(() => {
     if (isFirstRetryableFailed) {
@@ -68,13 +70,33 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     ? firstRetryableRedeemButton
     : firstTransactionExternalLink
 
-  const secondRetryableWaitingText = useMemo(
-    () => `Wait ~${isTestnetTx ? '1 minute' : '5 minutes'}`,
+  const firstRetryableWaitingDuration = useMemo(
+    () => (isTestnetTx ? '10 minutes' : '15 minutes'),
+    [isTestnetTx]
+  )
+
+  const secondRetryableWaitingDuration = useMemo(
+    () => (isTestnetTx ? '1 minute' : '5 minutes'),
     [isTestnetTx]
   )
 
   return (
     <>
+      {/* show waiting time for first leg of teleporter tx */}
+      <Step
+        pending={!isFirstRetryableWaitingTimeOver}
+        done={isFirstRetryableWaitingTimeOver}
+        text={`Wait ~${firstRetryableWaitingDuration}`}
+        endItem={
+          !isFirstRetryableWaitingTimeOver && (
+            <div>
+              {firstRetryableWaitingDuration}
+              <span> remaining</span>
+            </div>
+          )
+        }
+      />
+
       {/* show mid transaction step for teleport tx */}
       <Step
         done={isFirstRetryableSucceeded}
@@ -84,7 +106,10 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       />
 
       {/* Show second leg of teleport transfer waiting time */}
-      <Step done={secondRetryableCreated} text={secondRetryableWaitingText} />
+      <Step
+        done={secondRetryableCreated}
+        text={`Wait ~${secondRetryableWaitingDuration}`}
+      />
     </>
   )
 }

@@ -228,25 +228,27 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* Pending transfer showing the remaining time */}
-      <Step
-        pending={isTxPending(tx)}
-        done={!isTxPending(tx) && !isSourceChainDepositFailure}
-        text={`Wait ~${getTransferDurationText(tx)}`}
-        endItem={
-          isTxPending(tx) && (
-            <div>
-              {tx.isCctp && <>{cctpRemainingTime}</>}
-              {!tx.isCctp &&
-                (tx.isWithdrawal ? (
-                  <WithdrawalCountdown tx={tx} />
-                ) : (
-                  <DepositCountdown tx={tx} />
-                ))}
-              <span> remaining</span>
-            </div>
-          )
-        }
-      />
+      {!isTeleport(tx) && (
+        <Step
+          pending={isTxPending(tx)}
+          done={!isTxPending(tx) && !isSourceChainDepositFailure}
+          text={`Wait ~${getTransferDurationText(tx)}`}
+          endItem={
+            isTxPending(tx) && (
+              <div>
+                {tx.isCctp && <>{cctpRemainingTime}</>}
+                {!tx.isCctp &&
+                  (tx.isWithdrawal ? (
+                    <WithdrawalCountdown tx={tx} />
+                  ) : (
+                    <DepositCountdown tx={tx} />
+                  ))}
+                <span> remaining</span>
+              </div>
+            )
+          }
+        />
+      )}
 
       {isTeleport(tx) && (
         <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
