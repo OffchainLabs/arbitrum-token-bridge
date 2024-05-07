@@ -256,8 +256,6 @@ export class XErc20DepositStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    debugger
-
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
       signer
