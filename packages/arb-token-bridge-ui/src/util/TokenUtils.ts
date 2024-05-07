@@ -389,6 +389,11 @@ export function sanitizeTokenName(
     return 'USD Coin'
   }
 
+  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+    if (isArbitrumOne) return 'Crypto Unicorns'
+    return 'Wrapped Crypto Unicorns'
+  }
+
   return tokenName
 }
 
