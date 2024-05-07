@@ -13,6 +13,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 function getGasFeeTooltip(chainId: ChainId) {
   const { isEthereumMainnetOrTestnet } = isNetwork(chainId)
@@ -86,6 +87,15 @@ export function EstimatedGas({
     [isBridgingEth, childChain.id]
   )
 
+  const isTeleportMode = useMemo(
+    () =>
+      isTeleport({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [networks.sourceChain.id, networks.destinationChain.id]
+  )
+
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
@@ -119,7 +129,11 @@ export function EstimatedGas({
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 
-  if (isTokenNativeUSDC(selectedToken?.address) && !isSourceChain) {
+  if (
+    isTokenNativeUSDC(selectedToken?.address) &&
+    !isSourceChain &&
+    !isTeleportMode
+  ) {
     return (
       <GasFeeForClaimTxMessage networkName={networks.destinationChain.name} />
     )
