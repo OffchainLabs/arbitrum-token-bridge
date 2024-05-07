@@ -311,8 +311,8 @@ export async function updateTeleporterDepositStatusData({
 }): Promise<{
   status?: TxnStatus
   timestampResolved?: string
-  l1ToL2MsgData: L1ToL2MessageData
-  l2ToL3MsgData: L2ToL3MessageData
+  l1ToL2MsgData?: L1ToL2MessageData
+  l2ToL3MsgData?: L2ToL3MessageData
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
 
@@ -334,10 +334,7 @@ export async function updateTeleporterDepositStatusData({
     let l2Retryable: L1ToL2MessageReader | undefined,
       l3Retryable: L1ToL2MessageReader | undefined,
       l3TxHash: string | undefined,
-      l1ToL2MsgData: L1ToL2MessageData = {
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        fetchingUpdate: false
-      },
+      l1ToL2MsgData,
       l2ToL3MsgData: L2ToL3MessageData = {
         status: L1ToL2MessageStatus.NOT_YET_CREATED,
         l2ChainId
@@ -358,7 +355,6 @@ export async function updateTeleporterDepositStatusData({
       const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
 
       l1ToL2MsgData = {
-        ...l1ToL2MsgData,
         status: await l2Retryable.status(),
         l2TxID:
           l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED
@@ -366,7 +362,7 @@ export async function updateTeleporterDepositStatusData({
             : undefined,
         fetchingUpdate: false,
         retryableCreationTxID: l2Retryable.retryableCreationId
-      }
+      } as L1ToL2MessageData
     }
 
     // extract the l3 transaction details, if any
@@ -411,10 +407,6 @@ export async function updateTeleporterDepositStatusData({
 
     return {
       status: 'pending',
-      l1ToL2MsgData: {
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        fetchingUpdate: false
-      },
       l2ToL3MsgData: {
         status: L1ToL2MessageStatus.NOT_YET_CREATED,
         l2ChainId
