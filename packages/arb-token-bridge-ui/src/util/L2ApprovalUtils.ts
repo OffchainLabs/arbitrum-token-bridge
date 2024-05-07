@@ -36,6 +36,15 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
+  // xai mainnet
+  [660279]: [
+    {
+      symbol: 'wCU',
+      l1Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02',
+      l2Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
+    }
+  ],
+  // xai testnet
   [37714555429]: [
     {
       symbol: 'CU',
