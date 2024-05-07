@@ -40,8 +40,8 @@ export const getTeleportStatusDataFromTxId = async ({
   isNativeCurrencyTransfer
 }: {
   txId: string
-  sourceChainProvider: Provider
-  destinationChainProvider: Provider
+  sourceChainProvider: Provider // L1 Provider
+  destinationChainProvider: Provider // L3 Provider
   isNativeCurrencyTransfer: boolean
 }) => {
   // get the intermediate L2 chain provider

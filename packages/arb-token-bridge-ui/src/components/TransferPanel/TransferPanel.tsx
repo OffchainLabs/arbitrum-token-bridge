@@ -75,6 +75,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -606,6 +607,14 @@ export function TransferPanel() {
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
+      return
+    }
+
+    // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
+    if (isSmartContractWallet && isTeleportMode) {
+      console.error(
+        getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
+      )
       return
     }
 

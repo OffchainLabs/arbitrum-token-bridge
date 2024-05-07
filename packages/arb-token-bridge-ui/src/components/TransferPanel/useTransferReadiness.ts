@@ -17,13 +17,15 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
+  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
+  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -132,6 +134,15 @@ export function useTransferReadiness({
   } = useBalance({ provider: childChainProvider, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
+  const isTeleportMode = useMemo(
+    () =>
+      isTeleport({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [networks.sourceChain.id, networks.destinationChain.id]
+  )
+
   const ethL1BalanceFloat = useMemo(
     () => (ethL1Balance ? parseFloat(utils.formatEther(ethL1Balance)) : null),
     [ethL1Balance]
@@ -208,6 +219,14 @@ export function useTransferReadiness({
           getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage(
             { asset: nativeCurrency.symbol }
           )
+      })
+    }
+
+    // teleport transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && isTeleportMode) {
+      return notReady({
+        errorMessage:
+          getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
       })
     }
 
