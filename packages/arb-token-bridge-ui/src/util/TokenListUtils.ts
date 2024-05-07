@@ -120,6 +120,14 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: CoinGeckoLogo
   },
+  {
+    id: 19,
+    originChainID: ChainId.Sepolia,
+    url: '/tokens-list/xerc20_test_list_arbitrum_sepolia.json',
+    name: 'xERC20 Test List (Testnet - Arbitrum Sepolia)',
+    isDefault: true,
+    logoURI: CoinGeckoLogo
+  },
   // CoinGecko
   {
     id: 11,

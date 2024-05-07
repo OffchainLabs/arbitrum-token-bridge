@@ -5,7 +5,7 @@
   "tokens": [
     {
       "chainId": 421614,
-      "address": "0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd",
+      "address": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B",
       "name": "XERC20 NN",
       "symbol": "XERC20NN",
       "decimals": 18,
@@ -13,7 +13,24 @@
       "extensions": {
         "bridgeInfo": {
           "11155111": {
-            "tokenAddress": "0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd",
+            "tokenAddress": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B",
+            "originBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE",
+            "destBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE"
+          }
+        }
+      }
+    },
+    {
+      "chainId": 11155111,
+      "address": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B",
+      "name": "XERC20 NN",
+      "symbol": "XERC20NN",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/34498/standard/Design_uten_navn_%2865%29.png?1705265190",
+      "extensions": {
+        "bridgeInfo": {
+          "11155111": {
+            "tokenAddress": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B",
             "originBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE",
             "destBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE"
           }
