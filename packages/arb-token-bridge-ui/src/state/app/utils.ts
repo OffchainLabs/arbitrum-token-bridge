@@ -108,7 +108,6 @@ export const isRetryableTicketFailed = (
 ) => {
   return (
     retryableTicketStatus === L1ToL2MessageStatus.CREATION_FAILED ||
-    retryableTicketStatus === L1ToL2MessageStatus.EXPIRED ||
     retryableTicketStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
   )
 }

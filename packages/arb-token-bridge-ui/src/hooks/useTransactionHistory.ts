@@ -106,15 +106,15 @@ function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    let childChainIds = chain.partnerChainIDs ?? []
+    const childChainIds = chain.partnerChainIDs ?? []
     const isParentChain = childChainIds.length > 0
 
     // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
     if (isL1Chain(chain)) {
-      childChainIds = [
-        ...childChainIds,
-        ...(TELEPORT_ALLOWLIST[chain.chainID] || [])
-      ]
+      const teleportAllowList = TELEPORT_ALLOWLIST[chain.chainID] || []
+      teleportAllowList.forEach(chainId => {
+        childChainIds.push(chainId)
+      })
     }
 
     if (!isParentChain) {

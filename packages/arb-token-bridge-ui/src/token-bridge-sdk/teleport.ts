@@ -44,13 +44,11 @@ export const getTeleportStatusDataFromTxId = async ({
   destinationChainProvider: Provider
   isNativeCurrencyTransfer: boolean
 }) => {
-  const l3Provider = destinationChainProvider
-
   // get the intermediate L2 chain provider
   const { l2Provider } = await getL2ConfigForTeleport({
-    destinationChainProvider: l3Provider
+    destinationChainProvider
   })
-  const l3Network = await getL2Network(l3Provider)
+  const l3Network = await getL2Network(destinationChainProvider)
 
   // just the type of bridger changes in case of Eth vs Erc20 teleport
   const l1l3Bridger = isNativeCurrencyTransfer

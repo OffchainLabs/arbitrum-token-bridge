@@ -459,14 +459,14 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  let validDestinationChainIds =
+  const validDestinationChainIds =
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
   // add orbit-chains are also a part of the valid destination id's
-  validDestinationChainIds = [
-    ...validDestinationChainIds,
-    ...(TELEPORT_ALLOWLIST[chainId] || [])
-  ]
+  const teleportAllowlist = TELEPORT_ALLOWLIST[chainId] || []
+  teleportAllowlist.forEach(chainId => {
+    validDestinationChainIds.push(chainId)
+  })
 
   if (parentChainId) {
     // always make parent chain the first element

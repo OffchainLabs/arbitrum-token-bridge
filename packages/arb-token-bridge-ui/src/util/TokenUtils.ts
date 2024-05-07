@@ -460,6 +460,7 @@ export async function isGatewayRegistered({
   childChainProvider: Provider
 }): Promise<boolean> {
   // skip teleport transfers because there is no custom gateway there
+  // note: we only check for gateway registration for deposits, hence the assumption that source:parentChain, and destination:childChain
   const sourceChainId = await getChainIdFromProvider(parentChainProvider)
   const destinationChainId = await getChainIdFromProvider(childChainProvider)
   if (isTeleport({ sourceChainId, destinationChainId })) {

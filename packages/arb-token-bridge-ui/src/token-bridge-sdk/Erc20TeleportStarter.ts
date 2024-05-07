@@ -39,15 +39,15 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
   }
 
   public async requiresNativeCurrencyApproval() {
-    return false
+    return false // false for now, will need to be implemented for custom-native-token teleports later
   }
 
   public async approveNativeCurrency() {
-    // no-op
+    // no-op, but will need to be implemented for custom-native-token teleports later
   }
 
   public async approveNativeCurrencyEstimateGas() {
-    // no-op
+    // no-op, but will need to be implemented for custom-native-token teleports later
   }
 
   public requiresTokenApproval = async ({
