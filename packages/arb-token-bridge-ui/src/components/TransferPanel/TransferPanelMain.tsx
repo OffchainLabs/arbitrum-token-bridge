@@ -67,6 +67,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 enum NetworkType {
   l1 = 'l1',
@@ -363,6 +364,15 @@ export function TransferPanelMain({
     ? destinationAddressOrWalletAddress
     : walletAddress
 
+  const isTeleportMode = useMemo(
+    () =>
+      isTeleport({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [networks.sourceChain.id, networks.destinationChain.id]
+  )
+
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances, updateErc20L1Balances]
@@ -397,10 +407,11 @@ export function TransferPanelMain({
     }
 
     if (
-      isTokenMainnetUSDC(selectedToken.address) ||
-      isTokenSepoliaUSDC(selectedToken.address) ||
-      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
+      !isTeleportMode &&
+      (isTokenMainnetUSDC(selectedToken.address) ||
+        isTokenSepoliaUSDC(selectedToken.address) ||
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
     ) {
       updateUSDCBalances()
       return
@@ -415,7 +426,8 @@ export function TransferPanelMain({
     updateErc20L1Balances,
     updateErc20L2Balances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances
+    updateUSDCBalances,
+    isTeleportMode
   ])
 
   const customFeeTokenBalances: Balances = useMemo(() => {
@@ -441,8 +453,9 @@ export function TransferPanelMain({
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const showUSDCSpecificInfo =
-    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
+    !isTeleportMode &&
+    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
 
   const [, setQueryParams] = useArbQueryParams()
 

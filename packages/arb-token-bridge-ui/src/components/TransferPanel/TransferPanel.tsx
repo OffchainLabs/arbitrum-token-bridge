@@ -74,6 +74,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -222,6 +223,15 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  const isTeleportMode = useMemo(
+    () =>
+      isTeleport({
+        sourceChainId: networks.sourceChain.id,
+        destinationChainId: networks.destinationChain.id
+      }),
+    [networks.sourceChain.id, networks.destinationChain.id]
+  )
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -987,7 +997,11 @@ export function TransferPanel() {
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
                     isTokenSepoliaUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
+                  !isArbitrumNova &&
+                  !isTeleport({
+                    sourceChainId: networks.sourceChain.id,
+                    destinationChainId: networks.destinationChain.id
+                  })
                 ) {
                   transferCctp()
                 } else if (selectedToken) {
@@ -1019,6 +1033,7 @@ export function TransferPanel() {
               disabled={!transferReady.withdrawal}
               onClick={() => {
                 if (
+                  !isTeleportMode &&
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
