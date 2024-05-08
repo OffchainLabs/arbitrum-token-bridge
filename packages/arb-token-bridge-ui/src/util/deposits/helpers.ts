@@ -347,7 +347,7 @@ export async function updateTeleporterDepositStatusData({
     } else {
       const status = depositStatus as Erc20DepositMessages
       l2Retryable = status.l1l2TokenBridge
-      l3Retryable = status.l2l3TokenBridge
+      l3Retryable = status.l2ForwarderFactory
     }
 
     // extract the l2 transaction details, if any
