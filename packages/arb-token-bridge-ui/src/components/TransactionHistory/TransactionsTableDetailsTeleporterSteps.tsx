@@ -32,7 +32,21 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const firstTransactionText = useMemo(() => {
     if (isFirstRetryableFailed) {
       const l2NetworkName = getNetworkName(getChainIdForRedeemingRetryable(tx))
-      return `Transaction failed on ${l2NetworkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
+
+      return (
+        <div>
+          Transaction failed on {l2NetworkName}. You have 7 days to retry. After
+          that, the tx is no longer recoverable.
+          <div className="mt-1 text-white/60">
+            Note: Retrying may trigger 2 transactions to sign -
+            <div>1. To complete the deposit to {l2NetworkName}.</div>
+            <div>
+              2. To relay the deposit to {getNetworkName(tx.destinationChainId)}
+              .
+            </div>
+          </div>
+        </div>
+      )
     }
 
     // if l2ChainId is present
@@ -104,6 +118,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
         failure={isFirstRetryableFailed}
         text={firstTransactionText}
         endItem={firstTransactionActionItem}
+        classNameOverrides="h-auto items-start"
       />
 
       {/* Show second leg of teleport transfer waiting time */}
