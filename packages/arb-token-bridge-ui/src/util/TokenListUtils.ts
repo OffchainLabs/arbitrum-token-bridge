@@ -111,7 +111,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     isDefault: true,
     logoURI: UniswapLogo
   },
-  // Mock list for xERC20 tokens
+  // Mocked list for xERC20 tokens
   {
     id: 18,
     originChainID: ChainId.ArbitrumSepolia,
