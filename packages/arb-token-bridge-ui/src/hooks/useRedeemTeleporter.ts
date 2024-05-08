@@ -5,15 +5,14 @@ import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import {
-  firstRetryableRequiresRedeem,
   getChainIdForRedeemingRetryable,
-  getRetryableTicket
+  getRetryableTicket,
+  getRetryableToRedeem
 } from '../util/RetryableUtils'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { L1ToL2MessageData, L2ToL3MessageData } from './useTransactions'
@@ -49,36 +48,17 @@ export function useRedeemTeleporter(
         throw 'Signer is undefined'
       }
 
-      // 1. first check which leg of the tx needs redeeming - l1toL2 or l2tol3
-      // 2. then, ensure that the user is connected to the proper providers and signers
-      // 3. then, we can call the same redeem logic we have on any of the Retryables and update the tx accordingly
-
-      const isFirstRetryableBeingRedeemed = firstRetryableRequiresRedeem(tx)
-
-      let sourceChainTxHash, retryableCreationId, sourceChainProvider
-
-      if (isFirstRetryableBeingRedeemed) {
-        sourceChainTxHash = tx.txId
-        retryableCreationId = tx.l1ToL2MsgData?.retryableCreationTxID
-        sourceChainProvider = getProviderForChainId(tx.parentChainId)
-      } else {
-        if (tx.l2ToL3MsgData) {
-          sourceChainTxHash = tx.l1ToL2MsgData?.l2TxID
-          retryableCreationId = tx.l2ToL3MsgData.retryableCreationTxID
-          sourceChainProvider = getProviderForChainId(
-            tx.l2ToL3MsgData.l2ChainId
-          )
-        }
-      }
-
-      if (!sourceChainTxHash || !sourceChainProvider) {
-        throw 'Could not find redemption details'
-      }
+      const {
+        isFirstRetryableBeingRedeemed,
+        parentChainTxHash,
+        parentChainProvider,
+        retryableCreationId
+      } = getRetryableToRedeem(tx)
 
       const retryableTicket = await getRetryableTicket({
-        parentChainTxHash: sourceChainTxHash,
+        parentChainTxHash,
         retryableCreationId,
-        parentChainProvider: sourceChainProvider,
+        parentChainProvider,
         childChainSigner: signer
       })
 
@@ -100,37 +80,38 @@ export function useRedeemTeleporter(
         l2TxReceipt: TransactionReceipt
       }
 
-      const updatesInTx = isFirstRetryableBeingRedeemed
-        ? {
-            l1ToL2MsgData: {
-              ...tx.l1ToL2MsgData,
-              l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
-              status,
-              retryableCreationTxID: retryableTicket.retryableCreationId,
-              fetchingUpdate: false
-            } as L1ToL2MessageData,
-            l2ToL3MsgData: {
-              ...tx.l2ToL3MsgData,
-              status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 // 2nd retryable needs to be manually redeemed
-            } as L2ToL3MessageData,
-            depositStatus: DepositStatus.L2_PENDING
-          }
-        : {
-            l2ToL3MsgData: {
-              ...tx.l2ToL3MsgData,
-              l3TxID: redeemReceipt.l2TxReceipt.transactionHash,
-              status,
-              retryableCreationTxID: retryableTicket.retryableCreationId
-            } as L2ToL3MessageData,
-            depositStatus: DepositStatus.L2_SUCCESS, // 2nd retryable redeemed, full success
-            resolvedAt: dayjs().valueOf()
-          }
-
-      await updatePendingTransaction({
-        // we need to use `await` here so that we get next retryable data fetched before updating the tx
-        ...tx,
-        ...updatesInTx
-      })
+      if (isFirstRetryableBeingRedeemed) {
+        // if this was the first retryable that was redeemed, update the first retryable with success and l2TxID
+        // + update the upcoming retryable with a pending status, so that it's details are fetched
+        await updatePendingTransaction({
+          ...tx,
+          l1ToL2MsgData: {
+            ...tx.l1ToL2MsgData,
+            l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+            status,
+            retryableCreationTxID: retryableTicket.retryableCreationId,
+            fetchingUpdate: false
+          } as L1ToL2MessageData,
+          l2ToL3MsgData: {
+            ...tx.l2ToL3MsgData,
+            status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 // 2nd retryable needs to be manually redeemed
+          } as L2ToL3MessageData,
+          depositStatus: DepositStatus.L2_PENDING
+        })
+      } else {
+        // if this was the second retryable that was redeemed, full success
+        await updatePendingTransaction({
+          ...tx,
+          l2ToL3MsgData: {
+            ...tx.l2ToL3MsgData,
+            l3TxID: redeemReceipt.l2TxReceipt.transactionHash,
+            status,
+            retryableCreationTxID: retryableTicket.retryableCreationId
+          } as L2ToL3MessageData,
+          depositStatus: DepositStatus.L2_SUCCESS,
+          resolvedAt: dayjs().valueOf()
+        })
+      }
 
       // track in analytics
       trackEvent('Redeem Retryable', { network: redeemerNetworkName })
