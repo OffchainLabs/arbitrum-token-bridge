@@ -126,7 +126,7 @@ export const stylusTestnet: Chain = {
 }
 
 export const stylusTestnetV2: Chain = {
-  id: ChainId.StylusTestnet,
+  id: ChainId.StylusTestnetV2,
   name: 'Stylus Testnet v2',
   network: 'stylus-testnet-v2',
   nativeCurrency: ether,
