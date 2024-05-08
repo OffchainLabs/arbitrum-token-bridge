@@ -42,6 +42,8 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
+import { isTeleportDisabledToken } from '../../util/TokenTeleportDisabledUtils'
+import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -529,8 +531,13 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
@@ -538,6 +545,11 @@ export function TokenSearch({
   const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
+
+  const isTeleportMode = useTeleportMode({
+    sourceChainId: isDepositMode ? parentChain.id : childChain.id,
+    destinationChainId: isDepositMode ? childChain.id : parentChain.id
+  })
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -626,6 +638,14 @@ export function TokenSearch({
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (
+        isTeleportMode &&
+        isTeleportDisabledToken(_token.address, parentChain.id)
+      ) {
         openTransferDisabledDialog()
         return
       }

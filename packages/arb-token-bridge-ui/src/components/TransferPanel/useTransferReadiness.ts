@@ -26,6 +26,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTeleportMode } from '../../hooks/useTeleportMode'
+import { isTeleportDisabledToken } from '../../util/TokenTeleportDisabledUtils'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -118,8 +119,13 @@ export function useTransferReadiness({
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode
+  } = useNetworksRelationship(networks)
 
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
@@ -253,10 +259,10 @@ export function useTransferReadiness({
         childChain.id
       )
 
-      const selectedTokenIsDisabled = isTransferDisabledToken(
-        selectedToken.address,
-        childChain.id
-      )
+      const selectedTokenIsDisabled =
+        isTransferDisabledToken(selectedToken.address, childChain.id) ||
+        (isTeleportMode &&
+          isTeleportDisabledToken(selectedToken.address, parentChain.id))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
