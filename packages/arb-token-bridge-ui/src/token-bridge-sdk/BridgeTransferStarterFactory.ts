@@ -7,6 +7,7 @@ import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { XErc20DepositStarter } from './XErc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
+import { XErc20WithdrawalStarter } from './XErc20WithdrawalStarter'
 import { getBridgeTransferProperties } from './utils'
 import { getProviderForChainId } from '../hooks/useNetworks'
 
@@ -74,7 +75,7 @@ export class BridgeTransferStarterFactory {
     }
     // withdrawals
     if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
+      return withCache(cacheKey, new XErc20WithdrawalStarter(initProps))
     }
     return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }
