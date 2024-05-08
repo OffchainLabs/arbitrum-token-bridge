@@ -36,6 +36,13 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
+  [ChainId.ArbitrumSepolia]: [
+    {
+      symbol: 'ARB',
+      l1Address: '0xfa898E8d38B008F3bAc64dce019A9480d4F06863',
+      l2Address: '0xc275b23c035a9d4ec8867b47f55427e0bdce14cb'
+    }
+  ],
   // xai mainnet
   [660279]: [
     {
