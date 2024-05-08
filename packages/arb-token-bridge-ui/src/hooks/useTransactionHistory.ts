@@ -111,7 +111,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
     // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
     if (isL1Chain(chain)) {
-      const teleportAllowList = TELEPORT_ALLOWLIST[chain.chainID] || []
+      const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chain.chainID] || [])
       teleportAllowList.forEach(chainId => {
         if (!childChainIds.includes(chainId)) {
           childChainIds.push(chainId)

@@ -463,7 +463,7 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
   // add orbit-chains are also a part of the valid destination id's
-  const teleportAllowList = TELEPORT_ALLOWLIST[chainId] || []
+  const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chainId] || [])
   teleportAllowList.forEach(chainId => {
     if (!validDestinationChainIds.includes(chainId)) {
       validDestinationChainIds.push(chainId)
