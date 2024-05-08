@@ -1,24 +1,23 @@
 import { ChainId } from '../util/networks'
-import { CommonAddress } from './CommonAddressUtils'
 
-export type TeleportDisabledToken = {
+export type TeleportEnabledToken = {
   symbol: string
   l1Address: string
 }
 
-const teleportDisabledTokens: {
-  [parentChainId: number]: TeleportDisabledToken[]
+const teleportEnabledTokens: {
+  [parentChainId: number]: TeleportEnabledToken[]
 } = {
   [ChainId.Ethereum]: [
     {
-      symbol: 'USDC',
-      l1Address: CommonAddress.Ethereum.USDC
+      symbol: 'WETH',
+      l1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     }
   ],
   [ChainId.Sepolia]: [
     {
-      symbol: 'USDC',
-      l1Address: CommonAddress.Sepolia.USDC
+      symbol: 'WETH',
+      l1Address: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14'
     }
   ]
 }
@@ -27,7 +26,8 @@ export function isTeleportDisabledToken(
   erc20L1Address: string,
   parentChainId: number
 ) {
-  return (teleportDisabledTokens[parentChainId] ?? [])
+  // check teleport enabled tokens and return true if the token is not enabled
+  return !(teleportEnabledTokens[parentChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }
