@@ -1,7 +1,7 @@
-import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
-import { ChainWithRpcUrl } from './networks'
-import orbitMainnetsJson from './orbit/orbitMainnets.json'
-import orbitTestnetsJson from './orbit/orbitTestnets.json'
+import { NativeCurrencyBase } from '../../hooks/useNativeCurrency'
+import { ChainWithRpcUrl } from './../networks'
+import orbitMainnetsJson from './orbitMainnets.json'
+import orbitTestnetsJson from './orbitTestnets.json'
 
 export type NetworkType =
   | 'Ethereum'
