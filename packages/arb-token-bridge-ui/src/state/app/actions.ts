@@ -1,10 +1,7 @@
-import {
-  ArbTokenBridge,
-  ERC20BridgeToken
-} from '../../hooks/arbTokenBridge.types'
+import { ArbTokenBridge } from '../../hooks/arbTokenBridge.types'
 import { Context } from '..'
 import { ConnectionState } from '../../util'
-import { WhiteListState, WarningTokens } from './state'
+import { WhiteListState, WarningTokens, Token } from './state'
 
 export const setConnectionState = (
   { state }: Context,
@@ -21,10 +18,7 @@ export const setChainIds = (
   state.app.l2NetworkChainId = payload.l2NetworkChainId
 }
 
-export const setSelectedToken = (
-  { state }: Context,
-  token: ERC20BridgeToken | null
-) => {
+export const setSelectedToken = ({ state }: Context, token: Token) => {
   state.app.selectedToken = token ? { ...token } : null
 }
 

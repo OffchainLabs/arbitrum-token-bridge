@@ -23,7 +23,7 @@ import {
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -42,6 +42,7 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
+import { Token } from '../../state/app/state'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -167,7 +168,7 @@ const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  onTokenSelected: (token: Token) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -438,7 +439,7 @@ function TokensPanel({
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {
       const address = tokensToShow[virtualizedProps.index]
-      let token: ERC20BridgeToken | null = null
+      let token: Token = null
 
       if (isTokenArbitrumOneNativeUSDC(address)) {
         token = ARB_ONE_NATIVE_USDC_TOKEN
@@ -539,7 +540,7 @@ export function TokenSearch({
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
+  async function selectToken(_token: Token) {
     close()
 
     if (_token === null) {

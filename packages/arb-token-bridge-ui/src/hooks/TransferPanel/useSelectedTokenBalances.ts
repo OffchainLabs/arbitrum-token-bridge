@@ -7,6 +7,7 @@ import { useDestinationAddressStore } from '../../components/TransferPanel/Advan
 import { useAccount } from 'wagmi'
 import { useBalance } from '../useBalance'
 import {
+  isERC20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
@@ -76,7 +77,7 @@ export function useSelectedTokenBalances(): Balances {
       l2: null
     }
 
-    if (!selectedToken) {
+    if (!isERC20BridgeToken(selectedToken)) {
       return result
     }
 

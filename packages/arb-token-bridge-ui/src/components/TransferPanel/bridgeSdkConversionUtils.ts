@@ -8,17 +8,18 @@ import { BridgeTransfer } from '@/token-bridge-sdk/BridgeTransferStarter'
 import {
   DepositStatus,
   MergedTransaction,
-  WithdrawalStatus
+  WithdrawalStatus,
+  Token
 } from '../../state/app/state'
 import { Deposit } from '../../hooks/useTransactionHistory'
-import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
+import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { NativeCurrency } from '../../hooks/useNativeCurrency'
 
 type SdkToUiConversionProps = {
   bridgeTransfer: BridgeTransfer
   parentChainId: number
   childChainId: number
-  selectedToken: ERC20BridgeToken | null
+  selectedToken: Token
   walletAddress: string
   destinationAddress?: string
   nativeCurrency: NativeCurrency
