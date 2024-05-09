@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { MergedTransaction } from '../../state/app/state'
-import { orbitChains } from '../../util/orbitChainsList'
+import { orbitChains } from '../../util/orbit'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { TokenListWithId } from '../../util/TokenListUtils'
 

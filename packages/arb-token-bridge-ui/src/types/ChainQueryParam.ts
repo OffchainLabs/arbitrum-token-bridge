@@ -7,7 +7,7 @@ import {
   getSupportedChainIds
 } from '../util/networks'
 import * as customChains from '../util/wagmi/wagmiAdditionalNetworks'
-import { getOrbitChains, orbitChains } from '../util/orbitChainsList'
+import { getOrbitChains, orbitChains } from '../util/orbit'
 import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [

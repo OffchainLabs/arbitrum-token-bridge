@@ -8,7 +8,7 @@ import {
   getCustomChainsFromLocalStorage,
   mapCustomChainToNetworkData
 } from '../util/networks'
-import { getOrbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbit'
 
 const App = dynamic(() => import('../components/App/App'), {
   ssr: false,

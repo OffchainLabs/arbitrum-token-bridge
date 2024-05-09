@@ -22,7 +22,7 @@ import {
 
 import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { getOrbitChains } from '../util/orbitChainsList'
+import { getOrbitChains } from '../util/orbit'
 
 const getProviderForChainCache: {
   [chainId: number]: StaticJsonRpcProvider
