@@ -17,6 +17,7 @@ const chainQueryParams = [
   'arbitrum-nova',
   'arbitrum-sepolia',
   'stylus-testnet',
+  'stylus-testnet-v2',
   'custom-localhost',
   'arbitrum-localhost'
 ] as const
@@ -52,6 +53,9 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
 
     case ChainId.StylusTestnet:
       return 'stylus-testnet'
+
+    case ChainId.StylusTestnetV2:
+      return 'stylus-testnet-v2'
 
     case ChainId.Sepolia:
       return 'sepolia'
@@ -105,6 +109,9 @@ export function getChainForChainKeyQueryParam(
 
     case 'stylus-testnet':
       return customChains.stylusTestnet
+
+    case 'stylus-testnet-v2':
+      return customChains.stylusTestnetV2
 
     case 'custom-localhost':
       return customChains.localL1Network

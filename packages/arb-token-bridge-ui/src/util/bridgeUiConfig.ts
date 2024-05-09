@@ -100,7 +100,17 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
       return {
         color: '#E3066E',
         network: {
-          name: 'Stylus Testnet',
+          name: 'Stylus Testnet v1',
+          logo: '/images/StylusLogo.svg',
+          description:
+            'An experimental playground for Arbitrum Stylus smart contracts.'
+        }
+      }
+    case ChainId.StylusTestnetV2:
+      return {
+        color: '#E3066E',
+        network: {
+          name: 'Stylus Testnet v2',
           logo: '/images/StylusLogo.svg',
           description:
             'An experimental playground for Arbitrum Stylus smart contracts.'
