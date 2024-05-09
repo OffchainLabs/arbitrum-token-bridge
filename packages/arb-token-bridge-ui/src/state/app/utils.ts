@@ -12,6 +12,10 @@ import {
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  firstRetryableLegRequiresRedeem,
+  l2L3RetryableRequiresRedeem
+} from '../../util/RetryableUtils'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -51,13 +55,18 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
   // for teleport txn
   if (
     isTeleport({
-      sourceChainId: tx.parentChainId,
+      sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
       destinationChainId: tx.childChainId
     }) &&
     tx.l1ToL2MsgData &&
     tx.l2ToL3MsgData
   ) {
     const { l2ToL3MsgData, l1ToL2MsgData } = tx
+
+    // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
+    if (l2ToL3MsgData?.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
+
+    // else, normally check the status of l3Retryable and l2Retryable
     switch (l2ToL3MsgData.status) {
       case L1ToL2MessageStatus.CREATION_FAILED:
         return DepositStatus.CREATION_FAILED
@@ -101,15 +110,6 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     case L1ToL2MessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
-}
-
-export const isRetryableTicketFailed = (
-  retryableTicketStatus: L1ToL2MessageStatus
-) => {
-  return (
-    retryableTicketStatus === L1ToL2MessageStatus.CREATION_FAILED ||
-    retryableTicketStatus === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-  )
 }
 
 export const transformDeposit = (tx: Transaction): MergedTransaction => {
@@ -267,8 +267,7 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   if (isTeleport(tx)) {
     return (
-      tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 ||
-      tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+      firstRetryableLegRequiresRedeem(tx) || l2L3RetryableRequiresRedeem(tx)
     )
   }
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE

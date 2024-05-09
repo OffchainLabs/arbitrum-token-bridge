@@ -29,8 +29,8 @@ import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
-  firstRetryableRequiresRedeem,
-  secondRetryableRequiresRedeem
+  firstRetryableLegRequiresRedeem,
+  l2L3RetryableRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
 
@@ -153,7 +153,7 @@ const LastStepEndItem = ({
 
   if (
     (!isTeleportTx && isDepositReadyToRedeem(tx)) ||
-    (isTeleportTx && secondRetryableRequiresRedeem(tx))
+    (isTeleportTx && l2L3RetryableRequiresRedeem(tx))
   ) {
     return (
       <TransactionsTableRowAction
@@ -190,7 +190,7 @@ export const TransactionsTableDetailsSteps = ({
   const isTeleportTx = isTeleport(tx)
 
   const isDestinationChainFailure = isTeleportTx
-    ? secondRetryableRequiresRedeem(tx)
+    ? l2L3RetryableRequiresRedeem(tx)
     : !isSourceChainDepositFailure && isTxFailed(tx)
 
   const destinationChainTxText = useMemo(() => {
@@ -199,7 +199,7 @@ export const TransactionsTableDetailsSteps = ({
     if (isTxExpired(tx)) {
       return `Transaction expired on ${networkName}`
     }
-    if (isTeleportTx && firstRetryableRequiresRedeem(tx)) {
+    if (isTeleportTx && firstRetryableLegRequiresRedeem(tx)) {
       return `Funds arrived on ${networkName}`
     }
 

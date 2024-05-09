@@ -333,6 +333,7 @@ export async function updateTeleporterDepositStatusData({
 
     let l2Retryable: L1ToL2MessageReader | undefined,
       l3Retryable: L1ToL2MessageReader | undefined,
+      l2ForwarderFactoryRetryable: L1ToL2MessageReader | undefined,
       l3TxHash: string | undefined,
       l1ToL2MsgData,
       l2ToL3MsgData: L2ToL3MessageData = {
@@ -347,7 +348,8 @@ export async function updateTeleporterDepositStatusData({
     } else {
       const status = depositStatus as Erc20DepositMessages
       l2Retryable = status.l1l2TokenBridge
-      l3Retryable = status.l2ForwarderFactory
+      l2ForwarderFactoryRetryable = status.l2ForwarderFactory
+      l3Retryable = status.l2l3TokenBridge
     }
 
     // extract the l2 transaction details, if any
@@ -365,17 +367,41 @@ export async function updateTeleporterDepositStatusData({
       } as L1ToL2MessageData
     }
 
-    // extract the l3 transaction details, if any
-    if (l3Retryable) {
+    // in case the forwarder retryable has failed, add it to the `l2ToL3MsgData`, else leave it undefined
+    // note: having `l2ForwarderRetryableTxID` in the `l2ToL3MsgData` will mean that it needs redemption
+    if (
+      l2ForwarderFactoryRetryable &&
+      (await l2ForwarderFactoryRetryable.status()) ===
+        L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+    ) {
+      l2ToL3MsgData = {
+        ...l2ToL3MsgData,
+        status: await l2ForwarderFactoryRetryable.status(),
+        l2ForwarderRetryableTxID:
+          l2ForwarderFactoryRetryable.retryableCreationId
+      }
+    } else if (l3Retryable) {
+      // extract the new L2 tx details if we find that `l2ForwarderFactoryRetryable` has been redeemed manually
+      // the new l2TxId will be helpful to get l2L3 redemption details while redeeming
+      if (l2ForwarderFactoryRetryable) {
+        const l2ForwarderRedeem =
+          await l2ForwarderFactoryRetryable.getSuccessfulRedeem()
+        if (l2ForwarderRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+          l1ToL2MsgData = {
+            ...l1ToL2MsgData,
+            l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
+          } as L1ToL2MessageData
+        }
+      }
+
+      // extract the l3 transaction details, if any
       const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
       if (l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED) {
         l3TxHash = l2L3Redeem.l2TxReceipt.transactionHash
       }
       l2ToL3MsgData = {
         ...l2ToL3MsgData,
-        status: l3Retryable
-          ? await l3Retryable.status()
-          : L1ToL2MessageStatus.NOT_YET_CREATED,
+        status: await l3Retryable.status(),
         l3TxID: l3TxHash,
         retryableCreationTxID: l3Retryable.retryableCreationId
       }

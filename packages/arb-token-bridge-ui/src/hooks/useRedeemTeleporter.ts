@@ -1,13 +1,16 @@
 import { useCallback, useState } from 'react'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus, L1ToL2MessageWriter } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import {
+  firstRetryableLegRequiresRedeem,
   getChainIdForRedeemingRetryable,
   getRetryableTicket,
-  getRetryableToRedeem
+  l1L2RetryableRequiresRedeem,
+  l2ForwarderRetryableRequiresRedeem,
+  l2L3RetryableRequiresRedeem
 } from '../util/RetryableUtils'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
@@ -15,11 +18,153 @@ import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
-import { L1ToL2MessageData, L2ToL3MessageData } from './useTransactions'
+import { L2ToL3MessageData } from './useTransactions'
+import { getProviderForChainId } from '../token-bridge-sdk/utils'
+import { Signer } from 'ethers'
+import { updateTeleporterDepositStatusData } from '../util/deposits/helpers'
+import { UseRedeemRetryableResult } from './useRedeemRetryable'
+import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
+import { getDepositStatus } from '../state/app/utils'
 
-export type UseRedeemRetryableResult = {
-  redeem: () => Promise<void>
-  isRedeeming: boolean
+// common handling for redeeming all 3 retryables for teleporter
+const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
+  const reedemTx = await retryable.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
+  await reedemTx.wait()
+
+  const status = await retryable.status()
+  const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+
+  if (!isSuccess) {
+    console.error('Redemption failed; status is not REDEEMED', reedemTx)
+    throw new Error(
+      'Redemption failed; status is not REDEEMED. Please try again later.'
+    )
+  }
+
+  const redeemReceipt = (await retryable.getSuccessfulRedeem()) as {
+    status: L1ToL2MessageStatus.REDEEMED
+    l2TxReceipt: TransactionReceipt
+  }
+
+  return redeemReceipt
+}
+
+// this will try to redeem - 1. L1L2Retryable 2. L2ForwarderRetryable
+const redeemTeleporterFirstLeg = async ({
+  tx,
+  signer,
+  txUpdateCallback
+}: {
+  tx: MergedTransaction
+  signer: Signer
+  txUpdateCallback?: (tx: MergedTransaction) => void
+}) => {
+  let teleportTransfer = tx
+
+  // check if we require a redemption for the first retryable
+  if (l1L2RetryableRequiresRedeem(tx)) {
+    // get retryable ticket
+    const l1l2Retryable = await getRetryableTicket({
+      parentChainTxHash: tx.txId,
+      retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
+      parentChainProvider: getProviderForChainId(tx.parentChainId),
+      childChainSigner: signer
+    })
+
+    // redeem retryable
+    await redeemRetryable(l1l2Retryable)
+
+    // update the teleport tx in the UI
+    teleportTransfer = await getUpdatedTeleporterTxAfterRedemption(tx)
+    await txUpdateCallback?.(teleportTransfer)
+  }
+
+  // check if we require a redemption for the second retryable
+  if (l2ForwarderRetryableRequiresRedeem(teleportTransfer)) {
+    // get retryable ticket
+    const l2ForwarderRetryable = await getRetryableTicket({
+      parentChainTxHash: tx.txId,
+      retryableCreationId:
+        teleportTransfer?.l2ToL3MsgData?.l2ForwarderRetryableTxID,
+      parentChainProvider: getProviderForChainId(tx.parentChainId),
+      childChainSigner: signer
+    })
+
+    // redeem retryable
+    await redeemRetryable(l2ForwarderRetryable)
+
+    // update the teleport tx in the UI
+    const updatedTeleportTransfer = await getUpdatedTeleporterTxAfterRedemption(
+      teleportTransfer
+    )
+    await txUpdateCallback?.(updatedTeleportTransfer)
+  }
+}
+
+// this will try to redeem - L2L3Retryable
+const redeemTeleporterSecondLeg = async ({
+  tx,
+  signer,
+  txUpdateCallback
+}: {
+  tx: MergedTransaction
+  signer: Signer
+  txUpdateCallback?: (tx: MergedTransaction) => void
+}) => {
+  // check if we require a redemption for the l2l3 retryable
+  if (
+    l2L3RetryableRequiresRedeem(tx) &&
+    tx.l1ToL2MsgData?.l2TxID &&
+    tx.l2ToL3MsgData
+  ) {
+    const l2L3Retryable = await getRetryableTicket({
+      parentChainTxHash: tx.l1ToL2MsgData.l2TxID,
+      retryableCreationId: tx.l2ToL3MsgData?.retryableCreationTxID,
+      parentChainProvider: getProviderForChainId(tx.l2ToL3MsgData.l2ChainId),
+      childChainSigner: signer
+    })
+
+    // redeem retryable
+    const redemptionReceipt = await redeemRetryable(l2L3Retryable)
+
+    // update the teleport tx in the UI
+    const l2ToL3MsgData: L2ToL3MessageData = {
+      ...tx.l2ToL3MsgData,
+      l3TxID: redemptionReceipt.l2TxReceipt.transactionHash,
+      status: L1ToL2MessageStatus.REDEEMED,
+      retryableCreationTxID: l2L3Retryable.retryableCreationId
+    }
+    const updatedTeleporterTx = await getUpdatedTeleportTransfer({
+      ...tx,
+      l2ToL3MsgData,
+      depositStatus: DepositStatus.L2_SUCCESS,
+      resolvedAt: dayjs().valueOf()
+    })
+    await txUpdateCallback?.(updatedTeleporterTx)
+  }
+}
+
+const getUpdatedTeleporterTxAfterRedemption = async (tx: MergedTransaction) => {
+  const { txId: txID, childChainId, parentChainId, assetType } = tx
+
+  const { l1ToL2MsgData, l2ToL3MsgData } =
+    await updateTeleporterDepositStatusData({
+      txID,
+      childChainId,
+      parentChainId,
+      assetType
+    })
+
+  const teleportTransfer = {
+    ...tx,
+    l1ToL2MsgData,
+    l2ToL3MsgData
+  }
+
+  return {
+    ...teleportTransfer,
+    depositStatus: getDepositStatus(teleportTransfer)
+  }
 }
 
 export function useRedeemTeleporter(
@@ -48,68 +193,17 @@ export function useRedeemTeleporter(
         throw 'Signer is undefined'
       }
 
-      const {
-        isFirstRetryableBeingRedeemed,
-        parentChainTxHash,
-        parentChainProvider,
-        retryableCreationId
-      } = getRetryableToRedeem(tx)
-
-      const retryableTicket = await getRetryableTicket({
-        parentChainTxHash,
-        retryableCreationId,
-        parentChainProvider,
-        childChainSigner: signer
-      })
-
-      const reedemTx = await retryableTicket.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
-      await reedemTx.wait()
-
-      const status = await retryableTicket.status()
-      const isSuccess = status === L1ToL2MessageStatus.REDEEMED
-
-      if (!isSuccess) {
-        console.error('Redemption failed; status is not REDEEMED', reedemTx)
-        throw new Error(
-          'Redemption failed; status is not REDEEMED. Please try again later.'
-        )
-      }
-
-      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
-        status: L1ToL2MessageStatus.REDEEMED
-        l2TxReceipt: TransactionReceipt
-      }
-
-      if (isFirstRetryableBeingRedeemed) {
-        // if this was the first retryable that was redeemed, update the first retryable with success and l2TxID
-        // + update the upcoming retryable with a pending status, so that it's details are fetched
-        await updatePendingTransaction({
-          ...tx,
-          l1ToL2MsgData: {
-            ...tx.l1ToL2MsgData,
-            l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
-            status,
-            retryableCreationTxID: retryableTicket.retryableCreationId,
-            fetchingUpdate: false
-          } as L1ToL2MessageData,
-          l2ToL3MsgData: {
-            ...tx.l2ToL3MsgData,
-            status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 // 2nd retryable needs to be manually redeemed
-          } as L2ToL3MessageData,
-          depositStatus: DepositStatus.L2_PENDING
+      if (firstRetryableLegRequiresRedeem(tx)) {
+        await redeemTeleporterFirstLeg({
+          tx,
+          signer,
+          txUpdateCallback: updatePendingTransaction
         })
-      } else {
-        // if this was the second retryable that was redeemed, full success
-        await updatePendingTransaction({
-          ...tx,
-          l2ToL3MsgData: {
-            ...tx.l2ToL3MsgData,
-            l3TxID: redeemReceipt.l2TxReceipt.transactionHash,
-            status,
-            retryableCreationTxID: retryableTicket.retryableCreationId
-          } as L2ToL3MessageData,
-          depositStatus: DepositStatus.L2_SUCCESS,
-          resolvedAt: dayjs().valueOf()
+      } else if (l2L3RetryableRequiresRedeem(tx)) {
+        await redeemTeleporterSecondLeg({
+          tx,
+          signer,
+          txUpdateCallback: updatePendingTransaction
         })
       }
 

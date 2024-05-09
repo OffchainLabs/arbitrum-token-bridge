@@ -9,7 +9,6 @@ import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { MergedTransaction } from '../state/app/state'
 import { isTeleport } from '../token-bridge-sdk/teleport'
-import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -107,11 +106,24 @@ export const getRetryableTicketExpiration = async ({
 }
 
 // utilities for teleporter transactions
-export const firstRetryableRequiresRedeem = (tx: MergedTransaction) => {
+export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
   return tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
 }
-export const secondRetryableRequiresRedeem = (tx: MergedTransaction) => {
-  return tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+
+export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
+  return typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID !== 'undefined'
+}
+export const l2L3RetryableRequiresRedeem = (tx: MergedTransaction) => {
+  return (
+    typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined' &&
+    tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+  )
+}
+
+export const firstRetryableLegRequiresRedeem = (tx: MergedTransaction) => {
+  return (
+    l1L2RetryableRequiresRedeem(tx) || l2ForwarderRetryableRequiresRedeem(tx)
+  )
 }
 
 export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
@@ -120,7 +132,8 @@ export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   let chainIdForRedeemingRetryable
 
   if (isTeleport(tx)) {
-    chainIdForRedeemingRetryable = firstRetryableRequiresRedeem(tx)
+    // unless it's the final retryable being redeemed, we need to connect to the l2 chain in teleport, else, destination chain
+    chainIdForRedeemingRetryable = firstRetryableLegRequiresRedeem(tx)
       ? tx.l2ToL3MsgData?.l2ChainId
       : tx.childChainId
   } else {
@@ -134,38 +147,4 @@ export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   }
 
   return chainIdForRedeemingRetryable
-}
-
-// given a tx, find the retryable that needs redeeming and return the necessary info
-export const getRetryableToRedeem = (tx: MergedTransaction) => {
-  // 1. first check which leg of the tx needs redeeming - l1toL2 or l2tol3
-  // 2. then, ensure that the user is connected to the proper providers and signers
-  // 3. then, we can call the same redeem logic we have on any of the Retryables and update the tx accordingly
-
-  const isFirstRetryableBeingRedeemed = firstRetryableRequiresRedeem(tx)
-
-  let parentChainTxHash, retryableCreationId, parentChainProvider
-
-  if (isFirstRetryableBeingRedeemed) {
-    // first retryable info
-    parentChainTxHash = tx.txId
-    retryableCreationId = tx.l1ToL2MsgData?.retryableCreationTxID
-    parentChainProvider = getProviderForChainId(tx.parentChainId)
-  } else if (tx.l2ToL3MsgData) {
-    // second retryable info
-    parentChainTxHash = tx.l1ToL2MsgData?.l2TxID
-    retryableCreationId = tx.l2ToL3MsgData.retryableCreationTxID
-    parentChainProvider = getProviderForChainId(tx.l2ToL3MsgData.l2ChainId)
-  }
-
-  if (!parentChainTxHash || !parentChainProvider) {
-    throw 'Could not find redemption details'
-  }
-
-  return {
-    isFirstRetryableBeingRedeemed,
-    parentChainTxHash,
-    parentChainProvider,
-    retryableCreationId
-  }
 }

@@ -72,6 +72,7 @@ export interface L1ToL2MessageData {
 export interface L2ToL3MessageData {
   status: L1ToL2MessageStatus
   retryableCreationTxID?: string
+  l2ForwarderRetryableTxID?: string
   l3TxID?: string
   l2ChainId: number
 }
