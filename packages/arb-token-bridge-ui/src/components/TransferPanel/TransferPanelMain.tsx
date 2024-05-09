@@ -26,7 +26,6 @@ import {
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -34,7 +33,10 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  sanitizeTokenSymbol
+  sanitizeTokenSymbol,
+  isERC20BridgeToken,
+  isEther,
+  getL2ERC20Address
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
@@ -67,6 +69,10 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { Token } from '../../state/app/state'
+import { getL2Network } from '@arbitrum/sdk'
+import { TokenType } from '../../hooks/arbTokenBridge.types'
+import { getOrbitChains, orbitChains } from '../../util/orbitChainsList'
 
 enum NetworkType {
   l1 = 'l1',
@@ -272,7 +278,7 @@ function TokenBalance({
   prefix = '',
   tokenSymbolOverride
 }: {
-  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
+  forToken: Token | NativeCurrencyErc20
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
@@ -280,7 +286,7 @@ function TokenBalance({
 }) {
   const isParentChain = on === NetworkType.l1
 
-  if (!forToken) {
+  if (!isERC20BridgeToken(forToken)) {
     return null
   }
 
@@ -344,9 +350,16 @@ export function TransferPanelMain({
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const parentChainNativeCurrency = useNativeCurrency({
+    provider: parentChainProvider
+  })
+  const [orbitWeth, setOrbitWeth] = useState<string>()
 
   const {
-    app: { selectedToken }
+    app: {
+      selectedToken,
+      arbTokenBridge: { token }
+    }
   } = useAppState()
 
   const { address: walletAddress } = useAccount()
@@ -389,7 +402,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     if (
-      !selectedToken ||
+      !isERC20BridgeToken(selectedToken) ||
       !destinationAddressOrWalletAddress ||
       !utils.isAddress(destinationAddressOrWalletAddress)
     ) {
@@ -443,6 +456,12 @@ export function TransferPanelMain({
   const showUSDCSpecificInfo =
     (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
     (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
+
+  const showWrapEthInfo =
+    selectedToken &&
+    !isERC20BridgeToken(selectedToken) &&
+    nativeCurrency.isCustom &&
+    !parentChainNativeCurrency.isCustom
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -663,6 +682,33 @@ export function TransferPanelMain({
     [networks.sourceChain.id]
   )
 
+  useEffect(() => {
+    async function getOrbitWeth() {
+      const { isArbitrum: isParentChainArbitrum } = isNetwork(
+        networks.sourceChain.id
+      )
+
+      if (!isParentChainArbitrum || !token) {
+        return undefined
+      }
+
+      const l2Network = await getL2Network(networks.sourceChain.id)
+      const { l2Weth: parentChainWeth } = l2Network.tokenBridge
+
+      const orbitWeth = await getL2ERC20Address({
+        erc20L1Address: parentChainWeth,
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
+      })
+
+      await token.add(orbitWeth.toLowerCase())
+
+      setOrbitWeth(orbitWeth.toLowerCase())
+    }
+
+    getOrbitWeth()
+  }, [childChainProvider, networks.sourceChain.id, parentChainProvider, token])
+
   return (
     <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
@@ -736,6 +782,21 @@ export function TransferPanelMain({
             </p>
           )}
 
+          {showWrapEthInfo && (
+            <p className="mt-1 text-xs font-light text-white">
+              ETH is not a native currency on{' '}
+              {getNetworkName(networks.destinationChain.id)}. You will receive
+              Wrapped Ether (WETH) instead.{' '}
+              <ExternalLink
+                href={USDC_LEARN_MORE_LINK}
+                className="arb-hover underline"
+              >
+                Learn more
+              </ExternalLink>
+              .
+            </p>
+          )}
+
           {isDepositMode && selectedToken && (
             <p className="mt-1 text-xs font-light text-white">
               Make sure you have {nativeCurrency.symbol} in your{' '}
@@ -787,6 +848,30 @@ export function TransferPanelMain({
                         : undefined
                     }
                   />
+                  {/* In deposit mode, when user selected ETH on source chain,
+                  and the destination is a chain with a custom gas token,
+                  the UI shows WETH on the destination chain
+                  */}
+                  {isDepositMode &&
+                    isEther(selectedToken) &&
+                    nativeCurrency.isCustom && (
+                      <TokenBalance
+                        balance={
+                          (orbitWeth
+                            ? erc20L2Balances?.[orbitWeth]
+                            : constants.Zero) ?? constants.Zero
+                        }
+                        on={NetworkType.l2}
+                        forToken={{
+                          type: TokenType.ERC20,
+                          name: 'Wrapped Ether',
+                          symbol: 'WETH',
+                          decimals: 18,
+                          address: orbitWeth ?? '',
+                          listIds: new Set()
+                        }}
+                      />
+                    )}
                   {/* In deposit mode, when user selected USDC on mainnet,
                   the UI shows the Arb One balance of both USDC.e and native USDC */}
                   {isDepositMode && showUSDCSpecificInfo && (

@@ -7,13 +7,13 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLink'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { Token } from '../../state/app/state'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -23,7 +23,7 @@ export type TransferPanelSummaryToken = {
 
 export type TransferPanelSummaryProps = {
   amount: number
-  token: ERC20BridgeToken | null
+  token: Token
 }
 
 function StyledLoader() {

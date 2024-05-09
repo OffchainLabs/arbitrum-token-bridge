@@ -18,12 +18,13 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneUSDCe,
-  getL2ERC20Address
+  getL2ERC20Address,
+  isERC20BridgeToken
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken, TokenType } from '../../hooks/arbTokenBridge.types'
+import { TokenType } from '../../hooks/arbTokenBridge.types'
 import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -31,7 +32,10 @@ import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  nativeCurrencyEther,
+  useNativeCurrency
+} from '../../hooks/useNativeCurrency'
 import { SearchPanelTable } from '../common/SearchPanel/SearchPanelTable'
 import { SearchPanel } from '../common/SearchPanel/SearchPanel'
 import { TokenRow } from './TokenRow'
@@ -42,6 +46,7 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
+import { Token } from '../../state/app/state'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -163,11 +168,12 @@ function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
 }
 
 const NATIVE_CURRENCY_IDENTIFIER = 'native_currency'
+const ETH_IDENTIFIER = 'native_currency_eth'
 
 function TokensPanel({
   onTokenSelected
 }: {
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
+  onTokenSelected: (token: Token) => void
 }): JSX.Element {
   const { address: walletAddress } = useAccount()
   const {
@@ -278,6 +284,12 @@ function TokensPanel({
       // Deduplicate addresses
       ...new Set(tokenAddresses)
     ]
+
+    // for custom native tokens we add ETH to enable ETH transfers
+    if (nativeCurrency.isCustom) {
+      tokens.push(ETH_IDENTIFIER)
+    }
+
     return tokens
       .filter(address => {
         // Derive the token object from the address string
@@ -301,15 +313,20 @@ function TokensPanel({
         // If the token on the list is used as a custom fee token, we remove the duplicate
         if (
           nativeCurrency.isCustom &&
-          address.toLowerCase() === nativeCurrency.address.toLowerCase()
+          address !== NATIVE_CURRENCY_IDENTIFIER &&
+          address !== ETH_IDENTIFIER
         ) {
-          return false
+          return address.toLowerCase() !== nativeCurrency.address
         }
 
         // Which tokens to show while the search is not active
         if (!tokenSearch) {
           // Always show native currency
           if (address === NATIVE_CURRENCY_IDENTIFIER) {
+            return true
+          }
+
+          if (address === ETH_IDENTIFIER) {
             return true
           }
 
@@ -327,6 +344,10 @@ function TokensPanel({
           return `${nativeCurrency.name}${nativeCurrency.symbol}`
             .toLowerCase()
             .includes(tokenSearch)
+        }
+
+        if (address === ETH_IDENTIFIER) {
+          return `EtherETH`.toLowerCase().includes(tokenSearch)
         }
 
         if (!token) {
@@ -347,6 +368,14 @@ function TokensPanel({
 
         // Pin native currency to top
         if (address2 === NATIVE_CURRENCY_IDENTIFIER) {
+          return 1
+        }
+
+        if (address1 === ETH_IDENTIFIER) {
+          return -1
+        }
+
+        if (address2 === ETH_IDENTIFIER) {
           return 1
         }
 
@@ -438,7 +467,7 @@ function TokensPanel({
   const rowRenderer = useCallback(
     (virtualizedProps: ListRowProps) => {
       const address = tokensToShow[virtualizedProps.index]
-      let token: ERC20BridgeToken | null = null
+      let token: Token = null
 
       if (isTokenArbitrumOneNativeUSDC(address)) {
         token = ARB_ONE_NATIVE_USDC_TOKEN
@@ -454,6 +483,16 @@ function TokensPanel({
             key="TokenRowNativeCurrency"
             onTokenSelected={onTokenSelected}
             token={null}
+          />
+        )
+      }
+
+      if (address === ETH_IDENTIFIER) {
+        return (
+          <TokenRow
+            key="TokenRowNativeCurrencyParentChain"
+            onTokenSelected={onTokenSelected}
+            token={nativeCurrencyEther}
           />
         )
       }
@@ -539,11 +578,16 @@ export function TokenSearch({
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
-  async function selectToken(_token: ERC20BridgeToken | null) {
+  async function selectToken(_token: Token) {
     close()
 
     if (_token === null) {
       setSelectedToken(null)
+      return
+    }
+
+    if (!isERC20BridgeToken(_token)) {
+      setSelectedToken(nativeCurrencyEther)
       return
     }
 

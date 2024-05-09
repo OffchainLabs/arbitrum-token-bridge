@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 
 import { useAppState } from '../../state'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
+import { isERC20BridgeToken } from '../../util/TokenUtils'
 
 // Updates all balances periodically
 const BalanceUpdater = (): JSX.Element => {
@@ -21,7 +22,7 @@ const BalanceUpdater = (): JSX.Element => {
     const interval = setInterval(() => {
       updateUSDCBalances()
 
-      if (selectedToken) {
+      if (isERC20BridgeToken(selectedToken)) {
         latestTokenBridge?.current?.token?.updateTokenData(
           selectedToken.address
         )

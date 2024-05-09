@@ -9,7 +9,6 @@ import { ExternalLink } from '../common/ExternalLink'
 import { useETHPrice } from '../../hooks/useETHPrice'
 import { formatAmount, formatUSD } from '../../util/NumberUtils'
 import { getExplorerUrl, isNetwork } from '../../util/networks'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useGasPrice } from '../../hooks/useGasPrice'
 import { TOKEN_APPROVAL_ARTICLE_LINK, ether } from '../../constants'
 import { CctpTransferStarter } from '@/token-bridge-sdk/CctpTransferStarter'
@@ -24,9 +23,10 @@ import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferS
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { Token } from '../../state/app/state'
 
 export type TokenApprovalDialogProps = UseDialogProps & {
-  token: ERC20BridgeToken | null
+  token: Token
   isCctp: boolean
 }
 

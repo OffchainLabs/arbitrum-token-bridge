@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { getExplorerUrl } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
@@ -15,6 +14,7 @@ import {
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
+import { Token } from '../../state/app/state'
 
 export function TokenLogoFallback() {
   return (
@@ -28,13 +28,13 @@ export const TokenInfo = ({
   token,
   showFullAddress
 }: {
-  token: ERC20BridgeToken | null | undefined
+  token: Token
   showFullAddress?: boolean
 }) => {
   const [networks] = useNetworks()
   const tokensFromUser = useTokensFromUser()
   const tokensFromLists = useTokensFromLists()
-  const tokenAddressLowercased = token?.address.toLowerCase()
+  const tokenAddressLowercased = token?.address?.toLowerCase()
 
   const tokenLogo = useMemo(() => {
     if (!tokenAddressLowercased) {

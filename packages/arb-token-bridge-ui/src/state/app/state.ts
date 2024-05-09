@@ -13,6 +13,7 @@ import {
 import { ConnectionState } from '../../util'
 import { CCTPSupportedChainId } from '../cctpState'
 import { Address } from '../../util/AddressUtils'
+import { NativeCurrencyEther } from '../../hooks/useNativeCurrency'
 
 export enum WhiteListState {
   VERIFYING,
@@ -81,11 +82,13 @@ export interface WarningTokens {
   }
 }
 
+export type Token = ERC20BridgeToken | NativeCurrencyEther | null
+
 export type AppState = {
   arbTokenBridge: ArbTokenBridge
   warningTokens: WarningTokens
   connectionState: number
-  selectedToken: ERC20BridgeToken | null
+  selectedToken: Token
   verifying: WhiteListState
   l1NetworkChainId: number | null
   l2NetworkChainId: number | null

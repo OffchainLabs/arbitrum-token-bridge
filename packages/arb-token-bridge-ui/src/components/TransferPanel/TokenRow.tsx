@@ -15,6 +15,7 @@ import {
 import { formatAmount } from '../../util/NumberUtils'
 import { shortenAddress } from '../../util/CommonUtils'
 import {
+  isERC20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   sanitizeTokenName,
@@ -24,7 +25,6 @@ import { SafeImage } from '../common/SafeImage'
 import { getExplorerUrl, getNetworkName } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { ExternalLink } from '../common/ExternalLink'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -32,6 +32,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { TokenLogoFallback } from './TokenInfo'
 import { useBalanceOnSourceChain } from '../../hooks/useBalanceOnSourceChain'
+import { Token } from '../../state/app/state'
 
 function tokenListIdsToNames(ids: number[]): string {
   return ids
@@ -69,7 +70,7 @@ function BlockExplorerTokenLink({
   )
 }
 
-function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
+function TokenListInfo({ token }: { token: Token }) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider } = useNetworksRelationship(networks)
   const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
@@ -77,7 +78,7 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   })
 
   const tokenListInfo = useMemo(() => {
-    if (!token) {
+    if (!isERC20BridgeToken(token)) {
       return null
     }
 
@@ -109,13 +110,13 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
     )
   }, [token])
 
-  if (!token) {
+  if (!isERC20BridgeToken(token)) {
     const nativeTokenChain = getNetworkName(
       (childChainNativeCurrencyIsCustom ? childChain : networks.sourceChain).id
     )
     return (
       <span className="flex text-xs text-white/70">
-        Native token on {nativeTokenChain}
+        Native token on {token ? networks.sourceChain.name : nativeTokenChain}
       </span>
     )
   }
@@ -135,11 +136,11 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
 
 interface TokenRowProps {
   style?: React.CSSProperties
-  onTokenSelected: (token: ERC20BridgeToken | null) => void
-  token: ERC20BridgeToken | null
+  onTokenSelected: (token: Token) => void
+  token: Token
 }
 
-function useTokenInfo(token: ERC20BridgeToken | null) {
+function useTokenInfo(token: Token) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
@@ -169,8 +170,8 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   }, [token, nativeCurrency.symbol, chainId])
 
   const logoURI = useMemo(() => {
-    if (!token) {
-      return nativeCurrency.logoUrl
+    if (!isERC20BridgeToken(token)) {
+      return token?.logoUrl ?? nativeCurrency.logoUrl
     }
 
     return token.logoURI
@@ -179,7 +180,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   const balance = useBalanceOnSourceChain(token)
 
   const isArbitrumToken = useMemo(() => {
-    if (!token) {
+    if (!isERC20BridgeToken(token)) {
       return false
     }
 
@@ -198,7 +199,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
   }, [token, isArbitrumToken])
 
   const isBridgeable = useMemo(() => {
-    if (!token) {
+    if (!isERC20BridgeToken(token)) {
       return true
     }
 
@@ -236,7 +237,7 @@ function ArbitrumTokenBadge() {
   )
 }
 
-function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
+function TokenBalance({ token }: { token: Token }) {
   const {
     app: {
       arbTokenBridge: { bridgeTokens }
@@ -255,7 +256,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
       return true
     }
 
-    if (!token) {
+    if (!isERC20BridgeToken(token)) {
       return true
     }
 
@@ -289,7 +290,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   )
 }
 
-function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
+function TokenContractLink({ token }: { token: Token }) {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
@@ -307,7 +308,7 @@ function TokenContractLink({ token }: { token: ERC20BridgeToken | null }) {
     )
   }
 
-  if (!token) {
+  if (!isERC20BridgeToken(token)) {
     return null
   }
 

@@ -29,7 +29,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isGatewayRegistered
+  isGatewayRegistered,
+  isERC20BridgeToken
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -167,6 +168,8 @@ export function TransferPanel() {
     usdcDepositConfirmationDialogProps,
     openUSDCDepositConfirmationDialog
   ] = useDialog()
+  const [wrapEthAndTransferDialogProps, openWrapEthAndTransferDialog] =
+    useDialog()
 
   const { destinationAddress } = useDestinationAddressStore()
 
@@ -225,13 +228,14 @@ export function TransferPanel() {
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
-      selectedToken !== null && typeof selectedToken.l2Address === 'undefined'
+      isERC20BridgeToken(selectedToken) &&
+      typeof selectedToken.l2Address === 'undefined'
 
     return isDepositMode && isUnbridgedToken
   }, [isDepositMode, selectedToken])
 
   async function depositToken() {
-    if (!selectedToken) {
+    if (!isERC20BridgeToken(selectedToken)) {
       throw new Error('Invalid app state: no selected token')
     }
 
@@ -325,7 +329,7 @@ export function TransferPanel() {
     }
 
     const isUserAddedToken =
-      selectedToken &&
+      isERC20BridgeToken(selectedToken) &&
       selectedToken?.listIds.size === 0 &&
       typeof selectedToken.l2Address === 'undefined'
 
@@ -594,7 +598,7 @@ export function TransferPanel() {
     }
 
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
-    if (isSmartContractWallet && !selectedToken) {
+    if (isSmartContractWallet && !isERC20BridgeToken(selectedToken)) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
       return
     }
@@ -609,7 +613,8 @@ export function TransferPanel() {
       }
 
       const warningToken =
-        selectedToken && warningTokens[selectedToken.address.toLowerCase()]
+        isERC20BridgeToken(selectedToken) &&
+        warningTokens[selectedToken.address.toLowerCase()]
       if (warningToken) {
         const description = getWarningTokenDescription(warningToken.type)
         warningToast(
@@ -698,7 +703,7 @@ export function TransferPanel() {
 
       const signer = isDepositMode ? l1Signer : l2Signer
 
-      const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+      const bridgeTransferStarter = BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
@@ -768,7 +773,7 @@ export function TransferPanel() {
       }
 
       // checks for the selected token
-      if (selectedToken) {
+      if (isERC20BridgeToken(selectedToken)) {
         const tokenAddress = selectedToken.address
 
         // is selected token deployed on parent-chain?
@@ -776,12 +781,17 @@ export function TransferPanel() {
 
         // warning token handling
         const warningToken =
-          selectedToken && warningTokens[selectedToken.address.toLowerCase()]
+          isERC20BridgeToken(selectedToken) &&
+          warningTokens[selectedToken.address.toLowerCase()]
         if (warningToken) {
           const description = getWarningTokenDescription(warningToken.type)
           warningToast(
             `${selectedToken?.address} is ${description}; it will likely have unusual behavior when deployed as as standard token to Arbitrum. It is not recommended that you deploy it. (See ${DOCS_DOMAIN}/for-devs/concepts/token-bridge/token-bridge-erc20 for more info.)`
           )
+          return
+        }
+
+        if (!isERC20BridgeToken(selectedToken)) {
           return
         }
 
@@ -928,7 +938,7 @@ export function TransferPanel() {
     // tx confirmed, update balances
     await Promise.all([updateEthL1Balance(), updateEthL2Balance()])
 
-    if (selectedToken) {
+    if (isERC20BridgeToken(selectedToken)) {
       token.updateTokenData(selectedToken.address)
     }
 
@@ -993,7 +1003,7 @@ export function TransferPanel() {
                   !isArbitrumNova
                 ) {
                   transferCctp()
-                } else if (selectedToken) {
+                } else if (isERC20BridgeToken(selectedToken)) {
                   depositToken()
                 } else {
                   transfer()

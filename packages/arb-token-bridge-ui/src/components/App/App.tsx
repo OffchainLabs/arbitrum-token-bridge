@@ -41,6 +41,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { isERC20BridgeToken } from '../../util/TokenUtils'
 
 declare global {
   interface Window {
@@ -74,7 +75,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
     useState<TokenBridgeParams | null>(null)
 
   useEffect(() => {
-    if (!nativeCurrency.isCustom) {
+    if (!nativeCurrency.isCustom || !isERC20BridgeToken(selectedToken)) {
       return
     }
 
