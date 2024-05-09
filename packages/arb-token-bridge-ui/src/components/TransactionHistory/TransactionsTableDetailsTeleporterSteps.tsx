@@ -51,8 +51,6 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   tx: MergedTransaction
   address: Address | undefined
 }) => {
-  console.log('XXXX THIS IS THE TX', tx.txId, tx)
-
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
   const l2TxID = tx.l1ToL2MsgData?.l2TxID
