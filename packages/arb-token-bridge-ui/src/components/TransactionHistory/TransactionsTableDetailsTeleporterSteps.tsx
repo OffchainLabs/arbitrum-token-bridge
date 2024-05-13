@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 import { Address } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
+import {
+  ArrowTopRightOnSquareIcon,
+  CheckIcon
+} from '@heroicons/react/24/outline'
 import { MergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import {
@@ -12,10 +16,6 @@ import {
 } from '../../util/RetryableUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
-import {
-  ArrowTopRightOnSquareIcon,
-  CheckIcon
-} from '@heroicons/react/24/outline'
 import { Step } from './TransactionsTableDetailsSteps'
 import { DepositCountdown } from '../common/DepositCountdown'
 

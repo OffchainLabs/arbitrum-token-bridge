@@ -6,6 +6,9 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useTeleportMode } from '../../hooks/useTeleportMode'
 import { ExternalLink } from '../common/ExternalLink'
+import { getNetworkName } from '../../util/networks'
+import { useEffect, useState } from 'react'
+import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -35,11 +38,27 @@ export function TransferDisabledDialog() {
     erc20L1Address: selectedToken?.address,
     chainId: networks.sourceChain.id
   })
+  const [l2ChainIdForTeleport, setL2ChainIdForTeleport] = useState<
+    number | undefined
+  >()
 
   const isTeleportMode = useTeleportMode({
     sourceChainId: networks.sourceChain.id,
     destinationChainId: networks.destinationChain.id
   })
+
+  useEffect(() => {
+    const updateL2ChainIdForTeleport = async () => {
+      if (!isTeleportMode) {
+        return
+      }
+      const { l2ChainId } = await getL2ConfigForTeleport({
+        destinationChainProvider: networks.destinationChainProvider
+      })
+      setL2ChainIdForTeleport(l2ChainId)
+    }
+    updateL2ChainIdForTeleport()
+  }, [isTeleportMode, networks.destinationChain.id])
 
   const onClose = () => {
     setSelectedToken(null)
@@ -64,6 +83,15 @@ export function TransferDisabledDialog() {
               <span className="font-medium">{unsupportedToken}</span> is not
               supported for LayerLeap transfers yet.
             </p>
+            {typeof l2ChainIdForTeleport !== 'undefined' && (
+              <p>
+                If you would still like to bridge this token to{' '}
+                {getNetworkName(networks.destinationChain.id)}, you can do so by
+                first bridging it to {getNetworkName(l2ChainIdForTeleport)}, and
+                then bridging it from {getNetworkName(l2ChainIdForTeleport)} to{' '}
+                {getNetworkName(networks.destinationChain.id)}.
+              </p>
+            )}
             <p>
               For more information please contact{' '}
               <ExternalLink
@@ -72,7 +100,7 @@ export function TransferDisabledDialog() {
               >
                 Discord
               </ExternalLink>{' '}
-              and reach out in #support for assistance..
+              and reach out in #support for assistance.
             </p>
           </>
         ) : (
