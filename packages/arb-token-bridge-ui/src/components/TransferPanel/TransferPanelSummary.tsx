@@ -225,11 +225,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </span>
         <span className="font-medium">
           <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-          <TokenSymbolWithExplorerLink
-            token={token}
-            isParentChain={!isDepositMode}
-          />{' '}
-          {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
+          {isDepositingUSDCtoArbOneOrArbSepolia ? (
+            <>USDC</>
+          ) : (
+            <TokenSymbolWithExplorerLink
+              token={token}
+              isParentChain={!isDepositMode}
+            />
+          )}
           {isBridgingEth && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
