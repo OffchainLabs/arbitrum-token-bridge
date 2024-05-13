@@ -16,6 +16,8 @@ export type NativeCurrencyBase = {
 
 export type NativeCurrencyEther = NativeCurrencyBase & {
   isCustom: false
+  address?: undefined
+  l2Address?: undefined
 }
 
 export type NativeCurrencyErc20 = NativeCurrencyBase & {

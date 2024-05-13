@@ -85,7 +85,9 @@ export function TokenImportDialog({
 
   const [status, setStatus] = useState<ImportStatus>(ImportStatus.LOADING)
   const [isImportingToken, setIsImportingToken] = useState<boolean>(false)
-  const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken>()
+  const [tokenToImport, setTokenToImport] = useState<ERC20BridgeToken | null>(
+    null
+  )
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { isOpen } = useTokenImportDialogStore()

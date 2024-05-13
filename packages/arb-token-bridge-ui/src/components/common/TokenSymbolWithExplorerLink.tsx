@@ -1,15 +1,19 @@
 import { useMemo } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import {
   NativeCurrencyErc20,
   useNativeCurrency
 } from '../../hooks/useNativeCurrency'
-import { isTokenNativeUSDC, sanitizeTokenSymbol } from '../../util/TokenUtils'
+import {
+  isTokenNativeUSDC,
+  sanitizeTokenSymbol,
+  isERC20BridgeToken
+} from '../../util/TokenUtils'
 import { ExternalLink } from './ExternalLink'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Token } from '../../state/app/state'
 
 const createBlockExplorerUrlForToken = ({
   explorerLink,
@@ -34,17 +38,12 @@ const createBlockExplorerUrlForToken = ({
   }
 }
 
-const isERC20BridgeToken = (
-  token: ERC20BridgeToken | NativeCurrencyErc20 | null
-): token is ERC20BridgeToken =>
-  token !== null && !token.hasOwnProperty('isCustom')
-
 export function TokenSymbolWithExplorerLink({
   token,
   tokenSymbolOverride,
   isParentChain
 }: {
-  token: ERC20BridgeToken | NativeCurrencyErc20 | null
+  token: Token | NativeCurrencyErc20
   tokenSymbolOverride?: string
   isParentChain: boolean
 }) {

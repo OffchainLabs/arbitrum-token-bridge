@@ -26,7 +26,6 @@ import {
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
 import { useBalance } from '../../hooks/useBalance'
-import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
@@ -34,7 +33,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  sanitizeTokenSymbol
+  sanitizeTokenSymbol,
+  isERC20BridgeToken
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
@@ -67,6 +67,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { Token } from '../../state/app/state'
 
 enum NetworkType {
   l1 = 'l1',
@@ -272,7 +273,7 @@ function TokenBalance({
   prefix = '',
   tokenSymbolOverride
 }: {
-  forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
+  forToken: Token | NativeCurrencyErc20
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
@@ -280,7 +281,7 @@ function TokenBalance({
 }) {
   const isParentChain = on === NetworkType.l1
 
-  if (!forToken) {
+  if (!isERC20BridgeToken(forToken)) {
     return null
   }
 
@@ -389,7 +390,7 @@ export function TransferPanelMain({
 
   useEffect(() => {
     if (
-      !selectedToken ||
+      !isERC20BridgeToken(selectedToken) ||
       !destinationAddressOrWalletAddress ||
       !utils.isAddress(destinationAddressOrWalletAddress)
     ) {
