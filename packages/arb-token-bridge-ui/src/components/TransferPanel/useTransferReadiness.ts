@@ -201,6 +201,11 @@ export function useTransferReadiness({
       return notReady()
     }
 
+    // PoP Apex
+    if (childChain.id === 70700) {
+      return notReady()
+    }
+
     // native currency (ETH or custom fee token) transfers using SC wallets not enabled yet
     if (isSmartContractWallet && !selectedToken) {
       return notReady({

@@ -14,6 +14,7 @@ import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { NoteBox } from '../common/NoteBox'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -145,13 +146,22 @@ function TransferPanelSummaryContainer({
   children: React.ReactNode
   className?: string
 }) {
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+  const isChildChainPoPApex = childChain.id === 70700
+
   return (
     <div className="mb-8 flex flex-col text-white">
       <span className="mb-3 text-xl">Summary</span>
-
-      <div className={twMerge('flex flex-col space-y-3', className)}>
+      <div className={twMerge('mb-3 flex flex-col space-y-3', className)}>
         {children}
       </div>
+      {isChildChainPoPApex && (
+        <NoteBox variant="error">
+          Proof of Play Apex is currently down. You will be able to bridge again
+          once it is back online.
+        </NoteBox>
+      )}
     </div>
   )
 }
