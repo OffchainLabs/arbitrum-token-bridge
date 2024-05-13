@@ -449,7 +449,7 @@ function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
-  [ChainId.Sepolia]: [ChainId.StylusTestnet]
+  [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
