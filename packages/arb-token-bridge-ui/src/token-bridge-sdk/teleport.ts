@@ -1,9 +1,9 @@
 // utils for teleport type transactions
 
+import { Provider } from '@ethersproject/providers'
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
-import { Provider } from '@ethersproject/providers'
 
 export const isTeleport = ({
   sourceChainId,

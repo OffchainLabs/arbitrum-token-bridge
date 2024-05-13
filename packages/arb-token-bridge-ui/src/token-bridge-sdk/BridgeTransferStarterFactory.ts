@@ -67,9 +67,9 @@ export class BridgeTransferStarterFactory {
 
     if (isTeleport) {
       if (isNativeCurrencyTransfer) {
-        return new EthTeleportStarter(initProps)
+        return withCache(cacheKey, new EthTeleportStarter(initProps))
       }
-      return new Erc20TeleportStarter(initProps)
+      return withCache(cacheKey, new Erc20TeleportStarter(initProps))
     }
 
     // deposits

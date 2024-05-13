@@ -9,6 +9,10 @@ import {
   L1ToL2MessageReaderClassic
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
+import {
+  Erc20DepositMessages,
+  EthDepositStatus as EthTeleportStatus
+} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   L1ToL2MessageData,
@@ -22,10 +26,6 @@ import {
   getTeleportStatusDataFromTxId,
   isTeleport
 } from '../../token-bridge-sdk/teleport'
-import {
-  Erc20DepositMessages,
-  EthDepositStatus as EthTeleportStatus
-} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 import { getProvider } from '../../components/TransactionHistory/helpers'
 
 export const updateAdditionalDepositData = async ({

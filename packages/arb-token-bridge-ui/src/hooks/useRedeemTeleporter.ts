@@ -28,14 +28,14 @@ import { getDepositStatus } from '../state/app/utils'
 
 // common handling for redeeming all 3 retryables for teleporter
 const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
-  const reedemTx = await retryable.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
-  await reedemTx.wait()
+  const redeemTx = await retryable.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
+  await redeemTx.wait()
 
   const status = await retryable.status()
   const isSuccess = status === L1ToL2MessageStatus.REDEEMED
 
   if (!isSuccess) {
-    console.error('Redemption failed; status is not REDEEMED', reedemTx)
+    console.error('Redemption failed; status is not REDEEMED', redeemTx)
     throw new Error(
       'Redemption failed; status is not REDEEMED. Please try again later.'
     )

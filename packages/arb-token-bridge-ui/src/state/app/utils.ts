@@ -64,7 +64,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     const { l2ToL3MsgData, l1ToL2MsgData } = tx
 
     // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
-    if (l2ToL3MsgData?.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
+    if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
 
     // else, normally check the status of l3Retryable and l2Retryable
     switch (l2ToL3MsgData.status) {

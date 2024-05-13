@@ -115,7 +115,7 @@ export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
 }
 export const l2L3RetryableRequiresRedeem = (tx: MergedTransaction) => {
   return (
-    typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined' &&
+    !l2ForwarderRetryableRequiresRedeem(tx) &&
     tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
   )
 }

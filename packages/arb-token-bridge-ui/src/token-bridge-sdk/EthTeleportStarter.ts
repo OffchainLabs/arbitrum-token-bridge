@@ -9,12 +9,41 @@ import {
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
 import { getAddressFromSigner, percentIncrease } from './utils'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
+  private l1l3Bridger: EthL1L3Bridger | undefined
+  private l2Provider: StaticJsonRpcProvider | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
+  }
+
+  private async getBridger() {
+    if (this.l1l3Bridger) {
+      return this.l1l3Bridger
+    }
+
+    const l3Network = await getL2Network(this.destinationChainProvider)
+    this.l1l3Bridger = new EthL1L3Bridger(l3Network)
+
+    return this.l1l3Bridger
+  }
+
+  private async getL2Provider() {
+    if (this.l2Provider) {
+      return this.l2Provider
+    }
+
+    // get the intermediate L2 chain provider
+    const { l2Provider } = await getL2ConfigForTeleport({
+      destinationChainProvider: this.destinationChainProvider
+    })
+
+    this.l2Provider = l2Provider
+
+    return this.l2Provider
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -40,17 +69,13 @@ export class EthTeleportStarter extends BridgeTransferStarter {
   }
 
   public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
-    // get the intermediate L2 chain provider
-    const { l2Provider } = await getL2ConfigForTeleport({
-      destinationChainProvider: this.destinationChainProvider
-    })
+    const l2Provider = await this.getL2Provider()
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
-    const l1l3Bridger = new EthL1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      amount: amount,
+      amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
@@ -83,19 +108,14 @@ export class EthTeleportStarter extends BridgeTransferStarter {
   public async transfer({ amount, signer, destinationAddress }: TransferProps) {
     const address = await getAddressFromSigner(signer)
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
+    const l2Provider = await this.getL2Provider()
 
-    // get the intermediate L2 chain provider
-    const { l2Provider } = await getL2ConfigForTeleport({
-      destinationChainProvider: this.destinationChainProvider
-    })
-
-    const l1l3Bridger = new EthL1L3Bridger(l3Network)
+    const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
       to: destinationAddress ?? address,
-      amount: amount,
+      amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider

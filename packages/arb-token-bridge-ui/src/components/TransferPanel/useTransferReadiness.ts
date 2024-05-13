@@ -26,7 +26,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useTeleportMode } from '../../hooks/useTeleportMode'
-import { isTeleportDisabledToken } from '../../util/TokenTeleportDisabledUtils'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -262,7 +262,7 @@ export function useTransferReadiness({
       const selectedTokenIsDisabled =
         isTransferDisabledToken(selectedToken.address, childChain.id) ||
         (isTeleportMode &&
-          isTeleportDisabledToken(selectedToken.address, parentChain.id))
+          !isTeleportEnabledToken(selectedToken.address, parentChain.id))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
@@ -435,6 +435,8 @@ export function useTransferReadiness({
     nativeCurrency.symbol,
     gasSummary,
     childChain.id,
-    networks.sourceChain.name
+    parentChain.id,
+    networks.sourceChain.name,
+    isTeleportMode
   ])
 }

@@ -42,7 +42,7 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
-import { isTeleportDisabledToken } from '../../util/TokenTeleportDisabledUtils'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
@@ -644,7 +644,7 @@ export function TokenSearch({
 
       if (
         isTeleportMode &&
-        isTeleportDisabledToken(_token.address, parentChain.id)
+        !isTeleportEnabledToken(_token.address, parentChain.id)
       ) {
         openTransferDisabledDialog()
         return

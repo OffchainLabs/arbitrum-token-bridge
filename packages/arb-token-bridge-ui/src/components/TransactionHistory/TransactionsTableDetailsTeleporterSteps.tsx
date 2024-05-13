@@ -64,7 +64,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const isFirstRetryableResolved =
     isFirstRetryableSucceeded || isFirstRetryableFailed
 
-  const secondRetryableResolved =
+  const isSecondRetryableResolved =
     l2L3RetryableRequiresRedeem(tx) ||
     typeof tx.l2ToL3MsgData?.l3TxID !== 'undefined'
 
@@ -160,8 +160,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
       {/* Show second leg of teleport transfer waiting time */}
       <Step
-        pending={isFirstRetryableSucceeded && !secondRetryableResolved}
-        done={secondRetryableResolved}
+        pending={isFirstRetryableSucceeded && !isSecondRetryableResolved}
+        done={isSecondRetryableResolved}
         text={`Wait ~${secondRetryableWaitingDuration}`}
       />
     </>

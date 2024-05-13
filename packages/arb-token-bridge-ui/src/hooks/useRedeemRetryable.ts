@@ -48,8 +48,8 @@ export function useRedeemRetryable(
         childChainSigner: signer
       })
 
-      const reedemTx = await retryableTicket.redeem()
-      await reedemTx.wait()
+      const redeemTx = await retryableTicket.redeem()
+      await redeemTx.wait()
 
       const status = await retryableTicket.status()
       const isSuccess = status === L1ToL2MessageStatus.REDEEMED

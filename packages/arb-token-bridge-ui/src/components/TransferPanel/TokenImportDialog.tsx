@@ -22,7 +22,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
-import { isTeleportDisabledToken } from '../../util/TokenTeleportDisabledUtils'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 enum ImportStatus {
@@ -316,7 +316,7 @@ export function TokenImportDialog({
       return
     }
 
-    if (isTeleportMode && isTeleportDisabledToken(l1Address, parentChain.id)) {
+    if (isTeleportMode && !isTeleportEnabledToken(l1Address, parentChain.id)) {
       openTransferDisabledDialog()
       return
     }

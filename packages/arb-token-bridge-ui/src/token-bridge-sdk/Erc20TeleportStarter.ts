@@ -13,11 +13,13 @@ import {
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_teleport'
 
   private l1l3Bridger: Erc20L1L3Bridger | undefined
+  private l2Provider: StaticJsonRpcProvider | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -36,6 +38,21 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     this.l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
     return this.l1l3Bridger
+  }
+
+  private async getL2Provider() {
+    if (this.l2Provider) {
+      return this.l2Provider
+    }
+
+    // get the intermediate L2 chain provider
+    const { l2Provider } = await getL2ConfigForTeleport({
+      destinationChainProvider: this.destinationChainProvider
+    })
+
+    this.l2Provider = l2Provider
+
+    return this.l2Provider
   }
 
   public async requiresNativeCurrencyApproval() {
@@ -115,10 +132,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
-    // get the intermediate L2 chain provider
-    const { l2Provider } = await getL2ConfigForTeleport({
-      destinationChainProvider: this.destinationChainProvider
-    })
+    const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
 
@@ -162,10 +176,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
-    // // get the intermediate L2 chain provider
-    const { l2Provider } = await getL2ConfigForTeleport({
-      destinationChainProvider: this.destinationChainProvider
-    })
+    const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
 
