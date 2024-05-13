@@ -3,7 +3,7 @@ import { Address } from 'wagmi'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,
-  CheckIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { MergedTransaction } from '../../state/app/state'
 import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
@@ -25,20 +25,39 @@ const TeleportMiddleStepFailureExplanationNote = ({
   tx: MergedTransaction
 }) => {
   return (
-    <div className="mt-1 text-white/60">
-      Note: Retrying may trigger 2 transactions to sign -
-      <div className="flex items-center">
-        1. To complete the deposit to{' '}
-        {getNetworkName(getChainIdForRedeemingRetryable(tx))}.{' '}
-        {!l1L2RetryableRequiresRedeem(tx) && (
-          <CheckIcon height={12} className="m-1 text-green-400" />
+    <div className="mt-2">
+      <div
+        className={twMerge(
+          'flex items-center',
+          l1L2RetryableRequiresRedeem(tx) && 'text-white/60'
         )}
+      >
+        {!l1L2RetryableRequiresRedeem(tx) ? (
+          <CheckCircleIcon
+            height={15}
+            className="ml-[-1px] mr-2 h-[15px] w-[15px] shrink-0 text-green-400"
+          />
+        ) : (
+          <div className="mr-2 h-[12px] w-[12px] shrink-0 rounded-full border border-white/60" />
+        )}
+        Funds deposited to {getNetworkName(getChainIdForRedeemingRetryable(tx))}
+        .{' '}
       </div>
-      <div className="flex items-center">
-        2. To relay the deposit to {getNetworkName(tx.destinationChainId)}.
-        {!l2ForwarderRetryableRequiresRedeem(tx) && (
-          <CheckIcon height={12} className="m-1 text-green-400" />
+      <div
+        className={twMerge(
+          'mt-1 flex items-center',
+          l2ForwarderRetryableRequiresRedeem(tx) && 'text-white/60'
         )}
+      >
+        {!l2ForwarderRetryableRequiresRedeem(tx) ? (
+          <CheckCircleIcon
+            height={15}
+            className="ml-[-1px] mr-2 h-[15px] w-[15px] shrink-0 text-green-400"
+          />
+        ) : (
+          <div className="mr-2 h-[12px] w-[12px] shrink-0 rounded-full border border-white/60" />
+        )}
+        Funds sent to {getNetworkName(tx.destinationChainId)}.
       </div>
     </div>
   )
@@ -74,8 +93,9 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
       return (
         <div>
-          Transaction failed on {l2NetworkName}. You have 7 days to retry. After
-          that, the tx is no longer recoverable.
+          Transaction failed on {l2NetworkName}. You have 7 days to try again.
+          After that, your funds will be{' '}
+          <span className="font-bold text-red-400">lost forever</span>.
           {/* if we detect we will have 2 redemptions in the first leg of teleport, explain it to users */}
           {_l2ForwarderRequiresRedeem && (
             <TeleportMiddleStepFailureExplanationNote tx={tx} />

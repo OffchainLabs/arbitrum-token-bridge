@@ -204,7 +204,13 @@ export const TransactionsTableDetailsSteps = ({
     }
 
     if (isDepositReadyToRedeem(tx)) {
-      return `Transaction failed on ${networkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
+      return (
+        <div>
+          Transaction failed on {networkName}. You have 7 days to try again.
+          After that, your funds will be{' '}
+          <span className="font-bold text-red-400">lost forever</span>.
+        </div>
+      )
     }
     if (isDestinationChainFailure) {
       return `Transaction failed on ${networkName}.`
