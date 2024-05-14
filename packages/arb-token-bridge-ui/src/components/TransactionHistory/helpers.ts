@@ -466,15 +466,8 @@ export async function getUpdatedTeleportTransfer(
     return tx
   }
 
-  const { txId, parentChainId, childChainId, assetType } = tx
-
   const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
-    await fetchTeleporterDepositStatusData({
-      txID: txId,
-      childChainId,
-      parentChainId,
-      assetType
-    })
+    await fetchTeleporterDepositStatusData(tx)
 
   const updatedTx = {
     ...tx,

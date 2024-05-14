@@ -180,21 +180,21 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const l1l3Bridger = await this.getBridger()
 
-    const overrides = {
-      l2ForwarderFactoryRetryableGas: {
-        gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-      },
+    // const overrides = {
+    //   l2ForwarderFactoryRetryableGas: {
+    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
+    //   },
 
-      l1l2FeeTokenBridgeRetryableGas: {
-        gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-      },
-      l1l2TokenBridgeRetryableGas: {
-        gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-      },
-      l2l3TokenBridgeRetryableGas: {
-        gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-      }
-    }
+    //   l1l2FeeTokenBridgeRetryableGas: {
+    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
+    //   },
+    //   l1l2TokenBridgeRetryableGas: {
+    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
+    //   },
+    //   l2l3TokenBridgeRetryableGas: {
+    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
+    //   }
+    // }
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
@@ -203,14 +203,14 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
-      l3Provider: this.destinationChainProvider,
-      retryableOverrides: overrides
+      l3Provider: this.destinationChainProvider
+      // retryableOverrides: overrides
     })
 
     const tx = await l1l3Bridger.deposit({
       txRequest: depositRequest.txRequest,
-      l1Signer: signer,
-      retryableOverrides: overrides
+      l1Signer: signer
+      // retryableOverrides: overrides
     })
 
     return {

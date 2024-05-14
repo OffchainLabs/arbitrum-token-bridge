@@ -75,7 +75,12 @@ export const updateAdditionalDepositData = async ({
     })
   ) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
-      await fetchTeleporterDepositStatusData(depositTx)
+      await fetchTeleporterDepositStatusData({
+        ...depositTx,
+        txId: depositTx.txID,
+        sourceChainId: depositTx.parentChainId,
+        destinationChainId: depositTx.childChainId
+      })
 
     return {
       ...depositTx,
@@ -300,14 +305,14 @@ const updateClassicDepositStatusData = async ({
 
 export async function fetchTeleporterDepositStatusData({
   assetType,
-  parentChainId,
-  childChainId,
-  txID
+  sourceChainId,
+  destinationChainId,
+  txId
 }: {
   assetType: AssetType
-  parentChainId: number
-  childChainId: number
-  txID: string
+  sourceChainId: number
+  destinationChainId: number
+  txId: string
 }): Promise<{
   status?: TxnStatus
   timestampResolved?: string
@@ -316,8 +321,8 @@ export async function fetchTeleporterDepositStatusData({
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
 
-  const sourceChainProvider = getProviderForChainId(parentChainId)
-  const destinationChainProvider = getProviderForChainId(childChainId)
+  const sourceChainProvider = getProviderForChainId(sourceChainId)
+  const destinationChainProvider = getProviderForChainId(destinationChainId)
 
   const { l2ChainId } = await getL2ConfigForTeleport({
     destinationChainProvider
@@ -325,7 +330,7 @@ export async function fetchTeleporterDepositStatusData({
 
   try {
     const depositStatus = await fetchTeleportStatusFromTxId({
-      txId: txID,
+      txId,
       sourceChainProvider,
       destinationChainProvider,
       isNativeCurrencyTransfer
@@ -429,7 +434,7 @@ export async function fetchTeleporterDepositStatusData({
     }
   } catch (e) {
     // in case fetching teleport status fails (happens when you fetch before l1 confirmation), return the default data
-    console.log('Error fetching status for teleporter tx', txID)
+    console.log('Error fetching status for teleporter tx', txId)
 
     return {
       status: 'pending',

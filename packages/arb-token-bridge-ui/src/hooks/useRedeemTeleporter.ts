@@ -146,15 +146,8 @@ const redeemTeleporterSecondLeg = async ({
 }
 
 const getUpdatedTeleporterTxAfterRedemption = async (tx: MergedTransaction) => {
-  const { txId: txID, childChainId, parentChainId, assetType } = tx
-
   const { l1ToL2MsgData, l2ToL3MsgData } =
-    await fetchTeleporterDepositStatusData({
-      txID,
-      childChainId,
-      parentChainId,
-      assetType
-    })
+    await fetchTeleporterDepositStatusData(tx)
 
   const teleportTransfer = {
     ...tx,
