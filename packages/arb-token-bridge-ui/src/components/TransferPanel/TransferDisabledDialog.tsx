@@ -4,11 +4,11 @@ import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
-import { useTeleportMode } from '../../hooks/useTeleportMode'
 import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
 import { useEffect, useState } from 'react'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -25,6 +25,7 @@ export const useTransferDisabledDialogStore =
 
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
+  const { isTeleportMode } = useNetworksRelationship(networks)
   const { app } = useAppState()
   const { selectedToken } = app
   const {
@@ -41,11 +42,6 @@ export function TransferDisabledDialog() {
   const [l2ChainIdForTeleport, setL2ChainIdForTeleport] = useState<
     number | undefined
   >()
-
-  const isTeleportMode = useTeleportMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
 
   useEffect(() => {
     const updateL2ChainIdForTeleport = async () => {

@@ -23,7 +23,6 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
-import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 enum ImportStatus {
   LOADING,
@@ -78,7 +77,8 @@ export function TokenImportDialog({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const actions = useActions()
 
@@ -100,11 +100,6 @@ export function TokenImportDialog({
   const { data: l1Address, isLoading: isL1AddressLoading } = useERC20L1Address({
     eitherL1OrL2Address: tokenAddress,
     l2Provider: childChainProvider
-  })
-
-  const isTeleportMode = useTeleportMode({
-    sourceChainId: isDepositMode ? parentChain.id : childChain.id,
-    destinationChainId: isDepositMode ? childChain.id : parentChain.id
   })
 
   // we use a different state to handle dialog visibility to trigger the entry transition,

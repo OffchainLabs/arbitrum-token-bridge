@@ -104,7 +104,6 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       )
     }
 
-    // if l2ChainId is present
     if (l2ChainId) {
       return `Funds arrived on ${getNetworkName(l2ChainId)}`
     }
@@ -140,15 +139,11 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     ? firstRetryableRedeemButton
     : firstTransactionExternalLink
 
-  const firstRetryableWaitingDuration = useMemo(
-    () => (isTestnetTx ? '10 minutes' : '15 minutes'),
-    [isTestnetTx]
-  )
+  const firstRetryableWaitingDuration = isTestnetTx
+    ? '10 minutes'
+    : '15 minutes'
 
-  const secondRetryableWaitingDuration = useMemo(
-    () => (isTestnetTx ? '1 minute' : '5 minutes'),
-    [isTestnetTx]
-  )
+  const secondRetryableWaitingDuration = isTestnetTx ? '1 minute' : '5 minutes'
 
   return (
     <>

@@ -75,13 +75,13 @@ export const getRetryableTicketExpiration = async ({
       parentChainTxHash
     )
     const parentChainTxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const [message] = await parentChainTxReceipt.getL1ToL2Messages(
+    const [parentToChildMsg] = await parentChainTxReceipt.getL1ToL2Messages(
       childChainProvider
     )
 
     const now = dayjs()
 
-    const expiryDateResponse = await message!.getTimeout()
+    const expiryDateResponse = await parentToChildMsg!.getTimeout()
     expirationDate = Number(expiryDateResponse.toString()) * 1000
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')

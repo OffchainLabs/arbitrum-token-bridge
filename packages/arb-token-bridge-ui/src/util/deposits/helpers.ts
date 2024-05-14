@@ -23,10 +23,10 @@ import {
 import { fetchErc20Data } from '../TokenUtils'
 import {
   getL2ConfigForTeleport,
-  getTeleportStatusDataFromTxId,
+  fetchTeleportStatusFromTxId,
   isTeleport
 } from '../../token-bridge-sdk/teleport'
-import { getProvider } from '../../components/TransactionHistory/helpers'
+import { getProviderForChainId } from '../../token-bridge-sdk/utils'
 
 export const updateAdditionalDepositData = async ({
   depositTx,
@@ -75,7 +75,7 @@ export const updateAdditionalDepositData = async ({
     })
   ) {
     const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
-      await updateTeleporterDepositStatusData(depositTx)
+      await fetchTeleporterDepositStatusData(depositTx)
 
     return {
       ...depositTx,
@@ -298,7 +298,7 @@ const updateClassicDepositStatusData = async ({
   return completeDepositTx
 }
 
-export async function updateTeleporterDepositStatusData({
+export async function fetchTeleporterDepositStatusData({
   assetType,
   parentChainId,
   childChainId,
@@ -316,15 +316,15 @@ export async function updateTeleporterDepositStatusData({
 }> {
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
 
-  const sourceChainProvider = getProvider(parentChainId)
-  const destinationChainProvider = getProvider(childChainId)
+  const sourceChainProvider = getProviderForChainId(parentChainId)
+  const destinationChainProvider = getProviderForChainId(childChainId)
 
   const { l2ChainId } = await getL2ConfigForTeleport({
     destinationChainProvider
   })
 
   try {
-    const depositStatus = await getTeleportStatusDataFromTxId({
+    const depositStatus = await fetchTeleportStatusFromTxId({
       txId: txID,
       sourceChainProvider,
       destinationChainProvider,

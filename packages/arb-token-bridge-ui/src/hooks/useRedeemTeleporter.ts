@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Signer } from 'ethers'
 import { L1ToL2MessageStatus, L1ToL2MessageWriter } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
@@ -20,11 +21,11 @@ import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { L2ToL3MessageData } from './useTransactions'
 import { getProviderForChainId } from '../token-bridge-sdk/utils'
-import { Signer } from 'ethers'
-import { updateTeleporterDepositStatusData } from '../util/deposits/helpers'
+import { fetchTeleporterDepositStatusData } from '../util/deposits/helpers'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
 import { getDepositStatus } from '../state/app/utils'
+import { isTeleport } from '../token-bridge-sdk/teleport'
 
 // common handling for redeeming all 3 retryables for teleporter
 const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
@@ -148,7 +149,7 @@ const getUpdatedTeleporterTxAfterRedemption = async (tx: MergedTransaction) => {
   const { txId: txID, childChainId, parentChainId, assetType } = tx
 
   const { l1ToL2MsgData, l2ToL3MsgData } =
-    await updateTeleporterDepositStatusData({
+    await fetchTeleporterDepositStatusData({
       txID,
       childChainId,
       parentChainId,
@@ -186,6 +187,13 @@ export function useRedeemTeleporter(
     if (isRedeeming) {
       return
     }
+
+    if (!isTeleport(tx)) {
+      throw new Error(
+        'The transaction being redeemed is not a LayerLeap transaction.'
+      )
+    }
+
     try {
       setIsRedeeming(true)
 

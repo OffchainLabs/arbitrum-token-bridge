@@ -67,7 +67,6 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 enum NetworkType {
   l1 = 'l1',
@@ -337,8 +336,13 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -363,11 +367,6 @@ export function TransferPanelMain({
   const l2WalletAddress = isDepositMode
     ? destinationAddressOrWalletAddress
     : walletAddress
-
-  const isTeleportMode = useTeleportMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
-  })
 
   const {
     eth: [ethL1Balance],

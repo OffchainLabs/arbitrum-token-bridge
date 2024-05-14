@@ -74,7 +74,6 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { useTeleportMode } from '../../hooks/useTeleportMode'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 
 const networkConnectionWarningToast = () =>
@@ -122,7 +121,8 @@ export function TransferPanel() {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
@@ -223,11 +223,6 @@ export function TransferPanel() {
   useImportTokenModal({
     importTokenModalStatus,
     connectionState
-  })
-
-  const isTeleportMode = useTeleportMode({
-    sourceChainId: networks.sourceChain.id,
-    destinationChainId: networks.destinationChain.id
   })
 
   const isBridgingANewStandardToken = useMemo(() => {

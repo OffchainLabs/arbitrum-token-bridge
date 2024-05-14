@@ -20,7 +20,7 @@ import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import {
   getL1ToL2MessageDataFromL1TxHash,
-  updateTeleporterDepositStatusData
+  fetchTeleporterDepositStatusData
 } from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
@@ -469,7 +469,7 @@ export async function getUpdatedTeleportTransfer(
   const { txId, parentChainId, childChainId, assetType } = tx
 
   const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
-    await updateTeleporterDepositStatusData({
+    await fetchTeleporterDepositStatusData({
       txID: txId,
       childChainId,
       parentChainId,

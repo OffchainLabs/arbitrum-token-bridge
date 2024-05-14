@@ -333,7 +333,8 @@ export async function l1TokenIsDisabled({
     erc20Bridger instanceof EthL1L3Bridger ||
     erc20Bridger instanceof EthBridger
   ) {
-    throw new Error('`l1TokenIsDisabled` is not implemented for the bridger')
+    // fail-safe to ensure `l1TokenIsDisabled` is called on the correct bridger-types
+    return false
   }
 
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
@@ -464,8 +465,8 @@ export async function isGatewayRegistered({
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<boolean> {
-  // skip teleport transfers because there is no custom gateway there
-  // note: we only check for gateway registration for deposits, hence the assumption that source:parentChain, and destination:childChain
+  // for teleport transfers - we will need to check for 2 gateway registrations - 1 for L1-L2 and then for L2-L3 transfer
+  // for now, we are returning true since we are limiting the tokens to teleport, but we will expand this once we expand the allowList
   const sourceChainId = await getChainIdFromProvider(parentChainProvider)
   const destinationChainId = await getChainIdFromProvider(childChainProvider)
   if (isTeleport({ sourceChainId, destinationChainId })) {

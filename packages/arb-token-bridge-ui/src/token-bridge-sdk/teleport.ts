@@ -12,7 +12,7 @@ export const isTeleport = ({
   sourceChainId: number
   destinationChainId: number
 }) => {
-  return TELEPORT_ALLOWLIST[sourceChainId]?.includes(destinationChainId)
+  return !!TELEPORT_ALLOWLIST[sourceChainId]?.includes(destinationChainId)
 }
 
 export const getL2ConfigForTeleport = async ({
@@ -26,7 +26,7 @@ export const getL2ConfigForTeleport = async ({
   return { l2ChainId, l2Provider }
 }
 
-export const getTeleportStatusDataFromTxId = async ({
+export const fetchTeleportStatusFromTxId = async ({
   txId,
   sourceChainProvider,
   destinationChainProvider,

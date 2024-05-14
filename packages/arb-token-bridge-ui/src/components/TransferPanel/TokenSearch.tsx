@@ -43,7 +43,6 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
-import { useTeleportMode } from '../../hooks/useTeleportMode'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -536,7 +535,8 @@ export function TokenSearch({
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
@@ -545,11 +545,6 @@ export function TokenSearch({
   const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
-
-  const isTeleportMode = useTeleportMode({
-    sourceChainId: isDepositMode ? parentChain.id : childChain.id,
-    destinationChainId: isDepositMode ? childChain.id : parentChain.id
-  })
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()

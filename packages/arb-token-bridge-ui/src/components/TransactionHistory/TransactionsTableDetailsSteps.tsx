@@ -162,7 +162,7 @@ const LastStepEndItem = ({
   ) {
     return (
       <TransactionsTableRowAction
-        type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        type="deposits"
         isError={true}
         tx={tx}
         address={address}
