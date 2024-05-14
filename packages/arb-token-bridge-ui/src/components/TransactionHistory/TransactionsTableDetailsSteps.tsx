@@ -67,7 +67,7 @@ export const Step = ({
   failure = false,
   text,
   endItem = null,
-  classNameOverrides = ''
+  extendHeight = false
 }: {
   done?: boolean
   claimable?: boolean
@@ -75,7 +75,7 @@ export const Step = ({
   failure?: boolean
   text: React.ReactNode
   endItem?: ReactNode
-  classNameOverrides?: string
+  extendHeight?: boolean
 }) => {
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
@@ -105,10 +105,15 @@ export const Step = ({
       className={twMerge(
         'my-3 flex h-3 items-center justify-between space-x-2',
         pending && 'animate-pulse',
-        classNameOverrides
+        extendHeight && 'h-auto items-start'
       )}
     >
-      <div className="flex items-start space-x-3">
+      <div
+        className={twMerge(
+          'flex items-center space-x-3',
+          extendHeight && 'items-start'
+        )}
+      >
         {done && <CheckCircleIcon className={iconClassName} height={18} />}
         {failure && <XCircleIcon className={iconClassName} height={18} />}
         {!done && !failure && (

@@ -173,9 +173,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
         failure={isFirstRetryableFailed}
         text={firstTransactionText}
         endItem={firstTransactionActionItem}
-        classNameOverrides={twMerge(
-          _l2ForwarderRequiresRedeem ? 'h-auto items-start' : '' // when we show the explanatory note, we need more height for this step
-        )}
+        extendHeight={_l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
       />
 
       {/* Show second leg of teleport transfer waiting time */}
