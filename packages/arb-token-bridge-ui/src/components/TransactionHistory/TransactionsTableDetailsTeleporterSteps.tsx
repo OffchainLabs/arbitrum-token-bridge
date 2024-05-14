@@ -28,34 +28,34 @@ const TeleportMiddleStepFailureExplanationNote = ({
     <div className="mt-2">
       <div
         className={twMerge(
-          'flex items-center',
+          'flex items-center gap-2',
           l1L2RetryableRequiresRedeem(tx) && 'text-white/60'
         )}
       >
         {!l1L2RetryableRequiresRedeem(tx) ? (
           <CheckCircleIcon
             height={15}
-            className="ml-[-1px] mr-2 h-[15px] w-[15px] shrink-0 text-green-400"
+            className="h-[15px] w-[15px] shrink-0 text-green-400"
           />
         ) : (
-          <div className="mr-2 h-[12px] w-[12px] shrink-0 rounded-full border border-white/60" />
+          <div className="m-[1px] h-[13px] w-[13px] shrink-0 rounded-full border border-white/60" />
         )}
         Funds deposited to {getNetworkName(getChainIdForRedeemingRetryable(tx))}
         .{' '}
       </div>
       <div
         className={twMerge(
-          'mt-1 flex items-center',
+          'mt-1 flex items-center gap-2',
           l2ForwarderRetryableRequiresRedeem(tx) && 'text-white/60'
         )}
       >
         {!l2ForwarderRetryableRequiresRedeem(tx) ? (
           <CheckCircleIcon
             height={15}
-            className="ml-[-1px] mr-2 h-[15px] w-[15px] shrink-0 text-green-400"
+            className="h-[15px] w-[15px] shrink-0 text-green-400"
           />
         ) : (
-          <div className="mr-2 h-[12px] w-[12px] shrink-0 rounded-full border border-white/60" />
+          <div className="m-[1px] h-[13px] w-[13px] shrink-0 rounded-full border border-white/60" />
         )}
         Funds sent to {getNetworkName(tx.destinationChainId)}.
       </div>
