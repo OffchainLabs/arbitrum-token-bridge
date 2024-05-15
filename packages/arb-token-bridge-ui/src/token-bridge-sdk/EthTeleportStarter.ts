@@ -105,7 +105,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     }
   }
 
-  public async transfer({ amount, signer, destinationAddress }: TransferProps) {
+  public async transfer({ amount, signer }: TransferProps) {
     const address = await getAddressFromSigner(signer)
 
     const l2Provider = await this.getL2Provider()
@@ -114,7 +114,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      to: destinationAddress ?? address,
+      to: address,
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
