@@ -77,7 +77,8 @@ export function TransferDisabledDialog() {
             <p>
               Unfortunately,{' '}
               <span className="font-medium">{unsupportedToken}</span> is not
-              supported for LayerLeap transfers yet.
+              supported for LayerLeap transfers to{' '}
+              {getNetworkName(networks.destinationChain.id)} yet.
             </p>
             {typeof l2ChainIdForTeleport !== 'undefined' && (
               <p>

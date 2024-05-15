@@ -311,7 +311,10 @@ export function TokenImportDialog({
       return
     }
 
-    if (isTeleportMode && !isTeleportEnabledToken(l1Address, parentChain.id)) {
+    if (
+      isTeleportMode &&
+      !isTeleportEnabledToken(l1Address, parentChain.id, childChain.id)
+    ) {
       openTransferDisabledDialog()
       return
     }

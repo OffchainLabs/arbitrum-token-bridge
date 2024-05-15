@@ -639,7 +639,7 @@ export function TokenSearch({
 
       if (
         isTeleportMode &&
-        !isTeleportEnabledToken(_token.address, parentChain.id)
+        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
       ) {
         openTransferDisabledDialog()
         return

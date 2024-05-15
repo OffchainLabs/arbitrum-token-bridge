@@ -3,6 +3,7 @@ import { ChainId } from './networks'
 export type TeleportEnabledToken = {
   symbol: string
   l1Address: string
+  allowedChildChainIds: number[]
 }
 
 const teleportEnabledTokens: {
@@ -11,31 +12,37 @@ const teleportEnabledTokens: {
   [ChainId.Ethereum]: [
     {
       symbol: 'WETH',
-      l1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+      l1Address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+      allowedChildChainIds: [1380012617, 70700]
     },
     {
       symbol: 'RARI',
-      l1Address: '0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF'
+      l1Address: '0xFca59Cd816aB1eaD66534D82bc21E7515cE441CF',
+      allowedChildChainIds: [1380012617] // only allowed for RARI
     }
   ],
   [ChainId.Sepolia]: [
     {
       symbol: 'WETH',
-      l1Address: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14'
+      l1Address: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
+      allowedChildChainIds: [ChainId.StylusTestnetV2]
     },
     {
       symbol: 'LINK',
-      l1Address: '0x779877A7B0D9E8603169DdbD7836e478b4624789'
+      l1Address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
+      allowedChildChainIds: [ChainId.StylusTestnetV2]
     }
   ]
 }
 
 export function isTeleportEnabledToken(
   erc20L1Address: string,
-  parentChainId: number
+  parentChainId: number,
+  childChainId: number
 ) {
   // check teleport enabled tokens and return true if the token is not enabled
   return (teleportEnabledTokens[parentChainId] ?? [])
+    .filter(token => token.allowedChildChainIds.includes(childChainId))
     .map(token => token.l1Address.toLowerCase())
     .includes(erc20L1Address.toLowerCase())
 }

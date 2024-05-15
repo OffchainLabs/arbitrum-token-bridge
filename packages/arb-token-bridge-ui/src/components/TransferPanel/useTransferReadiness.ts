@@ -262,7 +262,11 @@ export function useTransferReadiness({
       const selectedTokenIsDisabled =
         isTransferDisabledToken(selectedToken.address, childChain.id) ||
         (isTeleportMode &&
-          !isTeleportEnabledToken(selectedToken.address, parentChain.id))
+          !isTeleportEnabledToken(
+            selectedToken.address,
+            parentChain.id,
+            childChain.id
+          ))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
