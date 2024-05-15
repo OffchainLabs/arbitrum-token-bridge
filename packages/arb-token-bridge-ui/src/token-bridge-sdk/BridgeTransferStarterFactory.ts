@@ -70,13 +70,25 @@ export class BridgeTransferStarterFactory {
     // deposits
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {
-        return withCache(cacheKey, new XErc20DepositStarter(initProps))
+        console.log('props.adapter', props.adapter)
+        if (props.adapter) {
+          console.log('using xerc20 deposit')
+          return withCache(cacheKey, new XErc20DepositStarter(initProps))
+        } else {
+          return withCache(cacheKey, new Erc20DepositStarter(initProps))
+        }
       }
       return withCache(cacheKey, new EthDepositStarter(initProps))
     }
     // withdrawals
     if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new XErc20WithdrawalStarter(initProps)) // TODO
+      console.log('props.adapter', props.adapter)
+      if (props.adapter) {
+        console.log('using xerc20 withdrawal')
+        return withCache(cacheKey, new XErc20WithdrawalStarter(initProps))
+      } else {
+        return withCache(cacheKey, new Erc20WithdrawalStarter(initProps))
+      }
     }
     return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }

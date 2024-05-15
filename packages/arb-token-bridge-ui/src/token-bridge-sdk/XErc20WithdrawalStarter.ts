@@ -3,48 +3,33 @@ import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveTokenProps,
-  BridgeTransferStarter,
   BridgeTransferStarterProps,
-  RequiresTokenApprovalProps,
   TransferEstimateGas,
-  TransferProps,
-  TransferType
+  TransferProps
 } from './BridgeTransferStarter'
-import {
-  fetchErc20L2GatewayAddress,
-  getL1ERC20Address
-} from '../util/TokenUtils'
-import {
-  getAddressFromSigner,
-  getChainIdFromProvider,
-  percentIncrease
-} from './utils'
-import { tokenRequiresApprovalOnL2 } from '../util/L2ApprovalUtils'
+import { fetchErc20L2GatewayAddress } from '../util/TokenUtils'
+import { getAddressFromSigner, percentIncrease } from './utils'
 import { withdrawInitTxEstimateGas } from '../util/WithdrawalUtils'
 import { addressIsSmartContract } from '../util/AddressUtils'
+import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
 
-export class XErc20WithdrawalStarter extends BridgeTransferStarter {
-  public transferType: TransferType = 'erc20_withdrawal'
-
-  private sourceChainGatewayAddress: string | undefined
-  private sourceChainAdapterAddress: string
+export class XErc20WithdrawalStarter extends Erc20WithdrawalStarter {
+  protected sourceChainAdapterAddress: string
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
 
-    // TODO - this should come in the props
-    this.sourceChainAdapterAddress =
-      '0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd'
-
-    if (!this.sourceChainErc20Address) {
-      throw Error('Erc20 token address not found')
+    if (!this.adapter) {
+      // TODO check for ... and change name
+      throw Error('Address for XERC20 adapter was expected')
     }
+
+    // TODO change to 0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd as source adapter.
+    this.sourceChainAdapterAddress =
+      '0xa399D70735BD37d786D9E49d03DEA44Cde603Dcd' // TODO this.adapter
   }
 
-  private async getSourceChainGatewayAddress(): Promise<string> {
-    const destinationChainErc20Address =
-      await this.getDestinationChainErc20Address()
-
+  protected async getSourceChainGatewayAddress(): Promise<string> {
     const sourceChainGatewayAddress = await fetchErc20L2GatewayAddress({
       erc20L1Address: this.sourceChainAdapterAddress,
       l2Provider: this.sourceChainProvider
@@ -53,63 +38,6 @@ export class XErc20WithdrawalStarter extends BridgeTransferStarter {
     this.sourceChainGatewayAddress = sourceChainGatewayAddress
 
     return this.sourceChainGatewayAddress
-  }
-
-  private async getDestinationChainErc20Address(): Promise<string> {
-    if (this.destinationChainErc20Address) {
-      return this.destinationChainErc20Address
-    }
-
-    if (!this.sourceChainErc20Address) {
-      throw Error('Erc20 token address not found')
-    }
-
-    const destinationChainErc20Address = await getL1ERC20Address({
-      erc20L2Address: this.sourceChainAdapterAddress,
-      l2Provider: this.sourceChainProvider
-    })
-
-    if (!destinationChainErc20Address) {
-      throw Error('Erc20 token not found on parent chain')
-    }
-
-    this.destinationChainErc20Address = destinationChainErc20Address
-
-    return this.destinationChainErc20Address
-  }
-
-  public async requiresNativeCurrencyApproval() {
-    // native currency approval not required for withdrawal
-    return false
-  }
-
-  public async approveNativeCurrencyEstimateGas() {
-    // no-op
-  }
-
-  public async approveNativeCurrency() {
-    // no-op
-  }
-
-  public requiresTokenApproval = async ({
-    amount,
-    signer
-  }: RequiresTokenApprovalProps) => {
-    if (!this.sourceChainErc20Address) {
-      throw Error('Erc20 token address not found')
-    }
-
-    const address = await getAddressFromSigner(signer)
-
-    const token = ERC20__factory.connect(
-      this.sourceChainErc20Address,
-      this.sourceChainProvider
-    )
-
-    const gatewayAddress = await this.getSourceChainGatewayAddress()
-    const allowance = await token.allowance(address, gatewayAddress)
-
-    return allowance.lt(amount)
   }
 
   public async approveTokenEstimateGas({ signer, amount }: ApproveTokenProps) {

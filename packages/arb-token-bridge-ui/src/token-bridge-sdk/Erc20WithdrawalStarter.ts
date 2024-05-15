@@ -26,7 +26,7 @@ import { addressIsSmartContract } from '../util/AddressUtils'
 export class Erc20WithdrawalStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_withdrawal'
 
-  private sourceChainGatewayAddress: string | undefined
+  protected sourceChainGatewayAddress: string | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -36,7 +36,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     }
   }
 
-  private async getSourceChainGatewayAddress(): Promise<string> {
+  protected async getSourceChainGatewayAddress(): Promise<string> {
     const destinationChainErc20Address =
       await this.getDestinationChainErc20Address()
 
@@ -50,7 +50,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     return this.sourceChainGatewayAddress
   }
 
-  private async getDestinationChainErc20Address(): Promise<string> {
+  protected async getDestinationChainErc20Address(): Promise<string> {
     if (this.destinationChainErc20Address) {
       return this.destinationChainErc20Address
     }
