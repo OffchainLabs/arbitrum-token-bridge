@@ -12,7 +12,7 @@ import {
   getChainIdForRedeemingRetryable,
   l1L2RetryableRequiresRedeem,
   l2ForwarderRetryableRequiresRedeem,
-  l2L3RetryableRequiresRedeem
+  secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
@@ -73,22 +73,22 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const { isTestnet: isTestnetTx } = isNetwork(tx.childChainId)
 
   const l2TxID = tx.l1ToL2MsgData?.l2TxID
-  const isFirstRetryableSucceeded =
+  const isFirstRetryableLegSucceeded =
     typeof l2TxID !== 'undefined' &&
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
-  const isFirstRetryableFailed = firstRetryableLegRequiresRedeem(tx)
+  const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
   const _l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
 
-  const isFirstRetryableResolved =
-    isFirstRetryableSucceeded || isFirstRetryableFailed
+  const isFirstRetryableLegResolved =
+    isFirstRetryableLegSucceeded || isFirstRetryableLegFailed
 
-  const isSecondRetryableResolved =
-    l2L3RetryableRequiresRedeem(tx) ||
+  const isSecondRetryableLegResolved =
+    secondRetryableLegForTeleportRequiresRedeem(tx) ||
     typeof tx.l2ToL3MsgData?.l3TxID !== 'undefined'
 
   const firstTransactionText = useMemo(() => {
-    if (isFirstRetryableFailed) {
+    if (isFirstRetryableLegFailed) {
       const l2NetworkName = getNetworkName(getChainIdForRedeemingRetryable(tx))
 
       return (
@@ -110,7 +110,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
     // till the time we don't have information for l2ChainId
     return `Funds arrived on intermediate chain`
-  }, [tx, isFirstRetryableFailed, l2ChainId, _l2ForwarderRequiresRedeem])
+  }, [tx, isFirstRetryableLegFailed, l2ChainId, _l2ForwarderRequiresRedeem])
 
   const firstRetryableRedeemButton = useMemo(
     () => (
@@ -135,7 +135,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     [l2TxID, l2ChainId]
   )
 
-  const firstTransactionActionItem = isFirstRetryableFailed
+  const firstTransactionActionItem = isFirstRetryableLegFailed
     ? firstRetryableRedeemButton
     : firstTransactionExternalLink
 
@@ -149,11 +149,11 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     <>
       {/* show waiting time for first leg of teleporter tx */}
       <Step
-        pending={!isFirstRetryableResolved}
-        done={isFirstRetryableResolved}
+        pending={!isFirstRetryableLegResolved}
+        done={isFirstRetryableLegResolved}
         text={`Wait ~${firstRetryableWaitingDuration}`}
         endItem={
-          !isFirstRetryableResolved && (
+          !isFirstRetryableLegResolved && (
             <div>
               <DepositCountdown tx={tx} firstTxOnly={true} />
               <span> remaining</span>
@@ -164,8 +164,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
       {/* show mid transaction step for teleport tx */}
       <Step
-        done={isFirstRetryableSucceeded}
-        failure={isFirstRetryableFailed}
+        done={isFirstRetryableLegSucceeded}
+        failure={isFirstRetryableLegFailed}
         text={firstTransactionText}
         endItem={firstTransactionActionItem}
         extendHeight={_l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
@@ -173,8 +173,8 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
       {/* Show second leg of teleport transfer waiting time */}
       <Step
-        pending={isFirstRetryableSucceeded && !isSecondRetryableResolved}
-        done={isSecondRetryableResolved}
+        pending={isFirstRetryableLegSucceeded && !isSecondRetryableLegResolved}
+        done={isSecondRetryableLegResolved}
         text={`Wait ~${secondRetryableWaitingDuration}`}
       />
     </>

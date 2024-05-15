@@ -113,16 +113,19 @@ export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
 export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
   return typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID !== 'undefined'
 }
-export const l2L3RetryableRequiresRedeem = (tx: MergedTransaction) => {
-  return (
-    !l2ForwarderRetryableRequiresRedeem(tx) &&
-    tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-  )
-}
 
 export const firstRetryableLegRequiresRedeem = (tx: MergedTransaction) => {
   return (
     l1L2RetryableRequiresRedeem(tx) || l2ForwarderRetryableRequiresRedeem(tx)
+  )
+}
+
+export const secondRetryableLegForTeleportRequiresRedeem = (
+  tx: MergedTransaction
+) => {
+  return (
+    !l2ForwarderRetryableRequiresRedeem(tx) &&
+    tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
   )
 }
 

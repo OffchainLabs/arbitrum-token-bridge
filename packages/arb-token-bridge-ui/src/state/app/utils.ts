@@ -14,7 +14,7 @@ import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
 import { isTeleport } from '../../token-bridge-sdk/teleport'
 import {
   firstRetryableLegRequiresRedeem,
-  l2L3RetryableRequiresRedeem
+  secondRetryableLegForTeleportRequiresRedeem
 } from '../../util/RetryableUtils'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
@@ -274,7 +274,8 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
   if (isTeleport(tx)) {
     return (
-      firstRetryableLegRequiresRedeem(tx) || l2L3RetryableRequiresRedeem(tx)
+      firstRetryableLegRequiresRedeem(tx) ||
+      secondRetryableLegForTeleportRequiresRedeem(tx)
     )
   }
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE

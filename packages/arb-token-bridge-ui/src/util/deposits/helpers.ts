@@ -303,6 +303,20 @@ const updateClassicDepositStatusData = async ({
   return completeDepositTx
 }
 
+async function getTimestampResolved(
+  destinationChainProvider: Provider,
+  l3TxHash: string | undefined
+) {
+  if (typeof l3TxHash === 'undefined') {
+    return
+  }
+  return await destinationChainProvider
+    .getTransactionReceipt(l3TxHash)
+    .then(tx => tx.blockNumber)
+    .then(blockNumber => destinationChainProvider.getBlock(blockNumber))
+    .then(block => String(block.timestamp * 1000))
+}
+
 export async function fetchTeleporterDepositStatusData({
   assetType,
   sourceChainId,
@@ -319,20 +333,18 @@ export async function fetchTeleporterDepositStatusData({
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL3MsgData?: L2ToL3MessageData
 }> {
-  // sanity check if the function is used incorrectly
-  if (!isTeleport({ sourceChainId, destinationChainId })) {
-    console.error(`Transaction is not a teleport transaction ${txId}`)
-    return {}
-  }
-
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
-
   const sourceChainProvider = getProviderForChainId(sourceChainId)
   const destinationChainProvider = getProviderForChainId(destinationChainId)
-
   const { l2ChainId } = await getL2ConfigForTeleport({
     destinationChainProvider
   })
+
+  function isEthTeleport(
+    status: EthTeleportStatus | Erc20DepositMessages
+  ): status is EthTeleportStatus {
+    return isNativeCurrencyTransfer
+  }
 
   try {
     const depositStatus = await fetchTeleportStatusFromTxId({
@@ -341,41 +353,30 @@ export async function fetchTeleporterDepositStatusData({
       destinationChainProvider,
       isNativeCurrencyTransfer
     })
-
-    let l2Retryable: L1ToL2MessageReader | undefined,
-      l3Retryable: L1ToL2MessageReader | undefined,
-      l2ForwarderFactoryRetryable: L1ToL2MessageReader | undefined,
-      l3TxHash: string | undefined,
-      l1ToL2MsgData,
-      l2ToL3MsgData: L2ToL3MessageData = {
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
-        l2ChainId
-      }
-
-    if (isNativeCurrencyTransfer) {
-      const status = depositStatus as EthTeleportStatus
-      l2Retryable = status.l2Retryable
-      l3Retryable = status.l3Retryable
-    } else {
-      const status = depositStatus as Erc20DepositMessages
-      l2Retryable = status.l1l2TokenBridge
-      l2ForwarderFactoryRetryable = status.l2ForwarderFactory
-      l3Retryable = status.l2l3TokenBridge
+    const l2ToL3MsgData: L2ToL3MessageData = {
+      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      l2ChainId
     }
+    const l2Retryable = isEthTeleport(depositStatus)
+      ? depositStatus.l2Retryable
+      : depositStatus.l1l2TokenBridge
+    const l2ForwarderFactoryRetryable = isEthTeleport(depositStatus)
+      ? null
+      : depositStatus.l2ForwarderFactory
+    const l3Retryable = isEthTeleport(depositStatus)
+      ? depositStatus.l3Retryable
+      : depositStatus.l2l3TokenBridge
 
     // extract the l2 transaction details, if any
-    if (l2Retryable) {
-      const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
-
-      l1ToL2MsgData = {
-        status: await l2Retryable.status(),
-        l2TxID:
-          l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED
-            ? l1l2Redeem.l2TxReceipt.transactionHash
-            : undefined,
-        fetchingUpdate: false,
-        retryableCreationTxID: l2Retryable.retryableCreationId
-      } as L1ToL2MessageData
+    const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
+    const l1ToL2MsgData: L1ToL2MessageData = {
+      status: await l2Retryable.status(),
+      l2TxID:
+        l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED
+          ? l1l2Redeem.l2TxReceipt.transactionHash
+          : undefined,
+      fetchingUpdate: false,
+      retryableCreationTxID: l2Retryable.retryableCreationId
     }
 
     // in case the forwarder retryable has failed, add it to the `l2ToL3MsgData`, else leave it undefined
@@ -385,11 +386,16 @@ export async function fetchTeleporterDepositStatusData({
       (await l2ForwarderFactoryRetryable.status()) ===
         L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
     ) {
-      l2ToL3MsgData = {
-        ...l2ToL3MsgData,
-        status: await l2ForwarderFactoryRetryable.status(),
-        l2ForwarderRetryableTxID:
-          l2ForwarderFactoryRetryable.retryableCreationId
+      return {
+        status: l2Retryable ? 'success' : 'failure',
+        timestampResolved: undefined,
+        l1ToL2MsgData,
+        l2ToL3MsgData: {
+          ...l2ToL3MsgData,
+          status: await l2ForwarderFactoryRetryable.status(),
+          l2ForwarderRetryableTxID:
+            l2ForwarderFactoryRetryable.retryableCreationId
+        }
       }
     } else if (l3Retryable) {
       // extract the new L2 tx details if we find that `l2ForwarderFactoryRetryable` has been redeemed manually
@@ -398,50 +404,54 @@ export async function fetchTeleporterDepositStatusData({
         const l2ForwarderRedeem =
           await l2ForwarderFactoryRetryable.getSuccessfulRedeem()
         if (l2ForwarderRedeem.status === L1ToL2MessageStatus.REDEEMED) {
-          l1ToL2MsgData = {
-            ...l1ToL2MsgData,
-            l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
-          } as L1ToL2MessageData
+          return {
+            status: l2Retryable ? 'success' : 'failure',
+            timestampResolved: undefined,
+            l1ToL2MsgData: {
+              ...l1ToL2MsgData,
+              l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
+            },
+            l2ToL3MsgData: {
+              ...l2ToL3MsgData,
+              status: await l3Retryable.status(),
+              retryableCreationTxID: l3Retryable.retryableCreationId
+            }
+          }
         }
       }
 
       // extract the l3 transaction details, if any
       const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
-      if (l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED) {
-        l3TxHash = l2L3Redeem.l2TxReceipt.transactionHash
-      }
-      l2ToL3MsgData = {
-        ...l2ToL3MsgData,
-        status: await l3Retryable.status(),
-        l3TxID: l3TxHash,
-        retryableCreationTxID: l3Retryable.retryableCreationId
+      const l3TxID =
+        l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED
+          ? l2L3Redeem.l2TxReceipt.transactionHash
+          : undefined
+      const timestampResolved = await getTimestampResolved(
+        destinationChainProvider,
+        l3TxID
+      )
+      return {
+        status: l2Retryable ? 'success' : 'failure',
+        timestampResolved,
+        l1ToL2MsgData,
+        l2ToL3MsgData: {
+          ...l2ToL3MsgData,
+          status: await l3Retryable.status(),
+          l3TxID,
+          retryableCreationTxID: l3Retryable.retryableCreationId
+        }
       }
     }
 
-    // extract other misc data
-    const destinationChainTx = l3TxHash
-      ? await destinationChainProvider.getTransactionReceipt(l3TxHash)
-      : null
-    const destinationChainBlockNumber = destinationChainTx
-      ? destinationChainTx.blockNumber
-      : null
-    const timestampResolved = destinationChainBlockNumber
-      ? (await destinationChainProvider.getBlock(destinationChainBlockNumber))
-          .timestamp * 1000
-      : null
-
     return {
       status: l2Retryable ? 'success' : 'failure',
-      timestampResolved: timestampResolved
-        ? String(timestampResolved)
-        : undefined,
+      timestampResolved: undefined,
       l1ToL2MsgData,
       l2ToL3MsgData
     }
   } catch (e) {
-    // in case fetching teleport status fails (happens when you fetch before l1 confirmation), return the default data
+    // in case fetching teleport status fails (happens sometimes when you fetch before l1 confirmation), return the default data
     console.log('Error fetching status for teleporter tx', txId)
-
     return {
       status: 'pending',
       l2ToL3MsgData: {

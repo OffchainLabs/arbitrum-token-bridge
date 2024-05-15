@@ -11,7 +11,7 @@ import {
   getRetryableTicket,
   l1L2RetryableRequiresRedeem,
   l2ForwarderRetryableRequiresRedeem,
-  l2L3RetryableRequiresRedeem
+  secondRetryableLegForTeleportRequiresRedeem
 } from '../util/RetryableUtils'
 import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
@@ -114,7 +114,7 @@ const redeemTeleporterSecondLeg = async ({
 }) => {
   // check if we require a redemption for the l2l3 retryable
   if (
-    l2L3RetryableRequiresRedeem(tx) &&
+    secondRetryableLegForTeleportRequiresRedeem(tx) &&
     tx.l1ToL2MsgData?.l2TxID &&
     tx.l2ToL3MsgData
   ) {
@@ -200,7 +200,7 @@ export function useRedeemTeleporter(
           signer,
           txUpdateCallback: updatePendingTransaction
         })
-      } else if (l2L3RetryableRequiresRedeem(tx)) {
+      } else if (secondRetryableLegForTeleportRequiresRedeem(tx)) {
         await redeemTeleporterSecondLeg({
           tx,
           signer,
