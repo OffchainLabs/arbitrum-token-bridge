@@ -452,6 +452,19 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
 }
 
+export function addTeleportDestinationChainToList(
+  chainId: ChainId,
+  chainList: ChainId[]
+) {
+  const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chainId] || [])
+  teleportAllowList.forEach(chainId => {
+    if (!chainList.includes(chainId)) {
+      chainList.push(chainId)
+    }
+  })
+  return chainList
+}
+
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
   const chains = getChains()
   const arbitrumSdkChain = chains.find(chain => chain.chainID === chainId)
@@ -464,16 +477,14 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  const validDestinationChainIds =
+  let validDestinationChainIds =
     chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
 
   // add orbit-chains are also a part of the valid destination id's
-  const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chainId] || [])
-  teleportAllowList.forEach(chainId => {
-    if (!validDestinationChainIds.includes(chainId)) {
-      validDestinationChainIds.push(chainId)
-    }
-  })
+  validDestinationChainIds = addTeleportDestinationChainToList(
+    chainId,
+    validDestinationChainIds
+  )
 
   if (parentChainId) {
     // always make parent chain the first element

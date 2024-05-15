@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 
 import {
   ChainId,
-  TELEPORT_ALLOWLIST,
+  addTeleportDestinationChainToList,
   getChains,
   isL1Chain,
   isNetwork
@@ -106,17 +106,15 @@ function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    const childChainIds = chain.partnerChainIDs ?? []
+    let childChainIds = chain.partnerChainIDs ?? []
     const isParentChain = childChainIds.length > 0
 
     // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
     if (isL1Chain(chain)) {
-      const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chain.chainID] || [])
-      teleportAllowList.forEach(chainId => {
-        if (!childChainIds.includes(chainId)) {
-          childChainIds.push(chainId)
-        }
-      })
+      childChainIds = addTeleportDestinationChainToList(
+        chain.chainID,
+        childChainIds
+      )
     }
 
     if (!isParentChain) {
