@@ -538,6 +538,8 @@ export function TokenSearch({
   const { setTokenQueryParam } = useTokenFromSearchParams()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
 
   async function selectToken(_token: ERC20BridgeToken | null) {
     close()
@@ -612,9 +614,12 @@ export function TokenSearch({
       })
 
       if (data) {
+        const tokensImported = { ...tokensFromLists, ...tokensFromUser }
+        const xerc20Bridge = tokensImported[_token.address]?.xerc20Bridge
+
         token.updateTokenData(_token.address)
         setSelectedToken({
-          ...erc20DataToErc20BridgeToken(data),
+          ...erc20DataToErc20BridgeToken({ ...data, xerc20Bridge }),
           l2Address: _token.l2Address
         })
       }

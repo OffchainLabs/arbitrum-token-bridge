@@ -49,7 +49,8 @@ export class BridgeTransferStarterFactory {
       sourceChainProvider,
       destinationChainProvider,
       sourceChainErc20Address: props.sourceChainErc20Address,
-      destinationChainErc20Address: props.destinationChainErc20Address
+      destinationChainErc20Address: props.destinationChainErc20Address,
+      adapter: props.adapter
     }
 
     const { isDeposit, isNativeCurrencyTransfer, isSupported } =
@@ -66,6 +67,8 @@ export class BridgeTransferStarterFactory {
       return cacheValue
     }
 
+    console.log({ INITPROPS___: initProps })
+
     // deposits
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {
@@ -75,7 +78,7 @@ export class BridgeTransferStarterFactory {
     }
     // withdrawals
     if (!isNativeCurrencyTransfer) {
-      return withCache(cacheKey, new XErc20WithdrawalStarter(initProps))
+      return withCache(cacheKey, new XErc20WithdrawalStarter(initProps)) // TODO
     }
     return withCache(cacheKey, new EthWithdrawalStarter(initProps))
   }

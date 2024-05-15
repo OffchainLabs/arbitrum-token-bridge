@@ -64,6 +64,11 @@ function tokenListsToSearchableTokenStorage(
         const stringifiedChainId = String(token.chainId)
         const accAddress = acc[address]
 
+        // @ts-ignore TODO
+        const xerc20BridgeObj: {
+          [chainId: string]: { adapter: string }
+        } = token?.extensions?.xerc20Bridge
+
         if (stringifiedChainId === l1ChainId) {
           // The address is from an L1 token
           if (typeof accAddress === 'undefined') {
@@ -71,6 +76,9 @@ function tokenListsToSearchableTokenStorage(
             acc[address] = {
               ...token,
               type: TokenType.ERC20,
+              xerc20Bridge: xerc20BridgeObj
+                ? xerc20BridgeObj[l1ChainId]?.adapter
+                : undefined,
               l2Address: undefined,
               listIds: new Set()
             }
@@ -110,6 +118,9 @@ function tokenListsToSearchableTokenStorage(
               acc[addressOnL1] = {
                 name: token.name,
                 symbol: token.symbol,
+                xerc20Bridge: xerc20BridgeObj
+                  ? xerc20BridgeObj[l1ChainId]?.adapter
+                  : undefined,
                 type: TokenType.ERC20,
                 logoURI: token.logoURI,
                 address: addressOnL1,

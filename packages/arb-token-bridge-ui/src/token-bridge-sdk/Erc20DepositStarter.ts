@@ -26,8 +26,8 @@ export const DEFAULT_GAS_PRICE_PERCENT_INCREASE = BigNumber.from(500)
 export class Erc20DepositStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_deposit'
 
-  private erc20Bridger: Erc20Bridger | undefined
-  private sourceChainGatewayAddress: string | undefined
+  protected erc20Bridger: Erc20Bridger | undefined
+  protected sourceChainGatewayAddress: string | undefined
 
   constructor(props: BridgeTransferStarterProps) {
     super(props)
@@ -37,7 +37,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     }
   }
 
-  private async getBridger() {
+  protected async getBridger() {
     if (this.erc20Bridger) {
       return this.erc20Bridger
     }
@@ -49,7 +49,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     return this.erc20Bridger
   }
 
-  private async getSourceChainGatewayAddress() {
+  protected async getSourceChainGatewayAddress() {
     if (this.sourceChainGatewayAddress) {
       return this.sourceChainGatewayAddress
     }

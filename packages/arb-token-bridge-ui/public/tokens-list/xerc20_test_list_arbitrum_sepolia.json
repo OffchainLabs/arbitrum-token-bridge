@@ -17,6 +17,11 @@
             "originBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE",
             "destBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE"
           }
+        },
+        "xerc20Bridge": {
+          "11155111": {
+            "adapter": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B"
+          }
         }
       }
     },
@@ -33,6 +38,11 @@
             "tokenAddress": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B",
             "originBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE",
             "destBridgeAddress": "0x2fA05722D0646c0c1e942600E828821cdb4d57EE"
+          }
+        },
+        "xerc20Bridge": {
+          "11155111": {
+            "adapter": "0xD46FC9be10efe3A4A783d69D891B6eeD1889149B"
           }
         }
       }

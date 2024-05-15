@@ -698,11 +698,13 @@ export function TransferPanel() {
 
       const signer = isDepositMode ? l1Signer : l2Signer
 
+      console.log({ selectedToken: selectedToken?.xerc20Bridge })
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
         destinationChainId,
-        destinationChainErc20Address
+        destinationChainErc20Address,
+        adapter: selectedToken?.xerc20Bridge ?? 'c'
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =

@@ -106,6 +106,7 @@ export interface BridgeToken {
 
 export interface ERC20BridgeToken extends BridgeToken {
   type: TokenType.ERC20
+  xerc20Bridge?: string
   decimals: number
 }
 

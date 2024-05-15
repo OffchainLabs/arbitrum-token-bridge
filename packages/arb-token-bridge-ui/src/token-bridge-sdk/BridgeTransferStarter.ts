@@ -36,11 +36,15 @@ export type BridgeTransferStarterProps = {
   destinationChainErc20Address?: string
 }
 
+export type BridgeTransferStarterWithAdapterProps =
+  BridgeTransferStarterProps & { adapter?: string }
+
 export type BridgeTransferStarterPropsWithChainIds = {
   sourceChainId: number
   sourceChainErc20Address?: string
   destinationChainId: number
   destinationChainErc20Address?: string
+  adapter?: string
 }
 
 export type TransferEstimateGas = {

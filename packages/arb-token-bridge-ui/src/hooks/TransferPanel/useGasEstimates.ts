@@ -25,7 +25,9 @@ async function fetcher([
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
-    destinationChainErc20Address
+    destinationChainErc20Address,
+    adapter: 'd'
+    // TODO xerc20Bridge / adapter
   })
 
   return await bridgeTransferStarter.transferEstimateGas({
