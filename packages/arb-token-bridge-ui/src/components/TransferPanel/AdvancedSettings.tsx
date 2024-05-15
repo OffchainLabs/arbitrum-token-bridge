@@ -23,7 +23,8 @@ import { Transition } from '../common/Transition'
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.',
-  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.'
+  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.',
+  TELEPORT_DISABLED = 'LayerLeap transfers to custom destination addresses is not supported yet.'
 }
 
 enum DestinationAddressWarnings {
@@ -49,10 +50,12 @@ export const useDestinationAddressStore = create<DestinationAddressStore>(
 
 export async function getDestinationAddressError({
   destinationAddress,
-  isSmartContractWallet
+  isSmartContractWallet,
+  isTeleportMode
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
+  isTeleportMode: boolean
 }): Promise<DestinationAddressErrors | null> {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
@@ -68,6 +71,10 @@ export async function getDestinationAddressError({
   }
   if (await addressIsDenylisted(destinationAddress)) {
     return DestinationAddressErrors.DENYLISTED_ADDRESS
+  }
+
+  if (isTeleportMode) {
+    return DestinationAddressErrors.TELEPORT_DISABLED
   }
 
   // no error
@@ -115,7 +122,8 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
@@ -139,12 +147,13 @@ export const AdvancedSettings = () => {
       setError(
         await getDestinationAddressError({
           destinationAddress,
-          isSmartContractWallet
+          isSmartContractWallet,
+          isTeleportMode
         })
       )
     }
     updateError()
-  }, [destinationAddress, isSmartContractWallet, setError])
+  }, [destinationAddress, isSmartContractWallet, setError, isTeleportMode])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
