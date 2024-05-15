@@ -2,10 +2,7 @@ import { BigNumber, Signer } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 
 import { isNetwork } from '../util/networks'
-import {
-  BridgeTransferStarterProps,
-  BridgeTransferStarterPropsWithChainIds
-} from './BridgeTransferStarter'
+import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 
 export const getAddressFromSigner = async (signer: Signer) => {
   const address = await signer.getAddress()

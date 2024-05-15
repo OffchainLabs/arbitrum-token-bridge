@@ -34,10 +34,8 @@ export type BridgeTransferStarterProps = {
   sourceChainErc20Address?: string
   destinationChainProvider: Provider
   destinationChainErc20Address?: string
+  adapter?: string
 }
-
-export type BridgeTransferStarterWithAdapterProps =
-  BridgeTransferStarterProps & { adapter?: string }
 
 export type BridgeTransferStarterPropsWithChainIds = {
   sourceChainId: number
@@ -89,6 +87,7 @@ export abstract class BridgeTransferStarter {
   public destinationChainProvider: Provider
   public sourceChainErc20Address?: string
   public destinationChainErc20Address?: string
+  public adapter?: string
 
   abstract transferType: TransferType
 
@@ -97,6 +96,7 @@ export abstract class BridgeTransferStarter {
     this.destinationChainProvider = props.destinationChainProvider
     this.sourceChainErc20Address = props.sourceChainErc20Address
     this.destinationChainErc20Address = props.destinationChainErc20Address
+    this.adapter = props.adapter
   }
 
   public abstract requiresNativeCurrencyApproval(

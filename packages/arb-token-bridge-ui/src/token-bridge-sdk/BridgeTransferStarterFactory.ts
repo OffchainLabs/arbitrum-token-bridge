@@ -67,8 +67,6 @@ export class BridgeTransferStarterFactory {
       return cacheValue
     }
 
-    console.log({ INITPROPS___: initProps })
-
     // deposits
     if (isDeposit) {
       if (!isNativeCurrencyTransfer) {

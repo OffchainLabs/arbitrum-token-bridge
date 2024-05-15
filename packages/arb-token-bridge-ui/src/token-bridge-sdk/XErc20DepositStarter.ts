@@ -2,7 +2,7 @@ import { BigNumber, constants } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import {
   ApproveTokenProps,
-  BridgeTransferStarterWithAdapterProps,
+  BridgeTransferStarterProps,
   TransferEstimateGas,
   TransferProps
 } from './BridgeTransferStarter'
@@ -14,10 +14,14 @@ import { Erc20DepositStarter } from './Erc20DepositStarter'
 export class XErc20DepositStarter extends Erc20DepositStarter {
   protected sourceChainAdapterAddress: string
 
-  constructor({ adapter, ...props }: BridgeTransferStarterWithAdapterProps) {
+  constructor(props: BridgeTransferStarterProps) {
     super(props)
 
-    this.sourceChainAdapterAddress = adapter
+    if (!this.adapter) {
+      throw Error('Address for XERC20 adapter was expected')
+    }
+
+    this.sourceChainAdapterAddress = this.adapter
   }
 
   protected async getSourceChainGatewayAddress() {
