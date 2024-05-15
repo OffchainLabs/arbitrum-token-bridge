@@ -319,6 +319,12 @@ export async function fetchTeleporterDepositStatusData({
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL3MsgData?: L2ToL3MessageData
 }> {
+  // sanity check if the function is used incorrectly
+  if (!isTeleport({ sourceChainId, destinationChainId })) {
+    console.error(`Transaction is not a teleport transaction ${txId}`)
+    return {}
+  }
+
   const isNativeCurrencyTransfer = assetType === AssetType.ETH
 
   const sourceChainProvider = getProviderForChainId(sourceChainId)

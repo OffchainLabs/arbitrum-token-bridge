@@ -57,35 +57,27 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     isTeleport({
       sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
       destinationChainId: tx.childChainId
-    }) &&
-    tx.l1ToL2MsgData &&
-    tx.l2ToL3MsgData
+    })
   ) {
     const { l2ToL3MsgData, l1ToL2MsgData } = tx
+
+    // if any of the retryable info is missing, first fetch might be pending
+    if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
 
     // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
     if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
 
-    // else, normally check the status of l3Retryable and l2Retryable
-    switch (l2ToL3MsgData.status) {
-      case L1ToL2MessageStatus.CREATION_FAILED:
-        return DepositStatus.CREATION_FAILED
-      case L1ToL2MessageStatus.EXPIRED:
-        return DepositStatus.EXPIRED
-      case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
-        return DepositStatus.L2_FAILURE
-      case L1ToL2MessageStatus.REDEEMED:
-        return DepositStatus.L2_SUCCESS
+    const depositStatus = getDepositStatusFromL1ToL2MessageStatus(
+      l2ToL3MsgData.status
+    )
+    if (typeof depositStatus !== 'undefined') {
+      return depositStatus
     }
     switch (l1ToL2MsgData.status) {
-      case L1ToL2MessageStatus.CREATION_FAILED:
-        return DepositStatus.CREATION_FAILED
-      case L1ToL2MessageStatus.EXPIRED:
-        return DepositStatus.EXPIRED
-      case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
-        return DepositStatus.L2_FAILURE
       case L1ToL2MessageStatus.REDEEMED:
-        return DepositStatus.L2_PENDING // tx is still pending if l1ToL2MsgData is redeemed
+        return DepositStatus.L2_PENDING // tx is still pending if l1ToL2MsgData is redeemed (but l2ToL3MsgData is not)
+      default:
+        return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
     }
   }
 
@@ -107,6 +99,21 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
+    case L1ToL2MessageStatus.REDEEMED:
+      return DepositStatus.L2_SUCCESS
+  }
+}
+
+function getDepositStatusFromL1ToL2MessageStatus(
+  status: L1ToL2MessageStatus
+): DepositStatus | undefined {
+  switch (status) {
+    case L1ToL2MessageStatus.CREATION_FAILED:
+      return DepositStatus.CREATION_FAILED
+    case L1ToL2MessageStatus.EXPIRED:
+      return DepositStatus.EXPIRED
+    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+      return DepositStatus.L2_FAILURE
     case L1ToL2MessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
