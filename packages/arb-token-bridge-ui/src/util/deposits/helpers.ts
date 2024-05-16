@@ -398,28 +398,6 @@ export async function fetchTeleporterDepositStatusData({
         }
       }
     } else if (l3Retryable) {
-      // extract the new L2 tx details if we find that `l2ForwarderFactoryRetryable` has been redeemed manually
-      // the new l2TxId will be helpful to get l2L3 redemption details while redeeming
-      if (l2ForwarderFactoryRetryable) {
-        const l2ForwarderRedeem =
-          await l2ForwarderFactoryRetryable.getSuccessfulRedeem()
-        if (l2ForwarderRedeem.status === L1ToL2MessageStatus.REDEEMED) {
-          return {
-            status: l2Retryable ? 'success' : 'failure',
-            timestampResolved: undefined,
-            l1ToL2MsgData: {
-              ...l1ToL2MsgData,
-              l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
-            },
-            l2ToL3MsgData: {
-              ...l2ToL3MsgData,
-              status: await l3Retryable.status(),
-              retryableCreationTxID: l3Retryable.retryableCreationId
-            }
-          }
-        }
-      }
-
       // extract the l3 transaction details, if any
       const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
       const l3TxID =
@@ -430,6 +408,30 @@ export async function fetchTeleporterDepositStatusData({
         destinationChainProvider,
         l3TxID
       )
+
+      // extract the new L2 tx details if we find that `l2ForwarderFactoryRetryable` has been redeemed manually
+      // the new l2TxId will be helpful to get l2L3 redemption details while redeeming
+      if (l2ForwarderFactoryRetryable) {
+        const l2ForwarderRedeem =
+          await l2ForwarderFactoryRetryable.getSuccessfulRedeem()
+        if (l2ForwarderRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+          return {
+            status: l2Retryable ? 'success' : 'failure',
+            timestampResolved,
+            l1ToL2MsgData: {
+              ...l1ToL2MsgData,
+              l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
+            },
+            l2ToL3MsgData: {
+              ...l2ToL3MsgData,
+              l3TxID,
+              status: await l3Retryable.status(),
+              retryableCreationTxID: l3Retryable.retryableCreationId
+            }
+          }
+        }
+      }
+
       return {
         status: l2Retryable ? 'success' : 'failure',
         timestampResolved,
