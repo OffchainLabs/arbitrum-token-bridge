@@ -173,6 +173,34 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
+  },
+  // Orbit testnet
+  {
+    id: 19,
+    // Xai testnet
+    originChainID: 37714555429,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/37714555429_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
+  },
+  {
+    id: 20,
+    // Dodochain
+    originChainID: 53457,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/53457_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
+  },
+  {
+    id: 21,
+    // L3X
+    originChainID: 12325,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/12325_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
