@@ -9,7 +9,7 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -75,6 +75,10 @@ import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
+import { fetchEthTeleportsFromSubgraph } from '../../util/deposits/fetchEthTeleportsFromSubgraph'
+import { fetchErc20TeleportsFromSubgraph } from '../../util/deposits/fetchErc20TeleportsFromSubgraph'
+import { Transaction } from '../../hooks/useTransactions'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -947,6 +951,66 @@ export function TransferPanel() {
     }
   }
 
+  const fetchEthTeleports = async () => {
+    const { l2ChainId } = await getL2ConfigForTeleport({
+      destinationChainProvider: childChainProvider
+    })
+    const transactions = await fetchEthTeleportsFromSubgraph({
+      sender: '0x2cd28Cda6825C4967372478E87D004637B73F996',
+      l2ChainId,
+      fromBlock: 0
+    })
+
+    const detailedTransactions = await Promise.all(
+      transactions.map(async tx => {
+        const transactionDetails = await parentChainProvider.getTransaction(
+          tx.transactionHash
+        )
+
+        // 1. extract the ETH value transferred
+        // 2. extract the l3 chain details - destination address will be the `delayed inbox` of the l3 chain
+
+        return {
+          type: 'deposit-l1',
+          status: 'pending',
+          direction: 'deposit',
+          source: 'subgraph',
+          value: utils.formatUnits(
+            transactionDetails.value || 0,
+            nativeCurrency.decimals
+          ),
+          txID: tx.transactionHash,
+          tokenAddress: '',
+          sender: tx.sender,
+          destination: tx.sender,
+
+          assetName: 'ETH',
+          assetType: AssetType.ETH,
+
+          l1NetworkID: String(parentChain.id),
+          l2NetworkID: String(tx.l3ChainId),
+          blockNumber: Number(tx.blockCreatedAt),
+          timestampCreated: tx.timestamp,
+          isClassic: false,
+
+          childChainId: tx.l3ChainId,
+          parentChainId: parentChain.id
+        } as Transaction
+      })
+    )
+
+    console.log('xxxx', transactions)
+    console.log('xxxxxxxx', detailedTransactions)
+  }
+
+  const fetchErc20Teleports = async () => {
+    fetchErc20TeleportsFromSubgraph({
+      sender: '0x2cd28Cda6825C4967372478E87D004637B73F996',
+      fromBlock: 0,
+      l1ChainId: parentChain.id
+    })
+  }
+
   return (
     <>
       <TokenApprovalDialog
@@ -977,6 +1041,13 @@ export function TransferPanel() {
         amount={amount}
       />
 
+      <button className="text-white" onClick={fetchEthTeleports}>
+        FETCH ETH
+      </button>
+      <hr />
+      <button className="text-white" onClick={fetchErc20Teleports}>
+        FETCH ERC20
+      </button>
       <div
         className={twMerge(
           'mb-7 flex flex-col border-y border-white/30 bg-gray-1 p-4 shadow-[0px_4px_20px_rgba(0,0,0,0.2)]',

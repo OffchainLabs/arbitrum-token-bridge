@@ -511,3 +511,13 @@ export function getOrbitChains(
 
   return [...mainnetChains, ...testnetChains]
 }
+
+export function getOrbitChainsInboxAddresses() {
+  return getOrbitChains().map(chain => chain.ethBridge.inbox)
+}
+
+export function getChainIdFromInboxAddress(inboxAddress: string) {
+  return getOrbitChains().find(
+    chain => chain.ethBridge.inbox.toLowerCase() === inboxAddress.toLowerCase()
+  )?.chainID
+}
