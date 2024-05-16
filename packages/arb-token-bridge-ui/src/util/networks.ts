@@ -456,7 +456,7 @@ export function addTeleportDestinationChainToList(
   chainId: ChainId,
   chainList: ChainId[]
 ) {
-  const teleportAllowList = new Set(TELEPORT_ALLOWLIST[chainId] || [])
+  const teleportAllowList = TELEPORT_ALLOWLIST[chainId] || []
   teleportAllowList.forEach(chainId => {
     if (!chainList.includes(chainId)) {
       chainList.push(chainId)
