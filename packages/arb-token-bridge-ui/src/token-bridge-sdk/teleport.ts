@@ -48,7 +48,7 @@ export const fetchTeleportStatusFromTxId = async ({
     ? new EthL1L3Bridger(l3Network)
     : new Erc20L1L3Bridger(l3Network)
 
-  return l1l3Bridger.getDepositMessages({
+  return l1l3Bridger.getDepositStatus({
     txHash: txId,
     l1Provider: sourceChainProvider,
     l2Provider,
