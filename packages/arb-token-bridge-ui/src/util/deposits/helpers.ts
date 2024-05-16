@@ -10,7 +10,7 @@ import {
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 import { Provider } from '@ethersproject/providers'
 import {
-  Erc20DepositMessages,
+  Erc20DepositStatus as Erc20TeleportStatus,
   EthDepositStatus as EthTeleportStatus
 } from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
@@ -341,7 +341,7 @@ export async function fetchTeleporterDepositStatusData({
   })
 
   function isEthTeleport(
-    status: EthTeleportStatus | Erc20DepositMessages
+    status: EthTeleportStatus | Erc20TeleportStatus
   ): status is EthTeleportStatus {
     return isNativeCurrencyTransfer
   }

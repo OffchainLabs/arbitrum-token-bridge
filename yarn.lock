@@ -39,10 +39,10 @@
     tslib "^2.3.0"
     zen-observable-ts "^1.2.5"
 
-"@arbitrum/sdk@npm:godzillaba-arbitrum-sdk@^3.4.1-teleporter.1":
-  version "3.4.1-teleporter.1"
-  resolved "https://registry.yarnpkg.com/godzillaba-arbitrum-sdk/-/godzillaba-arbitrum-sdk-3.4.1-teleporter.1.tgz#cd083b8c7771854be1dea6e50e89cb4621179517"
-  integrity sha512-bC5BGp6IMkXn3+9WMVjCWa+4osflr8Qnbgw1NCgdQBIigvijikntjcmx7NxXNHQ61enHUppfScSRlnS2ExMoAg==
+"@arbitrum/sdk@npm:godzillaba-arbitrum-sdk@^3.4.1-teleporter.3":
+  version "3.4.1-teleporter.3"
+  resolved "https://registry.yarnpkg.com/godzillaba-arbitrum-sdk/-/godzillaba-arbitrum-sdk-3.4.1-teleporter.3.tgz#96cffcc3168d4b7ad61f76d90beb72dc8a3b0f7a"
+  integrity sha512-4s/k2D4yP93wflvb250ONR1VrK024HBC8/qJHnqmbbzQ7GcGd2EpAPJy5XcXViPcG3MgeItOaJJRmGqmdowFlQ==
   dependencies:
     "@ethersproject/address" "^5.0.8"
     "@ethersproject/bignumber" "^5.1.1"
