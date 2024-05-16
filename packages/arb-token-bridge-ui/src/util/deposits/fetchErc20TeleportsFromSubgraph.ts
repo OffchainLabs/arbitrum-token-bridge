@@ -1,4 +1,4 @@
-import { hasL1Subgraph, hasTeleporterSubgraph } from '../SubgraphUtils'
+import { hasTeleporterSubgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchErc20TeleportsFromSubgraphResult = {
@@ -9,6 +9,7 @@ export type FetchErc20TeleportsFromSubgraphResult = {
   l1l2Router: string
   l2l3RouterOrInbox: string
   to: string
+  amount: string
 }
 
 /**

@@ -9,7 +9,7 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { Button } from '../common/Button'
 import {
   TokenDepositCheckDialog,
@@ -29,7 +29,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isGatewayRegistered
+  isGatewayRegistered,
+  fetchErc20Data
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -75,7 +76,10 @@ import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
-import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  getL2ConfigForTeleport,
+  getL3ChainIdFromTeleportEvents
+} from '../../token-bridge-sdk/teleport'
 import { fetchEthTeleportsFromSubgraph } from '../../util/deposits/fetchEthTeleportsFromSubgraph'
 import { fetchErc20TeleportsFromSubgraph } from '../../util/deposits/fetchErc20TeleportsFromSubgraph'
 import { Transaction } from '../../hooks/useTransactions'
@@ -969,7 +973,6 @@ export function TransferPanel() {
 
         // 1. extract the ETH value transferred
         // 2. extract the l3 chain details - destination address will be the `delayed inbox` of the l3 chain
-
         return {
           type: 'deposit-l1',
           status: 'pending',
@@ -990,7 +993,7 @@ export function TransferPanel() {
           l1NetworkID: String(parentChain.id),
           l2NetworkID: String(tx.l3ChainId),
           blockNumber: Number(tx.blockCreatedAt),
-          timestampCreated: tx.timestamp,
+          timestampCreated: transactionDetails.timestamp,
           isClassic: false,
 
           childChainId: tx.l3ChainId,
@@ -1004,11 +1007,62 @@ export function TransferPanel() {
   }
 
   const fetchErc20Teleports = async () => {
-    fetchErc20TeleportsFromSubgraph({
+    const transactions = await fetchErc20TeleportsFromSubgraph({
       sender: '0x2cd28Cda6825C4967372478E87D004637B73F996',
       fromBlock: 0,
       l1ChainId: parentChain.id
     })
+
+    // 1. fetch erc20 token details
+    // 2. fetch l3chainid
+
+    const detailedTransactions = await Promise.all(
+      transactions.map(async tx => {
+        const transactionHash = tx.id.split('-')[0]!
+
+        const transactionDetails = await parentChainProvider.getTransaction(
+          transactionHash
+        )
+
+        const l1TokenAddress = tx.l1Token
+        const { symbol, decimals } = await fetchErc20Data({
+          address: l1TokenAddress,
+          provider: parentChainProvider
+        })
+
+        const l3ChainId = await getL3ChainIdFromTeleportEvents(
+          tx,
+          parentChainProvider
+        )
+
+        // 1. extract the ETH value transferred
+        // 2. extract the l3 chain details - destination address will be the `delayed inbox` of the l3 chain
+        return {
+          type: 'deposit-l1',
+          status: 'pending',
+          direction: 'deposit',
+          source: 'subgraph',
+          value: utils.formatUnits(tx.amount || 0, decimals),
+          txID: transactionHash,
+          tokenAddress: l1TokenAddress,
+          sender: tx.sender,
+          destination: tx.sender,
+          assetName: symbol,
+          assetType: AssetType.ERC20,
+          l1NetworkID: String(parentChain.id),
+          l2NetworkID: String(l3ChainId),
+          blockNumber: Number(transactionDetails.blockNumber),
+          timestampCreated: transactionDetails.timestamp,
+          isClassic: false,
+
+          childChainId: l3ChainId,
+          parentChainId: parentChain.id
+        } as Transaction
+      })
+    )
+
+    console.log('xxxx', transactions)
+    console.log('xxxxxxxx', detailedTransactions)
   }
 
   return (

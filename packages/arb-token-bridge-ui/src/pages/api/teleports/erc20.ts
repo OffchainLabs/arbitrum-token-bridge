@@ -87,6 +87,7 @@ export default async function handler(
           l1l2Router
           l2l3RouterOrInbox
           to
+          amount
         }
       }`)
     })
