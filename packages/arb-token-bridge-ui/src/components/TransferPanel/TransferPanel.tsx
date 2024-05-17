@@ -60,7 +60,10 @@ import {
 import { useImportTokenModal } from '../../hooks/TransferPanel/useImportTokenModal'
 import { useTransferReadiness } from './useTransferReadiness'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
-import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import {
+  getMultiChainFetchList,
+  useTransactionHistory
+} from '../../hooks/useTransactionHistory'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
@@ -73,16 +76,21 @@ import {
   convertBridgeSdkToPendingDepositTransaction
 } from './bridgeSdkConversionUtils'
 import { useBalance } from '../../hooks/useBalance'
-import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
+import {
+  getBridgeTransferProperties,
+  getProviderForChainId
+} from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 import {
   getL2ConfigForTeleport,
-  getL3ChainIdFromTeleportEvents
+  getL3ChainIdFromTeleportEvents,
+  isTeleport
 } from '../../token-bridge-sdk/teleport'
 import { fetchEthTeleportsFromSubgraph } from '../../util/deposits/fetchEthTeleportsFromSubgraph'
 import { fetchErc20TeleportsFromSubgraph } from '../../util/deposits/fetchErc20TeleportsFromSubgraph'
 import { Transaction } from '../../hooks/useTransactions'
+import { fetchTeleports } from '../../util/deposits/fetchTeleports'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -966,22 +974,13 @@ export function TransferPanel() {
     })
 
     const detailedTransactions = await Promise.all(
-      transactions.map(async tx => {
-        const transactionDetails = await parentChainProvider.getTransaction(
-          tx.transactionHash
-        )
-
-        // 1. extract the ETH value transferred
-        // 2. extract the l3 chain details - destination address will be the `delayed inbox` of the l3 chain
+      transactions.map(tx => {
         return {
           type: 'deposit-l1',
           status: 'pending',
           direction: 'deposit',
           source: 'subgraph',
-          value: utils.formatUnits(
-            transactionDetails.value || 0,
-            nativeCurrency.decimals
-          ),
+          value: utils.formatUnits(tx.value || 0, nativeCurrency.decimals),
           txID: tx.transactionHash,
           tokenAddress: '',
           sender: tx.sender,
@@ -993,7 +992,7 @@ export function TransferPanel() {
           l1NetworkID: String(parentChain.id),
           l2NetworkID: String(tx.l3ChainId),
           blockNumber: Number(tx.blockCreatedAt),
-          timestampCreated: transactionDetails.timestamp,
+          timestampCreated: tx.timestamp,
           isClassic: false,
 
           childChainId: tx.l3ChainId,
@@ -1065,6 +1064,32 @@ export function TransferPanel() {
     console.log('xxxxxxxx', detailedTransactions)
   }
 
+  const fetchAllTeleports = async () => {
+    const fetchList = (await getMultiChainFetchList()).filter(item =>
+      isTeleport({
+        sourceChainId: item.parentChainId,
+        destinationChainId: item.childChainId
+      })
+    )
+
+    console.log('FETCH LIST', fetchList)
+
+    const txns = await Promise.all(
+      fetchList.map(item =>
+        fetchTeleports({
+          sender: '0x2cd28Cda6825C4967372478E87D004637B73F996',
+          l1Provider: getProviderForChainId(item.parentChainId),
+          l3Provider: getProviderForChainId(item.childChainId)
+        })
+      )
+    )
+
+    console.log(
+      'yyyyy',
+      txns.flat().sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1))
+    )
+  }
+
   return (
     <>
       <TokenApprovalDialog
@@ -1101,6 +1126,10 @@ export function TransferPanel() {
       <hr />
       <button className="text-white" onClick={fetchErc20Teleports}>
         FETCH ERC20
+      </button>
+      <hr />
+      <button className="text-white" onClick={fetchAllTeleports}>
+        FETCH ALL
       </button>
       <div
         className={twMerge(

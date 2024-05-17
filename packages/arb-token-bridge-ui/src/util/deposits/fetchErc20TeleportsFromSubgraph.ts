@@ -10,6 +10,8 @@ export type FetchErc20TeleportsFromSubgraphResult = {
   l2l3RouterOrInbox: string
   to: string
   amount: string
+  transactionHash: string
+  timestamp: string
 }
 
 /**

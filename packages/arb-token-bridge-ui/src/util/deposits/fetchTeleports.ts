@@ -1,38 +1,50 @@
 import { Provider } from '@ethersproject/providers'
-import { utils } from 'ethers'
-
 import {
   fetchEthTeleportsFromSubgraph,
   FetchEthTeleportsFromSubgraphResult
 } from './fetchEthTeleportsFromSubgraph'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
-import { Transaction } from '../../hooks/useTransactions'
-import { defaultErc20Decimals } from '../../defaults'
-import { fetchNativeCurrency } from '../../hooks/useNativeCurrency'
-import { FetchDepositParams } from './fetchDeposits'
 
-/* Fetch complete deposits - both ETH and Token deposits from subgraph into one list */
-/* Also fills in any additional data required per transaction for our UI logic to work well */
-/* TODO : Add event logs as well */
+import {
+  fetchErc20TeleportsFromSubgraph,
+  FetchErc20TeleportsFromSubgraphResult
+} from './fetchErc20TeleportsFromSubgraph'
+import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
+
+export type FetchTeleportsParams = {
+  sender?: string
+  receiver?: string
+  fromBlock?: number
+  toBlock?: number
+  l1Provider: Provider
+  l3Provider: Provider
+  pageSize?: number
+  pageNumber?: number
+  searchString?: string
+}
+
+export type TeleportFromSubgraph =
+  | FetchEthTeleportsFromSubgraphResult
+  | FetchErc20TeleportsFromSubgraphResult
+
 export const fetchTeleports = async ({
   sender,
   receiver,
   fromBlock,
   toBlock,
   l1Provider,
-  l2Provider,
+  l3Provider,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
-}: FetchDepositParams): Promise<FetchEthTeleportsFromSubgraphResult[]> => {
+}: FetchTeleportsParams): Promise<TeleportFromSubgraph[]> => {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined')
     return []
-  if (!l1Provider || !l2Provider) return []
+  if (!l1Provider || !l3Provider) return []
 
   const l1ChainId = (await l1Provider.getNetwork()).chainId
-  const l2ChainId = (await l2Provider.getNetwork()).chainId
-
-  const nativeCurrency = await fetchNativeCurrency({ provider: l2Provider })
+  const { l2ChainId } = await getL2ConfigForTeleport({
+    destinationChainProvider: l3Provider
+  })
 
   if (!fromBlock) {
     fromBlock = 0
@@ -51,68 +63,31 @@ export const fetchTeleports = async ({
       searchString
     })
   } catch (error: any) {
-    console.log('Error fetching deposits from subgraph', error)
+    console.log('Error fetching eth teleports from subgraph', error)
   }
 
-  //   const mappedDepositsFromSubgraph: Transaction[] =
-  //     ethTeleportsFromSubgraph.map((tx: FetchEthTeleportsFromSubgraphResult) => {
-  //       const isEthDeposit = tx.type === 'EthDeposit'
+  let erc20TeleportsFromSubgraph: FetchErc20TeleportsFromSubgraphResult[] = []
+  try {
+    erc20TeleportsFromSubgraph = await fetchErc20TeleportsFromSubgraph({
+      sender,
+      receiver,
+      fromBlock,
+      toBlock,
+      l1ChainId,
+      pageSize,
+      pageNumber,
+      searchString
+    })
+  } catch (error: any) {
+    console.log('Error fetching erc20 teleports from subgraph', error)
+  }
 
-  //       const assetDetails = {
-  //         assetName: nativeCurrency.symbol,
-  //         assetType: AssetType.ETH,
-  //         tokenAddress: ''
-  //       }
+  const combinedTransfers = [
+    ...ethTeleportsFromSubgraph,
+    ...erc20TeleportsFromSubgraph
+  ].sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1))
 
-  //       const amount = isEthDeposit ? tx.ethValue : tx.tokenAmount
+  console.log('XXXX COMBINED', combinedTransfers)
 
-  //       const tokenDecimals = tx?.l1Token?.decimals ?? defaultErc20Decimals
-  //       const decimals = isEthDeposit ? nativeCurrency.decimals : tokenDecimals
-
-  //       return {
-  //         type: 'deposit-l1',
-  //         status: 'pending',
-  //         direction: 'deposit',
-  //         source: 'subgraph',
-  //         value: utils.formatUnits(amount || 0, decimals),
-  //         txID: tx.transactionHash,
-  //         tokenAddress: assetDetails.tokenAddress,
-  //         sender: tx.sender,
-  //         destination: tx.receiver,
-
-  //         assetName: assetDetails.assetName,
-  //         assetType: assetDetails.assetType,
-
-  //         l1NetworkID: String(l1ChainId),
-  //         l2NetworkID: String(l2ChainId),
-  //         blockNumber: Number(tx.blockCreatedAt),
-  //         timestampCreated: tx.timestamp,
-  //         isClassic: tx.isClassic,
-
-  //         childChainId: l2ChainId,
-  //         parentChainId: l1ChainId
-  //       }
-  //     })
-
-  //   return mappedDepositsFromSubgraph
-
-  console.log('yyyy', ethTeleportsFromSubgraph)
-  Promise.all(
-    ethTeleportsFromSubgraph.map(
-      async tx =>
-        await fetchEthTeleportDataFromTxId(tx.transactionHash, l1Provider)
-    )
-  )
-
-  return ethTeleportsFromSubgraph
-}
-
-const fetchEthTeleportDataFromTxId = async (
-  txId: string,
-  l1Provider: Provider
-) => {
-  const txData = await l1Provider.getTransaction(txId)
-  const txReceipt = await l1Provider.getTransactionReceipt(txId)
-
-  console.log('xxxx', txData, txReceipt)
+  return combinedTransfers
 }

@@ -79,6 +79,8 @@ export default async function handler(
           }
           first: ${Number(pageSize)}
           skip: ${Number(page) * Number(pageSize)}
+          orderBy: timestamp
+          orderDirection: desc
         ) {
           id
           sender
@@ -88,6 +90,8 @@ export default async function handler(
           l2l3RouterOrInbox
           to
           amount
+          transactionHash
+          timestamp
         }
       }`)
     })
