@@ -629,20 +629,12 @@ export function TransferPanelMain({
             return
           }
 
-          // if a valid destination chain for the newly selected source is already selected, then select source + (existing)destination chain pair
-          // else (if currently selected destination chain is not valid for source chain) remove the destination chain selection and let it be auto-filled
-          if (
-            getDestinationChainIds(network.id).includes(
-              networks.destinationChain.id
-            )
-          ) {
-            setNetworks({
-              sourceChainId: network.id,
-              destinationChainId: networks.destinationChain.id
-            })
-          } else {
-            setNetworks({ sourceChainId: network.id })
-          }
+          // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+          // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
+          setNetworks({
+            sourceChainId: network.id,
+            destinationChainId: networks.destinationChain.id
+          })
 
           actions.app.setSelectedToken(null)
         }

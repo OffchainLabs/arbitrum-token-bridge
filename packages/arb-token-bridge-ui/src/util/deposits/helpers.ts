@@ -382,6 +382,7 @@ export async function fetchTeleporterDepositStatusData({
     // in case the forwarder retryable has failed, add it to the `l2ToL3MsgData`, else leave it undefined
     // note: having `l2ForwarderRetryableTxID` in the `l2ToL3MsgData` will mean that it needs redemption
     if (
+      !depositStatus.completed &&
       l2ForwarderFactoryRetryable &&
       (await l2ForwarderFactoryRetryable.status()) ===
         L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2

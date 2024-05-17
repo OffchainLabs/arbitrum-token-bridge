@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useEffect, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
@@ -6,7 +7,6 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
-import { useEffect, useState } from 'react'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -90,7 +90,7 @@ export function TransferDisabledDialog() {
               </p>
             )}
             <p>
-              For more information please contact{' '}
+              For more information please contact us on{' '}
               <ExternalLink
                 href="https://discord.com/invite/ZpZuw7p"
                 className="underline"

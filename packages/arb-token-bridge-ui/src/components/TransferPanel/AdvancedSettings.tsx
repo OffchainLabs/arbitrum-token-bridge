@@ -24,7 +24,7 @@ export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.',
   DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.',
-  TELEPORT_DISABLED = 'LayerLeap transfers to custom destination addresses is not supported yet.'
+  TELEPORT_DISABLED = 'LayerLeap transfers to custom destination addresses are not supported yet.'
 }
 
 enum DestinationAddressWarnings {

@@ -439,7 +439,7 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainID] = chain.explorerUrl
 }
 
-export function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
+function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
   return !chain.isArbitrum
 }
 
@@ -452,17 +452,12 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
 }
 
-export function addTeleportDestinationChainToList(
-  chainId: ChainId,
-  chainList: ChainId[]
-) {
-  const teleportAllowList = TELEPORT_ALLOWLIST[chainId] || []
-  teleportAllowList.forEach(chainId => {
-    if (!chainList.includes(chainId)) {
-      chainList.push(chainId)
-    }
-  })
-  return chainList
+export function getChildChainIds(chain: L2Network | L1Network) {
+  const childChainIds = [
+    ...(chain.partnerChainIDs ?? []),
+    ...(TELEPORT_ALLOWLIST[chain.chainID] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+  ]
+  return Array.from(new Set(childChainIds))
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {
@@ -477,14 +472,7 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  let validDestinationChainIds =
-    chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
-
-  // add orbit-chains are also a part of the valid destination id's
-  validDestinationChainIds = addTeleportDestinationChainToList(
-    chainId,
-    validDestinationChainIds
-  )
+  const validDestinationChainIds = getChildChainIds(arbitrumSdkChain)
 
   if (parentChainId) {
     // always make parent chain the first element

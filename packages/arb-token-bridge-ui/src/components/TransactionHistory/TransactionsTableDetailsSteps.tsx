@@ -200,12 +200,13 @@ export const TransactionsTableDetailsSteps = ({
 
   const destinationChainTxText = useMemo(() => {
     const networkName = getNetworkName(tx.destinationChainId)
+    const fundsArrivedText = `Funds arrived on ${networkName}`
 
     if (isTxExpired(tx)) {
       return `Transaction expired on ${networkName}`
     }
     if (isTeleportTx && firstRetryableLegRequiresRedeem(tx)) {
-      return `Funds arrived on ${networkName}`
+      return fundsArrivedText
     }
 
     if (isDepositReadyToRedeem(tx)) {
@@ -220,7 +221,7 @@ export const TransactionsTableDetailsSteps = ({
     if (isDestinationChainFailure) {
       return `Transaction failed on ${networkName}.`
     }
-    return `Funds arrived on ${networkName}`
+    return fundsArrivedText
   }, [tx, isDestinationChainFailure, isTeleportTx])
 
   return (
