@@ -990,8 +990,7 @@ export function TransferPanel() {
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
                     isTokenSepoliaUSDC(selectedToken.address)) &&
-                  isArbitrumOne &&
-                  isArbitrumSepolia
+                  (isArbitrumOne || isArbitrumSepolia)
                 ) {
                   transferCctp()
                 } else if (selectedToken) {
@@ -1026,8 +1025,7 @@ export function TransferPanel() {
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
                     isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)) &&
-                  isArbitrumOne &&
-                  isArbitrumSepolia
+                  (isArbitrumOne || isArbitrumSepolia)
                 ) {
                   transferCctp()
                 } else {
