@@ -108,6 +108,8 @@ function getDepositStatusFromL1ToL2MessageStatus(
   status: L1ToL2MessageStatus
 ): DepositStatus | undefined {
   switch (status) {
+    case L1ToL2MessageStatus.NOT_YET_CREATED:
+      return DepositStatus.L2_PENDING
     case L1ToL2MessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case L1ToL2MessageStatus.EXPIRED:
