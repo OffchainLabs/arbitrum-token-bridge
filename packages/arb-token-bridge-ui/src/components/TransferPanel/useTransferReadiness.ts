@@ -24,6 +24,7 @@ import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isNetwork } from '../../util/networks'
 
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
@@ -161,13 +162,16 @@ export function useTransferReadiness({
       return null
     }
 
+    const { isOrbitChain } = isNetwork(childChain.id)
+
     const isL2NativeUSDC =
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
 
-    const selectedTokenL2Address = isL2NativeUSDC
-      ? selectedToken.address.toLowerCase()
-      : (selectedToken.l2Address || '').toLowerCase()
+    const selectedTokenL2Address =
+      isL2NativeUSDC && !isOrbitChain
+        ? selectedToken.address.toLowerCase()
+        : (selectedToken.l2Address || '').toLowerCase()
 
     const balance = erc20L2Balances?.[selectedTokenL2Address]
 
@@ -176,7 +180,7 @@ export function useTransferReadiness({
     }
 
     return parseFloat(utils.formatUnits(balance, selectedToken.decimals))
-  }, [selectedToken, erc20L2Balances])
+  }, [selectedToken, childChain.id, erc20L2Balances])
 
   const customFeeTokenL1BalanceFloat = useMemo(() => {
     if (!nativeCurrency.isCustom) {

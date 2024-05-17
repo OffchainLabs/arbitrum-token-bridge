@@ -139,7 +139,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumNova } = isNetwork(childChain.id)
+  const { isArbitrumOne } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)
 
@@ -990,7 +990,7 @@ export function TransferPanel() {
                   selectedToken &&
                   (isTokenMainnetUSDC(selectedToken.address) ||
                     isTokenSepoliaUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
+                  isArbitrumOne
                 ) {
                   transferCctp()
                 } else if (selectedToken) {
@@ -1024,7 +1024,8 @@ export function TransferPanel() {
                 if (
                   selectedToken &&
                   (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
+                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)) &&
+                  isArbitrumOne
                 ) {
                   transferCctp()
                 } else {
