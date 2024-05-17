@@ -1,5 +1,5 @@
 import { hasTeleporterSubgraph } from '../SubgraphUtils'
-import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
+import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
 
 export type FetchErc20TeleportsFromSubgraphResult = {
   id: string
@@ -12,6 +12,8 @@ export type FetchErc20TeleportsFromSubgraphResult = {
   amount: string
   transactionHash: string
   timestamp: string
+  teleport_type: 'erc20'
+  l1ChainId: string
 }
 
 /**
@@ -79,5 +81,9 @@ export const fetchErc20TeleportsFromSubgraph = async ({
     await response.json()
   ).data
 
-  return transactions
+  return transactions.map(tx => ({
+    ...tx,
+    l1ChainId: String(l1ChainId),
+    teleport_type: 'erc20'
+  }))
 }

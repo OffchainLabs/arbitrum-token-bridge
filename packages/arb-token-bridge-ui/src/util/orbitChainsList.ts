@@ -1,6 +1,6 @@
 import { constants } from '@arbitrum/sdk'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
-import { ChainWithRpcUrl } from './networks'
+import { ChainId, ChainWithRpcUrl } from './networks'
 
 export type NetworkType =
   | 'Ethereum'
@@ -512,8 +512,12 @@ export function getOrbitChains(
   return [...mainnetChains, ...testnetChains]
 }
 
-export function getOrbitChainsInboxAddresses() {
-  return getOrbitChains().map(chain => chain.ethBridge.inbox)
+export function getInboxAddressFromOrbitChainId(chainId: number) {
+  if (chainId === ChainId.StylusTestnetV2)
+    return '0xcdcf1f59f5d4a65a3c67e1341f8b85cba50e0a7c'
+
+  return getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge
+    .inbox
 }
 
 export function getChainIdFromInboxAddress(inboxAddress: string) {

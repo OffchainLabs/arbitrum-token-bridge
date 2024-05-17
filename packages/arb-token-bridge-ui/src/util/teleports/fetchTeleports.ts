@@ -8,15 +8,19 @@ import {
   fetchErc20TeleportsFromSubgraph,
   FetchErc20TeleportsFromSubgraphResult
 } from './fetchErc20TeleportsFromSubgraph'
-import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  getL2ConfigForTeleport,
+  isTeleport
+} from '../../token-bridge-sdk/teleport'
+import { getChainIdFromProvider } from '../../token-bridge-sdk/utils'
 
 export type FetchTeleportsParams = {
   sender?: string
   receiver?: string
   fromBlock?: number
   toBlock?: number
-  l1Provider: Provider
-  l3Provider: Provider
+  parentChainProvider: Provider
+  childChainProvider: Provider
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -31,19 +35,35 @@ export const fetchTeleports = async ({
   receiver,
   fromBlock,
   toBlock,
-  l1Provider,
-  l3Provider,
+  parentChainProvider, // l1 provider
+  childChainProvider, // l3 provider
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
 }: FetchTeleportsParams): Promise<TeleportFromSubgraph[]> => {
   if (typeof sender === 'undefined' && typeof receiver === 'undefined')
     return []
-  if (!l1Provider || !l3Provider) return []
 
-  const l1ChainId = (await l1Provider.getNetwork()).chainId
+  if (!parentChainProvider || !childChainProvider) return []
+
+  const l1ChainId = await getChainIdFromProvider(parentChainProvider)
+  const l3ChainId = await getChainIdFromProvider(childChainProvider)
+
+  // don't query if not a valid teleport configuration
+  if (
+    !isTeleport({
+      sourceChainId: l1ChainId,
+      destinationChainId: l3ChainId
+    })
+  ) {
+    console.error(
+      `Error fetching teleports from subgraph: invalid source and destination chain ids: ${l1ChainId} -> ${l3ChainId}`
+    )
+    return []
+  }
+
   const { l2ChainId } = await getL2ConfigForTeleport({
-    destinationChainProvider: l3Provider
+    destinationChainProvider: childChainProvider
   })
 
   if (!fromBlock) {
@@ -57,7 +77,9 @@ export const fetchTeleports = async ({
       receiver,
       fromBlock,
       toBlock,
+      l1ChainId,
       l2ChainId,
+      l3ChainId,
       pageSize,
       pageNumber,
       searchString
@@ -82,12 +104,10 @@ export const fetchTeleports = async ({
     console.log('Error fetching erc20 teleports from subgraph', error)
   }
 
-  const combinedTransfers = [
+  const combinedTeleports: TeleportFromSubgraph[] = [
     ...ethTeleportsFromSubgraph,
     ...erc20TeleportsFromSubgraph
-  ].sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1))
+  ]
 
-  console.log('XXXX COMBINED', combinedTransfers)
-
-  return combinedTransfers
+  return combinedTeleports
 }

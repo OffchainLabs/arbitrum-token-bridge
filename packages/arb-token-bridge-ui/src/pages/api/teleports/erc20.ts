@@ -5,7 +5,7 @@ import {
   getSourceFromSubgraphClient,
   getTeleporterSubgraphClient
 } from '../../../api-utils/ServerSubgraphUtils'
-import { FetchErc20TeleportsFromSubgraphResult } from '../../../util/deposits/fetchErc20TeleportsFromSubgraph'
+import { FetchErc20TeleportsFromSubgraphResult } from '../../../util/teleports/fetchErc20TeleportsFromSubgraph'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithErc20TeleportParams = NextApiRequest & {

@@ -4,11 +4,8 @@ import {
   getL1SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../../api-utils/ServerSubgraphUtils'
-import {
-  getChainIdFromInboxAddress,
-  getOrbitChainsInboxAddresses
-} from '../../../util/orbitChainsList'
-import { FetchEthTeleportsFromSubgraphResult } from '../../../util/deposits/fetchEthTeleportsFromSubgraph'
+import { getInboxAddressFromOrbitChainId } from '../../../util/orbitChainsList'
+import { FetchEthTeleportsFromSubgraphResult } from '../../../util/teleports/fetchEthTeleportsFromSubgraph'
 import { ChainId } from '../../../util/networks'
 
 // Extending the standard NextJs request with Deposit-params
@@ -16,7 +13,9 @@ type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
     sender?: string
     receiver?: string
+    l1ChainId: string
     l2ChainId: string
+    l3ChainId: string
     search?: string
     page?: string
     pageSize?: string
@@ -40,7 +39,9 @@ export default async function handler(
       sender,
       receiver,
       search = '',
+      l1ChainId,
       l2ChainId,
+      l3ChainId,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -57,7 +58,13 @@ export default async function handler(
 
     // validate the request parameters
     const errorMessage = []
+
+    if (!l1ChainId) errorMessage.push('<l1ChainId> is required')
+
     if (!l2ChainId) errorMessage.push('<l2ChainId> is required')
+
+    if (!l3ChainId) errorMessage.push('<l3ChainId> is required')
+
     if (!sender && !receiver)
       errorMessage.push('<sender> or <receiver> is required')
 
@@ -89,10 +96,15 @@ export default async function handler(
       return
     }
 
-    const allowListedDelayedInboxes: { [delayedInboxAddress: string]: number } =
-      {
-        '0xcdcf1f59f5d4a65a3c67e1341f8b85cba50e0a7c': ChainId.StylusTestnetV2 // Stylus testnet v2
-      }
+    const l3InboxAddress = getInboxAddressFromOrbitChainId(Number(l3ChainId))
+
+    if (typeof l3InboxAddress === 'undefined') {
+      res.status(400).json({
+        message: `inbox address not found for chain-id: ${l1ChainId} -> ${l2ChainId} -> ${l3ChainId}`,
+        data: []
+      })
+      return
+    }
 
     const createRetryableFunctionSelector = '0x679b6ded'
 
@@ -101,10 +113,7 @@ export default async function handler(
         where: {
           sender: "${sender}",
           l2Calldata_contains: "${createRetryableFunctionSelector}",
-          destAddr_in: ${JSON.stringify([
-            ...Object.keys(allowListedDelayedInboxes),
-            ...getOrbitChainsInboxAddresses() // for rari and pop
-          ])}
+          destAddr: "${l3InboxAddress}",
         }
         first: ${Number(pageSize)}
         skip: ${Number(page) * Number(pageSize)}
@@ -131,9 +140,7 @@ export default async function handler(
       subgraphResult.data.retryables.map(
         (retryable: FetchEthTeleportsFromSubgraphResult) => ({
           ...retryable,
-          l3ChainId:
-            allowListedDelayedInboxes[retryable.destAddr] ??
-            getChainIdFromInboxAddress(retryable.destAddr)
+          l3ChainId
         })
       )
 

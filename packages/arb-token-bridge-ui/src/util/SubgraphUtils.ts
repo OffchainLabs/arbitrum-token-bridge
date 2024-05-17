@@ -54,7 +54,7 @@ export const shouldIncludeSentTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposits' | 'withdrawals'
+  type: 'deposits' | 'withdrawals' | 'teleports'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {
@@ -75,7 +75,7 @@ export const shouldIncludeReceivedTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposits' | 'withdrawals'
+  type: 'deposits' | 'withdrawals' | 'teleports'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {

@@ -121,9 +121,11 @@ export const getL3ChainIdFromTeleportEvents = async (
     l1l2Router: string
   },
   l1Provider: Provider
-) => {
-  if (typeof cache[`${l2l3RouterOrInbox}-${l1l2Router}`] !== 'undefined') {
-    return cache[`${l2l3RouterOrInbox}-${l1l2Router}`]
+): Promise<number> => {
+  const cacheKey = `${l2l3RouterOrInbox}-${l1l2Router}`
+  const cachedValue = cache[cacheKey]
+  if (typeof cachedValue !== 'undefined') {
+    return cachedValue
   }
 
   // get the chain id for the l2 network

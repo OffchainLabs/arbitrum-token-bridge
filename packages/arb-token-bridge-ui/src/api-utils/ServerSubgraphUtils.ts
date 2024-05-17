@@ -163,9 +163,7 @@ export function getTeleporterSubgraphClient(chainId: number) {
       return createSubgraphClient('teleporter-ethereum')
 
     case ChainId.Sepolia:
-      return createApolloClient(
-        `https://api.studio.thegraph.com/proxy/75074/teleporter-sepolia/version/latest` // we aren't able to index the latest v0.0.3 sepolia subgraph, hence, using the dev link
-      )
+      return createSubgraphClient('teleporter-sepolia')
 
     default:
       throw new Error(

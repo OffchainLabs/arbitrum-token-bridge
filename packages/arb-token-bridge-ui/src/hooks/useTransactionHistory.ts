@@ -52,8 +52,19 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
+import {
+  getL3ChainIdFromTeleportEvents,
+  isTeleport
+} from '@/token-bridge-sdk/teleport'
 import { Address } from '../util/AddressUtils'
+import {
+  TeleportFromSubgraph,
+  fetchTeleports
+} from '../util/teleports/fetchTeleports'
+import { FetchEthTeleportsFromSubgraphResult } from '../util/teleports/fetchEthTeleportsFromSubgraph'
+import { utils } from 'ethers'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { fetchErc20Data } from '../util/TokenUtils'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -77,11 +88,18 @@ export type Withdrawal =
   | EthWithdrawal
 
 type DepositOrWithdrawal = Deposit | Withdrawal
-export type Transfer = DepositOrWithdrawal | MergedTransaction
+export type Transfer =
+  | DepositOrWithdrawal
+  | MergedTransaction
+  | TeleportFromSubgraph
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
     return (tx.createdAt ?? 0) / 1_000
+  }
+
+  if (isTeleportTransfer(tx)) {
+    return tx.timestamp
   }
 
   if (isDeposit(tx)) {
@@ -133,6 +151,10 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+  if (isTeleportTransfer(tx)) {
+    return await transformTeleportTransaction(tx)
+  }
+
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
@@ -184,7 +206,104 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
+function isTeleportTransfer(tx: Transfer): tx is TeleportFromSubgraph {
+  // @ts-ignore : for now just ignore this xxxx
+  return typeof tx.teleport_type !== 'undefined'
+}
+
+async function transformTeleportTransaction(
+  tx: TeleportFromSubgraph
+): Promise<MergedTransaction> {
+  const parentChainProvider = getProviderForChainId(Number(tx.l1ChainId))
+  const transactionDetails = await parentChainProvider.getTransaction(
+    tx.transactionHash
+  )
+
+  // Eth transfers
+  if (isTransactionEthTeleportFromSubgraph(tx)) {
+    const depositTx = {
+      type: 'deposit-l1',
+      status: 'pending',
+      direction: 'deposit',
+      source: 'subgraph',
+      value: utils.formatUnits(transactionDetails.value || 0, 18),
+      txID: tx.transactionHash,
+      tokenAddress: '',
+      sender: tx.sender,
+      destination: tx.sender,
+      assetName: 'ETH',
+      assetType: AssetType.ETH,
+      l1NetworkID: tx.l1ChainId,
+      l2NetworkID: tx.l3ChainId,
+      blockNumber: Number(tx.blockCreatedAt),
+      timestampCreated: tx.timestamp,
+      isClassic: false,
+      parentChainId: Number(tx.l1ChainId),
+      childChainId: Number(tx.l3ChainId)
+    } as Transaction
+
+    const childChainProvider = getProviderForChainId(Number(tx.l3ChainId))
+    return transformDeposit(
+      await updateAdditionalDepositData({
+        depositTx,
+        l1Provider: parentChainProvider,
+        l2Provider: childChainProvider
+      })
+    )
+  }
+
+  // Erc20 transfers
+  const l1TokenAddress = tx.l1Token
+  const { symbol, decimals } = await fetchErc20Data({
+    address: l1TokenAddress,
+    provider: parentChainProvider
+  })
+  const l3ChainId = await getL3ChainIdFromTeleportEvents(
+    tx,
+    parentChainProvider
+  )
+  const depositTx = {
+    type: 'deposit-l1',
+    status: 'pending',
+    direction: 'deposit',
+    source: 'subgraph',
+    value: utils.formatUnits(tx.amount || 0, decimals),
+    txID: tx.transactionHash,
+    tokenAddress: l1TokenAddress,
+    sender: tx.sender,
+    destination: tx.sender,
+    assetName: symbol,
+    assetType: AssetType.ERC20,
+    l1NetworkID: tx.l1ChainId,
+    l2NetworkID: String(l3ChainId),
+    blockNumber: Number(transactionDetails.blockNumber),
+    timestampCreated: tx.timestamp,
+    isClassic: false,
+    parentChainId: Number(tx.l1ChainId),
+    childChainId: l3ChainId
+  } as Transaction
+
+  const childChainProvider = getProviderForChainId(l3ChainId)
+  return transformDeposit(
+    await updateAdditionalDepositData({
+      depositTx,
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider
+    })
+  )
+}
+
+function isTransactionEthTeleportFromSubgraph(
+  tx: TeleportFromSubgraph
+): tx is FetchEthTeleportsFromSubgraphResult {
+  return tx.teleport_type === 'eth'
+}
+
 function getTxIdFromTransaction(tx: Transfer) {
+  if (isTeleportTransfer(tx)) {
+    return tx.transactionHash
+  }
+
   if (isCctpTransfer(tx)) {
     return tx.txId
   }
@@ -198,6 +317,18 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.txHash
   }
   return tx.l2TxHash ?? tx.transactionHash
+}
+
+function getCacheKeyFromTransaction(
+  tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
+) {
+  if (isTeleportTransfer(tx)) {
+    return `${tx.l1ChainId}-${tx.transactionHash}`
+  }
+
+  return `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
+    tx
+  )?.toLowerCase()}}`
 }
 
 /**
@@ -294,7 +425,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     )
 
   const fetcher = useCallback(
-    (type: 'deposits' | 'withdrawals') => {
+    (type: 'deposits' | 'withdrawals' | 'teleports') => {
       if (!chain) {
         return []
       }
@@ -323,17 +454,35 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               chainPair.parentChainId === chain.id
 
             const includeSentTxs = shouldIncludeSentTxs({
-              type,
+              type, // xxx what if it's a teleport type?
               isSmartContractWallet,
               isConnectedToParentChain
             })
-
             const includeReceivedTxs = shouldIncludeReceivedTxs({
               type,
               isSmartContractWallet,
               isConnectedToParentChain
             })
             try {
+              // early check for fetching teleport
+              if (
+                type === 'teleports' &&
+                isTeleport({
+                  sourceChainId: chainPair.parentChainId,
+                  destinationChainId: chainPair.childChainId
+                })
+              ) {
+                return await fetchTeleports({
+                  sender: includeSentTxs ? address : undefined,
+                  receiver: includeReceivedTxs ? address : undefined,
+                  parentChainProvider: getProvider(chainPair.parentChainId),
+                  childChainProvider: getProvider(chainPair.childChainId),
+                  pageNumber: 0,
+                  pageSize: 1000
+                })
+              }
+
+              // else, fetch deposits or withdrawals
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
@@ -389,21 +538,34 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     () => fetcher('withdrawals')
   )
 
+  const {
+    data: teleportsData,
+    error: teleportsError,
+    isLoading: teleportsLoading
+  } = useSWRImmutable(
+    shouldFetch ? ['tx_list', 'teleports', address, isTestnetMode] : null,
+    () => fetcher('teleports')
+  )
+
   const deposits = (depositsData || []).flat()
 
   const withdrawals = (withdrawalsData || []).flat()
+
+  const teleports = (teleportsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [
     ...deposits,
     ...withdrawals,
+    ...teleports,
     ...combinedCctpTransfers
   ].flat()
 
   return {
     data: transactions,
-    loading: depositsLoading || withdrawalsLoading || cctpLoading,
-    error: depositsError ?? withdrawalsError,
+    loading:
+      depositsLoading || withdrawalsLoading || cctpLoading || teleportsLoading,
+    error: depositsError ?? withdrawalsError ?? teleportsError,
     failedChainPairs: failedChainPairs || []
   }
 }
@@ -507,12 +669,7 @@ export const useTransactionHistory = (
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
       const dedupedTransactions = Array.from(
         new Map(
-          dataWithCache.map(tx => [
-            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
-              tx
-            )?.toLowerCase()}}`,
-            tx
-          ])
+          dataWithCache.map(tx => [getCacheKeyFromTransaction(tx), tx])
         ).values()
       ).sort(sortByTimestampDescending)
 

@@ -1,5 +1,6 @@
+import { isTeleport } from '../../token-bridge-sdk/teleport'
 import { hasL1Subgraph } from '../SubgraphUtils'
-import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
+import { getAPIBaseUrl, sanitizeQueryParams } from '../index'
 
 export type FetchEthTeleportsFromSubgraphResult = {
   transactionHash: string
@@ -10,7 +11,9 @@ export type FetchEthTeleportsFromSubgraphResult = {
   sender: string
   retryableTicketID: string
   destAddr: string
-  l3ChainId: number
+  l1ChainId: string
+  l3ChainId: string
+  teleport_type: 'eth'
 }
 
 /**
@@ -32,7 +35,9 @@ export const fetchEthTeleportsFromSubgraph = async ({
   receiver,
   fromBlock,
   toBlock,
+  l1ChainId,
   l2ChainId,
+  l3ChainId,
   pageSize = 10,
   pageNumber = 0,
   searchString = ''
@@ -41,7 +46,9 @@ export const fetchEthTeleportsFromSubgraph = async ({
   receiver?: string
   fromBlock: number
   toBlock?: number
+  l1ChainId: number
   l2ChainId: number
+  l3ChainId: number
   pageSize?: number
   pageNumber?: number
   searchString?: string
@@ -57,7 +64,9 @@ export const fetchEthTeleportsFromSubgraph = async ({
       receiver,
       fromBlock,
       toBlock,
+      l1ChainId,
       l2ChainId,
+      l3ChainId,
       pageSize,
       page: pageNumber,
       search: searchString
@@ -69,6 +78,18 @@ export const fetchEthTeleportsFromSubgraph = async ({
   }
 
   if (pageSize === 0) return [] // don't query subgraph if nothing requested
+
+  // don't query if not a valid teleport configuration
+  if (
+    !isTeleport({
+      sourceChainId: Number(l1ChainId),
+      destinationChainId: Number(l3ChainId)
+    })
+  ) {
+    throw new Error(
+      `Invalid teleport source and destination chain id: ${l1ChainId} -> ${l3ChainId}`
+    )
+  }
 
   const response = await fetch(
     `${getAPIBaseUrl()}/api/teleports/eth?${urlParams}`,
@@ -82,5 +103,9 @@ export const fetchEthTeleportsFromSubgraph = async ({
     await response.json()
   ).data
 
-  return transactions
+  return transactions.map(tx => ({
+    ...tx,
+    l1ChainId: String(l1ChainId),
+    teleport_type: 'eth'
+  }))
 }
