@@ -139,7 +139,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumNova } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)
 
@@ -937,6 +937,38 @@ export function TransferPanel() {
     }
   }
 
+  const isCctpTransfer = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+
+    if (isDepositMode) {
+      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
+        return true
+      }
+
+      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
+        return true
+      }
+    } else {
+      if (
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+        isArbitrumOne
+      ) {
+        return true
+      }
+
+      if (
+        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+        isArbitrumSepolia
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
+
   return (
     <>
       <TokenApprovalDialog
@@ -986,12 +1018,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.deposit}
               onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenSepoliaUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
-                ) {
+                if (isCctpTransfer) {
                   transferCctp()
                 } else if (selectedToken) {
                   depositToken()
@@ -1021,11 +1048,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.withdrawal}
               onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
-                ) {
+                if (isCctpTransfer) {
                   transferCctp()
                 } else {
                   transfer()
