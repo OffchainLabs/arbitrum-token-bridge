@@ -6,9 +6,8 @@ import dayjs from 'dayjs'
 
 import {
   ChainId,
-  addTeleportDestinationChainToList,
   getChains,
-  isL1Chain,
+  getChildChainIds,
   isNetwork
 } from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
@@ -65,7 +64,7 @@ export type UseTransactionHistoryResult = {
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
-  updatePendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
@@ -106,16 +105,9 @@ export function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    let childChainIds = chain.partnerChainIDs ?? []
-    const isParentChain = childChainIds.length > 0
+    const childChainIds = getChildChainIds(chain)
 
-    // for considering teleport (L1-L3 transfers) we will get the L3 children of the L1 chain
-    if (isL1Chain(chain)) {
-      childChainIds = addTeleportDestinationChainToList(
-        chain.chainID,
-        childChainIds
-      )
-    }
+    const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
       // Skip non-parent chains

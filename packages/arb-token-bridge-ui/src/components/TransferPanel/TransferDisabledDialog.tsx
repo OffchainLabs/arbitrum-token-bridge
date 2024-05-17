@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
@@ -6,7 +7,6 @@ import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
 import { getNetworkName } from '../../util/networks'
-import { useEffect, useState } from 'react'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 
@@ -61,6 +61,13 @@ export function TransferDisabledDialog() {
     closeTransferDisabledDialog()
   }
 
+  const sourceChainName = getNetworkName(networks.sourceChain.id)
+  const destinationChainName = getNetworkName(networks.destinationChain.id)
+  const l2ChainIdForTeleportName = useMemo(() => {
+    if (typeof l2ChainIdForTeleport == 'undefined') return null
+    return getNetworkName(l2ChainIdForTeleport)
+  }, [l2ChainIdForTeleport])
+
   return (
     <Dialog
       closeable
@@ -76,21 +83,26 @@ export function TransferDisabledDialog() {
           <>
             <p>
               Unfortunately,{' '}
-              <span className="font-medium">{unsupportedToken}</span> is not
-              supported for LayerLeap transfers to{' '}
-              {getNetworkName(networks.destinationChain.id)} yet.
+              <span className="font-medium">{unsupportedToken}</span> is not yet
+              supported for direct {sourceChainName} to {destinationChainName}{' '}
+              transfers.
             </p>
             {typeof l2ChainIdForTeleport !== 'undefined' && (
               <p>
-                If you would still like to bridge this token to{' '}
-                {getNetworkName(networks.destinationChain.id)}, you can do so by
-                first bridging it to {getNetworkName(l2ChainIdForTeleport)}, and
-                then bridging it from {getNetworkName(l2ChainIdForTeleport)} to{' '}
-                {getNetworkName(networks.destinationChain.id)}.
+                To bridge{' '}
+                <span className="font-medium">{unsupportedToken}</span>:
+                <li>
+                  First bridge from {sourceChainName} to{' '}
+                  {l2ChainIdForTeleportName}.
+                </li>
+                <li>
+                  Then bridge from {l2ChainIdForTeleportName} to{' '}
+                  {destinationChainName}.
+                </li>
               </p>
             )}
             <p>
-              For more information please contact{' '}
+              For more information please contact us on{' '}
               <ExternalLink
                 href="https://discord.com/invite/ZpZuw7p"
                 className="underline"
