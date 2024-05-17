@@ -26,6 +26,10 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
 
+// Add chains IDs that are currently down or disabled
+// It will block transfers and display an info box in the transfer panel
+export const DISABLED_CHAIN_IDS: number[] = []
+
 function sanitizeEstimatedGasFees(
   gasSummary: UseGasSummaryResult,
   options: { isSmartContractWallet: boolean; isDepositMode: boolean }
@@ -205,8 +209,7 @@ export function useTransferReadiness({
       return notReady()
     }
 
-    // PoP Apex
-    if (childChain.id === 70700) {
+    if (DISABLED_CHAIN_IDS.includes(childChain.id)) {
       return notReady()
     }
 
