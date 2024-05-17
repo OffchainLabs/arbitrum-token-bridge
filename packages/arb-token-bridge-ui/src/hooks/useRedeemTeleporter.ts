@@ -58,7 +58,7 @@ const redeemTeleporterFirstLeg = async ({
 }: {
   tx: MergedTransaction
   signer: Signer
-  txUpdateCallback?: (tx: MergedTransaction) => void
+  txUpdateCallback?: (tx: MergedTransaction) => Promise<void>
 }) => {
   let teleportTransfer = tx
 
@@ -110,7 +110,7 @@ const redeemTeleporterSecondLeg = async ({
 }: {
   tx: MergedTransaction
   signer: Signer
-  txUpdateCallback?: (tx: MergedTransaction) => void
+  txUpdateCallback?: (tx: MergedTransaction) => Promise<void>
 }) => {
   // check if we require a redemption for the l2l3 retryable
   if (

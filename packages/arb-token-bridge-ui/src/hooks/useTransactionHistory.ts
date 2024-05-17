@@ -64,7 +64,7 @@ export type UseTransactionHistoryResult = {
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
-  updatePendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
