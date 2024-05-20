@@ -260,10 +260,12 @@ function dedupeTransactions(txns: Transfer[]) {
       return
     }
 
-    // else, add the tx to the cache
+    // else, add the tx to the map
     const cacheKey = getCacheKeyFromTransaction(tx)
     txnCacheMap.set(cacheKey, tx)
   })
+
+  // finally return the de-duplicated transactions from the map to show in tx history
   return Array.from(new Map(txnCacheMap).values())
 }
 
