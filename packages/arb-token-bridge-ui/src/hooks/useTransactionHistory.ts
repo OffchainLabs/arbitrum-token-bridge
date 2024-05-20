@@ -227,7 +227,11 @@ function getTxIdFromTransaction(tx: Transfer) {
 function getCacheKeyFromTransaction(
   tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
 ) {
-  return `${tx.parentChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
+  const txId = getTxIdFromTransaction(tx)
+  if (!txId) {
+    return undefined
+  }
+  return `${tx.parentChainId}-${txId.toLowerCase()}`
 }
 
 // remove the duplicates from the transactions passed
