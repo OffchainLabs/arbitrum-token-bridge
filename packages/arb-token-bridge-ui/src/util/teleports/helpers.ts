@@ -24,7 +24,9 @@ export function isTransactionEthTeleportFromSubgraph(
   return tx.teleport_type === 'eth'
 }
 
-export async function transformTeleportTransaction(
+// converts the `teleport-from-subgraph` to our tx-history compatible `merged-transaction` type
+// detects the token and destination `l3ChainId` in case of ERC20 teleports
+export async function transformTeleportFromSubgraph(
   tx: TeleportFromSubgraph
 ): Promise<MergedTransaction> {
   const parentChainProvider = getProviderForChainId(Number(tx.l1ChainId))

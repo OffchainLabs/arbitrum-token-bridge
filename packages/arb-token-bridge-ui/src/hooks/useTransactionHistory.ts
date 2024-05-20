@@ -60,7 +60,7 @@ import {
 } from '../util/teleports/fetchTeleports'
 import {
   isTransferTeleportFromSubgraph,
-  transformTeleportTransaction
+  transformTeleportFromSubgraph
 } from '../util/teleports/helpers'
 
 export type UseTransactionHistoryResult = {
@@ -150,7 +150,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
   if (isTransferTeleportFromSubgraph(tx)) {
-    return await transformTeleportTransaction(tx)
+    return await transformTeleportFromSubgraph(tx)
   }
 
   const parentChainProvider = getProvider(tx.parentChainId)
