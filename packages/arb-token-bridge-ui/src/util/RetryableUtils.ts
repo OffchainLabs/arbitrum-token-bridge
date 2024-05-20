@@ -131,23 +131,17 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
 
 export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
   // which chain id needs to be connected to, to redeem the retryable ticket
+  if (isTeleport(tx) && firstRetryableLegRequiresRedeem(tx)) {
+    // in teleport, unless it's the final retryable being redeemed, we need to connect to the l2 chain
+    if (!tx.l2ToL3MsgData) {
+      throw Error(
+        `Could not find destination chain id for redeeming retryable for ${tx.txId}`
+      )
+    }
 
-  let chainIdForRedeemingRetryable
-
-  if (isTeleport(tx)) {
-    // unless it's the final retryable being redeemed, we need to connect to the l2 chain in teleport, else, destination chain
-    chainIdForRedeemingRetryable = firstRetryableLegRequiresRedeem(tx)
-      ? tx.l2ToL3MsgData?.l2ChainId
-      : tx.childChainId
-  } else {
-    chainIdForRedeemingRetryable = tx.childChainId
+    // else, return the destination chain
+    return tx.l2ToL3MsgData.l2ChainId
   }
 
-  if (!chainIdForRedeemingRetryable) {
-    throw Error(
-      `Could not find destination chain id for redeeming retryable for ${tx.txId}`
-    )
-  }
-
-  return chainIdForRedeemingRetryable
+  return tx.childChainId
 }
