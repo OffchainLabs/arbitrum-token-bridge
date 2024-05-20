@@ -125,7 +125,7 @@ export const getL3ChainIdFromTeleportEvents = async (
   // get the chain id for the l2 network
   const l2ChainId = await getChainIdFromInboxOrRouter(l1l2Router, l1Provider)
 
-  const l2Provider = getProviderForChainId(+l2ChainId.toString())
+  const l2Provider = getProviderForChainId(l2ChainId)
 
   // get the chain id for the l3 network
   const l3ChainId = await getChainIdFromInboxOrRouter(
