@@ -106,6 +106,7 @@ export const fetchEthTeleportsFromSubgraph = async ({
   return transactions.map(tx => ({
     ...tx,
     parentChainId: String(l1ChainId),
+    childChainId: String(l3ChainId),
     teleport_type: 'eth'
   }))
 }
