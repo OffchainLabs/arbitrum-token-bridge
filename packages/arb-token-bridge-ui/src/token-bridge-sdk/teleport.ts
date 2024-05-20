@@ -1,7 +1,6 @@
 // utils for teleport type transactions
 
 import { Provider } from '@ethersproject/providers'
-import { providers } from 'ethers'
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1GatewayRouter__factory'
 import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
@@ -64,7 +63,7 @@ export const fetchTeleportStatusFromTxId = async ({
 
 async function tryGetInboxFromRouter(
   address: string,
-  provider: providers.Provider
+  provider: Provider
 ): Promise<string | undefined> {
   if (!(await addressIsSmartContract(address, provider))) {
     throw new Error('Not a contract')
@@ -84,18 +83,18 @@ async function tryGetInboxFromRouter(
 
 async function getChainIdFromInbox(
   address: string,
-  provider: providers.Provider
+  provider: Provider
 ): Promise<number> {
   const inbox = IInbox__factory.connect(address, provider)
   const bridge = IBridge__factory.connect(await inbox.bridge(), provider)
   const rollup = IRollupCore__factory.connect(await bridge.rollup(), provider)
-  const chainIdBigNumber = rollup.chainId()
+  const chainIdBigNumber = await rollup.chainId()
   return Number(chainIdBigNumber.toString())
 }
 
 async function getChainIdFromInboxOrRouter(
   address: string,
-  provider: providers.Provider
+  provider: Provider
 ): Promise<number> {
   const maybeInbox = await tryGetInboxFromRouter(address, provider)
   if (maybeInbox) {
