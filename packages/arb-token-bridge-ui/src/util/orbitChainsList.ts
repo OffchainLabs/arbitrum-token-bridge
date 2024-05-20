@@ -1,6 +1,7 @@
 import { constants } from '@arbitrum/sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
-import { ChainId, ChainWithRpcUrl } from './networks'
+import { ChainWithRpcUrl } from './networks'
 
 export type NetworkType =
   | 'Ethereum'
@@ -513,11 +514,10 @@ export function getOrbitChains(
 }
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {
-  if (chainId === ChainId.StylusTestnetV2)
-    return '0xcdcf1f59f5d4a65a3c67e1341f8b85cba50e0a7c'
-
-  return getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge
-    .inbox
+  return (
+    l2Networks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
+    getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge.inbox // for other custom orbit chains
+  )
 }
 
 export function getChainIdFromInboxAddress(inboxAddress: string) {

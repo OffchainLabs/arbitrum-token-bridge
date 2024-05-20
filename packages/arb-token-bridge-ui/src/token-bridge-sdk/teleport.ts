@@ -1,7 +1,7 @@
 // utils for teleport type transactions
 
 import { Provider } from '@ethersproject/providers'
-import { providers, BigNumber } from 'ethers'
+import { providers } from 'ethers'
 import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1GatewayRouter__factory'
 import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
@@ -9,6 +9,7 @@ import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__
 import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRollupCore__factory'
 import { getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
+import { addressIsSmartContract } from '../util/AddressUtils'
 
 export const isTeleport = ({
   sourceChainId,
@@ -61,19 +62,11 @@ export const fetchTeleportStatusFromTxId = async ({
   })
 }
 
-async function isContract(
-  address: string,
-  provider: providers.Provider
-): Promise<boolean> {
-  const code = await provider.getCode(address)
-  return code !== '0x'
-}
-
 async function tryGetInboxFromRouter(
   address: string,
   provider: providers.Provider
 ): Promise<string | undefined> {
-  if (!(await isContract(address, provider))) {
+  if (!(await addressIsSmartContract(address, provider))) {
     throw new Error('Not a contract')
   }
 
@@ -92,17 +85,18 @@ async function tryGetInboxFromRouter(
 async function getChainIdFromInbox(
   address: string,
   provider: providers.Provider
-): Promise<BigNumber> {
+): Promise<number> {
   const inbox = IInbox__factory.connect(address, provider)
   const bridge = IBridge__factory.connect(await inbox.bridge(), provider)
   const rollup = IRollupCore__factory.connect(await bridge.rollup(), provider)
-  return rollup.chainId()
+  const chainIdBigNumber = rollup.chainId()
+  return Number(chainIdBigNumber.toString())
 }
 
 async function getChainIdFromInboxOrRouter(
   address: string,
   provider: providers.Provider
-): Promise<BigNumber> {
+): Promise<number> {
   const maybeInbox = await tryGetInboxFromRouter(address, provider)
   if (maybeInbox) {
     return getChainIdFromInbox(maybeInbox, provider)
@@ -140,8 +134,7 @@ export const getL3ChainIdFromTeleportEvents = async (
   )
 
   // cache this value for faster fetches and saving RPC calls
-  const l3ChainIdNumber = Number(l3ChainId.toString())
-  cache[`${l2l3RouterOrInbox}-${l1l2Router}`] = l3ChainIdNumber
+  cache[`${l2l3RouterOrInbox}-${l1l2Router}`] = l3ChainId
 
-  return l3ChainIdNumber
+  return l3ChainId
 }
