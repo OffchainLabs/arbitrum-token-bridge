@@ -13,7 +13,7 @@ export type FetchErc20TeleportsFromSubgraphResult = {
   transactionHash: string
   timestamp: string
   teleport_type: 'erc20'
-  l1ChainId: string
+  parentChainId: string
 }
 
 /**
@@ -83,7 +83,7 @@ export const fetchErc20TeleportsFromSubgraph = async ({
 
   return transactions.map(tx => ({
     ...tx,
-    l1ChainId: String(l1ChainId),
+    parentChainId: String(l1ChainId),
     teleport_type: 'erc20'
   }))
 }

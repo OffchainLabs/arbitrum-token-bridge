@@ -29,7 +29,7 @@ export function isTransactionEthTeleportFromSubgraph(
 export async function transformTeleportFromSubgraph(
   tx: TeleportFromSubgraph
 ): Promise<MergedTransaction> {
-  const parentChainProvider = getProviderForChainId(Number(tx.l1ChainId))
+  const parentChainProvider = getProviderForChainId(Number(tx.parentChainId))
   const transactionDetails = await parentChainProvider.getTransaction(
     tx.transactionHash
   ) // we need to fetch the transaction details to get the exact value (subgraphs sometimes return negative values in retryables)
@@ -48,16 +48,16 @@ export async function transformTeleportFromSubgraph(
       destination: tx.sender,
       assetName: 'ETH',
       assetType: AssetType.ETH,
-      l1NetworkID: tx.l1ChainId,
-      l2NetworkID: tx.l3ChainId,
+      l1NetworkID: tx.parentChainId,
+      l2NetworkID: tx.childChainId,
       blockNumber: Number(tx.blockCreatedAt),
       timestampCreated: tx.timestamp,
       isClassic: false,
-      parentChainId: Number(tx.l1ChainId),
-      childChainId: Number(tx.l3ChainId)
+      parentChainId: Number(tx.parentChainId),
+      childChainId: Number(tx.childChainId)
     } as Transaction
 
-    const childChainProvider = getProviderForChainId(Number(tx.l3ChainId))
+    const childChainProvider = getProviderForChainId(Number(tx.childChainId))
     return transformDeposit(
       await updateAdditionalDepositData({
         depositTx,
@@ -89,12 +89,12 @@ export async function transformTeleportFromSubgraph(
     destination: tx.sender,
     assetName: symbol,
     assetType: AssetType.ERC20,
-    l1NetworkID: tx.l1ChainId,
+    l1NetworkID: tx.parentChainId,
     l2NetworkID: String(l3ChainId),
     blockNumber: Number(transactionDetails.blockNumber),
     timestampCreated: tx.timestamp,
     isClassic: false,
-    parentChainId: Number(tx.l1ChainId),
+    parentChainId: Number(tx.parentChainId),
     childChainId: l3ChainId
   } as Transaction
 

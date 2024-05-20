@@ -227,46 +227,14 @@ function getTxIdFromTransaction(tx: Transfer) {
 function getCacheKeyFromTransaction(
   tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
 ) {
-  if (isTransferTeleportFromSubgraph(tx)) {
-    return `${tx.l1ChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
-  }
-
-  return `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
-    tx
-  )?.toLowerCase()}}`
+  return `${tx.parentChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
 }
 
+// remove the duplicates from the transactions passed
 function dedupeTransactions(txns: Transfer[]) {
-  const txnCacheMap = new Map<string, Transfer>()
-
-  txns.forEach(tx => {
-    // special check for teleport txn
-    // if we detect that a teleport tx from subgraph has already been added to the map, then discard the same teleport tx that has been added through local storage
-    // we do this check manually because teleport-tx-from-subgraph will have different cache-key compared to teleport-tx-from-local-storage
-    // ... ^ this is because teleport-tx-from-subgraph doesn't have a child-chain-id (which is a part of cache key), we detect it later in the `transformTransaction` function
-    if (
-      !isTransferTeleportFromSubgraph(tx) && // tx is not teleport from subgraph...
-      isTeleport({
-        // ...but tx is teleport
-        sourceChainId: tx.parentChainId,
-        destinationChainId: tx.childChainId
-      }) &&
-      txnCacheMap.has(
-        // ...and has the same cache key as teleport-tx-from-subgraph cache key
-        `${tx.parentChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
-      )
-    ) {
-      // ...discard the tx
-      return
-    }
-
-    // else, add the tx to the map
-    const cacheKey = getCacheKeyFromTransaction(tx)
-    txnCacheMap.set(cacheKey, tx)
-  })
-
-  // finally return the de-duplicated transactions from the map to show in tx history
-  return Array.from(new Map(txnCacheMap).values())
+  return Array.from(
+    new Map(txns.map(tx => [getCacheKeyFromTransaction(tx), tx])).values()
+  )
 }
 
 /**

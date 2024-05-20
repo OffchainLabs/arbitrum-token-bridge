@@ -11,8 +11,8 @@ export type FetchEthTeleportsFromSubgraphResult = {
   sender: string
   retryableTicketID: string
   destAddr: string
-  l1ChainId: string
-  l3ChainId: string
+  parentChainId: string
+  childChainId: string // l3 chain id
   teleport_type: 'eth'
 }
 
@@ -105,7 +105,7 @@ export const fetchEthTeleportsFromSubgraph = async ({
 
   return transactions.map(tx => ({
     ...tx,
-    l1ChainId: String(l1ChainId),
+    parentChainId: String(l1ChainId),
     teleport_type: 'eth'
   }))
 }
