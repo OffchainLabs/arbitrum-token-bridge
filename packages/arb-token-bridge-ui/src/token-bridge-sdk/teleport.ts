@@ -117,6 +117,7 @@ export const getL3ChainIdFromTeleportEvents = async (
   l1Provider: Provider
 ): Promise<number> => {
   const cacheKey = `${l2l3RouterOrInbox}-${l1l2Router}`
+
   const cachedValue = cache[cacheKey]
   if (typeof cachedValue !== 'undefined') {
     return cachedValue
@@ -134,7 +135,7 @@ export const getL3ChainIdFromTeleportEvents = async (
   )
 
   // cache this value for faster fetches and saving RPC calls
-  cache[`${l2l3RouterOrInbox}-${l1l2Router}`] = l3ChainId
+  cache[cacheKey] = l3ChainId
 
   return l3ChainId
 }
