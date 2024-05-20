@@ -140,7 +140,8 @@ export const getL3ChainIdFromTeleportEvents = async (
   )
 
   // cache this value for faster fetches and saving RPC calls
-  cache[`${l2l3RouterOrInbox}-${l1l2Router}`] = +l3ChainId.toString()
+  const l3ChainIdNumber = Number(l3ChainId.toString())
+  cache[`${l2l3RouterOrInbox}-${l1l2Router}`] = l3ChainIdNumber
 
-  return +l3ChainId.toString()
+  return l3ChainIdNumber
 }
