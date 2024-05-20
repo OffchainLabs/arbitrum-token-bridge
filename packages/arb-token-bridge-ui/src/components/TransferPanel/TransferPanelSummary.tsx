@@ -15,6 +15,7 @@ import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
+import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -148,7 +149,8 @@ function TransferPanelSummaryContainer({
 }) {
   const [networks] = useNetworks()
   const { childChain } = useNetworksRelationship(networks)
-  const isChildChainPoPApex = childChain.id === 70700
+
+  const isDisabled = DISABLED_CHAIN_IDS.includes(childChain.id)
 
   return (
     <div className="mb-8 flex flex-col text-white">
@@ -156,10 +158,10 @@ function TransferPanelSummaryContainer({
       <div className={twMerge('mb-3 flex flex-col space-y-3', className)}>
         {children}
       </div>
-      {isChildChainPoPApex && (
+      {isDisabled && (
         <NoteBox variant="error">
-          Proof of Play Apex is currently down. You will be able to bridge again
-          once it is back online.
+          {getNetworkName(childChain.id)} is currently down. You will be able to
+          bridge again once it is back online.
         </NoteBox>
       )}
     </div>
