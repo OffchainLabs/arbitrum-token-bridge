@@ -3,6 +3,7 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import { utils } from 'ethers'
 
 import {
   ChainId,
@@ -62,7 +63,6 @@ import {
   fetchTeleports
 } from '../util/teleports/fetchTeleports'
 import { FetchEthTeleportsFromSubgraphResult } from '../util/teleports/fetchEthTeleportsFromSubgraph'
-import { utils } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { fetchErc20Data } from '../util/TokenUtils'
 
@@ -98,7 +98,7 @@ function getStandardizedTimestampByTx(tx: Transfer) {
     return (tx.createdAt ?? 0) / 1_000
   }
 
-  if (isTeleportTransfer(tx)) {
+  if (isTransferTeleportFromSubgraph(tx)) {
     return tx.timestamp
   }
 
@@ -151,7 +151,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
-  if (isTeleportTransfer(tx)) {
+  if (isTransferTeleportFromSubgraph(tx)) {
     return await transformTeleportTransaction(tx)
   }
 
@@ -206,7 +206,9 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
   )
 }
 
-function isTeleportTransfer(tx: Transfer): tx is TeleportFromSubgraph {
+function isTransferTeleportFromSubgraph(
+  tx: Transfer
+): tx is TeleportFromSubgraph {
   // @ts-ignore : for now just ignore this xxxx
   return typeof tx.teleport_type !== 'undefined'
 }
@@ -300,7 +302,7 @@ function isTransactionEthTeleportFromSubgraph(
 }
 
 function getTxIdFromTransaction(tx: Transfer) {
-  if (isTeleportTransfer(tx)) {
+  if (isTransferTeleportFromSubgraph(tx)) {
     return tx.transactionHash
   }
 
@@ -322,13 +324,48 @@ function getTxIdFromTransaction(tx: Transfer) {
 function getCacheKeyFromTransaction(
   tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
 ) {
-  if (isTeleportTransfer(tx)) {
-    return `${tx.l1ChainId}-${tx.transactionHash}`
+  if (isTransferTeleportFromSubgraph(tx)) {
+    return `${tx.l1ChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
   }
 
   return `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
     tx
   )?.toLowerCase()}}`
+}
+
+function dedupeTransactions(txns: Transfer[]) {
+  const txnCacheMap = new Map<string, Transfer>()
+
+  txns.forEach(tx => {
+    // special check for teleport txn
+    // if we detect that a teleport tx from subgraph has already been added to the map, then discard the same teleport tx that has been added through local storage
+    // we do this check manually because teleport-tx-from-subgraph will have different cache-key compared to teleport-tx-from-local-storage
+    // ... ^ this is because teleport-tx-from-subgraph doesn't have a child-chain-id (which is a part of cache key), we detect it later in the `transformTeleport` function
+    if (
+      !isTransferTeleportFromSubgraph(tx) && // tx is not teleport from subgraph...
+      isTeleport({
+        // ...but tx is teleport
+        sourceChainId: tx.parentChainId,
+        destinationChainId: tx.childChainId
+      }) &&
+      txnCacheMap.has(
+        // ...and has the same cache key as teleport-tx-from-subgraph cache key
+        `${tx.parentChainId}-${getTxIdFromTransaction(tx)?.toLowerCase()}`
+      )
+    ) {
+      // ...discard the tx
+      console.log(
+        "Discarding teleport tx from local storage because it's already in the cache",
+        tx
+      )
+      return
+    }
+
+    // else, add the tx to the cache
+    const cacheKey = getCacheKeyFromTransaction(tx)
+    txnCacheMap.set(cacheKey, tx)
+  })
+  return Array.from(new Map(txnCacheMap).values())
 }
 
 /**
@@ -667,11 +704,9 @@ export const useTransactionHistory = (
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
-      const dedupedTransactions = Array.from(
-        new Map(
-          dataWithCache.map(tx => [getCacheKeyFromTransaction(tx), tx])
-        ).values()
-      ).sort(sortByTimestampDescending)
+      const dedupedTransactions = dedupeTransactions(dataWithCache).sort(
+        sortByTimestampDescending
+      )
 
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
