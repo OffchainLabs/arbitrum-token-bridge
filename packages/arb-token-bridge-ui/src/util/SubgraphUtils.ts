@@ -63,7 +63,7 @@ export const shouldIncludeSentTxs = ({
     // 1. deposits if we are connected to the parent chain, or
     // 2. withdrawals if we are connected to the child chain
     return isConnectedToParentChain
-      ? type === 'deposits'
+      ? type === 'deposits' || type === 'teleports' // clubbing deposits and teleports together
       : type === 'withdrawals'
   }
   // always show for EOA
@@ -85,7 +85,7 @@ export const shouldIncludeReceivedTxs = ({
     // 2. deposits if we are connected to the child chain
     return isConnectedToParentChain
       ? type === 'withdrawals'
-      : type === 'deposits'
+      : type === 'deposits' || type === 'teleports' // clubbing deposits and teleports together
   }
   // always show for EOA
   return true

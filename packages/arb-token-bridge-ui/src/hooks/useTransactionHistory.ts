@@ -119,7 +119,7 @@ function sortByTimestampDescending(a: Transfer, b: Transfer) {
     : 1
 }
 
-export function getMultiChainFetchList(): ChainPair[] {
+function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
@@ -151,6 +151,7 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+  // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
   if (isTransferTeleportFromSubgraph(tx)) {
     return await transformTeleportTransaction(tx)
   }
@@ -209,7 +210,7 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
 function isTransferTeleportFromSubgraph(
   tx: Transfer
 ): tx is TeleportFromSubgraph {
-  // @ts-ignore : for now just ignore this xxxx
+  // @ts-ignore: `teleport_type` is present only in teleport-from-subgraph types, we ignore it for other types
   return typeof tx.teleport_type !== 'undefined'
 }
 
@@ -219,7 +220,7 @@ async function transformTeleportTransaction(
   const parentChainProvider = getProviderForChainId(Number(tx.l1ChainId))
   const transactionDetails = await parentChainProvider.getTransaction(
     tx.transactionHash
-  )
+  ) // we need to fetch the transaction details to get the exact value (subgraphs sometimes return negative values in retryables)
 
   // Eth transfers
   if (isTransactionEthTeleportFromSubgraph(tx)) {
@@ -340,7 +341,7 @@ function dedupeTransactions(txns: Transfer[]) {
     // special check for teleport txn
     // if we detect that a teleport tx from subgraph has already been added to the map, then discard the same teleport tx that has been added through local storage
     // we do this check manually because teleport-tx-from-subgraph will have different cache-key compared to teleport-tx-from-local-storage
-    // ... ^ this is because teleport-tx-from-subgraph doesn't have a child-chain-id (which is a part of cache key), we detect it later in the `transformTeleport` function
+    // ... ^ this is because teleport-tx-from-subgraph doesn't have a child-chain-id (which is a part of cache key), we detect it later in the `transformTransaction` function
     if (
       !isTransferTeleportFromSubgraph(tx) && // tx is not teleport from subgraph...
       isTeleport({
@@ -354,10 +355,6 @@ function dedupeTransactions(txns: Transfer[]) {
       )
     ) {
       // ...discard the tx
-      console.log(
-        "Discarding teleport tx from local storage because it's already in the cache",
-        tx
-      )
       return
     }
 
@@ -491,7 +488,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               chainPair.parentChainId === chain.id
 
             const includeSentTxs = shouldIncludeSentTxs({
-              type, // xxx what if it's a teleport type?
+              type,
               isSmartContractWallet,
               isConnectedToParentChain
             })

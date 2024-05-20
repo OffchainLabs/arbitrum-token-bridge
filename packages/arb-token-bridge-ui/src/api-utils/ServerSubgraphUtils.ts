@@ -74,7 +74,7 @@ const subgraphs = {
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   },
   'teleporter-ethereum': {
-    theGraphNetworkSubgraphId: 'xxxx',
+    theGraphNetworkSubgraphId: 'to-be-given-later',
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   }
 } as const
