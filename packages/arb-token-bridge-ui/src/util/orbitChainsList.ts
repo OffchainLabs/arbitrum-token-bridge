@@ -281,6 +281,55 @@ export const orbitMainnets: {
         logoUrl: '/images/PolychainMonstersLogo.png'
       }
     }
+  },
+  12324: {
+    chainID: 12324,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0x59E088d827CB7983Cd0CC64312E472D7cc8a4F44',
+      inbox: '0x80de5c4ccDfb7b6a250A9588C2d80F62a2B7d13F',
+      outbox: '0x1526DAacDAf3EE81E5ae087E0DA8677E8c677CE5',
+      rollup: '0xb75A0a5812303cBB198d4f0BcA7CA38f17b8783e',
+      sequencerInbox: '0xB9450b512Fd3454e9C1a2593C5DF9E71344b5653'
+    },
+    explorerUrl: 'https://explorer.l3x.com',
+    rpcUrl: 'https://rpc-mainnet.l3x.com',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'L3X Network',
+    slug: 'l3x-network',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xec80A45ebadD945379f69e9A8929973BCb3E297D',
+      l1ERC20Gateway: '0x4fF3E70f30f0394Ad62428751Fe3858740595908',
+      l1GatewayRouter: '0x817C8Da480bC6b42a5FA88A26e9eD8c0c03968Cf',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      l1WethGateway: '0x9bd7C6d040665E95a4FE70b61718abca2E3A62CD',
+      l2CustomGateway: '0x1AE90d0FBf03d1bb0685D4bAc5BCe4F4071cB0dc',
+      l2ERC20Gateway: '0x76df9F5004F38aC74D0cE664027a1E718AA45E97',
+      l2GatewayRouter: '0x460E0a28a1DcE5a15811C3F5775D1e8fd0a08278',
+      l2Multicall: '0xA9cfB51510b18300cf056d7e0b96925a1D11f424',
+      l2ProxyAdmin: '0xFB027dBD2FBb343FD16D66a63a690B29D51D23AA',
+      l2Weth: '0xD3f8b9D33b159E8f5141d28880b216d31B00ee63',
+      l2WethGateway: '0x0fEf8843450b7c6a416C30D1E00cbc535Bb905b6'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#3ABE7B',
+      network: {
+        name: 'L3X Network',
+        description:
+          'Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.',
+        logo: '/images/L3XLogo.png'
+      }
+    }
   }
 }
 
@@ -392,6 +441,55 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         symbol: 'BERD',
         decimals: 18,
         logoUrl: ''
+      }
+    }
+  },
+  12325: {
+    chainID: 12325,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0x98DBc5f9d4BB16A7c8C21e36789E673b6E0FDf37',
+      inbox: '0xB0e78299F14b50d151a5eF92b6465bb807B6e56b',
+      outbox: '0x243487a26284B17b70E8A183a7a1FeB5A6b00824',
+      rollup: '0xce99C9E7566438a8311424aD0287EB0fDEAc55A2',
+      sequencerInbox: '0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E'
+    },
+    explorerUrl: 'https://explorer-testnet.l3x.com',
+    rpcUrl: 'https://rpc-testnet.l3x.com',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'L3X Network Testnet',
+    slug: 'l3x-network-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3',
+      l1ERC20Gateway: '0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA',
+      l1GatewayRouter: '0x8D684F7fA0aE2a13e0a1FAa60699ee2db46505a8',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+      l1WethGateway: '0xB001D0E3a43EbB820E82720a2Bd74f4C03a5b424',
+      l2CustomGateway: '0xcc3fa38D4a18474DF92107d328bF4A6F7C9fA29A',
+      l2ERC20Gateway: '0x7aeD67245Db9b4E6bB26791b48E20aBbA9411EdD',
+      l2GatewayRouter: '0xF40E36d3043373Ce6F89abe3914d631135342C28',
+      l2Multicall: '0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62',
+      l2ProxyAdmin: '0xC381Ff423f37d42b0b9B84195D9C9C31eDc26e73',
+      l2Weth: '0x6793D074d3A410C803B8C2086E569883D6e928F1',
+      l2WethGateway: '0x4F24D0244B29d76ED1FBD3c8a9967b72b78B9DBd'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#3ABE7B',
+      network: {
+        name: 'L3X Network Testnet',
+        logo: '/images/L3XLogo.png',
+        description:
+          'Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.'
       }
     }
   }
