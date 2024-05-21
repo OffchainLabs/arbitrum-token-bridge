@@ -138,3 +138,35 @@ export const getL3ChainIdFromTeleportEvents = async (
 
   return l3ChainId
 }
+
+export const fetchTeleportInputParametersFromTxId = async ({
+  txId, // source chain tx id
+  sourceChainProvider,
+  destinationChainProvider,
+  isNativeCurrencyTransfer
+}: {
+  txId: string
+  sourceChainProvider: Provider
+  destinationChainProvider: Provider
+  isNativeCurrencyTransfer: boolean
+}) => {
+  const l3Network = await getL2Network(destinationChainProvider)
+
+  // get Eth deposit request
+  if (isNativeCurrencyTransfer) {
+    return await new EthL1L3Bridger(l3Network).getDepositParameters({
+      txHash: txId,
+      l1Provider: sourceChainProvider
+    })
+  }
+
+  // get Erc20 deposit request
+  const { l2Provider } = await getL2ConfigForTeleport({
+    destinationChainProvider
+  })
+  return await new Erc20L1L3Bridger(l3Network).getDepositParameters({
+    txHash: txId,
+    l1Provider: sourceChainProvider,
+    l2Provider
+  })
+}
