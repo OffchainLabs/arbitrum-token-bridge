@@ -65,7 +65,7 @@ const zAddress = z
 
 function validateOrbitChain(chain: OrbitChainConfig) {
   z.object({
-    chainI: z.number().nonnegative().int(),
+    chainID: z.number().nonnegative().int(),
     confirmPeriodBlocks: z.number().nonnegative().int(),
     ethBridge: z.object({
       bridge: zAddress,
