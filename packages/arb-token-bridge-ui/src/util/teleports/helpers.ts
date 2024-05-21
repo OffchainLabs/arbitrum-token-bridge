@@ -1,4 +1,5 @@
 import { utils } from 'ethers'
+import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { Transfer } from '../../hooks/useTransactionHistory'
 import { MergedTransaction } from '../../state/app/state'
 import { FetchEthTeleportsFromSubgraphResult } from './fetchEthTeleportsFromSubgraph'
@@ -30,18 +31,26 @@ export async function transformTeleportFromSubgraph(
   tx: TeleportFromSubgraph
 ): Promise<MergedTransaction> {
   const parentChainProvider = getProviderForChainId(Number(tx.parentChainId))
-  const transactionDetails = await parentChainProvider.getTransaction(
-    tx.transactionHash
-  ) // we need to fetch the transaction details to get the exact value (subgraphs sometimes return negative values in retryables)
 
   // Eth transfers
   if (isTransactionEthTeleportFromSubgraph(tx)) {
+    // to get the exact value of the ETH deposit we need to fetch the teleport parameters, otherwise tx.value will also include all the L2,L3 gas fee paid
+    const l3Network = await getL2Network(Number(tx.childChainId))
+    const l1L3Bridger = new EthL1L3Bridger(l3Network)
+    const depositParameters = await l1L3Bridger.getDepositParameters({
+      txHash: tx.transactionHash,
+      l1Provider: getProviderForChainId(Number(tx.parentChainId))
+    })
+
     const depositTx = {
       type: 'deposit-l1',
       status: 'pending',
       direction: 'deposit',
       source: 'subgraph',
-      value: utils.formatUnits(transactionDetails.value || 0, 18),
+      value: utils.formatUnits(
+        depositParameters.l2l3TicketData.l2CallValue.toString() || 0,
+        18
+      ),
       txID: tx.transactionHash,
       tokenAddress: '',
       sender: tx.sender,
@@ -77,6 +86,10 @@ export async function transformTeleportFromSubgraph(
     tx,
     parentChainProvider
   )
+  const transactionDetails = await parentChainProvider.getTransaction(
+    tx.transactionHash
+  ) // we need to fetch the transaction details to get the blockNumber
+
   const depositTx = {
     type: 'deposit-l1',
     status: 'pending',
