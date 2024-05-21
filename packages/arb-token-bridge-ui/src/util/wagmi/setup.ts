@@ -9,6 +9,7 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
+  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal,
   holesky
@@ -38,6 +39,7 @@ const chainList = isTestingEnvironment
       holesky,
       // Orbit chains
       stylusTestnet,
+      stylusTestnetV2,
       ...wagmiOrbitChains,
       // add local environments during testing
       local,
@@ -53,6 +55,7 @@ const chainList = isTestingEnvironment
       arbitrumSepolia,
       holesky,
       stylusTestnet,
+      stylusTestnetV2,
       ...wagmiOrbitChains,
       ...customChains
     ]

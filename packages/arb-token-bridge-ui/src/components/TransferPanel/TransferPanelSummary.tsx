@@ -14,6 +14,8 @@ import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
 import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
+import { NoteBox } from '../common/NoteBox'
+import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -145,13 +147,23 @@ function TransferPanelSummaryContainer({
   children: React.ReactNode
   className?: string
 }) {
+  const [networks] = useNetworks()
+  const { childChain } = useNetworksRelationship(networks)
+
+  const isDisabled = DISABLED_CHAIN_IDS.includes(childChain.id)
+
   return (
     <div className="mb-8 flex flex-col text-white">
       <span className="mb-3 text-xl">Summary</span>
-
-      <div className={twMerge('flex flex-col space-y-3', className)}>
+      <div className={twMerge('mb-3 flex flex-col space-y-3', className)}>
         {children}
       </div>
+      {isDisabled && (
+        <NoteBox variant="error">
+          {getNetworkName(childChain.id)} is currently down. You will be able to
+          bridge again once it is back online.
+        </NoteBox>
+      )}
     </div>
   )
 }
@@ -225,11 +237,14 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
         </span>
         <span className="font-medium">
           <span className="tabular-nums">{formatAmount(Number(amount))}</span>{' '}
-          <TokenSymbolWithExplorerLink
-            token={token}
-            isParentChain={!isDepositMode}
-          />{' '}
-          {isDepositingUSDCtoArbOneOrArbSepolia && <>or USDC</>}
+          {isDepositingUSDCtoArbOneOrArbSepolia ? (
+            <>USDC</>
+          ) : (
+            <TokenSymbolWithExplorerLink
+              token={token}
+              isParentChain={!isDepositMode}
+            />
+          )}
           {isBridgingEth && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
