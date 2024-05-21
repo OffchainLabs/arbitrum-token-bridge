@@ -376,8 +376,7 @@ export function TransferPanel() {
     const currentNetworkName = getNetworkName(currentChain.id)
     const childChainName = getNetworkName(childChain.id)
     const isConnectedToTheWrongChain =
-      (isDepositMode && isConnectedToArbitrum.current) ||
-      (!isDepositMode && !isConnectedToArbitrum.current)
+      chainId !== latestNetworks.current.sourceChain.id
 
     if (isConnectedToTheWrongChain) {
       trackEvent('Switch Network and Transfer', {
