@@ -496,7 +496,8 @@ export function TransferPanel() {
           accountType: 'Smart Contract',
           network: childChainName,
           amount: Number(amount),
-          complete: false
+          complete: false,
+          version: 2
         })
 
         return
@@ -510,7 +511,8 @@ export function TransferPanel() {
         accountType: 'EOA',
         network: childChainName,
         amount: Number(amount),
-        complete: false
+        complete: false,
+        version: 2
       })
 
       const newTransfer: MergedTransaction = {

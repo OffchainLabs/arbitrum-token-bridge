@@ -69,12 +69,14 @@ type AnalyticsEventMap = {
     network: string
     amount: number
     complete: boolean
+    version: number
   }
   'CCTP Withdrawal': {
     accountType: AccountType
     network: string
     amount: number
     complete: boolean
+    version: number
   }
 }
 
