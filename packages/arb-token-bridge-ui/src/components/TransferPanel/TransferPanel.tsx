@@ -372,8 +372,6 @@ export function TransferPanel() {
     }
 
     setTransferring(true)
-    const currentChain = latestNetworks.current.sourceChain
-    const currentNetworkName = getNetworkName(currentChain.id)
     const childChainName = getNetworkName(childChain.id)
     const isConnectedToTheWrongChain =
       chainId !== latestNetworks.current.sourceChain.id
@@ -384,7 +382,7 @@ export function TransferPanel() {
         tokenSymbol: 'USDC',
         assetType: 'ERC-20',
         accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: currentNetworkName,
+        network: childChainName,
         amount: Number(amount)
       })
 
@@ -599,8 +597,6 @@ export function TransferPanel() {
       return
     }
 
-    const currentChain = latestNetworks.current.sourceChain
-    const currentNetworkName = getNetworkName(currentChain.id)
     const childChainName = getNetworkName(childChain.id)
 
     setTransferring(true)
@@ -651,7 +647,7 @@ export function TransferPanel() {
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: currentNetworkName,
+          network: childChainName,
           amount: Number(amount)
         })
 
