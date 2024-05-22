@@ -383,7 +383,8 @@ export function TransferPanel() {
         assetType: 'ERC-20',
         accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
         network: childChainName,
-        amount: Number(amount)
+        amount: Number(amount),
+        version: 2
       })
 
       const switchTargetChainId = latestNetworks.current.sourceChain.id
@@ -648,7 +649,8 @@ export function TransferPanel() {
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
           network: childChainName,
-          amount: Number(amount)
+          amount: Number(amount),
+          version: 2
         })
 
         const switchTargetChainId = latestNetworks.current.sourceChain.id

@@ -53,6 +53,7 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: string
     amount: number
+    version: number
   }
   'Redeem Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
