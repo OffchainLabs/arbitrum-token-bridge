@@ -160,7 +160,10 @@ export function getCctpSubgraphClient(chainId: number) {
 export function getTeleporterSubgraphClient(chainId: number) {
   switch (chainId) {
     case ChainId.Ethereum:
-      return createSubgraphClient('teleporter-ethereum')
+      // return createSubgraphClient('teleporter-mainnet')
+      return createApolloClient(
+        `https://gateway-arbitrum.network.thegraph.com/api/${theGraphNetworkApiKey}/subgraphs/id/GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg`
+      )
 
     case ChainId.Sepolia:
       return createSubgraphClient('teleporter-sepolia')
