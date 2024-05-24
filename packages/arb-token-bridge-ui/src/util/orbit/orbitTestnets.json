@@ -117,7 +117,7 @@
       "inbox": "0xB0e78299F14b50d151a5eF92b6465bb807B6e56b",
       "outbox": "0x243487a26284B17b70E8A183a7a1FeB5A6b00824",
       "rollup": "0xce99C9E7566438a8311424aD0287EB0fDEAc55A2",
-      "sequencerInbox": ""
+      "sequencerInbox": "0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E"
     },
     "explorerUrl": "https://explorer-testnet.l3x.com",
     "rpcUrl": "https://rpc-testnet.l3x.com",
