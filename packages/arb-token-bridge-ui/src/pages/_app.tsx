@@ -47,8 +47,11 @@ Sentry.init({
         // Ignore events related to failed `eth_getBalance` calls
         event.message.match(/eth_getBalance/i) ||
         // Ignore events related to failed walletConnect calls
-        event.message.match(/Attempt to connect to relay via/i)
+        event.message.match(/Attempt to connect to relay via/i) ||
+        // Ignore events about window.propertyX being redefined accross multiple extensions
+        event.message.match(/Cannot redefine property/i)
       ) {
+        console.log('test')
         return null
       }
     }
