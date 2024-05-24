@@ -71,15 +71,14 @@ async function fetchTokenFallbackGasEstimates({
     }
   }
 
-  // custom gateway tokens have a higher gas limit in sdk
-  // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/assetBridger/erc20Bridger.ts#L181
+  // custom gateway token deposits have a higher gas limit in the @arbitrum/sdk : https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/assetBridger/erc20Bridger.ts#L181
   // tx example: https://arbiscan.io/tx/0x8f52daffdd97af8130d667a74a89234cd9ce838d23214d61818bd9743a2f64f8 // 275_000
-  const isCustomGatewayToken = await addressIsCustomGatewayToken({
+  const isCustomGatewayTokenDeposit = await addressIsCustomGatewayToken({
     parentChainErc20Address,
     parentChainProvider,
     childChainProvider
   })
-  if (isCustomGatewayToken) {
+  if (isCustomGatewayTokenDeposit) {
     return {
       estimatedParentChainGas,
       estimatedChildChainGas: BigNumber.from(300_000),
