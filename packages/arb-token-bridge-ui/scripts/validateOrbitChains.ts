@@ -9,7 +9,7 @@ const zAddress = z
 
 const zIsTrue = z
   .boolean()
-  .refine(bool => bool === true, "Invalid input, must be true")
+  .refine(bool => bool === true, 'Invalid input, must be true')
 
 function validateOrbitChain(chain: OrbitChainConfig) {
   try {
@@ -33,7 +33,7 @@ function validateOrbitChain(chain: OrbitChainConfig) {
       partnerChainID: z.number().nonnegative().int(),
       partnerChainIDs: z.array(z.number()),
       retryableLifetimeSeconds: z.number().nonnegative().int(),
-      blockTime: z.number().nonnegative(),
+      blockTime: z.number().refine(num => num === 0.25),
       tokenBridge: z.object({
         l1CustomGateway: zAddress,
         l1ERC20Gateway: zAddress,
