@@ -207,6 +207,7 @@ async function addressIsCustomGatewayToken({
   })
   const childChainNetwork = await getL2Network(childChainProvider)
   return (
-    parentChainGatewayAddress === childChainNetwork.tokenBridge.l1CustomGateway
+    parentChainGatewayAddress.toLowerCase() ===
+    childChainNetwork.tokenBridge.l1CustomGateway.toLowerCase()
   )
 }
