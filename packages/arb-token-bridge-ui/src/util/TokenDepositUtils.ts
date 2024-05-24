@@ -71,7 +71,7 @@ async function fetchTokenFallbackGasEstimates({
     }
   }
 
-  // we have a check for custom gateway tokens, which have a higher gas limit in sdk
+  // custom gateway tokens have a higher gas limit in sdk
   // https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/assetBridger/erc20Bridger.ts#L181
   // tx example: https://arbiscan.io/tx/0x8f52daffdd97af8130d667a74a89234cd9ce838d23214d61818bd9743a2f64f8 // 275_000
   const isCustomGatewayToken = await addressIsCustomGatewayToken({
