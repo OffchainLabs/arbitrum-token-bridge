@@ -7,7 +7,9 @@ const zAddress = z
   .string()
   .refine(address => isAddress(address), 'Invalid address')
 
-const zIsTrue = z.boolean().refine(bool => bool === true)
+const zIsTrue = z.boolean({
+  invalid_type_error: "Invalid input, must be 'true'"
+}).refine(bool => bool === true)
 
 function validateOrbitChain(chain: OrbitChainConfig) {
   try {
@@ -70,8 +72,9 @@ function validateOrbitChain(chain: OrbitChainConfig) {
     }).parse(chain)
   } catch (e) {
     console.error(
-      `Error while validating Orbit chain: ${chain.name} (${chain.chainID}): ${e}`
+      `Error while validating Orbit chain: ${chain.name} (${chain.chainID}):`
     )
+    throw e
   }
 }
 
