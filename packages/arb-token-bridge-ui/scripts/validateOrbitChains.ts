@@ -2,6 +2,7 @@ import z from 'zod'
 import { isAddress } from 'ethers/lib/utils.js'
 
 import { getOrbitChains, OrbitChainConfig } from '../src/util/orbit'
+import { constants } from 'ethers'
 
 const zAddress = z
   .string()
@@ -31,7 +32,7 @@ function validateOrbitChain(chain: OrbitChainConfig) {
       name: z.string(),
       slug: z.string(),
       partnerChainID: z.number().nonnegative().int(),
-      partnerChainIDs: z.array(z.number()),
+      partnerChainIDs: z.array(z.number()).refine(arr => arr.length === 0),
       retryableLifetimeSeconds: z.number().nonnegative().int(),
       blockTime: z.number().refine(num => num === 0.25),
       tokenBridge: z.object({
@@ -50,8 +51,8 @@ function validateOrbitChain(chain: OrbitChainConfig) {
         l2Weth: zAddress,
         l2WethGateway: zAddress
       }),
-      nitroGenesisBlock: z.number().nonnegative().int(),
-      nitroGenesisL1Block: z.number().nonnegative().int(),
+      nitroGenesisBlock: z.number().refine(num => num === 0),
+      nitroGenesisL1Block: z.number().refine(num => num === 0),
       depositTimeout: z.number().nonnegative().int(),
       bridgeUiConfig: z.object({
         color: z.string(),
@@ -64,7 +65,6 @@ function validateOrbitChain(chain: OrbitChainConfig) {
           .object({
             name: z.string(),
             symbol: z.string(),
-            decimals: z.number().nonnegative().int(),
             logoUrl: z.string()
           })
           .optional()
