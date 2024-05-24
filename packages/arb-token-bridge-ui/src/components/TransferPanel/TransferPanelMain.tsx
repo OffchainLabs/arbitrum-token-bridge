@@ -25,17 +25,9 @@ import {
 } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
-import {
-  calculateEstimatedL1GasFees,
-  calculateEstimatedL2GasFees
-} from './TransferPanelMainUtils'
 import { useBalance } from '../../hooks/useBalance'
-import { useGasPrice } from '../../hooks/useGasPrice'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
-import { GasEstimates } from '../../hooks/arbTokenBridge.types'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -68,11 +60,13 @@ import {
   useTransferDisabledDialogStore
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
 import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import {
   Balances,
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 
 enum NetworkType {
   l1 = 'l1',
@@ -338,29 +332,26 @@ function NetworkListboxPlusBalancesContainer({
 
 export function TransferPanelMain({
   amount,
-  setAmount,
   errorMessage
 }: {
   amount: string
-  setAmount: (value: string) => void
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+  const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
-  const l1GasPrice = useGasPrice({ provider: parentChainProvider })
-  const l2GasPrice = useGasPrice({ provider: childChainProvider })
-
   const {
     app: { selectedToken }
   } = useAppState()
+
   const { address: walletAddress } = useAccount()
 
   const { destinationAddress, setDestinationAddress } =
@@ -414,7 +405,7 @@ export function TransferPanelMain({
       isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
       isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
     ) {
-      updateUSDCBalances(selectedToken.address)
+      updateUSDCBalances()
       return
     }
 
@@ -458,42 +449,8 @@ export function TransferPanelMain({
 
   const [, setQueryParams] = useArbQueryParams()
 
-  const estimateGas = useCallback(
-    async (
-      weiValue: BigNumber
-    ): Promise<
-      | GasEstimates & {
-          estimatedL2SubmissionCost: BigNumber
-        }
-    > => {
-      if (!walletAddress) {
-        return {
-          estimatedL1Gas: constants.Zero,
-          estimatedL2Gas: constants.Zero,
-          estimatedL2SubmissionCost: constants.Zero
-        }
-      }
-
-      if (isDepositMode) {
-        const result = await depositEthEstimateGas({
-          amount: weiValue,
-          address: walletAddress,
-          l1Provider: parentChainProvider,
-          l2Provider: childChainProvider
-        })
-        return result
-      }
-
-      const result = await withdrawInitTxEstimateGas({
-        amount: weiValue,
-        address: walletAddress,
-        l2Provider: childChainProvider
-      })
-
-      return { ...result, estimatedL2SubmissionCost: constants.Zero }
-    },
-    [walletAddress, isDepositMode, childChainProvider, parentChainProvider]
-  )
+  const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
+    useGasSummary()
 
   const setMaxAmount = useCallback(async () => {
     if (selectedToken) {
@@ -533,29 +490,12 @@ export function TransferPanelMain({
 
     try {
       setLoadingMaxAmount(true)
-      const result = await estimateGas(nativeCurrencyBalance)
-
-      /**
-       * For a withdrawal init tx, the L1 gas fee is hardcoded to `0` as all fees are paid on L2.
-       *
-       * The actual fee breakdown includes L1 batch posting fee and L2 execution cost, where `L1 batch posting fee = gasEstimateForL1 * L2 gas price`
-       * @see
-       * {@link https://github.com/Offchainlabs/arbitrum-docs/blob/1bd3b9beb0858725d0faafa188cd13d32f642f9c/arbitrum-docs/devs-how-tos/how-to-estimate-gas.mdx#L125 | Documentation}
-       */
-      const estimatedL1GasFees = calculateEstimatedL1GasFees(
-        result.estimatedL1Gas,
-        l1GasPrice
-      )
-      const estimatedL2GasFees = calculateEstimatedL2GasFees(
-        result.estimatedL2Gas,
-        l2GasPrice,
-        result.estimatedL2SubmissionCost
-      )
 
       const nativeCurrencyBalanceFloat = parseFloat(
         utils.formatUnits(nativeCurrencyBalance, nativeCurrency.decimals)
       )
-      const estimatedTotalGasFees = estimatedL1GasFees + estimatedL2GasFees
+      const estimatedTotalGasFees =
+        (estimatedParentChainGasFees ?? 0) + (estimatedChildChainGasFees ?? 0)
       const maxAmount = nativeCurrencyBalanceFloat - estimatedTotalGasFees * 1.4
       // make sure it's always a positive number
       // if it's negative, set it to user's balance to show insufficient for gas error
@@ -567,15 +507,14 @@ export function TransferPanelMain({
     }
   }, [
     nativeCurrency,
-    estimateGas,
     ethL1Balance,
     ethL2Balance,
     isDepositMode,
-    l1GasPrice,
-    l2GasPrice,
     selectedToken,
     setAmount,
     selectedTokenBalances,
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees,
     customFeeTokenBalances
   ])
 
@@ -788,9 +727,6 @@ export function TransferPanelMain({
             }}
             errorMessage={errorMessageElement}
             value={isMaxAmount ? '' : amount}
-            onChange={e => {
-              setAmount(e.target.value)
-            }}
           />
 
           {showUSDCSpecificInfo && (

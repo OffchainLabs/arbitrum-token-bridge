@@ -1,40 +1,29 @@
-import { BigNumber, constants, utils } from 'ethers'
+import { constants, utils } from 'ethers'
 import { useAccount } from 'wagmi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDebounce } from '@uidotdev/usehooks'
 
 import { useAppState } from '../../state'
 import { useGasPrice } from '../useGasPrice'
-import { useDebouncedValue } from '../useDebouncedValue'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenArbitrumOneNativeUSDC
 } from '../../util/TokenUtils'
-import { withdrawInitTxEstimateGas } from '../../util/WithdrawalUtils'
-import { depositEthEstimateGas } from '../../util/EthDepositUtils'
-import { depositTokenEstimateGas } from '../../util/TokenDepositUtils'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
 import { useArbQueryParams } from '../useArbQueryParams'
-import { useNativeCurrency } from '../useNativeCurrency'
-import {
-  calculateEstimatedL2GasFees,
-  calculateEstimatedL1GasFees
-} from '../../components/TransferPanel/TransferPanelMainUtils'
-import { useTokenToBeBridgedBalance } from '../useTokenToBeBridgedBalance'
-
-const INITIAL_GAS_ESTIMATION_RESULT: GasEstimationResult = {
-  // Estimated Parent Chain gas, denominated in Wei, represented as a BigNumber
-  estimatedL1Gas: constants.Zero,
-  // Estimated Child Chain gas, denominated in Wei, represented as a BigNumber
-  estimatedL2Gas: constants.Zero,
-  // Estimated Child Chain submission cost is precalculated and includes gas price
-  estimatedL2SubmissionCost: constants.Zero
-}
+import { useGasEstimates } from './useGasEstimates'
+import { useBalanceOnSourceChain } from '../useBalanceOnSourceChain'
+import { DepositGasEstimates } from '../arbTokenBridge.types'
+import { truncateExtraDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from './useSelectedTokenDecimals'
+import { percentIncrease } from '@/token-bridge-sdk/utils'
+import { DEFAULT_GAS_PRICE_PERCENT_INCREASE } from '@/token-bridge-sdk/Erc20DepositStarter'
 
 const INITIAL_GAS_SUMMARY_RESULT: UseGasSummaryResult = {
   status: 'loading',
-  estimatedL1GasFees: 0,
-  estimatedL2GasFees: 0
+  estimatedParentChainGasFees: undefined,
+  estimatedChildChainGasFees: undefined
 }
 
 export type GasEstimationStatus =
@@ -42,17 +31,12 @@ export type GasEstimationStatus =
   | 'success'
   | 'error'
   | 'unavailable'
-
-export type GasEstimationResult = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
-  estimatedL2SubmissionCost: BigNumber
-}
+  | 'insufficientBalance'
 
 export type UseGasSummaryResult = {
   status: GasEstimationStatus
-  estimatedL1GasFees: number
-  estimatedL2GasFees: number
+  estimatedParentChainGasFees: number | undefined
+  estimatedChildChainGasFees: number | undefined
 }
 
 export function useGasSummary(): UseGasSummaryResult {
@@ -65,27 +49,25 @@ export function useGasSummary(): UseGasSummaryResult {
   const { address: walletAddress } = useAccount()
 
   const [{ amount }] = useArbQueryParams()
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const debouncedAmount = useDebounce(amount, 300)
   const [gasSummary, setGasSummary] = useState<UseGasSummaryResult>(
     INITIAL_GAS_SUMMARY_RESULT
   )
+  const decimals = useSelectedTokenDecimals()
 
   const amountBigNumber = useMemo(() => {
-    try {
-      const amountSafe = amount || '0'
-      const decimals = token ? token.decimals : nativeCurrency.decimals
-
-      return utils.parseUnits(amountSafe, decimals)
-    } catch (error) {
+    if (isNaN(Number(debouncedAmount))) {
       return constants.Zero
     }
-  }, [amount, token, nativeCurrency])
+    const amountSafe = debouncedAmount || '0'
+
+    const correctDecimalsAmount = truncateExtraDecimals(amountSafe, decimals)
+
+    return utils.parseUnits(correctDecimalsAmount, decimals)
+  }, [debouncedAmount, decimals])
 
   const parentChainGasPrice = useGasPrice({ provider: parentChainProvider })
   const childChainGasPrice = useGasPrice({ provider: childChainProvider })
-
-  // Debounce the amount, so we run gas estimation only after the user has stopped typing for a bit
-  const amountDebounced = useDebouncedValue(amountBigNumber, 1_500)
 
   const setGasSummaryStatus = useCallback(
     (status: GasEstimationStatus) =>
@@ -96,106 +78,114 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
-  const balance = useTokenToBeBridgedBalance()
+  const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
+    useGasEstimates({
+      walletAddress,
+      sourceChainId: networks.sourceChain.id,
+      destinationChainId: networks.destinationChain.id,
+      amount: amountBigNumber,
+      sourceChainErc20Address: isDepositMode
+        ? token?.address
+        : token?.l2Address,
+      destinationChainErc20Address: isDepositMode
+        ? token?.l2Address
+        : token?.address
+    })
 
-  const estimateGas = useCallback(async () => {
-    if (!walletAddress) {
+  const estimatedParentChainGasFees = useMemo(() => {
+    if (!estimateGasResult?.estimatedParentChainGas) {
+      return
+    }
+    return parseFloat(
+      utils.formatEther(
+        estimateGasResult.estimatedParentChainGas.mul(parentChainGasPrice)
+      )
+    )
+  }, [estimateGasResult, parentChainGasPrice])
+
+  const estimatedChildChainGasFees = useMemo(() => {
+    if (!estimateGasResult) {
+      return
+    }
+    if (
+      isDepositMode &&
+      'estimatedChildChainSubmissionCost' in estimateGasResult
+    ) {
+      return parseFloat(
+        utils.formatEther(
+          estimateGasResult.estimatedChildChainGas
+            .mul(
+              percentIncrease(
+                childChainGasPrice,
+                DEFAULT_GAS_PRICE_PERCENT_INCREASE
+              )
+            )
+            .add(
+              (estimateGasResult as DepositGasEstimates)
+                .estimatedChildChainSubmissionCost
+            )
+        )
+      )
+    }
+    return parseFloat(
+      utils.formatEther(
+        estimateGasResult.estimatedChildChainGas.mul(childChainGasPrice)
+      )
+    )
+  }, [childChainGasPrice, estimateGasResult, isDepositMode])
+
+  const balance = useBalanceOnSourceChain(token)
+
+  useEffect(() => {
+    if (
+      !isDepositMode &&
+      (isTokenArbitrumOneNativeUSDC(token?.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(token?.address))
+    ) {
+      setGasSummaryStatus('unavailable')
       return
     }
 
-    // If user has inputed an amount over their balance, don't estimate gas
     if (!balance) {
       setGasSummaryStatus('loading')
       return
     }
 
-    if (amountDebounced.gt(balance)) {
+    // If user has input an amount over their balance, don't estimate gas
+    if (amountBigNumber.gt(balance)) {
+      setGasSummaryStatus('insufficientBalance')
+      return
+    }
+
+    if (
+      typeof estimatedParentChainGasFees === 'undefined' ||
+      typeof estimatedChildChainGasFees === 'undefined'
+    ) {
+      setGasSummaryStatus('loading')
+      return
+    }
+
+    if (gasEstimatesError) {
       setGasSummaryStatus('error')
       return
     }
 
-    const estimateGasFunctionParams = {
-      amount: amountDebounced,
-      address: walletAddress,
-      l2Provider: childChainProvider
-    }
-
-    let estimateGasResult: GasEstimationResult = INITIAL_GAS_ESTIMATION_RESULT
-
-    try {
-      setGasSummaryStatus('loading')
-
-      if (isDepositMode) {
-        estimateGasResult = token
-          ? await depositTokenEstimateGas({
-              ...estimateGasFunctionParams,
-              l1Provider: parentChainProvider,
-              erc20L1Address: token.address
-            })
-          : await depositEthEstimateGas({
-              ...estimateGasFunctionParams,
-              l1Provider: parentChainProvider
-            })
-      } else {
-        const partialEstimateGasResult = await withdrawInitTxEstimateGas({
-          ...estimateGasFunctionParams,
-          erc20L1Address: token ? token.address : undefined
-        })
-
-        estimateGasResult = {
-          ...partialEstimateGasResult,
-          estimatedL2SubmissionCost: constants.Zero
-        }
-      }
-
-      setGasSummary({
-        status: 'success',
-        estimatedL1GasFees: calculateEstimatedL1GasFees(
-          estimateGasResult.estimatedL1Gas,
-          parentChainGasPrice
-        ),
-        estimatedL2GasFees: calculateEstimatedL2GasFees(
-          estimateGasResult.estimatedL2Gas,
-          childChainGasPrice,
-          estimateGasResult.estimatedL2SubmissionCost
-        )
-      })
-    } catch (error) {
-      console.error(error)
-      setGasSummaryStatus('error')
-    }
+    setGasSummary({
+      status: 'success',
+      estimatedParentChainGasFees,
+      estimatedChildChainGasFees
+    })
   }, [
     walletAddress,
     balance,
     token,
-    amountDebounced,
     childChainProvider,
     setGasSummaryStatus,
     isDepositMode,
-    parentChainGasPrice,
-    childChainGasPrice,
-    parentChainProvider
-  ])
-
-  useEffect(() => {
-    if (!isDepositMode) {
-      if (
-        isTokenArbitrumOneNativeUSDC(token?.address) ||
-        isTokenArbitrumSepoliaNativeUSDC(token?.address)
-      ) {
-        setGasSummaryStatus('unavailable')
-        return
-      }
-    }
-
-    estimateGas()
-  }, [
-    // Re-run gas estimation when:
-    estimateGas,
-    isDepositMode, // when user switches deposit/withdraw mode
-    amountDebounced,
-    token, // when the token changes
-    setGasSummaryStatus
+    estimatedParentChainGasFees,
+    estimatedChildChainGasFees,
+    gasEstimatesError,
+    amountBigNumber
   ])
 
   return gasSummary

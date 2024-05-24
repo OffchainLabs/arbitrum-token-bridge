@@ -9,8 +9,10 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
+  stylusTestnetV2,
   localL1Network as local,
-  localL2Network as arbitrumLocal
+  localL2Network as arbitrumLocal,
+  holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
 import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
@@ -34,8 +36,10 @@ const chainList = isTestingEnvironment
       // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
+      holesky,
       // Orbit chains
       stylusTestnet,
+      stylusTestnetV2,
       ...wagmiOrbitChains,
       // add local environments during testing
       local,
@@ -49,7 +53,9 @@ const chainList = isTestingEnvironment
       arbitrumNova,
       sepolia,
       arbitrumSepolia,
+      holesky,
       stylusTestnet,
+      stylusTestnetV2,
       ...wagmiOrbitChains,
       ...customChains
     ]

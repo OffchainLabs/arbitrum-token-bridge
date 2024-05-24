@@ -1,39 +1,60 @@
-import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 import { ExternalLink } from './ExternalLink'
 import { ArbitrumStatusResponse } from '../../pages/api/status'
 import { getAPIBaseUrl } from '../../util'
 
-const SiteBannerArbiscanIncident = () => {
+const SiteBannerArbiscanIncident = ({
+  type
+}: {
+  type: 'arbitrum-one' | 'arbitrum-nova'
+}) => {
+  const isArbitrumOne = type === 'arbitrum-one'
+
+  const chainName = isArbitrumOne ? 'Arbitrum One' : 'Arbitrum Nova'
+  const explorerUrl = isArbitrumOne
+    ? 'https://arbiscan.io/'
+    : 'https://nova.arbiscan.io/'
+  const explorerTitle = isArbitrumOne ? 'Arbiscan' : 'Nova Arbiscan'
+  const alternativeExplorerUrl = isArbitrumOne
+    ? 'https://www.oklink.com/arbitrum'
+    : false
+
   return (
     <div className="bg-orange-dark px-4 py-[8px] text-center text-sm font-normal text-white">
       <div className="w-full">
         <p>
-          <ExternalLink className="underline" href="https://arbiscan.io/">
-            Arbiscan
+          <ExternalLink className="arb-hover underline" href={explorerUrl}>
+            {explorerTitle}
           </ExternalLink>{' '}
-          is temporarily facing some issues while showing the latest data.
-          Arbitrum chains are still live and running. If you need an alternative
-          block explorer, you can visit{' '}
-          <ExternalLink
-            className="underline"
-            href="https://www.oklink.com/arbitrum"
-          >
-            OKLink
-          </ExternalLink>
-          .
+          is temporarily facing some issues while showing the latest data.{' '}
+          {chainName} is still live and running.{' '}
+          {alternativeExplorerUrl ? (
+            <>
+              If you need an alternative block explorer, you can visit{' '}
+              <ExternalLink
+                className="arb-hover underline"
+                href={alternativeExplorerUrl}
+              >
+                here
+              </ExternalLink>
+              .
+            </>
+          ) : null}
         </p>
       </div>
     </div>
   )
 }
 
-function isComponentArbiscan({ name }: { name: string }) {
+function isComponentArbiscanOne({ name }: { name: string }) {
   const componentNameLowercased = name.toLowerCase()
-  return (
-    componentNameLowercased === 'arb1 - arbiscan' ||
-    componentNameLowercased === 'nova - arbiscan'
-  )
+  return componentNameLowercased === 'arb1 - arbiscan'
+}
+
+function isComponentArbiscanNova({ name }: { name: string }) {
+  const componentNameLowercased = name.toLowerCase()
+  return componentNameLowercased === 'nova - arbiscan'
 }
 
 function isComponentOperational({ status }: { status: string }) {
@@ -42,7 +63,7 @@ function isComponentOperational({ status }: { status: string }) {
 
 export const SiteBanner = ({
   children,
-  expiryDate,
+  expiryDate, // date in utc
   ...props
 }: React.HTMLAttributes<HTMLDivElement> & { expiryDate?: string }) => {
   const [arbitrumStatus, setArbitrumStatus] = useState<ArbitrumStatusResponse>({
@@ -68,18 +89,26 @@ export const SiteBanner = ({
   }, [])
 
   // show incident-banner if there is an active incident
-  const showArbiscanIncidentBanner = arbitrumStatus.content.components.some(
+  const showArbiscanOneIncidentBanner = arbitrumStatus.content.components.some(
     component =>
-      isComponentArbiscan(component) && !isComponentOperational(component)
+      isComponentArbiscanOne(component) && !isComponentOperational(component)
+  )
+  const showArbiscanNovaIncidentBanner = arbitrumStatus.content.components.some(
+    component =>
+      isComponentArbiscanNova(component) && !isComponentOperational(component)
   )
 
   // show info-banner till expiry date if provided
   const showInfoBanner =
-    !expiryDate || (expiryDate && dayjs().isBefore(dayjs(expiryDate)))
+    !expiryDate ||
+    (expiryDate && dayjs.utc().isBefore(dayjs(expiryDate).utc(true)))
 
-  // arbiscan banner always takes priority
-  if (showArbiscanIncidentBanner) {
-    return <SiteBannerArbiscanIncident />
+  if (showArbiscanOneIncidentBanner) {
+    return <SiteBannerArbiscanIncident type="arbitrum-one" />
+  }
+
+  if (showArbiscanNovaIncidentBanner) {
+    return <SiteBannerArbiscanIncident type="arbitrum-nova" />
   }
 
   if (!showInfoBanner) {
