@@ -7,6 +7,8 @@ const zAddress = z
   .string()
   .refine(address => isAddress(address), 'Invalid address')
 
+const zIsTrue = z.boolean({ coerce: true })
+
 function validateOrbitChain(chain: OrbitChainConfig) {
   z.object({
     chainID: z.number().nonnegative().int(),
@@ -21,8 +23,8 @@ function validateOrbitChain(chain: OrbitChainConfig) {
     nativeToken: zAddress.optional(),
     explorerUrl: z.string(),
     rpcUrl: z.string(),
-    isArbitrum: z.boolean(),
-    isCustom: z.boolean(),
+    isArbitrum: zIsTrue,
+    isCustom: zIsTrue,
     name: z.string(),
     slug: z.string(),
     partnerChainID: z.number().nonnegative().int(),
