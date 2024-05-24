@@ -60,7 +60,10 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    Sentry.captureException(error)
+    const code = (error as { code: string }).code
+    if (code !== 'INSUFFICIENT_FUNDS' && code === 'UNPREDICTABLE_GAS_LIMIT') {
+      Sentry.captureException(error)
+    }
 
     return {
       estimatedParentChainGas,
