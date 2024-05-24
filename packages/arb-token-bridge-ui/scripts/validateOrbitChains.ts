@@ -25,8 +25,8 @@ function validateOrbitChain(chain: OrbitChainConfig) {
         sequencerInbox: zAddress
       }),
       nativeToken: zAddress.optional(),
-      explorerUrl: z.string(),
-      rpcUrl: z.string(),
+      explorerUrl: z.string().url(),
+      rpcUrl: z.string().url(),
       isArbitrum: zIsTrue,
       isCustom: zIsTrue,
       name: z.string(),
