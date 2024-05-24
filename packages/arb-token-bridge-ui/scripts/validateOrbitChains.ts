@@ -7,10 +7,9 @@ const zAddress = z
   .string()
   .refine(address => isAddress(address), 'Invalid address')
 
-const zIsTrue = z.boolean({
-  invalid_type_error: "Invalid input, must be 'true'",
-  description: "Invalid input, must be 'true'"
-}).refine(bool => bool === true)
+const zIsTrue = z
+  .boolean()
+  .refine(bool => bool === true, "Invalid input, must be true")
 
 function validateOrbitChain(chain: OrbitChainConfig) {
   try {

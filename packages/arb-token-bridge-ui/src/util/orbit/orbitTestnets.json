@@ -12,7 +12,7 @@
     "nativeToken": "0x4e6f41acbfa8eb4a3b25e151834d9a14b49b69d2",
     "explorerUrl": "https://testnet-explorer-v2.xai-chain.net",
     "rpcUrl": "https://testnet-v2.xai-chain.net/rpc",
-    "isArbitrum": false,
+    "isArbitrum": true,
     "isCustom": true,
     "name": "Xai Testnet",
     "slug": "xai-testnet",
