@@ -15,6 +15,7 @@ import {
   arbitrumNova,
   arbitrumSepolia,
   stylusTestnet,
+  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
@@ -65,6 +66,7 @@ export function isSupportedChainId(
     arbitrumNova.id,
     arbitrumSepolia.id,
     stylusTestnet.id,
+    stylusTestnetV2.id,
     arbitrumLocal.id,
     local.id,
     ...getOrbitChains().map(chain => chain.chainId),

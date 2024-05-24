@@ -139,7 +139,7 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumNova } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
 
   const latestEth = useLatest(eth)
 
@@ -372,11 +372,9 @@ export function TransferPanel() {
     }
 
     setTransferring(true)
-    const currentChain = latestNetworks.current.sourceChain
-    const currentNetworkName = getNetworkName(currentChain.id)
+    const childChainName = getNetworkName(childChain.id)
     const isConnectedToTheWrongChain =
-      (isDepositMode && isConnectedToArbitrum.current) ||
-      (!isDepositMode && !isConnectedToArbitrum.current)
+      chainId !== latestNetworks.current.sourceChain.id
 
     if (isConnectedToTheWrongChain) {
       trackEvent('Switch Network and Transfer', {
@@ -384,8 +382,9 @@ export function TransferPanel() {
         tokenSymbol: 'USDC',
         assetType: 'ERC-20',
         accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-        network: currentNetworkName,
-        amount: Number(amount)
+        network: childChainName,
+        amount: Number(amount),
+        version: 2
       })
 
       const switchTargetChainId = latestNetworks.current.sourceChain.id
@@ -495,9 +494,10 @@ export function TransferPanel() {
         // For SCW, we assume that the transaction went through
         trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
           accountType: 'Smart Contract',
-          network: currentNetworkName,
+          network: childChainName,
           amount: Number(amount),
-          complete: false
+          complete: false,
+          version: 2
         })
 
         return
@@ -509,9 +509,10 @@ export function TransferPanel() {
 
       trackEvent(isDepositMode ? 'CCTP Deposit' : 'CCTP Withdrawal', {
         accountType: 'EOA',
-        network: currentNetworkName,
+        network: childChainName,
         amount: Number(amount),
-        complete: false
+        complete: false,
+        version: 2
       })
 
       const newTransfer: MergedTransaction = {
@@ -599,7 +600,7 @@ export function TransferPanel() {
       return
     }
 
-    const l2NetworkName = getNetworkName(childChain.id)
+    const childChainName = getNetworkName(childChain.id)
 
     setTransferring(true)
 
@@ -649,8 +650,9 @@ export function TransferPanel() {
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
-          network: l2NetworkName,
-          amount: Number(amount)
+          network: childChainName,
+          amount: Number(amount),
+          version: 2
         })
 
         const switchTargetChainId = latestNetworks.current.sourceChain.id
@@ -688,19 +690,21 @@ export function TransferPanel() {
         return networkConnectionWarningToast()
       }
 
-      const sourceChainProvider = latestNetworks.current.sourceChainProvider
-      const destinationChainProvider =
-        latestNetworks.current.destinationChainProvider
       const sourceChainErc20Address = isDepositMode
         ? selectedToken?.address
         : selectedToken?.l2Address
+
+      const destinationChainErc20Address = isDepositMode
+        ? selectedToken?.l2Address
+        : selectedToken?.address
 
       const signer = isDepositMode ? l1Signer : l2Signer
 
       const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
         sourceChainId,
         sourceChainErc20Address,
-        destinationChainId
+        destinationChainId,
+        destinationChainErc20Address
       })
 
       const { isNativeCurrencyTransfer, isWithdrawal } =
@@ -844,7 +848,7 @@ export function TransferPanel() {
           tokenSymbol: selectedToken?.symbol,
           assetType: 'ERC-20',
           accountType: 'Smart Contract',
-          network: l2NetworkName,
+          network: childChainName,
           amount: Number(amount)
         })
       }
@@ -873,7 +877,7 @@ export function TransferPanel() {
         tokenSymbol: selectedToken?.symbol,
         assetType: selectedToken ? 'ERC-20' : 'ETH',
         accountType: 'EOA',
-        network: getNetworkName(parentChain.id),
+        network: getNetworkName(childChain.id),
         amount: Number(amount)
       })
     }
@@ -935,6 +939,38 @@ export function TransferPanel() {
     }
   }
 
+  const isCctpTransfer = useMemo(() => {
+    if (!selectedToken) {
+      return false
+    }
+
+    if (isDepositMode) {
+      if (isTokenMainnetUSDC(selectedToken.address) && isArbitrumOne) {
+        return true
+      }
+
+      if (isTokenSepoliaUSDC(selectedToken.address) && isArbitrumSepolia) {
+        return true
+      }
+    } else {
+      if (
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) &&
+        isArbitrumOne
+      ) {
+        return true
+      }
+
+      if (
+        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address) &&
+        isArbitrumSepolia
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
+
   return (
     <>
       <TokenApprovalDialog
@@ -984,12 +1020,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.deposit}
               onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenMainnetUSDC(selectedToken.address) ||
-                    isTokenSepoliaUSDC(selectedToken.address)) &&
-                  !isArbitrumNova
-                ) {
+                if (isCctpTransfer) {
                   transferCctp()
                 } else if (selectedToken) {
                   depositToken()
@@ -1019,11 +1050,7 @@ export function TransferPanel() {
               loading={isTransferring}
               disabled={!transferReady.withdrawal}
               onClick={() => {
-                if (
-                  selectedToken &&
-                  (isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-                    isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
-                ) {
+                if (isCctpTransfer) {
                   transferCctp()
                 } else {
                   transfer()

@@ -164,6 +164,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
+  },
+  {
+    id: 18,
+    // L3X
+    originChainID: 12324,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/12324_arbed_uniswap_labs.json',
+    name: 'Arbed Uniswap List',
+    isDefault: true,
+    logoURI: UniswapLogo
   }
 ]
 
