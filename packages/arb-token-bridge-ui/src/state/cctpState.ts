@@ -29,6 +29,7 @@ import { useAccountType } from '../hooks/useAccountType'
 import { AssetType } from '../hooks/arbTokenBridge.types'
 import { useTransactionHistory } from '../hooks/useTransactionHistory'
 import { Address } from '../util/AddressUtils'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 // see https://developers.circle.com/stablecoin/docs/cctp-technical-reference#block-confirmations-for-attestations
 // Blocks need to be awaited on the L1 whether it's a deposit or a withdrawal
@@ -570,6 +571,9 @@ export function useClaimCctp(tx: MergedTransaction) {
         throw new Error('Transaction failed')
       }
     } catch (e) {
+      if (isUserRejectedError(e)) {
+        return
+      }
       Sentry.captureException(e)
       throw e
     } finally {
