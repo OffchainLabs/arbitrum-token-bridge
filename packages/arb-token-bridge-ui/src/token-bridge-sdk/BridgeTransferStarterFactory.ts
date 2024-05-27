@@ -6,8 +6,7 @@ import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
-import { getBridgeTransferProperties } from './utils'
-import { getProviderForChainId } from '../hooks/useNetworks'
+import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
   let cacheKey = `source:${props.sourceChainId}-destination:${props.destinationChainId}`
