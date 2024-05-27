@@ -86,6 +86,10 @@ export function EstimatedGas({
     [isBridgingEth, childChain.id]
   )
 
+  const isDestinationChainOrbit = isNetwork(
+    networks.destinationChain.id
+  ).isOrbitChain
+
   const isWithdrawalParentChain = !isDepositMode && isParentChain
 
   const estimatedGasFee = useMemo(() => {
@@ -119,7 +123,11 @@ export function EstimatedGas({
     return <GasFeeForClaimTxMessage networkName={parentChainName} />
   }
 
-  if (isTokenNativeUSDC(selectedToken?.address) && !isSourceChain) {
+  if (
+    isTokenNativeUSDC(selectedToken?.address) &&
+    !isSourceChain &&
+    !isDestinationChainOrbit
+  ) {
     return (
       <GasFeeForClaimTxMessage networkName={networks.destinationChain.name} />
     )
