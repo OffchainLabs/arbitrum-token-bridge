@@ -8,16 +8,16 @@ import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
 type GetRetryableTicketParams = {
-  l1TxHash: string
+  parentChainTxHash: string
   retryableCreationId?: string
-  l1Provider: Provider
-  l2Signer: Signer
+  parentChainProvider: Provider
+  childChainSigner: Signer
 }
 
 type GetRetryableTicketExpirationParams = {
-  l1TxHash: string
-  l1Provider: JsonRpcProvider
-  l2Provider: JsonRpcProvider
+  parentChainTxHash: string
+  parentChainProvider: JsonRpcProvider
+  childChainProvider: JsonRpcProvider
 }
 
 type RetryableTicketExpirationResponse = {
@@ -29,20 +29,22 @@ type RetryableTicketExpirationResponse = {
 }
 
 export async function getRetryableTicket({
-  l1TxHash,
+  parentChainTxHash,
   retryableCreationId,
-  l1Provider,
-  l2Signer
+  parentChainProvider,
+  childChainSigner
 }: GetRetryableTicketParams): Promise<IL1ToL2MessageWriter> {
   if (!retryableCreationId) {
     throw new Error("Error: Couldn't find retryable ticket creation id")
   }
 
-  const l1TxReceipt = new L1TransactionReceipt(
-    await l1Provider.getTransactionReceipt(l1TxHash)
+  const parentChainTxReceipt = new L1TransactionReceipt(
+    await parentChainProvider.getTransactionReceipt(parentChainTxHash)
   )
 
-  const retryableTicket = (await l1TxReceipt.getL1ToL2Messages(l2Signer))
+  const retryableTicket = (
+    await parentChainTxReceipt.getL1ToL2Messages(childChainSigner)
+  )
     // Find message with the matching id
     .find(m => m.retryableCreationId === retryableCreationId)
 
@@ -54,9 +56,9 @@ export async function getRetryableTicket({
 }
 
 export const getRetryableTicketExpiration = async ({
-  l1TxHash,
-  l1Provider,
-  l2Provider
+  parentChainTxHash,
+  parentChainProvider,
+  childChainProvider
 }: GetRetryableTicketExpirationParams): Promise<RetryableTicketExpirationResponse> => {
   let isLoading = true,
     isLoadingError = false,
@@ -66,13 +68,17 @@ export const getRetryableTicketExpiration = async ({
   let expirationDate = 0
 
   try {
-    const depositTxReceipt = await l1Provider.getTransactionReceipt(l1TxHash)
-    const l1TxReceipt = new L1TransactionReceipt(depositTxReceipt)
-    const [l1ToL2Msg] = await l1TxReceipt.getL1ToL2Messages(l2Provider)
+    const depositTxReceipt = await parentChainProvider.getTransactionReceipt(
+      parentChainTxHash
+    )
+    const parentChainTxReceipt = new L1TransactionReceipt(depositTxReceipt)
+    const [parentToChildMsg] = await parentChainTxReceipt.getL1ToL2Messages(
+      childChainProvider
+    )
 
     const now = dayjs()
 
-    const expiryDateResponse = await l1ToL2Msg!.getTimeout()
+    const expiryDateResponse = await parentToChildMsg!.getTimeout()
     expirationDate = Number(expiryDateResponse.toString()) * 1000
 
     daysUntilExpired = dayjs(expirationDate).diff(now, 'days')
