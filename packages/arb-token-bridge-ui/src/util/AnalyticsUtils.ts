@@ -53,6 +53,7 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: string
     amount: number
+    version: number
   }
   'Redeem Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
@@ -68,12 +69,14 @@ type AnalyticsEventMap = {
     network: string
     amount: number
     complete: boolean
+    version: number
   }
   'CCTP Withdrawal': {
     accountType: AccountType
     network: string
     amount: number
     complete: boolean
+    version: number
   }
 }
 
