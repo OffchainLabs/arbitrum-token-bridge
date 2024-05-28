@@ -42,14 +42,14 @@ export function useRedeemRetryable(
       }
 
       const retryableTicket = await getRetryableTicket({
-        l1TxHash: tx.txId,
+        parentChainTxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: getProviderForChainId(tx.parentChainId),
-        l2Signer: signer
+        parentChainProvider: getProviderForChainId(tx.parentChainId),
+        childChainSigner: signer
       })
 
-      const reedemTx = await retryableTicket.redeem()
-      await reedemTx.wait()
+      const redeemTx = await retryableTicket.redeem()
+      await redeemTx.wait()
 
       const status = await retryableTicket.status()
       const isSuccess = status === L1ToL2MessageStatus.REDEEMED
