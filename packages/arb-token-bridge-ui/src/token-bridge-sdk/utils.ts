@@ -1,7 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
-import { Provider } from '@ethersproject/providers'
+import { Provider, StaticJsonRpcProvider } from '@ethersproject/providers'
 
-import { isNetwork } from '../util/networks'
+import { ChainId, isNetwork, rpcURLs } from '../util/networks'
 import { BridgeTransferStarterPropsWithChainIds } from './BridgeTransferStarter'
 
 export const getAddressFromSigner = async (signer: Signer) => {
@@ -57,4 +57,27 @@ export function percentIncrease(
   increase: BigNumber
 ): BigNumber {
   return num.add(num.mul(increase).div(100))
+}
+
+const getProviderForChainCache: {
+  [chainId: number]: StaticJsonRpcProvider
+} = {
+  // start with empty cache
+}
+
+function createProviderWithCache(chainId: ChainId) {
+  const rpcUrl = rpcURLs[chainId]
+  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
+  getProviderForChainCache[chainId] = provider
+  return provider
+}
+
+export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
+  const cachedProvider = getProviderForChainCache[chainId]
+
+  if (typeof cachedProvider !== 'undefined') {
+    return cachedProvider
+  }
+
+  return createProviderWithCache(chainId)
 }
