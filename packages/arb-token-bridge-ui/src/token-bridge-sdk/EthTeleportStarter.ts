@@ -98,8 +98,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       )
       return {
         // fallback estimates
-        // https://sepolia.etherscan.io/tx/0xdf2f688ea2ec3c87104e42de4008c3ebd113e14b7179cee165a1d26ade5a0487
-        estimatedParentChainGas: BigNumber.from(120_000),
+        estimatedParentChainGas: BigNumber.from(240_000),
         estimatedChildChainGas: constants.Zero
       }
     }
