@@ -67,6 +67,11 @@ export function getBaseChainIdByChainId({
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  // for server-side rendering
+  if (typeof window === 'undefined') {
+    return []
+  }
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
