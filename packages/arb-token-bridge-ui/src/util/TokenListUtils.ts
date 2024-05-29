@@ -19,10 +19,63 @@ export interface BridgeTokenList {
   url: string
   name: string
   isDefault: boolean
-  isArbitrumTokenTokenList?: boolean
+  isAlwaysLoaded?: boolean
   logoURI: ImageProps['src']
   isValid?: boolean
 }
+
+const BRIDGE_TOKEN_LISTS_NATIVE: BridgeTokenList[] = [
+  // Xai
+  {
+    id: 19,
+    originChainID: 660279,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/660279_arbed_native_list.json',
+    name: 'L2 Native List',
+    isDefault: true,
+    isAlwaysLoaded: true,
+    logoURI: ArbitrumLogo
+  },
+  // Rari
+  {
+    id: 20,
+    originChainID: 1380012617,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/1380012617_arbed_native_list.json',
+    name: 'L2 Native List',
+    isDefault: true,
+    isAlwaysLoaded: true,
+    logoURI: ArbitrumLogo
+  },
+  // Muster
+  {
+    id: 21,
+    originChainID: 4078,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/4078_arbed_native_list.json',
+    name: 'L2 Native List',
+    isDefault: true,
+    isAlwaysLoaded: true,
+    logoURI: ArbitrumLogo
+  },
+  // Proof of Play Apex
+  {
+    id: 22,
+    originChainID: 70700,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/70700_arbed_native_list.json',
+    name: 'L2 Native List',
+    isDefault: true,
+    isAlwaysLoaded: true,
+    logoURI: ArbitrumLogo
+  },
+  // L3X
+  {
+    id: 23,
+    originChainID: 12324,
+    url: 'https://tokenlist.arbitrum.io/ArbTokenLists/12324_arbed_native_list.json',
+    name: 'L2 Native List',
+    isDefault: true,
+    isAlwaysLoaded: true,
+    logoURI: ArbitrumLogo
+  }
+]
 
 export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
   {
@@ -32,7 +85,7 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbitrum Token',
     isDefault: true,
     logoURI: ArbitrumLogo,
-    isArbitrumTokenTokenList: true
+    isAlwaysLoaded: true
   },
   {
     id: 1,
@@ -173,7 +226,8 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     name: 'Arbed Uniswap List',
     isDefault: true,
     logoURI: UniswapLogo
-  }
+  },
+  ...BRIDGE_TOKEN_LISTS_NATIVE
 ]
 
 export const listIdsToNames: { [key: string]: string } = {}

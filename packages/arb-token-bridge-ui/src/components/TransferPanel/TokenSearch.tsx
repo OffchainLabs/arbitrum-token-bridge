@@ -132,8 +132,8 @@ function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
         return false
       }
 
-      // Don't show the Arbitrum Token token list, because it's special and can't be disabled
-      if (tokenList.isArbitrumTokenTokenList) {
+      // Don't show specials token lists (Arbitrum Token, Native token lists) because they can't be disabled
+      if (tokenList.isAlwaysLoaded) {
         return false
       }
 
