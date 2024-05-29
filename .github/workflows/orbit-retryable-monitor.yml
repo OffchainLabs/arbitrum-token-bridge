@@ -3,7 +3,7 @@ name: Orbit Retryable Tracker
 on:
   schedule:
     # Run everyday at 12:00 PM UTC
-    - cron: '0 12 * * *'
+    - cron: '*/3 * * * *'
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
@@ -16,12 +16,13 @@ jobs:
 
     steps:
     - name: Checkout Bridge repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
+      with:
+        repository: https://github.com/OffchainLabs/arbitrum-token-bridge
+        ref: 'feat-enable-orbit-retryable-monitoring' # the branch where our alerting code is present
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
-      with:
-        node-version: '18'
 
     - name: Install dependencies
       run: yarn install
@@ -30,7 +31,7 @@ jobs:
       run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
     - name: Checkout Orbit-Retryable-Tracker repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         repository: https://github.com/OffchainLabs/orbit-retryable-tracker
         ref: 'enable-alerting' # the branch where our alerting code is present
