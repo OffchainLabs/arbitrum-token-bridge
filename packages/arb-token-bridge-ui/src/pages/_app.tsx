@@ -20,6 +20,7 @@ import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -39,7 +40,7 @@ Sentry.init({
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
-  beforeSend: event => {
+  beforeSend: (event, hint) => {
     if (event.message) {
       if (
         // Ignore events related to failed `eth_gasPrice` calls
@@ -51,9 +52,12 @@ Sentry.init({
         // Ignore events about window.propertyX being redefined accross multiple extensions
         event.message.match(/Cannot redefine property/i)
       ) {
-        console.log('test')
         return null
       }
+    }
+
+    if (isUserRejectedError(hint.originalException)) {
+      return null
     }
 
     return event
