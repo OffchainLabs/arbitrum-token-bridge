@@ -40,7 +40,16 @@ async function generateOrbitChainsToMonitor() {
     )
   }))
 
-  fs.writeFileSync('chains.json', JSON.stringify(orbitChainsToMonitor, null, 2))
+  fs.writeFileSync(
+    'orbit-chains.json',
+    JSON.stringify(
+      {
+        childChains: [orbitChainsToMonitor]
+      },
+      null,
+      2
+    )
+  )
 }
 
 generateOrbitChainsToMonitor()

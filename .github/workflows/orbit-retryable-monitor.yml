@@ -7,6 +7,8 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+  SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+  SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
 
 jobs:
   run-alerting:
@@ -14,7 +16,7 @@ jobs:
 
     steps:
     - name: Checkout Bridge repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
@@ -28,19 +30,20 @@ jobs:
       run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
     - name: Checkout Orbit-Retryable-Tracker repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
-        repository: https://github.com/OffchainLabs/orbit-retryable-tracker/tree/enable-alerting
+        repository: https://github.com/OffchainLabs/orbit-retryable-tracker
+        ref: 'enable-alerting' # the branch where our alerting code is present
         path: orbit-retryable-tracker
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: cp chains.jsonorbit-retryable-tracker/lib/config.json
+      run: cp orbit-chains.json orbit-retryable-tracker/lib/config.json
 
-    - name: Set up Node.js
-      working-directory: orbit-retryable-tracker
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+    # - name: Set up Node.js
+    #   working-directory: orbit-retryable-tracker
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: '18' # Specify the version of Node.js you need
     
     - name: Install dependencies for Retryable-Tracker
       working-directory: orbit-retryable-tracker
@@ -56,4 +59,4 @@ jobs:
 
 
     - name: Clean up
-      run: rm chains.json
+      run: rm orbit-chains.json
