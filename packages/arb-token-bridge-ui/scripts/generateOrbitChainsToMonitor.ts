@@ -42,16 +42,14 @@ async function generateOrbitChainsToMonitor() {
   }))
 
   // write to orbit-chains.json, we will use this json as an input to the retryable-monitoring script
-  fs.writeFileSync(
-    'orbit-chains.json',
-    JSON.stringify(
-      {
-        childChains: [orbitChainsToMonitor]
-      },
-      null,
-      2
-    )
+  const resultsJson = JSON.stringify(
+    {
+      childChains: [orbitChainsToMonitor]
+    },
+    null,
+    2
   )
+  fs.writeFileSync('./public/__auto-generated-orbit-chains.json', resultsJson)
 }
 
 generateOrbitChainsToMonitor()
