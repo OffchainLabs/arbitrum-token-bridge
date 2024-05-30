@@ -18,7 +18,7 @@ jobs:
     - name: Checkout Bridge
       uses: actions/checkout@v3
       with:
-        repository: https://github.com/OffchainLabs/arbitrum-token-bridge
+        repository: OffchainLabs/arbitrum-token-bridge
         ref: 'feat-enable-orbit-retryable-monitoring' # the branch where our alerting code is present
 
     - name: Restore node_modules
