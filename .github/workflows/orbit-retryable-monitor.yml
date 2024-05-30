@@ -39,15 +39,9 @@ jobs:
 
     - name: Copy chains JSON to Retryable-Tracker
       run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./orbit-retryable-tracker/config.json
-
-    # - name: Set up Node.js
-    #   working-directory: orbit-retryable-tracker
-    #   uses: actions/setup-node@v3
-    #   with:
-    #     node-version: '18' # Specify the version of Node.js you need
     
     - name: Install dependencies for Retryable-Tracker
-      run: cd ./orbit-retryable-tracker && yarn install
+      run: cd ./orbit-retryable-tracker && yarn install && ls
 
     - name: Run alerting command
       run: cd ./orbit-retryable-tracker && yarn findRetryables --continuous --enableAlerting
