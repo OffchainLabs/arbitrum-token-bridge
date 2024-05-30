@@ -28,7 +28,7 @@ jobs:
       run: yarn install
 
     - name: Generate chains JSON
-      run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
+      run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor --testnet
 
     - name: Checkout Orbit-Retryable-Tracker repository
       uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         path: orbit-retryable-tracker
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./orbit-retryable-tracker/config.json
+      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./orbit-retryable-tracker/lib/config.json
    
     - name: Setup Node for Retryable-Tracker
       uses: actions/setup-node@v4
@@ -57,4 +57,4 @@ jobs:
 
 
     - name: Clean up
-      run: rm packages/arb-token-bridge-ui/scripts/orbit-chains.json
+      run: rm ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json

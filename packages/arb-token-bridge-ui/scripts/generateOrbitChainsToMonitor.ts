@@ -1,7 +1,23 @@
 import fs from 'fs'
+import yargs from 'yargs'
 import { L2Network } from '@arbitrum/sdk'
 import { getOrbitChains } from '../src/util/orbitChainsList'
 import { getExplorerUrl, rpcURLs } from '../src/util/networks'
+
+// Type for options passed to findRetryables function
+type GenerateOrbitChainsOptions = {
+  mainnet: boolean
+  testnet: boolean
+}
+
+// Parsing command line arguments using yargs
+const options: GenerateOrbitChainsOptions = yargs(process.argv.slice(2))
+  .options({
+    mainnet: { type: 'boolean', default: true },
+    testnet: { type: 'boolean', default: false }
+  })
+  .strict()
+  .parseSync() as GenerateOrbitChainsOptions
 
 interface ChildNetwork extends L2Network {
   parentRpcUrl: string
@@ -27,8 +43,14 @@ const sanitizeRpcUrl = (url: string) => {
   }
 }
 
-async function generateOrbitChainsToMonitor() {
-  const orbitChains = await getOrbitChains()
+async function generateOrbitChainsToMonitor({
+  mainnet,
+  testnet
+}: {
+  mainnet: boolean
+  testnet: boolean
+}) {
+  const orbitChains = await getOrbitChains({ mainnet, testnet })
 
   // make the orbit chain data compatible with the orbit-data required by the retryable-monitoring script
   const orbitChainsToMonitor: ChildNetwork[] = orbitChains.map(orbitChain => ({
@@ -44,7 +66,7 @@ async function generateOrbitChainsToMonitor() {
   // write to orbit-chains.json, we will use this json as an input to the retryable-monitoring script
   const resultsJson = JSON.stringify(
     {
-      childChains: [orbitChainsToMonitor]
+      childChains: orbitChainsToMonitor
     },
     null,
     2
@@ -52,6 +74,7 @@ async function generateOrbitChainsToMonitor() {
   fs.writeFileSync('./public/__auto-generated-orbit-chains.json', resultsJson)
 }
 
-generateOrbitChainsToMonitor()
-
-//6
+generateOrbitChainsToMonitor({
+  mainnet: options.mainnet,
+  testnet: options.testnet
+})
