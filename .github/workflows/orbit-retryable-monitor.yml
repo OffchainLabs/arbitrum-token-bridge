@@ -2,10 +2,8 @@ name: Orbit Retryable Tracker
 
 on:
   push:
-    branches:
-      - "feat-enable-orbit-retryable-monitoring"
     paths:
-      - ".github/workflows/orbit-retryable-monitor.yaml"
+      - ".github/workflows/orbit-retryable-monitor.yml"
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
@@ -17,14 +15,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Bridge repository
+    - name: Checkout Bridge
       uses: actions/checkout@v3
       with:
         repository: https://github.com/OffchainLabs/arbitrum-token-bridge
         ref: 'feat-enable-orbit-retryable-monitoring' # the branch where our alerting code is present
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    - name: Restore node_modules
+      uses: OffchainLabs/actions/node-modules/restore@main
 
     - name: Install dependencies
       run: yarn install
