@@ -359,13 +359,13 @@ export async function fetchTeleporterDepositStatusData({
     }
     const l2Retryable = isEthTeleport(depositStatus)
       ? depositStatus.l2Retryable
-      : depositStatus.l1l2TokenBridge
+      : depositStatus.l1l2TokenBridgeRetryable
     const l2ForwarderFactoryRetryable = isEthTeleport(depositStatus)
       ? null
-      : depositStatus.l2ForwarderFactory
+      : depositStatus.l2ForwarderFactoryRetryable
     const l3Retryable = isEthTeleport(depositStatus)
       ? depositStatus.l3Retryable
-      : depositStatus.l2l3TokenBridge
+      : depositStatus.l2l3TokenBridgeRetryable
 
     // extract the l2 transaction details, if any
     const l1l2Redeem = await l2Retryable.getSuccessfulRedeem()
