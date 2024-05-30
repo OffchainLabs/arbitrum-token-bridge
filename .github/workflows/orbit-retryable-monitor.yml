@@ -20,7 +20,7 @@ jobs:
       with:
         repository: OffchainLabs/arbitrum-token-bridge
         ref: 'feat-enable-orbit-retryable-monitoring' # the branch where our alerting code is present
-        path: bridge-ui
+        path: main
 
     - name: Restore node_modules
       uses: OffchainLabs/actions/node-modules/restore@main
@@ -29,7 +29,7 @@ jobs:
       run: yarn install
 
     - name: Generate chains JSON
-      working-directory: bridge-ui
+      working-directory: main
       run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
     - name: Checkout Orbit-Retryable-Tracker repository
@@ -40,7 +40,7 @@ jobs:
         path: orbit-retryable-tracker
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: cp bridge-ui/orbit-chains.json orbit-retryable-tracker/lib/config.json
+      run: cp main/orbit-chains.json orbit-retryable-tracker/lib/config.json
 
     # - name: Set up Node.js
     #   working-directory: orbit-retryable-tracker
