@@ -38,7 +38,7 @@ jobs:
         path: orbit-retryable-tracker
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: pwd && cd ./packages/arb-token-bridge-ui/public && ls
+      run: cp ./packages/arb-token-bridge-ui/public ./orbit-retryable-tracker/config.json
 
     # - name: Set up Node.js
     #   working-directory: orbit-retryable-tracker
