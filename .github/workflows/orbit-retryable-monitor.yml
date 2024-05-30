@@ -40,11 +40,11 @@ jobs:
     - name: Copy chains JSON to Retryable-Tracker
       run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./orbit-retryable-tracker/config.json
    
-    - name: Setup Node
+    - name: Setup Node for Retryable-Tracker
       uses: actions/setup-node@v4
       with:
         node-version: 18
-      
+
     - name: Install dependencies for Retryable-Tracker
       run: cd ./orbit-retryable-tracker && yarn install
 
