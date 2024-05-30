@@ -1,6 +1,6 @@
 import fs from 'fs'
-import { getOrbitChains } from '../src/util/orbitChainsList'
 import { L2Network } from '@arbitrum/sdk'
+import { getOrbitChains } from '../src/util/orbitChainsList'
 import { getExplorerUrl, rpcURLs } from '../src/util/networks'
 
 interface ChildNetwork extends L2Network {
@@ -30,6 +30,7 @@ const sanitizeRpcUrl = (url: string) => {
 async function generateOrbitChainsToMonitor() {
   const orbitChains = await getOrbitChains()
 
+  // make the orbit chain data compatible with the orbit-data required by the retryable-monitoring script
   const orbitChainsToMonitor: ChildNetwork[] = orbitChains.map(orbitChain => ({
     ...orbitChain,
     explorerUrl: sanitizeExplorerUrl(orbitChain.explorerUrl),
@@ -40,6 +41,7 @@ async function generateOrbitChainsToMonitor() {
     )
   }))
 
+  // write to orbit-chains.json, we will use this json as an input to the retryable-monitoring script
   fs.writeFileSync(
     'orbit-chains.json',
     JSON.stringify(
