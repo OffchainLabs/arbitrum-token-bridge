@@ -28,7 +28,7 @@ jobs:
       run: yarn install
 
     - name: Generate chains JSON
-      run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor --testnet
+      run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
     - name: Checkout Orbit-Retryable-Tracker repository
       uses: actions/checkout@v3
