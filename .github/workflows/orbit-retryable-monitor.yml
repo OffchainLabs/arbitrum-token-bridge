@@ -33,7 +33,7 @@ jobs:
     - name: Checkout Orbit-Retryable-Tracker repository
       uses: actions/checkout@v3
       with:
-        repository: https://github.com/OffchainLabs/orbit-retryable-tracker
+        repository: OffchainLabs/orbit-retryable-tracker
         ref: 'enable-alerting' # the branch where our alerting code is present
         path: orbit-retryable-tracker
 
