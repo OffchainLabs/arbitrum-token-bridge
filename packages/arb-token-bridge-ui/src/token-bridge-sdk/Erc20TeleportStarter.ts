@@ -198,7 +198,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      to: address,
+      destinationAddress: address,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
       l1Provider: this.sourceChainProvider,

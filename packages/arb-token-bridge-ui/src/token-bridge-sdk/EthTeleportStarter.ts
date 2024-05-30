@@ -114,7 +114,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      to: address,
+      destinationAddress: address,
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
