@@ -49,7 +49,7 @@ jobs:
       run: cd ./orbit-retryable-tracker && yarn install
 
     - name: Run alerting command
-      run: cd ./orbit-retryable-tracker && yarn findRetryables --continuous --enableAlerting
+      run: cd ./orbit-retryable-tracker && yarn findRetryables --enableAlerting
       env:
         NODE_ENV: "CI"
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
