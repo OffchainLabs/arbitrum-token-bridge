@@ -1,9 +1,9 @@
 name: Orbit Retryable Tracker
 
 on:
-  push:
-    paths:
-      - ".github/workflows/orbit-retryable-monitor.yml"
+  schedule:
+    # Run everyday at 12:00 PM UTC
+    - cron: '0 12 * * *'
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
