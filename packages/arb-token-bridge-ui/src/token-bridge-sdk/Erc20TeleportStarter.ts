@@ -162,8 +162,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       )
       return {
         // fallback estimates
-        // https://sepolia.etherscan.io/tx/0x894321f07217d4add560e3c011fbcea672c79eb8b5e7d5332a1657e1d21ca8c4
-        estimatedParentChainGas: BigNumber.from(380_000),
+        estimatedParentChainGas: BigNumber.from(800_000),
         estimatedChildChainGas: constants.Zero
       }
     }
@@ -185,13 +184,11 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
-      // retryableOverrides: overrides
     })
 
     const tx = await l1l3Bridger.deposit({
       txRequest: depositRequest.txRequest,
       l1Signer: signer
-      // retryableOverrides: overrides
     })
 
     return {
