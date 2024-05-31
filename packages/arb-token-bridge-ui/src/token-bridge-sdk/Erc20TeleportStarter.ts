@@ -173,12 +173,15 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       throw Error('Erc20 token address not found')
     }
 
+    const address = await getAddressFromSigner(signer)
+
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
+      destinationAddress: address,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
       l1Provider: this.sourceChainProvider,
