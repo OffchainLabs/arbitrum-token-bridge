@@ -27,6 +27,12 @@ import { DepositCountdown } from '../common/DepositCountdown'
 import { useRemainingTime } from '../../state/cctpState'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { Address } from '../../util/AddressUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
+import {
+  firstRetryableLegRequiresRedeem,
+  secondRetryableLegForTeleportRequiresRedeem
+} from '../../util/RetryableUtils'
+import { TransactionsTableDetailsTeleporterSteps } from './TransactionsTableDetailsTeleporterSteps'
 
 function getTransferDurationText(tx: MergedTransaction) {
   const { isTestnet, isOrbitChain } = isNetwork(tx.childChainId)
@@ -36,7 +42,7 @@ function getTransferDurationText(tx: MergedTransaction) {
   }
 
   if (!tx.isWithdrawal) {
-    if (isOrbitChain) {
+    if (isOrbitChain && !isTeleport(tx)) {
       return 'a minute'
     }
     return isTestnet ? '10 minutes' : '15 minutes'
@@ -54,20 +60,22 @@ function needsToClaimTransfer(tx: MergedTransaction) {
   return tx.isCctp || tx.isWithdrawal
 }
 
-const Step = ({
+export const Step = ({
   done = false,
   claimable = false,
   pending = false,
   failure = false,
   text,
-  endItem = null
+  endItem = null,
+  extendHeight = false
 }: {
   done?: boolean
   claimable?: boolean
   pending?: boolean
   failure?: boolean
-  text: string
+  text: React.ReactNode
   endItem?: ReactNode
+  extendHeight?: boolean
 }) => {
   // defaults to a step that hasn't been started yet
   let borderColorClassName = 'border-white/50'
@@ -96,16 +104,22 @@ const Step = ({
     <div
       className={twMerge(
         'my-3 flex h-3 items-center justify-between space-x-2',
-        pending && 'animate-pulse'
+        pending && 'animate-pulse',
+        extendHeight && 'h-auto items-start'
       )}
     >
-      <div className="flex items-center space-x-3">
+      <div
+        className={twMerge(
+          'flex items-center space-x-3',
+          extendHeight && 'items-start'
+        )}
+      >
         {done && <CheckCircleIcon className={iconClassName} height={18} />}
         {failure && <XCircleIcon className={iconClassName} height={18} />}
         {!done && !failure && (
           <div
             className={twMerge(
-              'ml-[2px] h-[15px] w-[15px] rounded-full border',
+              'ml-[2px] h-[15px] w-[15px] shrink-0 rounded-full border',
               borderColorClassName
             )}
           />
@@ -128,6 +142,7 @@ const LastStepEndItem = ({
   const destinationChainId = tx.isWithdrawal
     ? tx.parentChainId
     : tx.childChainId
+  const isTeleportTx = isTeleport(tx)
 
   if (destinationNetworkTxId) {
     return (
@@ -141,10 +156,13 @@ const LastStepEndItem = ({
     )
   }
 
-  if (isDepositReadyToRedeem(tx)) {
+  if (
+    (!isTeleportTx && isDepositReadyToRedeem(tx)) ||
+    (isTeleportTx && secondRetryableLegForTeleportRequiresRedeem(tx))
+  ) {
     return (
       <TransactionsTableRowAction
-        type={tx.isWithdrawal ? 'withdrawals' : 'deposits'}
+        type="deposits"
         isError={true}
         tx={tx}
         address={address}
@@ -174,23 +192,37 @@ export const TransactionsTableDetailsSteps = ({
       tx.depositStatus
     )
 
-  const isDestinationChainFailure =
-    !isSourceChainDepositFailure && isTxFailed(tx)
+  const isTeleportTx = isTeleport(tx)
+
+  const isDestinationChainFailure = isTeleportTx
+    ? secondRetryableLegForTeleportRequiresRedeem(tx)
+    : !isSourceChainDepositFailure && isTxFailed(tx)
 
   const destinationChainTxText = useMemo(() => {
     const networkName = getNetworkName(tx.destinationChainId)
+    const fundsArrivedText = `Funds arrived on ${networkName}`
 
     if (isTxExpired(tx)) {
       return `Transaction expired on ${networkName}`
     }
+    if (isTeleportTx && firstRetryableLegRequiresRedeem(tx)) {
+      return fundsArrivedText
+    }
+
     if (isDepositReadyToRedeem(tx)) {
-      return `Transaction failed on ${networkName}. You have 7 days to re-execute a failed tx. After that, the tx is no longer recoverable.`
+      return (
+        <div>
+          Transaction failed on {networkName}. You have 7 days to try again.
+          After that, your funds will be{' '}
+          <span className="font-bold text-red-400">lost forever</span>.
+        </div>
+      )
     }
     if (isDestinationChainFailure) {
       return `Transaction failed on ${networkName}.`
     }
-    return `Funds arrived on ${networkName}`
-  }, [tx, isDestinationChainFailure])
+    return fundsArrivedText
+  }, [tx, isDestinationChainFailure, isTeleportTx])
 
   return (
     <div className="flex flex-col text-xs">
@@ -211,25 +243,31 @@ export const TransactionsTableDetailsSteps = ({
       />
 
       {/* Pending transfer showing the remaining time */}
-      <Step
-        pending={isTxPending(tx)}
-        done={!isTxPending(tx) && !isSourceChainDepositFailure}
-        text={`Wait ~${getTransferDurationText(tx)}`}
-        endItem={
-          isTxPending(tx) && (
-            <div>
-              {tx.isCctp && <>{cctpRemainingTime}</>}
-              {!tx.isCctp &&
-                (tx.isWithdrawal ? (
-                  <WithdrawalCountdown tx={tx} />
-                ) : (
-                  <DepositCountdown tx={tx} />
-                ))}
-              <span> remaining</span>
-            </div>
-          )
-        }
-      />
+      {!isTeleport(tx) && (
+        <Step
+          pending={isTxPending(tx)}
+          done={!isTxPending(tx) && !isSourceChainDepositFailure}
+          text={`Wait ~${getTransferDurationText(tx)}`}
+          endItem={
+            isTxPending(tx) && (
+              <div>
+                {tx.isCctp && <>{cctpRemainingTime}</>}
+                {!tx.isCctp &&
+                  (tx.isWithdrawal ? (
+                    <WithdrawalCountdown tx={tx} />
+                  ) : (
+                    <DepositCountdown tx={tx} />
+                  ))}
+                <span> remaining</span>
+              </div>
+            )
+          }
+        />
+      )}
+
+      {isTeleport(tx) && (
+        <TransactionsTableDetailsTeleporterSteps tx={tx} address={address} />
+      )}
 
       {/* If claiming is required we show this step */}
       {needsToClaimTransfer(tx) && (

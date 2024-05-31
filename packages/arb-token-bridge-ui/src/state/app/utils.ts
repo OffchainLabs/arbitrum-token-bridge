@@ -11,6 +11,11 @@ import {
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { isTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  firstRetryableLegRequiresRedeem,
+  secondRetryableLegForTeleportRequiresRedeem
+} from '../../util/RetryableUtils'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -47,7 +52,35 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     return DepositStatus.L1_PENDING
   }
 
-  // l1 succeeded...
+  // for teleport txn
+  if (
+    isTeleport({
+      sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
+      destinationChainId: tx.childChainId
+    })
+  ) {
+    const { l2ToL3MsgData, l1ToL2MsgData } = tx
+
+    // if any of the retryable info is missing, first fetch might be pending
+    if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
+
+    // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
+    if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
+
+    const depositStatus = getDepositStatusFromL1ToL2MessageStatus(
+      l2ToL3MsgData.status
+    )
+    if (typeof depositStatus !== 'undefined') {
+      return depositStatus
+    }
+    switch (l1ToL2MsgData.status) {
+      case L1ToL2MessageStatus.REDEEMED:
+        return DepositStatus.L2_PENDING // tx is still pending if l1ToL2MsgData is redeemed (but l2ToL3MsgData is not)
+      default:
+        return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
+    }
+  }
+
   const { l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
@@ -66,6 +99,23 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
+    case L1ToL2MessageStatus.REDEEMED:
+      return DepositStatus.L2_SUCCESS
+  }
+}
+
+function getDepositStatusFromL1ToL2MessageStatus(
+  status: L1ToL2MessageStatus
+): DepositStatus | undefined {
+  switch (status) {
+    case L1ToL2MessageStatus.NOT_YET_CREATED:
+      return DepositStatus.L2_PENDING
+    case L1ToL2MessageStatus.CREATION_FAILED:
+      return DepositStatus.CREATION_FAILED
+    case L1ToL2MessageStatus.EXPIRED:
+      return DepositStatus.EXPIRED
+    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+      return DepositStatus.L2_FAILURE
     case L1ToL2MessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
   }
@@ -93,6 +143,7 @@ export const transformDeposit = (tx: Transaction): MergedTransaction => {
     tokenAddress: tx.tokenAddress || null,
     l1ToL2MsgData: tx.l1ToL2MsgData,
     l2ToL1MsgData: tx.l2ToL1MsgData,
+    l2ToL3MsgData: tx.l2ToL3MsgData,
     depositStatus: getDepositStatus(tx),
     parentChainId: Number(tx.l1NetworkID),
     childChainId: Number(tx.l2NetworkID),
@@ -223,6 +274,12 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
+  if (isTeleport(tx)) {
+    return (
+      firstRetryableLegRequiresRedeem(tx) ||
+      secondRetryableLegForTeleportRequiresRedeem(tx)
+    )
+  }
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
