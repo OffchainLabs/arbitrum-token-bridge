@@ -17,6 +17,7 @@ export type BridgeUiConfig = {
     description?: string
   }
   nativeTokenData?: NativeCurrencyBase
+  depositTimeMinutes?: number
 }
 
 type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
@@ -77,7 +78,8 @@ export const orbitMainnets: {
         symbol: 'XAI',
         decimals: 18,
         logoUrl: '/images/XaiLogo.svg'
-      }
+      },
+      depositTimeMinutes: 1
     }
   },
   1380012617: {
@@ -430,6 +432,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         logo: '/images/XaiLogo.svg',
         description: 'The testnet for Xai’s gaming chain.'
       },
+      depositTimeMinutes: 1,
       nativeTokenData: {
         name: 'Xai',
         symbol: 'sXAI',

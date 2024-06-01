@@ -114,7 +114,8 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
           logo: '/images/StylusLogo.svg',
           description:
             'An experimental playground for Arbitrum Stylus smart contracts.'
-        }
+        },
+        depositTimeMinutes: 1
       }
     default: {
       // added Orbit chains
