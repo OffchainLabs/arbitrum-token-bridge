@@ -441,13 +441,17 @@ function TokensPanel({
       let token: ERC20BridgeToken | null = null
 
       if (isTokenArbitrumOneNativeUSDC(address)) {
+        console.log('1')
         token = ARB_ONE_NATIVE_USDC_TOKEN
       } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
+        console.log('2')
         token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
       } else if (address) {
+        console.log('3')
         token = tokensFromLists[address] || tokensFromUser[address] || null
       }
 
+      console.log(token)
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         return (
           <TokenRow
@@ -567,32 +571,6 @@ export function TokenSearch({
         }
 
         await updateUSDCBalances()
-
-        // if an Orbit chain is selected we need to fetch its USDC address
-        let childChainUsdcAddress
-        try {
-          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
-            ? (
-                await getL2ERC20Address({
-                  erc20L1Address: _token.address,
-                  l1Provider: parentChainProvider,
-                  l2Provider: childChainProvider
-                })
-              ).toLowerCase()
-            : undefined
-        } catch {
-          // could be never bridged before
-        }
-
-        setSelectedToken({
-          name: 'USD Coin',
-          type: TokenType.ERC20,
-          symbol: 'USDC',
-          address: _token.address,
-          l2Address: childChainUsdcAddress,
-          decimals: 6,
-          listIds: new Set()
-        })
         return
       }
 
