@@ -1,5 +1,6 @@
 import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   BridgeTransferStarter,
   BridgeTransferStarterProps,
@@ -9,7 +10,6 @@ import {
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
 import { getAddressFromSigner, percentIncrease } from './utils'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -98,8 +98,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       )
       return {
         // fallback estimates
-        // https://sepolia.etherscan.io/tx/0xdf2f688ea2ec3c87104e42de4008c3ebd113e14b7179cee165a1d26ade5a0487
-        estimatedParentChainGas: BigNumber.from(120_000),
+        estimatedParentChainGas: BigNumber.from(240_000),
         estimatedChildChainGas: constants.Zero
       }
     }
@@ -114,17 +113,11 @@ export class EthTeleportStarter extends BridgeTransferStarter {
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      to: address,
+      destinationAddress: address,
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
-      // l2TicketGasOverrides: {
-      //   gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-      // },
-      // l3TicketGasOverrides: {
-      //   gasLimit: { base: BigNumber.from(0) } // fail the deposit on l3
-      // }
     })
 
     const tx = await l1l3Bridger.deposit({

@@ -1,6 +1,7 @@
 import { Erc20L1L3Bridger, getL2Network } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { BigNumber, constants } from 'ethers'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
   ApproveTokenProps,
   BridgeTransferStarter,
@@ -13,7 +14,6 @@ import {
 import { fetchErc20Allowance } from '../util/TokenUtils'
 import { getAddressFromSigner, percentIncrease } from './utils'
 import { getL2ConfigForTeleport } from './teleport'
-import { StaticJsonRpcProvider } from '@ethersproject/providers'
 
 export class Erc20TeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'erc20_teleport'
@@ -162,8 +162,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
       )
       return {
         // fallback estimates
-        // https://sepolia.etherscan.io/tx/0x894321f07217d4add560e3c011fbcea672c79eb8b5e7d5332a1657e1d21ca8c4
-        estimatedParentChainGas: BigNumber.from(380_000),
+        estimatedParentChainGas: BigNumber.from(800_000),
         estimatedChildChainGas: constants.Zero
       }
     }
@@ -180,37 +179,19 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const l1l3Bridger = await this.getBridger()
 
-    // const overrides = {
-    //   l2ForwarderFactoryRetryableGas: {
-    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-    //   },
-
-    //   l1l2FeeTokenBridgeRetryableGas: {
-    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-    //   },
-    //   l1l2TokenBridgeRetryableGas: {
-    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-    //   },
-    //   l2l3TokenBridgeRetryableGas: {
-    //     gasLimit: { base: BigNumber.from(0) } // fail the deposit on l2
-    //   }
-    // }
-
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
-      to: address,
+      destinationAddress: address,
       erc20L1Address: this.sourceChainErc20Address,
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,
       l3Provider: this.destinationChainProvider
-      // retryableOverrides: overrides
     })
 
     const tx = await l1l3Bridger.deposit({
       txRequest: depositRequest.txRequest,
       l1Signer: signer
-      // retryableOverrides: overrides
     })
 
     return {

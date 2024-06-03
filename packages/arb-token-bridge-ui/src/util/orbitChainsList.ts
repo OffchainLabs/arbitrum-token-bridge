@@ -331,6 +331,55 @@ export const orbitMainnets: {
         logo: '/images/L3XLogo.png'
       }
     }
+  },
+  94524: {
+    chainID: 94524,
+    confirmPeriodBlocks: 40320,
+    ethBridge: {
+      bridge: '0x2Be65c5b58F78B02AB5c0e798A9ffC181703D3C1',
+      inbox: '0xE961Ef06c26D0f032F0298c97C41e648d3bb715a',
+      outbox: '0x0b8071337dcB089478Ea740efC10904d9F359141',
+      rollup: '0xeb61c3FA03544021cf76412eFb9D0Ce7D8c0290d',
+      sequencerInbox: '0x47861E0419BE83d0175818a09221B6DF2EFD7793'
+    },
+    explorerUrl: 'https://xchain-explorer.idex.io',
+    rpcUrl: 'https://xchain-rpc.idex.io',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'XCHAIN',
+    slug: 'xchain',
+    partnerChainID: 1,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xEFb1F8ae759c595907782e9bD45F119c9814b308',
+      l1ERC20Gateway: '0xFFb821ca61e823a884D79226B0fcD7a99A4d48aa',
+      l1GatewayRouter: '0xe0a99350288971456EE4BAc4568495352929B769',
+      l1MultiCall: '0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e',
+      l1ProxyAdmin: '0x22010F5C4c106dfBaffec780196d2F691860Ff62',
+      l1Weth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      l1WethGateway: '0xCAde60b1331f1cF714ECb01f08117780887A0AF4',
+      l2CustomGateway: '0x642e40E3F9948F11E18973f79E910f0953dd0C80',
+      l2ERC20Gateway: '0xBF14b5F058AE33469eC2D20c9Ee712Cb7eC68A8b',
+      l2GatewayRouter: '0xe95788E89383447177312846DB45E6bffc32DD3b',
+      l2Multicall: '0x9eE16369804735D75944AA3B025B063C31862786',
+      l2ProxyAdmin: '0xc5A8e16EADC3276B3DdB9F122e2c824Dc8a87BfD',
+      l2Weth: '0x594Ee2FA451dC7aCFC6785c0d746695f79A4daeE',
+      l2WethGateway: '0x377880CbbA57EB9ACb7120028f21Ce043266A431'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#FD0598',
+      network: {
+        name: 'XCHAIN',
+        description:
+          'XCHAIN powers IDEX, the premier omnichain perpetuals exchange, combining industry-leading speed and performance with transparency and security to create an entirely new trading experience.',
+        logo: '/images/XCHAINLogo.png'
+      }
+    }
   }
 }
 
