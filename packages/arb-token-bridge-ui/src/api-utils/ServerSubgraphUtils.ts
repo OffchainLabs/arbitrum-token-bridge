@@ -74,7 +74,7 @@ const subgraphs = {
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   },
   'teleporter-ethereum': {
-    theGraphNetworkSubgraphId: 'to-be-given-later',
+    theGraphNetworkSubgraphId: 'GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg',
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   }
 } as const
@@ -160,13 +160,14 @@ export function getCctpSubgraphClient(chainId: number) {
 export function getTeleporterSubgraphClient(chainId: number) {
   switch (chainId) {
     case ChainId.Ethereum:
-      // return createSubgraphClient('teleporter-mainnet')
-      return createApolloClient(
-        `https://gateway-arbitrum.network.thegraph.com/api/${theGraphNetworkApiKey}/subgraphs/id/GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg`
+      return createTheGraphNetworkClient(
+        subgraphs['teleporter-ethereum'].theGraphNetworkSubgraphId
       )
 
     case ChainId.Sepolia:
-      return createSubgraphClient('teleporter-sepolia')
+      return createTheGraphNetworkClient(
+        subgraphs['teleporter-sepolia'].theGraphNetworkSubgraphId
+      )
 
     default:
       throw new Error(
