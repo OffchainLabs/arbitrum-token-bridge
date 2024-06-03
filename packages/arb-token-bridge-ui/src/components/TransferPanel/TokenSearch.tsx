@@ -441,17 +441,13 @@ function TokensPanel({
       let token: ERC20BridgeToken | null = null
 
       if (isTokenArbitrumOneNativeUSDC(address)) {
-        console.log('1')
         token = ARB_ONE_NATIVE_USDC_TOKEN
       } else if (isTokenArbitrumSepoliaNativeUSDC(address)) {
-        console.log('2')
         token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
       } else if (address) {
-        console.log('3')
         token = tokensFromLists[address] || tokensFromUser[address] || null
       }
 
-      console.log(token)
       if (address === NATIVE_CURRENCY_IDENTIFIER) {
         return (
           <TokenRow

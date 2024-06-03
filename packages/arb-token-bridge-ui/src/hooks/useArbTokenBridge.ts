@@ -283,7 +283,6 @@ export const useArbTokenBridge = (
       updateErc20L1Balance(l1Addresses)
       updateErc20L2Balance(l2Addresses)
 
-      console.log('ADDING', oldBridgeTokens, bridgeTokensToAdd)
       return {
         ...oldBridgeTokens,
         ...bridgeTokensToAdd
