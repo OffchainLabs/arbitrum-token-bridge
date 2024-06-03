@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
@@ -86,7 +86,7 @@ export function TransferDisabledDialog() {
               supported for direct {sourceChainName} to {destinationChainName}{' '}
               transfers.
             </p>
-            {l2ChainIdForTeleport && (
+            {l2ChainIdForTeleportName && (
               <p>
                 To bridge{' '}
                 <span className="font-medium">{unsupportedToken}</span>:
