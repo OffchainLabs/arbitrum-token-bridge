@@ -63,9 +63,9 @@ export function TransferDisabledDialog() {
 
   const sourceChainName = getNetworkName(networks.sourceChain.id)
   const destinationChainName = getNetworkName(networks.destinationChain.id)
-  const l2ChainIdForTeleportName = useMemo(() => {
-    return l2ChainIdForTeleport ? getNetworkName(l2ChainIdForTeleport) : null
-  }, [l2ChainIdForTeleport])
+  const l2ChainIdForTeleportName = l2ChainIdForTeleport
+    ? getNetworkName(l2ChainIdForTeleport)
+    : null
 
   return (
     <Dialog
