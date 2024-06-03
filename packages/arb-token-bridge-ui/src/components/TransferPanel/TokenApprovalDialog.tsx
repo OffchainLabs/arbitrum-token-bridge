@@ -21,7 +21,6 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
-import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { getBridger } from '@/token-bridge-sdk/utils'
 import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
@@ -50,7 +49,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
   const provider = isDepositMode ? parentChainProvider : childChainProvider
@@ -160,12 +160,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         return
       }
 
-      if (
-        isTeleport({
-          sourceChainId: sourceChain.id,
-          destinationChainId: destinationChain.id
-        })
-      ) {
+      if (isTeleportMode) {
         const l1L3Bridger = await getBridger({
           sourceChainId: sourceChain.id,
           destinationChainId: destinationChain.id

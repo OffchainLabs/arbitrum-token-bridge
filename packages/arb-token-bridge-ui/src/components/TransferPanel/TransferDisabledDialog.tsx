@@ -54,7 +54,7 @@ export function TransferDisabledDialog() {
       setL2ChainIdForTeleport(l2ChainId)
     }
     updateL2ChainIdForTeleport()
-  }, [isTeleportMode, networks.destinationChain.id])
+  }, [isTeleportMode, networks.destinationChainProvider])
 
   const onClose = () => {
     setSelectedToken(null)
@@ -64,8 +64,7 @@ export function TransferDisabledDialog() {
   const sourceChainName = getNetworkName(networks.sourceChain.id)
   const destinationChainName = getNetworkName(networks.destinationChain.id)
   const l2ChainIdForTeleportName = useMemo(() => {
-    if (typeof l2ChainIdForTeleport == 'undefined') return null
-    return getNetworkName(l2ChainIdForTeleport)
+    return l2ChainIdForTeleport ? getNetworkName(l2ChainIdForTeleport) : null
   }, [l2ChainIdForTeleport])
 
   return (
@@ -87,7 +86,7 @@ export function TransferDisabledDialog() {
               supported for direct {sourceChainName} to {destinationChainName}{' '}
               transfers.
             </p>
-            {typeof l2ChainIdForTeleport !== 'undefined' && (
+            {l2ChainIdForTeleport && (
               <p>
                 To bridge{' '}
                 <span className="font-medium">{unsupportedToken}</span>:
