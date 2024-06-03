@@ -2,8 +2,8 @@ name: Orbit Retryable Tracker
 
 on:
   schedule:
-    # Run everyday at 12:00 PM UTC
-    - cron: '0 12 * * *'
+    # Run every 3 hours (while we test)
+    - cron: '0 */3 * * *'
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
