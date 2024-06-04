@@ -1,4 +1,4 @@
-name: Orbit Retryable Tracker
+name: Monitor Orbit Retryables
 
 on:
   schedule:
