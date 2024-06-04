@@ -21,6 +21,8 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { getBridger } from '@/token-bridge-sdk/utils'
+import { Erc20L1L3Bridger } from '@arbitrum/sdk'
 import { shortenTxHash } from '../../util/CommonUtils'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
@@ -47,7 +49,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { isEthereumMainnet, isTestnet } = isNetwork(parentChain.id)
   const provider = isDepositMode ? parentChainProvider : childChainProvider
@@ -156,6 +159,21 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
         setContractAddress('')
         return
       }
+
+      if (isTeleportMode) {
+        const l1L3Bridger = await getBridger({
+          sourceChainId: sourceChain.id,
+          destinationChainId: destinationChain.id
+        })
+
+        if (!(l1L3Bridger instanceof Erc20L1L3Bridger)) {
+          throw new Error('Error initializing L1L3Bridger.')
+        }
+
+        setContractAddress(l1L3Bridger.teleporterAddresses.l1Teleporter)
+        return
+      }
+
       if (isDepositMode) {
         setContractAddress(
           await fetchErc20ParentChainGatewayAddress({
@@ -180,7 +198,9 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     isCctp,
     isDepositMode,
     parentChainProvider,
-    token?.address
+    token?.address,
+    sourceChain.id,
+    destinationChain.id
   ])
 
   function closeWithReset(confirmed: boolean) {
