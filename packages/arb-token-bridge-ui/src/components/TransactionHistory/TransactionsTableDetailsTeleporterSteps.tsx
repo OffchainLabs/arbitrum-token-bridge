@@ -78,7 +78,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
-  const _l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
+  const l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
 
   const isFirstRetryableLegResolved =
     isFirstRetryableLegSucceeded || isFirstRetryableLegFailed
@@ -97,7 +97,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
           After that, your funds will be{' '}
           <span className="font-bold text-red-400">lost forever</span>.
           {/* if we detect we will have 2 redemptions in the first leg of teleport, explain it to users */}
-          {_l2ForwarderRequiresRedeem && (
+          {l2ForwarderRequiresRedeem && (
             <TeleportMiddleStepFailureExplanationNote tx={tx} />
           )}
         </div>
@@ -110,7 +110,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
 
     // till the time we don't have information for l2ChainId
     return `Funds arrived on intermediate chain`
-  }, [tx, isFirstRetryableLegFailed, l2ChainId, _l2ForwarderRequiresRedeem])
+  }, [tx, isFirstRetryableLegFailed, l2ChainId, l2ForwarderRequiresRedeem])
 
   const firstRetryableRedeemButton = useMemo(
     () => (
@@ -168,7 +168,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
         failure={isFirstRetryableLegFailed}
         text={firstTransactionText}
         endItem={firstTransactionActionItem}
-        extendHeight={_l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
+        extendHeight={l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
       />
 
       {/* Show second leg of teleport transfer waiting time */}
