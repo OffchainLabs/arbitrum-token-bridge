@@ -2,8 +2,8 @@ name: Monitor Orbit Retryables
 
 on:
   schedule:
-    # Run every 3 hours (while we test)
-    - cron: '0 */3 * * *'
+    # Run every 1 hours (while we test)
+    - cron: '0 */1 * * *'
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
