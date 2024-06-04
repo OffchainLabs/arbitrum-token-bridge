@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { Chain } from 'wagmi'
 import { UseNetworksState } from './useNetworks'
 import { isDepositMode } from '../util/isDepositMode'
-import { isTeleport } from '../token-bridge-sdk/teleport'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 type UseNetworksRelationshipState = {
   childChain: Chain
@@ -25,7 +25,7 @@ export function useNetworksRelationship({
       destinationChainId: destinationChain.id
     })
 
-    const _isTeleportMode = isTeleport({
+    const isTeleportMode = isTeleport({
       sourceChainId: sourceChain.id,
       destinationChainId: destinationChain.id
     })
@@ -37,7 +37,7 @@ export function useNetworksRelationship({
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
-        isTeleportMode: _isTeleportMode
+        isTeleportMode
       }
     }
 
@@ -47,7 +47,7 @@ export function useNetworksRelationship({
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
-      isTeleportMode: _isTeleportMode
+      isTeleportMode
     }
   }, [
     sourceChain,

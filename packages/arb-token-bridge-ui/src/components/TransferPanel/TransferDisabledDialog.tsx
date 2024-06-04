@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useActions, useAppState } from '../../state'
 import { Dialog } from '../common/Dialog'
@@ -54,7 +54,7 @@ export function TransferDisabledDialog() {
       setL2ChainIdForTeleport(l2ChainId)
     }
     updateL2ChainIdForTeleport()
-  }, [isTeleportMode, networks.destinationChain.id])
+  }, [isTeleportMode, networks.destinationChainProvider])
 
   const onClose = () => {
     setSelectedToken(null)
@@ -63,10 +63,9 @@ export function TransferDisabledDialog() {
 
   const sourceChainName = getNetworkName(networks.sourceChain.id)
   const destinationChainName = getNetworkName(networks.destinationChain.id)
-  const l2ChainIdForTeleportName = useMemo(() => {
-    if (typeof l2ChainIdForTeleport == 'undefined') return null
-    return getNetworkName(l2ChainIdForTeleport)
-  }, [l2ChainIdForTeleport])
+  const l2ChainIdForTeleportName = l2ChainIdForTeleport
+    ? getNetworkName(l2ChainIdForTeleport)
+    : null
 
   return (
     <Dialog
@@ -87,7 +86,7 @@ export function TransferDisabledDialog() {
               supported for direct {sourceChainName} to {destinationChainName}{' '}
               transfers.
             </p>
-            {typeof l2ChainIdForTeleport !== 'undefined' && (
+            {l2ChainIdForTeleportName && (
               <p>
                 To bridge{' '}
                 <span className="font-medium">{unsupportedToken}</span>:
