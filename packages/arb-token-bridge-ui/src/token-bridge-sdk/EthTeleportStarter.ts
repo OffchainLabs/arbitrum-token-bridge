@@ -9,7 +9,7 @@ import {
   TransferType
 } from './BridgeTransferStarter'
 import { getL2ConfigForTeleport } from './teleport'
-import { percentIncrease } from './utils'
+import { getAddressFromSigner, percentIncrease } from './utils'
 
 export class EthTeleportStarter extends BridgeTransferStarter {
   public transferType: TransferType = 'eth_teleport'
@@ -105,12 +105,15 @@ export class EthTeleportStarter extends BridgeTransferStarter {
   }
 
   public async transfer({ amount, signer }: TransferProps) {
+    const address = await getAddressFromSigner(signer)
+
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
 
     const depositRequest = await l1l3Bridger.getDepositRequest({
       l1Signer: signer,
+      destinationAddress: address,
       amount,
       l1Provider: this.sourceChainProvider,
       l2Provider,

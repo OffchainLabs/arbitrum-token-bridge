@@ -42,6 +42,7 @@ import { isWithdrawOnlyToken } from '../../util/WithdrawOnlyUtils'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,
@@ -529,8 +530,14 @@ export function TokenSearch({
     app: { setSelectedToken }
   } = useActions()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const { updateUSDCBalances } = useUpdateUSDCBalances({ walletAddress })
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { openDialog: openTransferDisabledDialog } =
@@ -626,6 +633,14 @@ export function TokenSearch({
       }
 
       if (isTransferDisabledToken(_token.address, childChain.id)) {
+        openTransferDisabledDialog()
+        return
+      }
+
+      if (
+        isTeleportMode &&
+        !isTeleportEnabledToken(_token.address, parentChain.id, childChain.id)
+      ) {
         openTransferDisabledDialog()
         return
       }

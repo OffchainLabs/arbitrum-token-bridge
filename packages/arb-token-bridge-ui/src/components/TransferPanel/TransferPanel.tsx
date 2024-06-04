@@ -74,6 +74,7 @@ import {
 import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -120,7 +121,8 @@ export function TransferPanel() {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
 
@@ -420,7 +422,8 @@ export function TransferPanel() {
 
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet
+        isSmartContractWallet,
+        isTeleportMode
       })
       if (destinationAddressError) {
         console.error(destinationAddressError)
@@ -587,7 +590,8 @@ export function TransferPanel() {
 
     const destinationAddressError = await getDestinationAddressError({
       destinationAddress,
-      isSmartContractWallet
+      isSmartContractWallet,
+      isTeleportMode
     })
     if (destinationAddressError) {
       console.error(destinationAddressError)
@@ -597,6 +601,14 @@ export function TransferPanel() {
     // SC ETH transfers aren't enabled yet. Safety check, shouldn't be able to get here.
     if (isSmartContractWallet && !selectedToken) {
       console.error("ETH transfers aren't enabled for smart contract wallets.")
+      return
+    }
+
+    // SC Teleport transfers aren't enabled yet. Safety check, shouldn't be able to get here.
+    if (isSmartContractWallet && isTeleportMode) {
+      console.error(
+        getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
+      )
       return
     }
 
@@ -741,7 +753,8 @@ export function TransferPanel() {
       // if destination address is added, validate it
       const destinationAddressError = await getDestinationAddressError({
         destinationAddress,
-        isSmartContractWallet
+        isSmartContractWallet,
+        isTeleportMode
       })
       if (destinationAddressError) {
         console.error(destinationAddressError)
@@ -882,12 +895,9 @@ export function TransferPanel() {
       })
     }
 
-    const { transferType, sourceChainTransaction } = bridgeTransfer
+    const { sourceChainTransaction } = bridgeTransfer
 
     const timestampCreated = Math.floor(Date.now() / 1000).toString()
-
-    const isDeposit =
-      transferType === 'eth_deposit' || transferType === 'erc20_deposit'
 
     const txHistoryCompatibleObject = convertBridgeSdkToMergedTransaction({
       bridgeTransfer,
@@ -905,7 +915,7 @@ export function TransferPanel() {
     addPendingTransaction(txHistoryCompatibleObject)
 
     // if deposit, add to local cache
-    if (isDeposit) {
+    if (isDepositMode) {
       addDepositToCache(
         convertBridgeSdkToPendingDepositTransaction({
           bridgeTransfer,
@@ -941,6 +951,10 @@ export function TransferPanel() {
 
   const isCctpTransfer = useMemo(() => {
     if (!selectedToken) {
+      return false
+    }
+
+    if (isTeleportMode) {
       return false
     }
 
