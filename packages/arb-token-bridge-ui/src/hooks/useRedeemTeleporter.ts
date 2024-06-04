@@ -194,6 +194,14 @@ export function useRedeemTeleporter(
         throw 'Signer is undefined'
       }
 
+      if (
+        !firstRetryableLegRequiresRedeem(tx) &&
+        !secondRetryableLegForTeleportRequiresRedeem(tx)
+      ) {
+        // fail-safe: if there is no retryable to redeem, we should break the flow here
+        throw 'Transaction does not require redemption.'
+      }
+
       if (firstRetryableLegRequiresRedeem(tx)) {
         await redeemTeleporterFirstLeg({
           tx,
