@@ -3,8 +3,8 @@ name: Monitor Orbit Retryables
 on:
   workflow_dispatch:
   schedule:
-    # Run every 1 hours (while we test)
-    - cron: '0 */1 * * *'
+    # Run every 24 hours
+    - cron: '0 0 * * *'
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
