@@ -3,8 +3,8 @@ name: Monitor Orbit Retryables
 on:
   workflow_dispatch:
   schedule:
-    # Run every 24 hours
-    - cron: '0 0 * * *'
+    # Run once a day at 08:03am GMT (https://github.com/OffchainLabs/arb-monitoring/blob/master/.github/workflows/retryables.yml#L5)
+    - cron: "3 8 * * *" 
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
