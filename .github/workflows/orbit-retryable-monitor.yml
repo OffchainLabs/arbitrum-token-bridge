@@ -7,8 +7,8 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-  SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-  SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+  ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
+  ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
 
 jobs:
   run-alerting:
@@ -52,8 +52,8 @@ jobs:
       run: cd ./orbit-retryable-tracker && yarn findRetryables --enableAlerting
       env:
         NODE_ENV: "CI"
-        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+        ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
+        ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
 
 
     - name: Clean up
