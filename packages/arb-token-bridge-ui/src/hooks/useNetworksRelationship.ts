@@ -25,7 +25,7 @@ export function useNetworksRelationship({
       destinationChainId: destinationChain.id
     })
 
-    const _isTeleportMode = isTeleport({
+    const isTeleportMode = isTeleport({
       sourceChainId: sourceChain.id,
       destinationChainId: destinationChain.id
     })
@@ -37,7 +37,7 @@ export function useNetworksRelationship({
         parentChain: sourceChain,
         parentChainProvider: sourceChainProvider,
         isDepositMode: _isDepositMode,
-        isTeleportMode: _isTeleportMode
+        isTeleportMode
       }
     }
 
@@ -47,7 +47,7 @@ export function useNetworksRelationship({
       parentChain: destinationChain,
       parentChainProvider: destinationChainProvider,
       isDepositMode: _isDepositMode,
-      isTeleportMode: _isTeleportMode
+      isTeleportMode
     }
   }, [
     sourceChain,
