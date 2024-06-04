@@ -28,7 +28,7 @@ const sanitizeRpcUrl = (url: string) => {
 }
 
 async function generateOrbitChainsToMonitor() {
-  const orbitChains = await getOrbitChains({ mainnet: true, testnet: true })
+  const orbitChains = await getOrbitChains({ mainnet: true, testnet: false })
 
   // make the orbit chain data compatible with the orbit-data required by the retryable-monitoring script
   const orbitChainsToMonitor: ChildNetwork[] = orbitChains.map(orbitChain => ({
