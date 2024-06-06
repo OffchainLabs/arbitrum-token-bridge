@@ -462,10 +462,6 @@ export async function getUpdatedCctpTransfer(
 export async function getUpdatedTeleportTransfer(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  if (!isTxPending(tx)) {
-    return tx
-  }
-
   const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
     await fetchTeleporterDepositStatusData(tx)
 

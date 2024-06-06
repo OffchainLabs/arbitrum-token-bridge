@@ -67,15 +67,23 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
     // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
     if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
 
-    const depositStatus = getDepositStatusFromL1ToL2MessageStatus(
+    // if we find first retryable leg failing, then no need to check for the second leg
+    const firstLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
+      l1ToL2MsgData.status
+    )
+    if (firstLegDepositStatus !== DepositStatus.L2_SUCCESS) {
+      return firstLegDepositStatus
+    }
+
+    const secondLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
       l2ToL3MsgData.status
     )
-    if (typeof depositStatus !== 'undefined') {
-      return depositStatus
+    if (typeof secondLegDepositStatus !== 'undefined') {
+      return secondLegDepositStatus
     }
     switch (l1ToL2MsgData.status) {
       case L1ToL2MessageStatus.REDEEMED:
-        return DepositStatus.L2_PENDING // tx is still pending if l1ToL2MsgData is redeemed (but l2ToL3MsgData is not)
+        return DepositStatus.L2_PENDING // tx is still pending if `l1ToL2MsgData` is redeemed (but l2ToL3MsgData is not)
       default:
         return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
     }
