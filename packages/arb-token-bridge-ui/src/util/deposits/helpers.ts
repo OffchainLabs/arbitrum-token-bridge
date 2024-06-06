@@ -393,7 +393,7 @@ export async function fetchTeleporterDepositStatusData({
         l1ToL2MsgData,
         l2ToL3MsgData: {
           ...l2ToL3MsgData,
-          status: await l2ForwarderFactoryRetryable.status(),
+          status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2,
           l2ForwarderRetryableTxID:
             l2ForwarderFactoryRetryable.retryableCreationId
         }

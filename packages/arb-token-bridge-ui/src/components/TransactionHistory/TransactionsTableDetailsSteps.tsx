@@ -173,6 +173,18 @@ const LastStepEndItem = ({
   return null
 }
 
+export const TransactionFailedOnNetwork = ({
+  networkName
+}: {
+  networkName: string
+}) => (
+  <div>
+    Transaction failed on {networkName}. You have 7 days to try again. After
+    that, your funds will be{' '}
+    <span className="font-bold text-red-400">lost forever</span>.
+  </div>
+)
+
 export const TransactionsTableDetailsSteps = ({
   tx,
   address
@@ -210,13 +222,7 @@ export const TransactionsTableDetailsSteps = ({
     }
 
     if (isDepositReadyToRedeem(tx)) {
-      return (
-        <div>
-          Transaction failed on {networkName}. You have 7 days to try again.
-          After that, your funds will be{' '}
-          <span className="font-bold text-red-400">lost forever</span>.
-        </div>
-      )
+      return <TransactionFailedOnNetwork networkName={networkName} />
     }
     if (isDestinationChainFailure) {
       return `Transaction failed on ${networkName}.`

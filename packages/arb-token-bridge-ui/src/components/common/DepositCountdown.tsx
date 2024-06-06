@@ -14,7 +14,7 @@ function getMinutesRemainingText(minutesRemaining: number): string {
 
 function getEstimatedDepositDurationInMinutes(
   tx: MergedTransaction,
-  firstTxOnly?: boolean
+  firstTxOnly?: boolean // teleport has 2 txns, this flag will give us estimate of only 1st tx, else it will give consolidated duration
 ) {
   const { parentChainId, sourceChainId, destinationChainId } = tx
   if (!parentChainId) {
