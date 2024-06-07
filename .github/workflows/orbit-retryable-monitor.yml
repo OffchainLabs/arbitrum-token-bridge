@@ -34,7 +34,6 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: OffchainLabs/orbit-retryable-tracker
-        ref: 'enable-alerting' # the branch where our alerting code is present
         path: orbit-retryable-tracker
 
     - name: Copy chains JSON to Retryable-Tracker
