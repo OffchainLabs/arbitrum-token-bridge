@@ -15,6 +15,9 @@ import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { Address } from '../../util/AddressUtils'
+import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
 
 export function TransactionsTableRowAction({
   tx,
@@ -33,30 +36,47 @@ export function TransactionsTableRowAction({
 
   const { claim, isClaiming } = useClaimWithdrawal(tx)
   const { claim: claimCctp, isClaiming: isClaimingCctp } = useClaimCctp(tx)
-  const { redeem, isRedeeming } = useRedeemRetryable(tx, address)
+  const { redeem, isRedeeming: isRetryableRedeeming } = useRedeemRetryable(
+    tx,
+    address
+  )
+  const { redeem: teleporterRedeem, isRedeeming: isTeleporterRedeeming } =
+    useRedeemTeleporter(tx, address)
+
   const { remainingTime: cctpRemainingTime } = useRemainingTime(tx)
 
-  const isConnectedToCorrectNetworkForAction =
-    chain?.id === tx.destinationChainId
+  const isRedeeming = isRetryableRedeeming || isTeleporterRedeeming
+
+  const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
+
+  const isConnectedToCorrectNetworkForAction = isDepositReadyToRedeem(tx)
+    ? chain?.id === chainIdForRedeemingRetryable // for redemption actions, we can have different chain id
+    : chain?.id === tx.destinationChainId // for claims, we need to be on the destination chain
 
   const handleRedeemRetryable = useCallback(async () => {
     try {
       if (!isConnectedToCorrectNetworkForAction) {
-        await switchNetworkAsync?.(tx.destinationChainId)
+        await switchNetworkAsync?.(chainIdForRedeemingRetryable)
       }
-      await redeem()
+
+      if (isTeleport(tx)) {
+        await teleporterRedeem()
+      } else {
+        await redeem()
+      }
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
       }
-
       errorToast(`Can't retry the deposit: ${error?.message ?? error}`)
     }
   }, [
+    tx,
     isConnectedToCorrectNetworkForAction,
+    chainIdForRedeemingRetryable,
     redeem,
     switchNetworkAsync,
-    tx.destinationChainId
+    teleporterRedeem
   ])
 
   const handleClaim = useCallback(async () => {

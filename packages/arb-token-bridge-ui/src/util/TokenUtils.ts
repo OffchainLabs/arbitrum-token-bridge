@@ -1,6 +1,13 @@
 import { constants } from 'ethers'
 import { Provider } from '@ethersproject/providers'
-import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  Erc20L1L3Bridger,
+  EthBridger,
+  EthL1L3Bridger,
+  MultiCaller,
+  getL2Network
+} from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
@@ -9,6 +16,11 @@ import { CommonAddress } from './CommonAddressUtils'
 import { ChainId, isNetwork } from './networks'
 import { defaultErc20Decimals } from '../defaults'
 import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import {
+  getL2ConfigForTeleport,
+  isTeleport
+} from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -276,6 +288,30 @@ export async function getL2ERC20Address({
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
+// Given an L1 token address, derive it's L3 counterpart address
+// this address will be then used for calculating balances etc.
+export async function getL3ERC20Address({
+  erc20L1Address,
+  l1Provider,
+  l3Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+  l3Provider: Provider
+}): Promise<string> {
+  const l3Network = await getL2Network(l3Provider)
+  const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+
+  const { l2Provider } = await getL2ConfigForTeleport({
+    destinationChainProvider: l3Provider
+  })
+  return await l1l3Bridger.getL3ERC20Address(
+    erc20L1Address,
+    l1Provider,
+    l2Provider // this is the actual l2 provider
+  )
+}
+
 /*
  Retrieves data about whether an ERC-20 token is disabled on the router.
  */
@@ -288,7 +324,19 @@ export async function l1TokenIsDisabled({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<boolean> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainId: await getChainIdFromProvider(l1Provider),
+    destinationChainId: await getChainIdFromProvider(l2Provider)
+  })
+
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    // fail-safe to ensure `l1TokenIsDisabled` is called on the correct bridger-types
+    return false
+  }
+
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
@@ -417,6 +465,15 @@ export async function isGatewayRegistered({
   parentChainProvider: Provider
   childChainProvider: Provider
 }): Promise<boolean> {
+  // for teleport transfers - we will need to check for 2 gateway registrations - 1 for L1-L2 and then for L2-L3 transfer
+  // for now, we are returning true since we are limiting the tokens to teleport, but we will expand this once we expand the allowList
+  const sourceChainId = await getChainIdFromProvider(parentChainProvider)
+  const destinationChainId = await getChainIdFromProvider(childChainProvider)
+  if (isTeleport({ sourceChainId, destinationChainId })) {
+    return true
+  }
+
+  // for normal transfers, check for custom gateways
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
   const parentChainStandardGatewayAddressFromChainConfig =
     erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
