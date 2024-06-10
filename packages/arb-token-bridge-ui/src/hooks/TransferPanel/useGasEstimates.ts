@@ -1,6 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
 import { useSigner } from 'wagmi'
+import * as Sentry from '@sentry/react'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
@@ -21,17 +22,21 @@ async function fetcher([
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
-  const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+  const bridgeTransferStarter = BridgeTransferStarterFactory.create({
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
     destinationChainErc20Address
   })
 
-  return await bridgeTransferStarter.transferEstimateGas({
-    amount,
-    signer
-  })
+  try {
+    return await bridgeTransferStarter.transferEstimateGas({
+      amount,
+      signer
+    })
+  } catch (error) {
+    Sentry.captureException(error)
+  }
 }
 
 export function useGasEstimates({
@@ -40,7 +45,8 @@ export function useGasEstimates({
   destinationChainId,
   sourceChainErc20Address,
   destinationChainErc20Address,
-  amount
+  amount,
+  balance
 }: {
   walletAddress?: string
   sourceChainId: number
@@ -48,6 +54,7 @@ export function useGasEstimates({
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
+  balance: BigNumber | null
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
@@ -55,29 +62,34 @@ export function useGasEstimates({
   const { data: signer } = useSigner()
 
   const { data: gasEstimates, error } = useSWR(
-    typeof signer === 'undefined'
-      ? null
-      : [
-          walletAddress,
+    signer && balance && balance.gt(amount)
+      ? ([
+          signer,
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
           destinationChainErc20Address,
           amount.toString(), // BigNumber is not serializable
+          balance?.toString(),
+          walletAddress,
           'gasEstimates'
-        ],
-    () => {
-      if (typeof signer === 'undefined' || signer === null) {
-        return undefined
-      }
-
+        ] as const)
+      : null,
+    ([
+      _signer,
+      _sourceChainId,
+      _destinationChainId,
+      _sourceChainErc20Address,
+      _destinationChainErc20Address,
+      _amount
+    ]) => {
       return fetcher([
-        signer,
-        sourceChainId,
-        destinationChainId,
-        sourceChainErc20Address,
-        destinationChainErc20Address,
-        amount
+        _signer,
+        _sourceChainId,
+        _destinationChainId,
+        _sourceChainErc20Address,
+        _destinationChainErc20Address,
+        BigNumber.from(_amount)
       ])
     },
     {

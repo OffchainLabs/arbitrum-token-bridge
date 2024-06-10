@@ -1,7 +1,6 @@
 import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
-import * as Sentry from '@sentry/react'
 import { L2ToL1TransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
@@ -17,7 +16,11 @@ export async function withdrawInitTxEstimateGas({
   address: Address
   childChainProvider: Provider
   erc20L1Address?: string
-}): Promise<GasEstimates> {
+}): Promise<
+  GasEstimates & {
+    error?: Error
+  }
+> {
   const isToken = typeof erc20L1Address === 'string'
 
   // For the withdrawal init tx, there's no gas fee paid on L1 separately
@@ -60,12 +63,8 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    const code = (error as { code: string }).code
-    if (code !== 'INSUFFICIENT_FUNDS' && code === 'UNPREDICTABLE_GAS_LIMIT') {
-      Sentry.captureException(error)
-    }
-
     return {
+      error: error as Error,
       estimatedParentChainGas,
       // L2 gas estimation from recent txs
       //

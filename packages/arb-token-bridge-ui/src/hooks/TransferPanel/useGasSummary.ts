@@ -78,12 +78,15 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
+  const balance = useBalanceOnSourceChain(token)
+
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
       walletAddress,
       sourceChainId: networks.sourceChain.id,
       destinationChainId: networks.destinationChain.id,
       amount: amountBigNumber,
+      balance,
       sourceChainErc20Address: isDepositMode
         ? token?.address
         : token?.l2Address,
@@ -133,8 +136,6 @@ export function useGasSummary(): UseGasSummaryResult {
       )
     )
   }, [childChainGasPrice, estimateGasResult, isDepositMode])
-
-  const balance = useBalanceOnSourceChain(token)
 
   useEffect(() => {
     if (
