@@ -59,7 +59,7 @@ export function useRedeemRetryable(
         l2TxReceipt: TransactionReceipt
       }
 
-      updatePendingTransaction({
+      await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
           l2TxID: redeemReceipt.l2TxReceipt.transactionHash,

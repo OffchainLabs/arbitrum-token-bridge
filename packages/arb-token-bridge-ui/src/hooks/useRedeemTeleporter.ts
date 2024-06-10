@@ -4,6 +4,8 @@ import { L1ToL2MessageStatus, L1ToL2MessageWriter } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import {
   firstRetryableLegRequiresRedeem,
@@ -20,12 +22,8 @@ import { errorToast } from '../components/common/atoms/Toast'
 import { useTransactionHistory } from './useTransactionHistory'
 import { Address } from '../util/AddressUtils'
 import { L2ToL3MessageData } from './useTransactions'
-import { getProviderForChainId } from '../token-bridge-sdk/utils'
-import { fetchTeleporterDepositStatusData } from '../util/deposits/helpers'
 import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
-import { getDepositStatus } from '../state/app/utils'
-import { isTeleport } from '../token-bridge-sdk/teleport'
 
 // common handling for redeeming all 3 retryables for teleporter
 const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
@@ -76,7 +74,7 @@ const redeemTeleporterFirstLeg = async ({
     await redeemRetryable(l1l2Retryable)
 
     // update the teleport tx in the UI
-    teleportTransfer = await getUpdatedTeleporterTxAfterRedemption(tx)
+    teleportTransfer = await getUpdatedTeleportTransfer(tx)
     await txUpdateCallback?.(teleportTransfer)
   }
 
@@ -95,7 +93,7 @@ const redeemTeleporterFirstLeg = async ({
     await redeemRetryable(l2ForwarderRetryable)
 
     // update the teleport tx in the UI
-    const updatedTeleportTransfer = await getUpdatedTeleporterTxAfterRedemption(
+    const updatedTeleportTransfer = await getUpdatedTeleportTransfer(
       teleportTransfer
     )
     await txUpdateCallback?.(updatedTeleportTransfer)
@@ -145,22 +143,6 @@ const redeemTeleporterSecondLeg = async ({
   }
 }
 
-const getUpdatedTeleporterTxAfterRedemption = async (tx: MergedTransaction) => {
-  const { l1ToL2MsgData, l2ToL3MsgData } =
-    await fetchTeleporterDepositStatusData(tx)
-
-  const teleportTransfer = {
-    ...tx,
-    l1ToL2MsgData,
-    l2ToL3MsgData
-  }
-
-  return {
-    ...teleportTransfer,
-    depositStatus: getDepositStatus(teleportTransfer)
-  }
-}
-
 export function useRedeemTeleporter(
   tx: MergedTransaction,
   address: Address | undefined
@@ -192,6 +174,14 @@ export function useRedeemTeleporter(
 
       if (!signer) {
         throw 'Signer is undefined'
+      }
+
+      if (
+        !firstRetryableLegRequiresRedeem(tx) &&
+        !secondRetryableLegForTeleportRequiresRedeem(tx)
+      ) {
+        // fail-safe: if there is no retryable to redeem, we should break the flow here
+        throw 'Transaction does not require redemption.'
       }
 
       if (firstRetryableLegRequiresRedeem(tx)) {

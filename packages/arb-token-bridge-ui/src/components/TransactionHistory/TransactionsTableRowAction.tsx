@@ -16,7 +16,7 @@ import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
 import { DepositCountdown } from '../common/DepositCountdown'
 import { Address } from '../../util/AddressUtils'
 import { getChainIdForRedeemingRetryable } from '../../util/RetryableUtils'
-import { isTeleport } from '../../token-bridge-sdk/teleport'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { useRedeemTeleporter } from '../../hooks/useRedeemTeleporter'
 
 export function TransactionsTableRowAction({
