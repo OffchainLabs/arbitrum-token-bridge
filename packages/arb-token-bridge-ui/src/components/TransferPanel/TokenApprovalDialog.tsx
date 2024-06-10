@@ -200,7 +200,8 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
     parentChainProvider,
     token?.address,
     sourceChain.id,
-    destinationChain.id
+    destinationChain.id,
+    isTeleportMode
   ])
 
   function closeWithReset(confirmed: boolean) {
