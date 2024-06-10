@@ -12,7 +12,7 @@ import { Button, ButtonProps } from './Button'
 type WaitForInputFunction = () => Promise<[boolean, unknown]>
 
 /**
- * Opens the dialog and returns a function which can be called to retreive a {@link WaitForInputFunction}.
+ * Opens the dialog and returns a function which can be called to retrieve a {@link WaitForInputFunction}.
  */
 export type OpenDialogFunction = () => WaitForInputFunction
 

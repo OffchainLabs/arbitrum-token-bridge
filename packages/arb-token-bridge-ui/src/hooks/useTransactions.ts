@@ -32,12 +32,12 @@ export type TxnStatus = 'pending' | 'success' | 'failure' | 'confirmed'
 export type TxnType =
   | 'deposit'
   | 'deposit-l1'
-  | 'deposit-l2' // unused; keeping for cache backwrads compatability
+  | 'deposit-l2' // unused; keeping for cache backwards compatability
   | 'withdraw'
   | 'outbox'
   | 'approve'
-  | 'deposit-l2-auto-redeem' // unused; keeping for cache backwrads compatability
-  | 'deposit-l2-ticket-created' // unused; keeping for cache backwrads compatability
+  | 'deposit-l2-auto-redeem' // unused; keeping for cache backwards compatability
+  | 'deposit-l2-ticket-created' // unused; keeping for cache backwards compatability
   | 'approve-l2'
 
 const deprecatedTxTypes: Set<TxnType> = new Set([
