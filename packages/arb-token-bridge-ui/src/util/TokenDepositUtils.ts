@@ -1,4 +1,4 @@
-import { Erc20Bridger } from '@arbitrum/sdk'
+import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
@@ -60,7 +60,6 @@ async function fetchTokenFallbackGasEstimates({
     childChainTokenAddress,
     childChainProvider
   ))
-
   if (isFirstTimeTokenBridging) {
     return {
       estimatedParentChainGas,
@@ -68,6 +67,21 @@ async function fetchTokenFallbackGasEstimates({
       // https://explorer.xai-chain.net/tx/0x9b069c244e6c1ebb3eebfe9f653eb4c9fcb171ab56c68770509c86c16bb078a0
       // https://explorer.xai-chain.net/tx/0x68203e316c690878e35a8aa77db32108cd9afcc02eb7488ce3d2869a87e84492
       estimatedChildChainGas: BigNumber.from(800_000),
+      estimatedChildChainSubmissionCost
+    }
+  }
+
+  // custom gateway token deposits have a higher gas limit in the @arbitrum/sdk : https://github.com/OffchainLabs/arbitrum-sdk/blob/main/src/lib/assetBridger/erc20Bridger.ts#L181
+  // tx example: https://arbiscan.io/tx/0x8f52daffdd97af8130d667a74a89234cd9ce838d23214d61818bd9743a2f64f8 // 275_000
+  const isCustomGatewayTokenDeposit = await addressIsCustomGatewayToken({
+    parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  })
+  if (isCustomGatewayTokenDeposit) {
+    return {
+      estimatedParentChainGas,
+      estimatedChildChainGas: BigNumber.from(300_000),
       estimatedChildChainSubmissionCost
     }
   }
@@ -80,8 +94,7 @@ async function fetchTokenFallbackGasEstimates({
     // https://arbiscan.io/tx/0xb341745b6f4a34ee539c628dcf177fc98b658e494c7f8d21da872e69d5173596
     // https://arbiscan.io/tx/0x731d31834bc01d33a1de33b5562b29c1ae6f75d20f6da83a5d74c3c91bd2dab9
     // https://arbiscan.io/tx/0x6b13bfe9f22640ac25f77a677a3c36e748913d5e07766b3d6394de09a1398020
-    // https://arbiscan.io/tx/0x8f52daffdd97af8130d667a74a89234cd9ce838d23214d61818bd9743a2f64f8 // 275_000
-    estimatedChildChainGas: BigNumber.from(300_000),
+    estimatedChildChainGas: BigNumber.from(150_000),
     estimatedChildChainSubmissionCost
   }
 }
@@ -175,4 +188,25 @@ export async function depositTokenEstimateGas(
       childChainProvider
     })
   }
+}
+
+async function addressIsCustomGatewayToken({
+  parentChainErc20Address,
+  parentChainProvider,
+  childChainProvider
+}: {
+  parentChainErc20Address: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}) {
+  const parentChainGatewayAddress = await fetchErc20ParentChainGatewayAddress({
+    erc20ParentChainAddress: parentChainErc20Address,
+    parentChainProvider,
+    childChainProvider
+  })
+  const childChainNetwork = await getL2Network(childChainProvider)
+  return (
+    parentChainGatewayAddress.toLowerCase() ===
+    childChainNetwork.tokenBridge.l1CustomGateway.toLowerCase()
+  )
 }
