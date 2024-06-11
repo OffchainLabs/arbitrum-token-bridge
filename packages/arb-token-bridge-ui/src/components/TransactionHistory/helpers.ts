@@ -26,7 +26,7 @@ import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
-import { isTeleport } from '../../token-bridge-sdk/teleport'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -462,10 +462,6 @@ export async function getUpdatedCctpTransfer(
 export async function getUpdatedTeleportTransfer(
   tx: MergedTransaction
 ): Promise<MergedTransaction> {
-  if (!isTxPending(tx)) {
-    return tx
-  }
-
   const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
     await fetchTeleporterDepositStatusData(tx)
 

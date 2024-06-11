@@ -16,7 +16,10 @@ import {
 } from '../../util/RetryableUtils'
 import { TransactionsTableRowAction } from './TransactionsTableRowAction'
 import { ExternalLink } from '../common/ExternalLink'
-import { Step } from './TransactionsTableDetailsSteps'
+import {
+  Step,
+  TransactionFailedOnNetwork
+} from './TransactionsTableDetailsSteps'
 import { DepositCountdown } from '../common/DepositCountdown'
 
 const TeleportMiddleStepFailureExplanationNote = ({
@@ -78,7 +81,7 @@ export const TransactionsTableDetailsTeleporterSteps = ({
     typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID === 'undefined'
   const l2ChainId = tx.l2ToL3MsgData?.l2ChainId
   const isFirstRetryableLegFailed = firstRetryableLegRequiresRedeem(tx)
-  const _l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
+  const l2ForwarderRequiresRedeem = l2ForwarderRetryableRequiresRedeem(tx)
 
   const isFirstRetryableLegResolved =
     isFirstRetryableLegSucceeded || isFirstRetryableLegFailed
@@ -86,31 +89,6 @@ export const TransactionsTableDetailsTeleporterSteps = ({
   const isSecondRetryableLegResolved =
     secondRetryableLegForTeleportRequiresRedeem(tx) ||
     typeof tx.l2ToL3MsgData?.l3TxID !== 'undefined'
-
-  const firstTransactionText = useMemo(() => {
-    if (isFirstRetryableLegFailed) {
-      const l2NetworkName = getNetworkName(getChainIdForRedeemingRetryable(tx))
-
-      return (
-        <div>
-          Transaction failed on {l2NetworkName}. You have 7 days to try again.
-          After that, your funds will be{' '}
-          <span className="font-bold text-red-400">lost forever</span>.
-          {/* if we detect we will have 2 redemptions in the first leg of teleport, explain it to users */}
-          {_l2ForwarderRequiresRedeem && (
-            <TeleportMiddleStepFailureExplanationNote tx={tx} />
-          )}
-        </div>
-      )
-    }
-
-    if (l2ChainId) {
-      return `Funds arrived on ${getNetworkName(l2ChainId)}`
-    }
-
-    // till the time we don't have information for l2ChainId
-    return `Funds arrived on intermediate chain`
-  }, [tx, isFirstRetryableLegFailed, l2ChainId, _l2ForwarderRequiresRedeem])
 
   const firstRetryableRedeemButton = useMemo(
     () => (
@@ -166,9 +144,16 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       <Step
         done={isFirstRetryableLegSucceeded}
         failure={isFirstRetryableLegFailed}
-        text={firstTransactionText}
+        text={
+          <FirstRetryableLegLabel
+            tx={tx}
+            isFirstRetryableLegFailed={isFirstRetryableLegFailed}
+            l2ForwarderRequiresRedeem={l2ForwarderRequiresRedeem}
+            l2ChainId={l2ChainId}
+          />
+        }
         endItem={firstTransactionActionItem}
-        extendHeight={_l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
+        extendHeight={l2ForwarderRequiresRedeem} // when we show the explanatory note, we need more height for this step
       />
 
       {/* Show second leg of teleport transfer waiting time */}
@@ -179,4 +164,38 @@ export const TransactionsTableDetailsTeleporterSteps = ({
       />
     </>
   )
+}
+
+const FirstRetryableLegLabel = ({
+  tx,
+  isFirstRetryableLegFailed,
+  l2ForwarderRequiresRedeem,
+  l2ChainId
+}: {
+  tx: MergedTransaction
+  isFirstRetryableLegFailed: boolean
+  l2ForwarderRequiresRedeem: boolean
+  l2ChainId?: number
+}) => {
+  if (isFirstRetryableLegFailed) {
+    const l2NetworkName = getNetworkName(getChainIdForRedeemingRetryable(tx))
+
+    return (
+      <div>
+        <TransactionFailedOnNetwork networkName={l2NetworkName} />
+
+        {/* if we detect we will have 2 redemptions in the first leg of teleport, explain it to users */}
+        {l2ForwarderRequiresRedeem && (
+          <TeleportMiddleStepFailureExplanationNote tx={tx} />
+        )}
+      </div>
+    )
+  }
+
+  if (l2ChainId) {
+    return `Funds arrived on ${getNetworkName(l2ChainId)}`
+  }
+
+  // till the time we don't have information for l2ChainId
+  return `Funds arrived on intermediate chain`
 }

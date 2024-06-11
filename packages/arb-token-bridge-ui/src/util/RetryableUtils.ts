@@ -7,8 +7,8 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { MergedTransaction } from '../state/app/state'
-import { isTeleport } from '../token-bridge-sdk/teleport'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
