@@ -92,13 +92,11 @@ export const fetchTeleports = async ({
   try {
     erc20TeleportsFromSubgraph = await fetchErc20TeleportsFromSubgraph({
       sender,
-      receiver,
       fromBlock,
       toBlock,
       l1ChainId,
       pageSize,
-      pageNumber,
-      searchString
+      pageNumber
     })
   } catch (error: any) {
     console.log('Error fetching erc20 teleports from subgraph', error)
