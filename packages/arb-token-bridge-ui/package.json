@@ -50,6 +50,9 @@
     "zod": "^3.22.4",
     "zustand": "^4.3.9"
   },
+  "resolutions": {
+    "**/@walletconnect/ethereum-provider": "2.13.2"
+  },
   "scripts": {
     "dev": "next dev",
     "prebuild": "yarn generateDenylist",
