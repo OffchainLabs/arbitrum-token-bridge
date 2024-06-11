@@ -4,7 +4,12 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId, getChains, isNetwork } from '../util/networks'
+import {
+  ChainId,
+  getChains,
+  getChildChainIds,
+  isNetwork
+} from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -34,6 +39,7 @@ import {
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
+  getUpdatedTeleportTransfer,
   getUpdatedTokenDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
@@ -46,6 +52,7 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { Address } from '../util/AddressUtils'
 
 export type UseTransactionHistoryResult = {
@@ -57,7 +64,7 @@ export type UseTransactionHistoryResult = {
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
-  updatePendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
@@ -98,7 +105,8 @@ function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    const childChainIds = chain.partnerChainIDs ?? []
+    const childChainIds = getChildChainIds(chain)
+
     const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
@@ -646,6 +654,12 @@ export const useTransactionHistory = (
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
+        return
+      }
+
+      if (isTeleport(tx)) {
+        const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
+        updateCachedTransaction(updatedTeleportTransfer)
         return
       }
 

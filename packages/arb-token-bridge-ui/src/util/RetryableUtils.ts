@@ -1,11 +1,14 @@
 import {
   L1TransactionReceipt,
-  L1ToL2MessageWriter as IL1ToL2MessageWriter
+  L1ToL2MessageWriter as IL1ToL2MessageWriter,
+  L1ToL2MessageStatus
 } from '@arbitrum/sdk'
 import { Signer } from '@ethersproject/abstract-signer'
 import { Provider } from '@ethersproject/abstract-provider'
 import dayjs from 'dayjs'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
+import { MergedTransaction } from '../state/app/state'
 
 type GetRetryableTicketParams = {
   parentChainTxHash: string
@@ -100,4 +103,45 @@ export const getRetryableTicketExpiration = async ({
     daysUntilExpired,
     isExpired
   }
+}
+
+// utilities for teleporter transactions
+export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
+  return tx.l1ToL2MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+}
+
+export const l2ForwarderRetryableRequiresRedeem = (tx: MergedTransaction) => {
+  return typeof tx.l2ToL3MsgData?.l2ForwarderRetryableTxID !== 'undefined'
+}
+
+export const firstRetryableLegRequiresRedeem = (tx: MergedTransaction) => {
+  return (
+    l1L2RetryableRequiresRedeem(tx) || l2ForwarderRetryableRequiresRedeem(tx)
+  )
+}
+
+export const secondRetryableLegForTeleportRequiresRedeem = (
+  tx: MergedTransaction
+) => {
+  return (
+    !l2ForwarderRetryableRequiresRedeem(tx) &&
+    tx.l2ToL3MsgData?.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+  )
+}
+
+export const getChainIdForRedeemingRetryable = (tx: MergedTransaction) => {
+  // which chain id needs to be connected to, to redeem the retryable ticket
+  if (isTeleport(tx) && firstRetryableLegRequiresRedeem(tx)) {
+    // in teleport, unless it's the final retryable being redeemed, we need to connect to the l2 chain
+    if (!tx.l2ToL3MsgData) {
+      throw Error(
+        `Could not find destination chain id for redeeming retryable for ${tx.txId}`
+      )
+    }
+
+    // else, return the destination chain
+    return tx.l2ToL3MsgData.l2ChainId
+  }
+
+  return tx.childChainId
 }
