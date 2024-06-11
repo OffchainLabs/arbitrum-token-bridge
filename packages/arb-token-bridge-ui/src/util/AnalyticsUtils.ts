@@ -4,7 +4,7 @@ import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
-type TransferDirection = 'Deposit' | 'Withdrawal'
+type TransferDirection = 'Deposit' | 'Withdrawal' | 'Teleport'
 type FastBridgeName = `${FastBridgeNames}`
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
@@ -27,6 +27,13 @@ type AnalyticsEventMap = {
     amount: number
   }
   Withdraw: {
+    tokenSymbol?: string
+    assetType: AssetType
+    accountType: AccountType
+    network: string
+    amount: number
+  }
+  Teleport: {
     tokenSymbol?: string
     assetType: AssetType
     accountType: AccountType
@@ -56,6 +63,7 @@ type AnalyticsEventMap = {
     version: number
   }
   'Redeem Retryable': { network: string }
+  'Redeem Teleport Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
   'Tx Error: Get Help Click': { network: string }
   'Multiple Tx Error: Get Help Click': { network: string }
