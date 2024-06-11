@@ -368,6 +368,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               isSmartContractWallet,
               isConnectedToParentChain
             })
+
             const includeReceivedTxs = shouldIncludeReceivedTxs({
               type,
               isSmartContractWallet,
