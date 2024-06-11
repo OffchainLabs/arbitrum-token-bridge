@@ -22,6 +22,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'ARB',
       l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
       l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+    },
+    {
+      symbol: 'saETH',
+      l1Address: '0xF1617882A71467534D14EEe865922de1395c9E89',
+      l2Address: '0xF1617882A71467534D14EEe865922de1395c9E89'
     }
   ],
   [ChainId.ArbitrumNova]: [
