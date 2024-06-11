@@ -75,7 +75,7 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
     provider: childChainProvider
   })
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
     networks.sourceChain.id
   )
 
@@ -90,6 +90,14 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
 
     if (isArbitrumSepolia && isTokenArbitrumSepoliaNativeUSDC(token?.address)) {
       return 'Native USDC on Arbitrum Sepolia'
+    }
+
+    if (
+      isOrbitChain &&
+      (isTokenArbitrumOneNativeUSDC(token?.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(token?.address))
+    ) {
+      return `L2 Native USDC on ${getNetworkName(networks.sourceChain.id)}`
     }
 
     const listIds: Set<number> = token.listIds
@@ -110,7 +118,13 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token, isArbitrumOne, isArbitrumSepolia])
+  }, [
+    token,
+    isArbitrumOne,
+    isArbitrumSepolia,
+    isOrbitChain,
+    networks.sourceChain.id
+  ])
 
   if (!token) {
     const nativeTokenChain = getNetworkName(
