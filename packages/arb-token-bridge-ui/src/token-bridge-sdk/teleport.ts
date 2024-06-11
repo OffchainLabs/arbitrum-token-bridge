@@ -66,7 +66,9 @@ async function tryGetInboxFromRouter(
   provider: Provider
 ): Promise<string | undefined> {
   if (!(await addressIsSmartContract(address, provider))) {
-    throw new Error('Not a contract')
+    throw new Error(
+      '[tryGetInboxFromRouter]: address passed is not a smart contract'
+    )
   }
 
   const maybeRouter = L1GatewayRouter__factory.connect(address, provider)

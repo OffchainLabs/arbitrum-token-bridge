@@ -6,7 +6,6 @@ import {
 } from '../../../api-utils/ServerSubgraphUtils'
 import { getInboxAddressFromOrbitChainId } from '../../../util/orbitChainsList'
 import { FetchEthTeleportsFromSubgraphResult } from '../../../util/teleports/fetchEthTeleportsFromSubgraph'
-import { ChainId } from '../../../util/networks'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
@@ -38,14 +37,11 @@ export default async function handler(
     const {
       sender,
       receiver,
-      search = '',
       l1ChainId,
       l2ChainId,
       l3ChainId,
       page = '0',
-      pageSize = '10',
-      fromBlock,
-      toBlock
+      pageSize = '10'
     } = req.query
 
     // validate method

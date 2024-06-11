@@ -20,7 +20,7 @@ export type FetchEthTeleportsFromSubgraphResult = {
  * Fetches initiated ETH Teleports from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
- * @param query.sender Address that initiated the withdrawal
+ * @param query.sender Address that initiated the teleport
  * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)

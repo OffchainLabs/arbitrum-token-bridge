@@ -235,9 +235,9 @@ function getCacheKeyFromTransaction(
 }
 
 // remove the duplicates from the transactions passed
-function dedupeTransactions(txns: Transfer[]) {
+function dedupeTransactions(txs: Transfer[]) {
   return Array.from(
-    new Map(txns.map(tx => [getCacheKeyFromTransaction(tx), tx])).values()
+    new Map(txs.map(tx => [getCacheKeyFromTransaction(tx), tx])).values()
   )
 }
 

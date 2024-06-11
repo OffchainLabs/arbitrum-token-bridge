@@ -18,11 +18,10 @@ import { fetchErc20Data } from '../TokenUtils'
 export function isTransferTeleportFromSubgraph(
   tx: Transfer
 ): tx is TeleportFromSubgraph {
-  // @ts-ignore: `teleport_type` is present only in teleport-from-subgraph types, we ignore it for other types
-  return typeof tx.teleport_type !== 'undefined'
+  return typeof (tx as TeleportFromSubgraph).teleport_type !== 'undefined'
 }
 
-export function isTransactionEthTeleportFromSubgraph(
+function isTransactionEthTeleportFromSubgraph(
   tx: TeleportFromSubgraph
 ): tx is FetchEthTeleportsFromSubgraphResult {
   return tx.teleport_type === 'eth'
@@ -53,9 +52,8 @@ export async function transformTeleportFromSubgraph(
       status: 'pending',
       direction: 'deposit',
       source: 'subgraph',
-      value: utils.formatUnits(
-        depositParameters.l2l3TicketData.l2CallValue.toString() || 0,
-        18
+      value: utils.formatEther(
+        depositParameters.l2l3TicketData.l2CallValue.toString() || 0
       ),
       txID: tx.transactionHash,
       tokenAddress: '',
