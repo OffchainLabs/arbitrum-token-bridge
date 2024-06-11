@@ -375,13 +375,16 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
             })
             try {
               // early check for fetching teleport
-              if (
-                type === 'teleports' &&
-                isTeleport({
-                  sourceChainId: chainPair.parentChainId,
-                  destinationChainId: chainPair.childChainId
-                })
-              ) {
+              if (type === 'teleports') {
+                if (
+                  !isTeleport({
+                    sourceChainId: chainPair.parentChainId,
+                    destinationChainId: chainPair.childChainId
+                  })
+                ) {
+                  return []
+                }
+
                 return await fetchTeleports({
                   sender: includeSentTxs ? address : undefined,
                   receiver: includeReceivedTxs ? address : undefined,
