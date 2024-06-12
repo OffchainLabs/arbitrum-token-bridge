@@ -54,7 +54,7 @@ export const shouldIncludeSentTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposits' | 'withdrawals' | 'teleports'
+  type: 'deposits' | 'withdrawals'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {
@@ -63,7 +63,7 @@ export const shouldIncludeSentTxs = ({
     // 1. deposits if we are connected to the parent chain, or
     // 2. withdrawals if we are connected to the child chain
     return isConnectedToParentChain
-      ? type === 'deposits' || type === 'teleports' // clubbing deposits and teleports together
+      ? type === 'deposits'
       : type === 'withdrawals'
   }
   // always show for EOA
@@ -75,7 +75,7 @@ export const shouldIncludeReceivedTxs = ({
   isSmartContractWallet,
   isConnectedToParentChain
 }: {
-  type: 'deposits' | 'withdrawals' | 'teleports'
+  type: 'deposits' | 'withdrawals'
   isSmartContractWallet: boolean
   isConnectedToParentChain: boolean
 }) => {
@@ -85,7 +85,7 @@ export const shouldIncludeReceivedTxs = ({
     // 2. deposits if we are connected to the child chain
     return isConnectedToParentChain
       ? type === 'withdrawals'
-      : type === 'deposits' || type === 'teleports' // clubbing deposits and teleports together
+      : type === 'deposits'
   }
   // always show for EOA
   return true

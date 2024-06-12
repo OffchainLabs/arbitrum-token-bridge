@@ -335,7 +335,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     )
 
   const fetcher = useCallback(
-    (type: 'deposits' | 'withdrawals' | 'teleports') => {
+    (type: 'deposits' | 'withdrawals') => {
       if (!chain) {
         return []
       }
@@ -376,15 +376,15 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
             })
             try {
               // early check for fetching teleport
-              if (type === 'teleports') {
-                if (
-                  !isTeleport({
-                    sourceChainId: chainPair.parentChainId,
-                    destinationChainId: chainPair.childChainId
-                  })
-                ) {
-                  return []
-                }
+              if (
+                isTeleport({
+                  sourceChainId: chainPair.parentChainId,
+                  destinationChainId: chainPair.childChainId
+                })
+              ) {
+                // for an L1-L3 chain pair, we will enter in this condition 2 times - once for type 'deposits' and once for type 'withdrawals'
+                // we don't want to fetch teleport txs twice, so we return an empty array for one of these ^ cases
+                if (type === 'withdrawals') return []
 
                 return await fetchTeleports({
                   sender: includeSentTxs ? address : undefined,
@@ -452,34 +452,21 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
     () => fetcher('withdrawals')
   )
 
-  const {
-    data: teleportsData,
-    error: teleportsError,
-    isLoading: teleportsLoading
-  } = useSWRImmutable(
-    shouldFetch ? ['tx_list', 'teleports', address, isTestnetMode] : null,
-    () => fetcher('teleports')
-  )
-
   const deposits = (depositsData || []).flat()
 
   const withdrawals = (withdrawalsData || []).flat()
-
-  const teleports = (teleportsData || []).flat()
 
   // merge deposits and withdrawals and sort them by date
   const transactions = [
     ...deposits,
     ...withdrawals,
-    ...teleports,
     ...combinedCctpTransfers
   ].flat()
 
   return {
     data: transactions,
-    loading:
-      depositsLoading || withdrawalsLoading || cctpLoading || teleportsLoading,
-    error: depositsError ?? withdrawalsError ?? teleportsError,
+    loading: depositsLoading || withdrawalsLoading || cctpLoading,
+    error: depositsError ?? withdrawalsError,
     failedChainPairs: failedChainPairs || []
   }
 }
