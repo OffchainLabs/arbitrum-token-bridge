@@ -6,7 +6,7 @@ import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L
 import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
 import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__factory'
 import { IRollupCore__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IRollupCore__factory'
-import { getProviderForChainId } from './utils'
+import { getChainIdFromProvider, getProviderForChainId } from './utils'
 import { TELEPORT_ALLOWLIST } from '../util/networks'
 import { addressIsSmartContract } from '../util/AddressUtils'
 
@@ -65,7 +65,9 @@ async function tryGetInboxFromRouter(
   address: string,
   provider: Provider
 ): Promise<string | undefined> {
-  if (!(await addressIsSmartContract(address, provider))) {
+  const chainId = await getChainIdFromProvider(provider)
+
+  if (!(await addressIsSmartContract(address, chainId))) {
     throw new Error(
       '[tryGetInboxFromRouter]: address passed is not a smart contract'
     )
