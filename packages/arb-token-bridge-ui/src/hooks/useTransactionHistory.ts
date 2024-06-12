@@ -334,6 +334,16 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               isConnectedToParentChain
             })
             try {
+              if (
+                isTeleport({
+                  sourceChainId: chainPair.parentChainId,
+                  destinationChainId: chainPair.childChainId
+                })
+              ) {
+                // Teleport fetcher will go here.
+                return []
+              }
+
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
