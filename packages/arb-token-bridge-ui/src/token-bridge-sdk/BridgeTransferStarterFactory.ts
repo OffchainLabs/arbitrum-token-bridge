@@ -6,6 +6,8 @@ import { EthDepositStarter } from './EthDepositStarter'
 import { Erc20DepositStarter } from './Erc20DepositStarter'
 import { EthWithdrawalStarter } from './EthWithdrawalStarter'
 import { Erc20WithdrawalStarter } from './Erc20WithdrawalStarter'
+import { EthTeleportStarter } from './EthTeleportStarter'
+import { Erc20TeleportStarter } from './Erc20TeleportStarter'
 import { getBridgeTransferProperties, getProviderForChainId } from './utils'
 
 function getCacheKey(props: BridgeTransferStarterPropsWithChainIds): string {
@@ -49,7 +51,7 @@ export class BridgeTransferStarterFactory {
       destinationChainErc20Address: props.destinationChainErc20Address
     }
 
-    const { isDeposit, isNativeCurrencyTransfer, isSupported } =
+    const { isDeposit, isNativeCurrencyTransfer, isSupported, isTeleport } =
       getBridgeTransferProperties(props)
 
     if (!isSupported) {
@@ -61,6 +63,13 @@ export class BridgeTransferStarterFactory {
 
     if (typeof cacheValue !== 'undefined') {
       return cacheValue
+    }
+
+    if (isTeleport) {
+      if (isNativeCurrencyTransfer) {
+        return withCache(cacheKey, new EthTeleportStarter(initProps))
+      }
+      return withCache(cacheKey, new Erc20TeleportStarter(initProps))
     }
 
     // deposits
