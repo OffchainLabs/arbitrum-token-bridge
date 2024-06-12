@@ -472,8 +472,7 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  const validDestinationChainIds =
-    chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+  const validDestinationChainIds = getChildChainIds(arbitrumSdkChain)
 
   if (parentChainId) {
     // always make parent chain the first element
