@@ -382,8 +382,7 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                   destinationChainId: chainPair.childChainId
                 })
               ) {
-                // for an L1-L3 chain pair, we will enter in this condition 2 times - once for type 'deposits' and once for type 'withdrawals'
-                // we don't want to fetch teleport txs twice, so we return an empty array for one of these ^ cases
+                // teleporter does not support withdrawals
                 if (type === 'withdrawals') return []
 
                 return await fetchTeleports({
