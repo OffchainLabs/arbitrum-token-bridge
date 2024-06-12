@@ -7,8 +7,8 @@ export async function addressIsSmartContract(address: string, chainId: number) {
   const provider = getProviderForChainId(chainId)
   try {
     return (await provider.getCode(address)).length > 2
-  } catch (error) {
-    throw Error('Cannot determine if address is a smart contract')
+  } catch (_) {
+    return false
   }
 }
 
