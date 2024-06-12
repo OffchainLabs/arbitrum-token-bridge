@@ -375,7 +375,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               isConnectedToParentChain
             })
             try {
-<<<<<<< HEAD
               // early check for fetching teleport
               if (type === 'teleports') {
                 if (
@@ -398,18 +397,6 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               }
 
               // else, fetch deposits or withdrawals
-=======
-              if (
-                isTeleport({
-                  sourceChainId: chainPair.parentChainId,
-                  destinationChainId: chainPair.childChainId
-                })
-              ) {
-                // Teleport fetcher will go here.
-                return []
-              }
-
->>>>>>> 4734c150aca591268c1c4878d9ce31d3af620718
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
