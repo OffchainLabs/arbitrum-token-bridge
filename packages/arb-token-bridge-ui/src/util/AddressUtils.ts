@@ -1,17 +1,14 @@
-import { Provider } from '@ethersproject/providers'
-
 import { getAPIBaseUrl } from '.'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export type Address = `0x${string}`
 
-export async function addressIsSmartContract(
-  address: string,
-  provider: Provider
-) {
+export async function addressIsSmartContract(address: string, chainId: number) {
+  const provider = getProviderForChainId(chainId)
   try {
     return (await provider.getCode(address)).length > 2
-  } catch (_) {
-    return false
+  } catch (error) {
+    throw Error('Cannot determine if address is a smart contract')
   }
 }
 
