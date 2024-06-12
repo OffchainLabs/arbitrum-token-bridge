@@ -11,7 +11,7 @@ import {
 } from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { addressIsSmartContract } from './AddressUtils'
-import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
+import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
