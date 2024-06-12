@@ -46,6 +46,7 @@ export type BridgeTransferStarterPropsWithChainIds = {
 export type TransferEstimateGas = {
   amount: BigNumber
   signer: Signer
+  onError?: (error: unknown) => void
 }
 
 export type TransferProps = {

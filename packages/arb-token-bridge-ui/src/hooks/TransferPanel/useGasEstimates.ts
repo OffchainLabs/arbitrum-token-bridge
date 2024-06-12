@@ -12,14 +12,16 @@ async function fetcher([
   destinationChainId,
   sourceChainErc20Address,
   destinationChainErc20Address,
-  amount
+  amount,
+  balance
 ]: [
   signer: Signer,
   sourceChainId: number,
   destinationChainId: number,
   sourceChainErc20Address: string | undefined,
   destinationChainErc20Address: string | undefined,
-  amount: BigNumber
+  amount: BigNumber,
+  balance: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
   const bridgeTransferStarter = BridgeTransferStarterFactory.create({
@@ -29,14 +31,20 @@ async function fetcher([
     destinationChainErc20Address
   })
 
-  try {
-    return await bridgeTransferStarter.transferEstimateGas({
-      amount,
-      signer
-    })
-  } catch (error) {
-    Sentry.captureException(error)
-  }
+  return await bridgeTransferStarter.transferEstimateGas({
+    amount,
+    signer,
+    onError(error) {
+      const code = (error as { code: string }).code
+      if (
+        code === 'INSUFFICIENT_FUNDS' ||
+        (code === 'UNPREDICTABLE_GAS_LIMIT' && amount.gte(balance))
+      ) {
+        // If amount is equal or above balance's user, we should not have run the gas estimate
+        Sentry.captureException(error)
+      }
+    }
+  })
 }
 
 export function useGasEstimates({
@@ -81,7 +89,8 @@ export function useGasEstimates({
       _destinationChainId,
       _sourceChainErc20Address,
       _destinationChainErc20Address,
-      _amount
+      _amount,
+      _balance
     ]) => {
       return fetcher([
         _signer,
@@ -89,7 +98,8 @@ export function useGasEstimates({
         _destinationChainId,
         _sourceChainErc20Address,
         _destinationChainErc20Address,
-        BigNumber.from(_amount)
+        BigNumber.from(_amount),
+        BigNumber.from(_balance)
       ])
     },
     {

@@ -10,17 +10,15 @@ export async function withdrawInitTxEstimateGas({
   amount,
   address,
   childChainProvider,
-  erc20L1Address
+  erc20L1Address,
+  onError
 }: {
   amount: BigNumber
   address: Address
   childChainProvider: Provider
   erc20L1Address?: string
-}): Promise<
-  GasEstimates & {
-    error?: Error
-  }
-> {
+  onError?: (error: unknown) => void
+}): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
 
   // For the withdrawal init tx, there's no gas fee paid on L1 separately
@@ -63,8 +61,9 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
+    onError?.(error)
+
     return {
-      error: error as Error,
       estimatedParentChainGas,
       // L2 gas estimation from recent txs
       //

@@ -127,7 +127,11 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     })
   }
 
-  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
+  public async transferEstimateGas({
+    amount,
+    signer,
+    onError
+  }: TransferEstimateGas) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -160,6 +164,8 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
         'Error while estimating gas, falling back to hardcoded values.',
         e
       )
+
+      onError?.(e)
       return {
         // fallback estimates
         estimatedParentChainGas: BigNumber.from(800_000),
