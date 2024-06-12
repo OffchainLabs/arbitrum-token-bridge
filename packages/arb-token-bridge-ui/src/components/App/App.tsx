@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
 import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
@@ -41,6 +41,7 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useAccountType } from '../../hooks/useAccountType'
 
 declare global {
   interface Window {
@@ -291,26 +292,49 @@ function AppContent() {
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
 const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('walletConnectChain')
+const targetChainKey = searchParams.get('sourceChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
-// Clear cache for everything related to WalletConnect v2.
-//
-// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
-Object.keys(localStorage).forEach(key => {
-  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
-    localStorage.removeItem(key)
-  }
-})
-
 function ConnectedChainSyncer() {
+  const { isSmartContractWallet, isLoading } = useAccountType()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
   const { chain } = useNetwork()
+
+  const setSourceChainAndDestinationChain = useCallback(() => {
+    if (typeof chain === 'undefined') {
+      return
+    }
+
+    const { sourceChainId: sourceChain, destinationChainId: destinationChain } =
+      sanitizeQueryParams({
+        sourceChainId: chain.id,
+        destinationChainId: undefined
+      })
+
+    setQueryParams({ sourceChain, destinationChain })
+  }, [chain, setQueryParams])
+
+  useEffect(() => {
+    if (typeof chain === 'undefined') {
+      return
+    }
+    if (isSmartContractWallet && !isLoading && sourceChain !== chain.id) {
+      setSourceChainAndDestinationChain()
+      setTimeout(() => window.location.reload(), 10)
+    }
+  }, [
+    chain,
+    isLoading,
+    isSmartContractWallet,
+    setQueryParams,
+    setSourceChainAndDestinationChain,
+    sourceChain
+  ])
 
   useEffect(() => {
     if (shouldSync) {
@@ -329,18 +353,16 @@ function ConnectedChainSyncer() {
   useEffect(() => {
     // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
     if (chain && shouldSync && !didSync) {
-      const {
-        sourceChainId: sourceChain,
-        destinationChainId: destinationChain
-      } = sanitizeQueryParams({
-        sourceChainId: chain.id,
-        destinationChainId: undefined
-      })
-
-      setQueryParams({ sourceChain, destinationChain })
+      setSourceChainAndDestinationChain()
       setDidSync(true)
     }
-  }, [chain, shouldSync, didSync, setQueryParams])
+  }, [
+    chain,
+    shouldSync,
+    didSync,
+    setQueryParams,
+    setSourceChainAndDestinationChain
+  ])
 
   return null
 }
