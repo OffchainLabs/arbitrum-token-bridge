@@ -26,7 +26,7 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -296,6 +296,15 @@ const targetChainKey = searchParams.get('sourceChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
+// Clear cache for everything related to WalletConnect v2.
+//
+// TODO: Remove this once the fix for the infinite loop / memory leak is identified.
+Object.keys(localStorage).forEach(key => {
+  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
+    localStorage.removeItem(key)
+  }
+})
+
 function ConnectedChainSyncer() {
   const { isSmartContractWallet, isLoading } = useAccountType()
   const [shouldSync, setShouldSync] = useState(false)
@@ -305,7 +314,7 @@ function ConnectedChainSyncer() {
     useArbQueryParams()
   const { chain } = useNetwork()
 
-  const setSourceChainAndDestinationChain = useCallback(() => {
+  const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
       return
     }
@@ -324,7 +333,14 @@ function ConnectedChainSyncer() {
       return
     }
     if (isSmartContractWallet && !isLoading && sourceChain !== chain.id) {
-      setSourceChainAndDestinationChain()
+      const chainName = getNetworkName(chain.id)
+
+      setSourceChainToConnectedChain()
+
+      window.alert(
+        `You are currently connected to the app with a smart contract wallet on ${chainName}.\n\nWe will now reload the app for transfers from ${chainName}.\n\nPlease reconnect to the app after the reload.`
+      )
+
       setTimeout(() => window.location.reload(), 10)
     }
   }, [
@@ -332,7 +348,7 @@ function ConnectedChainSyncer() {
     isLoading,
     isSmartContractWallet,
     setQueryParams,
-    setSourceChainAndDestinationChain,
+    setSourceChainToConnectedChain,
     sourceChain
   ])
 
@@ -353,7 +369,7 @@ function ConnectedChainSyncer() {
   useEffect(() => {
     // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
     if (chain && shouldSync && !didSync) {
-      setSourceChainAndDestinationChain()
+      setSourceChainToConnectedChain()
       setDidSync(true)
     }
   }, [
@@ -361,7 +377,7 @@ function ConnectedChainSyncer() {
     shouldSync,
     didSync,
     setQueryParams,
-    setSourceChainAndDestinationChain
+    setSourceChainToConnectedChain
   ])
 
   return null
