@@ -306,7 +306,8 @@ Object.keys(localStorage).forEach(key => {
 })
 
 function ConnectedChainSyncer() {
-  const { isSmartContractWallet, isLoading } = useAccountType()
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
 
@@ -332,7 +333,11 @@ function ConnectedChainSyncer() {
     if (typeof chain === 'undefined') {
       return
     }
-    if (isSmartContractWallet && !isLoading && sourceChain !== chain.id) {
+    if (
+      isSmartContractWallet &&
+      !isLoadingAccountType &&
+      sourceChain !== chain.id
+    ) {
       const chainName = getNetworkName(chain.id)
 
       setSourceChainToConnectedChain()
@@ -345,7 +350,7 @@ function ConnectedChainSyncer() {
     }
   }, [
     chain,
-    isLoading,
+    isLoadingAccountType,
     isSmartContractWallet,
     setQueryParams,
     setSourceChainToConnectedChain,
