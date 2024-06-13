@@ -27,5 +27,8 @@
   ],
   "devDependencies": {
     "audit-ci": "^6.3.0"
+  },
+  "resolutions": {
+    "**/@walletconnect/ethereum-provider": "2.13.2"
   }
 }

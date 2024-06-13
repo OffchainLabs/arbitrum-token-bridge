@@ -39,7 +39,6 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 
 declare global {
@@ -247,13 +246,8 @@ function AppContent() {
         <Header>
           <HeaderConnectWalletButton />
         </Header>
-
-        <AppConnectionFallbackContainer>
-          <p className="text-5xl">No wallet connected</p>
-          <p className="text-xl">
-            Please connect your wallet to use the bridge.
-          </p>
-        </AppConnectionFallbackContainer>
+        <p className="text-5xl">No wallet connected</p>
+        <p className="text-xl">Please connect your wallet to use the bridge.</p>
       </>
     )
   }
