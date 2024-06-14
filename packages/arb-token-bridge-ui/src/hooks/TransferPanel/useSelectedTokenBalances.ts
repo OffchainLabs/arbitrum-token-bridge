@@ -2,16 +2,13 @@ import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
 import { useAppState } from '../../state'
 import { useNetworks } from '../useNetworks'
-import { useNetworksRelationship } from '../useNetworksRelationship'
-import { useDestinationAddressStore } from '../../components/TransferPanel/AdvancedSettings'
-import { useAccount } from 'wagmi'
-import { useBalance } from '../useBalance'
 import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
+import { useBalances } from '../../components/TransferPanel/TransferPanelNetworkContainers/hook'
 
 export type Balances = {
   l1: BigNumber | null
@@ -21,12 +18,7 @@ export type Balances = {
 export function useSelectedTokenBalances(): Balances {
   const { app } = useAppState()
   const { selectedToken } = app
-  const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
-  const { destinationAddress } = useDestinationAddressStore()
-  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
   const {
     isArbitrumOne: isSourceChainArbitrumOne,
@@ -49,26 +41,7 @@ export function useSelectedTokenBalances(): Balances {
     (isSourceChainEthereum && isDestinationChainArbitrumOne) ||
     (isSourceChainArbitrumOne && isDestinationChainEthereum)
 
-  const parentChainWalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const childChainWalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
-  const {
-    erc20: [erc20L1Balances]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress: parentChainWalletAddress
-  })
-  const {
-    erc20: [erc20L2Balances]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress: childChainWalletAddress
-  })
+  const { erc20L1Balances, erc20L2Balances } = useBalances()
 
   return useMemo(() => {
     const result: Balances = {

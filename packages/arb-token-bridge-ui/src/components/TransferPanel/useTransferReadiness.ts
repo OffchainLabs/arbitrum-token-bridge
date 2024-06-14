@@ -1,10 +1,8 @@
 import { useMemo } from 'react'
-import { useAccount } from 'wagmi'
 import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
 import { useAppState } from '../../state'
-import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
   isTokenArbitrumSepoliaNativeUSDC,
@@ -27,6 +25,8 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
+import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useAccount } from 'wagmi'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -127,7 +127,6 @@ export function useTransferReadiness({
     childChain,
     childChainProvider,
     parentChain,
-    parentChainProvider,
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
@@ -135,14 +134,11 @@ export function useTransferReadiness({
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+  const { ethL1Balance, erc20L1Balances, ethL2Balance, erc20L2Balances } =
+    useBalances({
+      l1WalletAddress: walletAddress,
+      l2WalletAddress: walletAddress
+    })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(

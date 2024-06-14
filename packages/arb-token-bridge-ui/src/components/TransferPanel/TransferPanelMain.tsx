@@ -25,7 +25,6 @@ import {
 } from '../../hooks/useArbQueryParams'
 
 import { TransferPanelMainInput } from './TransferPanelMainInput'
-import { useBalance } from '../../hooks/useBalance'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useAccountType } from '../../hooks/useAccountType'
 import { CommonAddress } from '../../util/CommonAddressUtils'
@@ -67,6 +66,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useBalances } from './TransferPanelNetworkContainers/hook'
 
 enum NetworkType {
   l1 = 'l1',
@@ -336,13 +336,8 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const {
-    childChain,
-    childChainProvider,
-    parentChainProvider,
-    isDepositMode,
-    isTeleportMode
-  } = useNetworksRelationship(networks)
+  const { childChain, childChainProvider, isDepositMode, isTeleportMode } =
+    useNetworksRelationship(networks)
   const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -358,30 +353,18 @@ export function TransferPanelMain({
 
   const { destinationAddress, setDestinationAddress } =
     useDestinationAddressStore()
+
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
 
-  const l1WalletAddress = isDepositMode
-    ? walletAddress
-    : destinationAddressOrWalletAddress
-
-  const l2WalletAddress = isDepositMode
-    ? destinationAddressOrWalletAddress
-    : walletAddress
-
   const {
-    eth: [ethL1Balance],
-    erc20: [erc20L1Balances, updateErc20L1Balances]
-  } = useBalance({
-    provider: parentChainProvider,
-    walletAddress: l1WalletAddress
-  })
-  const {
-    eth: [ethL2Balance],
-    erc20: [erc20L2Balances, updateErc20L2Balances]
-  } = useBalance({
-    provider: childChainProvider,
-    walletAddress: l2WalletAddress
-  })
+    ethL1Balance,
+    erc20L1Balances,
+    updateErc20L1Balances,
+    ethL2Balance,
+    erc20L2Balances,
+    updateErc20L2Balances
+  } = useBalances()
+
   const { updateUSDCBalances } = useUpdateUSDCBalances({
     walletAddress: destinationAddressOrWalletAddress
   })
