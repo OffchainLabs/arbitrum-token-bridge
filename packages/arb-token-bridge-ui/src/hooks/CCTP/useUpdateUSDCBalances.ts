@@ -6,7 +6,7 @@ import { getL2ERC20Address } from '../../util/TokenUtils'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
-import { useBalances } from '../../components/TransferPanel/TransferPanelNetworkContainers/hook'
+import { useBalances } from '../useBalances'
 
 export function useUpdateUSDCBalances({
   walletAddress

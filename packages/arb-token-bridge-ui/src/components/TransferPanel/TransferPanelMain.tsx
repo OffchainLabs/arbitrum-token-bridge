@@ -66,7 +66,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useBalances } from '../../hooks/useBalances'
 
 enum NetworkType {
   l1 = 'l1',

@@ -1,10 +1,10 @@
 import { Address, useAccount } from 'wagmi'
 
-import { useBalance } from '../../../hooks/useBalance'
-import { useNetworks } from '../../../hooks/useNetworks'
-import { useNetworksRelationship } from '../../../hooks/useNetworksRelationship'
+import { useBalance } from './useBalance'
+import { useNetworks } from './useNetworks'
+import { useNetworksRelationship } from './useNetworksRelationship'
 
-import { useDestinationAddressStore } from '../AdvancedSettings'
+import { useDestinationAddressStore } from '../components/TransferPanel/AdvancedSettings'
 
 export function useBalances({
   l1WalletAddress,

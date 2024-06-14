@@ -8,7 +8,7 @@ import {
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
-import { useBalances } from '../../components/TransferPanel/TransferPanelNetworkContainers/hook'
+import { useBalances } from '../useBalances'
 
 export type Balances = {
   l1: BigNumber | null

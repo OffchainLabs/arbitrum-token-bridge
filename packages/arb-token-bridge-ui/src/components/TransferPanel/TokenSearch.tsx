@@ -42,7 +42,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTokenFromSearchParams } from './TransferPanelUtils'
 import { Switch } from '../common/atoms/Switch'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
-import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useBalances } from '../../hooks/useBalances'
 
 export const ARB_ONE_NATIVE_USDC_TOKEN = {
   ...ArbOneNativeUSDC,

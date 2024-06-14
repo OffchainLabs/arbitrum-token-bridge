@@ -25,7 +25,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
-import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useBalances } from '../../hooks/useBalances'
 import { useAccount } from 'wagmi'
 
 // Add chains IDs that are currently down or disabled

@@ -74,7 +74,7 @@ import {
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
-import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useBalances } from '../../hooks/useBalances'
 
 const networkConnectionWarningToast = () =>
   warningToast(

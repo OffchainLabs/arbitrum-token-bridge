@@ -10,7 +10,7 @@ import { useAppState } from '../../state'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { countDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
-import { useBalances } from './TransferPanelNetworkContainers/hook'
+import { useBalances } from '../../hooks/useBalances'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
