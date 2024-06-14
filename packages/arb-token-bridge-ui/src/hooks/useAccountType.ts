@@ -17,7 +17,7 @@ export function useAccountType(): Result {
     address && isConnected && chain
       ? [address, chain.id, 'useAccountType']
       : null,
-    async ([_address, chainId]) => addressIsSmartContract(_address, chainId),
+    ([_address, chainId]) => addressIsSmartContract(_address, chainId),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
