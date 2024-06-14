@@ -2,6 +2,7 @@ import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { L2ToL1TransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
+import * as Sentry from '@sentry/react'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'
@@ -10,14 +11,12 @@ export async function withdrawInitTxEstimateGas({
   amount,
   address,
   childChainProvider,
-  erc20L1Address,
-  onError
+  erc20L1Address
 }: {
   amount: BigNumber
   address: Address
   childChainProvider: Provider
   erc20L1Address?: string
-  onError?: (error: unknown) => void
 }): Promise<GasEstimates> {
   const isToken = typeof erc20L1Address === 'string'
 
@@ -61,7 +60,7 @@ export async function withdrawInitTxEstimateGas({
       estimatedChildChainGas
     }
   } catch (error) {
-    onError?.(error)
+    Sentry.captureException(error)
 
     return {
       estimatedParentChainGas,

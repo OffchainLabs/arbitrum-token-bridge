@@ -68,11 +68,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer,
-    onError
-  }: TransferEstimateGas) {
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     const l2Provider = await this.getL2Provider()
 
     const l1l3Bridger = await this.getBridger()
@@ -100,7 +96,6 @@ export class EthTeleportStarter extends BridgeTransferStarter {
         'Error while estimating gas, falling back to hardcoded values.',
         e
       )
-      onError?.(e)
 
       return {
         // fallback estimates

@@ -161,11 +161,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
     )
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer,
-    onError
-  }: TransferEstimateGas) {
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     if (!this.sourceChainErc20Address) {
       throw Error('Erc20 token address not found')
     }
@@ -179,8 +175,7 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
       amount,
       address,
       erc20L1Address: destinationChainErc20Address,
-      childChainProvider: this.sourceChainProvider,
-      onError
+      childChainProvider: this.sourceChainProvider
     })
   }
 

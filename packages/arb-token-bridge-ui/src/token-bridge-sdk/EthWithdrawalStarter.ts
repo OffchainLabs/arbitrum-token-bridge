@@ -35,18 +35,13 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
     // no-op
   }
 
-  public async transferEstimateGas({
-    amount,
-    signer,
-    onError
-  }: TransferEstimateGas) {
+  public async transferEstimateGas({ amount, signer }: TransferEstimateGas) {
     const address = (await getAddressFromSigner(signer)) as `0x${string}`
 
     return withdrawInitTxEstimateGas({
       amount,
       address,
-      childChainProvider: this.sourceChainProvider,
-      onError
+      childChainProvider: this.sourceChainProvider
     })
   }
 
