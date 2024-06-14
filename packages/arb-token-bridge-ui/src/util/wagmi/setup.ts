@@ -145,8 +145,7 @@ export function getProps(targetChainKey: string | null) {
   ])
 
   const client = createClient({
-    autoConnect:
-      localStorage.getItem('wagmi.wallet')?.toLowerCase() !== '"walletconnect"',
+    autoConnect: true,
     connectors,
     provider
   })

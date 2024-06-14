@@ -2,7 +2,6 @@ import { useAccount, useNetwork } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 
 import { addressIsSmartContract } from '../util/AddressUtils'
-import { useNetworks } from './useNetworks'
 
 type Result = {
   isEOA: boolean
