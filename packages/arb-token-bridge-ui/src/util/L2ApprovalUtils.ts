@@ -22,6 +22,11 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       symbol: 'ARB',
       l1Address: '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
       l2Address: '0x912CE59144191C1204E64559FE8253a0e49E6548'
+    },
+    {
+      symbol: 'saETH',
+      l1Address: '0xF1617882A71467534D14EEe865922de1395c9E89',
+      l2Address: '0xF1617882A71467534D14EEe865922de1395c9E89'
     }
   ],
   [ChainId.ArbitrumNova]: [
@@ -36,6 +41,22 @@ const L2ApproveTokens: { [chainId: number]: RequireL2ApproveToken[] } = {
       l2Address: '0x0057Ac2d777797d31CD3f8f13bF5e927571D6Ad0'
     }
   ],
+  [ChainId.ArbitrumSepolia]: [
+    {
+      symbol: 'ARB',
+      l1Address: '0xfa898E8d38B008F3bAc64dce019A9480d4F06863',
+      l2Address: '0xc275b23c035a9d4ec8867b47f55427e0bdce14cb'
+    }
+  ],
+  // xai mainnet
+  [660279]: [
+    {
+      symbol: 'wCU',
+      l1Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02',
+      l2Address: '0x89c49a3fa372920ac23ce757a029e6936c0b8e02'
+    }
+  ],
+  // xai testnet
   [37714555429]: [
     {
       symbol: 'CU',

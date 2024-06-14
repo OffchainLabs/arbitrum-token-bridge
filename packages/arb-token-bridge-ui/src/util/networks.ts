@@ -67,6 +67,8 @@ export function getBaseChainIdByChainId({
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  if (typeof localStorage === 'undefined') return [] // required so that it does not fail test-runners
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
@@ -141,7 +143,8 @@ export enum ChainId {
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
   // Orbit
-  StylusTestnet = 23011913
+  StylusTestnet = 23011913,
+  StylusTestnetV2 = 13331371
 }
 
 export const supportedCustomOrbitParentChains = [
@@ -174,7 +177,8 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
   }),
   // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc'
+  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc',
+  [ChainId.StylusTestnetV2]: 'https://stylusv2.arbitrum.io/rpc'
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -189,7 +193,8 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io'
+  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io',
+  [ChainId.StylusTestnetV2]: 'https://stylusv2-explorer.arbitrum.io'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -339,6 +344,7 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
   const isStylusTestnet = chainId === ChainId.StylusTestnet
+  const isStylusTestnetV2 = chainId === ChainId.StylusTestnetV2
 
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isSepolia || isHolesky || isLocal
@@ -360,6 +366,7 @@ export function isNetwork(chainId: ChainId) {
     isArbitrumSepolia ||
     isCustomOrbitChain ||
     isStylusTestnet ||
+    isStylusTestnetV2 ||
     isTestnetOrbitChain
 
   const isSupported =
@@ -438,6 +445,19 @@ function isL1Chain(chain: L1Network | L2Network): chain is L1Network {
 
 function isArbitrumChain(chain: L1Network | L2Network): chain is L2Network {
   return chain.isArbitrum
+}
+
+export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
+  [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
+  [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
+}
+
+export function getChildChainIds(chain: L2Network | L1Network) {
+  const childChainIds = [
+    ...(chain.partnerChainIDs ?? []),
+    ...(TELEPORT_ALLOWLIST[chain.chainID] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+  ]
+  return Array.from(new Set(childChainIds))
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {

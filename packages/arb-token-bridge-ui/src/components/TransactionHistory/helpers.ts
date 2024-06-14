@@ -3,9 +3,10 @@ import {
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
-import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
+  EthDepositStatus,
   L1ToL2MessageReader
 } from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
@@ -17,11 +18,15 @@ import {
 import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import {
+  getL1ToL2MessageDataFromL1TxHash,
+  fetchTeleporterDepositStatusData
+} from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -454,6 +459,26 @@ export async function getUpdatedCctpTransfer(
   return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
 }
 
+export async function getUpdatedTeleportTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
+    await fetchTeleporterDepositStatusData(tx)
+
+  const updatedTx = {
+    ...tx,
+    status,
+    timestampResolved,
+    l1ToL2MsgData,
+    l2ToL3MsgData
+  }
+
+  return {
+    ...updatedTx,
+    depositStatus: getDepositStatus(updatedTx)
+  }
+}
+
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
   if (isDeposit(tx)) {
     switch (tx.depositStatus) {
@@ -577,6 +602,11 @@ export function getDestinationNetworkTxId(tx: MergedTransaction) {
   if (tx.isCctp) {
     return tx.cctpData?.receiveMessageTransactionHash
   }
+
+  if (isTeleport(tx)) {
+    return tx.l2ToL3MsgData?.l3TxID
+  }
+
   return tx.isWithdrawal
     ? tx.l2ToL1MsgData?.uniqueId.toString()
     : tx.l1ToL2MsgData?.l2TxID

@@ -1,4 +1,5 @@
 import { constants } from '@arbitrum/sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
@@ -281,6 +282,104 @@ export const orbitMainnets: {
         logoUrl: '/images/PolychainMonstersLogo.png'
       }
     }
+  },
+  12324: {
+    chainID: 12324,
+    confirmPeriodBlocks: 7200,
+    ethBridge: {
+      bridge: '0x59E088d827CB7983Cd0CC64312E472D7cc8a4F44',
+      inbox: '0x80de5c4ccDfb7b6a250A9588C2d80F62a2B7d13F',
+      outbox: '0x1526DAacDAf3EE81E5ae087E0DA8677E8c677CE5',
+      rollup: '0xb75A0a5812303cBB198d4f0BcA7CA38f17b8783e',
+      sequencerInbox: '0xB9450b512Fd3454e9C1a2593C5DF9E71344b5653'
+    },
+    explorerUrl: 'https://explorer.l3x.com',
+    rpcUrl: 'https://rpc-mainnet.l3x.com',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'L3X Network',
+    slug: 'l3x-network',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xec80A45ebadD945379f69e9A8929973BCb3E297D',
+      l1ERC20Gateway: '0x4fF3E70f30f0394Ad62428751Fe3858740595908',
+      l1GatewayRouter: '0x817C8Da480bC6b42a5FA88A26e9eD8c0c03968Cf',
+      l1MultiCall: '0x90B02D9F861017844F30dFbdF725b6aa84E63822',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+      l1WethGateway: '0x9bd7C6d040665E95a4FE70b61718abca2E3A62CD',
+      l2CustomGateway: '0x1AE90d0FBf03d1bb0685D4bAc5BCe4F4071cB0dc',
+      l2ERC20Gateway: '0x76df9F5004F38aC74D0cE664027a1E718AA45E97',
+      l2GatewayRouter: '0x460E0a28a1DcE5a15811C3F5775D1e8fd0a08278',
+      l2Multicall: '0xA9cfB51510b18300cf056d7e0b96925a1D11f424',
+      l2ProxyAdmin: '0xFB027dBD2FBb343FD16D66a63a690B29D51D23AA',
+      l2Weth: '0xD3f8b9D33b159E8f5141d28880b216d31B00ee63',
+      l2WethGateway: '0x0fEf8843450b7c6a416C30D1E00cbc535Bb905b6'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#3ABE7B',
+      network: {
+        name: 'L3X Network',
+        description:
+          'Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.',
+        logo: '/images/L3XLogo.png'
+      }
+    }
+  },
+  94524: {
+    chainID: 94524,
+    confirmPeriodBlocks: 40320,
+    ethBridge: {
+      bridge: '0x2Be65c5b58F78B02AB5c0e798A9ffC181703D3C1',
+      inbox: '0xE961Ef06c26D0f032F0298c97C41e648d3bb715a',
+      outbox: '0x0b8071337dcB089478Ea740efC10904d9F359141',
+      rollup: '0xeb61c3FA03544021cf76412eFb9D0Ce7D8c0290d',
+      sequencerInbox: '0x47861E0419BE83d0175818a09221B6DF2EFD7793'
+    },
+    explorerUrl: 'https://xchain-explorer.idex.io',
+    rpcUrl: 'https://xchain-rpc.idex.io',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'XCHAIN',
+    slug: 'xchain',
+    partnerChainID: 1,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xEFb1F8ae759c595907782e9bD45F119c9814b308',
+      l1ERC20Gateway: '0xFFb821ca61e823a884D79226B0fcD7a99A4d48aa',
+      l1GatewayRouter: '0xe0a99350288971456EE4BAc4568495352929B769',
+      l1MultiCall: '0x7cdCB0Cc61f47B8Dd8f47C5A29edaDd84a1BDf5e',
+      l1ProxyAdmin: '0x22010F5C4c106dfBaffec780196d2F691860Ff62',
+      l1Weth: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      l1WethGateway: '0xCAde60b1331f1cF714ECb01f08117780887A0AF4',
+      l2CustomGateway: '0x642e40E3F9948F11E18973f79E910f0953dd0C80',
+      l2ERC20Gateway: '0xBF14b5F058AE33469eC2D20c9Ee712Cb7eC68A8b',
+      l2GatewayRouter: '0xe95788E89383447177312846DB45E6bffc32DD3b',
+      l2Multicall: '0x9eE16369804735D75944AA3B025B063C31862786',
+      l2ProxyAdmin: '0xc5A8e16EADC3276B3DdB9F122e2c824Dc8a87BfD',
+      l2Weth: '0x594Ee2FA451dC7aCFC6785c0d746695f79A4daeE',
+      l2WethGateway: '0x377880CbbA57EB9ACb7120028f21Ce043266A431'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#FD0598',
+      network: {
+        name: 'XCHAIN',
+        description:
+          'XCHAIN powers IDEX, the premier omnichain perpetuals exchange, combining industry-leading speed and performance with transparency and security to create an entirely new trading experience.',
+        logo: '/images/XCHAINLogo.png'
+      }
+    }
   }
 }
 
@@ -339,6 +438,110 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         logoUrl: '/images/XaiLogo.svg'
       }
     }
+  },
+  53457: {
+    chainID: 53457,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0xC0856971702b02A5576219540BD92DAE79a79288',
+      inbox: '0xD62ef8d8c71d190417C6CE71f65795696C069f09',
+      outbox: '0xaEB5Fe2f7003881c3a8EBAE9664E8607f3935d53',
+      rollup: '0xBc4cc964eF0ea5792a398F9E738edf368A34f003',
+      sequencerInbox: '0x67ad6c79E33eA9e523E0e68961456d0ac7A973Cc'
+    },
+    nativeToken: '0xAC716E87b0853C0712674e8E3a8435a489F276b4',
+    explorerUrl: 'https://testnet-scan.dodochain.com',
+    rpcUrl: 'https://dodochain-testnet.alt.technology',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'DODOchain Testnet',
+    slug: 'dodochain-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xeCa856BE0041184eeda8F2c98896AC4693b168EA',
+      l1ERC20Gateway: '0xf57F874845CD652e69f69f020A4d46F4e427bb43',
+      l1GatewayRouter: '0xE3661c8313B35BA310Ad89e113561F3C983dC761',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0x6B8C4aD57806fB4563031B79348bcC4CC3bBa7D5',
+      l2ERC20Gateway: '0xBb94635f882f03f7641B742F5e3070e6B5108b71',
+      l2GatewayRouter: '0x14De2d9c4C7F5ad2d134Eb746207653797693C0D',
+      l2Multicall: '0xF6Fd6C87C4cac9A4BF4b6fF4efa4B06bdbbe5D51',
+      l2ProxyAdmin: '0x80C5A0C4004B4130b823AfE8D97aAeA3fBFf3fCc',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#B88B1E',
+      network: {
+        name: 'DODOchain Testnet',
+        logo: '/images/DODOchain.png',
+        description: 'An Omni-Trading Layer3 Powered by Arbitrum Orbit.'
+      },
+      nativeTokenData: {
+        name: 'Berd',
+        symbol: 'BERD',
+        decimals: 18,
+        logoUrl: ''
+      }
+    }
+  },
+  12325: {
+    chainID: 12325,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0x98DBc5f9d4BB16A7c8C21e36789E673b6E0FDf37',
+      inbox: '0xB0e78299F14b50d151a5eF92b6465bb807B6e56b',
+      outbox: '0x243487a26284B17b70E8A183a7a1FeB5A6b00824',
+      rollup: '0xce99C9E7566438a8311424aD0287EB0fDEAc55A2',
+      sequencerInbox: '0xd598F60Ae694bE2aF9D6933aD9e9f7A431A2005E'
+    },
+    explorerUrl: 'https://explorer-testnet.l3x.com',
+    rpcUrl: 'https://rpc-testnet.l3x.com',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'L3X Network Testnet',
+    slug: 'l3x-network-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x00eE97A18A85a58fbfddA2CCa2Bdb3B88d1068b3',
+      l1ERC20Gateway: '0xD2e9EA14CE4C61630a87bC652f5cD51deA7C66bA',
+      l1GatewayRouter: '0x8D684F7fA0aE2a13e0a1FAa60699ee2db46505a8',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+      l1WethGateway: '0xB001D0E3a43EbB820E82720a2Bd74f4C03a5b424',
+      l2CustomGateway: '0xcc3fa38D4a18474DF92107d328bF4A6F7C9fA29A',
+      l2ERC20Gateway: '0x7aeD67245Db9b4E6bB26791b48E20aBbA9411EdD',
+      l2GatewayRouter: '0xF40E36d3043373Ce6F89abe3914d631135342C28',
+      l2Multicall: '0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62',
+      l2ProxyAdmin: '0xC381Ff423f37d42b0b9B84195D9C9C31eDc26e73',
+      l2Weth: '0x6793D074d3A410C803B8C2086E569883D6e928F1',
+      l2WethGateway: '0x4F24D0244B29d76ED1FBD3c8a9967b72b78B9DBd'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#3ABE7B',
+      network: {
+        name: 'L3X Network Testnet',
+        logo: '/images/L3XLogo.png',
+        description:
+          'Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.'
+      }
+    }
   }
 }
 
@@ -357,4 +560,17 @@ export function getOrbitChains(
   const testnetChains = testnet ? Object.values(orbitTestnets) : []
 
   return [...mainnetChains, ...testnetChains]
+}
+
+export function getInboxAddressFromOrbitChainId(chainId: number) {
+  return (
+    l2Networks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
+    getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge.inbox // for other custom orbit chains
+  )
+}
+
+export function getChainIdFromInboxAddress(inboxAddress: string) {
+  return getOrbitChains().find(
+    chain => chain.ethBridge.inbox.toLowerCase() === inboxAddress.toLowerCase()
+  )?.chainID
 }
