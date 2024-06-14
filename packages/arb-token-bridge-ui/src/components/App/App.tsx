@@ -351,7 +351,7 @@ function ConnectedChainSyncer() {
       setSourceChainToConnectedChain()
 
       window.alert(
-        `You connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, we will now reload the app.\n\nPlease reconnect after the reload.`
+        `You're connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, the app will now reload.\n\nPlease reconnect after the reload.`
       )
       disconnect()
     }
