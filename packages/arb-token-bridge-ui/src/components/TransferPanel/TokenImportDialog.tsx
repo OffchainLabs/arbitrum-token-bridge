@@ -130,10 +130,7 @@ export function TokenImportDialog({
       return
     }
 
-    const erc20Params = {
-      address: l1Address,
-      provider: parentChainProvider
-    }
+    const erc20Params = { address: l1Address, provider: parentChainProvider }
 
     if (!(await isValidErc20(erc20Params))) {
       throw new Error(`${l1Address} is not a valid ERC-20 token`)
@@ -202,11 +199,11 @@ export function TokenImportDialog({
     }
 
     if (l1Address) {
-      const searchResult = searchForTokenInLists(l1Address)
+      const searchResult1 = searchForTokenInLists(l1Address)
 
-      if (searchResult.found) {
-        setStatus(searchResult.status)
-        setTokenToImport(searchResult.token)
+      if (searchResult1.found) {
+        setStatus(searchResult1.status)
+        setTokenToImport(searchResult1.token)
 
         return
       }
