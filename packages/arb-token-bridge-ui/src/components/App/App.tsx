@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -42,6 +42,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { useAccountType } from '../../hooks/useAccountType'
+import { onDisconnectHandler } from '../../util/walletConnectUtils'
 
 declare global {
   interface Window {
@@ -300,7 +301,11 @@ const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 //
 // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
 Object.keys(localStorage).forEach(key => {
-  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
+  if (
+    key === 'wagmi.requestedChains' ||
+    key === 'wagmi.store' ||
+    key.startsWith('wc@2')
+  ) {
     localStorage.removeItem(key)
   }
 })
@@ -310,6 +315,9 @@ function ConnectedChainSyncer() {
     useAccountType()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
+  const { disconnect } = useDisconnect({
+    onSettled: onDisconnectHandler
+  })
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
@@ -343,13 +351,13 @@ function ConnectedChainSyncer() {
       setSourceChainToConnectedChain()
 
       window.alert(
-        `You are currently connected to the app with a smart contract wallet on ${chainName}.\n\nWe will now reload the app for transfers from ${chainName}.\n\nPlease reconnect to the app after the reload.`
+        `You connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, we will now reload the app.\n\nPlease reconnect after the reload.`
       )
-
-      setTimeout(() => window.location.reload(), 10)
+      disconnect()
     }
   }, [
     chain,
+    disconnect,
     isLoadingAccountType,
     isSmartContractWallet,
     setQueryParams,
