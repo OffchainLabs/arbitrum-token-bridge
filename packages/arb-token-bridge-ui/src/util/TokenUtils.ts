@@ -9,7 +9,6 @@ import {
   getL2Network
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
-import { L2ERC20Gateway__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L2ERC20Gateway__factory'
 import * as Sentry from '@sentry/react'
 
 import { CommonAddress } from './CommonAddressUtils'
@@ -493,29 +492,9 @@ export async function isGatewayRegistered({
     return true
   }
 
-  const tokenChildChainAddressFromParentGatewayRouter = (
-    await erc20Bridger.getL2ERC20Address(
-      erc20ParentChainAddress,
-      parentChainProvider
-    )
-  ).toLowerCase()
-
-  const childChainGatewayAddressFromChildChainRouter = (
-    await erc20Bridger.getL2GatewayAddress(
-      erc20ParentChainAddress,
-      childChainProvider
-    )
-  ).toLowerCase()
-
-  const tokenChildChainAddressFromChildChainGateway = (
-    await L2ERC20Gateway__factory.connect(
-      childChainGatewayAddressFromChildChainRouter,
-      childChainProvider
-    ).calculateL2TokenAddress(erc20ParentChainAddress)
-  ).toLowerCase()
-
-  return (
-    tokenChildChainAddressFromParentGatewayRouter ===
-    tokenChildChainAddressFromChildChainGateway
-  )
+  return erc20Bridger.isRegistered({
+    erc20L1Address: erc20ParentChainAddress,
+    l1Provider: parentChainProvider,
+    l2Provider: childChainProvider
+  })
 }
