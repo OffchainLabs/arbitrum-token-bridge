@@ -308,7 +308,7 @@
       "bridge": "0x2Be65c5b58F78B02AB5c0e798A9ffC181703D3C1",
       "inbox": "0xE961Ef06c26D0f032F0298c97C41e648d3bb715a",
       "outbox": "0x0b8071337dcB089478Ea740efC10904d9F359141",
-      "rollup": "§0xeb61c3FA03544021cf76412eFb9D0Ce7D8c0290d",
+      "rollup": "0xeb61c3FA03544021cf76412eFb9D0Ce7D8c0290d",
       "sequencerInbox": "0x47861E0419BE83d0175818a09221B6DF2EFD7793"
     },
     "explorerUrl": "https://xchain-explorer.idex.io",
