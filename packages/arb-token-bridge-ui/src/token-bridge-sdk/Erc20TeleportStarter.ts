@@ -160,7 +160,6 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
         'Error while estimating gas, falling back to hardcoded values.',
         e
       )
-
       return {
         // fallback estimates
         estimatedParentChainGas: BigNumber.from(800_000),

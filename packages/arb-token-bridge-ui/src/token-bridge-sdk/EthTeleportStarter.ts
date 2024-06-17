@@ -96,7 +96,6 @@ export class EthTeleportStarter extends BridgeTransferStarter {
         'Error while estimating gas, falling back to hardcoded values.',
         e
       )
-
       return {
         // fallback estimates
         estimatedParentChainGas: BigNumber.from(240_000),
