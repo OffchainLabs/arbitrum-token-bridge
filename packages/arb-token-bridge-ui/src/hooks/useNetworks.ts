@@ -4,11 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
   sepolia,
   holesky,
@@ -22,30 +18,8 @@ import {
 
 import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { getOrbitChains } from '../util/orbit'
-
-const getProviderForChainCache: {
-  [chainId: number]: StaticJsonRpcProvider
-} = {
-  // start with empty cache
-}
-
-function createProviderWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
-}
-
-export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
-
-  if (typeof cachedProvider !== 'undefined') {
-    return cachedProvider
-  }
-
-  return createProviderWithCache(chainId)
-}
+import { getOrbitChains } from '../util/orbitChainsList'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined

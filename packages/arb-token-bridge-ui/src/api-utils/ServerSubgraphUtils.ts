@@ -67,6 +67,15 @@ const subgraphs = {
   'l2-arbitrum-sepolia': {
     theGraphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
     theGraphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-sepolia'
+  },
+  // Teleport Sepolia
+  'teleporter-sepolia': {
+    theGraphNetworkSubgraphId: '6AwhH4JF8Ss5ZFf12azD13D1nNhuNzLnjH56irYqA7fD',
+    theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
+  },
+  'teleporter-ethereum': {
+    theGraphNetworkSubgraphId: 'GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg',
+    theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   }
 } as const
 
@@ -145,6 +154,25 @@ export function getCctpSubgraphClient(chainId: number) {
 
     default:
       throw new Error(`[getCctpSubgraphClient] unsupported chain: ${chainId}`)
+  }
+}
+
+export function getTeleporterSubgraphClient(chainId: number) {
+  switch (chainId) {
+    case ChainId.Ethereum:
+      return createTheGraphNetworkClient(
+        subgraphs['teleporter-ethereum'].theGraphNetworkSubgraphId
+      )
+
+    case ChainId.Sepolia:
+      return createTheGraphNetworkClient(
+        subgraphs['teleporter-sepolia'].theGraphNetworkSubgraphId
+      )
+
+    default:
+      throw new Error(
+        `[getTeleporterSubgraphClient] unsupported chain: ${chainId}`
+      )
   }
 }
 
