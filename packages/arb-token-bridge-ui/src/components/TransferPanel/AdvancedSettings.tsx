@@ -84,11 +84,11 @@ export async function getDestinationAddressError({
 async function getDestinationAddressWarning({
   destinationAddress,
   isEOA,
-  destinationProvider
+  destinationChainId
 }: {
   destinationAddress: string | undefined
   isEOA: boolean
-  destinationProvider: Provider
+  destinationChainId: number
 }) {
   if (!destinationAddress) {
     return null
@@ -100,7 +100,7 @@ async function getDestinationAddressWarning({
 
   const destinationIsSmartContract = await addressIsSmartContract(
     destinationAddress,
-    destinationProvider
+    destinationChainId
   )
 
   // checks if trying to send to a contract address, only checks EOA
@@ -163,9 +163,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: isDepositMode
-          ? childChainProvider
-          : parentChainProvider
+        destinationChainId: isDepositMode ? childChain.id : parentChain.id
       })
       if (isSubscribed) {
         setWarning(result)
@@ -181,7 +179,9 @@ export const AdvancedSettings = () => {
     isDepositMode,
     isEOA,
     childChainProvider,
-    parentChainProvider
+    parentChainProvider,
+    childChain.id,
+    parentChain.id
   ])
 
   const collapsible = useMemo(() => {
