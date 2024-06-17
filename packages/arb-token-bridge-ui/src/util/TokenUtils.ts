@@ -472,25 +472,7 @@ export async function isGatewayRegistered({
     return true
   }
 
-  // for normal transfers, check for custom gateways
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-  const parentChainStandardGatewayAddressFromChainConfig =
-    erc20Bridger.l2Network.tokenBridge.l1ERC20Gateway.toLowerCase()
-
-  const parentChainGatewayAddressFromParentGatewayRouter = (
-    await erc20Bridger.getL1GatewayAddress(
-      erc20ParentChainAddress,
-      parentChainProvider
-    )
-  ).toLowerCase()
-
-  // token uses standard gateway; no need to check further
-  if (
-    parentChainStandardGatewayAddressFromChainConfig ===
-    parentChainGatewayAddressFromParentGatewayRouter
-  ) {
-    return true
-  }
 
   return erc20Bridger.isRegistered({
     erc20L1Address: erc20ParentChainAddress,
