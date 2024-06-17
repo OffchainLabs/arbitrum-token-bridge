@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig } from 'wagmi'
+import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -26,7 +26,7 @@ import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
 import { HeaderAccountPopover } from '../common/HeaderAccountPopover'
-import { isNetwork, rpcURLs } from '../../util/networks'
+import { getNetworkName, isNetwork, rpcURLs } from '../../util/networks'
 import {
   ArbQueryParamProvider,
   useArbQueryParams
@@ -41,6 +41,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
+import { useAccountType } from '../../hooks/useAccountType'
+import { onDisconnectHandler } from '../../util/walletConnectUtils'
 
 declare global {
   interface Window {
@@ -291,7 +293,7 @@ function AppContent() {
 // https://github.com/orgs/WalletConnect/discussions/2733
 // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
 const searchParams = new URLSearchParams(window.location.search)
-const targetChainKey = searchParams.get('walletConnectChain')
+const targetChainKey = searchParams.get('sourceChain')
 
 const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 
@@ -299,18 +301,69 @@ const { wagmiConfigProps, rainbowKitProviderProps } = getProps(targetChainKey)
 //
 // TODO: Remove this once the fix for the infinite loop / memory leak is identified.
 Object.keys(localStorage).forEach(key => {
-  if (key === 'wagmi.requestedChains' || key.startsWith('wc@2')) {
+  if (
+    key === 'wagmi.requestedChains' ||
+    key === 'wagmi.store' ||
+    key.startsWith('wc@2')
+  ) {
     localStorage.removeItem(key)
   }
 })
 
 function ConnectedChainSyncer() {
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
+  const { disconnect } = useDisconnect({
+    onSettled: onDisconnectHandler
+  })
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
   const { chain } = useNetwork()
+
+  const setSourceChainToConnectedChain = useCallback(() => {
+    if (typeof chain === 'undefined') {
+      return
+    }
+
+    const { sourceChainId: sourceChain, destinationChainId: destinationChain } =
+      sanitizeQueryParams({
+        sourceChainId: chain.id,
+        destinationChainId: undefined
+      })
+
+    setQueryParams({ sourceChain, destinationChain })
+  }, [chain, setQueryParams])
+
+  useEffect(() => {
+    if (typeof chain === 'undefined') {
+      return
+    }
+    if (
+      isSmartContractWallet &&
+      !isLoadingAccountType &&
+      sourceChain !== chain.id
+    ) {
+      const chainName = getNetworkName(chain.id)
+
+      setSourceChainToConnectedChain()
+
+      window.alert(
+        `You're connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, the app will now reload.\n\nPlease reconnect after the reload.`
+      )
+      disconnect()
+    }
+  }, [
+    chain,
+    disconnect,
+    isLoadingAccountType,
+    isSmartContractWallet,
+    setQueryParams,
+    setSourceChainToConnectedChain,
+    sourceChain
+  ])
 
   useEffect(() => {
     if (shouldSync) {
@@ -329,18 +382,16 @@ function ConnectedChainSyncer() {
   useEffect(() => {
     // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
     if (chain && shouldSync && !didSync) {
-      const {
-        sourceChainId: sourceChain,
-        destinationChainId: destinationChain
-      } = sanitizeQueryParams({
-        sourceChainId: chain.id,
-        destinationChainId: undefined
-      })
-
-      setQueryParams({ sourceChain, destinationChain })
+      setSourceChainToConnectedChain()
       setDidSync(true)
     }
-  }, [chain, shouldSync, didSync, setQueryParams])
+  }, [
+    chain,
+    shouldSync,
+    didSync,
+    setQueryParams,
+    setSourceChainToConnectedChain
+  ])
 
   return null
 }
