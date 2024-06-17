@@ -163,7 +163,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationChainId: isDepositMode ? childChain.id : parentChain.id
+        destinationChainId: networks.destinationChain.id
       })
       if (isSubscribed) {
         setWarning(result)
