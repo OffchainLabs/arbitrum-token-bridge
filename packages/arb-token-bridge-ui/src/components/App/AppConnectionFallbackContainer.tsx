@@ -16,8 +16,9 @@ function WalletConnectWarning() {
         be the Safe wallet&apos;s chain, e.g. <code>ethereum</code>,{' '}
         <code>arbitrum-one</code>, <code>sepolia</code>, or{' '}
         <code>arbitrum-sepolia</code>.
-        <br /> Note that ETH transfers with smart contract wallets are not
-        supported yet. Please{' '}
+        <br />
+        Note that ETH transfers with smart contract wallets are not supported
+        yet. Please{' '}
         <ExternalLink
           className="underline hover:no-underline"
           href="https://help.safe.global/en/"
