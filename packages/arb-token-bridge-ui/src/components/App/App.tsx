@@ -39,7 +39,6 @@ import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
-import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
@@ -250,12 +249,12 @@ function AppContent() {
           <HeaderConnectWalletButton />
         </Header>
 
-        <AppConnectionFallbackContainer>
+        <div className="flex flex-col items-start gap-4 px-6 pb-8 pt-12 text-white">
           <p className="text-5xl">No wallet connected</p>
           <p className="text-xl">
             Please connect your wallet to use the bridge.
           </p>
-        </AppConnectionFallbackContainer>
+        </div>
       </>
     )
   }

@@ -30,18 +30,3 @@ function WalletConnectWarning() {
     </div>
   )
 }
-
-export function AppConnectionFallbackContainer({
-  children
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col pt-4">
-      <WalletConnectWarning />
-      <div className="flex flex-col items-start gap-4 px-6 py-8 text-white">
-        {children}
-      </div>
-    </div>
-  )
-}
