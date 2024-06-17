@@ -392,7 +392,9 @@ export function TransferPanel() {
       const switchTargetChainId = latestNetworks.current.sourceChain.id
       try {
         await switchNetworkAsync?.(switchTargetChainId)
-      } catch (e) {}
+      } catch (e) {
+        Sentry.captureException(e)
+      }
     }
 
     try {
