@@ -9,6 +9,7 @@ import { Toast } from './atoms/Toast'
 import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
+import { ExternalLink } from './ExternalLink'
 
 const unica = localFont({
   src: [
@@ -56,8 +57,16 @@ export function Layout(props: LayoutProps) {
           <AppSidebar />
 
           <main className="grow">
-            <SiteBanner expiryDate="2024-04-07 12:00">
-              The Arbitrum Bridge has a new look!
+            <SiteBanner expiryDate="2024-08-17 12:00">
+              Stylus is now live on Arbitrum Sepolia! Learn more about the
+              Stylus Blitz hackathon{' '}
+              <ExternalLink
+                href="LINK"
+                className="underline hover:no-underline"
+              >
+                here
+              </ExternalLink>
+              .
             </SiteBanner>
             {props.children}
           </main>
