@@ -41,8 +41,8 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { AppConnectionFallbackContainer } from './AppConnectionFallbackContainer'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
-import { useAccountType } from '../../hooks/useAccountType'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
+import { addressIsSmartContract } from '../../util/AddressUtils'
 
 declare global {
   interface Window {
@@ -311,8 +311,7 @@ Object.keys(localStorage).forEach(key => {
 })
 
 function ConnectedChainSyncer() {
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
+  const { address } = useAccount()
   const [shouldSync, setShouldSync] = useState(false)
   const [didSync, setDidSync] = useState(false)
   const { disconnect } = useDisconnect({
@@ -338,28 +337,34 @@ function ConnectedChainSyncer() {
   }, [chain, setQueryParams])
 
   useEffect(() => {
-    if (typeof chain === 'undefined') {
-      return
-    }
-    if (
-      isSmartContractWallet &&
-      !isLoadingAccountType &&
-      sourceChain !== chain.id
-    ) {
-      const chainName = getNetworkName(chain.id)
-
-      setSourceChainToConnectedChain()
-
-      window.alert(
-        `You're connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, the app will now reload.\n\nPlease reconnect after the reload.`
+    async function checkCorrectChainForSmartContractWallet() {
+      if (typeof chain === 'undefined') {
+        return
+      }
+      if (!address) {
+        return
+      }
+      const isSmartContractWallet = await addressIsSmartContract(
+        address,
+        chain.id
       )
-      disconnect()
+      if (isSmartContractWallet && sourceChain !== chain.id) {
+        const chainName = getNetworkName(chain.id)
+
+        setSourceChainToConnectedChain()
+
+        window.alert(
+          `You're connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, the app will now reload.\n\nPlease reconnect after the reload.`
+        )
+        disconnect()
+      }
     }
+
+    checkCorrectChainForSmartContractWallet()
   }, [
+    address,
     chain,
     disconnect,
-    isLoadingAccountType,
-    isSmartContractWallet,
     setQueryParams,
     setSourceChainToConnectedChain,
     sourceChain

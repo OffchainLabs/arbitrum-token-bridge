@@ -1,6 +1,5 @@
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 
-import { GET_HELP_LINK } from '../../constants'
 import { ExternalLink } from '../common/ExternalLink'
 
 function WalletConnectWarning() {
@@ -9,17 +8,21 @@ function WalletConnectWarning() {
       <div className="flex items-center gap-1">
         <InformationCircleIcon className="h-3 w-3 stroke-2" />
         <span className="font-normal">
-          Connection issues with WalletConnect
+          Potential connection issues with Safe
         </span>
       </div>
       <div>
-        Users connecting to the site using WalletConnect may experience errors
-        due to their upgrade to v2. Please{' '}
+        Users connecting using Safe should ensure <code>?sourceChain=</code> to
+        be the Safe wallet&apos;s chain, e.g. <code>ethereum</code>,{' '}
+        <code>arbitrum-one</code>, <code>sepolia</code>, or{' '}
+        <code>arbitrum-sepolia</code>.
+        <br /> Note that ETH transfers with smart contract wallets are not
+        supported yet. Please{' '}
         <ExternalLink
           className="underline hover:no-underline"
-          href={GET_HELP_LINK}
+          href="https://help.safe.global/en/"
         >
-          contact support
+          contact Safe support
         </ExternalLink>{' '}
         if you have any issues.
       </div>
