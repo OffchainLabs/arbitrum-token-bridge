@@ -10,12 +10,14 @@ type Result = {
 }
 
 export function useAccountType(): Result {
-  const { address } = useAccount()
   const { chain } = useNetwork()
+  const { address, isConnected } = useAccount()
 
   const { data: isSmartContractWallet = false, isLoading } = useSWRImmutable(
-    address && chain ? [address, chain.id, 'useAccountType'] : null,
-    ([_address, _chainId]) => addressIsSmartContract(_address, _chainId),
+    address && isConnected && chain
+      ? [address, chain.id, 'useAccountType']
+      : null,
+    ([_address, chainId]) => addressIsSmartContract(_address, chainId),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
