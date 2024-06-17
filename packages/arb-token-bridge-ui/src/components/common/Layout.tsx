@@ -61,7 +61,7 @@ export function Layout(props: LayoutProps) {
               Stylus is now live on Arbitrum Sepolia! Learn more about the
               Stylus Blitz hackathon{' '}
               <ExternalLink
-                href="LINK"
+                href="https://arbitrumfoundation.medium.com/welcome-to-the-stylus-blitz-hackathon-0d8b27e0c057"
                 className="underline hover:no-underline"
               >
                 here
