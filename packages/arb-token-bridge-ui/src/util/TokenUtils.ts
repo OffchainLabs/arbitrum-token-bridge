@@ -6,7 +6,7 @@ import {
   EthBridger,
   EthL1L3Bridger,
   MultiCaller,
-  getL2Network
+  getArbitrumNetwork
 } from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 import * as Sentry from '@sentry/react'
@@ -232,7 +232,7 @@ export async function getL1ERC20Address({
 }): Promise<string | null> {
   try {
     const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-    return await erc20Bridger.getParentERC20Address(erc20L2Address, l2Provider)
+    return await erc20Bridger.getParentErc20Address(erc20L2Address, l2Provider)
   } catch (error) {
     return null
   }
@@ -251,7 +251,7 @@ export async function fetchErc20ParentChainGatewayAddress({
   childChainProvider: Provider
 }): Promise<string> {
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
-  return erc20Bridger.getL1GatewayAddress(
+  return erc20Bridger.getParentGatewayAddress(
     erc20ParentChainAddress,
     parentChainProvider
   )
@@ -268,7 +268,7 @@ export async function fetchErc20L2GatewayAddress({
   l2Provider: Provider
 }): Promise<string> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.getL2GatewayAddress(erc20L1Address, l2Provider)
+  return erc20Bridger.getChildGatewayAddress(erc20L1Address, l2Provider)
 }
 
 /*
@@ -284,7 +284,7 @@ export async function getL2ERC20Address({
   l2Provider: Provider
 }): Promise<string> {
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return await erc20Bridger.getChildERC20Address(erc20L1Address, l1Provider)
+  return await erc20Bridger.getChildErc20Address(erc20L1Address, l1Provider)
 }
 
 // Given an L1 token address, derive it's L3 counterpart address
@@ -298,7 +298,7 @@ export async function getL3ERC20Address({
   l1Provider: Provider
   l3Provider: Provider
 }): Promise<string> {
-  const l3Network = await getL2Network(l3Provider)
+  const l3Network = await getArbitrumNetwork(l3Provider)
   const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
 
   const { l2Provider } = await getL2ConfigForTeleport({

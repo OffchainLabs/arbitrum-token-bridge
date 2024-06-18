@@ -4,7 +4,7 @@ import {
   TransactionReceipt
 } from '@ethersproject/providers'
 import {
-  EthDepositStatus,
+  EthDepositMessageStatus,
   ParentToChildMessageStatus,
   ParentToChildMessageReader
 } from '@arbitrum/sdk'
@@ -291,7 +291,7 @@ export async function getUpdatedEthDeposit(
   }
 
   const status = await l1ToL2Msg?.status()
-  const isDeposited = status === EthDepositStatus.DEPOSITED
+  const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
   const newDeposit: MergedTransaction = {
     ...tx,
@@ -303,10 +303,10 @@ export async function getUpdatedEthDeposit(
         ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: (l1ToL2Msg as EthDepositMessage)
-        .chainDepositTxHash,
+        .childDepositTxHash,
       // Only show `l2TxID` after the deposit is confirmed
       l2TxID: isDeposited
-        ? (l1ToL2Msg as EthDepositMessage).chainDepositTxHash
+        ? (l1ToL2Msg as EthDepositMessage).childDepositTxHash
         : undefined
     }
   }
@@ -353,7 +353,7 @@ export async function getUpdatedTokenDeposit(
 
   const l2TxID = (() => {
     if (res.status === ParentToChildMessageStatus.REDEEMED) {
-      return res.chainTxReceipt.transactionHash
+      return res.txReceipt.transactionHash
     } else {
       return undefined
     }

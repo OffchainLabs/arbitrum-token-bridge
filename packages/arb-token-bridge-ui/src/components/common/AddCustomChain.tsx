@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import {
-  addCustomArbitrumNetwork,
-  constants as arbitrumSdkConstants
-} from '@arbitrum/sdk'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { constants } from 'ethers'
@@ -198,20 +195,20 @@ async function mapOrbitConfigToOrbitChain(
     retryableLifetimeSeconds: 604800,
     nativeToken: data.chainInfo.nativeToken,
     tokenBridge: {
-      l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
-      l1ERC20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
-      l1GatewayRouter: data.tokenBridgeContracts.l2Contracts.router,
-      l1MultiCall: data.tokenBridgeContracts.l2Contracts.multicall,
-      l1ProxyAdmin: data.tokenBridgeContracts.l2Contracts.proxyAdmin,
-      l1Weth: data.tokenBridgeContracts.l2Contracts.weth,
-      l1WethGateway: data.tokenBridgeContracts.l2Contracts.wethGateway,
-      l2CustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
-      l2ERC20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
-      l2GatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
-      l2Multicall: data.tokenBridgeContracts.l3Contracts.multicall,
-      l2ProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
-      l2Weth: data.tokenBridgeContracts.l3Contracts.weth,
-      l2WethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway
+      parentCustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
+      parentErc20Gateway: data.tokenBridgeContracts.l2Contracts.standardGateway,
+      parentGatewayRouter: data.tokenBridgeContracts.l2Contracts.router,
+      parentMultiCall: data.tokenBridgeContracts.l2Contracts.multicall,
+      parentProxyAdmin: data.tokenBridgeContracts.l2Contracts.proxyAdmin,
+      parentWeth: data.tokenBridgeContracts.l2Contracts.weth,
+      parentWethGateway: data.tokenBridgeContracts.l2Contracts.wethGateway,
+      childCustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
+      childErc20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
+      childGatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
+      childMulticall: data.tokenBridgeContracts.l3Contracts.multicall,
+      childProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
+      childWeth: data.tokenBridgeContracts.l3Contracts.weth,
+      childWethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway
     }
   }
 }
@@ -265,7 +262,7 @@ export const AddCustomChain = () => {
       const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomArbitrumNetwork(customChain)
+      registerCustomArbitrumNetwork(customChain)
       saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
       saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
