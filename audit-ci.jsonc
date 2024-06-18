@@ -5,6 +5,9 @@
     // https://github.com/advisories/GHSA-fr5h-rqp8-mj6g
     // Next.js Server-Side Request Forgery in Server Actions
     // We don't use Server Actions, but will upgrade soon
-    "GHSA-fr5h-rqp8-mj6g"
+    "GHSA-fr5h-rqp8-mj6g",
+    // https://github.com/advisories/GHSA-3h5v-q93c-6h6q
+    // ws is only used as part of the development environment
+    "GHSA-3h5v-q93c-6h6q"
   ]
 }
