@@ -537,7 +537,7 @@ export function useClaimCctp(tx: MergedTransaction) {
         receiveReceiptTx.status === 1
           ? getStandardizedTimestamp(BigNumber.from(Date.now()).toString())
           : null
-      updatePendingTransaction({
+      await updatePendingTransaction({
         ...tx,
         resolvedAt,
         depositStatus: tx.isWithdrawal ? undefined : DepositStatus.L2_SUCCESS,

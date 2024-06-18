@@ -189,9 +189,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
     const isSmartContractWallet = await addressIsSmartContract(
       address,
-      this.sourceChainProvider
+      sourceChainId
     )
 
     if (isSmartContractWallet && !destinationAddress) {

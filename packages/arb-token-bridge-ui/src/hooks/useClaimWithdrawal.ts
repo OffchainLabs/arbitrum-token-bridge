@@ -116,7 +116,7 @@ export function useClaimWithdrawal(
     const isSuccess = (res as ContractReceipt).status === 1
     const txHash = (res as ContractReceipt).transactionHash
 
-    updatePendingTransaction({
+    await updatePendingTransaction({
       ...tx,
       status: isSuccess ? WithdrawalStatus.EXECUTED : WithdrawalStatus.FAILURE,
       resolvedAt: isSuccess ? dayjs().valueOf() : null

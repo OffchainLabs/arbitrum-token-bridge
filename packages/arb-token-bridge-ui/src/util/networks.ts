@@ -111,6 +111,8 @@ export function getBaseChainIdByChainId({
 }
 
 export function getCustomChainsFromLocalStorage(): ChainWithRpcUrl[] {
+  if (typeof localStorage === 'undefined') return [] // required so that it does not fail test-runners
+
   const customChainsFromLocalStorage = localStorage.getItem(
     customChainLocalStorageKey
   )
@@ -371,6 +373,8 @@ export function isNetwork(chainId: ChainId) {
     isStylusTestnetV2 ||
     isTestnetOrbitChain
 
+  const isStylusTestnetV1orV2 = isStylusTestnet || isStylusTestnetV2
+
   const isSupported =
     isArbitrumOne ||
     isArbitrumNova ||
@@ -397,6 +401,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     isTestnet,
+    isStylusTestnetV1orV2,
     // General
     isSupported,
     // Core Chain is a chain category for the UI
@@ -449,6 +454,19 @@ function isArbitrumChain(
   chain: L1Network | ArbitrumNetwork
 ): chain is ArbitrumNetwork {
   return typeof (chain as ArbitrumNetwork).parentChainId !== 'undefined'
+}
+
+export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
+  [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
+  [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
+}
+
+export function getChildChainIds(chain: L2Network | L1Network) {
+  const childChainIds = [
+    ...(chain.partnerChainIDs ?? []),
+    ...(TELEPORT_ALLOWLIST[chain.chainID] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+  ]
+  return Array.from(new Set(childChainIds))
 }
 
 export function getDestinationChainIds(chainId: ChainId): ChainId[] {

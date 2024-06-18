@@ -69,6 +69,14 @@ export interface L1ToL2MessageData {
   fetchingUpdate: boolean
 }
 
+export interface L2ToL3MessageData {
+  status: L1ToL2MessageStatus
+  retryableCreationTxID?: string
+  l2ForwarderRetryableTxID?: string
+  l3TxID?: string
+  l2ChainId: number
+}
+
 export type L2ToL1MessageData = {
   uniqueId: BigNumber
 }
@@ -100,6 +108,7 @@ export interface Transaction extends TransactionBase {
   parentChainId: number
   childChainId: number
   nonce?: number
+  l2ToL3MsgData?: L2ToL3MessageData
 }
 
 export interface NewTransaction extends TransactionBase {

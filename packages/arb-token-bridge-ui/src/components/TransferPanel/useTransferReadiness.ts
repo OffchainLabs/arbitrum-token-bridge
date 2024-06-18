@@ -17,13 +17,15 @@ import {
   TransferReadinessRichErrorMessage,
   getInsufficientFundsErrorMessage,
   getInsufficientFundsForGasFeesErrorMessage,
-  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage
+  getSmartContractWalletNativeCurrencyTransfersNotSupportedErrorMessage,
+  getSmartContractWalletTeleportTransfersNotSupportedErrorMessage
 } from './useTransferReadinessUtils'
 import { ether } from '../../constants'
 import { UseGasSummaryResult } from '../../hooks/TransferPanel/useGasSummary'
 import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
 
 // Add chains IDs that are currently down or disabled
@@ -121,8 +123,14 @@ export function useTransferReadiness({
     layout: { isTransferring }
   } = useAppContextState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
 
   const { address: walletAddress } = useAccount()
   const { isSmartContractWallet } = useAccountType()
@@ -223,6 +231,14 @@ export function useTransferReadiness({
       })
     }
 
+    // teleport transfers using SC wallets not enabled yet
+    if (isSmartContractWallet && isTeleportMode) {
+      return notReady({
+        errorMessage:
+          getSmartContractWalletTeleportTransfersNotSupportedErrorMessage()
+      })
+    }
+
     // Check if destination address is valid for ERC20 transfers
     if (destinationAddressError) {
       return notReady()
@@ -250,10 +266,14 @@ export function useTransferReadiness({
         childChain.id
       )
 
-      const selectedTokenIsDisabled = isTransferDisabledToken(
-        selectedToken.address,
-        childChain.id
-      )
+      const selectedTokenIsDisabled =
+        isTransferDisabledToken(selectedToken.address, childChain.id) ||
+        (isTeleportMode &&
+          !isTeleportEnabledToken(
+            selectedToken.address,
+            parentChain.id,
+            childChain.id
+          ))
 
       if (isDepositMode && selectedTokenIsWithdrawOnly) {
         return notReady({
@@ -426,6 +446,8 @@ export function useTransferReadiness({
     nativeCurrency.symbol,
     gasSummary,
     childChain.id,
-    networks.sourceChain.name
+    parentChain.id,
+    networks.sourceChain.name,
+    isTeleportMode
   ])
 }

@@ -24,7 +24,7 @@ import {
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
 import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
-import { getProviderForChainId } from '../../hooks/useNetworks'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { Transition } from './Transition'
 import { Button } from './Button'
 
