@@ -57,7 +57,7 @@ export class EthWithdrawalStarter extends BridgeTransferStarter {
 
     const tx = await ethBridger.withdraw({
       ...request,
-      l2Signer: signer,
+      childSigner: signer,
       overrides: {
         gasLimit: percentIncrease(
           await this.sourceChainProvider.estimateGas(request.txRequest),

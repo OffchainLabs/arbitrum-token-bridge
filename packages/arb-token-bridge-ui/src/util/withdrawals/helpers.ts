@@ -1,7 +1,10 @@
 import { utils } from 'ethers'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
-import { L2ToL1MessageReader, L2TransactionReceipt } from '@arbitrum/sdk'
+import {
+  ChildToParentMessageReader,
+  ChildTransactionReceipt
+} from '@arbitrum/sdk'
 import { FetchWithdrawalsFromSubgraphResult } from './fetchWithdrawalsFromSubgraph'
 import { fetchErc20Data } from '../TokenUtils'
 import {
@@ -51,8 +54,8 @@ export async function attachTimestampToTokenWithdrawal({
   l2Provider: Provider
 }) {
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.txHash)
-  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-  const [event] = l2TxReceipt.getL2ToL1Events()
+  const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
+  const [event] = l2TxReceipt.getChildToParentEvents()
 
   return {
     ...withdrawal,
@@ -112,7 +115,7 @@ export async function getOutgoingMessageState(
     return OutgoingMessageState.EXECUTED
   }
 
-  const messageReader = new L2ToL1MessageReader(l1Provider, event)
+  const messageReader = new ChildToParentMessageReader(l1Provider, event)
 
   try {
     return await messageReader.status(l2Provider)
@@ -133,7 +136,7 @@ export async function attachNodeBlockDeadlineToEvent(
     return event
   }
 
-  const messageReader = L2ToL1MessageReader.fromEvent(l1Provider, event)
+  const messageReader = ChildToParentMessageReader.fromEvent(l1Provider, event)
 
   try {
     const firstExecutableBlock = await messageReader.getFirstExecutableBlock(
@@ -191,10 +194,10 @@ export async function mapTokenWithdrawalFromEventLogsToL2ToL1EventResult({
   })
 
   const txReceipt = await l2Provider.getTransactionReceipt(result.txHash)
-  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
 
   // TODO: length != 1
-  const [event] = l2TxReceipt.getL2ToL1Events()
+  const [event] = l2TxReceipt.getChildToParentEvents()
 
   if (!event) {
     return undefined
@@ -264,10 +267,10 @@ export async function mapWithdrawalToL2ToL1EventResult({
 }): Promise<L2ToL1EventResultPlus | undefined> {
   // get transaction receipt
   const txReceipt = await l2Provider.getTransactionReceipt(withdrawal.l2TxHash)
-  const l2TxReceipt = new L2TransactionReceipt(txReceipt)
+  const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
 
   // TODO: length != 1
-  const [event] = l2TxReceipt.getL2ToL1Events()
+  const [event] = l2TxReceipt.getChildToParentEvents()
 
   if (!event) {
     return undefined

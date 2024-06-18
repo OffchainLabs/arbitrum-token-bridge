@@ -5,10 +5,10 @@ import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
-  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
 
   return {
-    id: chain.chainID,
+    id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
     nativeCurrency: nativeTokenData ?? ether,

@@ -1,4 +1,4 @@
-import { EthBridger, getL2Network } from '@arbitrum/sdk'
+import { EthBridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
@@ -20,7 +20,7 @@ async function customFeeTokenAllowanceIsInsufficient(
   params: DepositEthEstimateGasParams
 ) {
   const { amount, address, parentChainProvider, childChainProvider } = params
-  const l2Network = await getL2Network(childChainProvider)
+  const l2Network = await getArbitrumNetwork(childChainProvider)
 
   if (typeof l2Network.nativeToken === 'undefined') {
     throw new Error(

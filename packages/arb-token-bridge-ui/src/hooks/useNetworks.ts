@@ -29,7 +29,7 @@ export function isSupportedChainId(
   }
 
   const customChainIds = getCustomChainsFromLocalStorage().map(
-    chain => chain.chainID
+    chain => chain.chainId
   )
 
   return [
@@ -43,7 +43,7 @@ export function isSupportedChainId(
     stylusTestnetV2.id,
     arbitrumLocal.id,
     local.id,
-    ...getOrbitChains().map(chain => chain.chainID),
+    ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
   ].includes(chainId)
 }

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
@@ -52,17 +52,18 @@ export function useRedeemRetryable(
       await redeemTx.wait()
 
       const status = await retryableTicket.status()
-      const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+      const isSuccess = status === ParentToChildMessageStatus.REDEEMED
 
-      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
-        status: L1ToL2MessageStatus.REDEEMED
-        l2TxReceipt: TransactionReceipt
-      }
+      const redeemReceipt =
+        (await retryableTicket.getSuccessfulRedeem()) as unknown as {
+          status: ParentToChildMessageStatus.REDEEMED
+          chainTxReceipt: TransactionReceipt
+        }
 
       await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+          l2TxID: redeemReceipt.chainTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false
