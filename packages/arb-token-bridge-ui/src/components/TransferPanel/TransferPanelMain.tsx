@@ -553,7 +553,8 @@ export function TransferPanelMain({
         destinationChainId !== orbitChainInRoute.chainID
       ) {
         setNetworks({
-          sourceChainId: orbitChainInRoute.chainID
+          sourceChainId: orbitChainInRoute.partnerChainID,
+          destinationChainId: orbitChainInRoute.chainID
         })
       }
     }
