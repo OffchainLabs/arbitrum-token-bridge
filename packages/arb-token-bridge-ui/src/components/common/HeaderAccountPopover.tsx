@@ -66,8 +66,7 @@ export function HeaderAccountPopover({
           'sm:w-max sm:rounded sm:border sm:px-2 sm:py-1',
           isTestnet
             ? 'sm:border-white sm:ui-not-open:bg-white/20'
-            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10',
-          orbitStyles ? 'sm:border-0' : ''
+            : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
         )}
         style={orbitStyles ?? undefined}
         role="button"
