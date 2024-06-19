@@ -658,7 +658,11 @@ export function TransferPanel() {
 
       if (depositRequiresChainSwitch() || withdrawalRequiresChainSwitch()) {
         trackEvent('Switch Network and Transfer', {
-          type: isDepositMode ? 'Deposit' : 'Withdrawal',
+          type: isTeleportMode
+            ? 'Teleport'
+            : isDepositMode
+            ? 'Deposit'
+            : 'Withdrawal',
           tokenSymbol: selectedToken?.symbol,
           assetType: selectedToken ? 'ERC-20' : 'ETH',
           accountType: isSmartContractWallet ? 'Smart Contract' : 'EOA',
@@ -857,13 +861,16 @@ export function TransferPanel() {
       if (isSmartContractWallet) {
         showDelayInSmartContractTransaction()
 
-        trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
-          tokenSymbol: selectedToken?.symbol,
-          assetType: 'ERC-20',
-          accountType: 'Smart Contract',
-          network: childChainName,
-          amount: Number(amount)
-        })
+        trackEvent(
+          isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
+          {
+            tokenSymbol: selectedToken?.symbol,
+            assetType: 'ERC-20',
+            accountType: 'Smart Contract',
+            network: childChainName,
+            amount: Number(amount)
+          }
+        )
       }
 
       // finally, call the transfer function
@@ -886,13 +893,16 @@ export function TransferPanel() {
     if (!walletAddress) return // at this point, walletAddress will always be defined, we just have this to avoid TS checks in this function
 
     if (!isSmartContractWallet) {
-      trackEvent(isDepositMode ? 'Deposit' : 'Withdraw', {
-        tokenSymbol: selectedToken?.symbol,
-        assetType: selectedToken ? 'ERC-20' : 'ETH',
-        accountType: 'EOA',
-        network: getNetworkName(childChain.id),
-        amount: Number(amount)
-      })
+      trackEvent(
+        isTeleportMode ? 'Teleport' : isDepositMode ? 'Deposit' : 'Withdraw',
+        {
+          tokenSymbol: selectedToken?.symbol,
+          assetType: selectedToken ? 'ERC-20' : 'ETH',
+          accountType: 'EOA',
+          network: getNetworkName(childChain.id),
+          amount: Number(amount)
+        }
+      )
     }
 
     const { sourceChainTransaction } = bridgeTransfer
