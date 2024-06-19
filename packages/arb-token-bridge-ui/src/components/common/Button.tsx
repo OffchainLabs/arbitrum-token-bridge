@@ -28,9 +28,9 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant: ButtonVariant
   loading?: boolean
   loadingProps?: ButtonLoadingProps
-  textLeft?: true
-  showArrow?: true
-  truncate?: false
+  textLeft?: boolean
+  showArrow?: boolean
+  truncate?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
