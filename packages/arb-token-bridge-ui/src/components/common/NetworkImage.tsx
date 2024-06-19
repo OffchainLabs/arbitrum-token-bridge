@@ -7,10 +7,12 @@ import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 export const NetworkImage = ({
   chainId,
   className,
+  style,
   size
 }: {
   chainId: number
   className?: string
+  style?: React.CSSProperties
   size?: number
 }) => {
   const imageSize = size ?? 16
@@ -19,9 +21,13 @@ export const NetworkImage = ({
 
   return (
     <div
-      style={{
-        backgroundColor: `${color}33`
-      }}
+      style={
+        style
+          ? style
+          : {
+              backgroundColor: `${color}33`
+            }
+      }
       className={twMerge(
         'flex w-4 shrink-0 items-center justify-center rounded-full p-[4px]',
         className
