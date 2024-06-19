@@ -14,7 +14,12 @@ import { twMerge } from 'tailwind-merge'
 import { AutoSizer, List, ListRowProps } from 'react-virtualized'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 
-import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
+import {
+  ChainId,
+  getChains,
+  getSupportedChainIds,
+  isNetwork
+} from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
 import { SearchPanel } from './SearchPanel/SearchPanel'
@@ -31,6 +36,7 @@ import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
 import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
+import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -170,15 +176,27 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
+  const { isCustomOrbitChainPage, orbitChain: orbitChainInRoute } =
+    useOrbitSlugInRoute()
 
-  const chainIds = useMemo(
-    () =>
-      getSupportedChainIds({
-        includeMainnets: !isTestnetMode,
-        includeTestnets: isTestnetMode
-      }),
-    [isTestnetMode]
-  )
+  const chainIds = useMemo(() => {
+    // if the page is custom orbit chain page, then only show the chains that support transfers to/from the orbit chain
+    if (isCustomOrbitChainPage && orbitChainInRoute) {
+      return getChains()
+        .filter(
+          chain =>
+            chain.chainID === orbitChainInRoute.chainID || // chain is same as selected in route
+            chain.chainID === orbitChainInRoute.partnerChainID || // parent-chain of the route-selected-chain
+            orbitChainInRoute.partnerChainIDs.includes(chain.chainID) // child-chains of the route-selected-chain
+        )
+        .map(chain => chain.chainID)
+    }
+
+    return getSupportedChainIds({
+      includeMainnets: !isTestnetMode,
+      includeTestnets: isTestnetMode
+    })
+  }, [isTestnetMode, isCustomOrbitChainPage, orbitChainInRoute])
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()

@@ -67,6 +67,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
 
 enum NetworkType {
   l1 = 'l1',
@@ -454,6 +455,9 @@ export function TransferPanelMain({
 
   const [, setQueryParams] = useArbQueryParams()
 
+  const { isCustomOrbitChainPage, orbitChain: orbitChainInRoute } =
+    useOrbitSlugInRoute()
+
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
 
@@ -539,6 +543,27 @@ export function TransferPanelMain({
     }
   }, [selectedToken, setDestinationAddress])
 
+  useEffect(() => {
+    // if `orbitSlugInRoute` is present and valid, check if one of source-and-destination chain pair contains the slug-chain, else reset to default
+    if (orbitChainInRoute) {
+      const sourceChainId = networks.sourceChain.id
+      const destinationChainId = networks.destinationChain.id
+      if (
+        sourceChainId !== orbitChainInRoute.chainID &&
+        destinationChainId !== orbitChainInRoute.chainID
+      ) {
+        setNetworks({
+          sourceChainId: orbitChainInRoute.chainID
+        })
+      }
+    }
+  }, [
+    orbitChainInRoute,
+    networks.sourceChain.id,
+    networks.destinationChain.id,
+    setNetworks
+  ])
+
   const errorMessageElement = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
@@ -591,6 +616,14 @@ export function TransferPanelMain({
       const destinationChainIds = getDestinationChainIds(
         networks.sourceChain.id
       )
+
+      // early return; if custom orbit page, and if the current destination chain is the one in route, then don't populate other destination chains
+      if (
+        isCustomOrbitChainPage &&
+        networks.destinationChain.id === orbitChainInRoute?.chainID
+      ) {
+        return []
+      }
 
       // if source chain is Arbitrum One, add Arbitrum Nova to destination
       if (networks.sourceChain.id === ChainId.ArbitrumOne) {

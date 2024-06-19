@@ -40,7 +40,10 @@ export const Switch = ({
 
           {label && (
             <HeadlessSwitch.Label
-              className={twMerge('heading mr-4 cursor-pointer text-sm')}
+              className={twMerge(
+                'heading mr-4 cursor-pointer text-sm',
+                disabled && 'cursor-not-allowed text-white/50'
+              )}
             >
               {label}
             </HeadlessSwitch.Label>
