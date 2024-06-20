@@ -18,6 +18,7 @@ import {
   ChainId,
   getChains,
   getSupportedChainIds,
+  getTeleportChainIdForOrbitChain,
   isNetwork
 } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
@@ -186,7 +187,9 @@ function NetworksPanel({
           chain =>
             chain.chainID === orbitChainInRoute.chainID || // chain is same as selected in route
             chain.chainID === orbitChainInRoute.partnerChainID || // parent-chain of the route-selected-chain
-            orbitChainInRoute.partnerChainIDs.includes(chain.chainID) // child-chains of the route-selected-chain
+            orbitChainInRoute.partnerChainIDs.includes(chain.chainID) || // child-chains of the route-selected-chain
+            chain.chainID ===
+              getTeleportChainIdForOrbitChain(orbitChainInRoute.chainID) // get teleport-parent chain for the orbit chain (if valid)
         )
         .map(chain => chain.chainID)
     }

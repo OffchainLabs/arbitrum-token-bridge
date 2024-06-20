@@ -4,7 +4,11 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
+import {
+  ChainId,
+  getCustomChainsFromLocalStorage,
+  getTeleportChainIdForOrbitChain
+} from '../util/networks'
 import {
   sepolia,
   holesky,
@@ -69,7 +73,9 @@ export function sanitizeQueryParams({
     destinationChainId !== orbitChainInRoute.chainID
   ) {
     return {
-      sourceChainId: orbitChainInRoute.partnerChainID,
+      sourceChainId:
+        getTeleportChainIdForOrbitChain(orbitChainInRoute.chainID) ??
+        orbitChainInRoute.partnerChainID, // show the grand-parent-chain id if valid, else get the parent chain id
       destinationChainId: orbitChainInRoute.chainID
     }
   }
