@@ -18,8 +18,9 @@ import {
 
 import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
-import { getOrbitChains } from '../util/orbitChainsList'
+import { OrbitChainConfig, getOrbitChains } from '../util/orbitChainsList'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useOrbitChainFromRoute } from './useOrbitChainFromRoute'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -50,14 +51,29 @@ export function isSupportedChainId(
 
 export function sanitizeQueryParams({
   sourceChainId,
-  destinationChainId
+  destinationChainId,
+  orbitChainInRoute
 }: {
   sourceChainId: ChainId | number | undefined
   destinationChainId: ChainId | number | undefined
+  orbitChainInRoute?: OrbitChainConfig
 }): {
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
+  // early check, if we detect an orbit chain in the route
+  // if neither of source or destination chains are the orbit chain in route, return the orbit chain as the destination
+  if (
+    orbitChainInRoute &&
+    sourceChainId !== orbitChainInRoute.chainID &&
+    destinationChainId !== orbitChainInRoute.chainID
+  ) {
+    return {
+      sourceChainId: orbitChainInRoute.partnerChainID,
+      destinationChainId: orbitChainInRoute.chainID
+    }
+  }
+
   // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
   if (
     (!sourceChainId && !destinationChainId) ||
@@ -130,12 +146,15 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
 
+  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+
   const {
     sourceChainId: validSourceChainId,
     destinationChainId: validDestinationChainId
   } = sanitizeQueryParams({
     sourceChainId,
-    destinationChainId
+    destinationChainId,
+    orbitChainInRoute
   })
 
   const setState = useCallback(
@@ -148,7 +167,8 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
         destinationChainId: validDestinationChainId
       } = sanitizeQueryParams({
         sourceChainId: newSourceChainId,
-        destinationChainId: newDestinationChainId
+        destinationChainId: newDestinationChainId,
+        orbitChainInRoute
       })
       setQueryParams({
         sourceChain: validSourceChainId,

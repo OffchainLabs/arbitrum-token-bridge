@@ -36,7 +36,7 @@ import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
 import { useNetworks } from '../../hooks/useNetworks'
 import { Transition } from './Transition'
 import { NetworkImage } from './NetworkImage'
-import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 
 type NetworkType = 'core' | 'orbit'
 
@@ -176,12 +176,11 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-  const { isCustomOrbitChainPage, orbitChain: orbitChainInRoute } =
-    useOrbitSlugInRoute()
+  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
 
   const chainIds = useMemo(() => {
     // if the page is custom orbit chain page, then only show the chains that support transfers to/from the orbit chain
-    if (isCustomOrbitChainPage && orbitChainInRoute) {
+    if (orbitChainInRoute) {
       return getChains()
         .filter(
           chain =>
@@ -196,7 +195,7 @@ function NetworksPanel({
       includeMainnets: !isTestnetMode,
       includeTestnets: isTestnetMode
     })
-  }, [isTestnetMode, isCustomOrbitChainPage, orbitChainInRoute])
+  }, [isTestnetMode, orbitChainInRoute])
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()

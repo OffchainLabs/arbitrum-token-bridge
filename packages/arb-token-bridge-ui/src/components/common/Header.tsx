@@ -6,13 +6,13 @@ import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
-import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 import { NetworkImage } from './NetworkImage'
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
-  const { orbitStyles, orbitChain } = useOrbitSlugInRoute()
+  const { orbitChain, orbitStyles } = useOrbitChainFromRoute()
 
   return (
     <header

@@ -67,7 +67,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
-import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 
 enum NetworkType {
   l1 = 'l1',
@@ -455,8 +455,7 @@ export function TransferPanelMain({
 
   const [, setQueryParams] = useArbQueryParams()
 
-  const { isCustomOrbitChainPage, orbitChain: orbitChainInRoute } =
-    useOrbitSlugInRoute()
+  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
@@ -543,28 +542,6 @@ export function TransferPanelMain({
     }
   }, [selectedToken, setDestinationAddress])
 
-  useEffect(() => {
-    // if `orbitSlugInRoute` is present and valid, check if one of source-and-destination chain pair contains the slug-chain, else reset to default
-    if (orbitChainInRoute) {
-      const sourceChainId = networks.sourceChain.id
-      const destinationChainId = networks.destinationChain.id
-      if (
-        sourceChainId !== orbitChainInRoute.chainID &&
-        destinationChainId !== orbitChainInRoute.chainID
-      ) {
-        setNetworks({
-          sourceChainId: orbitChainInRoute.partnerChainID,
-          destinationChainId: orbitChainInRoute.chainID
-        })
-      }
-    }
-  }, [
-    orbitChainInRoute,
-    networks.sourceChain.id,
-    networks.destinationChain.id,
-    setNetworks
-  ])
-
   const errorMessageElement = useMemo(() => {
     if (typeof errorMessage === 'undefined') {
       return undefined
@@ -620,7 +597,7 @@ export function TransferPanelMain({
 
       // early return; if custom orbit page, and if the current destination chain is the one in route, then don't populate other destination chains
       if (
-        isCustomOrbitChainPage &&
+        orbitChainInRoute &&
         networks.destinationChain.id === orbitChainInRoute?.chainID
       ) {
         return []

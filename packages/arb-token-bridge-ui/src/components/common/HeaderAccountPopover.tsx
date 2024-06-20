@@ -19,7 +19,7 @@ import { ExternalLink } from './ExternalLink'
 import { SafeImage } from './SafeImage'
 import { Transition } from './Transition'
 import { CustomBoringAvatar } from './CustomBoringAvatar'
-import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 
 export function HeaderAccountPopover({
   isCorrectNetworkConnected = true
@@ -44,7 +44,7 @@ export function HeaderAccountPopover({
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
 
-  const { orbitStyles } = useOrbitSlugInRoute()
+  const { orbitStyles } = useOrbitChainFromRoute()
 
   const [showCopied, setShowCopied] = useState(false)
 

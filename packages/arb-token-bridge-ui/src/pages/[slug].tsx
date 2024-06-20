@@ -1,11 +1,17 @@
 import Index from '.'
-import Custom404Page from './404'
-import { useOrbitSlugInRoute } from '../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../hooks/useOrbitChainFromRoute'
+import { useRouter } from 'next/router'
 
 export default function CustomOrbitPage() {
-  const { isSlugValid } = useOrbitSlugInRoute()
+  const router = useRouter()
 
-  if (!isSlugValid) return <Custom404Page />
+  const slug = router.query.slug
+  const { orbitChain } = useOrbitChainFromRoute()
+
+  // if the slug is present, but doesn't correspond to a valid orbit-chain, redirect to home
+  if (slug && !orbitChain) {
+    router.replace('/')
+  }
 
   return <Index />
 }

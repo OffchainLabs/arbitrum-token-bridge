@@ -42,6 +42,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 
 declare global {
   interface Window {
@@ -320,6 +321,7 @@ function ConnectedChainSyncer() {
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
   const { chain } = useNetwork()
+  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
@@ -329,11 +331,12 @@ function ConnectedChainSyncer() {
     const { sourceChainId: sourceChain, destinationChainId: destinationChain } =
       sanitizeQueryParams({
         sourceChainId: chain.id,
-        destinationChainId: undefined
+        destinationChainId: undefined,
+        orbitChainInRoute
       })
 
     setQueryParams({ sourceChain, destinationChain })
-  }, [chain, setQueryParams])
+  }, [chain, setQueryParams, orbitChainInRoute])
 
   useEffect(() => {
     async function checkCorrectChainForSmartContractWallet() {

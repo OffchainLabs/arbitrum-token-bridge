@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 
 import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
-import { useOrbitSlugInRoute } from '../../hooks/useOrbitSlugInRoute'
+import { useOrbitChainFromRoute } from '../../hooks/useOrbitChainFromRoute'
 
 import { Switch } from './atoms/Switch'
 
@@ -20,7 +20,7 @@ export const TestnetToggle = ({
   includeToggleStateOnLabel?: boolean
 }) => {
   const [isTestnetMode, toggleTestnetMode] = useIsTestnetMode()
-  const { isCustomOrbitChainPage } = useOrbitSlugInRoute()
+  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
 
   const labelText = includeToggleStateOnLabel
     ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
@@ -34,7 +34,7 @@ export const TestnetToggle = ({
         description={description}
         checked={isTestnetMode}
         onChange={toggleTestnetMode}
-        disabled={isCustomOrbitChainPage}
+        disabled={!!orbitChainInRoute}
       />
     </label>
   )
