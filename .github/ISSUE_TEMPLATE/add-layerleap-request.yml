@@ -61,7 +61,7 @@ body:
 
 
   - type: markdown
-      attributes:
+    attributes:
         value: |
           Information for enabling Layer Leap transfers for your Orbit Chain
   - type: checkboxes
