@@ -12,7 +12,10 @@ import { NetworkImage } from './NetworkImage'
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
-  const { orbitChain, orbitStyles } = useOrbitChainFromRoute()
+
+  const orbitChainFromRoute = useOrbitChainFromRoute()
+  const orbitChain = orbitChainFromRoute?.chain
+  const orbitStyles = orbitChainFromRoute?.styles
 
   return (
     <header

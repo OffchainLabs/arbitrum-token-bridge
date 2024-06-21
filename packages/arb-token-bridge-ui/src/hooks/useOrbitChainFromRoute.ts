@@ -6,13 +6,13 @@ export const useOrbitChainFromRoute = () => {
   const router = useRouter()
 
   const slug = router.query.slug
-  if (typeof slug !== 'string') return {}
+  if (typeof slug !== 'string') return undefined
 
   const orbitChains = getOrbitChains({ mainnet: true, testnet: false })
   const orbitChain = orbitChains.find(orbitChain => orbitChain.slug === slug)
 
   // early return if the orbit chain is not found
-  if (!orbitChain) return {}
+  if (!orbitChain) return undefined
 
   // styles for the orbit chain
   const orbitChainColor = getBridgeUiConfigForChain(orbitChain.chainID).color
@@ -22,7 +22,7 @@ export const useOrbitChainFromRoute = () => {
   }
 
   return {
-    orbitChain,
-    orbitStyles
+    chain: orbitChain,
+    styles: orbitStyles
   }
 }

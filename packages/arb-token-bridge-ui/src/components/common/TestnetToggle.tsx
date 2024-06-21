@@ -20,7 +20,7 @@ export const TestnetToggle = ({
   includeToggleStateOnLabel?: boolean
 }) => {
   const [isTestnetMode, toggleTestnetMode] = useIsTestnetMode()
-  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+  const orbitChainFromRoute = useOrbitChainFromRoute()
 
   const labelText = includeToggleStateOnLabel
     ? `${label} ${isTestnetMode ? 'ON' : 'OFF'}`
@@ -34,7 +34,7 @@ export const TestnetToggle = ({
         description={description}
         checked={isTestnetMode}
         onChange={toggleTestnetMode}
-        disabled={!!orbitChainInRoute}
+        disabled={!!orbitChainFromRoute}
       />
     </label>
   )

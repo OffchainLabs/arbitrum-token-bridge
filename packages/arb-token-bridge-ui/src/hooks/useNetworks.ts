@@ -152,7 +152,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
     setQueryParams
   ] = useArbQueryParams()
 
-  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+  const orbitChainFromRoute = useOrbitChainFromRoute()
 
   const {
     sourceChainId: validSourceChainId,
@@ -160,7 +160,7 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
   } = sanitizeQueryParams({
     sourceChainId,
     destinationChainId,
-    orbitChainInRoute
+    orbitChainInRoute: orbitChainFromRoute?.chain
   })
 
   const setState = useCallback(
@@ -174,14 +174,14 @@ export function useNetworks(): [UseNetworksState, UseNetworksSetState] {
       } = sanitizeQueryParams({
         sourceChainId: newSourceChainId,
         destinationChainId: newDestinationChainId,
-        orbitChainInRoute
+        orbitChainInRoute: orbitChainFromRoute?.chain
       })
       setQueryParams({
         sourceChain: validSourceChainId,
         destinationChain: validDestinationChainId
       })
     },
-    [setQueryParams]
+    [setQueryParams, orbitChainFromRoute?.chain]
   )
 
   if (

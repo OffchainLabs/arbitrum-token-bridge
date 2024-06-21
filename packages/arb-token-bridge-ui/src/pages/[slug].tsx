@@ -6,10 +6,10 @@ export default function CustomOrbitPage() {
   const router = useRouter()
 
   const slug = router.query.slug
-  const { orbitChain } = useOrbitChainFromRoute()
+  const orbitChainFromRoute = useOrbitChainFromRoute()
 
   // if the slug is present, but doesn't correspond to a valid orbit-chain, redirect to home
-  if (slug && !orbitChain) {
+  if (slug && !orbitChainFromRoute) {
     router.replace('/')
   }
 

@@ -455,7 +455,7 @@ export function TransferPanelMain({
 
   const [, setQueryParams] = useArbQueryParams()
 
-  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+  const orbitChainFromRoute = useOrbitChainFromRoute()
 
   const { estimatedParentChainGasFees, estimatedChildChainGasFees } =
     useGasSummary()
@@ -596,10 +596,7 @@ export function TransferPanelMain({
       )
 
       // early return; if custom orbit page, and if the current destination chain is the one in route, then don't populate other destination chains
-      if (
-        orbitChainInRoute &&
-        networks.destinationChain.id === orbitChainInRoute?.chainID
-      ) {
+      if (networks.destinationChain.id === orbitChainFromRoute?.chain.chainID) {
         return []
       }
 

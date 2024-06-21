@@ -321,7 +321,7 @@ function ConnectedChainSyncer() {
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
   const { chain } = useNetwork()
-  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+  const orbitChainFromRoute = useOrbitChainFromRoute()
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
@@ -332,11 +332,11 @@ function ConnectedChainSyncer() {
       sanitizeQueryParams({
         sourceChainId: chain.id,
         destinationChainId: undefined,
-        orbitChainInRoute
+        orbitChainInRoute: orbitChainFromRoute?.chain
       })
 
     setQueryParams({ sourceChain, destinationChain })
-  }, [chain, setQueryParams, orbitChainInRoute])
+  }, [chain, setQueryParams, orbitChainFromRoute?.chain])
 
   useEffect(() => {
     async function checkCorrectChainForSmartContractWallet() {

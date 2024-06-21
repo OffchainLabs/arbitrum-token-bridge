@@ -177,19 +177,21 @@ function NetworksPanel({
   const debouncedNetworkSearched = useDebounce(networkSearched, 200)
   const listRef = useRef<List>(null)
   const [isTestnetMode] = useIsTestnetMode()
-  const { orbitChain: orbitChainInRoute } = useOrbitChainFromRoute()
+
+  const orbitChainFromRoute = useOrbitChainFromRoute()
+  const orbitChain = orbitChainFromRoute?.chain
 
   const chainIds = useMemo(() => {
     // if the page is custom orbit chain page, then only show the chains that support transfers to/from the orbit chain
-    if (orbitChainInRoute) {
+    if (orbitChain) {
       return getChains()
         .filter(
           chain =>
-            chain.chainID === orbitChainInRoute.chainID || // chain is same as selected in route
-            chain.chainID === orbitChainInRoute.partnerChainID || // parent-chain of the route-selected-chain
-            orbitChainInRoute.partnerChainIDs.includes(chain.chainID) || // child-chains of the route-selected-chain
+            chain.chainID === orbitChain.chainID || // chain is same as selected in route
+            chain.chainID === orbitChain.partnerChainID || // parent-chain of the route-selected-chain
+            orbitChain.partnerChainIDs.includes(chain.chainID) || // child-chains of the route-selected-chain
             chain.chainID ===
-              getTeleportChainIdForOrbitChain(orbitChainInRoute.chainID) // get teleport-parent chain for the orbit chain (if valid)
+              getTeleportChainIdForOrbitChain(orbitChain.chainID) // get teleport-parent chain for the orbit chain (if valid)
         )
         .map(chain => chain.chainID)
     }
@@ -198,7 +200,7 @@ function NetworksPanel({
       includeMainnets: !isTestnetMode,
       includeTestnets: isTestnetMode
     })
-  }, [isTestnetMode, orbitChainInRoute])
+  }, [isTestnetMode, orbitChain])
 
   const networksToShow = useMemo(() => {
     const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
