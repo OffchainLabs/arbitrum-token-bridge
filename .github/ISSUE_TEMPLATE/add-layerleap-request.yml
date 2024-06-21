@@ -65,12 +65,10 @@ body:
         value: |
           Information for enabling Layer Leap transfers for your Orbit Chain
   - type: checkboxes
-    id: enable-layerleap
     attributes:
       label: Enable Layer Leap
       options:
         - label: We would like to adopt Layer Leap on bridge.arbitrum.io
-          required: true
   - type: input
     id: layerleap-token-symbol
     attributes:
