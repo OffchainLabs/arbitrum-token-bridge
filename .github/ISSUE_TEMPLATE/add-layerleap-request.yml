@@ -1,0 +1,89 @@
+name: Add Layer Leap Request
+description: File a request to have your Orbit chain support Layer Leap transfers
+title: "[feat]: "
+labels: ["feat", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide the necessary config information for the Orbit chain.
+  - type: input
+    id: chain-id
+    attributes:
+      label: Chain ID
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Chain name
+    validations:
+      required: true
+  - type: input
+    id: parent-chain-id
+    attributes:
+      label: Parent chain ID
+      placeholder: ex. 42161
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Parent Chain name
+    validations:
+      required: true
+  
+  - type: markdown
+    attributes:
+      value: |
+        Native token information - only fill this if you are using a native token other than ETH
+  - type: input
+    id: native-token-address
+    attributes:
+      label: Native token address
+      placeholder: ex. 0x0000000000000000000000000000000000000000
+    validations:
+      required: false
+  - type: input
+    id: native-token-name
+    attributes:
+      label: Native token name
+      placeholder: ex. Ether
+    validations:
+      required: false           
+  - type: input
+    id: native-token-symbol
+    attributes:
+      label: Native token symbol
+      placeholder: ex. ETH
+    validations:
+      required: false
+
+
+  - type: markdown
+      attributes:
+        value: |
+          Information about Layer Leap
+  - type: checkboxes
+    id: enable-layerleap
+    attributes:
+      label: Enable Layer Leap
+      options:
+        - label: We would like to adopt Layer Leap on bridge.arbitrum.io
+          required: true
+  - type: input
+    id: layerleap-token-symbol
+    attributes:
+      description: ERC20 tokens listed here will be added to an allowlist for L1-to-L3 ERC20 transfers
+      label: Layer Leap token symbol(s) (Comma-separated if multiple)
+      placeholder: ex. WETH, LINK, etc.
+    validations:
+      required: true
+  - type: input
+    id: layerleap-token-addresses
+    attributes:
+      description: ERC20 addresses (L1) listed here will be added to an allowlist for L1-to-L3 ERC20 transfers
+      label: Layer Leap L1 token address(es) (Comma-separated if multiple)
+      placeholder: ex. 0xfff9976782d46cc05630d1f6ebab18b2324d6b14, 0x779877A7B0D9E8603169DdbD7836e478b4624789
+    validations:
+      required: true
