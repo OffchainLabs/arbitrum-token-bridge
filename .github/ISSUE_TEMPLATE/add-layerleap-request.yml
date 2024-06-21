@@ -63,7 +63,7 @@ body:
   - type: markdown
       attributes:
         value: |
-          Information about Layer Leap
+          Information for enabling Layer Leap transfers for your Orbit Chain
   - type: checkboxes
     id: enable-layerleap
     attributes:
@@ -75,15 +75,15 @@ body:
     id: layerleap-token-symbol
     attributes:
       description: ERC20 tokens listed here will be added to an allowlist for L1-to-L3 ERC20 transfers
-      label: Layer Leap token symbol(s) (Comma-separated if multiple)
+      label: Token symbol(s) to allow Layer Leap for (Comma-separated, if multiple)
       placeholder: ex. WETH, LINK, etc.
     validations:
       required: true
   - type: input
     id: layerleap-token-addresses
     attributes:
-      description: ERC20 addresses (L1) listed here will be added to an allowlist for L1-to-L3 ERC20 transfers
-      label: Layer Leap L1 token address(es) (Comma-separated if multiple)
+      description: ERC20 addresses (L1) listed here will be added to an allowlist for L1-to-L3 ERC20 transfers (should correspond to the symbols above)
+      label: L1 token address(es) to allow Layer Leap for (Comma-separated, if multiple)
       placeholder: ex. 0xfff9976782d46cc05630d1f6ebab18b2324d6b14, 0x779877A7B0D9E8603169DdbD7836e478b4624789
     validations:
       required: true
