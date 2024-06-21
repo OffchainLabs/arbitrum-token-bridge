@@ -91,7 +91,7 @@ const sanitizeAmountQueryParam = (amount: string) => {
   // replace leading zeros and spaces
   // this regex finds 1 or more 0s before any digits including 0
   // but the digits are not captured into the result string
-  return parsedAmount.replace(/^0+(?=\d)/, '').replace(/ /g, '')
+  return parsedAmount.replace(/(^0+(?=\d))| /g, '');
 }
 
 // Our custom query param type for Amount field - will be parsed and returned as a string,
