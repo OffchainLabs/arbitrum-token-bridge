@@ -6,7 +6,6 @@ export interface ChainToMonitor extends L2Network {
   parentRpcUrl: string
   orbitRpcUrl: string
   parentExplorerUrl: string
-  parentBlockTime: number
 }
 
 export const sanitizeExplorerUrl = (url: string) => {
@@ -31,17 +30,14 @@ export const sanitizeRpcUrl = (url: string) => {
 // TODO: in a later refactor, we will update the term `orbitRpcUrl` to chain-agnostic, `rpcUrl`
 export const getChainToMonitor = ({
   chain,
-  rpcUrl,
-  parentBlockTime
+  rpcUrl
 }: {
   chain: L2Network | OrbitChainConfig
   rpcUrl: string
-  parentBlockTime: number
 }): ChainToMonitor => ({
   ...chain,
   explorerUrl: sanitizeExplorerUrl(chain.explorerUrl),
   orbitRpcUrl: sanitizeRpcUrl(rpcUrl),
   parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.partnerChainID]),
-  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.partnerChainID)),
-  parentBlockTime
+  parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.partnerChainID))
 })

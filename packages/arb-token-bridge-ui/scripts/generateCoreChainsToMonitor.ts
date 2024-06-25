@@ -1,18 +1,16 @@
 import fs from 'fs'
-import { getL1Network, getL2Network } from '@arbitrum/sdk'
+import { getL2Network } from '@arbitrum/sdk'
 import { ChainId, rpcURLs } from '../src/util/networks'
 import { getChainToMonitor } from './utils'
 
 async function generateCoreChainsToMonitor() {
-  const ethChain = await getL1Network(ChainId.Ethereum)
   const novaChain = await getL2Network(ChainId.ArbitrumNova)
 
   // make the chain data compatible with that required by the retryable-monitoring script
   const coreChainsToMonitor = [novaChain].map(coreChain =>
     getChainToMonitor({
       chain: coreChain,
-      rpcUrl: rpcURLs[coreChain.chainID],
-      parentBlockTime: ethChain.blockTime
+      rpcUrl: rpcURLs[coreChain.chainID]
     })
   )
 
