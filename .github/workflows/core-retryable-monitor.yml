@@ -1,0 +1,62 @@
+name: Monitor Core Retryables
+
+on:
+  push:
+    paths:
+    - ".github/workflows/core-retryable-monitor.yml"
+  workflow_dispatch:
+  schedule:
+    # Run once a day at 08:03am GMT (https://github.com/OffchainLabs/arb-monitoring/blob/master/.github/workflows/retryables.yml#L5)
+    - cron: "3 8 * * *" 
+
+env:
+  NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
+  CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN }}
+  CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+
+jobs:
+  run-alerting:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Bridge
+      uses: actions/checkout@v3
+      with:
+        repository: OffchainLabs/arbitrum-token-bridge
+
+    - name: Restore node_modules
+      uses: OffchainLabs/actions/node-modules/restore@main
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Generate chains JSON
+      run: yarn workspace arb-token-bridge-ui generateCoreChainsToMonitor
+
+    - name: Checkout Retryable-Tracker repository
+      uses: actions/checkout@v3
+      with:
+        repository: OffchainLabs/orbit-retryable-tracker
+        path: retryable-tracker
+
+    - name: Copy chains JSON to Retryable-Tracker
+      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json ./retryable-tracker/lib/config.json
+   
+    - name: Setup Node for Retryable-Tracker
+      uses: actions/setup-node@v4
+      with:
+        node-version: latest
+
+    - name: Install dependencies for Retryable-Tracker
+      run: cd ./retryable-tracker && yarn install
+
+    - name: Run alerting command
+      run: cd ./retryable-tracker && yarn findRetryables --enableAlerting
+      env:
+        NODE_ENV: "CI"
+        ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN }}
+        ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+
+
+    - name: Clean up
+      run: rm ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json

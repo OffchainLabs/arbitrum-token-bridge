@@ -20,7 +20,9 @@ export type BridgeUiConfig = {
   nativeTokenData?: NativeCurrencyBase
 }
 
-type OrbitChainConfig = ChainWithRpcUrl & { bridgeUiConfig: BridgeUiConfig }
+export type OrbitChainConfig = ChainWithRpcUrl & {
+  bridgeUiConfig: BridgeUiConfig
+}
 
 export const orbitMainnets: {
   [key: number]: OrbitChainConfig
