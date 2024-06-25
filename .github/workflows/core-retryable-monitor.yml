@@ -1,4 +1,4 @@
-name: Monitor Core-chain Retryables
+name: Monitor Core Retryables
 
 on:
   push:
