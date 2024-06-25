@@ -24,7 +24,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
         isTestnet
           ? 'sm:border-b sm:border-white sm:bg-white/20'
           : 'sm:bg-transparent',
-        orbitStyles ? 'sm:sm:border-b' : ''
+        orbitStyles ? 'sm:border-b' : ''
       )}
       style={orbitStyles ?? undefined}
     >
