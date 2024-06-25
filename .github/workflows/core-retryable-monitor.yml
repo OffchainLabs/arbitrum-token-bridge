@@ -1,9 +1,6 @@
 name: Monitor Core Retryables
 
 on:
-  push:
-    paths:
-    - ".github/workflows/core-retryable-monitor.yml"
   workflow_dispatch:
   schedule:
     # Run once a day at 08:03am GMT (https://github.com/OffchainLabs/arb-monitoring/blob/master/.github/workflows/retryables.yml#L5)
