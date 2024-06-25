@@ -24,6 +24,17 @@ export function hasL2Subgraph(l2ChainId: number) {
   }
 }
 
+export function hasTeleporterSubgraph(l1ChainId: number) {
+  switch (l1ChainId) {
+    case ChainId.Ethereum:
+    case ChainId.Sepolia:
+      return true
+
+    default:
+      return false
+  }
+}
+
 export const fetchLatestSubgraphBlockNumber = async (
   chainId: number
 ): Promise<number> => {

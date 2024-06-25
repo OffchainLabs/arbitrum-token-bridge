@@ -11,6 +11,7 @@ import {
 } from './TokenUtils'
 import { DepositGasEstimates } from '../hooks/arbTokenBridge.types'
 import { addressIsSmartContract } from './AddressUtils'
+import { getChainIdFromProvider } from '../token-bridge-sdk/utils'
 
 async function fetchTokenFallbackGasEstimates({
   inboxAddress,
@@ -56,9 +57,11 @@ async function fetchTokenFallbackGasEstimates({
     l2Provider: childChainProvider
   })
 
+  const childChainId = await getChainIdFromProvider(childChainProvider)
+
   const isFirstTimeTokenBridging = !(await addressIsSmartContract(
     childChainTokenAddress,
-    childChainProvider
+    childChainId
   ))
   if (isFirstTimeTokenBridging) {
     return {

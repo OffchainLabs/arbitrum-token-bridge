@@ -1,4 +1,5 @@
 import { constants } from '@arbitrum/sdk'
+import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
 
@@ -543,6 +544,55 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
           'Leverage LRTs to earn yield and trade perpetuals on L3X Layer 3 Network.'
       }
     }
+  },
+  1918988905: {
+    chainID: 1918988905,
+    confirmPeriodBlocks: 64,
+    ethBridge: {
+      bridge: '0x55f0a866E9A5B59Eab0269D62d121BC0978a4346',
+      inbox: '0xb6534cB24b925b58dfD811a0090f24C7aD52cA78',
+      outbox: '0x4d8679Db1058b0F8CaE84485F6B760a858CeCA10',
+      rollup: '0x2EeDc7b995267aa1060587Ff2585690C204E7e5c',
+      sequencerInbox: '0xf0d96B3a783F04620D5CBbf2829E70CEe396403F'
+    },
+    explorerUrl: 'https://testnet.explorer.rarichain.org',
+    rpcUrl: 'https://testnet.rpc.rarichain.org/http',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'RARI Testnet',
+    slug: 'rari-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x7EDA0d4c14Af6B0920F4e3C0F0cA18d18212fB0A',
+      l1ERC20Gateway: '0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856',
+      l1GatewayRouter: '0xece5902AD6Bbf4689EA8aD4B95237fAf5B65FB26',
+      l1MultiCall: '0x6550ef0Ff640fDD871C9321D2483801c891D7d54',
+      l1ProxyAdmin: '0x311C5Fe27874FBc8ea9D06BeDA2ff316E37c3E2f',
+      l1Weth: '0x980B62Da83eFf3D4576C647993b0c1D7faf17c73',
+      l1WethGateway: '0x1A0d79b35953fDA4F2b7A3B0BC893C767AAe44aE',
+      l2CustomGateway: '0x311C5Fe27874FBc8ea9D06BeDA2ff316E37c3E2f',
+      l2ERC20Gateway: '0x68b350501592a1501ffc2C8f1B28Ca896253fFe8',
+      l2GatewayRouter: '0x52d17dcd26F9B19A2672dC79686f1279391Aa449',
+      l2Multicall: '0x1A0d79b35953fDA4F2b7A3B0BC893C767AAe44aE',
+      l2ProxyAdmin: '0x25Da52b43f252Bc52Ce038a7541eCC62b9347229',
+      l2Weth: '0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856',
+      l2WethGateway: '0xece5902AD6Bbf4689EA8aD4B95237fAf5B65FB26'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#B16EFF',
+      network: {
+        name: 'RARI Testnet',
+        description:
+          'A testnet chain designed specifically for NFT royalties and creator empowerment.',
+        logo: '/images/RARIMainnetLogo.svg'
+      }
+    }
   }
 }
 
@@ -561,4 +611,17 @@ export function getOrbitChains(
   const testnetChains = testnet ? Object.values(orbitTestnets) : []
 
   return [...mainnetChains, ...testnetChains]
+}
+
+export function getInboxAddressFromOrbitChainId(chainId: number) {
+  return (
+    l2Networks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
+    getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge.inbox // for other custom orbit chains
+  )
+}
+
+export function getChainIdFromInboxAddress(inboxAddress: string) {
+  return getOrbitChains().find(
+    chain => chain.ethBridge.inbox.toLowerCase() === inboxAddress.toLowerCase()
+  )?.chainID
 }
