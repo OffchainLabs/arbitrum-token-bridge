@@ -199,7 +199,7 @@ export function useRedeemTeleporter(
       }
 
       // track in analytics
-      trackEvent('Redeem Retryable', { network: redeemerNetworkName })
+      trackEvent('Redeem Teleport Retryable', { network: redeemerNetworkName })
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
