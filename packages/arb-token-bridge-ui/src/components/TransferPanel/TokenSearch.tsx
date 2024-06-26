@@ -34,7 +34,7 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
-import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
+import { getNetworkName, isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -68,7 +68,7 @@ export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   l2Address: CommonAddress.ArbitrumSepolia.USDC
 }
 
-function getDefaultTokensToShowForChain(chainId: ChainId): string[] {
+function getDefaultTokensToShowForChain(chainId: number): string[] {
   const DEFAULT_TOKENS_TO_SHOW_FOR_CHAINS: { [chainId: number]: string[] } = {
     660279: [CommonAddress[660279].CU]
   }
