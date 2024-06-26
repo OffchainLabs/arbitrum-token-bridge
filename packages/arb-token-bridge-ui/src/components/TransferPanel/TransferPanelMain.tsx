@@ -678,7 +678,7 @@ export function TransferPanelMain({
   )
 
   return (
-    <div className="flex flex-col pb-8 lg:gap-y-1">
+    <div className="flex flex-col pb-6 lg:gap-y-1">
       <NetworkContainer bgLogoHeight={138} network={networks.sourceChain}>
         <NetworkListboxPlusBalancesContainer>
           <NetworkSelectionContainer
