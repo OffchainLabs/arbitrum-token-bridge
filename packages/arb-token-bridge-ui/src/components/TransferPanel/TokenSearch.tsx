@@ -224,6 +224,7 @@ function TokensPanel({
   const [isAddingToken, setIsAddingToken] = useState(false)
 
   useEffect(() => {
+    // when the search panel mounts, add the default tokens to the search
     const addDefaultTokensToSearch = async () => {
       const defaultTokensToShowForChain = getDefaultTokensToShowForChain(
         childChain.id
@@ -232,7 +233,7 @@ function TokensPanel({
       setIsAddingToken(true)
       try {
         for (const defaultTokenAddress of defaultTokensToShowForChain) {
-          // add token to the bridge if it's not already added
+          // only add token to the bridge if it's not already added
           if (
             !bridgeTokens ||
             typeof bridgeTokens[defaultTokenAddress] === 'undefined'
@@ -240,8 +241,7 @@ function TokensPanel({
             await token.add(defaultTokenAddress)
           }
         }
-      } catch (e) {
-        console.log(e)
+      } catch (_) {
       } finally {
         setIsAddingToken(false)
       }
