@@ -1,4 +1,10 @@
-import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
+import React, {
+  FormEventHandler,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect
+} from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
@@ -28,7 +34,7 @@ import { useTokenLists } from '../../hooks/useTokenLists'
 import { warningToast } from '../common/atoms/Toast'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { ArbOneNativeUSDC } from '../../util/L2NativeUtils'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ChainId, getNetworkName, isNetwork } from '../../util/networks'
 import { useUpdateUSDCBalances } from '../../hooks/CCTP/useUpdateUSDCBalances'
 import { useAccountType } from '../../hooks/useAccountType'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
@@ -60,6 +66,14 @@ export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   type: TokenType.ERC20,
   address: CommonAddress.ArbitrumSepolia.USDC,
   l2Address: CommonAddress.ArbitrumSepolia.USDC
+}
+
+function getDefaultTokensToShowForChain(chainId: ChainId): string[] {
+  const DEFAULT_TOKENS_TO_SHOW_FOR_CHAINS: { [chainId: number]: string[] } = {
+    660279: [CommonAddress[660279].CU]
+  }
+
+  return DEFAULT_TOKENS_TO_SHOW_FOR_CHAINS[chainId] ?? []
 }
 
 function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
@@ -208,6 +222,32 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
+
+  useEffect(() => {
+    const addDefaultTokensToSearch = async () => {
+      const defaultTokensToShowForChain = getDefaultTokensToShowForChain(
+        childChain.id
+      )
+
+      setIsAddingToken(true)
+      try {
+        for (const defaultTokenAddress of defaultTokensToShowForChain) {
+          // add token to the bridge if it's not already added
+          if (
+            !bridgeTokens ||
+            typeof bridgeTokens[defaultTokenAddress] === 'undefined'
+          ) {
+            await token.add(defaultTokenAddress)
+          }
+        }
+      } catch (e) {
+        console.log(e)
+      } finally {
+        setIsAddingToken(false)
+      }
+    }
+    addDefaultTokensToSearch()
+  }, [childChain.id, bridgeTokens])
 
   const getBalance = useCallback(
     (address: string) => {
