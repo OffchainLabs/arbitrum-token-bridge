@@ -59,6 +59,15 @@ export function MainContent() {
         <TransactionStatusInfo />
 
         <TransferPanel />
+
+        <div className="flex flex-col gap-4 rounded bg-black p-4">
+          <div className="text-xl text-white">Explore Apps on Portal</div>
+          <iframe
+            width="100%"
+            height="350px"
+            src="https://arbitrum-portal-git-feat-embeddable-cards-poc-offchain-labs.vercel.app/embed/projects?chains=arbitrum-nova&subcategories=bridge_fiat-on-ramp_wallet&maxProjects=4&classOverrides=grid-cols-2"
+          />
+        </div>
       </div>
 
       <TransactionHistorySidePanel />
