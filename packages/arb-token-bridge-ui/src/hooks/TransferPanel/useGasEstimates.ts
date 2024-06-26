@@ -42,7 +42,7 @@ export function useGasEstimates({
   sourceChainErc20Address,
   destinationChainErc20Address,
   amount,
-  balance
+  sourceChainBalance
 }: {
   walletAddress?: string
   sourceChainId: number
@@ -50,7 +50,7 @@ export function useGasEstimates({
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
-  balance: BigNumber | null
+  sourceChainBalance: BigNumber | null
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
@@ -58,7 +58,7 @@ export function useGasEstimates({
   const { data: signer } = useSigner()
 
   const { data: gasEstimates, error } = useSWR(
-    signer && balance && balance.gte(amount)
+    signer && sourceChainBalance && sourceChainBalance.gte(amount)
       ? ([
           sourceChainId,
           destinationChainId,
