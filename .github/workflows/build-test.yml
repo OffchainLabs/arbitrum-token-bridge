@@ -71,7 +71,7 @@ jobs:
           #     break
           #   fi
           # done
-          echo "run_tests=true" >> $GITHUB_OUTPIT
+          echo "run_tests=true" >> $GITHUB_OUTPUT
         shell: bash
 
   install:
