@@ -52,26 +52,18 @@ jobs:
           fetch-depth: 2
 
       # run tests only if specific files are changed
-      # - name: Check modified files
-      #   id: check-files
-      #   run: |
-      #     echo "=============== list modified files ==============="
-      #     files=`git diff --name-only HEAD^ HEAD`
-      #     echo "$files"
-      #     for file in $files; do
-      #       if [[ $file != packages/* ]] && ! [[ $file != .github/workflows/* ]]; then
-      #         # if not in packages/ and is not workflow
-      #         echo "run_tests=false" >> $GITHUB_OUTPUT
-      #       elif [[ $file == .github/ISSUE_TEMPLATE/* ]]; then
-      #         echo "run_tests=false" >> $GITHUB_OUTPUT
-      #       elif [[ $file =~ .*\.(md|svg|png|webp|gif|txt)$ ]]; then
-      #         echo "run_tests=false" >> $GITHUB_OUTPUT
-      #       else
-      #         echo "run_tests=true" >> $GITHUB_OUTPUT
-      #         break
-      #       fi
-      #     done
-      #   shell: bash
+      - name: Check modified files
+        id: check-files
+        run: |
+          echo "=============== list modified files ==============="
+          files=`git diff --name-only HEAD^ HEAD`
+          echo "$files"
+          for file in $files; do
+              echo "run_tests=true" >> $GITHUB_OUTPUT
+              break
+            fi
+          done
+        shell: bash
 
   install:
     name: "Install"
