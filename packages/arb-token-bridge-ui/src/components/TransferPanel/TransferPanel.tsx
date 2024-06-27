@@ -393,9 +393,7 @@ export function TransferPanel() {
       try {
         await switchNetworkAsync?.(switchTargetChainId)
       } catch (e) {
-        if (isUserRejectedError(e)) {
-          return
-        }
+        Sentry.captureException(e)
       }
     }
 
@@ -567,10 +565,6 @@ export function TransferPanel() {
       setTransferring(true)
       if (chainId !== networks.sourceChain.id) {
         await switchNetworkAsync?.(networks.sourceChain.id)
-      }
-    } catch (e) {
-      if (isUserRejectedError(e)) {
-        return
       }
     } finally {
       setTransferring(false)
@@ -883,7 +877,7 @@ export function TransferPanel() {
       // transaction submitted callback
       onTxSubmit(transfer)
     } catch (ex) {
-      console.log(ex)
+      Sentry.captureException(ex)
     } finally {
       setTransferring(false)
     }
