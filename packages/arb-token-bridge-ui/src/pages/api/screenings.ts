@@ -42,7 +42,7 @@ function isBlocked(response: ExternalApiResponse): boolean {
   return response.some(result => {
     const riskIndicators = result.addressRiskIndicators
       // Filter out false positives
-      .filter(ri => ri.categoryId != '21')
+      .filter(ri => ri.categoryId !== '21')
 
     return riskIndicators.length > 0
   })
