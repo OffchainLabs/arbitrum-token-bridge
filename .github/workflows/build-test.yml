@@ -51,6 +51,16 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Debug THE_GRAPH_NETWORK_ENABLED secret
+        run: |
+          if [ "${{ secrets.THE_GRAPH_NETWORK_ENABLED }}" = "true" ]; then
+            echo "THE_GRAPH_NETWORK_ENABLED is true"
+          elif [ "${{ secrets.THE_GRAPH_NETWORK_ENABLED }}" == "false" ]; then
+            echo "THE_GRAPH_NETWORK_ENABLED is false"
+          else
+            echo "THE_GRAPH_NETWORK_ENABLED is something else"
+          fi
+
       # run tests only if specific files are changed
       - name: Check modified files
         id: check-files
