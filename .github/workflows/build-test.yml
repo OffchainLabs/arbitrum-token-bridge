@@ -54,15 +54,7 @@ jobs:
       # run tests only if specific files are changed
       - name: Check modified files
         id: check-files
-        run: |
-          echo "=============== list modified files ==============="
-          files=`git diff --name-only HEAD^ HEAD`
-          echo "$files"
-          for file in $files; do
-            echo "$file"
-            echo "run_tests=true" >> $env:GITHUB_OUTPUT
-            break
-          done
+        run: echo "run_tests=true" >> $GITHUB_OUTPUT
         shell: bash
 
   install:
@@ -152,8 +144,7 @@ jobs:
         uses: actions/checkout@v3
 
       - run: |
-          echo "should run tests"
-          echo "${{ needs.check-files.outputs.run_tests }}"
+          echo "should run tests: ${{ needs.check-files.outputs.run_tests }}"
 
       - id: set-matrix
         run: |
