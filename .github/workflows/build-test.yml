@@ -59,6 +59,7 @@ jobs:
           files=`git diff --name-only HEAD^ HEAD`
           echo "$files"
           for file in $files; do
+            echo "file"
             echo "run_tests=true" >> $GITHUB_OUTPUT
             break
           done
@@ -159,7 +160,7 @@ jobs:
     name: "Test E2E"
     runs-on: ubuntu-latest
     needs: [install, check-files, check-is-hotfix, load-e2e-files]
-    # if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
+    if: needs.check-files.outputs.run_tests == 'true'
     strategy:
       fail-fast: false # If one test fails, let the other tests run
       matrix:
