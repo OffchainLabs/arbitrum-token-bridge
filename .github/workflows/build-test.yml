@@ -22,12 +22,25 @@ concurrency:
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
-  THE_GRAPH_NETWORK_ENABLED: ${{ toJson(secrets.THE_GRAPH_NETWORK_ENABLED == 'true') }}
   THE_GRAPH_NETWORK_API_KEY: ${{ secrets.THE_GRAPH_NETWORK_API_KEY }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   IS_HOTFIX: ${{ contains(github.event.pull_request.title, 'hotfix') }}
 
 jobs:
+  set-environment-variables:
+    runs-on: ubuntu-latest
+    outputs:
+      the_graph_network_enabled: ${{ steps.set-env.outputs.the_graph_network_enabled }}
+    steps:
+      - name: Set THE_GRAPH_NETWORK_ENABLED
+        id: set-env
+        run: |
+          if [ "${{ secrets.THE_GRAPH_NETWORK_ENABLED }}" = "true" ]; then
+            echo "THE_GRAPH_NETWORK_ENABLED=true" >> $GITHUB_ENV
+          else
+            echo "THE_GRAPH_NETWORK_ENABLED=false" >> $GITHUB_ENV
+          fi
+
   check-is-hotfix:
     name: Check if PR is hotfix
     runs-on: ubuntu-latest
@@ -42,6 +55,7 @@ jobs:
 
   check-files:
     name: Check files
+    needs: set-environment-variables
     outputs:
       run_tests: ${{ steps.check-files.outputs.run_tests }}
     runs-on: ubuntu-latest
