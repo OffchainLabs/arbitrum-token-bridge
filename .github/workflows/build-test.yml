@@ -60,7 +60,7 @@ jobs:
           echo "$files"
           for file in $files; do
             echo "$file"
-            echo "run_tests=true" >> $GITHUB_OUTPUT
+            echo "run_tests=true" >> $env:GITHUB_OUTPUT
             break
           done
         shell: bash
