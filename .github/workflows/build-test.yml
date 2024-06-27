@@ -36,9 +36,9 @@ jobs:
         id: set-env
         run: |
           if [ "${{ secrets.THE_GRAPH_NETWORK_ENABLED }}" = "true" ]; then
-            echo "THE_GRAPH_NETWORK_ENABLED=true" >> $GITHUB_ENV
+            echo "THE_GRAPH_NETWORK_ENABLED='true'" >> $GITHUB_ENV
           else
-            echo "THE_GRAPH_NETWORK_ENABLED=false" >> $GITHUB_ENV
+            echo "THE_GRAPH_NETWORK_ENABLED='false'" >> $GITHUB_ENV
           fi
 
   check-is-hotfix:
