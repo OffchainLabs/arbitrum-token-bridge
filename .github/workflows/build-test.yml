@@ -61,7 +61,6 @@ jobs:
           for file in $files; do
             echo "run_tests=true" >> $GITHUB_OUTPUT
             break
-            fi
           done
         shell: bash
 
