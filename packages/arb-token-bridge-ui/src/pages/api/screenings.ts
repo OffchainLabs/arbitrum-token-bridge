@@ -41,7 +41,7 @@ function isBlocked(response: ExternalApiResponse): boolean {
   // Block in case the address has any risk indicators on either network
   return response.some(result => {
     const riskIndicators = result.addressRiskIndicators
-      // Filter out false positives
+      // Filter out potential false positives
       .filter(ri => ri.categoryId !== '21')
 
     return riskIndicators.length > 0
