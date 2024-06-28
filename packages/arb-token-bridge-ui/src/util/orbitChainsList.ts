@@ -382,6 +382,62 @@ export const orbitMainnets: {
         logo: '/images/XCHAINLogo.png'
       }
     }
+  },
+  1183: {
+    chainID: 1183,
+    confirmPeriodBlocks: 150,
+    ethBridge: {
+      bridge: '0xCAeCF7c5c2769e250Ef69592dD470D40BC61D1f7',
+      inbox: '0x44199D537Aa690bE3B4446602e0c66F2B992D51e',
+      outbox: '0xAD6A8df458dBD6b440F50313C5d53E3C5b4734e9',
+      rollup: '0x357717a0F9Ac8714A5995109Fba3BAd3b5f0954F',
+      sequencerInbox: '0x146bCf344F949ad4c9Fcf339eb4415981aE21dF9'
+    },
+    nativeToken: '0x566f8345F7bF45358FaB2802C19c60D691dE04e4',
+    explorerUrl: 'https://testnet.theatlas.tech',
+    rpcUrl: 'https://theatlas.tech',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'Atlas Testnet',
+    slug: 'atlas-testnet',
+    partnerChainID: 421614,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0xE5A8943e36f93491f97A521447772fCF529533B5',
+      l1ERC20Gateway: '0xBc89C0A2CCA8A0e1583AA6d4e22B36E26661C78E',
+      l1GatewayRouter: '0xc93fDF8327e04776fd184188bB4EC8521E5E96D7',
+      l1MultiCall: '0xce1CAd780c529e66e3aa6D952a1ED9A6447791c1',
+      l1ProxyAdmin: '0x0000000000000000000000000000000000000000',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0x2c2Be954C9B79d9cA2CF145d9d6363F3c3784615',
+      l2ERC20Gateway: '0xDfCD9f6154BEA2E98e8aE493f3Fec2E22De52D6a',
+      l2GatewayRouter: '0xBc63Ec54dA9Ee3B2b3D4cA5DE3622a3F85e0F219',
+      l2Multicall: '0x54AFaf5Fd025A99708e73e52c317454bD52B1e77',
+      l2ProxyAdmin: '0xE1C9a27C47bb9691bA5b4E35eb7617B39F6098B9',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#2D2D2D',
+      network: {
+        name: 'Atlas Testnet',
+        logo: '/images/AtlasLogo.png',
+        description:
+          'Aarc is the first modular layer for unified borderless dapps.'
+      },
+      nativeTokenData: {
+        name: 'Aarc',
+        symbol: 'AARC',
+        decimals: 18,
+        logoUrl: ''
+      }
+    }
   }
 }
 
