@@ -646,7 +646,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
         name: 'Aarc',
         symbol: 'AARC',
         decimals: 18,
-        logoUrl: ''
+        logoUrl: '/images/AtlasLogo.png'
       }
     }
   }
