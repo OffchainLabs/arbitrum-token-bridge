@@ -1,10 +1,4 @@
-import React, {
-  FormEventHandler,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect
-} from 'react'
+import React, { FormEventHandler, useMemo, useState, useCallback } from 'react'
 import { isAddress } from 'ethers/lib/utils'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
@@ -66,14 +60,6 @@ export const ARB_SEPOLIA_NATIVE_USDC_TOKEN = {
   type: TokenType.ERC20,
   address: CommonAddress.ArbitrumSepolia.USDC,
   l2Address: CommonAddress.ArbitrumSepolia.USDC
-}
-
-function getDefaultTokensToShowForChain(chainId: number): string[] {
-  const DEFAULT_TOKENS_TO_SHOW_FOR_CHAINS: { [chainId: number]: string[] } = {
-    660279: [CommonAddress[660279].CU]
-  }
-
-  return DEFAULT_TOKENS_TO_SHOW_FOR_CHAINS[chainId] ?? []
 }
 
 function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
@@ -222,32 +208,6 @@ function TokensPanel({
   const [newToken, setNewToken] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isAddingToken, setIsAddingToken] = useState(false)
-
-  useEffect(() => {
-    // when the search panel mounts, add the default tokens to the search
-    const addDefaultTokensToSearch = async () => {
-      const defaultTokensToShowForChain = getDefaultTokensToShowForChain(
-        childChain.id
-      )
-
-      setIsAddingToken(true)
-      try {
-        for (const defaultTokenAddress of defaultTokensToShowForChain) {
-          // only add token to the bridge if it's not already added
-          if (
-            !bridgeTokens ||
-            typeof bridgeTokens[defaultTokenAddress] === 'undefined'
-          ) {
-            await token.add(defaultTokenAddress)
-          }
-        }
-      } catch (_) {
-      } finally {
-        setIsAddingToken(false)
-      }
-    }
-    addDefaultTokensToSearch()
-  }, [childChain.id, bridgeTokens])
 
   const getBalance = useCallback(
     (address: string) => {
