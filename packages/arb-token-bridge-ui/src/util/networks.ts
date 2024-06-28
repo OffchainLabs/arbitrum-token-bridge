@@ -369,6 +369,8 @@ export function isNetwork(chainId: ChainId) {
     isStylusTestnetV2 ||
     isTestnetOrbitChain
 
+  const isStylusTestnetV1orV2 = isStylusTestnet || isStylusTestnetV2
+
   const isSupported =
     isArbitrumOne ||
     isArbitrumNova ||
@@ -395,6 +397,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     isTestnet,
+    isStylusTestnetV1orV2,
     // General
     isSupported,
     // Core Chain is a chain category for the UI
@@ -472,8 +475,7 @@ export function getDestinationChainIds(chainId: ChainId): ChainId[] {
     ? arbitrumSdkChain.partnerChainID
     : undefined
 
-  const validDestinationChainIds =
-    chains.find(chain => chain.chainID === chainId)?.partnerChainIDs || []
+  const validDestinationChainIds = getChildChainIds(arbitrumSdkChain)
 
   if (parentChainId) {
     // always make parent chain the first element

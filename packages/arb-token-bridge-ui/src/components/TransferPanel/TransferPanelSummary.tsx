@@ -28,6 +28,28 @@ export type TransferPanelSummaryProps = {
   token: ERC20BridgeToken | null
 }
 
+function StylusNetworkWarning() {
+  const [{ sourceChain, destinationChain }] = useNetworks()
+  const { isStylusTestnetV1orV2: isSourceChainStylusTestnet } = isNetwork(
+    sourceChain.id
+  )
+  const { isStylusTestnetV1orV2: isDestinationChainStylusTestnet } = isNetwork(
+    destinationChain.id
+  )
+
+  if (!isSourceChainStylusTestnet && !isDestinationChainStylusTestnet) {
+    return null
+  }
+
+  return (
+    <NoteBox variant="warning">
+      Stylus is now live on Arbitrum Sepolia. The Stylus v1 and v2 testnets will
+      be deprecated shortly. Please withdraw all testnet assets and resume
+      testing on Arbitrum Sepolia.
+    </NoteBox>
+  )
+}
+
 function StyledLoader() {
   return (
     <span className="flex">
@@ -250,6 +272,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
           )}
         </span>
       </div>
+      <StylusNetworkWarning />
     </TransferPanelSummaryContainer>
   )
 }
