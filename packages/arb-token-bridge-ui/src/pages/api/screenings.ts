@@ -37,14 +37,15 @@ type ExternalApiResponse = [
   }
 ]
 
-function isBlocked(response: ExternalApiResponse): boolean {
-  // Block in case the address has any risk indicators on either network
-  return response.some(result => {
-    const riskIndicators = result.addressRiskIndicators
-      // Filter out potential false positives
-      .filter(ri => ri.categoryId !== '21')
+function filterRiskIndicator(ari: AddressRiskIndicator) {
+  // Don't filter out any
+  return true
+}
 
-    return riskIndicators.length > 0
+function isBlocked(response: ExternalApiResponse): boolean {
+  // Block in case the address has risk indicators on either network
+  return response.some(result => {
+    return result.addressRiskIndicators.filter(filterRiskIndicator).length > 0
   })
 }
 
