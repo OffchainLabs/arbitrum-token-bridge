@@ -364,8 +364,6 @@ export function isNetwork(chainId: ChainId) {
     isStylusTestnetV2 ||
     isTestnetOrbitChain
 
-  const isStylusTestnetV1orV2 = isStylusTestnetV2
-
   const isSupported =
     isArbitrumOne ||
     isArbitrumNova ||
@@ -392,7 +390,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     isTestnet,
-    isStylusTestnetV1orV2,
+    isStylusTestnetV2,
     // General
     isSupported,
     // Core Chain is a chain category for the UI
