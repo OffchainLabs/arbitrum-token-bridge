@@ -382,6 +382,62 @@ export const orbitMainnets: {
         logo: '/images/XCHAINLogo.png'
       }
     }
+  },
+  1996: {
+    chainID: 1996,
+    confirmPeriodBlocks: 20,
+    ethBridge: {
+      bridge: '0x2f285781B8d58678a3483de52D618198E4d27532',
+      inbox: '0x718E2a83775343d5c0B1eE0676703cBAF30CaFCD',
+      outbox: '0x575d32f7ff0C72921645e302cb14d2757E300786',
+      rollup: '0x9A59EdF7080fdA05396373a85DdBf2cEBDB81Cd4',
+      sequencerInbox: '0x24B68936C13A414cd91437aE7AA730321B9ff159'
+    },
+    nativeToken: '0x8B0E6f19Ee57089F7649A455D89D7bC6314D04e8',
+    explorerUrl: 'https://explorer.sanko.xyz',
+    rpcUrl: 'https://mainnet.sanko.xyz',
+    isArbitrum: true,
+    isCustom: true,
+    name: 'Sanko',
+    slug: 'sanko',
+    partnerChainID: 42161,
+    partnerChainIDs: [],
+    retryableLifetimeSeconds: 604800,
+    tokenBridge: {
+      l1CustomGateway: '0x5414Dc7c8DB4BeDbf3c772768aE1F5e984bdf47a',
+      l1ERC20Gateway: '0xb4951c0C41CFceB0D195A95FE66280457A80a990',
+      l1GatewayRouter: '0x847186fbeEBf41eEe9c230360D0bF8585c0Db57B',
+      l1MultiCall: '0x909b042B88F587d745dBF52e2569545376f6eAA4',
+      l1ProxyAdmin: '0xd18b1C6376633000c85541F7c15c591Ffe5f9556',
+      l1Weth: '0x0000000000000000000000000000000000000000',
+      l1WethGateway: '0x0000000000000000000000000000000000000000',
+      l2CustomGateway: '0x5dd84FB52A27B9D5b760b0373fDeda52D10d3c4a',
+      l2ERC20Gateway: '0xAf574BbE2139e39F560C4db1A118E1245aC0983d',
+      l2GatewayRouter: '0x505421b85ae7F906e8807bf59ee3Da62e894CDC3',
+      l2Multicall: '0x446696a44B13D7B03dBEe837610692d2A71D6232',
+      l2ProxyAdmin: '0xa2A055fa56b7B4d36F0320c5c65562854873e5B2',
+      l2Weth: '0x0000000000000000000000000000000000000000',
+      l2WethGateway: '0x0000000000000000000000000000000000000000'
+    },
+    nitroGenesisBlock: 0,
+    nitroGenesisL1Block: 0,
+    depositTimeout: 1800000,
+    blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    bridgeUiConfig: {
+      color: '#0367FF',
+      network: {
+        name: 'Sanko',
+        logo: '/images/SankoLogo.png',
+        description:
+          'Sanko Mainnet is an Orbit L3 chain - home to SankoPets and much more.'
+      },
+      nativeTokenData: {
+        name: 'DMT',
+        symbol: 'DMT',
+        decimals: 18,
+        logoUrl: '/images/SankoLogo.png'
+      }
+    }
   }
 }
 
