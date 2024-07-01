@@ -3,103 +3,162 @@
   Format: "You have [X] deposits to retry and [Y] withdrawals ready to claim. [CTA]"
 */
 
+import { useAccount } from 'wagmi'
+import { useMemo } from 'react'
 import {
-  CheckCircleIcon,
-  InformationCircleIcon
+  DocumentTextIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { useAppState } from '../../state'
-import { MergedTransaction } from '../../state/app/state'
-import {
-  isDepositReadyToRedeem,
-  isWithdrawalReadyToClaim
-} from '../../state/app/utils'
-import { shouldTrackAnalytics, trackEvent } from '../../util/AnalyticsUtils'
-import { getNetworkName } from '../../util/networks'
+import Image from 'next/image'
+import ArrowsIcon from '@/images/arrows.svg'
+
+import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useAppContextActions } from '../App/AppContext'
-import { ExternalLink } from '../common/ExternalLink'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { Button } from '../common/Button'
+import { isTxClaimable, isTxPending } from './helpers'
 
-export const TransactionStatusInfo = ({
-  deposits
+const Content = ({
+  numClaimableTransactions,
+  numRetryablesToRedeem,
+  numPendingTransactions
 }: {
-  deposits: MergedTransaction[]
+  numClaimableTransactions: number
+  numRetryablesToRedeem: number
+  numPendingTransactions: number
 }) => {
-  const {
-    l2: { network: l2Network }
-  } = useNetworksAndSigners()
-  const l2NetworkName = getNetworkName(l2Network.id)
-  const { openTransactionHistoryPanel } = useAppContextActions()
+  const numClaimableTransactionsString = `claim ${numClaimableTransactions} ${
+    numClaimableTransactions > 1 ? 'transactions' : 'transaction'
+  }`
+  const numRetryablesToRedeemString = `retry ${numRetryablesToRedeem} ${
+    numRetryablesToRedeem > 1 ? 'transactions' : 'transaction'
+  }`
+  const numPendingTransactionsString = `${numPendingTransactions} pending ${
+    numPendingTransactions > 1 ? 'transactions' : 'transaction'
+  }`
 
-  // get the pending withdrawals to claim
-  const {
-    app: { mergedTransactions }
-  } = useAppState()
-  const numWithdrawalsReadyToClaim = mergedTransactions.filter(tx =>
-    isWithdrawalReadyToClaim(tx)
-  ).length
+  if (numClaimableTransactions > 0 && numRetryablesToRedeem > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          Time sensitive: You must{' '}
+          <span className="font-bold">{numRetryablesToRedeemString}</span> and{' '}
+          <span className="font-bold">{numClaimableTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
 
-  // get the pending retryables to redeem
-  const numRetryablesToRedeem = deposits.filter(tx =>
-    isDepositReadyToRedeem(tx)
-  ).length
+  if (numRetryablesToRedeem > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          You must{' '}
+          <span className="font-bold">{numRetryablesToRedeemString}</span>
+        </span>
+      </div>
+    )
+  }
 
-  // don't show this banner if user doesn't have anything to claim or redeem
-  if (numWithdrawalsReadyToClaim === 0 && numRetryablesToRedeem === 0)
-    return null
+  if (numClaimableTransactions > 0) {
+    return (
+      <div className="flex space-x-2">
+        <ExclamationTriangleIcon width={20} />
+        <span>
+          You must{' '}
+          <span className="font-bold">{numClaimableTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
+
+  if (numPendingTransactions > 0) {
+    return (
+      <div className="flex space-x-2">
+        <Image src={ArrowsIcon} width={20} height={20} alt="Transactions" />
+        <span>
+          You have{' '}
+          <span className="font-bold">{numPendingTransactionsString}</span>
+        </span>
+      </div>
+    )
+  }
 
   return (
-    <div
-      className={twMerge(
-        'mx-0 flex cursor-pointer flex-wrap items-center gap-1  p-2 text-sm lg:flex-nowrap lg:rounded-md lg:text-base',
-        numRetryablesToRedeem
-          ? 'bg-brick text-brick-dark'
-          : 'bg-lime text-lime-dark'
-      )}
-      onClick={() => {
-        openTransactionHistoryPanel()
-        if (shouldTrackAnalytics(l2NetworkName)) {
-          trackEvent('Open Transaction History Click', {
-            pageElement: 'Tx Info Banner'
-          })
-        }
-      }}
-    >
-      <div className="inline">
-        {numRetryablesToRedeem ? (
-          <InformationCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
-        ) : (
-          <CheckCircleIcon className="-mt-1 mr-2 inline h-4 w-4" />
-        )}
-        You have{` `}
-        {/* deposits ready to retry */}
-        {numRetryablesToRedeem ? (
-          <span className="font-bold">
-            {`${numRetryablesToRedeem} ${
-              numRetryablesToRedeem > 1 ? 'deposits' : 'deposit'
-            } to retry`}
-          </span>
-        ) : null}
-        {/* and */}
-        {numRetryablesToRedeem && numWithdrawalsReadyToClaim ? (
-          <span>
-            {` `}and{` `}
-          </span>
-        ) : null}
-        {/* withdrawals ready to claim text */}
-        {numWithdrawalsReadyToClaim ? (
-          <span className="font-bold">
-            {`${numWithdrawalsReadyToClaim} ${
-              numWithdrawalsReadyToClaim > 1 ? 'withdrawals' : 'withdrawal'
-            } ready to claim`}
-          </span>
-        ) : null}
-        <span>.{` `}</span>
-        {/* open tx history panel cta */}
-        <ExternalLink className="arb-hover text-sm underline lg:text-base">
-          Open Transaction History panel.
-        </ExternalLink>
-      </div>
+    <div className="flex space-x-2">
+      <DocumentTextIcon width={20} />
+      <span>See transaction history</span>
     </div>
+  )
+}
+
+export const TransactionStatusInfo = () => {
+  const { address } = useAccount()
+  const { openTransactionHistoryPanel } = useAppContextActions()
+  const { transactions } = useTransactionHistory(address)
+
+  const {
+    numClaimableTransactions,
+    numRetryablesToRedeem,
+    numPendingTransactions
+  } = useMemo(() => {
+    return transactions.reduce(
+      (acc, tx) => {
+        // standard bridge withdrawal
+        if (isTxClaimable(tx)) {
+          acc.numClaimableTransactions += 1
+        }
+        // failed retryable
+        if (isDepositReadyToRedeem(tx)) {
+          acc.numRetryablesToRedeem += 1
+        }
+        // all pending
+        if (isTxPending(tx)) {
+          acc.numPendingTransactions += 1
+        }
+        return acc
+      },
+      {
+        numClaimableTransactions: 0,
+        numRetryablesToRedeem: 0,
+        numPendingTransactions: 0
+      }
+    )
+  }, [transactions])
+
+  const buttonClassName = useMemo(() => {
+    if (numRetryablesToRedeem > 0) {
+      return 'bg-red-700'
+    }
+    if (numClaimableTransactions > 0) {
+      return 'bg-lime-dark'
+    }
+    if (numPendingTransactions > 0) {
+      return 'bg-cyan-dark'
+    }
+    return 'bg-gray-1 text-white/70'
+  }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
+
+  return (
+    <Button
+      className={twMerge(
+        'mb-3 mt-0 w-full rounded-none border-x-0 border-white/30 p-3 text-left sm:rounded sm:border',
+        buttonClassName
+      )}
+      onClick={openTransactionHistoryPanel}
+      textLeft
+      showArrow
+      truncate={false}
+      variant="primary"
+    >
+      <Content
+        numClaimableTransactions={numClaimableTransactions}
+        numRetryablesToRedeem={numRetryablesToRedeem}
+        numPendingTransactions={numPendingTransactions}
+      />
+    </Button>
   )
 }

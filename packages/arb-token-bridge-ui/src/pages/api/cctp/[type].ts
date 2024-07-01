@@ -1,26 +1,18 @@
-import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client'
+import { gql } from '@apollo/client'
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { ChainId } from '../../../util/networks'
+import { Address } from '../../../util/AddressUtils'
 
-const subgraphUrl = process.env.NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL
-if (!subgraphUrl) {
-  console.warn('NEXT_PUBLIC_CCTP_SUBGRAPH_BASE_URL variable missing.')
-}
-
-export function getSubgraphClient(subgraph: string) {
-  return new ApolloClient({
-    link: new HttpLink({
-      uri: `${subgraphUrl}${subgraph}`,
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
+import {
+  getCctpSubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with CCTP params
 export type NextApiRequestWithCCTPParams = NextApiRequest & {
   query: {
-    walletAddress: `0x${string}`
+    walletAddress: Address
     l1ChainId: string
     pageNumber?: string
     pageSize?: string
@@ -28,33 +20,33 @@ export type NextApiRequestWithCCTPParams = NextApiRequest & {
 }
 
 export enum ChainDomain {
-  Mainnet = 0,
+  Ethereum = 0,
   ArbitrumOne = 3
 }
 
 export type MessageReceived = {
   blockNumber: string
   blockTimestamp: string
-  caller: `0x${string}`
+  caller: Address
   id: string
   messageBody: string
   nonce: string
-  sender: `0x${string}`
+  sender: Address
   sourceDomain: `${ChainDomain}`
-  transactionHash: `0x${string}`
+  transactionHash: Address
 }
 
 export type MessageSent = {
-  attestationHash: `0x${string}`
+  attestationHash: Address
   blockNumber: string
   blockTimestamp: string
   id: string
   message: string
   nonce: string
-  sender: `0x${string}`
-  recipient: `0x${string}`
+  sender: Address
+  recipient: Address
   sourceDomain: `${ChainDomain}`
-  transactionHash: `0x${string}`
+  transactionHash: Address
   amount: string
 }
 
@@ -68,6 +60,9 @@ export type CompletedCCTPTransfer = PendingCCTPTransfer & {
 
 export type Response =
   | {
+      meta?: {
+        source: string | null
+      }
       data: {
         pending: PendingCCTPTransfer[]
         completed: CompletedCCTPTransfer[]
@@ -138,12 +133,25 @@ export default async function handler(
       return
     }
 
-    const l1Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-mainnet' : 'cctp-goerli'
-    )
-    const l2Subgraph = getSubgraphClient(
-      l1ChainId === ChainId.Mainnet ? 'cctp-arb-one' : 'cctp-arb-goerli'
-    )
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: {
+          pending: [],
+          completed: []
+        },
+        error: null
+      })
+      return
+    }
+
+    const l2ChainId =
+      l1ChainId === ChainId.Ethereum
+        ? ChainId.ArbitrumOne
+        : ChainId.ArbitrumSepolia
+
+    const l1Subgraph = getCctpSubgraphClient(l1ChainId)
+    const l2Subgraph = getCctpSubgraphClient(l2ChainId)
 
     const messagesSentQuery = gql(`{
       messageSents(
@@ -242,6 +250,9 @@ export default async function handler(
     )
 
     res.status(200).json({
+      meta: {
+        source: getSourceFromSubgraphClient(l1Subgraph)
+      },
       data: {
         pending,
         completed

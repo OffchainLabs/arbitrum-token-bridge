@@ -1,41 +1,41 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Popover } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
 
 import { useAppState } from '../../state'
 import { sanitizeImageSrc } from '../../util'
-import { TokenImportDialog } from './TokenImportDialog'
 import { TokenSearch } from '../TransferPanel/TokenSearch'
-import {
-  useNetworksAndSigners,
-  UseNetworksAndSignersStatus
-} from '../../hooks/useNetworksAndSigners'
-import { useDialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
+import { useNativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  onPopoverButtonClick,
+  onPopoverClose,
+  panelWrapperClassnames
+} from '../common/SearchPanel/SearchPanelUtils'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Transition } from '../common/Transition'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
-      isDepositMode,
       selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
-  const { status, l1, l2 } = useNetworksAndSigners()
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
 
-  const [tokenToImport, setTokenToImport] = useState<string>()
-  const [tokenImportDialogProps, openTokenImportDialog] = useDialog()
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   const tokenLogo = useMemo<string | undefined>(() => {
     const selectedAddress = selectedToken?.address
     if (!selectedAddress) {
-      return 'https://raw.githubusercontent.com/ethereum/ethereum-org-website/957567c341f3ad91305c60f7d0b71dcaebfff839/src/assets/assets/eth-diamond-black-gray.png'
+      return nativeCurrency.logoUrl
     }
-    if (
-      status !== UseNetworksAndSignersStatus.CONNECTED ||
-      !arbTokenBridgeLoaded
-    ) {
+    if (!arbTokenBridgeLoaded) {
       return undefined
     }
     if (typeof bridgeTokens === 'undefined') {
@@ -46,66 +46,79 @@ export function TokenButton(): JSX.Element {
       return sanitizeImageSrc(logo)
     }
     return undefined
-  }, [bridgeTokens, selectedToken?.address, status, arbTokenBridgeLoaded])
+  }, [
+    nativeCurrency,
+    bridgeTokens,
+    selectedToken?.address,
+    arbTokenBridgeLoaded
+  ])
 
   const tokenSymbol = useMemo(() => {
     if (!selectedToken) {
-      return 'ETH'
+      return nativeCurrency.symbol
     }
 
     return sanitizeTokenSymbol(selectedToken.symbol, {
       erc20L1Address: selectedToken.address,
-      chain: isDepositMode ? l1.network : l2.network
+      chainId: networks.sourceChain.id
     })
-  }, [selectedToken, isDepositMode, l2.network, l1.network])
-
-  function closeWithReset() {
-    setTokenToImport(undefined)
-    tokenImportDialogProps.onClose(false)
-  }
-
-  function importToken(address: string) {
-    setTokenToImport(address)
-    openTokenImportDialog()
-  }
+  }, [selectedToken, networks.sourceChain.id, nativeCurrency.symbol])
 
   return (
     <>
-      {typeof tokenToImport !== 'undefined' && (
-        <TokenImportDialog
-          {...tokenImportDialogProps}
-          onClose={closeWithReset}
-          tokenAddress={tokenToImport}
-        />
-      )}
+      <Popover className="relative">
+        {({ open }) => (
+          <>
+            <Popover.Button
+              className="arb-hover h-full w-max rounded-bl rounded-tl px-3 py-3 text-white"
+              aria-label="Select Token"
+              onClick={onPopoverButtonClick}
+            >
+              <div className="flex items-center gap-2">
+                {/* Commenting it out until we update the token image source files to be of better quality */}
+                {/* {tokenLogo && ( 
+                 // SafeImage is used for token logo, we don't know at buildtime
+                where those images will be loaded from // It would throw error
+                if it's loaded from external domains // eslint-disable-next-line
+                @next/next/no-img-element 
+                 <img
+                    src={tokenLogo}
+                    alt="Token logo"
+                    className="h-5 w-5 sm:h-7 sm:w-7"
+                  />
+                )} */}
+                <span className="text-xl font-light sm:text-3xl">
+                  {tokenSymbol}
+                </span>
+                <ChevronDownIcon
+                  className={twMerge(
+                    'h-3 w-3 text-gray-6 transition-transform duration-200',
+                    open ? '-rotate-180' : 'rotate-0'
+                  )}
+                />
+              </div>
+            </Popover.Button>
 
-      <Popover className="h-full">
-        <Popover.Button
-          className="arb-hover h-full w-max rounded-bl-xl rounded-tl-xl bg-white px-3 hover:bg-gray-2"
-          aria-label="Select Token"
-        >
-          <div className="flex items-center space-x-2">
-            {tokenLogo && (
-              // SafeImage is used for token logo, we don't know at buildtime where those images will be loaded from
-              // It would throw error if it's loaded from external domains
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={tokenLogo}
-                alt="Token logo"
-                className="h-5 w-5 rounded-full sm:h-8 sm:w-8"
-              />
-            )}
-            <span className="text-xl font-light sm:text-3xl">
-              {tokenSymbol}
-            </span>
-            <ChevronDownIcon className="h-4 w-4 text-gray-6" />
-          </div>
-        </Popover.Button>
-        <Popover.Panel className="absolute left-0 top-0 z-50 w-full rounded-lg bg-white px-6 py-4 shadow-[0px_4px_12px_#9e9e9e] lg:left-auto lg:top-auto lg:h-auto lg:w-[466px] lg:p-6">
-          {({ close }) => (
-            <TokenSearch close={close} onImportToken={importToken} />
-          )}
-        </Popover.Panel>
+            <Transition
+              // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+              options={{ unmountOnLeave: false }}
+              className="fixed left-0 top-0 z-20 sm:absolute sm:top-[76px] sm:max-w-[466px]"
+              afterLeave={onPopoverClose}
+            >
+              <Popover.Panel
+                className={twMerge(panelWrapperClassnames, 'px-5 py-4')}
+              >
+                {({ close }) => {
+                  function onClose() {
+                    onPopoverClose()
+                    close()
+                  }
+                  return <TokenSearch close={onClose} />
+                }}
+              </Popover.Panel>
+            </Transition>
+          </>
+        )}
       </Popover>
     </>
   )

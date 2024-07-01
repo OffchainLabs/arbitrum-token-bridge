@@ -1,3 +1,4 @@
+import { hasL2Subgraph } from '../SubgraphUtils'
 import { getAPIBaseUrl, sanitizeQueryParams } from './../index'
 
 export type FetchWithdrawalsFromSubgraphResult = {
@@ -14,13 +15,18 @@ export type FetchWithdrawalsFromSubgraphResult = {
   l2BlockTimestamp: string
   l2TxHash: string
   l2BlockNum: string
+  direction: 'withdrawal'
+  source: 'subgraph'
+  parentChainId: number
+  childChainId: number
 }
 
 /**
  * Fetches initiated withdrawals (ETH + Token) from subgraph in range of [fromBlock, toBlock] and pageParams.
  *
  * @param query Query params
- * @param query.address Account address
+ * @param query.sender Address that initiated the withdrawal
+ * @param query.receiver Address that received the funds
  * @param query.fromBlock Start at this block number (including)
  * @param query.toBlock Stop at this block number (including)
  * @param query.l2ChainId ChainId for the L2 network
@@ -30,9 +36,7 @@ export type FetchWithdrawalsFromSubgraphResult = {
  */
 export async function fetchWithdrawalsFromSubgraph({
   sender,
-  senderNot,
   receiver,
-  receiverNot,
   fromBlock,
   toBlock,
   l2ChainId,
@@ -41,9 +45,7 @@ export async function fetchWithdrawalsFromSubgraph({
   searchString = ''
 }: {
   sender?: string
-  senderNot?: string
   receiver?: string
-  receiverNot?: string
   fromBlock: number
   toBlock: number
   l2ChainId: number
@@ -59,9 +61,7 @@ export async function fetchWithdrawalsFromSubgraph({
   const urlParams = new URLSearchParams(
     sanitizeQueryParams({
       sender,
-      senderNot,
       receiver,
-      receiverNot,
       fromBlock,
       toBlock,
       l2ChainId,
@@ -70,6 +70,12 @@ export async function fetchWithdrawalsFromSubgraph({
       search: searchString
     })
   )
+
+  if (!hasL2Subgraph(Number(l2ChainId))) {
+    throw new Error(`L2 subgraph not available for network: ${l2ChainId}`)
+  }
+
+  if (pageSize === 0) return [] // don't query subgraph if nothing requested
 
   const response = await fetch(
     `${getAPIBaseUrl()}/api/withdrawals?${urlParams}`,

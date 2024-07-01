@@ -1,0 +1,29 @@
+diff --git a/node_modules/wagmi/connectors/ledger/package.json b/node_modules/wagmi/connectors/ledger/package.json
+deleted file mode 100644
+index aa9304a..0000000
+--- a/node_modules/wagmi/connectors/ledger/package.json
++++ /dev/null
+@@ -1,4 +0,0 @@
+-{
+-  "type": "module",
+-  "main": "../../dist/connectors/ledger.js"
+-}
+\ No newline at end of file
+diff --git a/node_modules/wagmi/dist/connectors/ledger.d.ts b/node_modules/wagmi/dist/connectors/ledger.d.ts
+deleted file mode 100644
+index 73acc33..0000000
+--- a/node_modules/wagmi/dist/connectors/ledger.d.ts
++++ /dev/null
+@@ -1 +0,0 @@
+-export { LedgerConnector } from '@wagmi/core/connectors/ledger';
+diff --git a/node_modules/wagmi/dist/connectors/ledger.js b/node_modules/wagmi/dist/connectors/ledger.js
+deleted file mode 100644
+index 6fa1666..0000000
+--- a/node_modules/wagmi/dist/connectors/ledger.js
++++ /dev/null
+@@ -1,5 +0,0 @@
+-// src/connectors/ledger.ts
+-import { LedgerConnector } from "@wagmi/core/connectors/ledger";
+-export {
+-  LedgerConnector
+-};

@@ -1,0 +1,278 @@
+diff --git a/node_modules/@wagmi/connectors/README.md b/node_modules/@wagmi/connectors/README.md
+index d04f6ed..03684d1 100644
+--- a/node_modules/@wagmi/connectors/README.md
++++ b/node_modules/@wagmi/connectors/README.md
+@@ -35,7 +35,6 @@ const client = createClient({
+ 
+ - [`CoinbaseWalletConnector`](/packages/connectors/src/coinbaseWallet.ts)
+ - [`InjectedConnector`](/packages/connectors/src/injected.ts)
+-- [`LedgerConnector`](/packages/connectors/src/ledger.ts)
+ - [`MetaMaskConnector`](/packages/connectors/src/metaMask.ts)
+ - [`MockConnector`](/packages/connectors/src/mock.ts)
+ - [`SafeConnector`](/packages/connectors/src/safe.ts)
+diff --git a/node_modules/@wagmi/connectors/dist/ledger.d.ts b/node_modules/@wagmi/connectors/dist/ledger.d.ts
+deleted file mode 100644
+index af9b455..0000000
+--- a/node_modules/@wagmi/connectors/dist/ledger.d.ts
++++ /dev/null
+@@ -1,43 +0,0 @@
+-import { EthereumProvider } from '@ledgerhq/connect-kit-loader';
+-import { Chain } from '@wagmi/core';
+-import { providers } from 'ethers';
+-import { C as Connector, a as ConnectorData } from './base-84a689bb.js';
+-import '@wagmi/core/chains';
+-import 'eventemitter3';
+-
+-type LedgerConnectorOptions = {
+-    bridge?: string;
+-    chainId?: number;
+-    enableDebugLogs?: boolean;
+-    rpc?: {
+-        [chainId: number]: string;
+-    };
+-};
+-type LedgerSigner = providers.JsonRpcSigner;
+-declare class LedgerConnector extends Connector<EthereumProvider, LedgerConnectorOptions, LedgerSigner> {
+-    #private;
+-    readonly id = "ledger";
+-    readonly name = "Ledger";
+-    readonly ready = true;
+-    constructor({ chains, options, }?: {
+-        chains?: Chain[];
+-        options?: LedgerConnectorOptions;
+-    });
+-    connect(): Promise<Required<ConnectorData>>;
+-    disconnect(): Promise<void>;
+-    getAccount(): Promise<`0x${string}`>;
+-    getChainId(): Promise<number>;
+-    getProvider({ chainId, create }?: {
+-        chainId?: number;
+-        create?: boolean;
+-    }): Promise<EthereumProvider>;
+-    getSigner({ chainId }?: {
+-        chainId?: number;
+-    }): Promise<providers.JsonRpcSigner>;
+-    isAuthorized(): Promise<boolean>;
+-    protected onAccountsChanged: (accounts: string[]) => void;
+-    protected onChainChanged: (chainId: number | string) => void;
+-    protected onDisconnect: () => void;
+-}
+-
+-export { LedgerConnector };
+diff --git a/node_modules/@wagmi/connectors/dist/ledger.js b/node_modules/@wagmi/connectors/dist/ledger.js
+deleted file mode 100644
+index cdfe7d4..0000000
+--- a/node_modules/@wagmi/connectors/dist/ledger.js
++++ /dev/null
+@@ -1,187 +0,0 @@
+-import {
+-  Connector,
+-  __privateAdd,
+-  __privateGet,
+-  __privateMethod,
+-  __privateSet,
+-  __publicField
+-} from "./chunk-5NCTPR6C.js";
+-
+-// src/ledger.ts
+-import {
+-  SupportedProviders,
+-  loadConnectKit
+-} from "@ledgerhq/connect-kit-loader";
+-import {
+-  SwitchChainError,
+-  UserRejectedRequestError,
+-  normalizeChainId
+-} from "@wagmi/core";
+-import { providers } from "ethers";
+-import { getAddress, hexValue } from "ethers/lib/utils.js";
+-var _provider, _switchChain, switchChain_fn;
+-var LedgerConnector = class extends Connector {
+-  constructor({
+-    chains,
+-    options = { enableDebugLogs: false }
+-  } = {}) {
+-    super({ chains, options });
+-    __privateAdd(this, _switchChain);
+-    __publicField(this, "id", "ledger");
+-    __publicField(this, "name", "Ledger");
+-    __publicField(this, "ready", true);
+-    __privateAdd(this, _provider, void 0);
+-    __publicField(this, "onAccountsChanged", (accounts) => {
+-      if (accounts.length === 0)
+-        this.emit("disconnect");
+-      else
+-        this.emit("change", { account: getAddress(accounts[0]) });
+-    });
+-    __publicField(this, "onChainChanged", (chainId) => {
+-      const id = normalizeChainId(chainId);
+-      const unsupported = this.isChainUnsupported(id);
+-      this.emit("change", { chain: { id, unsupported } });
+-    });
+-    __publicField(this, "onDisconnect", () => {
+-      this.emit("disconnect");
+-    });
+-  }
+-  async connect() {
+-    try {
+-      const provider = await this.getProvider({ create: true });
+-      if (provider.on) {
+-        provider.on("accountsChanged", this.onAccountsChanged);
+-        provider.on("chainChanged", this.onChainChanged);
+-        provider.on("disconnect", this.onDisconnect);
+-      }
+-      this.emit("message", { type: "connecting" });
+-      const accounts = await provider.request({
+-        method: "eth_requestAccounts"
+-      });
+-      const account = getAddress(accounts[0]);
+-      const id = await this.getChainId();
+-      const unsupported = this.isChainUnsupported(id);
+-      this.switchChain = __privateMethod(this, _switchChain, switchChain_fn);
+-      return {
+-        account,
+-        chain: { id, unsupported },
+-        provider: new providers.Web3Provider(
+-          provider
+-        )
+-      };
+-    } catch (error) {
+-      if (error.code === 4001) {
+-        throw new UserRejectedRequestError(error);
+-      }
+-      if (error.code === -32002) {
+-        throw error instanceof Error ? error : new Error(String(error));
+-      }
+-      throw error;
+-    }
+-  }
+-  async disconnect() {
+-    const provider = await this.getProvider();
+-    if (provider?.disconnect) {
+-      await provider.disconnect();
+-    }
+-    if (provider?.removeListener) {
+-      provider.removeListener("accountsChanged", this.onAccountsChanged);
+-      provider.removeListener("chainChanged", this.onChainChanged);
+-      provider.removeListener("disconnect", this.onDisconnect);
+-    }
+-    typeof localStorage !== "undefined" && localStorage.removeItem("walletconnect");
+-  }
+-  async getAccount() {
+-    const provider = await this.getProvider();
+-    const accounts = await provider.request({
+-      method: "eth_accounts"
+-    });
+-    const account = getAddress(accounts[0]);
+-    return account;
+-  }
+-  async getChainId() {
+-    const provider = await this.getProvider();
+-    const chainId = await provider.request({
+-      method: "eth_chainId"
+-    });
+-    return normalizeChainId(chainId);
+-  }
+-  async getProvider({ chainId, create } = {
+-    create: false
+-  }) {
+-    if (!__privateGet(this, _provider) || chainId || create) {
+-      const connectKit = await loadConnectKit();
+-      if (this.options.enableDebugLogs) {
+-        connectKit.enableDebugLogs();
+-      }
+-      const rpc = this.chains.reduce(
+-        (rpc2, chain) => ({
+-          ...rpc2,
+-          [chain.id]: chain.rpcUrls.default.http[0]
+-        }),
+-        {}
+-      );
+-      connectKit.checkSupport({
+-        bridge: this.options.bridge,
+-        providerType: SupportedProviders.Ethereum,
+-        chainId: chainId || this.options.chainId,
+-        rpc: { ...rpc, ...this.options?.rpc }
+-      });
+-      __privateSet(this, _provider, await connectKit.getProvider());
+-    }
+-    return __privateGet(this, _provider);
+-  }
+-  async getSigner({ chainId } = {}) {
+-    const [provider, account] = await Promise.all([
+-      this.getProvider({ chainId }),
+-      this.getAccount()
+-    ]);
+-    return new providers.Web3Provider(
+-      provider,
+-      chainId
+-    ).getSigner(account);
+-  }
+-  async isAuthorized() {
+-    try {
+-      const account = await this.getAccount();
+-      return !!account;
+-    } catch {
+-      return false;
+-    }
+-  }
+-};
+-_provider = new WeakMap();
+-_switchChain = new WeakSet();
+-switchChain_fn = async function(chainId) {
+-  const provider = await this.getProvider();
+-  const id = hexValue(chainId);
+-  try {
+-    await Promise.race([
+-      provider.request({
+-        method: "wallet_switchEthereumChain",
+-        params: [{ chainId: id }]
+-      }),
+-      new Promise(
+-        (res) => this.on("change", ({ chain }) => {
+-          if (chain?.id === chainId)
+-            res(chainId);
+-        })
+-      )
+-    ]);
+-    return this.chains.find((x) => x.id === chainId) ?? {
+-      id: chainId,
+-      name: `Chain ${id}`,
+-      network: `${id}`,
+-      nativeCurrency: { name: "Ether", decimals: 18, symbol: "ETH" },
+-      rpcUrls: { default: { http: [""] }, public: { http: [""] } }
+-    };
+-  } catch (error) {
+-    const message = typeof error === "string" ? error : error?.message;
+-    if (/user rejected request/i.test(message))
+-      throw new UserRejectedRequestError(error);
+-    throw new SwitchChainError(error);
+-  }
+-};
+-export {
+-  LedgerConnector
+-};
+diff --git a/node_modules/@wagmi/connectors/dist/walletConnectLegacy.js b/node_modules/@wagmi/connectors/dist/walletConnectLegacy.js
+index 6a8734a..4c20baf 100644
+--- a/node_modules/@wagmi/connectors/dist/walletConnectLegacy.js
++++ b/node_modules/@wagmi/connectors/dist/walletConnectLegacy.js
+@@ -16,7 +16,7 @@ import {
+ } from "@wagmi/core";
+ import { providers } from "ethers";
+ import { getAddress, hexValue } from "ethers/lib/utils.js";
+-var switchChainAllowedRegex = /(imtoken|metamask|rainbow|trust wallet|uniswap wallet|ledger)/i;
++var switchChainAllowedRegex = /(imtoken|metamask|rainbow|trust wallet|uniswap wallet)/i;
+ var _provider, _switchChain, switchChain_fn;
+ var WalletConnectLegacyConnector = class extends Connector {
+   constructor(config) {
+diff --git a/node_modules/@wagmi/connectors/ledger/package.json b/node_modules/@wagmi/connectors/ledger/package.json
+deleted file mode 100644
+index e4ece85..0000000
+--- a/node_modules/@wagmi/connectors/ledger/package.json
++++ /dev/null
+@@ -1,4 +0,0 @@
+-{
+-  "type": "module",
+-  "main": "../dist/ledger.js"
+-}
+\ No newline at end of file

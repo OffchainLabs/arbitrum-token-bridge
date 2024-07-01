@@ -1,13 +1,25 @@
-import { BigNumber, constants } from 'ethers'
-import { Chain } from 'wagmi'
-import { JsonRpcProvider, Provider } from '@ethersproject/providers'
-import { Erc20Bridger, MultiCaller } from '@arbitrum/sdk'
-import { StandardArbERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/StandardArbERC20__factory'
+import { constants } from 'ethers'
+import { Provider } from '@ethersproject/providers'
+import {
+  Erc20Bridger,
+  Erc20L1L3Bridger,
+  EthBridger,
+  EthL1L3Bridger,
+  MultiCaller,
+  getL2Network
+} from '@arbitrum/sdk'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
+import * as Sentry from '@sentry/react'
 
-import { L1TokenData, L2TokenData } from '../hooks/arbTokenBridge.types'
 import { CommonAddress } from './CommonAddressUtils'
-import { isNetwork } from './networks'
+import { ChainId, isNetwork } from './networks'
+import { defaultErc20Decimals } from '../defaults'
+import { ERC20BridgeToken, TokenType } from '../hooks/arbTokenBridge.types'
+import { getBridger, getChainIdFromProvider } from '../token-bridge-sdk/utils'
+import {
+  getL2ConfigForTeleport,
+  isTeleport
+} from '../token-bridge-sdk/teleport'
 
 export function getDefaultTokenName(address: string) {
   const lowercased = address.toLowerCase()
@@ -27,175 +39,181 @@ export function getDefaultTokenSymbol(address: string) {
   )
 }
 
-type TokenDataCache = { [erc20L1Address: string]: L1TokenData }
+export type Erc20Data = {
+  name: string
+  symbol: string
+  decimals: number
+  address: string
+}
 
-// Get the token data cache (only name, symbol, decimals keys stored)
-const getTokenDataCache = () => {
-  const cache: TokenDataCache = JSON.parse(
-    sessionStorage.getItem('l1TokenDataCache') || '{}'
+const erc20DataCacheLocalStorageKey = 'arbitrum:bridge:erc20-cache'
+
+type Erc20DataCache = {
+  [cacheKey: string]: Erc20Data
+}
+
+type GetErc20DataCacheParams = {
+  chainId: number
+  address: string
+}
+
+function getErc20DataCacheKey({ chainId, address }: GetErc20DataCacheParams) {
+  return `${chainId}:${address}`
+}
+
+function getErc20DataCache(): Erc20DataCache
+function getErc20DataCache(params: GetErc20DataCacheParams): Erc20Data | null
+function getErc20DataCache(
+  params?: GetErc20DataCacheParams
+): Erc20DataCache | (Erc20Data | null) {
+  const cache: Erc20DataCache = JSON.parse(
+    // intentionally using || instead of ?? for it to work with an empty string
+    localStorage.getItem(erc20DataCacheLocalStorageKey) || '{}'
   )
+
+  if (typeof params !== 'undefined') {
+    return cache[getErc20DataCacheKey(params)] ?? null
+  }
+
   return cache
 }
 
-// Set the token data cache (only name, symbol, decimals)
-const setTokenDataCache = (erc20L1Address: string, tokenData: L1TokenData) => {
-  const l1TokenDataCache = getTokenDataCache()
-  l1TokenDataCache[erc20L1Address] = tokenData
-
-  sessionStorage.setItem('l1TokenDataCache', JSON.stringify(l1TokenDataCache))
+type SetErc20DataCacheParams = GetErc20DataCacheParams & {
+  erc20Data: Erc20Data
 }
 
-/**
- * Retrieves static data (name, decimals, symbol, address) about an ERC-20 token using its L1 address
- * @param erc20L1Address,
- * @param l1Provider
- */
-export async function getL1TokenData({
-  account,
-  erc20L1Address,
-  l1Provider,
-  l2Provider,
-  throwOnInvalidERC20 = true
-}: {
-  account: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-  throwOnInvalidERC20?: boolean
-}): Promise<L1TokenData> {
-  // checking the cache for tokens results
-  // if successfully found in the cache, return the token data
-  const l1TokenDataCache = getTokenDataCache()
-  const cachedTokenData = l1TokenDataCache[erc20L1Address]
-  if (cachedTokenData) return cachedTokenData
-
-  // else, call on-chain method to retrieve token data
-  const contract = ERC20__factory.connect(erc20L1Address, l1Provider)
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1Provider
-  )
-  const multiCaller = await MultiCaller.fromProvider(l1Provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20L1Address], {
-    decimals: true,
-    name: true,
-    symbol: true,
-    allowance: { owner: account, spender: l1GatewayAddress } // getting allowance will help us know if it's a valid ERC20 token
-  })
-
-  if (tokenData && typeof tokenData.allowance === 'undefined') {
-    if (throwOnInvalidERC20)
-      throw new Error(
-        `getL1TokenData: No allowance method available for ${erc20L1Address}`
-      )
-  }
-
-  const finalTokenData = {
-    name: tokenData?.name ?? getDefaultTokenName(erc20L1Address),
-    symbol: tokenData?.symbol ?? getDefaultTokenSymbol(erc20L1Address),
-    decimals: tokenData?.decimals ?? 0,
-    address: contract.address
-  }
-
-  // store the newly fetched final-token-data in cache
-  try {
-    setTokenDataCache(erc20L1Address, finalTokenData)
-  } catch (e) {
-    console.warn(e)
-  }
-
-  return finalTokenData
+function setErc20DataCache({ erc20Data, ...params }: SetErc20DataCacheParams) {
+  const cache = getErc20DataCache()
+  cache[getErc20DataCacheKey(params)] = erc20Data
+  localStorage.setItem(erc20DataCacheLocalStorageKey, JSON.stringify(cache))
 }
 
-/**
- * Retrieves token allowance for a given contract of an ERC-20 token using its L1/L2 address.
- * @param account,
- * @param erc20Address,
- * @param provider,
- * @param spender
- */
-export async function getTokenAllowanceForSpender({
-  account,
-  erc20Address,
-  spender,
-  provider
-}: {
-  account: string
-  erc20Address: string
-  spender: string
+export type FetchErc20DataProps = {
+  /**
+   * Address of the ERC-20 token contract.
+   */
+  address: string
+  /**
+   * Provider for the chain where the ERC-20 token contract is deployed.
+   */
   provider: Provider
-}) {
-  const multiCaller = await MultiCaller.fromProvider(provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20Address], {
-    allowance: { owner: account, spender }
-  })
-
-  return tokenData?.allowance ?? constants.Zero
 }
 
-/**
- * Retrieves token allowance of an ERC-20 token using its L1 address.
- * @param account,
- * @param erc20L1Address,
- * @param l1Provider,
- * @param l2Provider,
- */
-export async function getL1TokenAllowance({
-  account,
-  erc20L1Address,
-  l1Provider,
-  l2Provider
-}: {
-  account: string
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
-}): Promise<BigNumber> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+export async function fetchErc20Data({
+  address,
+  provider
+}: FetchErc20DataProps): Promise<Erc20Data> {
+  const chainId = (await provider.getNetwork()).chainId
+  const cachedErc20Data = getErc20DataCache({ chainId, address })
 
-  const l1GatewayAddress = await erc20Bridger.getL1GatewayAddress(
-    erc20L1Address,
-    l1Provider
-  )
-  return getTokenAllowanceForSpender({
-    account,
-    erc20Address: erc20L1Address,
-    provider: l1Provider,
-    spender: l1GatewayAddress
-  })
-}
-
-/**
- * Retrieves data about an ERC-20 token using its L2 address. Throws if fails to retrieve balance.
- * @param erc20L2Address
- * @returns
- */
-export async function getL2TokenData({
-  account,
-  erc20L2Address,
-  l2Provider
-}: {
-  account: string
-  erc20L2Address: string
-  l2Provider: Provider
-}): Promise<L2TokenData> {
-  const contract = StandardArbERC20__factory.connect(erc20L2Address, l2Provider)
-
-  const multiCaller = await MultiCaller.fromProvider(l2Provider)
-  const [tokenData] = await multiCaller.getTokenData([erc20L2Address], {
-    balanceOf: { account }
-  })
-
-  if (tokenData && typeof tokenData.balance === 'undefined') {
-    throw new Error(
-      `getL2TokenData: No balance method available for ${erc20L2Address}`
-    )
+  if (cachedErc20Data) {
+    return cachedErc20Data
   }
 
-  return {
-    balance: tokenData?.balance ?? constants.Zero,
-    contract
+  try {
+    let name, symbol, decimals
+
+    try {
+      // try multicaller first
+      const multiCaller = await MultiCaller.fromProvider(provider)
+      const [tokenData] = await multiCaller.getTokenData([address], {
+        name: true,
+        symbol: true,
+        decimals: true
+      })
+
+      name = tokenData?.name
+      symbol = tokenData?.symbol
+      decimals = tokenData?.decimals
+    } catch {
+      // fetch data individually if multicaller fails
+      try {
+        const erc20 = ERC20__factory.connect(address, provider)
+
+        ;[name, symbol, decimals] = await Promise.all([
+          erc20.name(),
+          erc20.symbol(),
+          erc20.decimals()
+        ])
+      } catch {
+        throw new Error('Failed to fetch ERC-20 data.')
+      }
+    }
+
+    const erc20Data: Erc20Data = {
+      name: name ?? getDefaultTokenName(address),
+      symbol: symbol ?? getDefaultTokenSymbol(address),
+      decimals: decimals ?? defaultErc20Decimals,
+      address
+    }
+
+    try {
+      setErc20DataCache({ chainId, address, erc20Data })
+    } catch (e) {
+      console.warn('Failed to store ERC-20 data to cache.')
+      console.warn(e)
+    }
+
+    return erc20Data
+  } catch (error) {
+    // log some extra info on sentry in case multi-caller fails
+    Sentry.configureScope(function (scope) {
+      scope.setExtra('token_address', address)
+      Sentry.captureException(error)
+    })
+    throw error
+  }
+}
+
+export async function isValidErc20({
+  address,
+  provider
+}: FetchErc20DataProps): Promise<boolean> {
+  const erc20 = ERC20__factory.connect(address, provider)
+
+  try {
+    await Promise.all([
+      // we don't reallly care about the balance in this call, so we're just using vitalik.eth
+      // didn't want to use address zero in case contracts have checks for it
+      erc20.balanceOf('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'),
+      erc20.totalSupply()
+    ])
+
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+export type FetchErc20AllowanceParams = FetchErc20DataProps & {
+  /**
+   * Address of the owner of the ERC-20 tokens.
+   */
+  owner: string
+  /**
+   * Address of the spender of the ERC-20 tokens.
+   */
+  spender: string
+}
+
+/**
+ * Fetches allowance for an ERC-20 token.
+ */
+export async function fetchErc20Allowance(params: FetchErc20AllowanceParams) {
+  const { address, provider, owner, spender } = params
+  try {
+    const multiCaller = await MultiCaller.fromProvider(provider)
+    const [tokenData] = await multiCaller.getTokenData([address], {
+      allowance: { owner, spender }
+    })
+    return tokenData?.allowance ?? constants.Zero
+  } catch (error) {
+    // log the issue on sentry, later, fall back if there is no multicall
+    Sentry.configureScope(function (scope) {
+      scope.setExtra('token_address', address)
+      Sentry.captureException(error)
+    })
+    throw error
   }
 }
 
@@ -221,25 +239,28 @@ export async function getL1ERC20Address({
 }
 
 /*
- Retrieves the L1 gateway of an ERC-20 token using its L1 address.
+ Retrieves the parent chain gateway of an ERC-20 token using its parent chain address.
 */
-export async function getL1GatewayAddress({
-  erc20L1Address,
-  l1Provider,
-  l2Provider
+export async function fetchErc20ParentChainGatewayAddress({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
 }: {
-  erc20L1Address: string
-  l1Provider: Provider
-  l2Provider: Provider
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
 }): Promise<string> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
-  return erc20Bridger.getL1GatewayAddress(erc20L1Address, l1Provider)
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+  return erc20Bridger.getL1GatewayAddress(
+    erc20ParentChainAddress,
+    parentChainProvider
+  )
 }
 
 /*
  Retrieves the L2 gateway of an ERC-20 token using its L1 address.
 */
-export async function getL2GatewayAddress({
+export async function fetchErc20L2GatewayAddress({
   erc20L1Address,
   l2Provider
 }: {
@@ -266,6 +287,30 @@ export async function getL2ERC20Address({
   return await erc20Bridger.getL2ERC20Address(erc20L1Address, l1Provider)
 }
 
+// Given an L1 token address, derive it's L3 counterpart address
+// this address will be then used for calculating balances etc.
+export async function getL3ERC20Address({
+  erc20L1Address,
+  l1Provider,
+  l3Provider
+}: {
+  erc20L1Address: string
+  l1Provider: Provider
+  l3Provider: Provider
+}): Promise<string> {
+  const l3Network = await getL2Network(l3Provider)
+  const l1l3Bridger = new Erc20L1L3Bridger(l3Network)
+
+  const { l2Provider } = await getL2ConfigForTeleport({
+    destinationChainProvider: l3Provider
+  })
+  return await l1l3Bridger.getL3ERC20Address(
+    erc20L1Address,
+    l1Provider,
+    l2Provider // this is the actual l2 provider
+  )
+}
+
 /*
  Retrieves data about whether an ERC-20 token is disabled on the router.
  */
@@ -278,31 +323,66 @@ export async function l1TokenIsDisabled({
   l1Provider: Provider
   l2Provider: Provider
 }): Promise<boolean> {
-  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const erc20Bridger = await getBridger({
+    sourceChainId: await getChainIdFromProvider(l1Provider),
+    destinationChainId: await getChainIdFromProvider(l2Provider)
+  })
+
+  if (
+    erc20Bridger instanceof EthL1L3Bridger ||
+    erc20Bridger instanceof EthBridger
+  ) {
+    // fail-safe to ensure `l1TokenIsDisabled` is called on the correct bridger-types
+    return false
+  }
+
   return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
 type SanitizeTokenOptions = {
   erc20L1Address?: string | null // token address on L1
-  chain: Chain // chain for which we want to retrieve the token name / symbol
+  chainId: ChainId // chainId for which we want to retrieve the token name / symbol
 }
 
-export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Mainnet.USDC.toLowerCase()
+export const isTokenArbitrumOneCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.CU.toLowerCase()
 
-export const isTokenGoerliUSDC = (tokenAddress: string | undefined) =>
-  tokenAddress?.toLowerCase() === CommonAddress.Goerli.USDC.toLowerCase()
+export const isTokenXaiMainnetCU = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress[660279].CU.toLowerCase()
+
+export const isTokenMainnetUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Ethereum.USDC.toLowerCase()
+
+export const isTokenArbitrumOneUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumOne['USDC.e'].toLowerCase()
+
+export const isTokenSepoliaUSDC = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() === CommonAddress.Sepolia.USDC.toLowerCase()
+
+export const isTokenArbitrumSepoliaUSDCe = (tokenAddress: string | undefined) =>
+  tokenAddress?.toLowerCase() ===
+  CommonAddress.ArbitrumSepolia['USDC.e'].toLowerCase()
 
 export const isTokenArbitrumOneNativeUSDC = (
-  tokenAddress: string | undefined
+  tokenAddress: string | undefined | null
 ) =>
   tokenAddress?.toLowerCase() === CommonAddress.ArbitrumOne.USDC.toLowerCase()
 
-export const isTokenArbitrumGoerliNativeUSDC = (
+export const isTokenArbitrumSepoliaNativeUSDC = (
   tokenAddress: string | undefined
 ) =>
   tokenAddress?.toLowerCase() ===
-  CommonAddress.ArbitrumGoerli.USDC.toLowerCase()
+  CommonAddress.ArbitrumSepolia.USDC.toLowerCase()
+
+export const isTokenNativeUSDC = (tokenAddress: string | undefined) => {
+  return (
+    isTokenMainnetUSDC(tokenAddress) ||
+    isTokenSepoliaUSDC(tokenAddress) ||
+    isTokenArbitrumOneNativeUSDC(tokenAddress) ||
+    isTokenArbitrumSepoliaNativeUSDC(tokenAddress)
+  )
+}
 
 // get the exact token symbol for a particular chain
 export function sanitizeTokenSymbol(
@@ -313,15 +393,22 @@ export function sanitizeTokenSymbol(
     return tokenSymbol
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenGoerliUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
-    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Goerli
-    if (isArbitrumOne || isArbitrumGoerli) return 'USDC.e'
+    // It should be `USDC` on all chains except Arbitrum One/Arbitrum Sepolia
+    if (isArbitrumOne || isArbitrumSepolia) return 'USDC.e'
     return 'USDC'
+  }
+
+  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+    if (isArbitrumOne) return 'CU'
+    return 'wCU'
   }
 
   return tokenSymbol
@@ -336,16 +423,60 @@ export function sanitizeTokenName(
     return tokenName
   }
 
-  const { isArbitrumOne, isArbitrumGoerli } = isNetwork(options.chain.id)
+  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(options.chainId)
 
   if (
     isTokenMainnetUSDC(options.erc20L1Address) ||
-    isTokenGoerliUSDC(options.erc20L1Address)
+    isTokenArbitrumOneUSDCe(options.erc20L1Address) ||
+    isTokenSepoliaUSDC(options.erc20L1Address) ||
+    isTokenArbitrumSepoliaUSDCe(options.erc20L1Address)
   ) {
-    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Goerli
-    if (isArbitrumOne || isArbitrumGoerli) return 'Bridged USDC'
+    // It should be `USD Coin` on all chains except Arbitrum One/Arbitrum Sepolia
+    if (isArbitrumOne || isArbitrumSepolia) return 'Bridged USDC'
     return 'USD Coin'
   }
 
+  if (isTokenArbitrumOneCU(options.erc20L1Address)) {
+    if (isArbitrumOne) return 'Crypto Unicorns'
+    return 'Wrapped Crypto Unicorns'
+  }
+
   return tokenName
+}
+
+export function erc20DataToErc20BridgeToken(data: Erc20Data): ERC20BridgeToken {
+  return {
+    name: data.name,
+    type: TokenType.ERC20,
+    symbol: data.symbol,
+    address: data.address,
+    decimals: data.decimals,
+    listIds: new Set()
+  }
+}
+
+export async function isGatewayRegistered({
+  erc20ParentChainAddress,
+  parentChainProvider,
+  childChainProvider
+}: {
+  erc20ParentChainAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}): Promise<boolean> {
+  // for teleport transfers - we will need to check for 2 gateway registrations - 1 for L1-L2 and then for L2-L3 transfer
+  // for now, we are returning true since we are limiting the tokens to teleport, but we will expand this once we expand the allowList
+  const sourceChainId = await getChainIdFromProvider(parentChainProvider)
+  const destinationChainId = await getChainIdFromProvider(childChainProvider)
+  if (isTeleport({ sourceChainId, destinationChainId })) {
+    return true
+  }
+
+  const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
+
+  return erc20Bridger.isRegistered({
+    erc20L1Address: erc20ParentChainAddress,
+    l1Provider: parentChainProvider,
+    l2Provider: childChainProvider
+  })
 }

@@ -14,16 +14,25 @@
 
 */
 import React from 'react'
-import { NextAdapter } from 'next-query-params'
+import NextAdapterPages from 'next-query-params/pages'
 import queryString from 'query-string'
 import {
   BooleanParam,
-  NumberParam,
   QueryParamProvider,
   StringParam,
+  decodeNumber,
+  decodeString,
   useQueryParams,
   withDefault
 } from 'use-query-params'
+
+import {
+  ChainKeyQueryParam,
+  getChainForChainKeyQueryParam,
+  getChainQueryParamForChain,
+  isValidChainQueryParam
+} from '../types/ChainQueryParam'
+import { ChainId } from '../util/networks'
 
 export enum AmountQueryParamEnum {
   MAX = 'max'
@@ -37,8 +46,9 @@ export const useArbQueryParams = () => {
     ]
   */
   return useQueryParams({
+    sourceChain: ChainParam,
+    destinationChain: ChainParam,
     amount: withDefault(AmountQueryParam, ''), // amount which is filled in Transfer panel
-    l2ChainId: NumberParam, // L2 chain-id with which we can initiaze (override) our networks/signer
     token: StringParam, // import a new token using a Dialog Box
     settingsOpen: withDefault(BooleanParam, false)
   })
@@ -78,10 +88,10 @@ const sanitizeAmountQueryParam = (amount: string) => {
     return String(Math.abs(Number(parsedAmount)))
   }
 
-  // replace leading zeros
+  // replace leading zeros and spaces
   // this regex finds 1 or more 0s before any digits including 0
   // but the digits are not captured into the result string
-  return parsedAmount.replace(/^0+(?=\d)/, '')
+  return parsedAmount.replace(/(^0+(?=\d))| /g, '')
 }
 
 // Our custom query param type for Amount field - will be parsed and returned as a string,
@@ -97,6 +107,61 @@ export const AmountQueryParam = {
   }
 }
 
+// Parse chainId to ChainQueryParam or ChainId for orbit chain
+function encodeChainQueryParam(
+  chainId: number | null | undefined
+): string | undefined {
+  if (!chainId) {
+    return undefined
+  }
+
+  try {
+    const chain = getChainQueryParamForChain(chainId)
+    return chain.toString()
+  } catch (e) {
+    return undefined
+  }
+}
+
+function isValidNumber(value: number | null | undefined): value is number {
+  if (typeof value === 'undefined' || value === null) {
+    return false
+  }
+
+  return !Number.isNaN(value)
+}
+
+// Parse ChainQueryParam/ChainId to ChainId
+// URL accept both chainId and chainQueryParam (string)
+function decodeChainQueryParam(
+  value: string | (string | null)[] | null | undefined
+  // ChainId type doesn't include custom orbit chain, we need to add number type
+): ChainId | number | undefined {
+  const valueString = decodeString(value)
+  if (!valueString) {
+    return undefined
+  }
+
+  const valueNumber = decodeNumber(value)
+  if (
+    isValidNumber(valueNumber) &&
+    isValidChainQueryParam(valueNumber as ChainId)
+  ) {
+    return valueNumber
+  }
+
+  if (isValidChainQueryParam(valueString)) {
+    return getChainForChainKeyQueryParam(valueString as ChainKeyQueryParam).id
+  }
+
+  return undefined
+}
+
+export const ChainParam = {
+  encode: encodeChainQueryParam,
+  decode: decodeChainQueryParam
+}
+
 export function ArbQueryParamProvider({
   children
 }: {
@@ -104,7 +169,7 @@ export function ArbQueryParamProvider({
 }) {
   return (
     <QueryParamProvider
-      adapter={NextAdapter}
+      adapter={NextAdapterPages}
       options={{
         searchStringToObject: queryString.parse,
         objectToSearchString: queryString.stringify,

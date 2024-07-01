@@ -7,6 +7,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timeZone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 
 import 'tippy.js/dist/tippy.css'
 import 'tippy.js/themes/light.css'
@@ -15,9 +16,11 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 import { registerLocalNetwork } from '../util/networks'
 import { Layout } from '../components/common/Layout'
+import { siteTitle } from './_document'
 
 import '../styles/tailwind.css'
 import '../styles/purple.css'
+import { isUserRejectedError } from '../util/isUserRejectedError'
 
 if (
   process.env.NODE_ENV !== 'production' ||
@@ -26,6 +29,7 @@ if (
   registerLocalNetwork()
 }
 
+dayjs.extend(utc)
 dayjs.extend(relativeTime)
 dayjs.extend(timeZone)
 dayjs.extend(advancedFormat)
@@ -34,18 +38,26 @@ Sentry.init({
   environment: process.env.NODE_ENV,
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   integrations: [new BrowserTracing()],
-  tracesSampleRate: 0.15,
+  tracesSampleRate: 0.025,
   maxValueLength: 0,
-  beforeSend: event => {
+  beforeSend: (event, hint) => {
     if (event.message) {
       if (
         // Ignore events related to failed `eth_gasPrice` calls
         event.message.match(/eth_gasPrice/i) ||
         // Ignore events related to failed `eth_getBalance` calls
-        event.message.match(/eth_getBalance/i)
+        event.message.match(/eth_getBalance/i) ||
+        // Ignore events related to failed walletConnect calls
+        event.message.match(/Attempt to connect to relay via/i) ||
+        // Ignore events about window.propertyX being redefined accross multiple extensions
+        event.message.match(/Cannot redefine property/i)
       ) {
         return null
       }
+    }
+
+    if (isUserRejectedError(hint.originalException)) {
+      return null
     }
 
     return event
@@ -78,7 +90,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Bridge to Arbitrum</title>
+        <title>{siteTitle}</title>
       </Head>
       <Layout>
         <Component {...pageProps} />

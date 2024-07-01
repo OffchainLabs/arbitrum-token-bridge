@@ -33,7 +33,7 @@ const formatNumber = (
 ): string => Intl.NumberFormat('en', options).format(number)
 
 // Format amount according to a specific set of rules to limit space used
-export const formatAmount = <T extends number | BigNumber>(
+export const formatAmount = <T extends number | BigNumber | undefined>(
   balance: T,
   options: {
     decimals?: T extends number ? never : number
@@ -41,6 +41,11 @@ export const formatAmount = <T extends number | BigNumber>(
   } = {}
 ): string => {
   const { decimals, symbol } = options
+
+  if (typeof balance === 'undefined') {
+    return ''
+  }
+
   const value: number = BigNumber.isBigNumber(balance)
     ? parseFloat(utils.formatUnits(balance, decimals))
     : balance
@@ -54,6 +59,14 @@ export const formatAmount = <T extends number | BigNumber>(
 
   // Small number, show 4 or 5 decimals based on token name length
   if (value < 1) {
+    const maximumFractionDigits = isShortSymbol
+      ? MaximumFractionDigits.Long
+      : MaximumFractionDigits.Standard
+    const minDisplayValue = Math.pow(10, -maximumFractionDigits)
+    if (value < minDisplayValue) {
+      return `< 0.${'0'.repeat(maximumFractionDigits - 1)}1${suffix}`
+    }
+
     return (
       formatNumber(value, {
         maximumFractionDigits: isShortSymbol
@@ -101,4 +114,28 @@ export const formatAmount = <T extends number | BigNumber>(
       notation: 'standard'
     }) + suffix
   )
+}
+
+export const countDecimals = (num: number | string) => {
+  if (Math.floor(Number(num)) === Number(num)) {
+    return 0
+  }
+
+  const decimalPart = String(num).split('.')[1]
+
+  if (typeof decimalPart === 'undefined') {
+    return 0
+  }
+
+  return decimalPart.length
+}
+
+export const truncateExtraDecimals = (amount: string, decimals: number) => {
+  const decimalPart = amount.split('.')[1]
+
+  if (typeof decimalPart === 'undefined') {
+    return amount
+  }
+
+  return `${amount.split('.')[0]}.${decimalPart.slice(0, decimals)}`
 }

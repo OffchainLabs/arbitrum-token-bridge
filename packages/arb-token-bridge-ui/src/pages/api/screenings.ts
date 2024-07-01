@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { utils } from 'ethers'
 import withRetry from 'fetch-retry'
+import { has } from '@vercel/edge-config'
 
 function loadEnvironmentVariable(key: string): string {
   const value = process.env[key]
@@ -19,20 +20,33 @@ const apiKey = loadEnvironmentVariable('SCREENING_API_KEY')
 
 const basicAuth = Buffer.from(`${apiKey}:${apiKey}`).toString('base64')
 
+type AddressRiskIndicator = {
+  category: string
+  categoryId: string
+  categoryRiskScoreLevelLabel: string
+}
+
 type ExternalApiResponse = [
   {
     chain: 'ethereum'
-    addressRiskIndicators: [{ categoryRiskScoreLevel: number }]
+    addressRiskIndicators: AddressRiskIndicator[]
   },
   {
     chain: 'arbitrum'
-    addressRiskIndicators: [{ categoryRiskScoreLevel: number }]
+    addressRiskIndicators: AddressRiskIndicator[]
   }
 ]
 
+function filterRiskIndicator(ari: AddressRiskIndicator) {
+  // Don't filter out any
+  return true
+}
+
 function isBlocked(response: ExternalApiResponse): boolean {
-  // Block in case the address has any risk indicators on either network
-  return response.some(result => result.addressRiskIndicators.length > 0)
+  // Block in case the address has risk indicators on either network
+  return response.some(result => {
+    return result.addressRiskIndicators.filter(filterRiskIndicator).length > 0
+  })
 }
 
 function requestLooksLikeBot(req: NextApiRequest) {
@@ -81,6 +95,13 @@ export default async function handler(
 
   if (typeof address !== 'string' || !utils.isAddress(address)) {
     res.status(400).send({ message: 'invalid_address' })
+    return
+  }
+
+  const isOnBlockList = await has(address)
+
+  if (isOnBlockList) {
+    res.status(200).send({ blocked: true })
     return
   }
 

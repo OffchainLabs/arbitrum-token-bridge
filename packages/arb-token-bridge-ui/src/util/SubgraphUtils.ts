@@ -1,144 +1,92 @@
-import fetch from 'cross-fetch'
-import { ApolloClient, HttpLink, InMemoryCache, gql } from '@apollo/client'
-import { FetchDepositParams } from './deposits/fetchDeposits'
-import { FetchWithdrawalsParams } from './withdrawals/fetchWithdrawals'
+import { ChainId } from './networks'
+import { getAPIBaseUrl } from '.'
 
-const L1SubgraphClient = {
-  ArbitrumOne: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nitro',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  ArbitrumNova: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-nova',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  ArbitrumGoerli: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/arb-bridge-eth-goerli',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
-
-const L2SubgraphClient = {
-  ArbitrumOne: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-arb1',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  }),
-  ArbitrumGoerli: new ApolloClient({
-    link: new HttpLink({
-      uri: 'https://api.thegraph.com/subgraphs/name/gvladika/layer2-token-gateway-goerli',
-      fetch
-    }),
-    cache: new InMemoryCache()
-  })
-}
-
-export function getL1SubgraphClient(l2ChainId: number) {
+export function hasL1Subgraph(l2ChainId: number) {
   switch (l2ChainId) {
-    case 42161:
-      return L1SubgraphClient.ArbitrumOne
-
-    case 42170:
-      return L1SubgraphClient.ArbitrumNova
-
-    case 421613:
-      return L1SubgraphClient.ArbitrumGoerli
+    case ChainId.ArbitrumOne:
+    case ChainId.ArbitrumNova:
+    case ChainId.ArbitrumSepolia:
+      return true
 
     default:
-      throw new Error(`[getL1SubgraphClient] Unsupported network: ${l2ChainId}`)
+      return false
   }
 }
 
-export function getL2SubgraphClient(l2ChainId: number) {
+export function hasL2Subgraph(l2ChainId: number) {
   switch (l2ChainId) {
-    case 42161:
-      return L2SubgraphClient.ArbitrumOne
-
-    case 421613:
-      return L2SubgraphClient.ArbitrumGoerli
+    case ChainId.ArbitrumOne:
+    case ChainId.ArbitrumSepolia:
+      return true
 
     default:
-      throw new Error(`[getL2SubgraphClient] Unsupported network: ${l2ChainId}`)
+      return false
   }
 }
 
-// TODO: Codegen types
-type FetchBlockNumberFromSubgraphQueryResult = {
-  data: {
-    _meta: {
-      block: {
-        number: number
-      }
+export function hasTeleporterSubgraph(l1ChainId: number) {
+  switch (l1ChainId) {
+    case ChainId.Ethereum:
+    case ChainId.Sepolia:
+      return true
+
+    default:
+      return false
+  }
+}
+
+export const fetchLatestSubgraphBlockNumber = async (
+  chainId: number
+): Promise<number> => {
+  const response = await fetch(
+    `${getAPIBaseUrl()}/api/chains/${chainId}/block-number`,
+    {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     }
-  }
+  )
+
+  return ((await response.json()) as { data: number }).data
 }
 
-export const fetchBlockNumberFromSubgraph = async (
-  chainType: 'L1' | 'L2',
-  l2ChainId: number
-): Promise<number> => {
-  const subgraphClient =
-    chainType === 'L2'
-      ? getL2SubgraphClient(l2ChainId)
-      : getL1SubgraphClient(l2ChainId)
-
-  const queryResult: FetchBlockNumberFromSubgraphQueryResult =
-    await subgraphClient.query({
-      query: gql`
-        {
-          _meta {
-            block {
-              number
-            }
-          }
-        }
-      `
-    })
-
-  return queryResult.data._meta.block.number
+export const shouldIncludeSentTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposits' | 'withdrawals'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent from this account for:
+    // 1. deposits if we are connected to the parent chain, or
+    // 2. withdrawals if we are connected to the child chain
+    return isConnectedToParentChain
+      ? type === 'deposits'
+      : type === 'withdrawals'
+  }
+  // always show for EOA
+  return true
 }
 
-export const tryFetchLatestSubgraphBlockNumber = async (
-  chainType: 'L1' | 'L2',
-  l2ChainID: number
-): Promise<number> => {
-  try {
-    return await fetchBlockNumberFromSubgraph(chainType, l2ChainID)
-  } catch (error) {
-    // In case the subgraph is not supported or down, fall back to fetching everything through event logs
-    return 0
+export const shouldIncludeReceivedTxs = ({
+  type,
+  isSmartContractWallet,
+  isConnectedToParentChain
+}: {
+  type: 'deposits' | 'withdrawals'
+  isSmartContractWallet: boolean
+  isConnectedToParentChain: boolean
+}) => {
+  if (isSmartContractWallet) {
+    // show txs sent to this account for:
+    // 1. withdrawals if we are connected to the parent chain, or
+    // 2. deposits if we are connected to the child chain
+    return isConnectedToParentChain
+      ? type === 'withdrawals'
+      : type === 'deposits'
   }
-}
-
-type AdditionalSubgraphQueryParams = Pick<
-  FetchDepositParams | FetchWithdrawalsParams,
-  'sender' | 'senderNot' | 'receiver' | 'receiverNot'
->
-
-export function getQueryParamsForFetchingSentFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    sender: address
-  }
-}
-
-export function getQueryParamsForFetchingReceivedFunds(
-  address: string
-): AdditionalSubgraphQueryParams {
-  return {
-    senderNot: address,
-    receiver: address
-  }
+  // always show for EOA
+  return true
 }

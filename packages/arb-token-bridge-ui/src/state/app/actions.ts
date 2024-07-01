@@ -21,13 +21,6 @@ export const setChainIds = (
   state.app.l2NetworkChainId = payload.l2NetworkChainId
 }
 
-export const setIsDepositMode = (
-  { state }: Context,
-  isDepositMode: boolean
-) => {
-  state.app.isDepositMode = isDepositMode
-}
-
 export const setSelectedToken = (
   { state }: Context,
   token: ERC20BridgeToken | null
@@ -41,7 +34,7 @@ export const reset = ({ state }: Context, newChainId: number) => {
     state.app.l2NetworkChainId !== newChainId
   ) {
     // only reset the selected token if we are not switching between the pair of l1-l2 networks.
-    // we dont want to reset the token if we are switching from Goerli to Arbitrum Goerli for example
+    // we dont want to reset the token if we are switching from Mainnet to Arbitrum One for example
     // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
     state.app.selectedToken = null
   }
@@ -81,20 +74,4 @@ export const setArbTokenBridge = (
   if (atb && !state.app.arbTokenBridgeLoaded) {
     actions.app.setArbTokenBridgeLoaded(true)
   }
-}
-
-export const getPendingTransactions = ({ state }: Context) => {
-  return state.app.pendingTransactions
-}
-
-export const l1DepositsWithUntrackedL2Messages = ({ state }: Context) => {
-  return state.app.l1DepositsWithUntrackedL2Messages
-}
-
-export const getSortedTransactions = ({ state }: Context) => {
-  return state.app.sortedTransactions
-}
-
-export const getFailedRetryablesToRedeem = ({ state }: Context) => {
-  return state.app.failedRetryablesToRedeem
 }

@@ -44,6 +44,8 @@ async function fetchCCTP({
     })
   )
 
+  if (pageSize === 0) return { pending: [], completed: [] } // don't query subgraph if nothing requested
+
   const response = await fetch(
     `${getAPIBaseUrl()}/api/cctp/${type}?${urlParams}`,
     {
@@ -61,14 +63,15 @@ async function fetchCCTP({
   }
 }
 
+type FetchCctpResponse = Response['data']
 export async function fetchCCTPDeposits(
   params: FetchParams
-): Promise<Response['data']> {
+): Promise<FetchCctpResponse> {
   return fetchCCTP({ ...params, type: 'deposits' })
 }
 
 export async function fetchCCTPWithdrawals(
   params: FetchParams
-): Promise<Response['data']> {
+): Promise<FetchCctpResponse> {
   return fetchCCTP({ ...params, type: 'withdrawals' })
 }

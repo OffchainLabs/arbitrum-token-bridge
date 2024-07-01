@@ -1,17 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+
 import { FetchWithdrawalsFromSubgraphResult } from '../../util/withdrawals/fetchWithdrawalsFromSubgraph'
-import { getL2SubgraphClient } from '../../util/SubgraphUtils'
+import {
+  getL2SubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with Withdrawal-params
 type NextApiRequestWithWithdrawalParams = NextApiRequest & {
   query: {
+    sender?: string
+    receiver?: string
     l2ChainId: string
     search?: string
-    sender?: string
-    senderNot?: string
-    receiver?: string
-    receiverNot?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -20,6 +22,7 @@ type NextApiRequestWithWithdrawalParams = NextApiRequest & {
 }
 
 type WithdrawalResponse = {
+  meta?: { source: string | null }
   data: FetchWithdrawalsFromSubgraphResult[]
   message?: string // in case of any error
 }
@@ -30,12 +33,10 @@ export default async function handler(
 ) {
   try {
     const {
+      sender,
+      receiver,
       search = '',
       l2ChainId,
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -61,48 +62,75 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
+      return
     }
 
-    const subgraphResult = await getL2SubgraphClient(Number(l2ChainId)).query({
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: []
+      })
+      return
+    }
+
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `l2BlockNum_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `l2BlockNum_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `l2TxHash_contains: "${search}"` : ''}
+    `
+
+    let subgraphClient
+    try {
+      subgraphClient = getL2SubgraphClient(Number(l2ChainId))
+    } catch (error: any) {
+      // catch attempt to query unsupported networks and throw a 400
+      res.status(400).json({
+        message: error?.message ?? 'Something went wrong',
+        data: []
+      })
+      return
+    }
+
+    const subgraphResult = await subgraphClient.query({
       query: gql`{
-            withdrawals(
-                where: {
-                ${sender ? `sender: "${sender}",` : ''}
-                ${senderNot ? `sender_not: "${senderNot}",` : ''}
-                ${receiver ? `receiver: "${receiver}",` : ''}
-                ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}
-                ${
-                  typeof fromBlock !== 'undefined'
-                    ? `l2BlockNum_gte: ${Number(fromBlock)}`
-                    : ''
-                }
-                  ${
-                    typeof toBlock !== 'undefined'
-                      ? `l2BlockNum_lte: ${Number(toBlock)}`
-                      : ''
-                  }  
-                  ${search ? `l2TxHash_contains: "${search}"` : ''}
-                }
-                orderBy: l2BlockTimestamp
-                orderDirection: desc
-                first: ${Number(pageSize)},
-                skip: ${Number(page) * Number(pageSize)}
-            ) {
-                id,
-                type,
-                sender,
-                receiver,
-                ethValue,
-                l1Token {
-                    id
-                },
-                tokenAmount,
-                isClassic,
-                l2BlockTimestamp,
-                l2TxHash,
-                l2BlockNum
-            }
-        }`
+        withdrawals(
+          where: {            
+            or: [
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
+              }
+            ]
+          }
+          orderBy: l2BlockTimestamp
+          orderDirection: desc
+          first: ${Number(pageSize)},
+          skip: ${Number(page) * Number(pageSize)}
+        ) {
+          id,
+          type,
+          sender,
+          receiver,
+          ethValue,
+          l1Token {
+            id
+          },
+          tokenAmount,
+          isClassic,
+          l2BlockTimestamp,
+          l2TxHash,
+          l2BlockNum
+        }
+    }`
     })
 
     const transactions: FetchWithdrawalsFromSubgraphResult[] =
@@ -136,7 +164,10 @@ export default async function handler(
         }
       })
 
-    res.status(200).json({ data: transactions })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: transactions
+    })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',

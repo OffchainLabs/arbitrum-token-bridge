@@ -1,77 +1,54 @@
-import { useMedia } from 'react-use'
 import dayjs, { Dayjs } from 'dayjs'
 
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { ChainId } from '../../util/networks'
+import {
+  getBaseChainIdByChainId,
+  getBlockTime,
+  getConfirmPeriodBlocks
+} from '../../util/networks'
+import { MergedTransaction } from '../../state/app/state'
 
 /**
- * Buffer for after a node is confirmable but isn't yet confirmed; we give 30 minutes, should usually/always be less in practice.
+ * Buffer for after a node is confirmable but isn't yet confirmed.
+ * A rollup block (RBlock) typically gets asserted every 30-60 minutes.
  */
-const CONFIRMATION_BUFFER_MINUTES = 30
+const CONFIRMATION_BUFFER_MINUTES = 60
 
-function getTxConfirmationDate({
+const SECONDS_IN_MIN = 60
+
+export function getTxConfirmationDate({
   createdAt,
-  parentChainId
+  withdrawalFromChainId
 }: {
   createdAt: Dayjs
-  parentChainId: number
+  withdrawalFromChainId: number
 }) {
-  const confirmNodeMinutes = getNodeConfirmationTimeInMinutes(parentChainId)
-
-  return createdAt
-    .add(confirmNodeMinutes, 'minute')
-    .add(CONFIRMATION_BUFFER_MINUTES, 'minute')
-}
-
-function getTxConfirmationRemainingMinutes({
-  createdAt,
-  parentChainId
-}: {
-  createdAt: Dayjs
-  parentChainId: number
-}) {
-  const txConfirmationDate = getTxConfirmationDate({ createdAt, parentChainId })
-  return Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
-}
-
-function getNodeConfirmationTimeInMinutes(parentChainId: ChainId) {
-  const SEVEN_DAYS_IN_MINUTES = 7 * 24 * 60
-
-  if (parentChainId === ChainId.Mainnet) {
-    return SEVEN_DAYS_IN_MINUTES
-  }
-
-  // Node is created every ~1h for all other chains
-  return 60
+  const baseChainId = getBaseChainIdByChainId({
+    chainId: withdrawalFromChainId
+  })
+  // the block time is always base chain's block time regardless of withdrawing from L3 to L2 or from L2 to L1
+  // and similarly, the confirm period blocks is always the number of blocks on the base chain
+  const confirmationSeconds =
+    getBlockTime(baseChainId) * getConfirmPeriodBlocks(withdrawalFromChainId) +
+    CONFIRMATION_BUFFER_MINUTES * SECONDS_IN_MIN
+  return createdAt.add(confirmationSeconds, 'second')
 }
 
 export function WithdrawalCountdown({
-  createdAt
+  tx
 }: {
-  createdAt: string | null
-}): JSX.Element {
-  const {
-    l1: { network: l1Network }
-  } = useNetworksAndSigners()
-  const isLargeScreen = useMedia('(min-width: 1024px)')
-
+  tx: MergedTransaction
+}): JSX.Element | null {
   // For new txs createdAt won't be defined yet, we default to the current time in that case
-  const createdAtDate = createdAt ? dayjs(createdAt) : dayjs()
+  const createdAtDate = tx.createdAt ? dayjs(tx.createdAt) : dayjs()
   const txConfirmationDate = getTxConfirmationDate({
     createdAt: createdAtDate,
-    parentChainId: l1Network.id
+    withdrawalFromChainId: tx.childChainId
   })
 
-  const minutesLeft = getTxConfirmationRemainingMinutes({
-    createdAt: createdAtDate,
-    parentChainId: l1Network.id
-  })
-
-  const remainingTextOrEmpty =
-    isLargeScreen && minutesLeft > 0 ? ' remaining' : ''
+  const minutesLeft = Math.max(txConfirmationDate.diff(dayjs(), 'minute'), 0)
 
   const timeLeftText =
-    minutesLeft === 0 ? 'Almost there...' : dayjs().to(txConfirmationDate, true)
+    minutesLeft === 0 ? 'less than a minute' : txConfirmationDate.fromNow(true)
 
-  return <span>{timeLeftText + remainingTextOrEmpty}</span>
+  return <span>{timeLeftText}</span>
 }

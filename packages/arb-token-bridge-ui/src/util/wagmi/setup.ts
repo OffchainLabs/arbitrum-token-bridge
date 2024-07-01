@@ -1,25 +1,29 @@
-import { createClient, configureChains, goerli } from 'wagmi'
-import { mainnet, arbitrum, arbitrumGoerli } from '@wagmi/core/chains'
+import { createClient, configureChains } from 'wagmi'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet, ledgerWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  xaiTestnet,
-  stylusTestnet,
+  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal,
-  chainToWagmiChain
+  holesky
 } from './wagmiAdditionalNetworks'
 import { isTestingEnvironment } from '../CommonUtils'
-import { ChainId } from '../networks'
-import { getCustomChainsFromLocalStorage } from '../networks'
+import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
+import { getOrbitChains } from '../orbitChainsList'
+import { getWagmiChain } from './getWagmiChain'
+import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  chainToWagmiChain(chain)
+  getWagmiChain(chain.chainID)
+)
+const wagmiOrbitChains = getOrbitChains().map(chain =>
+  getWagmiChain(chain.chainID)
 )
 
 const chainList = isTestingEnvironment
@@ -28,15 +32,13 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      // goerli & arb goerli are for tx history panel tests
-      goerli,
-      arbitrumGoerli,
-      // sepolia
+      // sepolia & arb sepolia are for tx history panel tests
       sepolia,
       arbitrumSepolia,
+      holesky,
       // Orbit chains
-      xaiTestnet,
-      stylusTestnet,
+      stylusTestnetV2,
+      ...wagmiOrbitChains,
       // add local environments during testing
       local,
       arbitrumLocal,
@@ -47,12 +49,11 @@ const chainList = isTestingEnvironment
       mainnet,
       arbitrum,
       arbitrumNova,
-      goerli,
-      arbitrumGoerli,
       sepolia,
       arbitrumSepolia,
-      xaiTestnet,
-      stylusTestnet,
+      holesky,
+      stylusTestnetV2,
+      ...wagmiOrbitChains,
       ...customChains
     ]
 
@@ -68,11 +69,9 @@ const appInfo = {
 }
 
 enum TargetChainKey {
-  Mainnet = 'mainnet',
+  Ethereum = 'mainnet',
   ArbitrumOne = 'arbitrum-one',
   ArbitrumNova = 'arbitrum-nova',
-  Goerli = 'goerli',
-  ArbitrumGoerli = 'arbitrum-goerli',
   Sepolia = 'sepolia',
   ArbitrumSepolia = 'arbitrum-sepolia'
 }
@@ -80,12 +79,12 @@ enum TargetChainKey {
 function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
   // Default to Ethereum Mainnet if nothing passed in
   if (targetChainKey === null) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   // Default to Ethereum Mainnet if invalid
   if (!(Object.values(TargetChainKey) as string[]).includes(targetChainKey)) {
-    return TargetChainKey.Mainnet
+    return TargetChainKey.Ethereum
   }
 
   return targetChainKey as TargetChainKey
@@ -93,20 +92,14 @@ function sanitizeTargetChainKey(targetChainKey: string | null): TargetChainKey {
 
 function getChainId(targetChainKey: TargetChainKey): number {
   switch (targetChainKey) {
-    case TargetChainKey.Mainnet:
-      return ChainId.Mainnet
+    case TargetChainKey.Ethereum:
+      return ChainId.Ethereum
 
     case TargetChainKey.ArbitrumOne:
       return ChainId.ArbitrumOne
 
     case TargetChainKey.ArbitrumNova:
       return ChainId.ArbitrumNova
-
-    case TargetChainKey.Goerli:
-      return ChainId.Goerli
-
-    case TargetChainKey.ArbitrumGoerli:
-      return ChainId.ArbitrumGoerli
 
     case TargetChainKey.Sepolia:
       return ChainId.Sepolia
@@ -132,7 +125,7 @@ export function getProps(targetChainKey: string | null) {
     //
     // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
     getChains(sanitizeTargetChainKey(targetChainKey)),
-    [publicProvider()]
+    [customInfuraProvider(), publicProvider()]
   )
 
   const { wallets } = getDefaultWallets({
@@ -144,10 +137,7 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [
-        trustWallet({ chains, projectId }),
-        ledgerWallet({ chains, projectId })
-      ]
+      wallets: [trustWallet({ chains, projectId })]
     }
   ])
 

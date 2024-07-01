@@ -74,7 +74,7 @@ Interested in contributing to this repo? We welcome your contribution.
    4. For custom urls, set optional vars:
 
    - `NEXT_PUBLIC_ETHEREUM_RPC_URL=my-eth-node`
-   - `NEXT_PUBLIC_GOERLI_RPC_URL=my-goerli-node`
+   - `NEXT_PUBLIC_SEPOLIA_RPC_URL=my-sepolia-node`
      (see [.env.sample](./packages/arb-token-bridge-ui/.env.sample))
      If no custom URL is provided, Infura will be used by default.
 
@@ -118,19 +118,11 @@ It is important for any code change to pass both unit and end-to-end tests. This
 
 ### Run End-to-End (E2E) Tests
 
-1. Set up the Nitro node
+1. Set up the Nitro test node
 
-   1. Download and install [Docker](https://www.docker.com/)
+   1. First, make sure you have a Nitro test node running. Follow the instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
-   2. Check out the [Nitro repo](https://github.com/OffchainLabs/nitro)
-
-   3. Run: (Make sure your Docker App is running)
-
-      ```bash
-      $ ./test-node.bash --init
-      ```
-
-   4. When the Nitro node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes
+   2. When the Nitro test-node is up and running you should see logs like `sequencer_1` and `staker-unsafe_1` in the terminal. This can take up to 10 minutes.
 
 2. At the root of the token bridge UI:
 

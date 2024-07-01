@@ -8,6 +8,7 @@ import useSWR, {
   SWRHook
 } from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
+import * as Sentry from '@sentry/react'
 
 import { useChainId } from './useChainId'
 
@@ -70,19 +71,28 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         return {}
       }
 
-      const multiCaller = await MultiCaller.fromProvider(provider)
-      const addressesBalances = await multiCaller.getTokenData(_addresses, {
-        balanceOf: { account: walletAddressLowercased }
-      })
+      try {
+        const multiCaller = await MultiCaller.fromProvider(provider)
+        const addressesBalances = await multiCaller.getTokenData(_addresses, {
+          balanceOf: { account: walletAddressLowercased }
+        })
 
-      return _addresses.reduce((acc, address, index) => {
-        const balance = addressesBalances[index]
-        if (balance) {
-          acc[address.toLowerCase()] = balance.balance
-        }
+        return _addresses.reduce((acc, address, index) => {
+          const balance = addressesBalances[index]
+          if (balance) {
+            acc[address.toLowerCase()] = balance.balance
+          }
 
-        return acc
-      }, {} as Erc20Balances)
+          return acc
+        }, {} as Erc20Balances)
+      } catch (error) {
+        // log some extra info on sentry in case multi-caller fails
+        Sentry.configureScope(function (scope) {
+          scope.setExtra('token_addresses', _addresses)
+          Sentry.captureException(error)
+        })
+        return {}
+      }
     },
     [provider, walletAddressLowercased]
   )

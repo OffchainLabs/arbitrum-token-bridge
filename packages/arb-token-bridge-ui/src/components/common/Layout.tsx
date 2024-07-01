@@ -1,29 +1,37 @@
+import localFont from 'next/font/local'
 import React from 'react'
-import { useWindowSize } from 'react-use'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { twMerge } from 'tailwind-merge'
+import Image from 'next/image'
+import EclipseBottom from '@/images/eclipse_bottom.png'
 
-import { Header } from './Header'
-import { Footer } from './Footer'
+import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
+import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
+import { ExternalLink } from './ExternalLink'
 
-function Moon() {
-  const { width } = useWindowSize()
-  const moonScaleRange = width >= 1024 ? [0.75, 1] : [0.75, 1.25]
-
-  const { scrollYProgress } = useScroll()
-  const scale = useTransform(scrollYProgress, [0, 1], moonScaleRange)
-
-  return (
-    <motion.img
-      src="/images/moon.webp"
-      alt="Moon"
-      className="absolute bottom-[-10%] z-0 lg:bottom-[-65%] lg:right-0 lg:max-w-[75vw]"
-      style={{ scale }}
-    />
-  )
-}
+const unica = localFont({
+  src: [
+    {
+      path: '../../font/Unica77LLWeb-Light.woff2',
+      weight: '300',
+      style: 'normal'
+    },
+    {
+      path: '../../font/Unica77LLWeb-Regular.woff2',
+      weight: '400',
+      style: 'normal'
+    },
+    {
+      path: '../../font/Unica77LLWeb-Medium.woff2',
+      weight: '500',
+      style: 'normal'
+    }
+  ],
+  variable: '--font-unica77',
+  fallback: ['Roboto', 'sans-serif']
+})
 
 export type LayoutProps = {
   children: React.ReactNode
@@ -31,21 +39,41 @@ export type LayoutProps = {
 
 export function Layout(props: LayoutProps) {
   return (
-    <div
-      style={{ backgroundImage: 'url(/images/space.webp)' }}
-      className="background-image relative flex min-h-screen flex-col overflow-hidden bg-repeat"
-    >
-      <Header />
+    <div className={twMerge('relative flex-col', unica.className)}>
+      <Image
+        src={EclipseBottom}
+        alt="grains"
+        className="absolute left-1/2 top-0 w-full -translate-x-1/2 rotate-180 opacity-20"
+        aria-hidden
+      />
+      <Image
+        src={EclipseBottom}
+        alt="grains"
+        className="absolute bottom-0 left-1/2 w-full -translate-x-1/2 opacity-20"
+        aria-hidden
+      />
+      <div className="relative flex flex-col sm:min-h-screen">
+        <div className="flex flex-row">
+          <AppSidebar />
 
-      <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
-        <main>{props.children}</main>
+          <main className="grow">
+            <SiteBanner expiryDate="2024-08-17 12:00">
+              Stylus is now live on Arbitrum Sepolia! Learn more about the
+              Stylus Blitz hackathon{' '}
+              <ExternalLink
+                href="https://arbitrumfoundation.medium.com/welcome-to-the-stylus-blitz-hackathon-0d8b27e0c057"
+                className="underline hover:no-underline"
+              >
+                here
+              </ExternalLink>
+              .
+            </SiteBanner>
+            {props.children}
+          </main>
+
+          <Toast />
+        </div>
       </div>
-
-      <Toast />
-
-      <Footer />
-
-      <Moon />
     </div>
   )
 }

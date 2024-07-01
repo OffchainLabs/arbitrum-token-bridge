@@ -4,12 +4,18 @@ import { ethers, BigNumber } from 'ethers'
 
 import { DepositStatus, MergedTransaction } from './state'
 import {
+  AssetType,
   L2ToL1EventResultPlus,
   NodeBlockDeadlineStatusTypes,
   OutgoingMessageState
 } from '../../hooks/arbTokenBridge.types'
 import { Transaction } from '../../hooks/useTransactions'
 import { getUniqueIdOrHashFromEvent } from '../../hooks/useArbTokenBridge'
+import { isTeleport } from '../../token-bridge-sdk/teleport'
+import {
+  firstRetryableLegRequiresRedeem,
+  secondRetryableLegForTeleportRequiresRedeem
+} from '../../util/RetryableUtils'
 
 export const TX_DATE_FORMAT = 'MMM DD, YYYY'
 export const TX_TIME_FORMAT = 'hh:mm A (z)'
@@ -20,8 +26,25 @@ export const outgoingStateToString = {
   [OutgoingMessageState.EXECUTED]: 'Executed'
 }
 
-export const getDepositStatus = (tx: Transaction) => {
-  if (tx.type !== 'deposit' && tx.type !== 'deposit-l1') return undefined
+function isTransaction(tx: Transaction | MergedTransaction): tx is Transaction {
+  return typeof (tx as Transaction).type !== 'undefined'
+}
+
+function isMergedTransaction(
+  tx: Transaction | MergedTransaction
+): tx is MergedTransaction {
+  return typeof (tx as MergedTransaction).direction !== 'undefined'
+}
+
+export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
+  if (isTransaction(tx) && tx.type !== 'deposit' && tx.type !== 'deposit-l1') {
+    return undefined
+  }
+
+  if (isMergedTransaction(tx) && tx.isWithdrawal) {
+    return undefined
+  }
+
   if (tx.status === 'failure') {
     return DepositStatus.L1_FAILURE
   }
@@ -29,7 +52,43 @@ export const getDepositStatus = (tx: Transaction) => {
     return DepositStatus.L1_PENDING
   }
 
-  // l1 succeeded...
+  // for teleport txn
+  if (
+    isTeleport({
+      sourceChainId: tx.parentChainId, // we make sourceChain=parentChain assumption coz it's a deposit txn
+      destinationChainId: tx.childChainId
+    })
+  ) {
+    const { l2ToL3MsgData, l1ToL2MsgData } = tx
+
+    // if any of the retryable info is missing, first fetch might be pending
+    if (!l1ToL2MsgData || !l2ToL3MsgData) return DepositStatus.L2_PENDING
+
+    // if we find `l2ForwarderRetryableTxID` then this tx will need to be redeemed
+    if (l2ToL3MsgData.l2ForwarderRetryableTxID) return DepositStatus.L2_FAILURE
+
+    // if we find first retryable leg failing, then no need to check for the second leg
+    const firstLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
+      l1ToL2MsgData.status
+    )
+    if (firstLegDepositStatus !== DepositStatus.L2_SUCCESS) {
+      return firstLegDepositStatus
+    }
+
+    const secondLegDepositStatus = getDepositStatusFromL1ToL2MessageStatus(
+      l2ToL3MsgData.status
+    )
+    if (typeof secondLegDepositStatus !== 'undefined') {
+      return secondLegDepositStatus
+    }
+    switch (l1ToL2MsgData.status) {
+      case L1ToL2MessageStatus.REDEEMED:
+        return DepositStatus.L2_PENDING // tx is still pending if `l1ToL2MsgData` is redeemed (but l2ToL3MsgData is not)
+      default:
+        return getDepositStatusFromL1ToL2MessageStatus(l1ToL2MsgData.status)
+    }
+  }
+
   const { l1ToL2MsgData } = tx
   if (!l1ToL2MsgData) {
     return DepositStatus.L2_PENDING
@@ -40,11 +99,11 @@ export const getDepositStatus = (tx: Transaction) => {
     case L1ToL2MessageStatus.CREATION_FAILED:
       return DepositStatus.CREATION_FAILED
     case L1ToL2MessageStatus.EXPIRED:
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
     case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2: {
-      return tx.assetType === 'ETH'
+      return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
     }
@@ -53,68 +112,86 @@ export const getDepositStatus = (tx: Transaction) => {
   }
 }
 
-export const transformDeposits = (
-  deposits: Transaction[]
-): MergedTransaction[] => {
-  return deposits.map(tx => {
-    return {
-      sender: tx.sender,
-      destination: tx.destination,
-      direction: tx.type,
-      status: tx.status,
-      createdAt: tx.timestampCreated
-        ? getStandardizedTimestamp(tx.timestampCreated)
-        : null,
-      resolvedAt: tx.timestampResolved
-        ? getStandardizedTimestamp(tx.timestampResolved)
-        : null,
-      txId: tx.txID,
-      asset: tx.assetName || '',
-      value: tx.value,
-      uniqueId: null, // not needed
-      isWithdrawal: false,
-      blockNum: tx.blockNumber || null,
-      tokenAddress: tx.tokenAddress || null,
-      l1ToL2MsgData: tx.l1ToL2MsgData,
-      l2ToL1MsgData: tx.l2ToL1MsgData,
-      depositStatus: getDepositStatus(tx),
-      chainId: Number(tx.l2NetworkID),
-      parentChainId: Number(tx.l1NetworkID)
-    }
-  })
+function getDepositStatusFromL1ToL2MessageStatus(
+  status: L1ToL2MessageStatus
+): DepositStatus | undefined {
+  switch (status) {
+    case L1ToL2MessageStatus.NOT_YET_CREATED:
+      return DepositStatus.L2_PENDING
+    case L1ToL2MessageStatus.CREATION_FAILED:
+      return DepositStatus.CREATION_FAILED
+    case L1ToL2MessageStatus.EXPIRED:
+      return DepositStatus.EXPIRED
+    case L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2:
+      return DepositStatus.L2_FAILURE
+    case L1ToL2MessageStatus.REDEEMED:
+      return DepositStatus.L2_SUCCESS
+  }
 }
 
-export const transformWithdrawals = (
-  withdrawals: L2ToL1EventResultPlus[]
-): MergedTransaction[] => {
-  return withdrawals.map(tx => {
-    const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
+export const transformDeposit = (tx: Transaction): MergedTransaction => {
+  return {
+    sender: tx.sender,
+    destination: tx.destination,
+    direction: tx.type,
+    status: tx.status,
+    createdAt: tx.timestampCreated
+      ? getStandardizedTimestamp(tx.timestampCreated)
+      : null,
+    resolvedAt: tx.timestampResolved
+      ? getStandardizedTimestamp(tx.timestampResolved)
+      : null,
+    txId: tx.txID,
+    asset: tx.assetName || '',
+    assetType: tx.assetType,
+    value: tx.value,
+    uniqueId: null, // not needed
+    isWithdrawal: false,
+    blockNum: tx.blockNumber || null,
+    tokenAddress: tx.tokenAddress || null,
+    l1ToL2MsgData: tx.l1ToL2MsgData,
+    l2ToL1MsgData: tx.l2ToL1MsgData,
+    l2ToL3MsgData: tx.l2ToL3MsgData,
+    depositStatus: getDepositStatus(tx),
+    parentChainId: Number(tx.l1NetworkID),
+    childChainId: Number(tx.l2NetworkID),
+    sourceChainId: Number(tx.l1NetworkID),
+    destinationChainId: Number(tx.l2NetworkID)
+  }
+}
 
-    return {
-      sender: tx.sender,
-      destination: tx.destinationAddress,
-      direction: 'outbox',
-      status:
-        tx.nodeBlockDeadline ===
-        NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
-          ? 'Failure'
-          : outgoingStateToString[tx.outgoingMessageState],
-      createdAt: getStandardizedTimestamp(
-        String(BigNumber.from(tx.timestamp).toNumber() * 1000)
-      ),
-      resolvedAt: null,
-      txId: tx.l2TxHash || 'l2-tx-hash-not-found',
-      asset: tx.symbol || '',
-      value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
-      uniqueId: uniqueIdOrHash,
-      isWithdrawal: true,
-      blockNum: tx.ethBlockNum.toNumber(),
-      tokenAddress: tx.tokenAddress || null,
-      nodeBlockDeadline: tx.nodeBlockDeadline,
-      chainId: tx.chainId,
-      parentChainId: tx.parentChainId
-    }
-  })
+export const transformWithdrawal = (
+  tx: L2ToL1EventResultPlus
+): MergedTransaction => {
+  const uniqueIdOrHash = getUniqueIdOrHashFromEvent(tx)
+
+  return {
+    sender: tx.sender,
+    destination: tx.destinationAddress,
+    direction: 'outbox',
+    status:
+      tx.nodeBlockDeadline ===
+      NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
+        ? 'Failure'
+        : outgoingStateToString[tx.outgoingMessageState],
+    createdAt: getStandardizedTimestamp(
+      String(BigNumber.from(tx.timestamp).toNumber() * 1000)
+    ),
+    resolvedAt: null,
+    txId: tx.l2TxHash || 'l2-tx-hash-not-found',
+    asset: tx.symbol || '',
+    assetType: tx.type,
+    value: ethers.utils.formatUnits(tx.value?.toString(), tx.decimals),
+    uniqueId: uniqueIdOrHash,
+    isWithdrawal: true,
+    blockNum: tx.ethBlockNum.toNumber(),
+    tokenAddress: tx.tokenAddress || null,
+    nodeBlockDeadline: tx.nodeBlockDeadline,
+    parentChainId: tx.parentChainId,
+    childChainId: tx.childChainId,
+    sourceChainId: tx.childChainId,
+    destinationChainId: tx.parentChainId
+  }
 }
 
 // filter the transactions based on current wallet address and network ID's
@@ -205,47 +282,30 @@ export const isWithdrawalReadyToClaim = (tx: MergedTransaction) => {
 }
 
 export const isDepositReadyToRedeem = (tx: MergedTransaction) => {
+  if (isTeleport(tx)) {
+    return (
+      firstRetryableLegRequiresRedeem(tx) ||
+      secondRetryableLegForTeleportRequiresRedeem(tx)
+    )
+  }
   return isDeposit(tx) && tx.depositStatus === DepositStatus.L2_FAILURE
 }
 
-export const getStandardizedTimestamp = (dateString: string) => {
+export const getStandardizedTimestamp = (date: string | BigNumber) => {
   // because we get timestamps in different formats from subgraph/event-logs/useTxn hook, we need 1 standard format.
+  if (typeof date === 'string') {
+    if (isNaN(Number(date))) return dayjs(new Date(date)).unix() // for ISOstring type of dates -> dayjs timestamp
+    return Number(date) // for timestamp type of date -> dayjs timestamp
+  }
 
-  if (isNaN(Number(dateString))) return dayjs(new Date(dateString)).format() // for ISOstring type of dates -> dayjs timestamp
-  return dayjs(Number(dateString)).format() // for timestamp type of date -> dayjs timestamp
+  // BigNumber
+  return date.toNumber()
 }
 
-export const getStandardizedTime = (standatdisedTimestamp: string) => {
-  return dayjs(standatdisedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
+export const getStandardizedTime = (standardizedTimestamp: number) => {
+  return dayjs(standardizedTimestamp).format(TX_TIME_FORMAT) // dayjs timestamp -> time
 }
 
-export const getStandardizedDate = (standatdisedTimestamp: string) => {
-  return dayjs(standatdisedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
-}
-
-export const findMatchingL1TxForWithdrawal = (
-  withdrawalTxn: MergedTransaction
-) => {
-  // finds the corresponding L1 transaction for withdrawal
-
-  const cachedTransactions: Transaction[] = JSON.parse(
-    window.localStorage.getItem('arbTransactions') || '[]'
-  )
-  const outboxTransactions = transformDeposits(
-    cachedTransactions.filter(tx => tx.type === 'outbox')
-  )
-
-  return outboxTransactions.find(_tx => {
-    const l2ToL1MsgData = _tx.l2ToL1MsgData
-
-    if (!(l2ToL1MsgData?.uniqueId && withdrawalTxn?.uniqueId)) {
-      return false
-    }
-
-    // To get rid of Proxy
-    const txUniqueId = BigNumber.from(withdrawalTxn.uniqueId)
-    const _txUniqueId = BigNumber.from(l2ToL1MsgData.uniqueId)
-
-    return txUniqueId.eq(_txUniqueId)
-  })
+export const getStandardizedDate = (standardizedTimestamp: number) => {
+  return dayjs(standardizedTimestamp).format(TX_DATE_FORMAT) // dayjs timestamp -> date
 }

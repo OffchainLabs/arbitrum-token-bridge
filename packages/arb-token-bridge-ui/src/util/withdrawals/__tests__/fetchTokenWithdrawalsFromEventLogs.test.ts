@@ -10,22 +10,14 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
     // TODO: This is a temporary fix, when Event Logs are enabled for custom address
     // we will be able to use the same properties, and remove the need to assign sender to address
     const query = getQueryCoveringClassicOnlyWithoutResults()
-    const fromAddress = query.sender
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query,
-      fromAddress
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(0)
   })
 
   it('fetches some token withdrawals from event logs pre-nitro', async () => {
     const query = getQueryCoveringClassicOnlyWithResults()
-    const fromAddress = query.sender
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query,
-      fromAddress
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(1)
     expect(result).toEqual(
@@ -40,11 +32,7 @@ describe('fetchTokenWithdrawalsFromEventLogs', () => {
 
   it('fetches some token withdrawals from event logs pre-nitro and post-nitro', async () => {
     const query = getQueryCoveringClassicAndNitroWithResults()
-    const fromAddress = query.sender
-    const result = await fetchTokenWithdrawalsFromEventLogs({
-      ...query,
-      fromAddress
-    })
+    const result = await fetchTokenWithdrawalsFromEventLogs(query)
 
     expect(result).toHaveLength(2)
     expect(result).toEqual(

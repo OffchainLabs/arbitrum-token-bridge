@@ -1,18 +1,29 @@
 import { Chain, sepolia as sepoliaDefault } from 'wagmi'
+
+import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
+import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+
   return {
     id: chain.chainID,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    nativeCurrency: nativeTokenData ?? ether,
     rpcUrls: {
       default: {
         http: [chain.rpcUrl]
       },
       public: {
         http: [chain.rpcUrl]
+      }
+    },
+    blockExplorers: {
+      default: {
+        name: 'Block Explorer',
+        url: chain.explorerUrl
       }
     }
   }
@@ -30,11 +41,33 @@ export const sepolia: Chain = {
   }
 }
 
+export const holesky: Chain = {
+  id: ChainId.Holesky,
+  name: 'Holesky',
+  network: 'holesky',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Etherscan',
+      url: explorerUrls[ChainId.Holesky]!
+    },
+    default: { name: 'Etherscan', url: explorerUrls[ChainId.Holesky]! }
+  }
+}
+
 export const arbitrumSepolia: Chain = {
   id: ChainId.ArbitrumSepolia,
   name: 'Arbitrum Sepolia',
   network: 'arbitrum-sepolia',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumSepolia]!]
@@ -56,7 +89,7 @@ export const arbitrumNova: Chain = {
   id: ChainId.ArbitrumNova,
   name: 'Arbitrum Nova',
   network: 'arbitrum-nova',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumNova]!]
@@ -71,44 +104,23 @@ export const arbitrumNova: Chain = {
   }
 }
 
-export const xaiTestnet: Chain = {
-  id: ChainId.XaiTestnet,
-  name: 'Xai Orbit Testnet',
-  network: 'xai-testnet',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+export const stylusTestnetV2: Chain = {
+  id: ChainId.StylusTestnetV2,
+  name: 'Stylus Testnet v2',
+  network: 'stylus-testnet-v2',
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
+      http: [rpcURLs[ChainId.StylusTestnetV2]!]
     },
     public: {
-      http: [rpcURLs[ChainId.XaiTestnet]!]
+      http: [rpcURLs[ChainId.StylusTestnetV2]!]
     }
   },
   blockExplorers: {
     default: {
       name: 'Blockscout',
-      url: 'https://testnet-explorer.xai-chain.net'
-    }
-  }
-}
-
-export const stylusTestnet: Chain = {
-  id: ChainId.StylusTestnet,
-  name: 'Stylus Testnet',
-  network: 'stylus-testnet',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
+      url: 'https://stylusv2-explorer.arbitrum.io'
     }
   }
 }
@@ -118,9 +130,9 @@ export const stylusTestnet: Chain = {
  */
 export const localL1Network: Chain = {
   id: ChainId.Local,
-  name: 'EthLocal',
-  network: 'local',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  name: 'Ethereum Local',
+  network: 'custom-localhost',
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.Local]!]
@@ -139,9 +151,9 @@ export const localL1Network: Chain = {
  */
 export const localL2Network: Chain = {
   id: ChainId.ArbitrumLocal,
-  name: 'ArbLocal',
-  network: 'arbitrum-local',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  name: 'Arbitrum Local',
+  network: 'arbitrum-localhost',
+  nativeCurrency: ether,
   rpcUrls: {
     default: {
       http: [rpcURLs[ChainId.ArbitrumLocal]!]

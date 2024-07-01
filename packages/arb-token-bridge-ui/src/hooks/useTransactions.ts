@@ -3,12 +3,6 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import {
-  EthDepositMessage,
-  EthDepositStatus,
-  L1ToL2MessageReader,
-  L1ToL2MessageReaderClassic
-} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -75,13 +69,21 @@ export interface L1ToL2MessageData {
   fetchingUpdate: boolean
 }
 
+export interface L2ToL3MessageData {
+  status: L1ToL2MessageStatus
+  retryableCreationTxID?: string
+  l2ForwarderRetryableTxID?: string
+  l3TxID?: string
+  l2ChainId: number
+}
+
 export type L2ToL1MessageData = {
   uniqueId: BigNumber
 }
 
 type TransactionBase = {
   type: TxnType
-  status: TxnStatus
+  status?: TxnStatus
   value: string | null
   txID?: string
   assetName: string
@@ -101,6 +103,12 @@ type TransactionBase = {
 
 export interface Transaction extends TransactionBase {
   txID: string
+  direction: 'deposit' | 'withdrawal'
+  source: 'subgraph' | 'event_logs' | 'local_storage_cache'
+  parentChainId: number
+  childChainId: number
+  nonce?: number
+  l2ToL3MsgData?: L2ToL3MessageData
 }
 
 export interface NewTransaction extends TransactionBase {
@@ -316,29 +324,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       transaction: tx
     })
   }
-  const addTransactions = (transactions: Transaction[]) => {
-    const timestampedTransactions = transactions.map(txn => {
-      return {
-        ...txn,
-        timestampCreated: new Date().toISOString()
-      }
-    })
-    return dispatch({
-      type: 'ADD_TRANSACTIONS',
-      transactions: timestampedTransactions
-    })
-  }
-  const addFailedTransaction = (transaction: FailedTransaction) => {
-    if (!transaction.txID) {
-      console.warn(' Cannot add transaction: TxID not included (???)')
-      return
-    }
-    const tx = transaction as Transaction
-    return dispatch({
-      type: 'ADD_TRANSACTION',
-      transaction: tx
-    })
-  }
 
   const updateTxnL1ToL2MsgData = async (
     txID: string,
@@ -348,104 +333,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       type: 'UPDATE_L1TOL2MSG_DATA',
       txID: txID,
       l1ToL2MsgData
-    })
-  }
-
-  const fetchAndUpdateEthDepositMessageStatus = async (
-    txID: string,
-    ethDepositMessage: EthDepositMessage
-  ) => {
-    updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: true,
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash
-    })
-
-    const status = await ethDepositMessage.status()
-    const isDeposited = status === EthDepositStatus.DEPOSITED
-
-    updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: false,
-      status: isDeposited
-        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: ethDepositMessage.l2DepositTxHash,
-      // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.l2DepositTxHash : undefined
-    })
-  }
-
-  const fetchAndUpdateL1ToL2MsgStatus = async (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReader,
-    isEthDeposit: boolean,
-    currentStatus: L1ToL2MessageStatus
-  ) => {
-    // set fetching:
-    updateTxnL1ToL2MsgData(txID, {
-      fetchingUpdate: true,
-      status: currentStatus,
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId
-    })
-
-    const res = await l1ToL2Msg.getSuccessfulRedeem()
-
-    const l2TxID = (() => {
-      if (res.status === L1ToL2MessageStatus.REDEEMED) {
-        return res.l2TxReceipt.transactionHash
-      } else if (
-        res.status === L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2 &&
-        isEthDeposit
-      ) {
-        return l1ToL2Msg.retryableCreationId /** for completed eth deposits, retryableCreationId is the l2txid */
-      } else {
-        return undefined
-      }
-    })()
-
-    updateTxnL1ToL2MsgData(txID, {
-      status: res.status,
-      l2TxID,
-      fetchingUpdate: false,
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId
-    })
-  }
-
-  const fetchAndUpdateL1ToL2MsgClassicStatus = async (
-    txID: string,
-    l1ToL2Msg: L1ToL2MessageReaderClassic,
-    isEthDeposit: boolean,
-    status: L1ToL2MessageStatus
-  ) => {
-    const isCompletedEthDeposit =
-      isEthDeposit && status >= L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-
-    const l2TxID = (() => {
-      if (isCompletedEthDeposit) {
-        return l1ToL2Msg.retryableCreationId
-      }
-
-      if (status === L1ToL2MessageStatus.REDEEMED) {
-        return l1ToL2Msg.l2TxHash
-      }
-
-      return undefined
-    })()
-
-    updateTxnL1ToL2MsgData(txID, {
-      status: isCompletedEthDeposit
-        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-        : status,
-      l2TxID,
-      fetchingUpdate: false,
-      retryableCreationTxID: l1ToL2Msg.retryableCreationId
-    })
-  }
-
-  const removeTransaction = (txID: string) => {
-    return dispatch({
-      type: 'REMOVE_TRANSACTION',
-      txID: txID
     })
   }
 
@@ -479,18 +366,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
       txID: txID
     })
   }
-  const clearPendingTransactions = () => {
-    return dispatch({
-      type: 'CLEAR_PENDING'
-    })
-  }
-
-  const setTransactionConfirmed = (txID: string) => {
-    return dispatch({
-      type: 'CONFIRM_TRANSACTION',
-      txID: txID
-    })
-  }
 
   const updateTransaction = (
     txReceipt: TransactionReceipt,
@@ -515,7 +390,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
         console.warn('*** Status not included in transaction receipt *** ')
         break
     }
-    console.log('TX for update', tx)
     if (tx?.blockNumber) {
       setTransactionBlock(txReceipt.transactionHash, tx.blockNumber)
     }
@@ -527,22 +401,6 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     }
   }
 
-  const setDepositsInStore = (newTransactions: Transaction[]) => {
-    // appends the state with a new set of transactions
-    // useful when you want to display some transactions fetched from subgraph without worrying about existing state
-
-    const transactionsMap: { [id: string]: Transaction } = {}
-
-    ;[...transactions, ...newTransactions].forEach(tx => {
-      transactionsMap[tx.txID] = tx
-    })
-
-    return dispatch({
-      type: 'SET_TRANSACTIONS',
-      transactions: Object.values(transactionsMap)
-    })
-  }
-
   const transactions = useMemo(() => {
     return state.filter(tx => !deprecatedTxTypes.has(tx.type))
   }, [state])
@@ -551,18 +409,7 @@ const useTransactions = (): [Transaction[], TransactionActions] => {
     transactions,
     {
       addTransaction,
-      addTransactions,
-      setDepositsInStore,
-      setTransactionSuccess,
-      setTransactionFailure,
-      clearPendingTransactions,
-      setTransactionConfirmed,
-      updateTransaction,
-      removeTransaction,
-      addFailedTransaction,
-      fetchAndUpdateL1ToL2MsgStatus,
-      fetchAndUpdateL1ToL2MsgClassicStatus,
-      fetchAndUpdateEthDepositMessageStatus
+      updateTransaction
     }
   ]
 }

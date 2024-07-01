@@ -1,140 +1,378 @@
-import { Popover, Transition } from '@headlessui/react'
-import useLocalStorage from '@rehooks/local-storage'
-import Image from 'next/image'
-import { useCallback } from 'react'
-import { useNetwork } from 'wagmi'
-import { useWindowSize } from 'react-use'
-
+import { Popover } from '@headlessui/react'
 import {
-  ChainId,
-  getNetworkLogo,
-  getNetworkName,
-  getSupportedNetworks,
-  isNetwork
-} from '../../util/networks'
-import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
+import { Chain } from 'wagmi'
+import { useDebounce } from '@uidotdev/usehooks'
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
+import { twMerge } from 'tailwind-merge'
+import { AutoSizer, List, ListRowProps } from 'react-virtualized'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
+
+import { ChainId, getSupportedChainIds, isNetwork } from '../../util/networks'
 import { useAccountType } from '../../hooks/useAccountType'
-import { testnetModeLocalStorageKey } from './SettingsDialog'
+import { useIsTestnetMode } from '../../hooks/useIsTestnetMode'
+import { SearchPanel } from './SearchPanel/SearchPanel'
+import { SearchPanelTable } from './SearchPanel/SearchPanelTable'
+import { TestnetToggle } from './TestnetToggle'
+import { useArbQueryParams } from '../../hooks/useArbQueryParams'
+import {
+  panelWrapperClassnames,
+  onPopoverButtonClick,
+  onPopoverClose
+} from './SearchPanel/SearchPanelUtils'
+import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
+import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
+import { useNetworks } from '../../hooks/useNetworks'
+import { Transition } from './Transition'
+import { NetworkImage } from './NetworkImage'
 
-export const NetworkSelectionContainer = ({
-  children
+type NetworkType = 'core' | 'orbit'
+
+enum ChainGroupName {
+  core = 'CORE CHAINS',
+  orbit = 'ORBIT CHAINS'
+}
+
+type ChainGroupInfo = {
+  name: ChainGroupName
+  description?: React.ReactNode
+}
+
+const chainGroupInfo: { [key in NetworkType]: ChainGroupInfo } = {
+  core: {
+    name: ChainGroupName.core
+  },
+  orbit: {
+    name: ChainGroupName.orbit,
+    description: (
+      <p className="mt-2 flex gap-1 whitespace-normal rounded bg-orange-dark px-2 py-1 text-xs text-orange">
+        <ShieldExclamationIcon className="h-4 w-4 shrink-0" />
+        <span>
+          Independent projects using Arbitrum technology. Orbit chains have
+          varying degrees of decentralization.{' '}
+          <span className="font-semibold">Bridge at your own risk.</span>
+        </span>
+      </p>
+    )
+  }
+}
+
+function ChainTypeInfoRow({
+  chainGroup,
+  style
 }: {
-  children: React.ReactNode
-}) => {
-  const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetworkWithConfig()
-  const [isTestnetMode] = useLocalStorage<boolean>(testnetModeLocalStorageKey)
+  chainGroup: ChainGroupInfo
+  style: CSSProperties
+}) {
+  const { name, description } = chainGroup
+  const isCoreGroup = chainGroup.name === ChainGroupName.core
 
-  const windowSize = useWindowSize()
-  const isLgScreen = windowSize.width >= 1024
-
-  const supportedNetworks = getSupportedNetworks(
-    chain?.id,
-    !!isTestnetMode
-  ).filter(chainId => chainId !== chain?.id)
-  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
-    useAccountType()
-
-  const l1Networks = supportedNetworks.filter(
-    network => isNetwork(network).isEthereum
+  return (
+    <div
+      key={name}
+      style={style}
+      className={twMerge(
+        'px-4 py-3',
+        !isCoreGroup &&
+          'before:-mt-3 before:mb-3 before:block before:h-[1px] before:w-full before:bg-white/30 before:content-[""]'
+      )}
+    >
+      <p className="text-sm text-white/70">{name}</p>
+      {description}
+    </div>
   )
-  const l2Networks = supportedNetworks.filter(
-    network => isNetwork(network).isArbitrum
+}
+
+function NetworkRow({
+  chainId,
+  style,
+  onClick,
+  close
+}: {
+  chainId: ChainId
+  style: CSSProperties
+  onClick: (value: Chain) => void
+  close: (focusableElement?: HTMLElement) => void
+}) {
+  const { network, nativeTokenData } = getBridgeUiConfigForChain(chainId)
+  const chain = getWagmiChain(chainId)
+  const [{ sourceChain }] = useNetworks()
+
+  function handleClick() {
+    onClick(chain)
+    close() // close the popover after option-click
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      key={chainId}
+      style={style}
+      type="button"
+      aria-label={`Switch to ${network.name}`}
+      className={twMerge(
+        'flex h-[90px] w-full items-center gap-4 px-4 py-2 text-lg transition-[background] duration-200 hover:bg-white/10',
+        chainId === sourceChain.id && 'bg-white/10' // selected row
+      )}
+    >
+      <NetworkImage
+        chainId={chainId}
+        className="h-[32px] w-[32px] p-[6px]"
+        size={20}
+      />
+      <div className={twMerge('flex flex-col items-start gap-1')}>
+        <span className="truncate leading-[1.1]">{network.name}</span>
+        {network.description && (
+          <p className="whitespace-pre-wrap text-left text-xs leading-[1.15] text-white/70">
+            {network.description}
+          </p>
+        )}
+        <p className="text-[10px] leading-none text-white/50">
+          {nativeTokenData?.symbol ?? 'ETH'} is the native gas token
+        </p>
+      </div>
+    </button>
   )
-  const orbitNetworks = supportedNetworks.filter(
-    network => isNetwork(network).isOrbitChain
+}
+
+function AddCustomOrbitChainButton() {
+  const [, setQueryParams] = useArbQueryParams()
+  const [isTestnetMode] = useIsTestnetMode()
+
+  const openSettingsPanel = () => setQueryParams({ settingsOpen: true })
+
+  if (!isTestnetMode) {
+    return null
+  }
+
+  return (
+    <button className="arb-hover text-sm underline" onClick={openSettingsPanel}>
+      <span>Add Custom Orbit Chain</span>
+    </button>
+  )
+}
+
+function NetworksPanel({
+  onNetworkRowClick,
+  close
+}: {
+  onNetworkRowClick: (value: Chain) => void
+  close: (focusableElement?: HTMLElement) => void
+}) {
+  const [errorMessage, setErrorMessage] = useState('')
+  const [networkSearched, setNetworkSearched] = useState('')
+  const debouncedNetworkSearched = useDebounce(networkSearched, 200)
+  const listRef = useRef<List>(null)
+  const [isTestnetMode] = useIsTestnetMode()
+
+  const chainIds = useMemo(
+    () =>
+      getSupportedChainIds({
+        includeMainnets: !isTestnetMode,
+        includeTestnets: isTestnetMode
+      }),
+    [isTestnetMode]
   )
 
-  const finalNetworks: { id: string; title: string; networks: number[] }[] = []
+  const networksToShow = useMemo(() => {
+    const _networkSearched = debouncedNetworkSearched.trim().toLowerCase()
 
-  if (l1Networks.length > 0) {
-    finalNetworks.push({ id: 'l1', title: 'L1', networks: l1Networks })
-  }
-  if (l2Networks.length > 0) {
-    finalNetworks.push({ id: 'l2', title: 'L2', networks: l2Networks })
-  }
-  if (orbitNetworks.length > 0) {
-    finalNetworks.push({ id: 'orbit', title: 'Orbit', networks: orbitNetworks })
+    if (_networkSearched) {
+      return chainIds.filter(chainId => {
+        const networkName =
+          getBridgeUiConfigForChain(chainId).network.name.toLowerCase()
+        return networkName.includes(_networkSearched)
+      })
+    }
+
+    const coreNetworks = chainIds.filter(
+      chainId => !isNetwork(chainId).isOrbitChain
+    )
+    const orbitNetworks = chainIds.filter(
+      chainId => isNetwork(chainId).isOrbitChain
+    )
+
+    return {
+      core: coreNetworks,
+      orbit: orbitNetworks
+    }
+  }, [debouncedNetworkSearched, chainIds])
+
+  const isNetworkSearchResult = Array.isArray(networksToShow)
+
+  const networkRowsWithChainInfoRows = useMemo(() => {
+    if (isNetworkSearchResult) {
+      return networksToShow
+    }
+    return [
+      ChainGroupName.core,
+      ...networksToShow.core,
+      ChainGroupName.orbit,
+      ...networksToShow.orbit
+    ]
+  }, [isNetworkSearchResult, networksToShow])
+
+  function getRowHeight({ index }: { index: number }) {
+    const rowItemOrChainId = networkRowsWithChainInfoRows[index]
+    if (!rowItemOrChainId) {
+      return 0
+    }
+    if (typeof rowItemOrChainId === 'string') {
+      return rowItemOrChainId === ChainGroupName.core ? 45 : 115
+    }
+    const rowItem = getBridgeUiConfigForChain(rowItemOrChainId)
+    if (rowItem.network.description) {
+      return 90
+    }
+    return 60
   }
 
-  const handleClick = useCallback(
-    (
-      chainId: ChainId,
-      close: (
-        focusableElement?:
-          | HTMLElement
-          | React.MutableRefObject<HTMLElement | null>
-          | undefined
-      ) => void
-    ) => {
-      switchNetwork?.(Number(chainId))
-      close?.() //close the popover after option-click
+  useEffect(() => {
+    listRef.current?.recomputeRowHeights()
+  }, [isTestnetMode, networkRowsWithChainInfoRows])
+
+  const rowRenderer = useCallback(
+    ({ index, style }: ListRowProps) => {
+      const networkOrChainTypeName = networkRowsWithChainInfoRows[index]
+
+      if (!networkOrChainTypeName) {
+        return null
+      }
+
+      if (networkOrChainTypeName === ChainGroupName.core) {
+        return (
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.core} style={style} />
+        )
+      }
+
+      if (networkOrChainTypeName === ChainGroupName.orbit) {
+        return (
+          <ChainTypeInfoRow chainGroup={chainGroupInfo.orbit} style={style} />
+        )
+      }
+
+      return (
+        <NetworkRow
+          key={networkOrChainTypeName}
+          style={style}
+          chainId={networkOrChainTypeName}
+          onClick={onNetworkRowClick}
+          close={close}
+        />
+      )
     },
-    [switchNetwork]
+    [close, networkRowsWithChainInfoRows, onNetworkRowClick]
+  )
+
+  const onSearchInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setErrorMessage('')
+      setNetworkSearched(event.target.value)
+    },
+    []
   )
 
   return (
-    <Popover className="relative z-50 w-full lg:w-max">
-      <Popover.Button
-        disabled={isSmartContractWallet || isLoadingAccountType}
-        className="arb-hover flex w-full justify-start rounded-full px-6 py-3 lg:w-max lg:p-0"
+    <div className="flex flex-col gap-4">
+      <SearchPanelTable
+        searchInputPlaceholder="Search a network name"
+        searchInputValue={networkSearched}
+        searchInputOnChange={onSearchInputChange}
+        errorMessage={errorMessage}
       >
-        {children}
-      </Popover.Button>
-
-      <Transition>
-        <Popover.Panel className="relative flex w-full flex-col justify-between rounded-md lg:absolute lg:ml-1 lg:mt-1 lg:w-max lg:-translate-x-12 lg:flex-row lg:gap-3 lg:bg-white lg:p-2 lg:shadow-[0px_4px_20px_rgba(0,0,0,0.2)]">
-          {({ close }) => (
-            <>
-              {finalNetworks.map(networkType => (
-                <div key={networkType.id} className="shrink-0">
-                  {finalNetworks.length > 1 && (
-                    // don't show the network type header if it's the only column
-                    <div className="p-2 px-12 text-xl text-white lg:px-4 lg:text-dark">
-                      {networkType.title}
-                    </div>
-                  )}
-
-                  {networkType.networks.map(chainId => (
-                    <button
-                      key={chainId}
-                      className="flex h-10 cursor-pointer flex-nowrap items-center justify-start space-x-3 px-12 text-lg font-light text-white hover:bg-gray-3 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-4 lg:px-4 lg:text-base lg:font-normal lg:text-dark"
-                      onClick={() => {
-                        handleClick(chainId, close)
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' || e.keyCode === 13) {
-                          handleClick(chainId, close)
-                        }
-                      }}
-                      type="button"
-                      aria-label={`Switch to ${getNetworkName(
-                        Number(chainId)
-                      )}`}
-                    >
-                      <div className="flex h-6 w-6 items-center justify-center lg:h-6 lg:w-6">
-                        <Image
-                          src={getNetworkLogo(
-                            Number(chainId),
-                            isLgScreen ? 'dark' : 'light'
-                          )}
-                          alt={`${getNetworkName(Number(chainId))} logo`}
-                          className="h-full w-auto"
-                          width={24}
-                          height={24}
-                        />
-                      </div>
-                      <span className="max-w-[140px] truncate">
-                        {getNetworkName(Number(chainId))}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </>
+        <AutoSizer>
+          {({ height, width }) => (
+            <List
+              ref={listRef}
+              width={width - 2}
+              height={height}
+              rowCount={networkRowsWithChainInfoRows.length}
+              rowHeight={getRowHeight}
+              rowRenderer={rowRenderer}
+              listRef={listRef}
+            />
           )}
-        </Popover.Panel>
-      </Transition>
+        </AutoSizer>
+      </SearchPanelTable>
+      <div className="flex justify-between pb-2">
+        <TestnetToggle label="Testnet mode" includeToggleStateOnLabel />
+        <AddCustomOrbitChainButton />
+      </div>
+    </div>
+  )
+}
+
+export const NetworkSelectionContainer = ({
+  children,
+  buttonClassName,
+  buttonStyle,
+  onChange
+}: {
+  children: React.ReactNode
+  buttonClassName: string
+  buttonStyle?: CSSProperties
+  onChange: (value: Chain) => void
+}) => {
+  const { isSmartContractWallet, isLoading: isLoadingAccountType } =
+    useAccountType()
+
+  return (
+    <Popover className="relative w-max">
+      {({ open }) => (
+        <>
+          <Popover.Button
+            style={buttonStyle}
+            disabled={isSmartContractWallet || isLoadingAccountType}
+            className={buttonClassName}
+            onClick={onPopoverButtonClick}
+          >
+            {children}
+            {!isSmartContractWallet && (
+              <ChevronDownIcon
+                className={twMerge(
+                  'h-[12px] w-[12px] transition-transform duration-200 sm:h-3 sm:w-3',
+                  open ? '-rotate-180' : 'rotate-0'
+                )}
+              />
+            )}
+          </Popover.Button>
+
+          <Transition
+            className="fixed left-0 top-0 z-50 sm:absolute sm:top-[54px]"
+            // we don't unmount on leave here because otherwise transition won't work with virtualized lists
+            options={{ unmountOnLeave: false }}
+            afterLeave={onPopoverClose}
+          >
+            <Popover.Panel className={twMerge(panelWrapperClassnames)}>
+              {({ close }) => {
+                function onClose() {
+                  onPopoverClose()
+                  close()
+                }
+                return (
+                  <SearchPanel>
+                    <SearchPanel.MainPage className="flex h-full flex-col px-5 py-4">
+                      <SearchPanel.PageTitle title="Select Network">
+                        <SearchPanel.CloseButton onClick={onClose} />
+                      </SearchPanel.PageTitle>
+                      <NetworksPanel
+                        close={onClose}
+                        onNetworkRowClick={onChange}
+                      />
+                    </SearchPanel.MainPage>
+                  </SearchPanel>
+                )
+              }}
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
     </Popover>
   )
 }

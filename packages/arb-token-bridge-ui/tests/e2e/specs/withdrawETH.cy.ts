@@ -29,38 +29,25 @@ describe('Withdraw ETH', () => {
     })
 
     context("bridge amount is lower than user's L2 ETH balance value", () => {
-      it('should show summary', () => {
+      it('should show gas estimations', () => {
         cy.login({ networkType: 'L2' })
         typeAmountIntoInput()
           .should('have.value', String(ETHToWithdraw))
           .then(() => {
-            cy.findByText("You're moving")
-              .siblings()
-              .last()
-              .contains(formatAmount(0.0001, { symbol: 'ETH' }))
-              .should('be.visible')
-            cy.findByText("You'll pay in gas fees")
+            cy.findByText('You will pay in gas fees:')
               .siblings()
               .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('L1 gas')
+            cy.findAllByText(/gas fee$/)
+              .first()
               .parent()
               .siblings()
-              .last()
               .contains(zeroToLessThanOneETH)
               .should('be.visible')
-            cy.findByText('L2 gas')
-              .parent()
-              .siblings()
-              .last()
-              .contains(zeroToLessThanOneETH)
-              .should('be.visible')
-            cy.findByText('Total amount')
-              .siblings()
-              .last()
-              .contains(/(\d*)(\.\d+)*( ETH)/)
-              .should('be.visible')
+            cy.findByText(
+              /You'll have to pay [\w\s]+ gas fee upon claiming./i
+            ).should('be.visible')
           })
       })
 
@@ -75,7 +62,7 @@ describe('Withdraw ETH', () => {
               .should('be.visible')
               .should('be.enabled')
               .click()
-            cy.findByText(/Use Arbitrum’s bridge/i).should('be.visible')
+            cy.findByText(/Arbitrum’s bridge/i).should('be.visible')
 
             // the Continue withdrawal button should be disabled at first
             cy.findByRole('button', {
@@ -102,10 +89,11 @@ describe('Withdraw ETH', () => {
                   .click()
                   .then(() => {
                     cy.confirmMetamaskTransaction().then(() => {
-                      cy.findAllByText(
-                        `Moving ${formatAmount(0.0001, {
+                      cy.findByText('an hour').should('be.visible')
+                      cy.findByText(
+                        `${formatAmount(ETHToWithdraw, {
                           symbol: 'ETH'
-                        })} to Ethereum`
+                        })}`
                       ).should('be.visible')
                     })
                   })

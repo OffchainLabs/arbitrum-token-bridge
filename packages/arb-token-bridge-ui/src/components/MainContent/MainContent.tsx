@@ -1,147 +1,73 @@
-import { useEffect, useMemo, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import useLocalStorage from '@rehooks/local-storage'
+import { useEffect, useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { TransferPanel } from '../TransferPanel/TransferPanel'
-import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
 import { SidePanel } from '../common/SidePanel'
 import { useAppContextActions, useAppContextState } from '../App/AppContext'
-import { useAppState } from '../../state'
-import { useDeposits } from '../../hooks/useDeposits'
-import { PageParams } from '../TransactionHistory/TransactionsTable/TransactionsTable'
-import { useWithdrawals } from '../../hooks/useWithdrawals'
-import { useNetworksAndSigners } from '../../hooks/useNetworksAndSigners'
-import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 import { ArbitrumStats, statsLocalStorageKey } from './ArbitrumStats'
 import { SettingsDialog } from '../common/SettingsDialog'
-import { isNetwork } from '../../util/networks'
+import { TransactionHistory } from '../TransactionHistory/TransactionHistory'
+import { useTransactionHistory } from '../../hooks/useTransactionHistory'
+import { isTxPending } from '../TransactionHistory/helpers'
+import { TransactionStatusInfo } from '../TransactionHistory/TransactionStatusInfo'
 
-export const motionDivProps = {
-  layout: true,
-  initial: {
-    opacity: 0,
-    scale: 0.9
-  },
-  animate: {
-    opacity: 1,
-    scale: 1
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9
-  }
-}
-
-export function MainContent() {
+function TransactionHistorySidePanel() {
   const { closeTransactionHistoryPanel } = useAppContextActions()
   const {
     layout: { isTransactionHistoryPanelVisible }
   } = useAppContextState()
+  const { address } = useAccount()
 
+  const transactionHistoryProps = useTransactionHistory(address, {
+    runFetcher: true
+  })
+
+  const { transactions, updatePendingTransaction } = transactionHistoryProps
+
+  const pendingTransactions = useMemo(() => {
+    return transactions.filter(isTxPending)
+  }, [transactions])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      pendingTransactions.forEach(updatePendingTransaction)
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [pendingTransactions, updatePendingTransaction])
+
+  return (
+    <SidePanel
+      isOpen={isTransactionHistoryPanelVisible}
+      onClose={closeTransactionHistoryPanel}
+      scrollable={false}
+      panelClassNameOverrides="pb-8"
+    >
+      <TransactionHistory props={{ ...transactionHistoryProps, address }} />
+    </SidePanel>
+  )
+}
+
+export function MainContent() {
   const [isArbitrumStatsVisible] =
     useLocalStorage<boolean>(statsLocalStorageKey)
 
-  const {
-    app: { arbTokenBridge }
-  } = useAppState()
-
-  const { l2 } = useNetworksAndSigners()
-
-  const [depositsPageParams, setDepositsPageParams] = useState<PageParams>({
-    searchString: '',
-    pageNumber: 0,
-    pageSize: 10
-  })
-
-  const [withdrawalsPageParams, setWithdrawalsPageParams] =
-    useState<PageParams>({
-      searchString: '',
-      pageNumber: 0,
-      pageSize: 10
-    })
-
-  const pageSize = useMemo(
-    () => (isNetwork(l2.network.id).isOrbitChain ? 5 : 10),
-    [l2.network.id]
-  )
-
-  const {
-    data: depositsData = {
-      deposits: [],
-      pendingDeposits: [],
-      transformedDeposits: []
-    },
-    isValidating: depositsLoading,
-    error: depositsError
-  } = useDeposits({ ...depositsPageParams, pageSize })
-
-  const {
-    data: withdrawalsData = {
-      withdrawals: [],
-      pendingWithdrawals: [],
-      transformedWithdrawals: []
-    },
-    isValidating: withdrawalsLoading,
-    error: withdrawalsError
-  } = useWithdrawals({ ...withdrawalsPageParams, pageSize })
-
-  useEffect(() => {
-    // if pending deposits found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.transactions?.setDepositsInStore?.(
-      depositsData.pendingDeposits
-    )
-  }, [JSON.stringify(depositsData.pendingDeposits)]) // only run side effect on value change, not reference (Call stack exceeded)
-
-  useEffect(() => {
-    // if pending withdrawals found, add them in the store - this will add them to pending div + start polling for their status
-    arbTokenBridge?.setWithdrawalsInStore?.(withdrawalsData.pendingWithdrawals)
-  }, [JSON.stringify(withdrawalsData.pendingWithdrawals)]) // only run side effect on value change, not reference (Call stack exceeded)
-
   return (
-    <div className="flex w-full justify-center">
-      <div className="main-panel w-full max-w-screen-lg flex-col space-y-6">
-        <div className="hidden text-center text-5xl">Arbitrum Token Bridge</div>
+    <>
+      <div className="main-panel mx-auto flex w-full flex-col sm:max-w-[600px] sm:pb-12 sm:pt-6">
+        <TransactionStatusInfo />
 
-        {/* if the user has some pending claim txns or retryables to redeem, show that banner here */}
-        <TransactionStatusInfo deposits={depositsData.transformedDeposits} />
-
-        <AnimatePresence>
-          <motion.div
-            key="transfer-panel"
-            {...motionDivProps}
-            className="relative z-10"
-          >
-            <TransferPanel />
-          </motion.div>
-        </AnimatePresence>
+        <TransferPanel />
       </div>
-      <SidePanel
-        isOpen={isTransactionHistoryPanelVisible}
-        heading="Transaction History"
-        onClose={closeTransactionHistoryPanel}
-      >
-        {/* Transaction history - pending transactions + history table */}
-        <TransactionHistory
-          {...{
-            depositsPageParams: { ...depositsPageParams, pageSize },
-            withdrawalsPageParams: { ...withdrawalsPageParams, pageSize },
-            depositsData,
-            depositsLoading,
-            depositsError,
-            withdrawalsData,
-            withdrawalsLoading,
-            withdrawalsError,
-            setDepositsPageParams,
-            setWithdrawalsPageParams
-          }}
-        />
-      </SidePanel>
+
+      <TransactionHistorySidePanel />
 
       {/* Settings panel */}
       <SettingsDialog />
 
       {/* Toggle-able Stats for nerds */}
       {isArbitrumStatsVisible && <ArbitrumStats />}
-    </div>
+    </>
   )
 }

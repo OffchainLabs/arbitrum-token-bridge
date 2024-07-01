@@ -5,17 +5,15 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
+import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
-  | 'localhost'
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'arbitrum-sepolia'
   | 'mainnet'
-  | 'goerli'
-  | 'Sepolia test network'
-
-export const metamaskLocalL1RpcUrl = 'http://localhost:8545'
+  | 'sepolia'
 
 type NetworkConfig = {
   networkName: NetworkName
@@ -28,17 +26,12 @@ type NetworkConfig = {
 
 export const getL1NetworkConfig = (): NetworkConfig => {
   return {
-    // reuse built-in Metamask network if possible
-    // we add a new network in CI because of a different rpc url
-    networkName:
-      Cypress.env('ETH_RPC_URL') === metamaskLocalL1RpcUrl
-        ? 'localhost'
-        : 'custom-localhost',
+    networkName: 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
     chainId: '1337',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
+    multiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386'
   }
 }
 
@@ -53,7 +46,30 @@ export const getL2NetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const wethTokenAddressL1 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const getL1TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'sepolia',
+    rpcUrl: Cypress.env('ETH_SEPOLIA_RPC_URL'),
+    chainId: '11155111',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: MULTICALL_TESTNET_ADDRESS
+  }
+}
+
+export const getL2TestnetNetworkConfig = (): NetworkConfig => {
+  return {
+    networkName: 'arbitrum-sepolia',
+    rpcUrl: Cypress.env('ARB_SEPOLIA_RPC_URL'),
+    chainId: '421614',
+    symbol: 'ETH',
+    isTestnet: true,
+    multiCall: MULTICALL_TESTNET_ADDRESS
+  }
+}
+
+export const l1WethGateway = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
+export const wethTokenAddressL1 = '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48'
 export const wethTokenAddressL2 = '0x408Da76E87511429485C32E4Ad647DD14823Fdc4'
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
@@ -89,15 +105,21 @@ export async function getInitialETHBalance(
   return await provider.getBalance(walletAddress ?? Cypress.env('ADDRESS'))
 }
 
-export async function getInitialERC20Balance(
-  tokenAddress: string,
-  multiCallerAddress: string,
+export async function getInitialERC20Balance({
+  tokenAddress,
+  multiCallerAddress,
+  rpcURL,
+  address
+}: {
+  tokenAddress: string
+  multiCallerAddress: string
   rpcURL: string
-): Promise<BigNumber> {
+  address: string
+}): Promise<BigNumber | undefined> {
   const provider = new StaticJsonRpcProvider(rpcURL)
   const multiCaller = new MultiCaller(provider, multiCallerAddress)
   const [tokenData] = await multiCaller.getTokenData([tokenAddress], {
-    balanceOf: { account: Cypress.env('ADDRESS') }
+    balanceOf: { account: address }
   })
   return tokenData.balance
 }
@@ -115,7 +137,7 @@ export const acceptMetamaskAccess = () => {
 export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
   // once all the metamask setup is done, we can start the actual web-app for testing
   // clear local storage for terms to always have it pop up
-  cy.clearLocalStorage('arbitrum:bridge:tos-v1')
+  cy.clearLocalStorage('arbitrum:bridge:tos-v2')
   cy.visit(url, {
     qs
   })
@@ -130,4 +152,12 @@ export const startWebApp = (url = '/', qs: { [s: string]: string } = {}) => {
       cy.task('setWalletConnectedToDapp')
     }
   })
+}
+
+export const visitAfterSomeDelay = (
+  url: string,
+  options?: Partial<Cypress.VisitOptions>
+) => {
+  cy.wait(15_000) // let all the race conditions settle, let UI load well first
+  cy.visit(url, options)
 }

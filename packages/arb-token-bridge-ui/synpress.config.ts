@@ -1,4 +1,4 @@
-import { BigNumber, constants, Wallet, utils } from 'ethers'
+import { BigNumber, Wallet, constants, utils } from 'ethers'
 import { defineConfig } from 'cypress'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import synpressPlugins from '@synthetixio/synpress/plugins'
@@ -7,24 +7,34 @@ import { TestERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/TestERC
 import { Erc20Bridger } from '@arbitrum/sdk'
 import { getL2ERC20Address } from './src/util/TokenUtils'
 import specFiles from './tests/e2e/specfiles.json'
+import cctpFiles from './tests/e2e/cctp.json'
 
 import {
   NetworkName,
+  l1WethGateway,
   wethTokenAddressL1,
   wethTokenAddressL2
 } from './tests/support/common'
+
 import { registerLocalNetwork } from './src/util/networks'
 
-const tests = process.env.TEST_FILE
-  ? [process.env.TEST_FILE]
-  : specFiles.map(file => file.file)
+let tests: string[]
+if (process.env.TEST_FILE) {
+  tests = [process.env.TEST_FILE]
+} else if (process.env.E2E_CCTP) {
+  tests = cctpFiles.map(file => file.file)
+} else {
+  tests = specFiles.map(file => file.file)
+}
+
+const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
 
 export default defineConfig({
   userAgent: 'synpress',
-  retries: 2,
+  retries: shouldRecordVideo ? 0 : 2,
   screenshotsFolder: 'cypress/screenshots',
   videosFolder: 'cypress/videos',
-  video: false,
+  video: shouldRecordVideo,
   screenshotOnRunFailure: true,
   chromeWebSecurity: true,
   modifyObstructiveCode: false,
@@ -40,6 +50,7 @@ export default defineConfig({
   e2e: {
     // @ts-ignore
     async setupNodeEvents(on, config) {
+      require('cypress-terminal-report/src/installLogsPrinter')(on)
       registerLocalNetwork()
 
       if (!ethRpcUrl) {
@@ -47,6 +58,11 @@ export default defineConfig({
       }
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
+      }
+      if (!sepoliaRpcUrl) {
+        throw new Error(
+          'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
+        )
       }
 
       const userWalletAddress = await userWallet.getAddress()
@@ -69,32 +85,36 @@ export default defineConfig({
         .transfer(userWalletAddress, BigNumber.from(50000000))
 
       // Fund the userWallet. We do this to run tests on a small amount of ETH.
-      // L1
-      await fundUserWallet('L1')
-      // L2
-      await fundUserWallet('L2')
+      await Promise.all([fundUserWalletEth('L1'), fundUserWalletEth('L2')])
 
       // Wrap ETH to test ERC-20 transactions
-      // L1
-      await wrapEth('L1')
-      // L2
-      await wrapEth('L2')
+      await Promise.all([wrapEth('L1'), wrapEth('L2')])
+
       // Approve WETH
       await approveWeth()
 
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
+      config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
+      config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
       config.env.PRIVATE_KEY = userWallet.privateKey
       config.env.INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
       config.env.ERC20_TOKEN_ADDRESS_L1 = l1ERC20Token.address
+      config.env.LOCAL_WALLET_PRIVATE_KEY = localWallet.privateKey
+
+      config.env.CUSTOM_DESTINATION_ADDRESS =
+        await getCustomDestinationAddress()
 
       config.env.ERC20_TOKEN_ADDRESS_L2 = await getL2ERC20Address({
         erc20L1Address: l1ERC20Token.address,
         l1Provider: ethProvider,
         l2Provider: arbProvider
       })
+
+      config.env.REDEEM_RETRYABLE_TEST_TX =
+        await generateTestTxForRedeemRetryable()
 
       synpressPlugins(on, config)
       setupCypressTasks(on)
@@ -106,8 +126,34 @@ export default defineConfig({
   }
 })
 
-const ethRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY
+if (typeof INFURA_KEY === 'undefined') {
+  throw new Error('Infura API key not provided')
+}
+
+const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
+const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
+
+const ethRpcUrl = (() => {
+  // MetaMask comes with a default http://localhost:8545 network with 'localhost' as network name
+  // On CI, the rpc is http://geth:8545 so we cannot reuse the 'localhost' network
+  // However, Synpress does not allow editing network name on the MetaMask extension
+  // For consistency purpose, we would be using 'custom-localhost'
+  // MetaMask auto-detects same rpc url and blocks adding new custom network with same rpc
+  // so we have to add a / to the end of the rpc url
+  if (!process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL) {
+    return MAINNET_INFURA_RPC_URL
+  }
+  if (process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL.endsWith('/')) {
+    return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL
+  }
+  return process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL + '/'
+})()
+
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
+const sepoliaRpcUrl =
+  process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
+const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
 const arbProvider = new StaticJsonRpcProvider(arbRpcUrl)
@@ -145,8 +191,8 @@ async function deployERC20ToL2(erc20L1Address: string) {
   await deploy.wait()
 }
 
-async function fundUserWallet(networkType: 'L1' | 'L2') {
-  console.log(`Funding user wallet: ${networkType}...`)
+async function fundUserWalletEth(networkType: 'L1' | 'L2') {
+  console.log(`Funding ETH to user wallet: ${networkType}...`)
   const address = await userWallet.getAddress()
   const provider = networkType === 'L1' ? ethProvider : arbProvider
   const balance = await provider.getBalance(address)
@@ -182,10 +228,51 @@ async function approveWeth() {
   console.log('Approving WETH...')
   const tx = await getWethContract(ethProvider, wethTokenAddressL1).approve(
     // L1 WETH gateway
-    '0xF5FfD11A55AFD39377411Ab9856474D2a7Cb697e',
+    l1WethGateway,
     constants.MaxInt256
   )
   await tx.wait()
+}
+
+async function getCustomDestinationAddress() {
+  console.log('Getting custom destination address...')
+  return (await Wallet.createRandom().getAddress()).toLowerCase()
+}
+
+async function generateTestTxForRedeemRetryable() {
+  console.log('Adding a test transaction for redeeming retryable...')
+
+  const walletAddress = await userWallet.getAddress()
+  const l1Provider = ethProvider
+  const l2Provider = arbProvider
+  const erc20Token = {
+    symbol: 'WETH',
+    decimals: 18,
+    address: wethTokenAddressL1
+  }
+  const amount = utils.parseUnits('0.001', erc20Token.decimals)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const depositRequest = await erc20Bridger.getDepositRequest({
+    l1Provider,
+    l2Provider,
+    from: walletAddress,
+    erc20L1Address: erc20Token.address,
+    amount,
+    retryableGasOverrides: {
+      gasLimit: { base: BigNumber.from(0) }
+    }
+  })
+  const tx = await erc20Bridger.deposit({
+    ...depositRequest,
+    l1Signer: userWallet.connect(ethProvider),
+    retryableGasOverrides: {
+      gasLimit: {
+        base: BigNumber.from(0)
+      }
+    }
+  })
+  const receipt = await tx.wait()
+  return receipt.transactionHash
 }
 
 function setupCypressTasks(on: Cypress.PluginEvents) {

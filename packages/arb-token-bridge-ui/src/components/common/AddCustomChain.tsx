@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { isAddress } from 'ethers/lib/utils.js'
 import { Popover } from '@headlessui/react'
-import { addCustomChain } from '@arbitrum/sdk'
+import {
+  addCustomNetwork,
+  constants as arbitrumSdkConstants
+} from '@arbitrum/sdk'
+import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { EllipsisHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { constants } from 'ethers'
 import { z } from 'zod'
+import { RollupAdminLogic__factory } from '@arbitrum/sdk/dist/lib/abi/factories/RollupAdminLogic__factory'
 
 import {
   ChainId,
@@ -13,9 +19,16 @@ import {
   getNetworkName,
   removeCustomChainFromLocalStorage,
   saveCustomChainToLocalStorage,
-  supportedCustomOrbitParentChains
+  supportedCustomOrbitParentChains,
+  rpcURLs
 } from '../../util/networks'
 import { Loader } from './atoms/Loader'
+import { Erc20Data, fetchErc20Data } from '../../util/TokenUtils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { Transition } from './Transition'
+import { Button } from './Button'
+
+const orbitConfigsLocalStorageKey = 'arbitrum:orbit:configs'
 
 type Contracts = {
   customGateway: string
@@ -40,6 +53,7 @@ type OrbitConfig = {
     parentChainId: number
     rpcUrl: string
     explorerUrl: string
+    nativeToken?: string
   }
   coreContracts: {
     rollup: string
@@ -105,7 +119,8 @@ const ZodOrbitConfig = z.object({
     chainId: zChainId,
     parentChainId: zParentChainId,
     rpcUrl: z.string().url(),
-    explorerUrl: z.string().url()
+    explorerUrl: z.string().url(),
+    nativeToken: zAddress.optional()
   }),
   coreContracts: z.object({
     rollup: zAddress,
@@ -123,10 +138,51 @@ const ZodOrbitConfig = z.object({
   })
 })
 
-function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
+function getOrbitConfigsFromLocalStorage(): OrbitConfig[] {
+  const configs = localStorage.getItem(orbitConfigsLocalStorageKey)
+
+  if (!configs) {
+    return []
+  }
+
+  return JSON.parse(configs)
+}
+
+function getOrbitConfigFromLocalStorageById(
+  chainId: ChainId
+): OrbitConfig | undefined {
+  const configs = getOrbitConfigsFromLocalStorage()
+  return configs.find(config => config.chainInfo.chainId === chainId)
+}
+
+function removeOrbitConfigFromLocalStorage(chainId: ChainId) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  const newConfigs = configs.filter(
+    config => config.chainInfo.chainId !== chainId
+  )
+  localStorage.setItem(orbitConfigsLocalStorageKey, JSON.stringify(newConfigs))
+}
+
+function saveOrbitConfigToLocalStorage(data: OrbitConfig) {
+  const configs = getOrbitConfigsFromLocalStorage()
+  localStorage.setItem(
+    orbitConfigsLocalStorageKey,
+    JSON.stringify([...configs, data])
+  )
+}
+
+async function mapOrbitConfigToOrbitChain(
+  data: OrbitConfig
+): Promise<ChainWithRpcUrl> {
+  const rollup = RollupAdminLogic__factory.connect(
+    data.coreContracts.rollup,
+    getProviderForChainId(data.chainInfo.parentChainId)
+  )
+  const confirmPeriodBlocks =
+    (await rollup.confirmPeriodBlocks()).toNumber() ?? 150
   return {
     chainID: data.chainInfo.chainId,
-    confirmPeriodBlocks: 150,
+    confirmPeriodBlocks,
     ethBridge: {
       bridge: data.coreContracts.bridge,
       inbox: data.coreContracts.inbox,
@@ -139,10 +195,13 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
     isCustom: true,
     name: data.chainInfo.chainName,
     partnerChainID: data.chainInfo.parentChainId,
+    partnerChainIDs: [],
     retryableLifetimeSeconds: 604800,
     nitroGenesisBlock: 0,
     nitroGenesisL1Block: 0,
     depositTimeout: 900000,
+    blockTime: arbitrumSdkConstants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
+    nativeToken: data.chainInfo.nativeToken,
     isArbitrum: true,
     tokenBridge: {
       l1CustomGateway: data.tokenBridgeContracts.l2Contracts.customGateway,
@@ -163,6 +222,28 @@ function mapOrbitConfigToOrbitChain(data: OrbitConfig): ChainWithRpcUrl {
   }
 }
 
+async function fetchNativeToken(
+  data: OrbitConfig
+): Promise<
+  | { nativeToken: undefined; nativeTokenData: undefined }
+  | { nativeToken: string; nativeTokenData: Erc20Data }
+> {
+  const nativeToken = data.chainInfo.nativeToken
+  const nativeTokenIsEther =
+    typeof nativeToken === 'undefined' || nativeToken === constants.AddressZero
+
+  if (nativeTokenIsEther) {
+    return { nativeToken: undefined, nativeTokenData: undefined }
+  }
+
+  const nativeTokenData = await fetchErc20Data({
+    address: nativeToken,
+    provider: new StaticJsonRpcProvider(rpcURLs[data.chainInfo.parentChainId])
+  })
+
+  return { nativeToken, nativeTokenData }
+}
+
 export const AddCustomChain = () => {
   const [chainJson, setChainJson] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
@@ -170,7 +251,7 @@ export const AddCustomChain = () => {
 
   const customChains = getCustomChainsFromLocalStorage()
 
-  function onAddChain() {
+  async function onAddChain() {
     setAddingChain(true)
     setError(null)
 
@@ -186,12 +267,13 @@ export const AddCustomChain = () => {
       // validate config
       ZodOrbitConfig.parse(data)
 
-      const customChain = mapOrbitConfigToOrbitChain(data)
+      const customChain = await mapOrbitConfigToOrbitChain(data)
+      const nativeToken = await fetchNativeToken(data)
       // Orbit config has been validated and will be added to the custom list after page refreshes
       // let's still try to add it here to handle eventual errors
-      addCustomChain({ customChain })
-
-      saveCustomChainToLocalStorage(customChain)
+      addCustomNetwork({ customL2Network: customChain })
+      saveCustomChainToLocalStorage({ ...customChain, ...nativeToken })
+      saveOrbitConfigToLocalStorage(data)
       // reload to apply changes
       location.reload()
     } catch (error: any) {
@@ -204,17 +286,17 @@ export const AddCustomChain = () => {
     <>
       <textarea
         onChange={e => setChainJson(e.target.value)}
-        placeholder="Insert the JSON configuration from the `outputInfo.json` file that's generated at the end of the custom Orbit chain deployment."
-        className="min-h-[100px] w-full rounded-lg px-4 py-2 text-sm font-light text-black"
+        placeholder="Paste the JSON configuration from the 'outputInfo.json' file that's generated at the end of the custom Orbit chain deployment."
+        className="min-h-[154px] w-full rounded border border-gray-dark bg-dark p-4 text-sm font-light text-white placeholder:text-white/70"
       />
       {error && (
         <div className="relative">
-          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded-lg border border-white/20 bg-white/5 p-4 text-sm text-error">
+          <pre className="scroll mb-2 max-h-[400px] overflow-auto rounded border border-gray-dark bg-dark p-4 text-sm text-error">
             <button
               onClick={() => setError(null)}
               className="arb-hover absolute right-4 top-4 text-white"
             >
-              <XMarkIcon width={24} />
+              <XMarkIcon width={20} />
             </button>
             {error}
           </pre>
@@ -222,16 +304,15 @@ export const AddCustomChain = () => {
       )}
       <div className="flex w-full justify-end">
         {addingChain ? (
-          <Loader size="small" />
+          <Loader size="small" color="white" />
         ) : (
-          // Need to replace with an atom
-          <button
+          <Button
+            variant="secondary"
             onClick={onAddChain}
-            className="rounded bg-white p-2 text-sm text-black transition-all hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!chainJson.trim()}
           >
             Add Chain
-          </button>
+          </Button>
         )}
       </div>
 
@@ -240,7 +321,7 @@ export const AddCustomChain = () => {
         <div className="mt-4">
           <div className="heading mb-4 text-lg">Live Orbit Chains</div>
           <table className="w-full text-left">
-            <thead className="border-b border-gray-600">
+            <thead className="border-b border-gray-dark">
               <tr>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN</th>
                 <th className="pb-1 text-xs font-normal">ORBIT CHAIN ID</th>
@@ -253,7 +334,7 @@ export const AddCustomChain = () => {
               {customChains.map(customChain => (
                 <tr
                   key={customChain.chainID}
-                  className="border-b border-gray-600"
+                  className="border-b border-gray-dark"
                 >
                   <th className="max-w-[100px] truncate py-3 text-sm font-normal">
                     {customChain.name}
@@ -269,34 +350,43 @@ export const AddCustomChain = () => {
                   </th>
                   <th className="py-3">
                     <Popover className="relative">
-                      <Popover.Button>
+                      <Popover.Button className="arb-hover">
                         <EllipsisHorizontalIcon width={20} />
                       </Popover.Button>
-                      <Popover.Panel className="absolute bottom-6 right-0 flex w-52 flex-col rounded bg-white text-xs font-normal text-black">
-                        <button
-                          className="rounded p-4 text-left hover:bg-gray-3"
-                          onClick={() => {
-                            removeCustomChainFromLocalStorage(
-                              customChain.chainID
-                            )
-                            // reload to apply changes
-                            location.reload()
-                          }}
-                        >
-                          Delete this chain
-                        </button>
-                        <a
-                          className="rounded p-4 text-left hover:bg-gray-3"
-                          href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                            JSON.stringify(customChain)
-                          )}`}
-                          download={`${customChain.name
-                            .split(' ')
-                            .join('')}.json`}
-                        >
-                          Download config for this chain
-                        </a>
-                      </Popover.Panel>
+                      <Transition>
+                        <Popover.Panel className="absolute bottom-6 right-0 flex w-[240px] flex-col rounded border border-gray-dark bg-dark text-sm font-normal text-white">
+                          <button
+                            className="rounded-t p-4 text-left transition duration-300 hover:bg-[#333333]"
+                            onClick={() => {
+                              removeCustomChainFromLocalStorage(
+                                customChain.chainID
+                              )
+                              removeOrbitConfigFromLocalStorage(
+                                customChain.chainID
+                              )
+                              // reload to apply changes
+                              location.reload()
+                            }}
+                          >
+                            Delete this chain
+                          </button>
+                          <a
+                            className="rounded-b p-4 text-left transition duration-300 hover:bg-[#333333]"
+                            href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                              JSON.stringify(
+                                getOrbitConfigFromLocalStorageById(
+                                  customChain.chainID
+                                )
+                              )
+                            )}`}
+                            download={`${customChain.name
+                              .split(' ')
+                              .join('')}.json`}
+                          >
+                            Download config for this chain
+                          </a>
+                        </Popover.Panel>
+                      </Transition>
                     </Popover>
                   </th>
                 </tr>

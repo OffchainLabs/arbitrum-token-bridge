@@ -1,17 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { gql } from '@apollo/client'
+
 import { FetchDepositsFromSubgraphResult } from '../../util/deposits/fetchDepositsFromSubgraph'
-import { getL1SubgraphClient } from '../../util/SubgraphUtils'
+import {
+  getL1SubgraphClient,
+  getSourceFromSubgraphClient
+} from '../../api-utils/ServerSubgraphUtils'
 
 // Extending the standard NextJs request with Deposit-params
 type NextApiRequestWithDepositParams = NextApiRequest & {
   query: {
+    sender?: string
+    receiver?: string
     l2ChainId: string
     search?: string
-    sender?: string
-    senderNot?: string
-    receiver?: string
-    receiverNot?: string
     page?: string
     pageSize?: string
     fromBlock?: string
@@ -20,6 +22,7 @@ type NextApiRequestWithDepositParams = NextApiRequest & {
 }
 
 type DepositsResponse = {
+  meta?: { source: string | null }
   data: FetchDepositsFromSubgraphResult[]
   message?: string // in case of any error
 }
@@ -30,12 +33,10 @@ export default async function handler(
 ) {
   try {
     const {
+      sender,
+      receiver,
       search = '',
       l2ChainId,
-      sender,
-      senderNot,
-      receiver,
-      receiverNot,
       page = '0',
       pageSize = '10',
       fromBlock,
@@ -61,27 +62,54 @@ export default async function handler(
         message: `incomplete request: ${errorMessage.join(', ')}`,
         data: []
       })
+      return
     }
 
-    const subgraphResult = await getL1SubgraphClient(Number(l2ChainId)).query({
+    // if invalid pageSize, send empty data instead of error
+    if (isNaN(Number(pageSize)) || Number(pageSize) === 0) {
+      res.status(200).json({
+        data: []
+      })
+      return
+    }
+
+    const additionalFilters = `${
+      typeof fromBlock !== 'undefined'
+        ? `blockCreatedAt_gte: ${Number(fromBlock)},`
+        : ''
+    }
+    ${
+      typeof toBlock !== 'undefined'
+        ? `blockCreatedAt_lte: ${Number(toBlock)},`
+        : ''
+    }
+    ${search ? `transactionHash_contains: "${search}"` : ''}
+    `
+
+    let subgraphClient
+    try {
+      subgraphClient = getL1SubgraphClient(Number(l2ChainId))
+    } catch (error: any) {
+      // catch attempt to query unsupported networks and throw a 400
+      res.status(400).json({
+        message: error?.message ?? 'Something went wrong',
+        data: []
+      })
+      return
+    }
+
+    const subgraphResult = await subgraphClient.query({
       query: gql(`{
         deposits(
           where: {            
-            ${sender ? `sender: "${sender}",` : ''}
-            ${senderNot ? `sender_not: "${senderNot}",` : ''}
-            ${receiver ? `receiver: "${receiver}",` : ''}
-            ${receiverNot ? `receiver_not: "${receiverNot}",` : ''}   
-            ${
-              typeof fromBlock !== 'undefined'
-                ? `blockCreatedAt_gte: ${Number(fromBlock)}`
-                : ''
-            }
-            ${
-              typeof toBlock !== 'undefined'
-                ? `blockCreatedAt_lte: ${Number(toBlock)}`
-                : ''
-            }  
-            ${search ? `transactionHash_contains: "${search}"` : ''}
+            or: [
+              ${sender ? `{ sender: "${sender}", ${additionalFilters} },` : ''}
+              ${
+                receiver
+                  ? `{ receiver: "${receiver}", ${additionalFilters} },`
+                  : ''
+              }
+            ]
           }
           orderBy: blockCreatedAt
           orderDirection: desc
@@ -114,7 +142,10 @@ export default async function handler(
     const transactions: FetchDepositsFromSubgraphResult[] =
       subgraphResult.data.deposits
 
-    res.status(200).json({ data: transactions })
+    res.status(200).json({
+      meta: { source: getSourceFromSubgraphClient(subgraphClient) },
+      data: transactions
+    })
   } catch (error: any) {
     res.status(500).json({
       message: error?.message ?? 'Something went wrong',

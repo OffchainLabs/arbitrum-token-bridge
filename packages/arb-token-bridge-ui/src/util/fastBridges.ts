@@ -29,18 +29,6 @@ export enum SpecialTokenSymbol {
   USDC = 'USDC'
 }
 
-export enum NonCanonicalTokenNames {
-  FRAX = 'FRAX'
-}
-
-export enum NonCanonicalTokenAddresses {
-  FRAX = '0x853d955acef822db058eb8505911ed77f175b99e'
-}
-
-export type NonCanonicalTokenSupportedBridges<
-  T extends NonCanonicalTokenAddresses
-> = `${(typeof NonCanonicalTokensBridgeInfo)[T]['supportedBridges'][number]}`
-
 export type FastBridgeInfo = {
   name: FastBridgeNames
   imageSrc: StaticImageData
@@ -50,17 +38,17 @@ export type FastBridgeInfo = {
 export function getFastBridges({
   from,
   to,
-  tokenSymbol = 'ETH',
+  tokenSymbol,
   amount
 }: {
   from: ChainId
   to: ChainId
-  tokenSymbol?: string
+  tokenSymbol: string
   amount: string
 }): FastBridgeInfo[] {
   function chainIdToSlug(chainId: ChainId): string {
     switch (chainId) {
-      case ChainId.Mainnet:
+      case ChainId.Ethereum:
         return 'ethereum'
       case ChainId.ArbitrumOne:
         return 'arbitrum'
@@ -157,16 +145,6 @@ export function getFastBridges({
       }
     })
 }
-
-export const NonCanonicalTokensBridgeInfo = {
-  [NonCanonicalTokenAddresses.FRAX]: {
-    tokenSymbol: 'FRAX',
-    tokenSymbolOnArbitrum: 'arbiFRAX',
-    supportedBridges: [FastBridgeNames.Celer],
-    learnMoreUrl: 'https://docs.frax.finance/cross-chain/bridge',
-    bridgeUrl: 'https://app.frax.finance/bridge?chain=arbitrum'
-  }
-} as const
 
 export const USDCBridgeInfo = {
   tokenSymbol: 'USDC',
