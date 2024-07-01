@@ -4,7 +4,7 @@ import {
   getL1SubgraphClient,
   getSourceFromSubgraphClient
 } from '../../../api-utils/ServerSubgraphUtils'
-import { getInboxAddressFromOrbitChainId } from '../../../util/orbitChainsList'
+import { getInboxAddressFromOrbitChainId } from '../../../util/orbit'
 import { FetchEthTeleportsFromSubgraphResult } from '../../../util/teleports/fetchEthTeleportsFromSubgraph'
 
 // Extending the standard NextJs request with Deposit-params

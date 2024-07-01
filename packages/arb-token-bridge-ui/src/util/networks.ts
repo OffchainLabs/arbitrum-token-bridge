@@ -8,7 +8,7 @@ import { networks as arbitrumSdkChains } from '@arbitrum/sdk/dist/lib/dataEntiti
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
-import { orbitMainnets, orbitTestnets } from './orbitChainsList'
+import { orbitMainnets, orbitTestnets } from './orbit'
 import { chainIdToInfuraUrl } from './infura'
 
 export const getChains = () => {

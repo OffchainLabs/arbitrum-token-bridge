@@ -5,7 +5,7 @@ import {
   getBaseChainIdByChainId,
   getSupportedChainIds
 } from '../networks'
-import { orbitTestnets } from '../orbitChainsList'
+import { orbitTestnets } from '../orbit'
 
 const xaiTestnetChainId = 37714555429
 
