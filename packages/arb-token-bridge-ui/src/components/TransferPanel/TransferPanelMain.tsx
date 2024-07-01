@@ -270,13 +270,15 @@ function TokenBalance({
   balance,
   on,
   prefix = '',
-  tokenSymbolOverride
+  tokenSymbolOverride,
+  isNativeCurrencyOnOrbitChain
 }: {
   forToken: ERC20BridgeToken | NativeCurrencyErc20 | null
   balance: BigNumber | null
   on: NetworkType
   prefix?: string
   tokenSymbolOverride?: string
+  isNativeCurrencyOnOrbitChain?: boolean
 }) {
   const isParentChain = on === NetworkType.l1
 
@@ -295,7 +297,8 @@ function TokenBalance({
       <span className="font-light">{prefix}</span>
       <span aria-label={`${tokenSymbol} balance amount on ${on}`}>
         {formatAmount(balance, {
-          decimals: forToken.decimals
+          // native currency on Orbit chain is always 18 decimals
+          decimals: isNativeCurrencyOnOrbitChain ? 18 : forToken.decimals
         })}
       </span>{' '}
       <TokenSymbolWithExplorerLink
@@ -714,6 +717,9 @@ export function TransferPanelMain({
                   }
                   forToken={nativeCurrency}
                   prefix={selectedToken ? '' : 'Balance: '}
+                  isNativeCurrencyOnOrbitChain={
+                    !isDepositMode && isNetwork(childChain.id).isOrbitChain
+                  }
                 />
                 {/* Only show ETH balance on L1 */}
                 {isDepositMode && <ETHBalance balance={ethL1Balance} />}
@@ -832,6 +838,9 @@ export function TransferPanelMain({
                         }
                         forToken={nativeCurrency}
                         prefix={selectedToken ? '' : 'Balance: '}
+                        isNativeCurrencyOnOrbitChain={
+                          isDepositMode && isNetwork(childChain.id).isOrbitChain
+                        }
                       />
                       {!isDepositMode && <ETHBalance balance={ethL1Balance} />}
                     </>

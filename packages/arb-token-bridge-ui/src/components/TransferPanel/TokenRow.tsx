@@ -21,7 +21,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -244,6 +244,12 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
   } = useAppState()
   const { isLoading: isLoadingAccountType } = useAccountType()
   const { balance, symbol } = useTokenInfo(token)
+  const [networks] = useNetworks()
+  const { childChainProvider } = useNetworksRelationship(networks)
+
+  const nativeCurrency = useNativeCurrency({
+    provider: childChainProvider
+  })
 
   const isArbitrumNativeUSDC =
     isTokenArbitrumOneNativeUSDC(token?.address) ||
@@ -266,6 +272,21 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     return typeof bridgeTokens[token.address] !== 'undefined'
   }, [bridgeTokens, isArbitrumNativeUSDC, token])
 
+  const decimals = useMemo(() => {
+    const { isOrbitChain } = isNetwork(networks.sourceChain.id)
+
+    if (token) {
+      return token.decimals
+    }
+
+    // token is the native currency, and it's always 18 for Orbit chains
+    if (isOrbitChain) {
+      return 18
+    }
+
+    return nativeCurrency.decimals
+  }, [nativeCurrency.decimals, networks.sourceChain.id, token])
+
   if (!tokenIsAddedToTheBridge) {
     return <span className="arb-hover text-sm">Import</span>
   }
@@ -279,7 +300,7 @@ function TokenBalance({ token }: { token: ERC20BridgeToken | null }) {
     <span className="flex items-center whitespace-nowrap text-sm text-white/70">
       {balance ? (
         formatAmount(balance, {
-          decimals: token?.decimals,
+          decimals,
           symbol
         })
       ) : (
