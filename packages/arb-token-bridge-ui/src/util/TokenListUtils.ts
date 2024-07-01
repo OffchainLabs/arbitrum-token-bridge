@@ -122,6 +122,15 @@ export const BRIDGE_TOKEN_LISTS: BridgeTokenList[] = [
     logoURI: UniswapLogo
   },
   {
+    id: 660279,
+    // Xai
+    originChainID: 660279,
+    url: 'tokenLists/660279_default.json',
+    name: 'XAI Default List',
+    isDefault: true,
+    logoURI: '/images/XaiLogo.svg'
+  },
+  {
     id: 15,
     // Rari
     originChainID: 1380012617,
