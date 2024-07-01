@@ -33,9 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-    
-    steps:        
-      - name: Make IS_HOTFIX env var global 
+
+    steps:
+      - name: Make IS_HOTFIX env var global
         id: check-is-hotfix
         run: |
           echo "is_hotfix=${{ env.IS_HOTFIX }}" >> $GITHUB_OUTPUT
@@ -80,6 +80,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Install node_modules
         uses: OffchainLabs/actions/node-modules/install@main
 
@@ -90,6 +93,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -109,6 +115,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
@@ -126,6 +135,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
+
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
@@ -139,6 +151,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
@@ -179,6 +194,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: ./.github/actions/setup-node
 
       - name: Chown workspace
         run: chown -R $(whoami) .
@@ -260,7 +278,7 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
-      
+
       - name: Create screenshots directory
         if: steps.e2e-run.outputs.status == 'failed'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
@@ -294,7 +312,7 @@ jobs:
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
           compression-level: 0
           retention-days: 3
-            
+
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
