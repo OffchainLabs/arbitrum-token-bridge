@@ -6,10 +6,8 @@ import EclipseBottom from '@/images/eclipse_bottom.png'
 
 import { AppSidebar } from '../Sidebar/AppSidebar'
 import { Toast } from './atoms/Toast'
-import { SiteBanner } from './SiteBanner'
 
 import 'react-toastify/dist/ReactToastify.css'
-import { ExternalLink } from './ExternalLink'
 
 const unica = localFont({
   src: [
@@ -56,20 +54,7 @@ export function Layout(props: LayoutProps) {
         <div className="flex flex-row">
           <AppSidebar />
 
-          <main className="grow">
-            <SiteBanner expiryDate="2024-08-17 12:00">
-              Stylus is now live on Arbitrum Sepolia! Learn more about the
-              Stylus Blitz hackathon{' '}
-              <ExternalLink
-                href="https://arbitrumfoundation.medium.com/welcome-to-the-stylus-blitz-hackathon-0d8b27e0c057"
-                className="underline hover:no-underline"
-              >
-                here
-              </ExternalLink>
-              .
-            </SiteBanner>
-            {props.children}
-          </main>
+          <main className="grow">{props.children}</main>
 
           <Toast />
         </div>
