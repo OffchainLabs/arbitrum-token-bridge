@@ -10,7 +10,7 @@ async function generateCoreChainsToMonitor() {
   const coreChainsToMonitor = [novaChain].map(coreChain =>
     getChainToMonitor({
       chain: coreChain,
-      rpcUrl: rpcURLs[coreChain.chainID]
+      rpcUrl: process.env.NOVA_MONITOR_RPC_URL ?? rpcURLs[novaChain.chainID]
     })
   )
 
