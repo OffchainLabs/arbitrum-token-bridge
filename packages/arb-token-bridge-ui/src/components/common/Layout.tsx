@@ -37,15 +37,8 @@ export function Layout(props: LayoutProps) {
     >
       <Header />
 
-<<<<<<< Updated upstream
       <div className="bg-gradient-overlay flex min-h-[calc(100vh-80px)] flex-col">
         <main>{props.children}</main>
-=======
-          <main className="grow">{props.children}</main>
-
-          <Toast />
-        </div>
->>>>>>> Stashed changes
       </div>
 
       <Toast />
