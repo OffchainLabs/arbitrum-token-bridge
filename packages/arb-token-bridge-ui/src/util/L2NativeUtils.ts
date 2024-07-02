@@ -14,7 +14,8 @@ export const ArbOneNativeUSDC = {
   symbol: 'USDC',
   address: CommonAddress.ArbitrumOne.USDC,
   decimals: 6,
-  logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png'
+  logoURI:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/assets/0xaf88d065e77c8cC2239327C5EDb3A432268e5831/logo.png'
 }
 
 const L2NativeTokens: { [chainId: number]: L2NativeToken[] } = {

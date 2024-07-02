@@ -30,7 +30,7 @@ const TokenListSyncer = (): JSX.Element => {
 
     const tokenListsToSet = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
       // Always load the Arbitrum Token token list
-      if (bridgeTokenList.isArbitrumTokenTokenList) {
+      if (bridgeTokenList.isAlwaysLoaded) {
         return true
       }
 

@@ -3,6 +3,7 @@ import { SWRResponse } from 'swr'
 import {
   BRIDGE_TOKEN_LISTS,
   fetchTokenListFromURL,
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
   TokenListWithId
 } from '../util/TokenListUtils'
 import { isNetwork } from '../util/networks'
@@ -12,12 +13,30 @@ export function fetchTokenLists(
 ): Promise<TokenListWithId[]> {
   return new Promise(resolve => {
     const { isOrbitChain } = isNetwork(forL2ChainId)
-    const requestListArray = BRIDGE_TOKEN_LISTS.filter(
-      bridgeTokenList =>
-        bridgeTokenList.originChainID === forL2ChainId ||
-        // Always load the Arbitrum Token token list except from or to Orbit chain
-        (bridgeTokenList.isArbitrumTokenTokenList && !isOrbitChain)
-    )
+    const requestListArray = BRIDGE_TOKEN_LISTS.filter(bridgeTokenList => {
+      if (bridgeTokenList.originChainID === forL2ChainId) {
+        return true
+      }
+
+      // Always load the Arbitrum Token token list except from or to Orbit chain
+      if (
+        bridgeTokenList.id === SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID &&
+        !isOrbitChain
+      ) {
+        return true
+      }
+
+      // L2 Native token list
+      if (
+        bridgeTokenList.isAlwaysLoaded &&
+        bridgeTokenList.id !== SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID &&
+        isOrbitChain
+      ) {
+        return true
+      }
+
+      return false
+    })
 
     Promise.all(
       requestListArray.map(bridgeTokenList =>

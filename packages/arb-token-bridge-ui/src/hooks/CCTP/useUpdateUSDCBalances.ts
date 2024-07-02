@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 import { CommonAddress } from '../../util/CommonAddressUtils'
-import { getL2ERC20Address } from '../../util/TokenUtils'
 import { useBalance } from '../useBalance'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { isNetwork } from '../../util/networks'
+import { useTokensFromLists } from '../../components/TransferPanel/TokenSearchUtils'
 
 export function useUpdateUSDCBalances({
   walletAddress
@@ -26,6 +26,8 @@ export function useUpdateUSDCBalances({
     provider: childChainProvider,
     walletAddress
   })
+
+  const tokensFromLists = useTokensFromLists()
 
   const updateUSDCBalances = useCallback(async () => {
     const { isEthereumMainnet, isSepolia, isArbitrumOne, isArbitrumSepolia } =
@@ -58,27 +60,15 @@ export function useUpdateUSDCBalances({
 
     // we don't have native USDC addresses for Orbit chains, we need to fetch it
     if (!childChainUsdcAddress) {
-      try {
-        childChainUsdcAddress = (
-          await getL2ERC20Address({
-            erc20L1Address: parentChainUsdcAddress,
-            l1Provider: parentChainProvider,
-            l2Provider: childChainProvider
-          })
-        ).toLowerCase()
-      } catch {
-        // could be never bridged before
-        return
-      }
+      childChainUsdcAddress = tokensFromLists[parentChainUsdcAddress]?.l2Address
     }
 
     if (childChainUsdcAddress) {
       updateErc20L2Balance([childChainUsdcAddress])
     }
   }, [
-    childChainProvider,
     parentChain.id,
-    parentChainProvider,
+    tokensFromLists,
     updateErc20L1Balance,
     updateErc20L2Balance
   ])
