@@ -635,7 +635,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
     depositTimeout: 1800000,
     blockTime: constants.ARB_MINIMUM_BLOCK_TIME_IN_SECONDS,
     bridgeUiConfig: {
-      color: '#2D2D2D',
+      color: '#889B6F',
       network: {
         name: 'Atlas Testnet',
         logo: '/images/AtlasLogo.png',
