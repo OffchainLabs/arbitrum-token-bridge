@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi'
+import { Chain } from 'viem'
 import * as chains from 'wagmi/chains'
 
 import {

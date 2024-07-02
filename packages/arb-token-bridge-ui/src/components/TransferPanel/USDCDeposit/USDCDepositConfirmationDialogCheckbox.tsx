@@ -2,7 +2,7 @@ import { ExternalLink } from '../../common/ExternalLink'
 import { Checkbox } from '../../common/Checkbox'
 import { useEffect, useState } from 'react'
 import { isNetwork } from '../../../util/networks'
-import { useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 export function USDCDepositConfirmationDialogCheckbox({
   onChange,
@@ -19,7 +19,7 @@ export function USDCDepositConfirmationDialogCheckbox({
     false
   ])
   const externalLinkClassnames = 'arb-hover underline'
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const { isTestnet } = isNetwork(chain?.id ?? 0)
 
   const destinationNetworkName = isTestnet ? 'Arbitrum Sepolia' : 'Arbitrum One'

@@ -1,9 +1,4 @@
-import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
-import { publicProvider } from 'wagmi/providers/public'
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
-
 import {
   sepolia,
   arbitrumNova,
@@ -18,6 +13,8 @@ import { getCustomChainsFromLocalStorage, ChainId } from '../networks'
 import { getOrbitChains } from '../orbitChainsList'
 import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
+import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { _chains } from '@rainbow-me/rainbowkit/dist/config/getDefaultConfig'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
   getWagmiChain(chain.chainID)
@@ -109,7 +106,7 @@ function getChainId(targetChainKey: TargetChainKey): number {
   }
 }
 
-function getChains(targetChainKey: TargetChainKey) {
+function getChains(targetChainKey: TargetChainKey): _chains {
   const targetChainId = getChainId(targetChainKey)
 
   // Doing `Array.filter` instead of `Array.find` in case it's empty, just in case.
@@ -120,31 +117,11 @@ function getChains(targetChainKey: TargetChainKey) {
 }
 
 export function getProps(targetChainKey: string | null) {
-  const { chains, provider } = configureChains(
-    // Wagmi selects the first chain as the one to target in WalletConnect, so it has to be the first in the array.
-    //
-    // https://github.com/wagmi-dev/references/blob/main/packages/connectors/src/walletConnect.ts#L114
-    getChains(sanitizeTargetChainKey(targetChainKey)),
-    [customInfuraProvider(), publicProvider()]
-  )
+  const chains = getChains(sanitizeTargetChainKey(targetChainKey))
 
-  const { wallets } = getDefaultWallets({
+  const config = getDefaultConfig({
     ...appInfo,
-    chains
-  })
-
-  const connectors = connectorsForWallets([
-    ...wallets,
-    {
-      groupName: 'More',
-      wallets: [trustWallet({ chains, projectId })]
-    }
-  ])
-
-  const client = createClient({
-    autoConnect: true,
-    connectors,
-    provider
+    chains: getChains(sanitizeTargetChainKey(targetChainKey))
   })
 
   return {
@@ -153,7 +130,7 @@ export function getProps(targetChainKey: string | null) {
       chains
     },
     wagmiConfigProps: {
-      client
+      config
     }
   }
 }

@@ -1,6 +1,6 @@
 import { BigNumber, Signer } from 'ethers'
 import useSWR from 'swr'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
@@ -55,7 +55,7 @@ export function useGasEstimates({
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
 } {
-  const { data: signer } = useSigner()
+  const { data: signer } = useWalletClient()
 
   const { data: gasEstimates, error } = useSWR(
     signer && sourceChainBalance && sourceChainBalance.gte(amount)

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 import { twMerge } from 'tailwind-merge'
 import {
   ArrowTopRightOnSquareIcon,

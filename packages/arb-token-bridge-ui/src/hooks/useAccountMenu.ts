@@ -3,10 +3,9 @@ import { useState, useEffect, useMemo } from 'react'
 import Resolution from '@unstoppabledomains/resolution'
 
 import {
-  useProvider,
+  usePublicClient,
   useAccount,
   useDisconnect,
-  useNetwork,
   useEnsName,
   useEnsAvatar
 } from 'wagmi'
@@ -46,12 +45,12 @@ async function tryLookupUDName(provider: JsonRpcProvider, address: string) {
 }
 
 export const useAccountMenu = () => {
-  const l1Provider = useProvider({ chainId: 1 })
+  const l1Provider = usePublicClient({ chainId: 1 })
   const { address } = useAccount()
   const { disconnect } = useDisconnect({
     onSettled: onDisconnectHandler
   })
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
 
   const { openTransactionHistoryPanel } = useAppContextActions()
   const [, setQueryParams] = useArbQueryParams()

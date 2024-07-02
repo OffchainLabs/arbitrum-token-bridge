@@ -1,4 +1,4 @@
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { simulateContract, writeContract } from '@wagmi/core'
 import { constants, utils } from 'ethers'
 import { ERC20__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ERC20__factory'
 
@@ -118,7 +118,7 @@ export class CctpTransferStarter extends BridgeTransferStarter {
       sourceChainId
     })
 
-    const config = await prepareWriteContract({
+    const config = await simulateContract({
       address: tokenMessengerContractAddress,
       abi: TokenMessengerAbi,
       functionName: 'depositForBurn',

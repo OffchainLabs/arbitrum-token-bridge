@@ -1,9 +1,9 @@
-import { useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import { isNetwork } from '../util/networks'
 
 export function useIsConnectedToArbitrum() {
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
 
   if (typeof chain === 'undefined') {
     return undefined

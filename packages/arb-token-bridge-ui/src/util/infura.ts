@@ -1,5 +1,5 @@
 import { providers } from 'ethers'
-import { Chain, ChainProviderFn } from 'wagmi'
+import { Chain } from 'viem'
 
 import { ChainId } from './networks'
 

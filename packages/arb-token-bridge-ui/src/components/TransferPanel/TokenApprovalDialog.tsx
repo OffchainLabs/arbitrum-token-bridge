@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BigNumber, constants, utils } from 'ethers'
 import { useAccount, useChainId } from 'wagmi'
 
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
@@ -56,7 +56,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
   const provider = isDepositMode ? parentChainProvider : childChainProvider
   const gasPrice = useGasPrice({ provider })
   const chainId = useChainId()
-  const { data: signer } = useSigner({
+  const { data: signer } = useWalletClient({
     chainId
   })
 

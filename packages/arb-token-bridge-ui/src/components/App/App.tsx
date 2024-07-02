@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react'
 
-import { useAccount, useNetwork, WagmiConfig, useDisconnect } from 'wagmi'
+import { useAccount, WagmiProvider, useDisconnect } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   darkTheme,
   RainbowKitProvider,
@@ -319,7 +320,7 @@ function ConnectedChainSyncer() {
 
   const [{ sourceChain, destinationChain }, setQueryParams] =
     useArbQueryParams()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
 
   const setSourceChainToConnectedChain = useCallback(() => {
     if (typeof chain === 'undefined') {
@@ -402,22 +403,25 @@ function ConnectedChainSyncer() {
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))
+  const queryClient = new QueryClient()
 
   return (
     <Provider value={overmind}>
-      <ArbQueryParamProvider>
-        <WagmiConfig {...wagmiConfigProps}>
-          <RainbowKitProvider
-            theme={rainbowkitTheme}
-            {...rainbowKitProviderProps}
-          >
-            <ConnectedChainSyncer />
-            <AppContextProvider>
-              <AppContent />
-            </AppContextProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
-      </ArbQueryParamProvider>
+      <QueryClientProvider client={queryClient}>
+        <ArbQueryParamProvider>
+          <WagmiProvider config={wagmiConfigProps.config}>
+            <RainbowKitProvider
+              theme={rainbowkitTheme}
+              {...rainbowKitProviderProps}
+            >
+              <ConnectedChainSyncer />
+              <AppContextProvider>
+                <AppContent />
+              </AppContextProvider>
+            </RainbowKitProvider>
+          </WagmiProvider>
+        </ArbQueryParamProvider>
+      </QueryClientProvider>
     </Provider>
   )
 }

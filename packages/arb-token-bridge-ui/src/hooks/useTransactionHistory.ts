@@ -1,4 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import useSWRImmutable from 'swr/immutable'
 import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -245,7 +245,7 @@ function dedupeTransactions(txs: Transfer[]) {
  * Fetches transaction history only for deposits and withdrawals, without their statuses.
  */
 const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const [isTestnetMode] = useIsTestnetMode()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
@@ -480,7 +480,7 @@ export const useTransactionHistory = (
   { runFetcher = false } = {}
 ): UseTransactionHistoryResult => {
   const [isTestnetMode] = useIsTestnetMode()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
   const { connector } = useAccount()

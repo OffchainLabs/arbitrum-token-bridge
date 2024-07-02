@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import { BigNumber, constants, utils } from 'ethers'
 import { Dialog, UseDialogProps } from '../common/Dialog'
 import { Checkbox } from '../common/Checkbox'
@@ -35,7 +35,7 @@ export function CustomFeeTokenApprovalDialog(
   const { parentChain, parentChainProvider } = useNetworksRelationship(networks)
   const { isEthereumMainnet } = isNetwork(parentChain.id)
 
-  const { data: l1Signer } = useSigner({ chainId: parentChain.id })
+  const { data: l1Signer } = useWalletClient({ chainId: parentChain.id })
   const l1GasPrice = useGasPrice({ provider: parentChainProvider })
 
   const [checked, setChecked] = useState(false)

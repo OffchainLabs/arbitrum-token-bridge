@@ -1,4 +1,6 @@
-import { Chain, sepolia as sepoliaDefault } from 'wagmi'
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { Chain } from 'viem'
+import { sepolia as sepoliaDefault } from 'viem/chains'
 
 import { ether } from '../../constants'
 import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'

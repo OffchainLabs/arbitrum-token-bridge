@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import * as Sentry from '@sentry/react'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount, useWalletClient } from 'wagmi'
 
 import { useAppState } from '../state'
 import { MergedTransaction, WithdrawalStatus } from '../state/app/state'
@@ -30,7 +30,7 @@ export function useClaimWithdrawal(
     app: { arbTokenBridge }
   } = useAppState()
   const { address } = useAccount()
-  const { data: signer } = useSigner({ chainId: tx.parentChainId })
+  const { data: signer } = useWalletClient({ chainId: tx.parentChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
   const [isClaiming, setIsClaiming] = useState(false)
 

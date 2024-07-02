@@ -9,7 +9,7 @@ import { getNetworkName } from '../../util/networks'
 import { errorToast } from '../common/atoms/Toast'
 import { Button } from '../common/Button'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
-import { useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { isDepositReadyToRedeem } from '../../state/app/utils'
 import { useRedeemRetryable } from '../../hooks/useRedeemRetryable'
 import { WithdrawalCountdown } from '../common/WithdrawalCountdown'
@@ -30,7 +30,7 @@ export function TransactionsTableRowAction({
   type: 'deposits' | 'withdrawals'
   address: Address | undefined
 }) {
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const { switchNetworkAsync } = useSwitchNetworkWithConfig()
   const networkName = getNetworkName(chain?.id ?? 0)
 

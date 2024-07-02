@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { L1ToL2MessageStatus } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
 
@@ -23,7 +23,7 @@ export function useRedeemRetryable(
   tx: MergedTransaction,
   address: Address | undefined
 ): UseRedeemRetryableResult {
-  const { data: signer } = useSigner({ chainId: tx.destinationChainId })
+  const { data: signer } = useWalletClient({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
 
   const destinationNetworkName = getNetworkName(tx.destinationChainId)

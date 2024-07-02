@@ -7,7 +7,7 @@ import {
   useRef,
   useState
 } from 'react'
-import { Chain } from 'wagmi'
+import { Chain } from 'viem'
 import { useDebounce } from '@uidotdev/usehooks'
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { twMerge } from 'tailwind-merge'

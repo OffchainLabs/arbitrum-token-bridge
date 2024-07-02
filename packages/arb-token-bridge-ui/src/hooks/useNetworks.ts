@@ -1,4 +1,4 @@
-import { Chain } from 'wagmi'
+import { Chain } from 'viem'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'

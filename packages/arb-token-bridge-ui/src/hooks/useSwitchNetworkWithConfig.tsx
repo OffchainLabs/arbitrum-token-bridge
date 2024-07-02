@@ -1,5 +1,6 @@
-import { useSwitchNetwork } from 'wagmi'
-import { SwitchNetworkArgs } from '@wagmi/core'
+import { useSwitchChain } from 'wagmi'
+import { type UseSwitchChainParameters } from 'wagmi'
+
 import * as Sentry from '@sentry/react'
 
 import { getNetworkName, isNetwork } from '../util/networks'
@@ -27,14 +28,14 @@ const handleSwitchNetworkNotSupported = (
 
 /**
  * Function to invoke when an error is thrown while attempting to switch network.
- * https://wagmi.sh/react/hooks/useSwitchNetwork#onerror-optional
+ * https://wagmi.sh/react/hooks/useSwitchChain#onerror-optional
  * @param error
  * @param param1 - `{ chainId: number }`
  * @param context - default value `{ isSwitchingNetworkBeforeTx: false }`
  */
 function handleSwitchNetworkError(
   error: any,
-  { chainId }: SwitchNetworkArgs,
+  { chainId }: UseSwitchChainParameters,
   context: unknown = { isSwitchingNetworkBeforeTx: false }
 ) {
   const { isSwitchingNetworkBeforeTx } = context as {
@@ -50,7 +51,7 @@ function handleSwitchNetworkError(
   }
 }
 
-export function useSwitchNetworkWithConfig({
+export function useSwitchChainWithConfig({
   isSwitchingNetworkBeforeTx = false
 }: SwitchNetworkConfig = {}) {
   const config = {
@@ -64,7 +65,7 @@ export function useSwitchNetworkWithConfig({
      * variables switch network function would receive.
      * Value returned from this function will be passed to both `onError` and
      * `onSettled` functions in event of a switch network failure.
-     * https://wagmi.sh/react/hooks/useSwitchNetwork#onmutate-optional
+     * https://wagmi.sh/react/hooks/useSwitchChain#onmutate-optional
      *
      * @returns `{ isSwitchingNetworkBeforeTx: boolean }`
      */
@@ -72,5 +73,5 @@ export function useSwitchNetworkWithConfig({
     onError: handleSwitchNetworkError
   }
 
-  return useSwitchNetwork(config)
+  return useSwitchChain(config)
 }

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Signer } from 'ethers'
 import { L1ToL2MessageStatus, L1ToL2MessageWriter } from '@arbitrum/sdk'
-import { useSigner } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
@@ -149,7 +149,7 @@ export function useRedeemTeleporter(
 ): UseRedeemRetryableResult {
   const chainIdForRedeemingRetryable = getChainIdForRedeemingRetryable(tx)
 
-  const { data: signer } = useSigner({
+  const { data: signer } = useWalletClient({
     chainId: chainIdForRedeemingRetryable
   })
   const { updatePendingTransaction } = useTransactionHistory(address)

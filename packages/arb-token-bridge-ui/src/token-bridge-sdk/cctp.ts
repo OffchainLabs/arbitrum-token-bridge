@@ -2,7 +2,7 @@ import { readContract } from '@wagmi/core'
 import { Signer } from 'ethers'
 import { TokenMinterAbi } from '../util/cctp/TokenMinterAbi'
 import { ChainDomain } from '../pages/api/cctp/[type]'
-import { prepareWriteContract, writeContract } from '@wagmi/core'
+import { simulateContract, writeContract } from '@wagmi/core'
 import { MessageTransmitterAbi } from '../util/cctp/MessageTransmitterAbi'
 import { CCTPSupportedChainId } from '../state/cctpState'
 import { ChainId } from '../util/networks'
@@ -146,7 +146,7 @@ export const getCctpUtils = ({ sourceChainId }: { sourceChainId?: number }) => {
     attestation: Address
     signer: Signer
   }) => {
-    const config = await prepareWriteContract({
+    const config = await simulateContract({
       address: messageTransmitterContractAddress,
       abi: MessageTransmitterAbi,
       functionName: 'receiveMessage',

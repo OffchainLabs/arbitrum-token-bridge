@@ -15,7 +15,7 @@ import {
 import { fetchCCTPDeposits, fetchCCTPWithdrawals } from '../util/cctp/fetchCCTP'
 import { DepositStatus, MergedTransaction, WithdrawalStatus } from './app/state'
 import { getStandardizedTimestamp } from './app/utils'
-import { useAccount, useSigner } from 'wagmi'
+import { useAccount, useWalletClient } from 'wagmi'
 import dayjs from 'dayjs'
 import {
   ChainDomain,
@@ -514,7 +514,7 @@ export function useClaimCctp(tx: MergedTransaction) {
   })
   const { isSmartContractWallet } = useAccountType()
 
-  const { data: signer } = useSigner({
+  const { data: signer } = useWalletClient({
     chainId: tx.destinationChainId
   })
 

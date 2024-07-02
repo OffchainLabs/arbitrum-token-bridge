@@ -1,6 +1,6 @@
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useMemo } from 'react'
-import { Chain } from 'wagmi'
+import { Chain } from 'viem'
 import { UseNetworksState } from './useNetworks'
 import { isDepositMode } from '../util/isDepositMode'
 import { isTeleport } from '@/token-bridge-sdk/teleport'

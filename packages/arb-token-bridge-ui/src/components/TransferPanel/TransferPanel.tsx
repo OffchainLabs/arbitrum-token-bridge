@@ -4,7 +4,7 @@ import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
 import * as Sentry from '@sentry/react'
-import { useAccount, useChainId, useSigner } from 'wagmi'
+import { useAccount, useChainId, useWalletClient } from 'wagmi'
 import { TransactionResponse } from '@ethersproject/providers'
 import { twMerge } from 'tailwind-merge'
 
@@ -130,10 +130,10 @@ export function TransferPanel() {
 
   const { isEOA, isSmartContractWallet } = useAccountType()
 
-  const { data: l1Signer } = useSigner({
+  const { data: l1Signer } = useWalletClient({
     chainId: parentChain.id
   })
-  const { data: l2Signer } = useSigner({
+  const { data: l2Signer } = useWalletClient({
     chainId: childChain.id
   })
 
