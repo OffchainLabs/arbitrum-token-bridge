@@ -24,8 +24,16 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
+import { ChainId } from '../util/networks'
 
 export { OutgoingMessageState }
+
+export type AddTokensFromListArgs = {
+  arbTokenList: TokenList
+  listId: number
+  parentChainId: ChainId
+  childChainId: ChainId
+}
 
 export enum TokenType {
   ERC20 = 'ERC20'
@@ -150,7 +158,12 @@ export interface ArbTokenBridgeEth {
 export interface ArbTokenBridgeToken {
   add: (erc20L1orL2Address: string) => Promise<void>
   addL2NativeToken: (erc20L2Address: string) => void
-  addTokensFromList: (tokenList: TokenList, listID: number) => void
+  addTokensFromList: ({
+    arbTokenList,
+    listId,
+    parentChainId,
+    childChainId
+  }: AddTokensFromListArgs) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
