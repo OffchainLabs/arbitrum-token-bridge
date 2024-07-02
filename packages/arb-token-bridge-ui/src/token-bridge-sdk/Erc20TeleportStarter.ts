@@ -79,7 +79,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
 
     const l1l3Bridger = await this.getBridger()
 
-    const l1TeleporterAddress = l1l3Bridger.teleporterAddresses.l1Teleporter
+    const l1TeleporterAddress = l1l3Bridger.teleporter.l1Teleporter
 
     const allowanceForTeleporter = await fetchErc20Allowance({
       address: this.sourceChainErc20Address,
@@ -98,7 +98,7 @@ export class Erc20TeleportStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
 
     const l1l3Bridger = await this.getBridger()
-    const l1TeleporterAddress = l1l3Bridger.teleporterAddresses.l1Teleporter
+    const l1TeleporterAddress = l1l3Bridger.teleporter.l1Teleporter
 
     const contract = ERC20__factory.connect(
       this.sourceChainErc20Address,
