@@ -170,7 +170,7 @@ export function TokenApprovalDialog(props: TokenApprovalDialogProps) {
           throw new Error('Error initializing L1L3Bridger.')
         }
 
-        setContractAddress(l1L3Bridger.teleporterAddresses.l1Teleporter)
+        setContractAddress(l1L3Bridger.teleporter.l1Teleporter)
         return
       }
 
