@@ -14,7 +14,7 @@ export type WithdrawOnlyToken = {
   l2Address: string
 }
 
-const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
+export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -171,6 +171,12 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2',
       l1Address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
       l2Address: '0x292CbA96fce24f6802dBdA021ED2B05481a3eEdF'
+    },
+    {
+      symbol: 'GHO',
+      l2CustomAddr: '',
+      l1Address: '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f',
+      l2Address: '0xfeb8670b834d9157864126f5dbd24b25d06882ad'
     }
   ],
   [ChainId.ArbitrumNova]: []

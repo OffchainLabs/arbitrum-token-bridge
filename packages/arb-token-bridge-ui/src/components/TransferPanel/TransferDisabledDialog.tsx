@@ -6,9 +6,10 @@ import { Dialog } from '../common/Dialog'
 import { sanitizeTokenSymbol } from '../../util/TokenUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { ExternalLink } from '../common/ExternalLink'
-import { getNetworkName } from '../../util/networks'
+import { ChainId, getNetworkName } from '../../util/networks'
 import { getL2ConfigForTeleport } from '../../token-bridge-sdk/teleport'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { withdrawOnlyTokens } from '../../util/WithdrawOnlyUtils'
 
 type TransferDisabledDialogStore = {
   isOpen: boolean
@@ -67,6 +68,13 @@ export function TransferDisabledDialog() {
     ? getNetworkName(l2ChainIdForTeleport)
     : null
 
+  const isGHO =
+    networks.destinationChain.id === ChainId.ArbitrumOne &&
+    selectedToken?.address.toLowerCase() ===
+      withdrawOnlyTokens[ChainId.ArbitrumOne]
+        ?.find(_token => _token.symbol === 'GHO')
+        ?.l1Address.toLowerCase()
+
   return (
     <Dialog
       closeable
@@ -120,6 +128,18 @@ export function TransferDisabledDialog() {
               custom bridge solution that is incompatible with the canonical
               Arbitrum bridge.
             </p>
+            {isGHO && (
+              <p>
+                Please use the{' '}
+                <ExternalLink
+                  className="underline hover:opacity-70"
+                  href="https://app.transporter.io/?from=mainnet&tab=token&to=arbitrum&token=GHO"
+                >
+                  CCIP bridge for GHO
+                </ExternalLink>{' '}
+                instead.
+              </p>
+            )}
             <p>
               For more information please contact{' '}
               <span className="font-medium">{unsupportedToken}</span>
