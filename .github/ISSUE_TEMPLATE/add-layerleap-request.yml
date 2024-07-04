@@ -6,14 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please provide the necessary config information for the Orbit chain.
-  - type: input
-    id: chain-id
-    attributes:
-      label: Chain ID
-      placeholder: Your Orbit Chain ID
-    validations:
-      required: true
+        Please provide the necessary config information for the Orbit chain.  
   - type: input
     id: name
     attributes:
@@ -21,25 +14,11 @@ body:
       placeholder: Your Orbit Chain name
     validations:
       required: true
-  - type: input
-    id: parent-chain-id
-    attributes:
-      label: Parent chain ID
-      placeholder: eg. 42161
-    validations:
-      required: true
-  - type: input
-    id: parent-chain-name
-    attributes:
-      label: Parent Chain name
-      placeholder: eg. Arbitrum One
-    validations:
-      required: true
-  
+    
   - type: markdown
     attributes:
       value: |
-        Native token information - only fill this if you are using a native token other than ETH
+        Native Token Information - Please note that LayerLeap does not yet support custom gas token chains. We still encourage you to fill the form out to be part of our early release for the next LayerLeap version which will support custom gas token chains.
   - type: input
     id: native-token-address
     attributes:
