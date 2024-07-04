@@ -51,9 +51,6 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
 
-    case ChainId.StylusTestnet:
-      return 'stylus-testnet'
-
     case ChainId.StylusTestnetV2:
       return 'stylus-testnet-v2'
 
@@ -106,9 +103,6 @@ export function getChainForChainKeyQueryParam(
 
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
-
-    case 'stylus-testnet':
-      return customChains.stylusTestnet
 
     case 'stylus-testnet-v2':
       return customChains.stylusTestnetV2

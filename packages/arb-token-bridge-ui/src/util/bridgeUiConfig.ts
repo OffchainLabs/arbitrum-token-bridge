@@ -96,16 +96,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
             'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
-    case ChainId.StylusTestnet:
-      return {
-        color: '#E3066E',
-        network: {
-          name: 'Stylus Testnet v1',
-          logo: '/images/StylusLogo.svg',
-          description:
-            'An experimental playground for Arbitrum Stylus smart contracts.'
-        }
-      }
     case ChainId.StylusTestnetV2:
       return {
         color: '#E3066E',
