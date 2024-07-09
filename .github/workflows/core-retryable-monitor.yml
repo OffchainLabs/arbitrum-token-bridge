@@ -8,8 +8,8 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-  CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN }}
-  CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+  RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.RETRYABLE_MONITORING_SLACK_TOKEN }}
+  RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.RETRYABLE_MONITORING_SLACK_CHANNEL }}
   NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
 
 jobs:
@@ -37,10 +37,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: OffchainLabs/orbit-retryable-tracker
-        path: retryable-tracker
+        path: arbitrum-monitor
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json ./retryable-tracker/lib/config.json
+      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json ./arbitrum-monitor/packages/retryable-monitor/config.json
    
     - name: Setup Node for Retryable-Tracker
       uses: actions/setup-node@v4
@@ -48,15 +48,14 @@ jobs:
         node-version: latest
 
     - name: Install dependencies for Retryable-Tracker
-      run: cd ./retryable-tracker && yarn install
+      run: cd ./arbitrum-monitor && yarn install
 
     - name: Run alerting command
-      run: cd ./retryable-tracker && yarn findRetryables --enableAlerting
+      run: cd ./arbitrum-monitor && yarn retryable-monitor --enableAlerting
       env:
         NODE_ENV: "CI"
-        ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN }}
-        ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL }}
-
+        RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.RETRYABLE_MONITORING_SLACK_TOKEN }}
+        RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.RETRYABLE_MONITORING_SLACK_CHANNEL }}
 
     - name: Clean up
       run: rm ./packages/arb-token-bridge-ui/public/__auto-generated-core-chains.json
