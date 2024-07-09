@@ -4,11 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  isNetwork
-} from '../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
   sepolia,
   holesky,
@@ -62,23 +58,6 @@ export function sanitizeQueryParams({
   sourceChainId: ChainId | number
   destinationChainId: ChainId | number
 } {
-  // early check, if we detect an orbit chain in the route
-  // if neither of source or destination chains are the orbit chain in route, return the orbit chain as the destination
-  if (
-    sourceChainId === undefined &&
-    destinationChainId !== undefined &&
-    isNetwork(destinationChainId).isOrbitChain
-  ) {
-    const orbitChain = getOrbitChains().find(
-      chain => chain.chainID === destinationChainId
-    )
-    const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
-    return {
-      sourceChainId: orbitChain?.partnerChainID ?? defaultSourceChainId!,
-      destinationChainId: destinationChainId
-    }
-  }
-
   // when both `sourceChain` and `destinationChain` are undefined or invalid, default to Ethereum and Arbitrum One
   if (
     (!sourceChainId && !destinationChainId) ||
