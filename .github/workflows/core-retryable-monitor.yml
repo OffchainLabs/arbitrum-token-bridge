@@ -10,6 +10,7 @@ env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
   CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_TOKEN }}
   CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.CORE_CHAIN_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+  NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
 
 jobs:
   run-alerting:
@@ -29,6 +30,8 @@ jobs:
 
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui generateCoreChainsToMonitor
+      env:
+        NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
 
     - name: Checkout Retryable-Tracker repository
       uses: actions/checkout@v3

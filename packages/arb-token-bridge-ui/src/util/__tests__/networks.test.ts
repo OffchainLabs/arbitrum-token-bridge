@@ -130,7 +130,7 @@ describe('getBaseChainIdByChainId', () => {
 
       expect(
         getBaseChainIdByChainId({
-          chainId: ChainId.StylusTestnet
+          chainId: ChainId.StylusTestnetV2
         })
       ).toBe(ChainId.Sepolia)
     })
@@ -173,9 +173,6 @@ describe('getSupportedChainIds', () => {
       expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
         ChainId.ArbitrumLocal
       )
-      expect(getSupportedChainIds({ includeMainnets: true })).not.toContain(
-        ChainId.StylusTestnet
-      )
     })
   })
   describe('includeMainnets is true, includeTestnets is true', () => {
@@ -203,9 +200,6 @@ describe('getSupportedChainIds', () => {
       expect(
         getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
       ).toContain(ChainId.ArbitrumLocal)
-      expect(
-        getSupportedChainIds({ includeMainnets: true, includeTestnets: true })
-      ).toContain(ChainId.StylusTestnet)
     })
   })
   describe('includeMainnets is unset, includeTestnets is true', () => {
@@ -232,9 +226,6 @@ describe('getSupportedChainIds', () => {
       )
       expect(getSupportedChainIds({ includeTestnets: true })).toContain(
         ChainId.ArbitrumLocal
-      )
-      expect(getSupportedChainIds({ includeTestnets: true })).toContain(
-        ChainId.StylusTestnet
       )
     })
   })
