@@ -104,27 +104,6 @@ export const arbitrumNova: Chain = {
   }
 }
 
-export const stylusTestnet: Chain = {
-  id: ChainId.StylusTestnet,
-  name: 'Stylus Testnet v1',
-  network: 'stylus-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
-    }
-  }
-}
-
 export const stylusTestnetV2: Chain = {
   id: ChainId.StylusTestnetV2,
   name: 'Stylus Testnet v2',

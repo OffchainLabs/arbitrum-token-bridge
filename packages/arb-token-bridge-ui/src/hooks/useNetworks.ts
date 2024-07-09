@@ -10,7 +10,6 @@ import {
   holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal
@@ -39,7 +38,6 @@ export function isSupportedChainId(
     arbitrum.id,
     arbitrumNova.id,
     arbitrumSepolia.id,
-    stylusTestnet.id,
     stylusTestnetV2.id,
     arbitrumLocal.id,
     local.id,

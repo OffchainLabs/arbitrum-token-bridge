@@ -7,7 +7,6 @@ import {
   holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   stylusTestnetV2,
   localL1Network,
   localL2Network
@@ -48,9 +47,6 @@ export function getWagmiChain(chainId: number): Chain {
 
     case ChainId.ArbitrumSepolia:
       return arbitrumSepolia
-
-    case ChainId.StylusTestnet:
-      return stylusTestnet
 
     case ChainId.StylusTestnetV2:
       return stylusTestnetV2

@@ -1,6 +1,6 @@
 import {
   ArbitrumNetwork,
-  addCustomArbitrumNetwork,
+  addDefaultLocalNetwork,
   getChildrenForNetwork
 } from '@arbitrum/sdk'
 import { networks as arbitrumNetworks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
@@ -207,7 +207,6 @@ export const rpcURLs: { [chainId: number]: string } = {
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
   }),
   // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet.arbitrum.io/rpc',
   [ChainId.StylusTestnetV2]: 'https://stylusv2.arbitrum.io/rpc'
 }
 
@@ -223,7 +222,6 @@ export const explorerUrls: { [chainId: number]: string } = {
   // L2 Testnets
   [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
   // Orbit Testnets
-  [ChainId.StylusTestnet]: 'https://stylus-testnet-explorer.arbitrum.io',
   [ChainId.StylusTestnetV2]: 'https://stylusv2-explorer.arbitrum.io'
 }
 
@@ -294,20 +292,20 @@ const defaultL2Network: ArbitrumNetwork = {
   name: 'Arbitrum Local',
   retryableLifetimeSeconds: 604800,
   tokenBridge: {
-    l1CustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
-    l1ERC20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
-    l1GatewayRouter: '0x85D9a8a4bd77b9b5559c1B7FCb8eC9635922Ed49',
-    l1MultiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386',
-    l1ProxyAdmin: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
-    l1Weth: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l1WethGateway: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l2CustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
-    l2ERC20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
-    l2GatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',
-    l2Multicall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
-    l2ProxyAdmin: '0xda52b25ddB0e3B9CC393b0690Ac62245Ac772527',
-    l2Weth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
-    l2WethGateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4'
+    parentCustomGateway: '0x75E0E92A79880Bd81A69F72983D03c75e2B33dC8',
+    parentErc20Gateway: '0x4Af567288e68caD4aA93A272fe6139Ca53859C70',
+    parentGatewayRouter: '0x85D9a8a4bd77b9b5559c1B7FCb8eC9635922Ed49',
+    parentMultiCall: '0xA39FFA43ebA037D67a0f4fe91956038ABA0CA386',
+    parentProxyAdmin: '0x7E32b54800705876d3b5cFbc7d9c226a211F7C1a',
+    parentWeth: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+    parentWethGateway: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
+    childCustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
+    childErc20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
+    childGatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',
+    childMulticall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+    childProxyAdmin: '0xda52b25ddB0e3B9CC393b0690Ac62245Ac772527',
+    childWeth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
+    childWethGateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4'
   }
 }
 
@@ -325,7 +323,7 @@ export function registerLocalNetwork() {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
 
-    addCustomArbitrumNetwork(defaultL2Network)
+    addDefaultLocalNetwork()
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
@@ -347,7 +345,6 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
-  const isStylusTestnet = chainId === ChainId.StylusTestnet
   const isStylusTestnetV2 = chainId === ChainId.StylusTestnetV2
 
   const isEthereumMainnetOrTestnet =
@@ -369,11 +366,8 @@ export function isNetwork(chainId: ChainId) {
     isHolesky ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
-    isStylusTestnet ||
     isStylusTestnetV2 ||
     isTestnetOrbitChain
-
-  const isStylusTestnetV1orV2 = isStylusTestnet || isStylusTestnetV2
 
   const isSupported =
     isArbitrumOne ||
@@ -401,7 +395,7 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     isTestnet,
-    isStylusTestnetV1orV2,
+    isStylusTestnetV2,
     // General
     isSupported,
     // Core Chain is a chain category for the UI
@@ -461,10 +455,10 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
 }
 
-export function getChildChainIds(chain: L2Network | L1Network) {
+export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
   const childChainIds = [
-    ...(chain.partnerChainIDs ?? []),
-    ...(TELEPORT_ALLOWLIST[chain.chainID] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
+    ...getChildrenForNetwork(chain.chainId),
+    ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
   ]
   return Array.from(new Set(childChainIds))
 }
