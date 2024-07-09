@@ -7,6 +7,8 @@ import {
 
 import { ChainId } from '../util/networks'
 
+const SELF_HOSTED_SUBGRAPH = 'self-hosted'
+
 /**
  * Determines whether to use The Graph Network over The Graph Hosted Service.
  */
@@ -16,6 +18,8 @@ const theGraphNetworkEnabled = process.env.THE_GRAPH_NETWORK_ENABLED === 'true'
  * The API key to be used for calls to The Graph Network.
  */
 const theGraphNetworkApiKey = process.env.THE_GRAPH_NETWORK_API_KEY
+
+const selfHostedSubgraphApiKey = process.env.SELF_HOSTED_SUBGRAPH_API_KEY
 
 type SubgraphKey = keyof typeof subgraphs
 
@@ -63,6 +67,11 @@ const subgraphs = {
     theGraphNetworkSubgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj',
     theGraphHostedServiceSubgraphName: 'gvladika/layer2-token-gateway-arb1'
   },
+  // L2 Nova Subgraphs
+  'l2-arbitrum-nova': {
+    theGraphNetworkSubgraphId: SELF_HOSTED_SUBGRAPH,
+    theGraphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-nova'
+  },
   // L2 Testnet Subgraphs
   'l2-arbitrum-sepolia': {
     theGraphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
@@ -84,6 +93,20 @@ function createApolloClient(uri: string) {
     link: new HttpLink({ uri, fetch }),
     cache: new InMemoryCache()
   })
+}
+
+function createSelfHostedSubgraphClient(subgraphName: string) {
+  if (
+    typeof selfHostedSubgraphApiKey === 'undefined' ||
+    selfHostedSubgraphApiKey === ''
+  ) {
+    throw new Error(
+      `[createSelfHostedSubgraphClient] missing "SELF_HOSTED_SUBGRAPH_API_KEY" env variable`
+    )
+  }
+  return createApolloClient(
+    `https://graph.arbitrum.io/${selfHostedSubgraphApiKey}/subgraphs/name/${subgraphName}`
+  )
 }
 
 function createTheGraphNetworkClient(subgraphId: TheGraphNetworkSubgraphId) {
@@ -115,13 +138,16 @@ function createSubgraphClient(key: SubgraphKey) {
   const { theGraphHostedServiceSubgraphName, theGraphNetworkSubgraphId } =
     subgraphs[key]
 
+  if (theGraphNetworkSubgraphId === SELF_HOSTED_SUBGRAPH) {
+    return createSelfHostedSubgraphClient(theGraphHostedServiceSubgraphName)
+  }
+
   if (!theGraphNetworkEnabled) {
     console.log(
       `[createSubgraphClient] using subgraph "${theGraphHostedServiceSubgraphName}" on the graph hosted service\n`
     )
     return createTheGraphHostedServiceClient(theGraphHostedServiceSubgraphName)
   }
-
   try {
     console.log(
       `[createSubgraphClient] using subgraph "${theGraphNetworkSubgraphId}" on the graph network`
@@ -196,6 +222,9 @@ export function getL2SubgraphClient(l2ChainId: number) {
   switch (l2ChainId) {
     case ChainId.ArbitrumOne:
       return createSubgraphClient('l2-arbitrum-one')
+
+    case ChainId.ArbitrumNova:
+      return createSubgraphClient('l2-arbitrum-nova')
 
     case ChainId.ArbitrumSepolia:
       return createSubgraphClient('l2-arbitrum-sepolia')
