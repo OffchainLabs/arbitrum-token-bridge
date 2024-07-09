@@ -75,7 +75,7 @@ const subgraphs = {
   },
   // L2 Nova Subgraphs
   'l2-arbitrum-nova': {
-    selfHostedSubgraph: 'fionnachan/layer2-token-gateway-nova',
+    selfHostedSubgraph: 'arbitrum-nova/layer2-token-gateway',
     theGraphNetworkSubgraphId: '',
     theGraphHostedServiceSubgraphName: ''
   },
