@@ -24,7 +24,6 @@ export enum ChainId {
   ArbitrumSepolia = 421614,
   ArbitrumLocal = 412346,
   // Orbit
-  StylusTestnet = 23011913,
   StylusTestnetV2 = 13331371
 }
 
@@ -61,6 +60,10 @@ export const getChains = () => {
   return chains.filter(chain => {
     // exclude L1 chains with no child chains
     if (isL1Chain(chain) && getChildrenForNetwork(chain.chainId).length === 0) {
+      return false
+    }
+    // TODO: REMOVE!
+    if (chain.chainId === 23011913) {
       return false
     }
     return true
