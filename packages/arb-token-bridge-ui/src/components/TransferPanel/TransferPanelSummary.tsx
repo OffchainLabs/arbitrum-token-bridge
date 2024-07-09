@@ -30,10 +30,10 @@ export type TransferPanelSummaryProps = {
 
 function StylusNetworkWarning() {
   const [{ sourceChain, destinationChain }] = useNetworks()
-  const { isStylusTestnetV1orV2: isSourceChainStylusTestnet } = isNetwork(
+  const { isStylusTestnetV2: isSourceChainStylusTestnet } = isNetwork(
     sourceChain.id
   )
-  const { isStylusTestnetV1orV2: isDestinationChainStylusTestnet } = isNetwork(
+  const { isStylusTestnetV2: isDestinationChainStylusTestnet } = isNetwork(
     destinationChain.id
   )
 
