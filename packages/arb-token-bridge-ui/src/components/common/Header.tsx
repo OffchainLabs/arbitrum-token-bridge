@@ -5,15 +5,14 @@ import ArbitrumLogoSmall from '@/images/ArbitrumLogo.svg'
 
 import { isNetwork } from '../../util/networks'
 import { useNetworks } from '../../hooks/useNetworks'
-import { useDestinationOrbitChain } from '../../hooks/useDestinationOrbitChain'
+import { useDestinationChainStyles } from '../../hooks/useDestinationChainStyles'
 import { AppMobileSidebar } from '../Sidebar/AppMobileSidebar'
 
 export function Header({ children }: { children?: React.ReactNode }) {
   const [{ sourceChain }] = useNetworks()
   const { isTestnet } = isNetwork(sourceChain.id)
 
-  const destinationOrbitChain = useDestinationOrbitChain()
-  const orbitStyles = destinationOrbitChain?.styles
+  const destinationOrbitChainStyles = useDestinationChainStyles()
 
   return (
     <header
@@ -22,9 +21,9 @@ export function Header({ children }: { children?: React.ReactNode }) {
         isTestnet
           ? 'sm:border-b sm:border-white sm:bg-white/20'
           : 'sm:bg-transparent',
-        orbitStyles ? 'sm:border-b' : ''
+        destinationOrbitChainStyles ? 'sm:border-b' : ''
       )}
-      style={orbitStyles ?? undefined}
+      style={destinationOrbitChainStyles ?? undefined}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image
