@@ -34,10 +34,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: OffchainLabs/orbit-retryable-tracker
-        path: arbitrum-monitor
+        path: arbitrum-monitoring
 
     - name: Copy chains JSON to Retryable-Tracker
-      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./arbitrum-monitor/packages/retryable-monitor/config.json
+      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./arbitrum-monitoring/packages/retryable-monitor/config.json
    
     - name: Setup Node for Retryable-Tracker
       uses: actions/setup-node@v4
@@ -45,10 +45,10 @@ jobs:
         node-version: latest
 
     - name: Install dependencies for Retryable-Tracker
-      run: cd ./arbitrum-monitor && yarn install
+      run: cd ./arbitrum-monitoring && yarn install
 
     - name: Run alerting command
-      run: cd ./arbitrum-monitor && yarn retryable-monitor --enableAlerting
+      run: cd ./arbitrum-monitoring && yarn retryable-monitor --enableAlerting
       env:
         NODE_ENV: "CI"
         RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.RETRYABLE_MONITORING_SLACK_TOKEN }}
