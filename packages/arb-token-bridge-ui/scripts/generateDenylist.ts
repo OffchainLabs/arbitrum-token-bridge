@@ -1,7 +1,7 @@
 import fs from 'fs'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
-import { networks as arbitrumNetworks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { getArbitrumNetworks } from '@arbitrum/sdk'
 
 const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
@@ -123,10 +123,8 @@ async function main() {
     ...allTokenAddresses
   ]
 
-  Object.keys(arbitrumNetworks).map(chainId => {
-    const networkObject = arbitrumNetworks[chainId]
-
-    const { ethBridge, tokenBridge } = networkObject
+  getArbitrumNetworks().map(arbitrumNetwork => {
+    const { ethBridge, tokenBridge } = arbitrumNetwork
     const { classicOutboxes } = ethBridge
 
     if (classicOutboxes) {

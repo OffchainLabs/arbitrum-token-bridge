@@ -1,9 +1,9 @@
 import {
   ArbitrumNetwork,
   addDefaultLocalNetwork,
-  getChildrenForNetwork
+  getChildrenForNetwork,
+  getArbitrumNetworks
 } from '@arbitrum/sdk'
-import { networks as arbitrumNetworks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
 
 import { loadEnvironmentVariableWithFallback } from './index'
 import { getBridgeUiConfigForChain } from './bridgeUiConfig'
@@ -52,7 +52,7 @@ const l1Networks: { [chainId: number]: L1Network } = {
 }
 
 export const getChains = () => {
-  const chains = Object.values({ ...l1Networks, ...arbitrumNetworks }) as (
+  const chains = [...Object.values(l1Networks), ...getArbitrumNetworks()] as (
     | L1Network
     | ArbitrumNetwork
   )[]
@@ -87,7 +87,10 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  const chain = arbitrumNetworks[chainId]
+  // TODO: Change to synchronous getArbitrumNetwork
+  const chain = getArbitrumNetworks().find(
+    arbitrumNetwork => arbitrumNetwork.chainId === chainId
+  )
 
   // the chain provided is an L1 chain, so we can return early
   if (!chain || isL1Chain(chain)) {
@@ -244,7 +247,10 @@ export const getL1BlockTime = (chainId: number) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  const network = arbitrumNetworks[chainId]
+  // TODO: Change to synchronous getArbitrumNetwork
+  const network = getArbitrumNetworks().find(
+    network => network.chainId === chainId
+  )
   if (!network || !isArbitrumChain(network)) {
     throw new Error(
       `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
@@ -305,7 +311,7 @@ const defaultL2Network: ArbitrumNetwork = {
     childCustomGateway: '0x525c2aBA45F66987217323E8a05EA400C65D06DC',
     childErc20Gateway: '0xe1080224B632A93951A7CFA33EeEa9Fd81558b5e',
     childGatewayRouter: '0x1294b86822ff4976BfE136cB06CF43eC7FCF2574',
-    childMulticall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
+    childMultiCall: '0xDB2D15a3EB70C347E0D2C2c7861cAFb946baAb48',
     childProxyAdmin: '0xda52b25ddB0e3B9CC393b0690Ac62245Ac772527',
     childWeth: '0x408Da76E87511429485C32E4Ad647DD14823Fdc4',
     childWethGateway: '0x4A2bA922052bA54e29c5417bC979Daaf7D5Fe4f4'

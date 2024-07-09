@@ -1,6 +1,6 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
-import { networks as arbitrumNetworks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { getArbitrumNetworks } from '@arbitrum/sdk'
 
 export type NetworkType =
   | 'Ethereum'
@@ -55,7 +55,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x96551194230725c72ACF8E9573B1382CCBC70635',
       childErc20Gateway: '0x0c71417917D24F4A6A6A55559B98c5cCEcb33F7a',
       childGatewayRouter: '0xd096e8dE90D34de758B0E0bA4a796eA2e1e272cF',
-      childMulticall: '0xEEC168551A85911Ec3A905e0561b656979f3ea67',
+      childMultiCall: '0xEEC168551A85911Ec3A905e0561b656979f3ea67',
       childProxyAdmin: '0x56800fDCFbE19Ea3EE9d115dAC30d95d6459c44E',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -104,7 +104,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x90E43f5d772e50B01B3F9596f65AD5653467d010',
       childErc20Gateway: '0x0CA4c24079a191e08F659699292e5C75274EF253',
       childGatewayRouter: '0x9a2859B2a83148b8DE25d26643B5407555D219E1',
-      childMulticall: '0x4c753F58Ee9E83B38170abAbBEa8B47976C7ee1b',
+      childMultiCall: '0x4c753F58Ee9E83B38170abAbBEa8B47976C7ee1b',
       childProxyAdmin: '0x18AB1fE7CBeB5F40d2eAf8A3906A966d59E79767',
       childWeth: '0xf037540e51D71b2D2B1120e8432bA49F29EDFBD0',
       childWethGateway: '0xd0C21F7960ea9835E7B2E636548f4deDD9E2309C'
@@ -147,7 +147,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x9FcC7aC2c40eFD0443D8B641e482F04310F113f6',
       childErc20Gateway: '0xFdEb5b89bb8FCA61BF77f205B9F89aC3C5fA5dB8',
       childGatewayRouter: '0xDcF4964Dbb526e91CD6354ac3d1247Ce93C21fc4',
-      childMulticall: '0xaA6669a609862871ce72c91a93E70F1ef7590271',
+      childMultiCall: '0xaA6669a609862871ce72c91a93E70F1ef7590271',
       childProxyAdmin: '0xf10D50B24eDd74ECF3B6Bc22aE74b7F9843e0fDD',
       childWeth: '0x869Bf8814d77106323745758135b999D34C79a87',
       childWethGateway: '0xB6145BFd3fA9D270871037238003c66B984787f4'
@@ -188,7 +188,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x1a4ba648Ddc0E726085A847178eBff204411EB1A',
       childErc20Gateway: '0x7aEdD5a2F3bBd4841711D017Edf90d611aD96a9e',
       childGatewayRouter: '0x33e59640CD7E5C5E8D43fd46d995efDdDd0Fc930',
-      childMulticall: '0xEB4150a4F26Cf3563B3a86965E269C8873D48527',
+      childMultiCall: '0xEB4150a4F26Cf3563B3a86965E269C8873D48527',
       childProxyAdmin: '0x518e5FA773118b779a6231303f5593A10D3B3c84',
       childWeth: '0x77684A04145a5924eFCE0D92A7c4a2A2E8C359de',
       childWethGateway: '0x6e965dd667cb08f09DE8285317f012Ac889507b4'
@@ -231,7 +231,7 @@ export const orbitMainnets: {
       childCustomGateway: '0xed609532adB4B24cd580d042A05ef15d914Bb7b0',
       childErc20Gateway: '0x8624C8046AA1E619528adA4Fa894E431b7CCE139',
       childGatewayRouter: '0x1d55e424757817CBd27caD7169FE462d6703c57d',
-      childMulticall: '0xB019E8B9448138251a9C58af34FcCd276cE733f6',
+      childMultiCall: '0xB019E8B9448138251a9C58af34FcCd276cE733f6',
       childProxyAdmin: '0x8699E41Ed6246708035f7B2E1bf194D9C6Fb7d32',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -280,7 +280,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x1AE90d0FBf03d1bb0685D4bAc5BCe4F4071cB0dc',
       childErc20Gateway: '0x76df9F5004F38aC74D0cE664027a1E718AA45E97',
       childGatewayRouter: '0x460E0a28a1DcE5a15811C3F5775D1e8fd0a08278',
-      childMulticall: '0xA9cfB51510b18300cf056d7e0b96925a1D11f424',
+      childMultiCall: '0xA9cfB51510b18300cf056d7e0b96925a1D11f424',
       childProxyAdmin: '0xFB027dBD2FBb343FD16D66a63a690B29D51D23AA',
       childWeth: '0xD3f8b9D33b159E8f5141d28880b216d31B00ee63',
       childWethGateway: '0x0fEf8843450b7c6a416C30D1E00cbc535Bb905b6'
@@ -323,7 +323,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x642e40E3F9948F11E18973f79E910f0953dd0C80',
       childErc20Gateway: '0xBF14b5F058AE33469eC2D20c9Ee712Cb7eC68A8b',
       childGatewayRouter: '0xe95788E89383447177312846DB45E6bffc32DD3b',
-      childMulticall: '0x9eE16369804735D75944AA3B025B063C31862786',
+      childMultiCall: '0x9eE16369804735D75944AA3B025B063C31862786',
       childProxyAdmin: '0xc5A8e16EADC3276B3DdB9F122e2c824Dc8a87BfD',
       childWeth: '0x594Ee2FA451dC7aCFC6785c0d746695f79A4daeE',
       childWethGateway: '0x377880CbbA57EB9ACb7120028f21Ce043266A431'
@@ -367,7 +367,7 @@ export const orbitMainnets: {
       childCustomGateway: '0x5dd84FB52A27B9D5b760b0373fDeda52D10d3c4a',
       childErc20Gateway: '0xAf574BbE2139e39F560C4db1A118E1245aC0983d',
       childGatewayRouter: '0x505421b85ae7F906e8807bf59ee3Da62e894CDC3',
-      childMulticall: '0x446696a44B13D7B03dBEe837610692d2A71D6232',
+      childMultiCall: '0x446696a44B13D7B03dBEe837610692d2A71D6232',
       childProxyAdmin: '0xa2A055fa56b7B4d36F0320c5c65562854873e5B2',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -420,7 +420,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       childCustomGateway: '0xea1ce1CC75C948488515A3058E10aa82da40cE8F',
       childErc20Gateway: '0xD840761a09609394FaFA3404bEEAb312059AC558',
       childGatewayRouter: '0x3B8ba769a43f34cdD67a20aF60d08D54C9C8f1AD',
-      childMulticall: '0x5CBd60Ae5Af80A42FA8b0F20ADF95A8879844984',
+      childMultiCall: '0x5CBd60Ae5Af80A42FA8b0F20ADF95A8879844984',
       childProxyAdmin: '0x7C1BA251d812fb34aF5C2566040C3C30585aFed9',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -469,7 +469,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       childCustomGateway: '0x6B8C4aD57806fB4563031B79348bcC4CC3bBa7D5',
       childErc20Gateway: '0xBb94635f882f03f7641B742F5e3070e6B5108b71',
       childGatewayRouter: '0x14De2d9c4C7F5ad2d134Eb746207653797693C0D',
-      childMulticall: '0xF6Fd6C87C4cac9A4BF4b6fF4efa4B06bdbbe5D51',
+      childMultiCall: '0xF6Fd6C87C4cac9A4BF4b6fF4efa4B06bdbbe5D51',
       childProxyAdmin: '0x80C5A0C4004B4130b823AfE8D97aAeA3fBFf3fCc',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -517,7 +517,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       childCustomGateway: '0xcc3fa38D4a18474DF92107d328bF4A6F7C9fA29A',
       childErc20Gateway: '0x7aeD67245Db9b4E6bB26791b48E20aBbA9411EdD',
       childGatewayRouter: '0xF40E36d3043373Ce6F89abe3914d631135342C28',
-      childMulticall: '0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62',
+      childMultiCall: '0xa8D4b59f0FB23CB785d360E73C7364dDB3e34A62',
       childProxyAdmin: '0xC381Ff423f37d42b0b9B84195D9C9C31eDc26e73',
       childWeth: '0x6793D074d3A410C803B8C2086E569883D6e928F1',
       childWethGateway: '0x4F24D0244B29d76ED1FBD3c8a9967b72b78B9DBd'
@@ -560,7 +560,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       childCustomGateway: '0x311C5Fe27874FBc8ea9D06BeDA2ff316E37c3E2f',
       childErc20Gateway: '0x68b350501592a1501ffc2C8f1B28Ca896253fFe8',
       childGatewayRouter: '0x52d17dcd26F9B19A2672dC79686f1279391Aa449',
-      childMulticall: '0x1A0d79b35953fDA4F2b7A3B0BC893C767AAe44aE',
+      childMultiCall: '0x1A0d79b35953fDA4F2b7A3B0BC893C767AAe44aE',
       childProxyAdmin: '0x25Da52b43f252Bc52Ce038a7541eCC62b9347229',
       childWeth: '0x2c9Dd2b2cd55266e3b5c3C95840F3c037fbCb856',
       childWethGateway: '0xece5902AD6Bbf4689EA8aD4B95237fAf5B65FB26'
@@ -604,7 +604,7 @@ export const orbitTestnets: { [key in number]: OrbitChainConfig } = {
       childCustomGateway: '0x2c2Be954C9B79d9cA2CF145d9d6363F3c3784615',
       childErc20Gateway: '0xDfCD9f6154BEA2E98e8aE493f3Fec2E22De52D6a',
       childGatewayRouter: '0xBc63Ec54dA9Ee3B2b3D4cA5DE3622a3F85e0F219',
-      childMulticall: '0x54AFaf5Fd025A99708e73e52c317454bD52B1e77',
+      childMultiCall: '0x54AFaf5Fd025A99708e73e52c317454bD52B1e77',
       childProxyAdmin: '0xE1C9a27C47bb9691bA5b4E35eb7617B39F6098B9',
       childWeth: '0x0000000000000000000000000000000000000000',
       childWethGateway: '0x0000000000000000000000000000000000000000'
@@ -646,7 +646,10 @@ export function getOrbitChains(
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {
   return (
-    arbitrumNetworks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
+    // TODO: Change to synchronous getArbitrumNetwork
+    getArbitrumNetworks().find(
+      arbitrumNetwork => arbitrumNetwork.chainId === chainId
+    )?.ethBridge.inbox ?? // for stylus testnet v2
     getOrbitChains().find(chain => chain.chainId === chainId)?.ethBridge.inbox // for other custom orbit chains
   )
 }

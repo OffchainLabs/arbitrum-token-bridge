@@ -108,7 +108,7 @@ export const getRetryableTicketExpiration = async ({
 export const l1L2RetryableRequiresRedeem = (tx: MergedTransaction) => {
   return (
     tx.l1ToL2MsgData?.status ===
-    ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+    ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
 
@@ -128,7 +128,7 @@ export const secondRetryableLegForTeleportRequiresRedeem = (
   return (
     !l2ForwarderRetryableRequiresRedeem(tx) &&
     tx.l2ToL3MsgData?.status ===
-      ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+      ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
   )
 }
 

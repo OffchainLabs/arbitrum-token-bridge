@@ -157,7 +157,7 @@ const updateETHDepositStatusData = async ({
       : undefined,
     l1ToL2MsgData: {
       status: isDeposited
-        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
       // Only show `l2TxID` after the deposit is confirmed
@@ -261,7 +261,7 @@ const updateClassicDepositStatusData = async ({
 
   const isCompletedEthDeposit =
     isEthDeposit &&
-    status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+    status >= ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
 
   const l2TxID = (() => {
     if (isCompletedEthDeposit) {
@@ -385,7 +385,7 @@ export async function fetchTeleporterDepositStatusData({
       !depositStatus.completed &&
       l2ForwarderFactoryRetryable &&
       (await l2ForwarderFactoryRetryable.status()) ===
-        ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+        ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
     ) {
       return {
         status: l2Retryable ? 'success' : 'failure',
@@ -393,7 +393,7 @@ export async function fetchTeleporterDepositStatusData({
         l1ToL2MsgData,
         l2ToL3MsgData: {
           ...l2ToL3MsgData,
-          status: ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN,
+          status: ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD,
           l2ForwarderRetryableTxID:
             l2ForwarderFactoryRetryable.retryableCreationId
         }

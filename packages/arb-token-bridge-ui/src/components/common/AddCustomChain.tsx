@@ -205,7 +205,7 @@ async function mapOrbitConfigToOrbitChain(
       childCustomGateway: data.tokenBridgeContracts.l3Contracts.customGateway,
       childErc20Gateway: data.tokenBridgeContracts.l3Contracts.standardGateway,
       childGatewayRouter: data.tokenBridgeContracts.l3Contracts.router,
-      childMulticall: data.tokenBridgeContracts.l3Contracts.multicall,
+      childMultiCall: data.tokenBridgeContracts.l3Contracts.multicall,
       childProxyAdmin: data.tokenBridgeContracts.l3Contracts.proxyAdmin,
       childWeth: data.tokenBridgeContracts.l3Contracts.weth,
       childWethGateway: data.tokenBridgeContracts.l3Contracts.wethGateway

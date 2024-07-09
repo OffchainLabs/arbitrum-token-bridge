@@ -304,7 +304,7 @@ export async function getL3ERC20Address({
   const { l2Provider } = await getL2ConfigForTeleport({
     destinationChainProvider: l3Provider
   })
-  return await l1l3Bridger.getL3ERC20Address(
+  return await l1l3Bridger.getL3Erc20Address(
     erc20L1Address,
     l1Provider,
     l2Provider // this is the actual l2 provider

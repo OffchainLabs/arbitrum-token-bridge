@@ -300,7 +300,7 @@ export async function getUpdatedEthDeposit(
     l1ToL2MsgData: {
       fetchingUpdate: false,
       status: isDeposited
-        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
+        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID: (l1ToL2Msg as EthDepositMessage)
         .childDepositTxHash,

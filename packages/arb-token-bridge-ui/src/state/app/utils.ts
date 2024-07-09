@@ -102,7 +102,7 @@ export const getDepositStatus = (tx: Transaction | MergedTransaction) => {
       return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.EXPIRED
-    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN: {
+    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD: {
       return tx.assetType === AssetType.ETH
         ? DepositStatus.L2_SUCCESS
         : DepositStatus.L2_FAILURE
@@ -122,7 +122,7 @@ function getDepositStatusFromL1ToL2MessageStatus(
       return DepositStatus.CREATION_FAILED
     case ParentToChildMessageStatus.EXPIRED:
       return DepositStatus.EXPIRED
-    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN:
+    case ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD:
       return DepositStatus.L2_FAILURE
     case ParentToChildMessageStatus.REDEEMED:
       return DepositStatus.L2_SUCCESS
