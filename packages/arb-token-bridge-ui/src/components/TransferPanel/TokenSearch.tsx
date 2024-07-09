@@ -17,8 +17,7 @@ import {
   erc20DataToErc20BridgeToken,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneUSDCe,
-  getL2ERC20Address
+  isTokenArbitrumOneUSDCe
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -133,8 +132,8 @@ function TokenListsPanel({ closePanel }: { closePanel: () => void }) {
         return false
       }
 
-      // Don't show the Arbitrum Token token list, because it's special and can't be disabled
-      if (tokenList.isArbitrumTokenTokenList) {
+      // Don't show specials token lists (Arbitrum Token, Native token lists) because they can't be disabled
+      if (tokenList.isAlwaysLoaded) {
         return false
       }
 
@@ -230,8 +229,9 @@ function TokensPanel({
       }
 
       if (
-        isTokenArbitrumOneNativeUSDC(address) ||
-        isTokenArbitrumSepoliaNativeUSDC(address)
+        (isTokenArbitrumOneNativeUSDC(address) ||
+          isTokenArbitrumSepoliaNativeUSDC(address)) &&
+        !isOrbitChain
       ) {
         return erc20L2Balances?.[address.toLowerCase()]
       }
@@ -246,7 +246,8 @@ function TokensPanel({
       erc20L2Balances,
       ethL1Balance,
       ethL2Balance,
-      isDepositMode
+      isDepositMode,
+      isOrbitChain
     ]
   )
 
@@ -287,11 +288,21 @@ function TokensPanel({
         if (isTokenArbitrumOneNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_ONE_NATIVE_USDC_TOKEN
+
+          // take Orbit chain address from the token lists
+          if (isOrbitChain) {
+            token.l2Address = tokensFromLists[address]?.l2Address
+          }
         }
 
         if (isTokenArbitrumSepoliaNativeUSDC(address)) {
           // for token search as Arb One native USDC isn't in any lists
           token = ARB_SEPOLIA_NATIVE_USDC_TOKEN
+
+          // take Orbit chain address from the token lists
+          if (isOrbitChain) {
+            token.l2Address = tokensFromLists[address]?.l2Address
+          }
         }
 
         if (isTokenArbitrumOneUSDCe(address) && isDepositMode && isOrbitChain) {
@@ -532,7 +543,6 @@ export function TokenSearch({
   const [networks] = useNetworks()
   const {
     childChain,
-    childChainProvider,
     parentChain,
     parentChainProvider,
     isDepositMode,
@@ -543,6 +553,7 @@ export function TokenSearch({
   const { openDialog: openTransferDisabledDialog } =
     useTransferDisabledDialogStore()
   const { setTokenQueryParam } = useTokenFromSearchParams()
+  const tokensFromLists = useTokensFromLists()
 
   const { isValidating: isFetchingTokenLists } = useTokenLists(childChain.id) // to show a small loader while token-lists are loading when search panel opens
 
@@ -575,28 +586,14 @@ export function TokenSearch({
 
         await updateUSDCBalances()
 
-        // if an Orbit chain is selected we need to fetch its USDC address
-        let childChainUsdcAddress
-        try {
-          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
-            ? (
-                await getL2ERC20Address({
-                  erc20L1Address: _token.address,
-                  l1Provider: parentChainProvider,
-                  l2Provider: childChainProvider
-                })
-              ).toLowerCase()
-            : undefined
-        } catch {
-          // could be never bridged before
-        }
-
         setSelectedToken({
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
           address: _token.address,
-          l2Address: childChainUsdcAddress,
+          l2Address: isNetwork(childChain.id).isOrbitChain
+            ? tokensFromLists[_token.address]?.l2Address
+            : undefined,
           decimals: 6,
           listIds: new Set()
         })

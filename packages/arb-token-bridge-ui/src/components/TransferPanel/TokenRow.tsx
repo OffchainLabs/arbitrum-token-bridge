@@ -21,7 +21,7 @@ import {
   sanitizeTokenSymbol
 } from '../../util/TokenUtils'
 import { SafeImage } from '../common/SafeImage'
-import { getExplorerUrl, getNetworkName } from '../../util/networks'
+import { getExplorerUrl, getNetworkName, isNetwork } from '../../util/networks'
 import { Tooltip } from '../common/Tooltip'
 import { StatusBadge } from '../common/StatusBadge'
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
@@ -75,18 +75,29 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
   const { isCustom: childChainNativeCurrencyIsCustom } = useNativeCurrency({
     provider: childChainProvider
   })
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
+    networks.sourceChain.id
+  )
 
   const tokenListInfo = useMemo(() => {
     if (!token) {
       return null
     }
 
-    if (isTokenArbitrumOneNativeUSDC(token?.address)) {
+    if (isArbitrumOne && isTokenArbitrumOneNativeUSDC(token?.address)) {
       return 'Native USDC on Arbitrum One'
     }
 
-    if (isTokenArbitrumSepoliaNativeUSDC(token?.address)) {
+    if (isArbitrumSepolia && isTokenArbitrumSepoliaNativeUSDC(token?.address)) {
       return 'Native USDC on Arbitrum Sepolia'
+    }
+
+    if (
+      isOrbitChain &&
+      (isTokenArbitrumOneNativeUSDC(token?.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(token?.address))
+    ) {
+      return `L2 Native USDC on ${getNetworkName(networks.sourceChain.id)}`
     }
 
     const listIds: Set<number> = token.listIds
@@ -107,7 +118,13 @@ function TokenListInfo({ token }: { token: ERC20BridgeToken | null }) {
       tokenListIdsToNames(firstList) +
       ` and ${more} more list${more > 1 ? 's' : ''}`
     )
-  }, [token])
+  }, [
+    token,
+    isArbitrumOne,
+    isArbitrumSepolia,
+    isOrbitChain,
+    networks.sourceChain.id
+  ])
 
   if (!token) {
     const nativeTokenChain = getNetworkName(
