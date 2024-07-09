@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { addCustomArbitrumNetwork } from '@arbitrum/sdk'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { sanitizeQueryParams } from '../useNetworks'
 import { createMockOrbitChain } from './helpers'
@@ -35,9 +35,9 @@ describe('sanitizeQueryParams', () => {
         return null
       }
     )
-    addCustomArbitrumNetwork(mockedOrbitChain_1)
-    addCustomArbitrumNetwork(mockedOrbitChain_2)
-    addCustomArbitrumNetwork(mockedOrbitChain_3)
+    registerCustomArbitrumNetwork(mockedOrbitChain_1)
+    registerCustomArbitrumNetwork(mockedOrbitChain_2)
+    registerCustomArbitrumNetwork(mockedOrbitChain_3)
   })
 
   afterAll(() => {

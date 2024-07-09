@@ -311,6 +311,12 @@ export async function getL3ERC20Address({
   )
 }
 
+function isErc20Bridger(
+  bridger: Erc20Bridger | Erc20L1L3Bridger
+): bridger is Erc20Bridger {
+  return typeof (bridger as Erc20Bridger).isDepositDisabled !== 'undefined'
+}
+
 /*
  Retrieves data about whether an ERC-20 token is disabled on the router.
  */
@@ -336,7 +342,9 @@ export async function l1TokenIsDisabled({
     return false
   }
 
-  return erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
+  return isErc20Bridger(erc20Bridger)
+    ? erc20Bridger.isDepositDisabled(erc20L1Address, l1Provider)
+    : erc20Bridger.l1TokenIsDisabled(erc20L1Address, l1Provider)
 }
 
 type SanitizeTokenOptions = {
@@ -475,8 +483,8 @@ export async function isGatewayRegistered({
   const erc20Bridger = await Erc20Bridger.fromProvider(childChainProvider)
 
   return erc20Bridger.isRegistered({
-    erc20L1Address: erc20ParentChainAddress,
-    l1Provider: parentChainProvider,
-    l2Provider: childChainProvider
+    erc20ParentAddress: erc20ParentChainAddress,
+    parentProvider: parentChainProvider,
+    childProvider: childChainProvider
   })
 }

@@ -1,7 +1,7 @@
 import {
   ParentTransactionReceipt,
   ParentToChildMessageStatus,
-  EthDepositStatus,
+  EthDepositMessageStatus,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic
 } from '@arbitrum/sdk'
@@ -135,9 +135,9 @@ const updateETHDepositStatusData = async ({
   if (!ethDepositMessage) return depositTx
 
   const status = await ethDepositMessage.status()
-  const isDeposited = status === EthDepositStatus.DEPOSITED
+  const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
-  const retryableCreationTxID = ethDepositMessage.chainDepositTxHash
+  const retryableCreationTxID = ethDepositMessage.childDepositTxHash
 
   const l2BlockNum = isDeposited
     ? (await l2Provider.getTransaction(retryableCreationTxID)).blockNumber
@@ -161,7 +161,7 @@ const updateETHDepositStatusData = async ({
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
       // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.chainDepositTxHash : undefined,
+      l2TxID: isDeposited ? ethDepositMessage.childDepositTxHash : undefined,
       fetchingUpdate: false
     }
   }
@@ -204,7 +204,7 @@ const updateTokenDepositStatusData = async ({
 
   const l2TxID =
     res.status === ParentToChildMessageStatus.REDEEMED
-      ? res.chainTxReceipt.transactionHash
+      ? res.txReceipt.transactionHash
       : undefined
 
   const l1ToL2MsgData = {
@@ -269,7 +269,7 @@ const updateClassicDepositStatusData = async ({
     }
 
     if (status === ParentToChildMessageStatus.REDEEMED) {
-      return l1ToL2Msg.chainTxHash
+      return l1ToL2Msg.childTxHash
     }
 
     return undefined
@@ -354,7 +354,7 @@ export async function fetchTeleporterDepositStatusData({
       isNativeCurrencyTransfer
     })
     const l2ToL3MsgData: L2ToL3MessageData = {
-      status: L1ToL2MessageStatus.NOT_YET_CREATED,
+      status: ParentToChildMessageStatus.NOT_YET_CREATED,
       l2ChainId
     }
     const l2Retryable = isEthTeleport(depositStatus)
@@ -372,8 +372,8 @@ export async function fetchTeleporterDepositStatusData({
     const l1ToL2MsgData: L1ToL2MessageData = {
       status: await l2Retryable.status(),
       l2TxID:
-        l1l2Redeem && l1l2Redeem.status === L1ToL2MessageStatus.REDEEMED
-          ? l1l2Redeem.l2TxReceipt.transactionHash
+        l1l2Redeem && l1l2Redeem.status === ParentToChildMessageStatus.REDEEMED
+          ? l1l2Redeem.txReceipt.transactionHash
           : undefined,
       fetchingUpdate: false,
       retryableCreationTxID: l2Retryable.retryableCreationId
@@ -385,7 +385,7 @@ export async function fetchTeleporterDepositStatusData({
       !depositStatus.completed &&
       l2ForwarderFactoryRetryable &&
       (await l2ForwarderFactoryRetryable.status()) ===
-        L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
+        ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN
     ) {
       return {
         status: l2Retryable ? 'success' : 'failure',
@@ -393,7 +393,7 @@ export async function fetchTeleporterDepositStatusData({
         l1ToL2MsgData,
         l2ToL3MsgData: {
           ...l2ToL3MsgData,
-          status: L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2,
+          status: ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHAIN,
           l2ForwarderRetryableTxID:
             l2ForwarderFactoryRetryable.retryableCreationId
         }
@@ -402,8 +402,8 @@ export async function fetchTeleporterDepositStatusData({
       // extract the l3 transaction details, if any
       const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
       const l3TxID =
-        l2L3Redeem && l2L3Redeem.status === L1ToL2MessageStatus.REDEEMED
-          ? l2L3Redeem.l2TxReceipt.transactionHash
+        l2L3Redeem && l2L3Redeem.status === ParentToChildMessageStatus.REDEEMED
+          ? l2L3Redeem.txReceipt.transactionHash
           : undefined
       const timestampResolved = await getTimestampResolved(
         destinationChainProvider,
@@ -415,13 +415,13 @@ export async function fetchTeleporterDepositStatusData({
       if (l2ForwarderFactoryRetryable) {
         const l2ForwarderRedeem =
           await l2ForwarderFactoryRetryable.getSuccessfulRedeem()
-        if (l2ForwarderRedeem.status === L1ToL2MessageStatus.REDEEMED) {
+        if (l2ForwarderRedeem.status === ParentToChildMessageStatus.REDEEMED) {
           return {
             status: l2Retryable ? 'success' : 'failure',
             timestampResolved,
             l1ToL2MsgData: {
               ...l1ToL2MsgData,
-              l2TxID: l2ForwarderRedeem.l2TxReceipt.transactionHash
+              l2TxID: l2ForwarderRedeem.txReceipt.transactionHash
             },
             l2ToL3MsgData: {
               ...l2ToL3MsgData,
@@ -458,7 +458,7 @@ export async function fetchTeleporterDepositStatusData({
     return {
       status: 'pending',
       l2ToL3MsgData: {
-        status: L1ToL2MessageStatus.NOT_YET_CREATED,
+        status: ParentToChildMessageStatus.NOT_YET_CREATED,
         l2ChainId
       }
     }

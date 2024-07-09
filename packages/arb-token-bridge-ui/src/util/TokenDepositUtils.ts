@@ -1,4 +1,4 @@
-import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
@@ -207,9 +207,9 @@ async function addressIsCustomGatewayToken({
     parentChainProvider,
     childChainProvider
   })
-  const childChainNetwork = await getL2Network(childChainProvider)
+  const childChainNetwork = await getArbitrumNetwork(childChainProvider)
   return (
     parentChainGatewayAddress.toLowerCase() ===
-    childChainNetwork.tokenBridge.l1CustomGateway.toLowerCase()
+    childChainNetwork.tokenBridge?.parentCustomGateway.toLowerCase()
   )
 }

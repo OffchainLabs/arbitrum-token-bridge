@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react'
 import { Signer } from 'ethers'
-import { L1ToL2MessageStatus, L1ToL2MessageWriter } from '@arbitrum/sdk'
+import {
+  ParentToChildMessageStatus,
+  ParentToChildMessageWriter
+} from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 import { TransactionReceipt } from '@ethersproject/providers'
@@ -26,12 +29,12 @@ import { UseRedeemRetryableResult } from './useRedeemRetryable'
 import { getUpdatedTeleportTransfer } from '../components/TransactionHistory/helpers'
 
 // common handling for redeeming all 3 retryables for teleporter
-const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
+const redeemRetryable = async (retryable: ParentToChildMessageWriter) => {
   const redeemTx = await retryable.redeem({ gasLimit: 40_000_000 }) // after a few trials, this gas limit seems to be working fine
   await redeemTx.wait()
 
   const status = await retryable.status()
-  const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+  const isSuccess = status === ParentToChildMessageStatus.REDEEMED
 
   if (!isSuccess) {
     console.error('Redemption failed; status is not REDEEMED', redeemTx)
@@ -40,9 +43,9 @@ const redeemRetryable = async (retryable: L1ToL2MessageWriter) => {
     )
   }
 
-  const redeemReceipt = (await retryable.getSuccessfulRedeem()) as {
-    status: L1ToL2MessageStatus.REDEEMED
-    l2TxReceipt: TransactionReceipt
+  const redeemReceipt = (await retryable.getSuccessfulRedeem()) as unknown as {
+    status: ParentToChildMessageStatus.REDEEMED
+    txReceipt: TransactionReceipt
   }
 
   return redeemReceipt
@@ -129,8 +132,8 @@ const redeemTeleporterSecondLeg = async ({
     // update the teleport tx in the UI
     const l2ToL3MsgData: L2ToL3MessageData = {
       ...tx.l2ToL3MsgData,
-      l3TxID: redemptionReceipt.l2TxReceipt.transactionHash,
-      status: L1ToL2MessageStatus.REDEEMED,
+      l3TxID: redemptionReceipt.txReceipt.transactionHash,
+      status: ParentToChildMessageStatus.REDEEMED,
       retryableCreationTxID: l2L3Retryable.retryableCreationId
     }
     const updatedTeleporterTx = await getUpdatedTeleportTransfer({

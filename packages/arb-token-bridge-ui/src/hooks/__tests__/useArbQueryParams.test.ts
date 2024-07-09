@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { addCustomArbitrumNetwork } from '@arbitrum/sdk'
+import { registerCustomArbitrumNetwork } from '@arbitrum/sdk'
 import { ChainId, customChainLocalStorageKey } from '../../util/networks'
 import { AmountQueryParam, ChainParam } from '../useArbQueryParams'
 import { createMockOrbitChain } from './helpers'
@@ -224,7 +224,7 @@ describe('ChainParam custom encoder and decoder', () => {
         chainId: 222222,
         parentChainId: 1
       })
-      addCustomArbitrumNetwork(customChain)
+      registerCustomArbitrumNetwork(customChain)
       expect(ChainParam.decode('222222')).toEqual(222222)
     })
   })
