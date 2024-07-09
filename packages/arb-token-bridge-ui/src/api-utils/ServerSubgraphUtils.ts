@@ -7,8 +7,6 @@ import {
 
 import { ChainId } from '../util/networks'
 
-const SELF_HOSTED_SUBGRAPH = 'self-hosted'
-
 /**
  * Determines whether to use The Graph Network over The Graph Hosted Service.
  */
@@ -32,57 +30,69 @@ type TheGraphHostedServiceSubgraphName =
 const subgraphs = {
   // CCTP Mainnet Subgraphs
   'cctp-ethereum': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1',
     theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-mainnet'
   },
   'cctp-arbitrum-one': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW',
     theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-one'
   },
   // CCTP Testnet Subgraphs
   'cctp-sepolia': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5',
     theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-sepolia'
   },
   'cctp-arbitrum-sepolia': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB',
     theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-sepolia'
   },
   // L1 Mainnet Subgraphs
   'l1-arbitrum-one': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4',
     theGraphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nitro'
   },
   'l1-arbitrum-nova': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp',
     theGraphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nova'
   },
   // L1 Testnet Subgraphs
   'l1-arbitrum-sepolia': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9',
     theGraphHostedServiceSubgraphName: 'fionnachan/arb-bridge-eth-sepolia'
   },
   // L2 Mainnet Subgraphs
   'l2-arbitrum-one': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj',
     theGraphHostedServiceSubgraphName: 'gvladika/layer2-token-gateway-arb1'
   },
   // L2 Nova Subgraphs
   'l2-arbitrum-nova': {
-    theGraphNetworkSubgraphId: SELF_HOSTED_SUBGRAPH,
-    theGraphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-nova'
+    selfHostedSubgraph: 'fionnachan/layer2-token-gateway-nova',
+    theGraphNetworkSubgraphId: '',
+    theGraphHostedServiceSubgraphName: ''
   },
   // L2 Testnet Subgraphs
   'l2-arbitrum-sepolia': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
     theGraphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-sepolia'
   },
   // Teleport Sepolia
   'teleporter-sepolia': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: '6AwhH4JF8Ss5ZFf12azD13D1nNhuNzLnjH56irYqA7fD',
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   },
   'teleporter-ethereum': {
+    selfHostedSubgraph: '',
     theGraphNetworkSubgraphId: 'GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg',
     theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
   }
@@ -135,11 +145,14 @@ function createTheGraphHostedServiceClient(
 function createSubgraphClient(key: SubgraphKey) {
   console.log(`[createSubgraphClient] key=${key}`)
 
-  const { theGraphHostedServiceSubgraphName, theGraphNetworkSubgraphId } =
-    subgraphs[key]
+  const {
+    theGraphHostedServiceSubgraphName,
+    theGraphNetworkSubgraphId,
+    selfHostedSubgraph
+  } = subgraphs[key]
 
-  if (theGraphNetworkSubgraphId === SELF_HOSTED_SUBGRAPH) {
-    return createSelfHostedSubgraphClient(theGraphHostedServiceSubgraphName)
+  if (typeof selfHostedSubgraph !== 'undefined' && selfHostedSubgraph !== '') {
+    return createSelfHostedSubgraphClient(selfHostedSubgraph)
   }
 
   if (!theGraphNetworkEnabled) {
