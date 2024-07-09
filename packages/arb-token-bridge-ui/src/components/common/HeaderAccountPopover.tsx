@@ -68,7 +68,7 @@ export function HeaderAccountPopover({
             ? 'sm:border-white sm:ui-not-open:bg-white/20'
             : 'sm:border-gray-1 sm:ui-not-open:bg-gray-1 sm:ui-not-open:hover:bg-white/10'
         )}
-        style={destinationOrbitChainStyles ?? undefined}
+        style={destinationOrbitChainStyles}
         role="button"
         aria-label="Account Header Button"
       >

@@ -23,7 +23,7 @@ export function Header({ children }: { children?: React.ReactNode }) {
           : 'sm:bg-transparent',
         destinationOrbitChainStyles ? 'sm:border-b' : ''
       )}
-      style={destinationOrbitChainStyles ?? undefined}
+      style={destinationOrbitChainStyles}
     >
       <div className="flex w-full items-center justify-end gap-2 text-white">
         <Image
