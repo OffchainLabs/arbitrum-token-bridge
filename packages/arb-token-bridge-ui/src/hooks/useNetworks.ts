@@ -7,7 +7,6 @@ import { useArbQueryParams } from './useArbQueryParams'
 import {
   ChainId,
   getCustomChainsFromLocalStorage,
-  getTeleportChainIdForOrbitChain,
   isNetwork
 } from '../util/networks'
 import {
@@ -75,10 +74,7 @@ export function sanitizeQueryParams({
     )
     const [defaultSourceChainId] = getDestinationChainIds(destinationChainId)
     return {
-      sourceChainId:
-        getTeleportChainIdForOrbitChain(destinationChainId) ?? // show the grand-parent-chain id if valid, else get the parent chain id
-        orbitChain?.partnerChainID ??
-        defaultSourceChainId!,
+      sourceChainId: orbitChain?.partnerChainID ?? defaultSourceChainId!,
       destinationChainId: destinationChainId
     }
   }

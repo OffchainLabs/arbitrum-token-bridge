@@ -455,15 +455,6 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
 }
 
-export const getTeleportChainIdForOrbitChain = (chainId: number) => {
-  // only checks for mainnet orbit chains
-  if (TELEPORT_ALLOWLIST[ChainId.Ethereum]?.includes(chainId)) {
-    return ChainId.Ethereum
-  } else {
-    return undefined
-  }
-}
-
 export function getChildChainIds(chain: L2Network | L1Network) {
   const childChainIds = [
     ...(chain.partnerChainIDs ?? []),
