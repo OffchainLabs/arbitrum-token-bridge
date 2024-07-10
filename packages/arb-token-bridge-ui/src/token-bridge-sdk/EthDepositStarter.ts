@@ -37,17 +37,17 @@ export class EthDepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
     const ethBridger = await this.getBridger()
 
-    const { childChain } = ethBridger
+    const { childNetwork } = ethBridger
 
-    if (typeof childChain.nativeToken === 'undefined') {
+    if (typeof childNetwork.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
     }
 
     const customFeeTokenAllowanceForInbox = await fetchErc20Allowance({
-      address: childChain.nativeToken,
+      address: childNetwork.nativeToken,
       provider: this.sourceChainProvider,
       owner: address,
-      spender: childChain.ethBridge.inbox
+      spender: childNetwork.ethBridge.inbox
     })
 
     // We want to bridge a certain amount of the custom fee token, so we have to check if the allowance is enough.

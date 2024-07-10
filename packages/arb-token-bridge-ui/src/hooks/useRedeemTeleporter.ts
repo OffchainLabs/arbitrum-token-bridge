@@ -43,12 +43,15 @@ const redeemRetryable = async (retryable: ParentToChildMessageWriter) => {
     )
   }
 
-  const redeemReceipt = (await retryable.getSuccessfulRedeem()) as unknown as {
-    status: ParentToChildMessageStatus.REDEEMED
-    txReceipt: TransactionReceipt
+  const successfulRedeem = await retryable.getSuccessfulRedeem()
+
+  if (successfulRedeem.status !== ParentToChildMessageStatus.REDEEMED) {
+    throw new Error(
+      `Unexpected status for retryable ticket (creation id ${retryable.retryableCreationId}), expected ${ParentToChildMessageStatus.REDEEMED} but got ${successfulRedeem.status}`
+    )
   }
 
-  return redeemReceipt
+  return successfulRedeem
 }
 
 // this will try to redeem - 1. L1L2Retryable 2. L2ForwarderRetryable
@@ -132,7 +135,7 @@ const redeemTeleporterSecondLeg = async ({
     // update the teleport tx in the UI
     const l2ToL3MsgData: L2ToL3MessageData = {
       ...tx.l2ToL3MsgData,
-      l3TxID: redemptionReceipt.txReceipt.transactionHash,
+      l3TxID: redemptionReceipt.childTxReceipt.transactionHash,
       status: ParentToChildMessageStatus.REDEEMED,
       retryableCreationTxID: l2L3Retryable.retryableCreationId
     }

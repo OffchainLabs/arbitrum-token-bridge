@@ -136,7 +136,7 @@ const updateETHDepositStatusData = async ({
   const status = await ethDepositMessage.status()
   const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
-  const retryableCreationTxID = ethDepositMessage.childDepositTxHash
+  const retryableCreationTxID = ethDepositMessage.childTxHash
 
   const l2BlockNum = isDeposited
     ? (await l2Provider.getTransaction(retryableCreationTxID)).blockNumber
@@ -160,7 +160,7 @@ const updateETHDepositStatusData = async ({
         : ParentToChildMessageStatus.NOT_YET_CREATED,
       retryableCreationTxID,
       // Only show `l2TxID` after the deposit is confirmed
-      l2TxID: isDeposited ? ethDepositMessage.childDepositTxHash : undefined,
+      l2TxID: isDeposited ? ethDepositMessage.childTxHash : undefined,
       fetchingUpdate: false
     }
   }

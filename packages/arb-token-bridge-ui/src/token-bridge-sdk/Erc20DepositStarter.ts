@@ -84,7 +84,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
     const address = await getAddressFromSigner(signer)
 
     const erc20Bridger = await this.getBridger()
-    const l2Network = erc20Bridger.childChain
+    const l2Network = erc20Bridger.childNetwork
 
     if (typeof l2Network.nativeToken === 'undefined') {
       return false // native currency doesn't require approval
@@ -161,7 +161,7 @@ export class Erc20DepositStarter extends BridgeTransferStarter {
 
     const erc20Bridger = await this.getBridger()
 
-    const l2Network = erc20Bridger.childChain
+    const l2Network = erc20Bridger.childNetwork
 
     if (typeof l2Network.nativeToken === 'undefined') {
       throw Error('Network does not have a custom native token')

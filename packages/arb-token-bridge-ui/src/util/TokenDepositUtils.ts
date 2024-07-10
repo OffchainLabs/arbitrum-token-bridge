@@ -156,7 +156,7 @@ export async function depositTokenEstimateGas(
       )
 
       return fetchTokenFallbackGasEstimates({
-        inboxAddress: erc20Bridger.childChain.ethBridge.inbox,
+        inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
         parentChainErc20Address,
         parentChainProvider,
         childChainProvider
@@ -185,7 +185,7 @@ export async function depositTokenEstimateGas(
     Sentry.captureException(error)
 
     return fetchTokenFallbackGasEstimates({
-      inboxAddress: erc20Bridger.childChain.ethBridge.inbox,
+      inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
       parentChainErc20Address,
       parentChainProvider,
       childChainProvider

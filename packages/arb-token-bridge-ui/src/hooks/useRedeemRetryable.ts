@@ -63,7 +63,7 @@ export function useRedeemRetryable(
       await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: successfulRedeem.txReceipt.transactionHash,
+          l2TxID: successfulRedeem.childTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false
