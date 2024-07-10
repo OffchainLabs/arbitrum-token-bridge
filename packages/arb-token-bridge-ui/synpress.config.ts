@@ -275,6 +275,7 @@ async function generateTestTxForRedeemRetryable() {
   const tx = await erc20Bridger.deposit({
     ...depositRequest,
     parentSigner: userWallet.connect(ethProvider),
+    childProvider: arbProvider,
     retryableGasOverrides: {
       gasLimit: {
         base: BigNumber.from(0)
