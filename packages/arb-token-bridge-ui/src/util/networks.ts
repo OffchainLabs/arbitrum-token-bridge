@@ -86,13 +86,12 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  const chain = getArbitrumNetwork(chainId)
-
   // the chain provided is an L1 chain, so we can return early
-  if (isL1Chain(chain)) {
+  if (isL1Chain({ chainId })) {
     return chainId
   }
 
+  const chain = getArbitrumNetwork(chainId)
   let currentParentChain: L1Network | ArbitrumNetwork = chain
   // keep following the parent chains until we find the L1 chain
   while (true) {
@@ -428,7 +427,7 @@ export function mapCustomChainToNetworkData(chain: ChainWithRpcUrl) {
   explorerUrls[chain.chainId] = chain.explorerUrl
 }
 
-function isL1Chain(chain: L1Network | ArbitrumNetwork): chain is L1Network {
+function isL1Chain(chain: { chainId: number }): chain is L1Network {
   return typeof l1Networks[chain.chainId] !== 'undefined'
 }
 
