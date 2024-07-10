@@ -727,8 +727,9 @@ export function getOrbitChains(
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {
   return (
-    l2Networks[chainId]?.ethBridge.inbox ?? // for stylus testnet v2
-    getOrbitChains().find(chain => chain.chainID === chainId)?.ethBridge.inbox // for other custom orbit chains
+    getOrbitChains()
+      //
+      .find(chain => chain.chainID === chainId)?.ethBridge.inbox
   )
 }
 

@@ -96,16 +96,6 @@ export function getBridgeUiConfigForChain(chainId: number): BridgeUiConfig {
             'AnyTrust protocol. Low fees for high-volume transactions. Secured by a trust-minimized Data Availability Committee (DAC).'
         }
       }
-    case ChainId.StylusTestnetV2:
-      return {
-        color: '#E3066E',
-        network: {
-          name: 'Stylus Testnet v2',
-          logo: '/images/StylusLogo.svg',
-          description:
-            'An experimental playground for Arbitrum Stylus smart contracts.'
-        }
-      }
     default: {
       // added Orbit chains
       const orbitChain = orbitChains[chainId]

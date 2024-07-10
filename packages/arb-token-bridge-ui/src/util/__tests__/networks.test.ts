@@ -127,12 +127,6 @@ describe('getBaseChainIdByChainId', () => {
           chainId: xaiTestnetChainId
         })
       ).toBe(ChainId.Sepolia)
-
-      expect(
-        getBaseChainIdByChainId({
-          chainId: ChainId.StylusTestnetV2
-        })
-      ).toBe(ChainId.Sepolia)
     })
   })
 

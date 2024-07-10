@@ -25,12 +25,12 @@ const teleportEnabledTokens: {
     {
       symbol: 'WETH',
       l1Address: '0xfff9976782d46cc05630d1f6ebab18b2324d6b14',
-      allowedL3ChainIds: [ChainId.StylusTestnetV2]
+      allowedL3ChainIds: []
     },
     {
       symbol: 'LINK',
       l1Address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
-      allowedL3ChainIds: [ChainId.StylusTestnetV2]
+      allowedL3ChainIds: []
     }
   ]
 }
