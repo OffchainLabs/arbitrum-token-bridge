@@ -2,7 +2,14 @@ import { getOrbitChains } from '../util/orbitChainsList'
 import { getBridgeUiConfigForChain } from '../util/bridgeUiConfig'
 import { useNetworks } from './useNetworks'
 
-export const useDestinationChainStyles = () => {
+type DestinationChainStyle =
+  | {
+      borderColor: `#${string}`
+      backgroundColor: string
+    }
+  | Record<string, never>
+
+export const useDestinationChainStyle = (): DestinationChainStyle => {
   const [networks] = useNetworks()
   const orbitChains = getOrbitChains({ mainnet: true, testnet: false })
   const orbitChain = orbitChains.find(
@@ -10,7 +17,7 @@ export const useDestinationChainStyles = () => {
   )
 
   // early return if the orbit chain is not found
-  if (!orbitChain) return undefined
+  if (!orbitChain) return {}
 
   // styles for the orbit chain
   const orbitChainColor = getBridgeUiConfigForChain(orbitChain.chainID).color
