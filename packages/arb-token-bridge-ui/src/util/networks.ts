@@ -1,9 +1,9 @@
 import {
   ArbitrumNetwork,
-  addDefaultLocalNetwork,
   getChildrenForNetwork,
   getArbitrumNetwork,
-  getArbitrumNetworks
+  getArbitrumNetworks,
+  registerCustomArbitrumNetwork
 } from '@arbitrum/sdk'
 
 import { loadEnvironmentVariableWithFallback } from './index'
@@ -320,7 +320,7 @@ export function registerLocalNetwork() {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
 
-    addDefaultLocalNetwork()
+    registerCustomArbitrumNetwork(defaultL2Network)
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
