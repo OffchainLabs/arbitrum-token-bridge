@@ -30,7 +30,7 @@ module.exports = {
       {
         source: '/:slug',
         destination: '/?destinationChain=:slug',
-        permanent: false
+        permanent: true
       }
     ]
   }
