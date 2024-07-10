@@ -1,6 +1,5 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { Erc20Bridger } from '@arbitrum/sdk'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
+import { Erc20Bridger, EventArgs } from '@arbitrum/sdk'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
 
 function dedupeEvents(

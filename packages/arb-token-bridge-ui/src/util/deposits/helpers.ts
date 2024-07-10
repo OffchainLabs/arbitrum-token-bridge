@@ -1,11 +1,12 @@
 import {
   ParentTransactionReceipt,
   ParentToChildMessageStatus,
+  EthDepositMessage,
   EthDepositMessageStatus,
   ParentToChildMessageReader,
   ParentToChildMessageReaderClassic
 } from '@arbitrum/sdk'
-import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
+
 import { Provider } from '@ethersproject/providers'
 import {
   Erc20DepositStatus as Erc20TeleportStatus,

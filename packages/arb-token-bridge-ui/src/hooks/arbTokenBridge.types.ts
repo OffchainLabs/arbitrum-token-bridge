@@ -2,22 +2,19 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { ChildToParentMessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
-import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
-import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-
 import {
+  EventArgs,
   ParentEthDepositTransaction,
   ParentEthDepositTransactionReceipt,
   ParentContractCallTransaction,
-  ParentContractCallTransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/ParentTransaction'
-import {
+  ParentContractCallTransactionReceipt,
   ChildContractTransaction,
-  ChildTransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/ChildTransaction'
+  ChildTransactionReceipt,
+  ChildToParentMessageStatus as OutgoingMessageState
+} from '@arbitrum/sdk'
+import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
+import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
+import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
 
 import {
   NewTransaction,

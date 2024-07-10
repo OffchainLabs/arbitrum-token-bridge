@@ -1,8 +1,11 @@
-import { Erc20Bridger, EthBridger } from '@arbitrum/sdk'
+import {
+  Erc20Bridger,
+  EthBridger,
+  ChildToParentTransactionRequest
+} from '@arbitrum/sdk'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import * as Sentry from '@sentry/react'
-import { ChildToParentTransactionRequest } from '@arbitrum/sdk/dist/lib/dataEntities/transactionRequest'
 
 import { GasEstimates } from '../hooks/arbTokenBridge.types'
 import { Address } from './AddressUtils'

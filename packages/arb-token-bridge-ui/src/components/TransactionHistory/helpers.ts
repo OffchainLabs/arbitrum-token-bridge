@@ -4,11 +4,11 @@ import {
   TransactionReceipt
 } from '@ethersproject/providers'
 import {
+  EthDepositMessage,
   EthDepositMessageStatus,
   ParentToChildMessageStatus,
   ParentToChildMessageReader
 } from '@arbitrum/sdk'
-import { EthDepositMessage } from '@arbitrum/sdk/dist/lib/message/ParentToChildMessage'
 
 import {
   DepositStatus,
