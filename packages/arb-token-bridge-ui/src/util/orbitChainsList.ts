@@ -120,7 +120,7 @@ export const orbitMainnets: {
   },
   4078: {
     chainId: 4078,
-    parentChainId: 0,
+    parentChainId: 42161,
     confirmPeriodBlocks: 7200,
     ethBridge: {
       bridge: '0xB0EC3C1368AF7d9C2CAE6B7f8E022Cc14d59D2b1',
