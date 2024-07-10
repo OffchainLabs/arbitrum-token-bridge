@@ -91,8 +91,14 @@ export function getBaseChainIdByChainId({
     return chainId
   }
 
-  const chain = getArbitrumNetwork(chainId)
-  let currentParentChain: L1Network | ArbitrumNetwork = chain
+  let currentParentChain: L1Network | ArbitrumNetwork
+
+  try {
+    currentParentChain = getArbitrumNetwork(chainId)
+  } catch (error) {
+    return chainId
+  }
+
   // keep following the parent chains until we find the L1 chain
   while (true) {
     if (isL1Chain(currentParentChain)) {
