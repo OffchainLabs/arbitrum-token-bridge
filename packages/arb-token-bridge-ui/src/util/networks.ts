@@ -23,9 +23,7 @@ export enum ChainId {
   ArbitrumNova = 42170,
   // L2 Testnets
   ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346,
-  // Orbit
-  StylusTestnetV2 = 13331371
+  ArbitrumLocal = 412346
 }
 
 type L1Network = {
@@ -209,9 +207,7 @@ export const rpcURLs: { [chainId: number]: string } = {
   [ChainId.ArbitrumSepolia]: loadEnvironmentVariableWithFallback({
     env: chainIdToInfuraUrl(ChainId.ArbitrumSepolia),
     fallback: 'https://sepolia-rollup.arbitrum.io/rpc'
-  }),
-  // Orbit Testnets
-  [ChainId.StylusTestnetV2]: 'https://stylusv2.arbitrum.io/rpc'
+  })
 }
 
 export const explorerUrls: { [chainId: number]: string } = {
@@ -224,9 +220,7 @@ export const explorerUrls: { [chainId: number]: string } = {
   [ChainId.ArbitrumNova]: 'https://nova.arbiscan.io',
   [ChainId.ArbitrumOne]: 'https://arbiscan.io',
   // L2 Testnets
-  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io',
-  // Orbit Testnets
-  [ChainId.StylusTestnetV2]: 'https://stylusv2-explorer.arbitrum.io'
+  [ChainId.ArbitrumSepolia]: 'https://sepolia.arbiscan.io'
 }
 
 export const getExplorerUrl = (chainId: ChainId) => {
@@ -343,8 +337,6 @@ export function isNetwork(chainId: ChainId) {
   const isArbitrumSepolia = chainId === ChainId.ArbitrumSepolia
   const isArbitrumLocal = chainId === ChainId.ArbitrumLocal
 
-  const isStylusTestnetV2 = chainId === ChainId.StylusTestnetV2
-
   const isEthereumMainnetOrTestnet =
     isEthereumMainnet || isSepolia || isHolesky || isLocal
 
@@ -364,7 +356,6 @@ export function isNetwork(chainId: ChainId) {
     isHolesky ||
     isArbitrumSepolia ||
     isCustomOrbitChain ||
-    isStylusTestnetV2 ||
     isTestnetOrbitChain
 
   const isSupported =
@@ -393,7 +384,6 @@ export function isNetwork(chainId: ChainId) {
     // Orbit chains
     isOrbitChain,
     isTestnet,
-    isStylusTestnetV2,
     // General
     isSupported,
     // Core Chain is a chain category for the UI
@@ -450,7 +440,7 @@ function isArbitrumChain(
 
 export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Ethereum]: [1380012617, 70700], // Rari and PopApex
-  [ChainId.Sepolia]: [ChainId.StylusTestnetV2]
+  [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
 export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {

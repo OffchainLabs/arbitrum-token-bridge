@@ -1,6 +1,5 @@
 import { NativeCurrencyBase } from '../hooks/useNativeCurrency'
 import { ChainWithRpcUrl } from './networks'
-import { getArbitrumNetworks } from '@arbitrum/sdk'
 
 export type NetworkType =
   | 'Ethereum'
