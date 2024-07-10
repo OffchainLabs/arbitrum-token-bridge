@@ -151,7 +151,7 @@ function createSubgraphClient(key: SubgraphKey) {
     selfHostedSubgraph
   } = subgraphs[key]
 
-  if (typeof selfHostedSubgraph !== 'undefined' && selfHostedSubgraph !== '') {
+  if (selfHostedSubgraph !== '') {
     return createSelfHostedSubgraphClient(selfHostedSubgraph)
   }
 
