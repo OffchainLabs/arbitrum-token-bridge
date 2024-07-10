@@ -7,5 +7,14 @@
 module.exports = {
   distDir: 'build',
   productionBrowserSourceMaps: true,
-  reactStrictMode: true
+  reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: '/:slug',
+        destination: '/?destinationChain=:slug',
+        permanent: true
+      }
+    ]
+  }
 }
