@@ -203,7 +203,7 @@ const updateTokenDepositStatusData = async ({
 
   const l2TxID =
     res.status === ParentToChildMessageStatus.REDEEMED
-      ? res.txReceipt.transactionHash
+      ? res.childTxReceipt.transactionHash
       : undefined
 
   const l1ToL2MsgData = {
@@ -372,7 +372,7 @@ export async function fetchTeleporterDepositStatusData({
       status: await l2Retryable.status(),
       l2TxID:
         l1l2Redeem && l1l2Redeem.status === ParentToChildMessageStatus.REDEEMED
-          ? l1l2Redeem.txReceipt.transactionHash
+          ? l1l2Redeem.childTxReceipt.transactionHash
           : undefined,
       fetchingUpdate: false,
       retryableCreationTxID: l2Retryable.retryableCreationId
@@ -402,7 +402,7 @@ export async function fetchTeleporterDepositStatusData({
       const l2L3Redeem = await l3Retryable.getSuccessfulRedeem()
       const l3TxID =
         l2L3Redeem && l2L3Redeem.status === ParentToChildMessageStatus.REDEEMED
-          ? l2L3Redeem.txReceipt.transactionHash
+          ? l2L3Redeem.childTxReceipt.transactionHash
           : undefined
       const timestampResolved = await getTimestampResolved(
         destinationChainProvider,
@@ -420,7 +420,7 @@ export async function fetchTeleporterDepositStatusData({
             timestampResolved,
             l1ToL2MsgData: {
               ...l1ToL2MsgData,
-              l2TxID: l2ForwarderRedeem.txReceipt.transactionHash
+              l2TxID: l2ForwarderRedeem.childTxReceipt.transactionHash
             },
             l2ToL3MsgData: {
               ...l2ToL3MsgData,
