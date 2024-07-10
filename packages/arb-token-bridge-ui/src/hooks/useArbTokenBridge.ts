@@ -5,8 +5,11 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { EventArgs, ChildToParentMessage } from '@arbitrum/sdk'
-import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
+import {
+  EventArgs,
+  ChildToParentMessage,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions from './useTransactions'

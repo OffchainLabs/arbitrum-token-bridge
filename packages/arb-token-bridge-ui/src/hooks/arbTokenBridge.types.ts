@@ -10,11 +10,11 @@ import {
   ParentContractCallTransactionReceipt,
   ChildContractTransaction,
   ChildTransactionReceipt,
-  ChildToParentMessageStatus as OutgoingMessageState
+  ChildToParentMessageStatus as OutgoingMessageState,
+  ChildToParentTransactionEvent
 } from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { ChildToParentTransactionEvent } from '@arbitrum/sdk/dist/lib/message/ChildToParentMessage'
 
 import {
   NewTransaction,

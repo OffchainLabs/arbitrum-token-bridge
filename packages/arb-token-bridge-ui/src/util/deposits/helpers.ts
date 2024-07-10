@@ -4,14 +4,12 @@ import {
   EthDepositMessage,
   EthDepositMessageStatus,
   ParentToChildMessageReader,
-  ParentToChildMessageReaderClassic
+  ParentToChildMessageReaderClassic,
+  EthL1L3DepositStatus,
+  Erc20L1L3DepositStatus
 } from '@arbitrum/sdk'
 
 import { Provider } from '@ethersproject/providers'
-import {
-  Erc20DepositStatus as Erc20TeleportStatus,
-  EthDepositStatus as EthTeleportStatus
-} from '@arbitrum/sdk/dist/lib/assetBridger/l1l3Bridger'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import {
   L1ToL2MessageData,
@@ -342,8 +340,8 @@ export async function fetchTeleporterDepositStatusData({
   })
 
   function isEthTeleport(
-    status: EthTeleportStatus | Erc20TeleportStatus
-  ): status is EthTeleportStatus {
+    status: EthL1L3DepositStatus | Erc20L1L3DepositStatus
+  ): status is EthL1L3DepositStatus {
     return isNativeCurrencyTransfer
   }
 
