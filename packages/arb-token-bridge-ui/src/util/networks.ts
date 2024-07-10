@@ -2,6 +2,7 @@ import {
   ArbitrumNetwork,
   addDefaultLocalNetwork,
   getChildrenForNetwork,
+  getArbitrumNetwork,
   getArbitrumNetworks
 } from '@arbitrum/sdk'
 
@@ -87,13 +88,10 @@ export function getBaseChainIdByChainId({
 }: {
   chainId: number
 }): number {
-  // TODO: Change to synchronous getArbitrumNetwork
-  const chain = getArbitrumNetworks().find(
-    arbitrumNetwork => arbitrumNetwork.chainId === chainId
-  )
+  const chain = getArbitrumNetwork(chainId)
 
   // the chain provided is an L1 chain, so we can return early
-  if (!chain || isL1Chain(chain)) {
+  if (isL1Chain(chain)) {
     return chainId
   }
 
@@ -247,16 +245,7 @@ export const getL1BlockTime = (chainId: number) => {
 }
 
 export const getConfirmPeriodBlocks = (chainId: ChainId) => {
-  // TODO: Change to synchronous getArbitrumNetwork
-  const network = getArbitrumNetworks().find(
-    network => network.chainId === chainId
-  )
-  if (!network || !isArbitrumChain(network)) {
-    throw new Error(
-      `Couldn't get confirm period blocks. Unexpected chain ID: ${chainId}`
-    )
-  }
-  return network.confirmPeriodBlocks
+  return getArbitrumNetwork(chainId).confirmPeriodBlocks
 }
 
 export const l2ArbReverseGatewayAddresses: { [chainId: number]: string } = {

@@ -646,11 +646,9 @@ export function getOrbitChains(
 
 export function getInboxAddressFromOrbitChainId(chainId: number) {
   return (
-    // TODO: Change to synchronous getArbitrumNetwork
-    getArbitrumNetworks().find(
-      arbitrumNetwork => arbitrumNetwork.chainId === chainId
-    )?.ethBridge.inbox ?? // for stylus testnet v2
-    getOrbitChains().find(chain => chain.chainId === chainId)?.ethBridge.inbox // for other custom orbit chains
+    getOrbitChains()
+      //
+      .find(chain => chain.chainId === chainId)?.ethBridge.inbox
   )
 }
 
