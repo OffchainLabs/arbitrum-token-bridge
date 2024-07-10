@@ -182,6 +182,17 @@ async function deployERC20ToL1() {
 async function deployERC20ToL2(erc20L1Address: string) {
   console.log('Deploying ERC20 to L2...')
   const bridger = await Erc20Bridger.fromProvider(arbProvider)
+
+  const detectedGateway = await bridger.getL1GatewayAddress(
+    erc20L1Address,
+    ethProvider
+  )
+
+  console.log({
+    standardGateway: bridger.l2Network.tokenBridge.l1ERC20Gateway,
+    detectedGateway
+  })
+
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
     erc20L1Address,
