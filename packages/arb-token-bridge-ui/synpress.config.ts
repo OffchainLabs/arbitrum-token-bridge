@@ -182,16 +182,6 @@ async function deployERC20ToL1() {
 async function deployERC20ToL2(erc20L1Address: string) {
   console.log('Deploying ERC20 to L2...')
   const bridger = await Erc20Bridger.fromProvider(arbProvider)
-
-  const parentStandardGatewayAddressFromChainConfig =
-    bridger.childChain.tokenBridge.parentErc20Gateway
-
-  const parentGatewayAddressFromParentGatewayRouter =
-    await bridger.getParentGatewayAddress(erc20L1Address, ethProvider)
-
-  console.log({ parentStandardGatewayAddressFromChainConfig })
-  console.log({ parentGatewayAddressFromParentGatewayRouter })
-
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
     erc20ParentAddress: erc20L1Address,
