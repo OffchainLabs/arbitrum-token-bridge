@@ -30,21 +30,21 @@ jobs:
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
-    - name: Checkout Retryable-Tracker repository
+    - name: Checkout Arbitrum Monitoring repository
       uses: actions/checkout@v4
       with:
         repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
 
-    - name: Copy chains JSON to Retryable-Tracker
+    - name: Copy chains JSON to Arbitrum Monitoring
       run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./arbitrum-monitoring/packages/retryable-monitor/config.json
    
-    - name: Setup Node for Retryable-Tracker
+    - name: Setup Node for Arbitrum Monitoring
       uses: actions/setup-node@v4
       with:
         node-version: latest
 
-    - name: Install dependencies for Retryable-Tracker
+    - name: Install dependencies for Arbitrum Monitoring
       run: cd ./arbitrum-monitoring && yarn install
 
     - name: Run alerting command
