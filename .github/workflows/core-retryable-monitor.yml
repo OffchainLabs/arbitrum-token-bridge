@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout Bridge
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: OffchainLabs/arbitrum-token-bridge
 
@@ -34,10 +34,10 @@ jobs:
         NOVA_MONITOR_RPC_URL: ${{ secrets.NOVA_MONITOR_RPC_URL }}
 
     - name: Checkout Retryable-Tracker repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: OffchainLabs/orbit-retryable-tracker
-        ref: origin/monorepo
+        ref: monorepo
         path: arbitrum-monitoring
 
     - name: Copy chains JSON to Retryable-Tracker
