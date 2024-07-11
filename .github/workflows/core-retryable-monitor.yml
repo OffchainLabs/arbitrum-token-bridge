@@ -36,8 +36,7 @@ jobs:
     - name: Checkout Retryable-Tracker repository
       uses: actions/checkout@v4
       with:
-        repository: OffchainLabs/orbit-retryable-tracker
-        ref: monorepo
+        repository: OffchainLabs/arbitrum-monitoring
         path: arbitrum-monitoring
 
     - name: Copy chains JSON to Retryable-Tracker
