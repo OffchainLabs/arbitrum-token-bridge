@@ -11,6 +11,7 @@ import { MultiCaller } from '@arbitrum/sdk'
 import * as Sentry from '@sentry/react'
 
 import { useChainId } from './useChainId'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
@@ -97,26 +98,35 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
     [provider, walletAddressLowercased]
   )
 
-  const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
+  const {
+    data: dataEth = null,
+    mutate: updateEthBalance,
+    isLoading: isLoadingEthBalance, // isLoading only applies for the first loading
+    isValidating: isValidatingEthBalance // isValidating will be true for every refetch
+  } = useSWR(
     queryKey('eth'),
-    ([_walletAddress]) => provider.getBalance(_walletAddress),
+    ([_walletAddress, _chainId]) => {
+      const _provider = getProviderForChainId(_chainId)
+      return _provider.getBalance(_walletAddress)
+    },
     {
-      refreshInterval: 15_000,
+      // refreshInterval: 15_000,
       shouldRetryOnError: true,
       errorRetryCount: 2,
       errorRetryInterval: 3_000
     }
   )
-  const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
-    queryKey('erc20'),
-    () => fetchErc20([]),
-    {
-      shouldRetryOnError: true,
-      errorRetryCount: 2,
-      errorRetryInterval: 3_000,
-      use: [merge]
-    }
-  )
+  const {
+    data: dataErc20 = null,
+    mutate: mutateErc20,
+    isLoading: isLoadingErc20Balance,
+    isValidating: isValidatingErc20Balance
+  } = useSWR(queryKey('erc20'), () => fetchErc20([]), {
+    shouldRetryOnError: true,
+    errorRetryCount: 2,
+    errorRetryInterval: 3_000,
+    use: [merge]
+  })
 
   const updateErc20 = useCallback(
     async (addresses: string[]) => {
@@ -136,8 +146,16 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
   )
 
   return {
-    eth: [dataEth, updateEthBalance] as const,
-    erc20: [dataErc20, updateErc20] as const
+    eth: [
+      dataEth,
+      updateEthBalance,
+      isLoadingEthBalance || isValidatingEthBalance
+    ] as const,
+    erc20: [
+      dataErc20,
+      updateErc20,
+      isLoadingErc20Balance || isValidatingErc20Balance
+    ] as const
   }
 }
 

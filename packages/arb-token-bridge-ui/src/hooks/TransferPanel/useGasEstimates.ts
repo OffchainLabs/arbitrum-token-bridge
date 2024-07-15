@@ -5,6 +5,7 @@ import { useSigner } from 'wagmi'
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
+import { useEffect } from 'react'
 
 async function fetcher([
   signer,
@@ -57,6 +58,12 @@ export function useGasEstimates({
 } {
   const { data: signer } = useSigner()
 
+  // useEffect(() => {
+  //   console.log('source chain id', sourceChainId)
+  // }, [sourceChainId])
+
+  // console.log('balance', sourceChainBalance?.toString())
+
   const { data: gasEstimates, error } = useSWR(
     signer && sourceChainBalance && sourceChainBalance.gte(amount)
       ? ([
@@ -66,6 +73,7 @@ export function useGasEstimates({
           destinationChainErc20Address,
           amount.toString(), // BigNumber is not serializable
           walletAddress,
+          sourceChainBalance,
           'gasEstimates'
         ] as const)
       : null,
@@ -75,8 +83,15 @@ export function useGasEstimates({
       _sourceChainErc20Address,
       _destinationChainErc20Address,
       _amount,
-      _walletAddress
+      _walletAddress,
+      _balance
     ]) => {
+      console.log(
+        'fetching',
+        _sourceChainId,
+        _destinationChainId,
+        sourceChainBalance?.toString()
+      )
       const sourceProvider = getProviderForChainId(_sourceChainId)
       const _signer = sourceProvider.getSigner(_walletAddress)
 

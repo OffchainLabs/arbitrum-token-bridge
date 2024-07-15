@@ -78,8 +78,9 @@ export function useGasSummary(): UseGasSummaryResult {
     []
   )
 
-  const balance = useBalanceOnSourceChain(token)
+  const { balance, isLoading } = useBalanceOnSourceChain(token)
 
+  console.log(balance?.toString(), isLoading)
   const { gasEstimates: estimateGasResult, error: gasEstimatesError } =
     useGasEstimates({
       walletAddress,
@@ -92,7 +93,7 @@ export function useGasSummary(): UseGasSummaryResult {
       destinationChainErc20Address: isDepositMode
         ? token?.l2Address
         : token?.address,
-      sourceChainBalance: balance
+      sourceChainBalance: isLoading ? null : balance
     })
 
   const estimatedParentChainGasFees = useMemo(() => {
