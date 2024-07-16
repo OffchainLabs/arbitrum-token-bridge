@@ -442,7 +442,7 @@ export const TELEPORT_ALLOWLIST: { [id: number]: number[] } = {
   [ChainId.Sepolia]: [1918988905] // RARI Testnet
 }
 
-function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
+export function getChildChainIds(chain: ArbitrumNetwork | L1Network) {
   const childChainIds = [
     ...getChildrenForNetwork(chain.chainId).map(chain => chain.chainId),
     ...(TELEPORT_ALLOWLIST[chain.chainId] ?? []) // for considering teleport (L1-L3 transfers) we will get the L3 children of the chain, if present
