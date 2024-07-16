@@ -7,7 +7,8 @@ import { ExternalLink } from '../../common/ExternalLink'
 import {
   SpecialTokenSymbol,
   USDCFastBridges,
-  FastBridgeInfo
+  FastBridgeInfo,
+  FastBridgeNames
 } from '../../../util/fastBridges'
 import { TabButton } from '../../common/Tab'
 import { BridgesTable } from '../../common/BridgesTable'
@@ -79,6 +80,8 @@ export function USDCWithdrawalConfirmationDialog(
       transferMode: 'withdraw'
     })
   }))
+    // temporarily disable lifi
+    .filter(bridge => bridge.name !== FastBridgeNames.LIFI)
 
   return (
     <Dialog
