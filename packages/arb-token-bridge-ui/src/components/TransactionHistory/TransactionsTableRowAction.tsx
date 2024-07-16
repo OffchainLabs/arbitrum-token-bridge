@@ -96,7 +96,7 @@ export function TransactionsTableRowAction({
       }
 
       errorToast(
-        `Can't claim ${type === 'deposits' ? 'withdrawal' : 'deposit'}: ${
+        `Can't claim ${type === 'deposits' ? 'deposit' : 'withdrawal'}: ${
           error?.message ?? error
         }`
       )
