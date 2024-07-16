@@ -21,7 +21,7 @@ export enum FastBridgeNames {
   Stargate = 'Stargate',
   Synapse = 'Synapse',
   Wormhole = 'Wormhole',
-  LIFI = 'LI.FI',
+  // LIFI = 'LI.FI',
   Router = 'Router'
 }
 
@@ -89,7 +89,8 @@ export function getFastBridges({
   const bridgeInfo: {
     [bridge in Exclude<
       FastBridgeNames,
-      FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+      // FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+      FastBridgeNames.Router | FastBridgeNames.Wormhole
     >]: {
       imageSrc: StaticImageData
       href: string
@@ -125,7 +126,7 @@ export function getFastBridges({
     .filter(fastBridgeName => {
       // exclude these fast bridges for now
       switch (fastBridgeName) {
-        case FastBridgeNames.LIFI:
+        // case FastBridgeNames.LIFI:
         case FastBridgeNames.Wormhole:
         case FastBridgeNames.Router:
           return false
@@ -136,7 +137,8 @@ export function getFastBridges({
     .map<FastBridgeInfo>(bridge => {
       const name = bridge as Exclude<
         FastBridgeNames,
-        FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+        // FastBridgeNames.LIFI | FastBridgeNames.Router | FastBridgeNames.Wormhole
+        FastBridgeNames.Router | FastBridgeNames.Wormhole
       >
       return {
         name,
@@ -151,7 +153,7 @@ export const USDCBridgeInfo = {
   tokenSymbolOnArbitrum: 'USDC.e',
   supportedBridges: [
     FastBridgeNames.Celer,
-    FastBridgeNames.LIFI,
+    // FastBridgeNames.LIFI,
     FastBridgeNames.Wormhole,
     FastBridgeNames.Router
   ],
@@ -187,26 +189,26 @@ export const USDCFastBridges: USDCFastBridgeInfo[] = [
       }
     }
   },
-  {
-    name: FastBridgeNames.LIFI,
-    imageSrc: LIFI,
-    getHref: ({
-      from,
-      to,
-      fromTokenAddress,
-      toTokenAddress,
-      amount,
-      transferMode
-    }: getHrefParams) => {
-      switch (transferMode) {
-        case 'deposit':
-          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
-        case 'withdraw':
-        default:
-          return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
-      }
-    }
-  },
+  // {
+  //   name: FastBridgeNames.LIFI,
+  //   imageSrc: LIFI,
+  //   getHref: ({
+  //     from,
+  //     to,
+  //     fromTokenAddress,
+  //     toTokenAddress,
+  //     amount,
+  //     transferMode
+  //   }: getHrefParams) => {
+  //     switch (transferMode) {
+  //       case 'deposit':
+  //         return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+  //       case 'withdraw':
+  //       default:
+  //         return `https://jumper.exchange/?fromChain=${from}&fromToken=${fromTokenAddress}&toChain=${to}&toToken=${toTokenAddress}&fromAmount=${amount}`
+  //     }
+  //   }
+  // },
   {
     name: FastBridgeNames.Wormhole,
     imageSrc: Wormhole,
