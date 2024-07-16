@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
-import { TransactionReceipt } from '@ethersproject/providers'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
 import { getRetryableTicket } from '../util/RetryableUtils'
@@ -52,17 +51,19 @@ export function useRedeemRetryable(
       await redeemTx.wait()
 
       const status = await retryableTicket.status()
-      const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+      const isSuccess = status === ParentToChildMessageStatus.REDEEMED
+      const successfulRedeem = await retryableTicket.getSuccessfulRedeem()
 
-      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
-        status: L1ToL2MessageStatus.REDEEMED
-        l2TxReceipt: TransactionReceipt
+      if (successfulRedeem.status !== ParentToChildMessageStatus.REDEEMED) {
+        throw new Error(
+          `Unexpected status for retryable ticket (parent tx hash ${tx.txId}), expected ${ParentToChildMessageStatus.REDEEMED} but got ${successfulRedeem.status}`
+        )
       }
 
       await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+          l2TxID: successfulRedeem.childTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false

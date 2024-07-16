@@ -1,4 +1,4 @@
-import { EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
+import { EthL1L3Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { BigNumber, constants } from 'ethers'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import {
@@ -25,7 +25,7 @@ export class EthTeleportStarter extends BridgeTransferStarter {
       return this.l1l3Bridger
     }
 
-    const l3Network = await getL2Network(this.destinationChainProvider)
+    const l3Network = await getArbitrumNetwork(this.destinationChainProvider)
     this.l1l3Bridger = new EthL1L3Bridger(l3Network)
 
     return this.l1l3Bridger

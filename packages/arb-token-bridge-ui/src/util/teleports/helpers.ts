@@ -1,6 +1,6 @@
 import { utils } from 'ethers'
 import { getProviderForChainId } from '@/token-bridge-sdk/utils'
-import { RetryableMessageParams } from '@arbitrum/sdk/dist/lib/dataEntities/message'
+import { RetryableMessageParams } from '@arbitrum/sdk'
 import {
   fetchTeleportInputParametersFromTxId,
   getL3ChainIdFromTeleportEvents

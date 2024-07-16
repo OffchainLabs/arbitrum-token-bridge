@@ -2,7 +2,7 @@ import { useReducer, useEffect, useMemo } from 'react'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { AssetType, TransactionActions } from './arbTokenBridge.types'
 import { BigNumber, ethers } from 'ethers'
-import { L1ToL2MessageStatus } from '@arbitrum/sdk'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
 
 type Action =
   | { type: 'ADD_TRANSACTION'; transaction: Transaction }
@@ -63,14 +63,14 @@ export const txnTypeToLayer = (txnType: TxnType): 1 | 2 => {
 }
 
 export interface L1ToL2MessageData {
-  status: L1ToL2MessageStatus
+  status: ParentToChildMessageStatus
   retryableCreationTxID: string
   l2TxID?: string
   fetchingUpdate: boolean
 }
 
 export interface L2ToL3MessageData {
-  status: L1ToL2MessageStatus
+  status: ParentToChildMessageStatus
   retryableCreationTxID?: string
   l2ForwarderRetryableTxID?: string
   l3TxID?: string
