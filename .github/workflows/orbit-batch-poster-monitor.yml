@@ -1,4 +1,4 @@
-name: Monitor Orbit Chains Batch Posting
+name: Monitor Orbit Batch Posting
 
 on:
   workflow_dispatch:

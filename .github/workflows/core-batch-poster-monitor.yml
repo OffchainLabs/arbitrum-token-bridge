@@ -1,4 +1,4 @@
-name: Monitor Core Chains Batch Posting
+name: Monitor Core Batch Posting
 
 on:
   workflow_dispatch:
