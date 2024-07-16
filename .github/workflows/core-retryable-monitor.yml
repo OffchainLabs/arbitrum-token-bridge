@@ -37,6 +37,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: OffchainLabs/arbitrum-monitoring
+        ref: refactor-sdk-v4
         path: arbitrum-monitoring
 
     - name: Copy chains JSON to Arbitrum Monitoring
