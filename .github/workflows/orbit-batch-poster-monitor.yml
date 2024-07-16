@@ -1,6 +1,9 @@
 name: Monitor Orbit Batch Posting
 
 on:
+  push:
+    branches:
+      - 'chore-ib'
   workflow_dispatch:
   schedule:
     # Run every 2 hours
