@@ -9,7 +9,8 @@ import { useActions, useAppState } from '../../state'
 import {
   BRIDGE_TOKEN_LISTS,
   BridgeTokenList,
-  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID
+  SPECIAL_ARBITRUM_TOKEN_TOKEN_LIST_ID,
+  addBridgeTokenListToBridge
 } from '../../util/TokenListUtils'
 import {
   fetchErc20Data,
@@ -72,10 +73,10 @@ function TokenListRow({ tokenList }: { tokenList: BridgeTokenList }) {
       if (isActive) {
         token.removeTokensFromList(bridgeTokenList.id)
       } else {
-        token.addBridgeTokenListToBridge(bridgeTokenList)
+        addBridgeTokenListToBridge(bridgeTokenList, arbTokenBridge)
       }
     },
-    [token]
+    [arbTokenBridge, token]
   )
 
   const isActive = Object.keys(bridgeTokens ?? []).some(address => {

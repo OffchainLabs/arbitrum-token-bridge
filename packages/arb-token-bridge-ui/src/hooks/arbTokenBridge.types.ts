@@ -21,7 +21,6 @@ import {
   Transaction,
   L1ToL2MessageData
 } from './useTransactions'
-import { BridgeTokenList } from '../util/TokenListUtils'
 
 export { OutgoingMessageState }
 
