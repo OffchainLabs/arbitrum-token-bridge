@@ -5,9 +5,11 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
 import { TokenList } from '@uniswap/token-lists'
-import { L2ToL1Message } from '@arbitrum/sdk'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import {
+  EventArgs,
+  ChildToParentMessage,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions from './useTransactions'
@@ -40,7 +42,7 @@ export const wait = (ms = 0) => {
 }
 
 function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
+  event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
 }
@@ -435,7 +437,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider
@@ -491,7 +493,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider
