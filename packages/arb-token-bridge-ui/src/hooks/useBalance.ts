@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { BigNumber } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 import { Provider } from '@ethersproject/abstract-provider'
 import useSWR, {
   useSWRConfig,
@@ -52,7 +52,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
     (type: 'eth' | 'erc20') => {
       if (
         typeof chainId === 'undefined' ||
-        typeof walletAddressLowercased === 'undefined'
+        (typeof walletAddressLowercased === 'undefined' && type === 'erc20')
       ) {
         // Don't fetch
         return null
@@ -99,7 +99,10 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
-    ([_walletAddress]) => provider.getBalance(_walletAddress),
+    ([_walletAddress]) =>
+      typeof _walletAddress === 'undefined'
+        ? constants.Zero
+        : provider.getBalance(_walletAddress),
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,

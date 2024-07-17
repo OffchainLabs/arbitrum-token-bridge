@@ -147,7 +147,11 @@ export function useGasSummary(): UseGasSummaryResult {
     }
 
     // If user has input an amount over their balance, don't estimate gas
-    if (balance && amountBigNumber.gt(balance)) {
+    if (
+      typeof walletAddress !== 'undefined' &&
+      balance &&
+      amountBigNumber.gt(balance)
+    ) {
       setGasSummaryStatus('insufficientBalance')
       return
     }
