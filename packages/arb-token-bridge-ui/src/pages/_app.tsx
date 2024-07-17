@@ -40,7 +40,6 @@ Sentry.init({
   integrations: [new BrowserTracing()],
   tracesSampleRate: 0.025,
   maxValueLength: 0,
-  debug: true,
   beforeSend: (event, hint) => {
     if (event.message) {
       if (

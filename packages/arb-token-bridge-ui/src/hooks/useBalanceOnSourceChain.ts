@@ -10,18 +10,21 @@ import { ERC20BridgeToken } from './arbTokenBridge.types'
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
-export function useBalanceOnSourceChain(token: ERC20BridgeToken | null): {
-  balance: BigNumber | null
-  isLoading: boolean
-} {
+// {
+//   balance: BigNumber | null
+//   isLoading: boolean
+// }
+export function useBalanceOnSourceChain(
+  token: ERC20BridgeToken | null
+): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
   const {
-    eth: [ethSourceChainBalance, , isRefetchingEthBalance],
-    erc20: [erc20SourceChainBalances, , isRefetchingErc20Balance]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+    eth: [ethSourceChainBalance],
+    erc20: [erc20SourceChainBalances]
+  } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
@@ -43,22 +46,27 @@ export function useBalanceOnSourceChain(token: ERC20BridgeToken | null): {
 
     // `ethSourceChainBalance` is the ETH balance at source chain when ETH is selected for bridging,
     // or the custom gas native currency balance when withdrawing the native currency
-    return { balance: ethSourceChainBalance, isLoading: isRefetchingEthBalance }
+    // return { balance: ethSourceChainBalance, isLoading: isRefetchingEthBalance }
+    return ethSourceChainBalance
   }
 
   if (!erc20SourceChainBalances) {
-    return {
-      balance: constants.Zero,
-      isLoading: isRefetchingEthBalance
-    }
+    // return {
+    //   balance: constants.Zero,
+    //   isLoading: isRefetchingEthBalance
+    // }
+    return constants.Zero
   }
 
   if (isDepositMode) {
-    return {
-      balance:
-        erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero,
-      isLoading: isRefetchingErc20Balance
-    }
+    // return {
+    //   balance:
+    //     erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero,
+    //   isLoading: isRefetchingErc20Balance
+    // }
+    return (
+      erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero
+    )
   }
 
   const tokenChildChainAddress = token.l2Address?.toLowerCase()
@@ -66,12 +74,14 @@ export function useBalanceOnSourceChain(token: ERC20BridgeToken | null): {
   // token that has never been deposited so it doesn't have an l2Address
   // this should not happen because user shouldn't be able to select it
   if (!tokenChildChainAddress) {
-    return { balance: constants.Zero, isLoading: false }
+    // return { balance: constants.Zero, isLoading: false }
+    return constants.Zero
   }
 
   // token withdrawal
-  return {
-    balance: erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero,
-    isLoading: isRefetchingErc20Balance
-  }
+  // return {
+  //   balance: erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero,
+  //   isLoading: isRefetchingErc20Balance
+  // }
+  return erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero
 }

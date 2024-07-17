@@ -19,7 +19,7 @@ const Container = ({ children }: PropsWithChildren<unknown>) => (
 const walletAddress = '0x58b6a8a3302369daec383334672404ee733ab239'
 
 const renderHookAsyncUseBalance = async ({
-  provider,
+  chainId,
   walletAddress
 }: UseBalanceProps) => {
   let hook:
@@ -27,7 +27,7 @@ const renderHookAsyncUseBalance = async ({
     | undefined
 
   await act(async () => {
-    hook = renderHook(() => useBalance({ provider, walletAddress }), {
+    hook = renderHook(() => useBalance({ chainId, walletAddress }), {
       wrapper: Container
     })
   })
@@ -65,7 +65,7 @@ describe('useBalance', () => {
     )
 
     const { result } = await renderHookAsyncUseBalance({
-      provider,
+      chainId: 1,
       walletAddress: undefined
     })
 
@@ -106,7 +106,7 @@ describe('useBalance', () => {
     )
 
     const { result } = await renderHookAsyncUseBalance({
-      provider,
+      chainId: 1,
       walletAddress
     })
 
@@ -144,7 +144,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
 
@@ -174,7 +174,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
 
@@ -232,7 +232,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
       const {
@@ -283,7 +283,7 @@ describe('useBalance', () => {
       )
 
       const { result } = await renderHookAsyncUseBalance({
-        provider,
+        chainId: 1,
         walletAddress
       })
       const {

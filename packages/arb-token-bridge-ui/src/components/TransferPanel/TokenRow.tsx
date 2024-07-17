@@ -176,7 +176,7 @@ function useTokenInfo(token: ERC20BridgeToken | null) {
     return token.logoURI
   }, [token, nativeCurrency])
 
-  const { balance } = useBalanceOnSourceChain(token)
+  const balance = useBalanceOnSourceChain(token)
 
   const isArbitrumToken = useMemo(() => {
     if (!token) {
