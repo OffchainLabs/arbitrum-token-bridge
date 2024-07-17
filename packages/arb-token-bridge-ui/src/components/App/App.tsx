@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { useAccount, useDisconnect, useNetwork, WagmiConfig } from 'wagmi'
+import { useEffect, useState } from 'react'
+import { useAccount, WagmiConfig } from 'wagmi'
 import { darkTheme, RainbowKitProvider, Theme } from '@rainbow-me/rainbowkit'
 
 import merge from 'lodash-es/merge'
@@ -8,7 +8,7 @@ import { createOvermind, Overmind } from 'overmind'
 import { Provider } from 'overmind-react'
 import { useLocalStorage } from '@uidotdev/usehooks'
 
-import { ConnectionState, sanitizeQueryParams } from '../../util'
+import { ConnectionState } from '../../util'
 import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
@@ -19,11 +19,8 @@ import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
 import { TokenListSyncer } from '../syncers/TokenListSyncer'
 import { Header } from '../common/Header'
-import {
-  ArbQueryParamProvider,
-  useArbQueryParams
-} from '../../hooks/useArbQueryParams'
-import { getNetworkName, isNetwork } from '../../util/networks'
+import { ArbQueryParamProvider } from '../../hooks/useArbQueryParams'
+import { isNetwork } from '../../util/networks'
 import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
@@ -33,8 +30,6 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useSyncConnectedChainToAnalytics } from './useSyncConnectedChainToAnalytics'
 import { useSyncConnectedChainToQueryParams } from './useSyncConnectedChainToQueryParams'
-import { onDisconnectHandler } from '../../util/walletConnectUtils'
-import { addressIsSmartContract } from '../../util/AddressUtils'
 
 declare global {
   interface Window {
@@ -194,7 +189,6 @@ function AppContent() {
     <>
       <Header />
       <TokenListSyncer />
-      <ConnectedChainSyncer />
       <BalanceUpdater />
       <ArbTokenBridgeStoreSyncWrapper />
       <MainContent />
@@ -223,97 +217,6 @@ Object.keys(localStorage).forEach(key => {
     localStorage.removeItem(key)
   }
 })
-
-function ConnectedChainSyncer() {
-  const { address } = useAccount()
-  const [shouldSync, setShouldSync] = useState(false)
-  const [didSync, setDidSync] = useState(false)
-  const { disconnect } = useDisconnect({
-    onSettled: onDisconnectHandler
-  })
-
-  const [{ sourceChain, destinationChain }, setQueryParams] =
-    useArbQueryParams()
-  const { chain } = useNetwork()
-
-  const setSourceChainToConnectedChain = useCallback(() => {
-    if (typeof chain === 'undefined') {
-      return
-    }
-
-    const { sourceChainId: sourceChain, destinationChainId: destinationChain } =
-      sanitizeQueryParams({
-        sourceChainId: chain.id,
-        destinationChainId: undefined
-      })
-
-    setQueryParams({ sourceChain, destinationChain })
-  }, [chain, setQueryParams])
-
-  useEffect(() => {
-    async function checkCorrectChainForSmartContractWallet() {
-      if (typeof chain === 'undefined') {
-        return
-      }
-      if (!address) {
-        return
-      }
-      const isSmartContractWallet = await addressIsSmartContract(
-        address,
-        chain.id
-      )
-      if (isSmartContractWallet && sourceChain !== chain.id) {
-        const chainName = getNetworkName(chain.id)
-
-        setSourceChainToConnectedChain()
-
-        window.alert(
-          `You're connected to the app with a smart contract wallet on ${chainName}. In order to properly enable transfers, the app will now reload.\n\nPlease reconnect after the reload.`
-        )
-        disconnect()
-      }
-    }
-
-    checkCorrectChainForSmartContractWallet()
-  }, [
-    address,
-    chain,
-    disconnect,
-    setQueryParams,
-    setSourceChainToConnectedChain,
-    sourceChain
-  ])
-
-  useEffect(() => {
-    if (shouldSync) {
-      return
-    }
-
-    // Only sync connected chain to query params if the query params were not initially provided
-    if (
-      typeof sourceChain === 'undefined' &&
-      typeof destinationChain === 'undefined'
-    ) {
-      setShouldSync(true)
-    }
-  }, [shouldSync, sourceChain, destinationChain])
-
-  useEffect(() => {
-    // When the chain is connected and we should sync, and we haven't synced yet, sync the connected chain to the query params
-    if (chain && shouldSync && !didSync) {
-      setSourceChainToConnectedChain()
-      setDidSync(true)
-    }
-  }, [
-    chain,
-    shouldSync,
-    didSync,
-    setQueryParams,
-    setSourceChainToConnectedChain
-  ])
-
-  return null
-}
 
 export default function App() {
   const [overmind] = useState<Overmind<typeof config>>(createOvermind(config))

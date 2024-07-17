@@ -16,11 +16,8 @@ function getWalletName(connectorName: string): ProviderName {
     case 'Safe':
     case 'Injected':
     case 'Ledger':
-      return connectorName
-
-    case 'WalletConnectLegacy':
     case 'WalletConnect':
-      return 'WalletConnect'
+      return connectorName
 
     default:
       return 'Other'
