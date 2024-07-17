@@ -11,7 +11,7 @@ import {
   getProvider,
   setParentChainTxDetailsOfWithdrawalClaimTx
 } from '../components/TransactionHistory/helpers'
-import { L2TransactionReceipt } from '@arbitrum/sdk'
+import { ChildTransactionReceipt } from '@arbitrum/sdk'
 import { ContractReceipt, utils } from 'ethers'
 import { useTransactionHistory } from './useTransactionHistory'
 import dayjs from 'dayjs'
@@ -49,8 +49,8 @@ export function useClaimWithdrawal(
 
     const childChainProvider = getProvider(tx.childChainId)
     const txReceipt = await childChainProvider.getTransactionReceipt(tx.txId)
-    const l2TxReceipt = new L2TransactionReceipt(txReceipt)
-    const [event] = l2TxReceipt.getL2ToL1Events()
+    const l2TxReceipt = new ChildTransactionReceipt(txReceipt)
+    const [event] = l2TxReceipt.getChildToParentEvents()
 
     if (!event) {
       setIsClaiming(false)
@@ -116,7 +116,7 @@ export function useClaimWithdrawal(
     const isSuccess = (res as ContractReceipt).status === 1
     const txHash = (res as ContractReceipt).transactionHash
 
-    updatePendingTransaction({
+    await updatePendingTransaction({
       ...tx,
       status: isSuccess ? WithdrawalStatus.EXECUTED : WithdrawalStatus.FAILURE,
       resolvedAt: isSuccess ? dayjs().valueOf() : null

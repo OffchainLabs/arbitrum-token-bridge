@@ -59,11 +59,6 @@ export default defineConfig({
       if (!arbRpcUrl) {
         throw new Error('NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL variable missing.')
       }
-      if (!goerliRpcUrl) {
-        throw new Error(
-          'process.env.NEXT_PUBLIC_GOERLI_RPC_URL variable missing.'
-        )
-      }
       if (!sepoliaRpcUrl) {
         throw new Error(
           'process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL variable missing.'
@@ -101,8 +96,6 @@ export default defineConfig({
       // Set Cypress variables
       config.env.ETH_RPC_URL = ethRpcUrl
       config.env.ARB_RPC_URL = arbRpcUrl
-      config.env.ETH_GOERLI_RPC_URL = goerliRpcUrl
-      config.env.ARB_GOERLI_RPC_URL = arbGoerliRpcUrl
       config.env.ETH_SEPOLIA_RPC_URL = sepoliaRpcUrl
       config.env.ARB_SEPOLIA_RPC_URL = arbSepoliaRpcUrl
       config.env.ADDRESS = userWalletAddress
@@ -120,6 +113,9 @@ export default defineConfig({
         l2Provider: arbProvider
       })
 
+      config.env.REDEEM_RETRYABLE_TEST_TX =
+        await generateTestTxForRedeemRetryable()
+
       synpressPlugins(on, config)
       setupCypressTasks(on)
       return config
@@ -136,7 +132,6 @@ if (typeof INFURA_KEY === 'undefined') {
 }
 
 const MAINNET_INFURA_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`
-const GOERLI_INFURA_RPC_URL = `https://goerli.infura.io/v3/${INFURA_KEY}`
 const SEPOLIA_INFURA_RPC_URL = `https://sepolia.infura.io/v3/${INFURA_KEY}`
 
 const ethRpcUrl = (() => {
@@ -156,11 +151,8 @@ const ethRpcUrl = (() => {
 })()
 
 const arbRpcUrl = process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL
-const goerliRpcUrl =
-  process.env.NEXT_PUBLIC_GOERLI_RPC_URL ?? GOERLI_INFURA_RPC_URL
 const sepoliaRpcUrl =
   process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL ?? SEPOLIA_INFURA_RPC_URL
-const arbGoerliRpcUrl = 'https://goerli-rollup.arbitrum.io/rpc'
 const arbSepoliaRpcUrl = 'https://sepolia-rollup.arbitrum.io/rpc'
 
 const ethProvider = new StaticJsonRpcProvider(ethRpcUrl)
@@ -192,9 +184,9 @@ async function deployERC20ToL2(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(arbProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
-    erc20L1Address,
-    l1Signer: localWallet.connect(ethProvider),
-    l2Provider: arbProvider
+    erc20ParentAddress: erc20L1Address,
+    parentSigner: localWallet.connect(ethProvider),
+    childProvider: arbProvider
   })
   await deploy.wait()
 }
@@ -245,6 +237,43 @@ async function approveWeth() {
 async function getCustomDestinationAddress() {
   console.log('Getting custom destination address...')
   return (await Wallet.createRandom().getAddress()).toLowerCase()
+}
+
+async function generateTestTxForRedeemRetryable() {
+  console.log('Adding a test transaction for redeeming retryable...')
+
+  const walletAddress = await userWallet.getAddress()
+  const l1Provider = ethProvider
+  const l2Provider = arbProvider
+  const erc20Token = {
+    symbol: 'WETH',
+    decimals: 18,
+    address: wethTokenAddressL1
+  }
+  const amount = utils.parseUnits('0.001', erc20Token.decimals)
+  const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
+  const depositRequest = await erc20Bridger.getDepositRequest({
+    parentProvider: l1Provider,
+    childProvider: l2Provider,
+    from: walletAddress,
+    erc20ParentAddress: erc20Token.address,
+    amount,
+    retryableGasOverrides: {
+      gasLimit: { base: BigNumber.from(0) }
+    }
+  })
+  const tx = await erc20Bridger.deposit({
+    ...depositRequest,
+    parentSigner: userWallet.connect(ethProvider),
+    childProvider: arbProvider,
+    retryableGasOverrides: {
+      gasLimit: {
+        base: BigNumber.from(0)
+      }
+    }
+  })
+  const receipt = await tx.wait()
+  return receipt.transactionHash
 }
 
 function setupCypressTasks(on: Cypress.PluginEvents) {

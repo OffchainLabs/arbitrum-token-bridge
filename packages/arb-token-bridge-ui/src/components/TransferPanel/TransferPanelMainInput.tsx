@@ -1,6 +1,18 @@
 import { twMerge } from 'tailwind-merge'
+import { useAccount } from 'wagmi'
+import { useEffect, useMemo } from 'react'
+
 import { Loader } from '../common/atoms/Loader'
 import { TokenButton } from './TokenButton'
+import { useNetworks } from '../../hooks/useNetworks'
+import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { useDestinationAddressStore } from './AdvancedSettings'
+import { useBalance } from '../../hooks/useBalance'
+import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
+import { useAppState } from '../../state'
+import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { countDecimals } from '../../util/NumberUtils'
+import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -8,6 +20,70 @@ type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 function MaxButton(props: MaxButtonProps) {
   const { loading, className = '', ...rest } = props
+
+  const {
+    app: { selectedToken }
+  } = useAppState()
+  const { address: walletAddress } = useAccount()
+  const [networks] = useNetworks()
+  const { childChainProvider, parentChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+
+  const { destinationAddress } = useDestinationAddressStore()
+  const destinationAddressOrWalletAddress = destinationAddress || walletAddress
+
+  const l1WalletAddress = isDepositMode
+    ? walletAddress
+    : destinationAddressOrWalletAddress
+
+  const l2WalletAddress = isDepositMode
+    ? destinationAddressOrWalletAddress
+    : walletAddress
+
+  const {
+    eth: [ethL1Balance]
+  } = useBalance({
+    provider: parentChainProvider,
+    walletAddress: l1WalletAddress
+  })
+  const {
+    eth: [ethL2Balance]
+  } = useBalance({
+    provider: childChainProvider,
+    walletAddress: l2WalletAddress
+  })
+  const selectedTokenBalances = useSelectedTokenBalances()
+
+  const maxButtonVisible = useMemo(() => {
+    const ethBalance = isDepositMode ? ethL1Balance : ethL2Balance
+    const tokenBalance = isDepositMode
+      ? selectedTokenBalances.l1
+      : selectedTokenBalances.l2
+
+    if (selectedToken) {
+      if (!tokenBalance) {
+        return false
+      }
+
+      return !tokenBalance.isZero()
+    }
+
+    if (!ethBalance) {
+      return false
+    }
+
+    return !ethBalance.isZero()
+  }, [
+    ethL1Balance,
+    ethL2Balance,
+    selectedTokenBalances,
+    selectedToken,
+    isDepositMode
+  ])
+
+  if (!maxButtonVisible) {
+    return null
+  }
 
   if (loading) {
     return (
@@ -31,18 +107,46 @@ function MaxButton(props: MaxButtonProps) {
   )
 }
 
+function TransferPanelInputField(
+  props: React.InputHTMLAttributes<HTMLInputElement>
+) {
+  const { value = '', onChange, ...rest } = props
+  const setAmount = useSetInputAmount()
+  const decimals = useSelectedTokenDecimals()
+
+  useEffect(() => {
+    // if number of decimals of query param value is greater than token decimals,
+    // truncate the decimals and update the amount query param value
+    if (countDecimals(String(value)) > decimals) {
+      setAmount(String(value))
+    }
+  }, [value, decimals, setAmount])
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      placeholder="Enter amount"
+      className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
+      value={value}
+      onChange={event => {
+        onChange?.(event)
+        setAmount(event.target.value)
+      }}
+      {...rest}
+    />
+  )
+}
+
 export type TransferPanelMainInputProps =
   React.InputHTMLAttributes<HTMLInputElement> & {
     errorMessage?: string | React.ReactNode
-    maxButtonProps: MaxButtonProps & {
-      visible: boolean
-    }
+    maxButtonProps: MaxButtonProps
     value: string
   }
 
 export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
-  const { errorMessage, maxButtonProps, value, ...rest } = props
-  const { visible: maxButtonVisible, ...restMaxButtonProps } = maxButtonProps
+  const { errorMessage, maxButtonProps, ...rest } = props
 
   return (
     <>
@@ -61,15 +165,8 @@ export function TransferPanelMainInput(props: TransferPanelMainInputProps) {
             errorMessage ? 'border-brick' : 'border-white/30'
           )}
         >
-          <input
-            type="text"
-            inputMode="decimal"
-            placeholder="Enter amount"
-            className="h-full w-full bg-transparent px-3 text-xl font-light placeholder:text-gray-dark sm:text-3xl"
-            value={value}
-            {...rest}
-          />
-          {maxButtonVisible && <MaxButton {...restMaxButtonProps} />}
+          <TransferPanelInputField {...rest} />
+          <MaxButton {...maxButtonProps} />
         </div>
       </div>
 
