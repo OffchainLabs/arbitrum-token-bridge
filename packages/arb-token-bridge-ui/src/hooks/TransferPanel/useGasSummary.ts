@@ -146,6 +146,11 @@ export function useGasSummary(): UseGasSummaryResult {
       return
     }
 
+    if (typeof walletAddress !== 'undefined' && !balance) {
+      setGasSummaryStatus('loading')
+      return
+    }
+
     // If user has input an amount over their balance, don't estimate gas
     if (
       typeof walletAddress !== 'undefined' &&

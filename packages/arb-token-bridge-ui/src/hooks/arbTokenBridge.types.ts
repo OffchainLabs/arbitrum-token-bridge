@@ -150,7 +150,6 @@ export interface ArbTokenBridgeToken {
   addL2NativeToken: (erc20L2Address: string) => void
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
-  addBridgeTokenListToBridge: (bridgeTokenList: BridgeTokenList) => void
   updateTokenData: (l1Address: string) => Promise<void>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
