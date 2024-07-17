@@ -131,7 +131,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
     // For each destination chain, map to an array of ChainPair objects
     return childChainIds.map(childChainId => ({
-      parentChainId: chain.chainID,
+      parentChainId: chain.chainId,
       childChainId: childChainId
     }))
   })

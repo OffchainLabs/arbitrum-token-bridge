@@ -8,8 +8,8 @@ on:
 
 env:
   NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-  ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
-  ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+  RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
+  RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
 
 jobs:
   run-alerting:
@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout Bridge
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: OffchainLabs/arbitrum-token-bridge
 
@@ -30,29 +30,29 @@ jobs:
     - name: Generate chains JSON
       run: yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
 
-    - name: Checkout Orbit-Retryable-Tracker repository
-      uses: actions/checkout@v3
+    - name: Checkout Arbitrum Monitoring repository
+      uses: actions/checkout@v4
       with:
-        repository: OffchainLabs/orbit-retryable-tracker
-        path: orbit-retryable-tracker
+        repository: OffchainLabs/arbitrum-monitoring
+        path: arbitrum-monitoring
 
-    - name: Copy chains JSON to Retryable-Tracker
-      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./orbit-retryable-tracker/lib/config.json
+    - name: Copy chains JSON to Arbitrum Monitoring
+      run: cp ./packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json ./arbitrum-monitoring/packages/retryable-monitor/config.json
    
-    - name: Setup Node for Retryable-Tracker
+    - name: Setup Node for Arbitrum Monitoring
       uses: actions/setup-node@v4
       with:
         node-version: latest
 
-    - name: Install dependencies for Retryable-Tracker
-      run: cd ./orbit-retryable-tracker && yarn install
+    - name: Install dependencies for Arbitrum Monitoring
+      run: cd ./arbitrum-monitoring && yarn install
 
     - name: Run alerting command
-      run: cd ./orbit-retryable-tracker && yarn findRetryables --enableAlerting
+      run: cd ./arbitrum-monitoring && yarn retryable-monitor --enableAlerting
       env:
         NODE_ENV: "CI"
-        ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
-        ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
+        RETRYABLE_MONITORING_SLACK_TOKEN: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_TOKEN }}
+        RETRYABLE_MONITORING_SLACK_CHANNEL: ${{ secrets.ORBIT_RETRYABLE_MONITORING_SLACK_CHANNEL }}
 
 
     - name: Clean up

@@ -8,11 +8,6 @@ import {
 import { ChainId } from '../util/networks'
 
 /**
- * Determines whether to use The Graph Network over The Graph Hosted Service.
- */
-const theGraphNetworkEnabled = process.env.THE_GRAPH_NETWORK_ENABLED === 'true'
-
-/**
  * The API key to be used for calls to The Graph Network.
  */
 const theGraphNetworkApiKey = process.env.THE_GRAPH_NETWORK_API_KEY
@@ -24,77 +19,62 @@ type SubgraphKey = keyof typeof subgraphs
 type TheGraphNetworkSubgraphId =
   (typeof subgraphs)[SubgraphKey]['theGraphNetworkSubgraphId']
 
-type TheGraphHostedServiceSubgraphName =
-  (typeof subgraphs)[SubgraphKey]['theGraphHostedServiceSubgraphName']
-
 const subgraphs = {
   // CCTP Mainnet Subgraphs
   'cctp-ethereum': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1',
-    theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-mainnet'
+    theGraphNetworkSubgraphId: 'E6iPLnDGEgrcc4gu9uiHJxENSRAAzTvUJqQqJcHZqJT1'
   },
   'cctp-arbitrum-one': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW',
-    theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-one'
+    theGraphNetworkSubgraphId: '9DgSggKVrvfi4vdyYTdmSBuPgDfm3D7zfLZ1qaQFjYYW'
   },
   // CCTP Testnet Subgraphs
   'cctp-sepolia': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5',
-    theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-sepolia'
+    theGraphNetworkSubgraphId: '4gSU1PTxjYPWk2TXPX2fusjuXrBFHC7kCZrbhrhaF9V5'
   },
   'cctp-arbitrum-sepolia': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB',
-    theGraphHostedServiceSubgraphName: 'chrstph-dvx/cctp-arb-sepolia'
+    theGraphNetworkSubgraphId: '4Dp9ENSFDKfeBsmZeSyATKKrhxC2EKzbC3bZvTHpU1DB'
   },
   // L1 Mainnet Subgraphs
   'l1-arbitrum-one': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4',
-    theGraphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nitro'
+    theGraphNetworkSubgraphId: 'F2N4nGH86Y5Bk2vPo15EVRSTz2wbtz7BGRe8DDJqMPG4'
   },
   'l1-arbitrum-nova': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp',
-    theGraphHostedServiceSubgraphName: 'gvladika/arb-bridge-eth-nova'
+    theGraphNetworkSubgraphId: '6Xvyjk9r91N3DSRQP6UZ1Lkbou567hFxLSWt2Tsv5AWp'
   },
   // L1 Testnet Subgraphs
   'l1-arbitrum-sepolia': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9',
-    theGraphHostedServiceSubgraphName: 'fionnachan/arb-bridge-eth-sepolia'
+    theGraphNetworkSubgraphId: 'GF6Ez7sY2gef8EoXrR76X6iFa41wf38zh4TXZkDkL5Z9'
   },
   // L2 Mainnet Subgraphs
   'l2-arbitrum-one': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj',
-    theGraphHostedServiceSubgraphName: 'gvladika/layer2-token-gateway-arb1'
+    theGraphNetworkSubgraphId: '9eFk14Tms68qBN7YwL6kFuk9e2BVRqkX6gXyjzLR3tuj'
   },
   // L2 Nova Subgraphs
   'l2-arbitrum-nova': {
     selfHostedSubgraph: 'arbitrum-nova/layer2-token-gateway',
-    theGraphNetworkSubgraphId: '',
-    theGraphHostedServiceSubgraphName: ''
+    theGraphNetworkSubgraphId: ''
   },
   // L2 Testnet Subgraphs
   'l2-arbitrum-sepolia': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw',
-    theGraphHostedServiceSubgraphName: 'fionnachan/layer2-token-gateway-sepolia'
+    theGraphNetworkSubgraphId: 'AaUuKWWuQbCXbvRkXpVDEpw9B7oVicYrovNyMLPZtLPw'
   },
   // Teleport Sepolia
   'teleporter-sepolia': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: '6AwhH4JF8Ss5ZFf12azD13D1nNhuNzLnjH56irYqA7fD',
-    theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
+    theGraphNetworkSubgraphId: '6AwhH4JF8Ss5ZFf12azD13D1nNhuNzLnjH56irYqA7fD'
   },
   'teleporter-ethereum': {
     selfHostedSubgraph: '',
-    theGraphNetworkSubgraphId: 'GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg',
-    theGraphHostedServiceSubgraphName: '' // we don't have a hosted service subgraph for teleports
+    theGraphNetworkSubgraphId: 'GEVHWg3FLKvWivMhqkeVrQVt4WCN6cWnsvdf6MpNrHpg'
   }
 } as const
 
@@ -134,47 +114,19 @@ function createTheGraphNetworkClient(subgraphId: TheGraphNetworkSubgraphId) {
   )
 }
 
-function createTheGraphHostedServiceClient(
-  subgraphName: TheGraphHostedServiceSubgraphName
-) {
-  return createApolloClient(
-    `https://api.thegraph.com/subgraphs/name/${subgraphName}`
-  )
-}
-
 function createSubgraphClient(key: SubgraphKey) {
   console.log(`[createSubgraphClient] key=${key}`)
 
-  const {
-    theGraphHostedServiceSubgraphName,
-    theGraphNetworkSubgraphId,
-    selfHostedSubgraph
-  } = subgraphs[key]
+  const { theGraphNetworkSubgraphId, selfHostedSubgraph } = subgraphs[key]
 
   if (selfHostedSubgraph !== '') {
     return createSelfHostedSubgraphClient(selfHostedSubgraph)
   }
 
-  if (!theGraphNetworkEnabled) {
-    console.log(
-      `[createSubgraphClient] using subgraph "${theGraphHostedServiceSubgraphName}" on the graph hosted service\n`
-    )
-    return createTheGraphHostedServiceClient(theGraphHostedServiceSubgraphName)
-  }
-  try {
-    console.log(
-      `[createSubgraphClient] using subgraph "${theGraphNetworkSubgraphId}" on the graph network`
-    )
-    return createTheGraphNetworkClient(theGraphNetworkSubgraphId)
-  } catch (err) {
-    console.warn(
-      `[createSubgraphClient] failed to create client for subgraph "${theGraphNetworkSubgraphId}" on the graph network`
-    )
-    console.warn(
-      `[createSubgraphClient] falling back to subgraph "${theGraphHostedServiceSubgraphName}" on the graph hosted service\n`
-    )
-    return createTheGraphHostedServiceClient(theGraphHostedServiceSubgraphName)
-  }
+  console.log(
+    `[createSubgraphClient] using subgraph "${theGraphNetworkSubgraphId}" on the graph network`
+  )
+  return createTheGraphNetworkClient(theGraphNetworkSubgraphId)
 }
 
 export function getCctpSubgraphClient(chainId: number) {

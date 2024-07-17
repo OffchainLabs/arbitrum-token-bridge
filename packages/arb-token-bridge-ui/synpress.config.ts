@@ -184,9 +184,9 @@ async function deployERC20ToL2(erc20L1Address: string) {
   const bridger = await Erc20Bridger.fromProvider(arbProvider)
   const deploy = await bridger.deposit({
     amount: BigNumber.from(0),
-    erc20L1Address,
-    l1Signer: localWallet.connect(ethProvider),
-    l2Provider: arbProvider
+    erc20ParentAddress: erc20L1Address,
+    parentSigner: localWallet.connect(ethProvider),
+    childProvider: arbProvider
   })
   await deploy.wait()
 }
@@ -253,10 +253,10 @@ async function generateTestTxForRedeemRetryable() {
   const amount = utils.parseUnits('0.001', erc20Token.decimals)
   const erc20Bridger = await Erc20Bridger.fromProvider(l2Provider)
   const depositRequest = await erc20Bridger.getDepositRequest({
-    l1Provider,
-    l2Provider,
+    parentProvider: l1Provider,
+    childProvider: l2Provider,
     from: walletAddress,
-    erc20L1Address: erc20Token.address,
+    erc20ParentAddress: erc20Token.address,
     amount,
     retryableGasOverrides: {
       gasLimit: { base: BigNumber.from(0) }
@@ -264,7 +264,8 @@ async function generateTestTxForRedeemRetryable() {
   })
   const tx = await erc20Bridger.deposit({
     ...depositRequest,
-    l1Signer: userWallet.connect(ethProvider),
+    parentSigner: userWallet.connect(ethProvider),
+    childProvider: arbProvider,
     retryableGasOverrides: {
       gasLimit: {
         base: BigNumber.from(0)
