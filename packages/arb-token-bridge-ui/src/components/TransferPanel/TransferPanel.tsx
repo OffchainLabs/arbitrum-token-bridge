@@ -988,7 +988,13 @@ export function TransferPanel() {
     }
 
     return false
-  }, [isArbitrumOne, isArbitrumSepolia, isDepositMode, selectedToken])
+  }, [
+    isArbitrumOne,
+    isArbitrumSepolia,
+    isDepositMode,
+    isTeleportMode,
+    selectedToken
+  ])
 
   return (
     <>
@@ -1057,6 +1063,8 @@ export function TransferPanel() {
                   } else {
                     transfer()
                   }
+                } else {
+                  transfer()
                 }
               }}
               style={{
