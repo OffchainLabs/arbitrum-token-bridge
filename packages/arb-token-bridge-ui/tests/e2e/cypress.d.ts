@@ -27,7 +27,7 @@ declare global {
       resetCctpAllowance: typeof resetCctpAllowance
       fundUserUsdcTestnet: typeof fundUserUsdcTestnet
       fundUserWalletEth: typeof fundUserWalletEth
-      typeRecursively: Chainable<JQuery<HTMLElement>>
+      typeRecursively(text: string): Chainable<JQuery<HTMLElement>>
       searchAndSelectToken: typeof searchAndSelectToken
       fillCustomDestinationAddress: typeof fillCustomDestinationAddress
     }
