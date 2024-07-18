@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { BigNumber } from 'ethers'
-import { Provider } from '@ethersproject/abstract-provider'
 import useSWR, {
   useSWRConfig,
   unstable_serialize,
@@ -99,12 +98,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
     []
   )
 
-  const {
-    data: dataEth = null,
-    mutate: updateEthBalance,
-    isLoading: isLoadingEthBalance, // isLoading only applies for the first loading
-    isValidating: isValidatingEthBalance // isValidating will be true for every refetch
-  } = useSWR(
+  const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
     ([_walletAddress, _chainId]) => {
       const _provider = getProviderForChainId(_chainId)
@@ -117,12 +111,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
       errorRetryInterval: 3_000
     }
   )
-  const {
-    data: dataErc20 = null,
-    mutate: mutateErc20,
-    isLoading: isLoadingErc20Balance,
-    isValidating: isValidatingErc20Balance
-  } = useSWR(
+  const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
     ([_walletAddressLowercased, _chainId]) =>
       fetchErc20({

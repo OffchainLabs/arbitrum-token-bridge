@@ -10,10 +10,6 @@ import { ERC20BridgeToken } from './arbTokenBridge.types'
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
-// {
-//   balance: BigNumber | null
-//   isLoading: boolean
-// }
 export function useBalanceOnSourceChain(
   token: ERC20BridgeToken | null
 ): BigNumber | null {
@@ -21,6 +17,7 @@ export function useBalanceOnSourceChain(
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+
   const {
     eth: [ethSourceChainBalance],
     erc20: [erc20SourceChainBalances]
@@ -35,13 +32,11 @@ export function useBalanceOnSourceChain(
   if (!token) {
     // check if user is depositing destination chain's custom native currency to orbit chain
     if (childChainNativeCurrency.isCustom && isDepositMode) {
-      return {
-        balance:
-          erc20SourceChainBalances?.[
-            childChainNativeCurrency.address.toLowerCase()
-          ] ?? constants.Zero,
-        isLoading: isRefetchingErc20Balance
-      }
+      return (
+        erc20SourceChainBalances?.[
+          childChainNativeCurrency.address.toLowerCase()
+        ] ?? constants.Zero
+      )
     }
 
     // `ethSourceChainBalance` is the ETH balance at source chain when ETH is selected for bridging,
@@ -51,19 +46,10 @@ export function useBalanceOnSourceChain(
   }
 
   if (!erc20SourceChainBalances) {
-    // return {
-    //   balance: constants.Zero,
-    //   isLoading: isRefetchingEthBalance
-    // }
     return constants.Zero
   }
 
   if (isDepositMode) {
-    // return {
-    //   balance:
-    //     erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero,
-    //   isLoading: isRefetchingErc20Balance
-    // }
     return (
       erc20SourceChainBalances[token.address.toLowerCase()] ?? constants.Zero
     )
@@ -74,14 +60,9 @@ export function useBalanceOnSourceChain(
   // token that has never been deposited so it doesn't have an l2Address
   // this should not happen because user shouldn't be able to select it
   if (!tokenChildChainAddress) {
-    // return { balance: constants.Zero, isLoading: false }
     return constants.Zero
   }
 
   // token withdrawal
-  // return {
-  //   balance: erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero,
-  //   isLoading: isRefetchingErc20Balance
-  // }
   return erc20SourceChainBalances[tokenChildChainAddress] ?? constants.Zero
 }

@@ -66,7 +66,6 @@ export function useGasEstimates({
           destinationChainErc20Address,
           amount.toString(), // BigNumber is not serializable
           walletAddress,
-          sourceChainBalance,
           'gasEstimates'
         ] as const)
       : null,
