@@ -291,6 +291,7 @@ function TokensPanel({
 
     // for custom gas tokens we add ETH to enable ETH deposits
     if (nativeCurrency.isCustom && isDepositMode) {
+      // TODO: This will be commented out before merging to hide the feature!
       tokens.push(ETH_IDENTIFIER)
     }
 

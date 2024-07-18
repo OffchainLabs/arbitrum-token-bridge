@@ -29,6 +29,7 @@ export const setSelectedToken = (
   }: { token: ERC20BridgeToken | null; isSelectedTokenEther?: boolean }
 ) => {
   state.app.selectedToken = token ? { ...token } : null
+  // TODO: This will always be set to false to hide the feature!
   state.app.isSelectedTokenEther = isSelectedTokenEther
 }
 
