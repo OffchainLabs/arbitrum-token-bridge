@@ -1,0 +1,28 @@
+{
+  "name": "XAI Default List",
+  "timestamp": "2024-06-28T09:16:36.457Z",
+  "tokens": [
+    {
+      "chainId": 660279,
+      "address": "0x89c49a3fa372920ac23ce757a029e6936c0b8e02",
+      "name": "Crypto Unicorns",
+      "symbol": "CU",
+      "decimals": 18,
+      "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/31074.png",
+      "extensions": {
+        "bridgeInfo": {
+          "42161": {
+            "tokenAddress": "0x89c49a3fa372920ac23ce757a029e6936c0b8e02",
+            "originBridgeAddress": "0x96551194230725c72ACF8E9573B1382CCBC70635",
+            "destBridgeAddress": "0xb15A0826d65bE4c2fDd961b72636168ee70Af030"
+          }
+        }
+      }
+    }
+  ],
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  }
+}

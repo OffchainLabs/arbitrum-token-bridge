@@ -5,10 +5,10 @@ import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
-  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
 
   return {
-    id: chain.chainID,
+    id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
     nativeCurrency: nativeTokenData ?? ether,
@@ -101,48 +101,6 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
-  }
-}
-
-export const stylusTestnet: Chain = {
-  id: ChainId.StylusTestnet,
-  name: 'Stylus Testnet v1',
-  network: 'stylus-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
-    }
-  }
-}
-
-export const stylusTestnetV2: Chain = {
-  id: ChainId.StylusTestnetV2,
-  name: 'Stylus Testnet v2',
-  network: 'stylus-testnet-v2',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnetV2]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnetV2]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylusv2-explorer.arbitrum.io'
-    }
   }
 }
 

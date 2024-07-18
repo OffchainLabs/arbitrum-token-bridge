@@ -4,6 +4,7 @@ import { useSigner } from 'wagmi'
 
 import { DepositGasEstimates, GasEstimates } from '../arbTokenBridge.types'
 import { BridgeTransferStarterFactory } from '@/token-bridge-sdk/BridgeTransferStarterFactory'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 async function fetcher([
   signer,
@@ -21,7 +22,7 @@ async function fetcher([
   amount: BigNumber
 ]): Promise<GasEstimates | DepositGasEstimates | undefined> {
   // use chainIds to initialize the bridgeTransferStarter to save RPC calls
-  const bridgeTransferStarter = await BridgeTransferStarterFactory.create({
+  const bridgeTransferStarter = BridgeTransferStarterFactory.create({
     sourceChainId,
     sourceChainErc20Address,
     destinationChainId,
@@ -40,7 +41,8 @@ export function useGasEstimates({
   destinationChainId,
   sourceChainErc20Address,
   destinationChainErc20Address,
-  amount
+  amount,
+  sourceChainBalance
 }: {
   walletAddress?: string
   sourceChainId: number
@@ -48,6 +50,7 @@ export function useGasEstimates({
   sourceChainErc20Address?: string
   destinationChainErc20Address?: string
   amount: BigNumber
+  sourceChainBalance: BigNumber | null
 }): {
   gasEstimates: GasEstimates | DepositGasEstimates | undefined
   error: any
@@ -55,29 +58,35 @@ export function useGasEstimates({
   const { data: signer } = useSigner()
 
   const { data: gasEstimates, error } = useSWR(
-    typeof signer === 'undefined'
-      ? null
-      : [
-          walletAddress,
+    signer && sourceChainBalance && sourceChainBalance.gte(amount)
+      ? ([
           sourceChainId,
           destinationChainId,
           sourceChainErc20Address,
           destinationChainErc20Address,
           amount.toString(), // BigNumber is not serializable
+          walletAddress,
           'gasEstimates'
-        ],
-    () => {
-      if (typeof signer === 'undefined' || signer === null) {
-        return undefined
-      }
+        ] as const)
+      : null,
+    ([
+      _sourceChainId,
+      _destinationChainId,
+      _sourceChainErc20Address,
+      _destinationChainErc20Address,
+      _amount,
+      _walletAddress
+    ]) => {
+      const sourceProvider = getProviderForChainId(_sourceChainId)
+      const _signer = sourceProvider.getSigner(_walletAddress)
 
       return fetcher([
-        signer,
-        sourceChainId,
-        destinationChainId,
-        sourceChainErc20Address,
-        destinationChainErc20Address,
-        amount
+        _signer,
+        _sourceChainId,
+        _destinationChainId,
+        _sourceChainErc20Address,
+        _destinationChainErc20Address,
+        BigNumber.from(_amount)
       ])
     },
     {

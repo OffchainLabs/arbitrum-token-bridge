@@ -22,6 +22,7 @@ import { isTransferDisabledToken } from '../../util/TokenTransferDisabledUtils'
 import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
+import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 
 enum ImportStatus {
   LOADING,
@@ -71,8 +72,14 @@ export function TokenImportDialog({
     }
   } = useAppState()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChain,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
@@ -302,6 +309,14 @@ export function TokenImportDialog({
     }
 
     if (isTransferDisabledToken(l1Address, childChain.id)) {
+      openTransferDisabledDialog()
+      return
+    }
+
+    if (
+      isTeleportMode &&
+      !isTeleportEnabledToken(l1Address, parentChain.id, childChain.id)
+    ) {
       openTransferDisabledDialog()
       return
     }

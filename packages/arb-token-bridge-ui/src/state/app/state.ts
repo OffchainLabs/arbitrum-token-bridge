@@ -8,6 +8,7 @@ import {
 import {
   L1ToL2MessageData,
   L2ToL1MessageData,
+  L2ToL3MessageData,
   TxnType
 } from '../../hooks/useTransactions'
 import { ConnectionState } from '../../util'
@@ -61,6 +62,7 @@ export interface MergedTransaction {
   nodeBlockDeadline?: NodeBlockDeadlineStatus
   l1ToL2MsgData?: L1ToL2MessageData
   l2ToL1MsgData?: L2ToL1MessageData
+  l2ToL3MsgData?: L2ToL3MessageData
   depositStatus?: DepositStatus
   childChainId: number
   parentChainId: number

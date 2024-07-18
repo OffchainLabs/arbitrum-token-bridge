@@ -1,17 +1,15 @@
 import fs from 'fs'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
-import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { getArbitrumNetworks } from '@arbitrum/sdk'
 
 const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_arb_whitelist_era.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_uniswap_labs_default.json',
-  'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_gemini_token_list.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coinmarketcap.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbed_coingecko.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_uniswap_labs_default.json',
-  'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_gemini_token_list.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/42170_arbed_coingecko.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coinmarketcap.json',
   'https://tokenlist.arbitrum.io/ArbTokenLists/421613_arbed_coingecko.json',
@@ -125,10 +123,8 @@ async function main() {
     ...allTokenAddresses
   ]
 
-  Object.keys(l2Networks).map(chainId => {
-    const networkObject = l2Networks[chainId]
-
-    const { ethBridge, tokenBridge } = networkObject
+  getArbitrumNetworks().map(arbitrumNetwork => {
+    const { ethBridge, tokenBridge } = arbitrumNetwork
     const { classicOutboxes } = ethBridge
 
     if (classicOutboxes) {
@@ -136,10 +132,11 @@ async function main() {
     }
 
     delete ethBridge.classicOutboxes
-    denylistedAddresses.push(
-      ...Object.values(ethBridge),
-      ...Object.values(tokenBridge)
-    )
+    denylistedAddresses.push(...Object.values(ethBridge))
+
+    if (tokenBridge) {
+      denylistedAddresses.push(...Object.values(tokenBridge))
+    }
   })
 
   const resultJson =

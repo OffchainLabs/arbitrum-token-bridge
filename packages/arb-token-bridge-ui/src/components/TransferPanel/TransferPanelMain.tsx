@@ -337,8 +337,13 @@ export function TransferPanelMain({
 }) {
   const actions = useActions()
   const [networks, setNetworks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider, isDepositMode } =
-    useNetworksRelationship(networks)
+  const {
+    childChain,
+    childChainProvider,
+    parentChainProvider,
+    isDepositMode,
+    isTeleportMode
+  } = useNetworksRelationship(networks)
   const setAmount = useSetInputAmount()
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
@@ -398,10 +403,11 @@ export function TransferPanelMain({
     }
 
     if (
-      isTokenMainnetUSDC(selectedToken.address) ||
-      isTokenSepoliaUSDC(selectedToken.address) ||
-      isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
-      isTokenArbitrumSepoliaNativeUSDC(selectedToken.address)
+      !isTeleportMode &&
+      (isTokenMainnetUSDC(selectedToken.address) ||
+        isTokenSepoliaUSDC(selectedToken.address) ||
+        isTokenArbitrumOneNativeUSDC(selectedToken.address) ||
+        isTokenArbitrumSepoliaNativeUSDC(selectedToken.address))
     ) {
       updateUSDCBalances()
       return
@@ -416,7 +422,8 @@ export function TransferPanelMain({
     updateErc20L1Balances,
     updateErc20L2Balances,
     destinationAddressOrWalletAddress,
-    updateUSDCBalances
+    updateUSDCBalances,
+    isTeleportMode
   ])
 
   const customFeeTokenBalances: Balances = useMemo(() => {
@@ -442,8 +449,9 @@ export function TransferPanelMain({
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
   const showUSDCSpecificInfo =
-    (isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
-    (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia)
+    !isTeleportMode &&
+    ((isTokenMainnetUSDC(selectedToken?.address) && isArbitrumOne) ||
+      (isTokenSepoliaUSDC(selectedToken?.address) && isArbitrumSepolia))
 
   const [, setQueryParams] = useArbQueryParams()
 
@@ -622,7 +630,13 @@ export function TransferPanelMain({
             return
           }
 
-          setNetworks({ sourceChainId: network.id })
+          // if changing sourceChainId, let the destinationId be the same, and let the `setNetworks` func decide whether it's a valid or invalid chain pair
+          // this way, the destination doesn't reset to the default chain if the source chain is changed, and if both are valid
+          setNetworks({
+            sourceChainId: network.id,
+            destinationChainId: networks.destinationChain.id
+          })
+
           actions.app.setSelectedToken(null)
         }
       },

@@ -16,8 +16,6 @@ const chainQueryParams = [
   'arbitrum-one',
   'arbitrum-nova',
   'arbitrum-sepolia',
-  'stylus-testnet',
-  'stylus-testnet-v2',
   'custom-localhost',
   'arbitrum-localhost'
 ] as const
@@ -51,12 +49,6 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
 
-    case ChainId.StylusTestnet:
-      return 'stylus-testnet'
-
-    case ChainId.StylusTestnetV2:
-      return 'stylus-testnet-v2'
-
     case ChainId.Sepolia:
       return 'sepolia'
 
@@ -75,11 +67,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       const orbitChain = orbitChains[chainId]
 
       if (customChain) {
-        return customChain.chainID
+        return customChain.chainId
       }
 
       if (orbitChain) {
-        return orbitChain.slug ?? orbitChain.chainID
+        return orbitChain.slug ?? orbitChain.chainId
       }
 
       throw new Error(
@@ -107,12 +99,6 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
 
-    case 'stylus-testnet':
-      return customChains.stylusTestnet
-
-    case 'stylus-testnet-v2':
-      return customChains.stylusTestnetV2
-
     case 'custom-localhost':
       return customChains.localL1Network
 
@@ -123,7 +109,7 @@ export function getChainForChainKeyQueryParam(
       const orbitChain = getOrbitChains().find(
         chain =>
           chain.slug === chainKeyQueryParam ??
-          chain.chainID === Number(chainKeyQueryParam)
+          chain.chainId === Number(chainKeyQueryParam)
       )
 
       if (orbitChain) {

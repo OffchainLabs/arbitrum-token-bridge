@@ -21,12 +21,6 @@ export function getWarningTokenDescription(warningTokenType: number) {
   }
 }
 
-export function onTxError(error: unknown) {
-  if (!isUserRejectedError(error)) {
-    Sentry.captureException(error)
-  }
-}
-
 export function useTokenFromSearchParams(): {
   tokenFromSearchParams: string | undefined
   setTokenQueryParam: (token: string | undefined) => void

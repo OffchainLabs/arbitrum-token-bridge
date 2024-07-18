@@ -1,5 +1,5 @@
 import { Provider, BlockTag } from '@ethersproject/providers'
-import { L2ToL1MessageReader } from '@arbitrum/sdk'
+import { ChildToParentMessageReader } from '@arbitrum/sdk'
 
 /**
  * Fetches initiated ETH withdrawals from event logs in range of [fromBlock, toBlock].
@@ -25,7 +25,7 @@ export function fetchETHWithdrawalsFromEventLogs({
     return []
   }
   // funds sent by this address
-  return L2ToL1MessageReader.getL2ToL1Events(
+  return ChildToParentMessageReader.getChildToParentEvents(
     l2Provider,
     { fromBlock, toBlock },
     undefined,

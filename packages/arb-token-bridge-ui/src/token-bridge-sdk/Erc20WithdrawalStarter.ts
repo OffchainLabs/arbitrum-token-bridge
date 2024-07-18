@@ -189,9 +189,11 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const address = await getAddressFromSigner(signer)
 
+    const sourceChainId = await getChainIdFromProvider(this.sourceChainProvider)
+
     const isSmartContractWallet = await addressIsSmartContract(
       address,
-      this.sourceChainProvider
+      sourceChainId
     )
 
     if (isSmartContractWallet && !destinationAddress) {
@@ -204,14 +206,14 @@ export class Erc20WithdrawalStarter extends BridgeTransferStarter {
 
     const request = await erc20Bridger.getWithdrawalRequest({
       from: address,
-      erc20l1Address: destinationChainErc20Address,
+      erc20ParentAddress: destinationChainErc20Address,
       destinationAddress: destinationAddress ?? address,
       amount
     })
 
     const tx = await erc20Bridger.withdraw({
       ...request,
-      l2Signer: signer,
+      childSigner: signer,
       overrides: {
         gasLimit: percentIncrease(
           await this.sourceChainProvider.estimateGas(request.txRequest),

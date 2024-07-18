@@ -38,7 +38,11 @@ export const convertBridgeSdkToMergedTransaction = ({
   amount
 }: SdkToUiConversionProps): MergedTransaction => {
   const { transferType } = bridgeTransfer
-  const isDeposit = transferType.includes('deposit')
+  const isDeposit =
+    transferType === 'eth_deposit' ||
+    transferType === 'erc20_deposit' ||
+    transferType === 'eth_teleport' ||
+    transferType === 'erc20_teleport'
 
   return {
     sender: walletAddress!,

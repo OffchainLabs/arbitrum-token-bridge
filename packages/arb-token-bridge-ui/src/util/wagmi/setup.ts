@@ -2,14 +2,12 @@ import { createClient, configureChains } from 'wagmi'
 import { mainnet, arbitrum } from '@wagmi/core/chains'
 import { publicProvider } from 'wagmi/providers/public'
 import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import { trustWallet } from '@rainbow-me/rainbowkit/wallets'
+import { trustWallet, okxWallet } from '@rainbow-me/rainbowkit/wallets'
 
 import {
   sepolia,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
-  stylusTestnetV2,
   localL1Network as local,
   localL2Network as arbitrumLocal,
   holesky
@@ -21,10 +19,10 @@ import { getWagmiChain } from './getWagmiChain'
 import { customInfuraProvider } from '../infura'
 
 const customChains = getCustomChainsFromLocalStorage().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 const wagmiOrbitChains = getOrbitChains().map(chain =>
-  getWagmiChain(chain.chainID)
+  getWagmiChain(chain.chainId)
 )
 
 const chainList = isTestingEnvironment
@@ -38,8 +36,6 @@ const chainList = isTestingEnvironment
       arbitrumSepolia,
       holesky,
       // Orbit chains
-      stylusTestnet,
-      stylusTestnetV2,
       ...wagmiOrbitChains,
       // add local environments during testing
       local,
@@ -54,8 +50,6 @@ const chainList = isTestingEnvironment
       sepolia,
       arbitrumSepolia,
       holesky,
-      stylusTestnet,
-      stylusTestnetV2,
       ...wagmiOrbitChains,
       ...customChains
     ]
@@ -140,7 +134,10 @@ export function getProps(targetChainKey: string | null) {
     ...wallets,
     {
       groupName: 'More',
-      wallets: [trustWallet({ chains, projectId })]
+      wallets: [
+        trustWallet({ chains, projectId }),
+        okxWallet({ chains, projectId })
+      ]
     }
   ])
 
