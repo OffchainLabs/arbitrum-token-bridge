@@ -177,6 +177,12 @@ export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f',
       l2Address: '0xfeb8670b834d9157864126f5dbd24b25d06882ad'
+    },
+    {
+      symbol: 'ETHFI',
+      l2CustomAddr: '0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27',
+      l1Address: '0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
+      l2Address: '0x07D65C18CECbA423298c0aEB5d2BeDED4DFd5736'
     }
   ],
   [ChainId.ArbitrumNova]: []
