@@ -70,7 +70,7 @@ export function TransferDisabledDialog() {
 
   const isGHO =
     networks.destinationChain.id === ChainId.ArbitrumOne &&
-    selectedToken?.address.toLowerCase() ===
+    selectedToken?.address?.toLowerCase() ===
       withdrawOnlyTokens[ChainId.ArbitrumOne]
         ?.find(_token => _token.symbol === 'GHO')
         ?.l1Address.toLowerCase()
