@@ -2,22 +2,19 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
+import {
+  EventArgs,
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt,
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt,
+  ChildContractTransaction,
+  ChildTransactionReceipt,
+  ChildToParentMessageStatus as OutgoingMessageState,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-
-import {
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt,
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import {
-  L2ContractTransaction,
-  L2TransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L2Transaction'
 
 import {
   NewTransaction,
@@ -43,18 +40,18 @@ export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
 }>
 
 export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt
 >
 
 export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt
 >
 
 export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
-  L2ContractTransaction,
-  L2TransactionReceipt
+  ChildContractTransaction,
+  ChildTransactionReceipt
 >
 
 export enum NodeBlockDeadlineStatusTypes {
@@ -67,7 +64,7 @@ export type NodeBlockDeadlineStatus =
   | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
   | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
-export type L2ToL1EventResult = L2ToL1TransactionEvent
+export type L2ToL1EventResult = ChildToParentTransactionEvent
 
 export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   sender?: string
@@ -132,25 +129,15 @@ export interface AddressToDecimals {
 }
 
 export type GasEstimates = {
-  estimatedL1Gas: BigNumber
-  estimatedL2Gas: BigNumber
+  estimatedParentChainGas: BigNumber
+  estimatedChildChainGas: BigNumber
 }
 
 export type DepositGasEstimates = GasEstimates & {
-  estimatedL2SubmissionCost: BigNumber
+  estimatedChildChainSubmissionCost: BigNumber
 }
 
 export interface ArbTokenBridgeEth {
-  deposit: (params: {
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1EthDepositTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer
@@ -163,28 +150,6 @@ export interface ArbTokenBridgeToken {
   addTokensFromList: (tokenList: TokenList, listID: number) => void
   removeTokensFromList: (listID: number) => void
   updateTokenData: (l1Address: string) => Promise<void>
-  approve: (params: {
-    erc20L1Address: string
-    l1Signer: Signer
-  }) => Promise<void>
-  approveL2: (params: {
-    erc20L1Address: string
-    l2Signer: Signer
-  }) => Promise<void>
-  deposit: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l1Signer: Signer
-    txLifecycle?: L1ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
-  withdraw: (params: {
-    erc20L1Address: string
-    amount: BigNumber
-    l2Signer: Signer
-    txLifecycle?: L2ContractCallTransactionLifecycle
-    destinationAddress?: string
-  }) => Promise<void | ContractReceipt>
   triggerOutbox: (params: {
     event: L2ToL1EventResultPlus
     l1Signer: Signer

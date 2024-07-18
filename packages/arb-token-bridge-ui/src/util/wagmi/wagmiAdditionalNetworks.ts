@@ -5,10 +5,10 @@ import { ChainId, ChainWithRpcUrl, explorerUrls, rpcURLs } from '../networks'
 import { getBridgeUiConfigForChain } from '../bridgeUiConfig'
 
 export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
-  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainID)
+  const { nativeTokenData } = getBridgeUiConfigForChain(chain.chainId)
 
   return {
-    id: chain.chainID,
+    id: chain.chainId,
     name: chain.name,
     network: chain.name.toLowerCase().split(' ').join('-'),
     nativeCurrency: nativeTokenData ?? ether,
@@ -18,6 +18,12 @@ export function chainToWagmiChain(chain: ChainWithRpcUrl): Chain {
       },
       public: {
         http: [chain.rpcUrl]
+      }
+    },
+    blockExplorers: {
+      default: {
+        name: 'Block Explorer',
+        url: chain.explorerUrl
       }
     }
   }
@@ -32,6 +38,28 @@ export const sepolia: Chain = {
     default: {
       http: [rpcURLs[ChainId.Sepolia]!]
     }
+  }
+}
+
+export const holesky: Chain = {
+  id: ChainId.Holesky,
+  name: 'Holesky',
+  network: 'holesky',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.Holesky]!]
+    }
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Etherscan',
+      url: explorerUrls[ChainId.Holesky]!
+    },
+    default: { name: 'Etherscan', url: explorerUrls[ChainId.Holesky]! }
   }
 }
 
@@ -73,27 +101,6 @@ export const arbitrumNova: Chain = {
   blockExplorers: {
     etherscan: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' },
     default: { name: 'Arbiscan', url: 'https://nova.arbiscan.io' }
-  }
-}
-
-export const stylusTestnet: Chain = {
-  id: ChainId.StylusTestnet,
-  name: 'Stylus Testnet',
-  network: 'stylus-testnet',
-  nativeCurrency: ether,
-  rpcUrls: {
-    default: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    },
-    public: {
-      http: [rpcURLs[ChainId.StylusTestnet]!]
-    }
-  },
-  blockExplorers: {
-    default: {
-      name: 'Blockscout',
-      url: 'https://stylus-testnet-explorer.arbitrum.io'
-    }
   }
 }
 

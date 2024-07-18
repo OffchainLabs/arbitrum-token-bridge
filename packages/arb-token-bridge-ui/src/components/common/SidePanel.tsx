@@ -91,7 +91,11 @@ export const SidePanel = ({
                 )}
               >
                 {heading && <span className="text-2xl">{heading}</span>}
-                <button className="arb-hover" onClick={handleCloseStart}>
+                <button
+                  className="arb-hover"
+                  onClick={handleCloseStart}
+                  aria-label="Close side panel"
+                >
                   <XMarkIcon
                     className={twMerge(
                       'h-5 w-5 text-white',

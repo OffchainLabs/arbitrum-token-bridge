@@ -20,6 +20,11 @@
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix"
   },
+  "resolutions": {
+    "**/@walletconnect/ethereum-provider": "2.13.1",
+    "**/@ethersproject/providers/ws": "7.5.10",
+    "**/@synthetixio/synpress/ws": "8.17.1"
+  },
   "keywords": [],
   "author": "",
   "workspaces": [

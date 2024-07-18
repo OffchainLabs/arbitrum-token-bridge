@@ -12,13 +12,10 @@ import { chainToWagmiChain } from '../util/wagmi/wagmiAdditionalNetworks'
 
 const chainQueryParams = [
   'ethereum',
-  'goerli',
   'sepolia',
   'arbitrum-one',
   'arbitrum-nova',
-  'arbitrum-goerli',
   'arbitrum-sepolia',
-  'stylus-testnet',
   'custom-localhost',
   'arbitrum-localhost'
 ] as const
@@ -46,20 +43,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
     case ChainId.Ethereum:
       return 'ethereum'
 
-    case ChainId.Goerli:
-      return 'goerli'
-
     case ChainId.ArbitrumOne:
       return 'arbitrum-one'
 
     case ChainId.ArbitrumNova:
       return 'arbitrum-nova'
-
-    case ChainId.ArbitrumGoerli:
-      return 'arbitrum-goerli'
-
-    case ChainId.StylusTestnet:
-      return 'stylus-testnet'
 
     case ChainId.Sepolia:
       return 'sepolia'
@@ -79,11 +67,11 @@ export function getChainQueryParamForChain(chainId: ChainId): ChainQueryParam {
       const orbitChain = orbitChains[chainId]
 
       if (customChain) {
-        return customChain.chainID
+        return customChain.chainId
       }
 
       if (orbitChain) {
-        return orbitChain.slug ?? orbitChain.chainID
+        return orbitChain.slug ?? orbitChain.chainId
       }
 
       throw new Error(
@@ -99,9 +87,6 @@ export function getChainForChainKeyQueryParam(
     case 'ethereum':
       return chains.mainnet
 
-    case 'goerli':
-      return chains.goerli
-
     case 'sepolia':
       return chains.sepolia
 
@@ -111,14 +96,8 @@ export function getChainForChainKeyQueryParam(
     case 'arbitrum-nova':
       return customChains.arbitrumNova
 
-    case 'arbitrum-goerli':
-      return chains.arbitrumGoerli
-
     case 'arbitrum-sepolia':
       return customChains.arbitrumSepolia
-
-    case 'stylus-testnet':
-      return customChains.stylusTestnet
 
     case 'custom-localhost':
       return customChains.localL1Network
@@ -130,7 +109,7 @@ export function getChainForChainKeyQueryParam(
       const orbitChain = getOrbitChains().find(
         chain =>
           chain.slug === chainKeyQueryParam ??
-          chain.chainID === Number(chainKeyQueryParam)
+          chain.chainId === Number(chainKeyQueryParam)
       )
 
       if (orbitChain) {

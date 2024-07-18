@@ -219,6 +219,7 @@ export function TransactionsTableRow({
       </div>
       <div className="pl-2 align-middle">
         <Button
+          aria-label="Transaction details button"
           variant="primary"
           className="rounded border border-white p-2 text-xs text-white"
           onClick={() => openTxDetails(tx)}
