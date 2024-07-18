@@ -195,6 +195,10 @@ describe('Import token', () => {
           connectMetamask: false
         })
 
+        // waiting for URL to resolve correctly
+        // eslint-disable-next-line
+        cy.wait(3000)
+
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
@@ -229,6 +233,10 @@ describe('Import token', () => {
           },
           connectMetamask: false
         })
+
+        // waiting for URL to resolve correctly
+        // eslint-disable-next-line
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')

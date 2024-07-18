@@ -1052,17 +1052,7 @@ export function TransferPanel() {
                 if (isCctpTransfer) {
                   transferCctp()
                 } else if (selectedToken) {
-                  if (
-                    (isTokenMainnetUSDC(selectedToken.address) ||
-                      isTokenSepoliaUSDC(selectedToken.address)) &&
-                    !isArbitrumNova
-                  ) {
-                    transferCctp()
-                  } else if (selectedToken) {
-                    depositToken()
-                  } else {
-                    transfer()
-                  }
+                  depositToken()
                 } else {
                   transfer()
                 }
