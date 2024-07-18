@@ -78,6 +78,12 @@ export function SwitchNetworksButton(
 ) {
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
+  const {
+    app: { isSelectedTokenEther }
+  } = useAppState()
+  const {
+    app: { setSelectedToken }
+  } = useActions()
 
   const disabled = isSmartContractWallet || isLoadingAccountType
 
@@ -97,6 +103,12 @@ export function SwitchNetworksButton(
             sourceChainId: networks.destinationChain.id,
             destinationChainId: networks.sourceChain.id
           })
+
+          // If this is true that means ETH is selected as deposit to a custom gas token chain.
+          // We can't withdraw ETH then.
+          if (isSelectedTokenEther) {
+            setSelectedToken({ token: null })
+          }
         }}
         aria-label="Switch Networks"
         {...props}
@@ -636,7 +648,7 @@ export function TransferPanelMain({
             destinationChainId: networks.destinationChain.id
           })
 
-          actions.app.setSelectedToken(null)
+          actions.app.setSelectedToken({ token: null })
         }
       },
       to: {
@@ -657,7 +669,7 @@ export function TransferPanelMain({
             sourceChainId: networks.sourceChain.id,
             destinationChainId: network.id
           })
-          actions.app.setSelectedToken(null)
+          actions.app.setSelectedToken({ token: null })
         }
       }
     }

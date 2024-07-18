@@ -1,7 +1,11 @@
 import { useAccount } from 'wagmi'
 import { constants } from 'ethers'
 
-import { useNativeCurrency } from './useNativeCurrency'
+import {
+  NativeCurrencyEther,
+  isNativeCurrencyEther,
+  useNativeCurrency
+} from './useNativeCurrency'
 import { useBalance } from './useBalance'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { useNetworks } from './useNetworks'
@@ -10,7 +14,9 @@ import { ERC20BridgeToken } from './arbTokenBridge.types'
 /**
  * Balance of the child chain's native currency or ERC20 token
  */
-export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
+export function useBalanceOnSourceChain(
+  token: ERC20BridgeToken | NativeCurrencyEther | null
+) {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
@@ -23,6 +29,10 @@ export function useBalanceOnSourceChain(token: ERC20BridgeToken | null) {
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
   })
+
+  if (isNativeCurrencyEther(token)) {
+    return ethSourceChainBalance
+  }
 
   // user selected source chain native currency or
   // user bridging the destination chain's native currency

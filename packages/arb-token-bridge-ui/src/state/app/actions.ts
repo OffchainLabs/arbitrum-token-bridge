@@ -23,9 +23,13 @@ export const setChainIds = (
 
 export const setSelectedToken = (
   { state }: Context,
-  token: ERC20BridgeToken | null
+  {
+    token,
+    isSelectedTokenEther = false
+  }: { token: ERC20BridgeToken | null; isSelectedTokenEther?: boolean }
 ) => {
   state.app.selectedToken = token ? { ...token } : null
+  state.app.isSelectedTokenEther = isSelectedTokenEther
 }
 
 export const reset = ({ state }: Context, newChainId: number) => {
@@ -37,6 +41,7 @@ export const reset = ({ state }: Context, newChainId: number) => {
     // we dont want to reset the token if we are switching from Mainnet to Arbitrum One for example
     // because we are maybe in the process of auto switching the network and triggering deposit or withdraw
     state.app.selectedToken = null
+    state.app.isSelectedTokenEther = false
   }
 
   state.app.arbTokenBridge = {} as ArbTokenBridge
