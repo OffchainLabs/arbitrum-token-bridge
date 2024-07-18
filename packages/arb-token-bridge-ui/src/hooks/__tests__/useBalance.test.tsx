@@ -44,7 +44,7 @@ describe('useBalance', () => {
     jest.restoreAllMocks()
   })
 
-  it('getter return null for undefined walletAddress', async () => {
+  it('getter return 0 for undefined walletAddress', async () => {
     const provider = new StaticJsonRpcProvider(
       process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL,
       1
@@ -78,7 +78,7 @@ describe('useBalance', () => {
 
     expect(getBalanceSpy).not.toHaveBeenCalled()
     expect(getTokenDataSpy).not.toHaveBeenCalled()
-    expect(ethBalance).toBeNull()
+    expect(ethBalance?.toNumber()).toEqual(0)
     expect(erc20Balances).toBeNull()
   })
 
