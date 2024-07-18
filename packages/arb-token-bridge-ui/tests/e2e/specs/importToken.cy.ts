@@ -192,9 +192,11 @@ describe('Import token', () => {
           }
         })
 
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
+        visitAfterSomeDelay('/', {
+          qs: {
+            token: ERC20TokenAddressL1
+          }
+        })
 
         // Modal is displayed
         cy.get('h2')
@@ -232,9 +234,11 @@ describe('Import token', () => {
           }
         })
 
-        // waiting for metamask notification to disappear
-        // eslint-disable-next-line
-        cy.wait(3000)
+        visitAfterSomeDelay('/', {
+          qs: {
+            token: ERC20TokenAddressL2
+          }
+        })
 
         // Modal is displayed
         cy.get('h2')
