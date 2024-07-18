@@ -142,6 +142,10 @@ export const TransactionStatusInfo = () => {
     return 'bg-gray-1 text-white/70'
   }, [numClaimableTransactions, numPendingTransactions, numRetryablesToRedeem])
 
+  if (typeof address === 'undefined') {
+    return null
+  }
+
   return (
     <Button
       className={twMerge(
