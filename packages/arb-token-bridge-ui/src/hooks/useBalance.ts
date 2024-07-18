@@ -135,7 +135,7 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
 
       const balances = await fetchErc20({
         addresses,
-        chainId: chainId,
+        chainId,
         walletAddress: walletAddressLowercased
       })
 
@@ -149,21 +149,12 @@ const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
         revalidate: false
       })
     },
-    // TODO: check that dependencies cause issues
     [chainId, fetchErc20, mutateErc20, walletAddressLowercased]
   )
 
   return {
-    eth: [
-      dataEth,
-      updateEthBalance
-      // isLoadingEthBalance || isValidatingEthBalance
-    ] as const,
-    erc20: [
-      dataErc20,
-      updateErc20
-      // isLoadingErc20Balance || isValidatingErc20Balance
-    ] as const
+    eth: [dataEth, updateEthBalance] as const,
+    erc20: [dataErc20, updateErc20] as const
   }
 }
 
