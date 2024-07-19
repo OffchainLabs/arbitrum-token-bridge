@@ -996,9 +996,9 @@
   integrity sha512-3aMdDyYZx9A15euRehpppSyQnb2gIw2s/Uccn2ELIoLQ9oDy0+9oRygNWNjXCD5Dt+w1pxo7C+XoiYvGcqA4Kg==
 
 "@heroicons/react@^2.0.18":
-  version "2.0.18"
-  resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-2.0.18.tgz#f80301907c243df03c7e9fd76c0286e95361f7c1"
-  integrity sha512-7TyMjRrZZMBPa+/5Y8lN0iyvUU/01PeMGX2+RE7cQWpEUIcb4QotzUObFkJDejj/HUH4qjP/eQ0gzzKs2f+6Yw==
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@heroicons/react/-/react-2.1.5.tgz#1e13f34976cc542deae92353c01c8b3d7942e9ba"
+  integrity sha512-FuzFN+BsHa+7OxbvAERtgBTNeZpUjgM/MIizfVkSCL2/edriN0Hx/DWRCR//aPYwO5QX/YlgLGXk+E3PcfZwjA==
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
@@ -1504,10 +1504,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@offchainlabs/cobalt@0.3.5":
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.5.tgz#495befa3f59d9a02165ae683dc712bd952703076"
-  integrity sha512-4+rgtc67YdAq0viN9uMrkLyYo23uVAXHrGCAzpnP6+cXtZ/GVIt4qFOZKxq3w6b2raFn/gf8VFuRlHwR3DumHA==
+"@offchainlabs/cobalt@^0.3.6":
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/@offchainlabs/cobalt/-/cobalt-0.3.6.tgz#e7daa9b20a7ff5897cb57d39927ebbf1ede3ae5f"
+  integrity sha512-7WSP6Mme+pMAoIxO+PHHF1ICKc/htky8xd1QbkzOFQAyMSrkVxqICnKsLr8Pu1nzG597A6BApk//LYv/0EkUjg==
 
 "@parcel/watcher-android-arm64@2.4.1":
   version "2.4.1"
