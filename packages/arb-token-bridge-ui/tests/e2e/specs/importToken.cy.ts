@@ -221,6 +221,10 @@ describe('Import token', () => {
               interval: 500
             }
           )
+
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', ERC20TokenSymbol)
       })
     })
 
@@ -264,6 +268,10 @@ describe('Import token', () => {
               interval: 500
             }
           )
+
+        cy.findByRole('button', { name: 'Select Token' })
+          .should('be.visible')
+          .should('have.text', ERC20TokenSymbol)
       })
     })
 
