@@ -59,7 +59,7 @@ export function login({
   }
 
   shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
-    if (changeNetwork) {
+    if (changeNetwork && connectMetamask) {
       cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
         _startWebApp()
       })
