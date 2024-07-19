@@ -21,7 +21,7 @@ const provider = new StaticJsonRpcProvider(
   1
 )
 jest.mock('../../token-bridge-sdk/utils', () => ({
-  getProviderForChainId: function A() {
+  getProviderForChainId: function getProviderForChainIdMock() {
     return provider
   }
 }))
