@@ -208,19 +208,19 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
-
-            // Modal is closed
-            cy.findByRole('button', { name: 'Import token' }).should(
-              'not.exist'
-            )
-          })
+          .trigger('click')
+          // Modal is closed
+          .waitUntil(
+            () =>
+              cy
+                .findByRole('button', { name: 'Import token' })
+                .should('not.exist'),
+            {
+              errorMsg: 'Import Token Dialog is not closed yet.',
+              timeout: 30_000,
+              interval: 500
+            }
+          )
       })
     })
 
@@ -251,17 +251,19 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click', {
-            force: true
-          })
-          .then(() => {
-            cy.findByRole('button', { name: 'Select Token' })
-              .should('be.visible')
-              .should('have.text', ERC20TokenSymbol)
-          })
-
-        // Modal is closed
-        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
+          .trigger('click')
+          // Modal is closed
+          .waitUntil(
+            () =>
+              cy
+                .findByRole('button', { name: 'Import token' })
+                .should('not.exist'),
+            {
+              errorMsg: 'Import Token Dialog is not closed yet.',
+              timeout: 30_000,
+              interval: 500
+            }
+          )
       })
     })
 

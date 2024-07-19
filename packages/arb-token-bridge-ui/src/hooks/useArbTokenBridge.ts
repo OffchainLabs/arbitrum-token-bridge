@@ -414,7 +414,8 @@ export const useArbTokenBridge = (
       updateErc20L1Balance,
       updateErc20L2Balance,
       updateErc20L1CustomDestinationBalance,
-      updateErc20CustomDestinationL2Balance
+      updateErc20CustomDestinationL2Balance,
+      destinationAddress
     ]
   )
 
