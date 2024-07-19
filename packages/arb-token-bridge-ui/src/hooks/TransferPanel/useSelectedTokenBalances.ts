@@ -23,7 +23,7 @@ export function useSelectedTokenBalances(): Balances {
   const { selectedToken } = app
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChain, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
   const { destinationAddress } = useDestinationAddressStore()
   const destinationAddressOrWalletAddress = destinationAddress || walletAddress
@@ -60,13 +60,13 @@ export function useSelectedTokenBalances(): Balances {
   const {
     erc20: [erc20L1Balances]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: parentChainWalletAddress
   })
   const {
     erc20: [erc20L2Balances]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: childChainWalletAddress
   })
 
