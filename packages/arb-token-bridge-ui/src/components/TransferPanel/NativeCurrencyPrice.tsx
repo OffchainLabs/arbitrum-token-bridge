@@ -1,4 +1,7 @@
-import { NativeCurrency } from '../../hooks/useNativeCurrency'
+import {
+  NativeCurrency,
+  useNativeCurrency
+} from '../../hooks/useNativeCurrency'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useAppState } from '../../state'
@@ -13,6 +16,25 @@ export function useIsBridgingEth(childChainNativeCurrency: NativeCurrency) {
   const isBridgingEth =
     selectedToken === null && !childChainNativeCurrency.isCustom
   return isBridgingEth
+}
+
+export function useIsBridgingEthToCustomGasTokenChain() {
+  const {
+    app: { selectedToken, isSelectedTokenEther }
+  } = useAppState()
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider, isDepositMode } =
+    useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const { isOrbitChain } = isNetwork(childChain.id)
+
+  return (
+    isDepositMode &&
+    isOrbitChain &&
+    selectedToken === null &&
+    nativeCurrency.isCustom &&
+    isSelectedTokenEther
+  )
 }
 
 export function NativeCurrencyPrice({

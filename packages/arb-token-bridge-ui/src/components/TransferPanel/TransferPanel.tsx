@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -29,7 +29,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isGatewayRegistered
+  isGatewayRegistered,
+  getWethToken
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -50,7 +51,7 @@ import { isUserRejectedError } from '../../util/isUserRejectedError'
 import { getUsdcTokenAddressFromSourceChainId } from '../../state/cctpState'
 import { DepositStatus, MergedTransaction } from '../../state/app/state'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
-import { AssetType } from '../../hooks/arbTokenBridge.types'
+import { AssetType, ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import {
   ImportTokenModalStatus,
   getWarningTokenDescription,
@@ -75,6 +76,7 @@ import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useIsBridgingEthToCustomGasTokenChain } from './NativeCurrencyPrice'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -98,6 +100,8 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
+  const [wethOnOrbitChain, setWethOnOrbitChain] =
+    useState<ERC20BridgeToken | null>(null)
 
   const {
     app: {
@@ -114,6 +118,8 @@ export function TransferPanel() {
   const { switchNetworkAsync } = useSwitchNetworkWithConfig({
     isSwitchingNetworkBeforeTx: true
   })
+  const isBridgingEthToCustomGasTokenChain =
+    useIsBridgingEthToCustomGasTokenChain()
   const chainId = useChainId()
   const [networks] = useNetworks()
   const {
@@ -141,7 +147,9 @@ export function TransferPanel() {
     useAppContextActions()
   const { addPendingTransaction } = useTransactionHistory(walletAddress)
 
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
+    childChain.id
+  )
 
   const latestEth = useLatest(eth)
 
@@ -224,6 +232,24 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  useEffect(() => {
+    async function getWeth() {
+      if (!isOrbitChain) {
+        setWethOnOrbitChain(null)
+        return
+      }
+
+      const wethToken = await getWethToken({
+        parentChainProvider,
+        childChainProvider
+      })
+
+      setWethOnOrbitChain(wethToken)
+    }
+
+    getWeth()
+  }, [childChainProvider, isOrbitChain, parentChain.id, parentChainProvider])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -1029,7 +1055,11 @@ export function TransferPanel() {
         <AdvancedSettings />
         <TransferPanelSummary
           amount={parseFloat(amount)}
-          token={selectedToken}
+          token={
+            isBridgingEthToCustomGasTokenChain
+              ? wethOnOrbitChain
+              : selectedToken
+          }
         />
         <div className="transfer-panel-stats">
           {isDepositMode ? (

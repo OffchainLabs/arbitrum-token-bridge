@@ -311,6 +311,65 @@ export async function getL3ERC20Address({
   )
 }
 
+export async function getWethToken({
+  parentChainProvider,
+  childChainProvider
+}: {
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}): Promise<ERC20BridgeToken | null> {
+  const name = 'Wrapped Ether'
+  const symbol = 'WETH'
+
+  try {
+    const l2ChainId = await getChainIdFromProvider(parentChainProvider)
+    const l2Chain = getArbitrumNetwork(l2ChainId)
+    // getArbitrumNetwork throws here if l2Chain as parent chain wasn't found. This means the parent chain is L1.
+
+    const l2ChainWethAddress = l2Chain.tokenBridge?.childWeth
+
+    if (!l2ChainWethAddress) {
+      return null
+    }
+
+    const l3ChainWethAddress = await getL2ERC20Address({
+      erc20L1Address: l2ChainWethAddress,
+      l1Provider: parentChainProvider,
+      l2Provider: childChainProvider
+    })
+
+    return {
+      name,
+      symbol,
+      decimals: 18,
+      address: l2ChainWethAddress,
+      l2Address: l3ChainWethAddress,
+      type: TokenType.ERC20,
+      listIds: new Set([])
+    }
+  } catch {
+    // Parent chain is L1
+    const l2ChainId = await getChainIdFromProvider(childChainProvider)
+    const l2Chain = getArbitrumNetwork(l2ChainId)
+    const l1ChainWethAddress = l2Chain.tokenBridge?.parentWeth
+    const l2ChainWethAddress = l2Chain.tokenBridge?.childWeth
+
+    if (!l1ChainWethAddress || !l2ChainWethAddress) {
+      return null
+    }
+
+    return {
+      name,
+      symbol,
+      decimals: 18,
+      address: l1ChainWethAddress,
+      l2Address: l2ChainWethAddress,
+      type: TokenType.ERC20,
+      listIds: new Set([])
+    }
+  }
+}
+
 function isErc20Bridger(
   bridger: Erc20Bridger | Erc20L1L3Bridger
 ): bridger is Erc20Bridger {

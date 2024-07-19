@@ -34,7 +34,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  sanitizeTokenSymbol
+  sanitizeTokenSymbol,
+  getWethToken
 } from '../../util/TokenUtils'
 import {
   ETH_BALANCE_ARTICLE_LINK,
@@ -67,6 +68,7 @@ import {
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useIsBridgingEthToCustomGasTokenChain } from './NativeCurrencyPrice'
 
 enum NetworkType {
   l1 = 'l1',
@@ -351,6 +353,7 @@ export function TransferPanelMain({
   const {
     childChain,
     childChainProvider,
+    parentChain,
     parentChainProvider,
     isDepositMode,
     isTeleportMode
@@ -359,8 +362,12 @@ export function TransferPanelMain({
 
   const { isSmartContractWallet, isLoading: isLoadingAccountType } =
     useAccountType()
-  const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
+  const { isArbitrumOne, isArbitrumSepolia, isOrbitChain } = isNetwork(
+    childChain.id
+  )
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+  const isBridgingEthToCustomGasTokenChain =
+    useIsBridgingEthToCustomGasTokenChain()
 
   const {
     app: { selectedToken }
@@ -456,6 +463,8 @@ export function TransferPanelMain({
     oneNovaTransferDestinationNetworkId,
     setOneNovaTransferDestinationNetworkId
   ] = useState<number | null>(null)
+  const [wethOnOrbitChain, setWethOnOrbitChain] =
+    useState<ERC20BridgeToken | null>(null)
   const selectedTokenBalances = useSelectedTokenBalances()
   const isMaxAmount = amount === AmountQueryParamEnum.MAX
 
@@ -543,6 +552,34 @@ export function TransferPanelMain({
       setMaxAmount()
     }
   }, [amount, isMaxAmount, setMaxAmount, setQueryParams])
+
+  useEffect(() => {
+    async function getWeth() {
+      if (!isOrbitChain) {
+        setWethOnOrbitChain(null)
+        return
+      }
+
+      const wethToken = await getWethToken({
+        parentChainProvider,
+        childChainProvider
+      })
+
+      setWethOnOrbitChain(wethToken)
+
+      if (wethToken?.l2Address) {
+        updateErc20L2Balances([wethToken?.l2Address?.toLowerCase()])
+      }
+    }
+
+    getWeth()
+  }, [
+    childChainProvider,
+    isOrbitChain,
+    parentChain.id,
+    parentChainProvider,
+    updateErc20L2Balances
+  ])
 
   useEffect(() => {
     // Different destination address only allowed for tokens
@@ -851,6 +888,19 @@ export function TransferPanelMain({
                     <ETHBalance
                       balance={isDepositMode ? ethL2Balance : ethL1Balance}
                       prefix={selectedToken ? '' : 'Balance: '}
+                    />
+                  )}
+                  {/* When sending ETH to an Orbit chain with custom gas token we send WETH instead.
+                  In the UI we show WETH balance on the Orbit chain. */}
+                  {isBridgingEthToCustomGasTokenChain && (
+                    <TokenBalance
+                      balance={
+                        erc20L2Balances?.[
+                          String(wethOnOrbitChain?.l2Address?.toLowerCase())
+                        ] || null
+                      }
+                      on={isDepositMode ? NetworkType.l2 : NetworkType.l1}
+                      forToken={wethOnOrbitChain}
                     />
                   )}
                 </>
