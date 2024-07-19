@@ -41,7 +41,6 @@ export function useBalanceOnSourceChain(
 
     // `ethSourceChainBalance` is the ETH balance at source chain when ETH is selected for bridging,
     // or the custom gas native currency balance when withdrawing the native currency
-    // return { balance: ethSourceChainBalance, isLoading: isRefetchingEthBalance }
     return ethSourceChainBalance
   }
 
