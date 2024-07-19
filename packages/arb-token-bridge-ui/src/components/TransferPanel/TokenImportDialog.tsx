@@ -23,6 +23,7 @@ import { useTransferDisabledDialogStore } from './TransferDisabledDialog'
 import { TokenInfo } from './TokenInfo'
 import { NoteBox } from '../common/NoteBox'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 enum ImportStatus {
   LOADING,
@@ -130,6 +131,8 @@ export function TokenImportDialog({
       return
     }
 
+    const parentChainProvider = getProviderForChainId(parentChain.id)
+
     const erc20Params = { address: l1Address, provider: parentChainProvider }
 
     if (!(await isValidErc20(erc20Params))) {
@@ -137,7 +140,7 @@ export function TokenImportDialog({
     }
 
     return fetchErc20Data(erc20Params)
-  }, [parentChainProvider, walletAddress, l1Address])
+  }, [l1Address, walletAddress, parentChain.id])
 
   const searchForTokenInLists = useCallback(
     (erc20L1Address: string): TokenListSearchResult => {
