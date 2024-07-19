@@ -192,11 +192,9 @@ describe('Import token', () => {
           }
         })
 
-        visitAfterSomeDelay('/', {
-          qs: {
-            token: ERC20TokenAddressL1
-          }
-        })
+        // waiting for metamask notification to disappear
+        // eslint-disable-next-line
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
@@ -208,23 +206,19 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click')
-          // Modal is closed
-          .waitUntil(
-            () =>
-              cy
-                .queryByRole('button', { name: 'Import token' })
-                .should('be.null'),
-            {
-              errorMsg: 'Import Token Dialog is not closed yet.',
-              timeout: 30_000,
-              interval: 500
-            }
-          )
+          .trigger('click', {
+            force: true
+          })
+          .then(() => {
+            cy.findByRole('button', { name: 'Select Token' })
+              .should('be.visible')
+              .should('have.text', ERC20TokenSymbol)
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+            // Modal is closed
+            cy.findByRole('button', { name: 'Import token' }).should(
+              'not.exist'
+            )
+          })
       })
     })
 
@@ -238,11 +232,9 @@ describe('Import token', () => {
           }
         })
 
-        visitAfterSomeDelay('/', {
-          qs: {
-            token: ERC20TokenAddressL2
-          }
-        })
+        // waiting for metamask notification to disappear
+        // eslint-disable-next-line
+        cy.wait(3000)
 
         // Modal is displayed
         cy.get('h2')
@@ -255,23 +247,17 @@ describe('Import token', () => {
         // Import token
         cy.findByRole('button', { name: 'Import token' })
           .should('be.visible')
-          .trigger('click')
-          // Modal is closed
-          .waitUntil(
-            () =>
-              cy
-                .queryByRole('button', { name: 'Import token' })
-                .should('be.null'),
-            {
-              errorMsg: 'Import Token Dialog is not closed yet.',
-              timeout: 30_000,
-              interval: 500
-            }
-          )
+          .trigger('click', {
+            force: true
+          })
+          .then(() => {
+            cy.findByRole('button', { name: 'Select Token' })
+              .should('be.visible')
+              .should('have.text', ERC20TokenSymbol)
+          })
 
-        cy.findByRole('button', { name: 'Select Token' })
-          .should('be.visible')
-          .should('have.text', ERC20TokenSymbol)
+        // Modal is closed
+        cy.findByRole('button', { name: 'Import token' }).should('not.exist')
       })
     })
 
