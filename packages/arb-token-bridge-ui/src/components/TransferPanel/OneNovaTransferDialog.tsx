@@ -1,7 +1,6 @@
 import { Tab } from '@headlessui/react'
 import Hop from '@/images/bridge/hop.png'
 
-import { useAppState } from '../../state'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
 import { SecurityNotGuaranteed } from './SecurityLabels'
@@ -9,6 +8,7 @@ import { Dialog, UseDialogProps } from '../common/Dialog'
 import { FastBridgeInfo, FastBridgeNames } from '../../util/fastBridges'
 import { ChainId, getNetworkName } from '../../util/networks'
 import { ether } from '../../constants'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export function OneNovaTransferDialog(
   props: UseDialogProps & {
@@ -16,9 +16,7 @@ export function OneNovaTransferDialog(
     amount: string
   }
 ) {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
 
   const { destinationChainId } = props
 

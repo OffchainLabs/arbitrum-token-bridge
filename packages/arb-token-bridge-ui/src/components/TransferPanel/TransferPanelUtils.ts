@@ -1,6 +1,4 @@
-import * as Sentry from '@sentry/react'
-
-import { isUserRejectedError } from '../../util/isUserRejectedError'
+import { utils } from 'ethers'
 import { useArbQueryParams } from '../../hooks/useArbQueryParams'
 
 export enum ImportTokenModalStatus {
@@ -21,14 +19,26 @@ export function getWarningTokenDescription(warningTokenType: number) {
   }
 }
 
+function sanitizeTokenSearchParams(
+  tokenAddress: string | null
+): string | undefined {
+  if (!tokenAddress) {
+    return undefined
+  }
+  if (utils.isAddress(tokenAddress)) {
+    return tokenAddress
+  }
+  return undefined
+}
+
 export function useTokenFromSearchParams(): {
   tokenFromSearchParams: string | undefined
-  setTokenQueryParam: (token: string | undefined) => void
+  setTokenQueryParam: (token: string | null) => void
 } {
   const [{ token: tokenFromSearchParams }, setQueryParams] = useArbQueryParams()
 
-  const setTokenQueryParam = (token: string | undefined) =>
-    setQueryParams({ token })
+  const setTokenQueryParam = (token: string | null) =>
+    setQueryParams({ token: sanitizeTokenSearchParams(token) })
 
   if (!tokenFromSearchParams) {
     return {

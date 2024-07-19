@@ -3,7 +3,6 @@ import { useAccount } from 'wagmi'
 import { utils } from 'ethers'
 
 import { useAccountType } from '../../hooks/useAccountType'
-import { useAppState } from '../../state'
 import { useBalance } from '../../hooks/useBalance'
 import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import {
@@ -27,6 +26,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { isTeleportEnabledToken } from '../../util/TokenTeleportEnabledUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 // Add chains IDs that are currently down or disabled
 // It will block transfers and display an info box in the transfer panel
@@ -116,9 +116,7 @@ export function useTransferReadiness({
   amount: string
   gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const {
     layout: { isTransferring }
   } = useAppContextState()

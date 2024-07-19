@@ -6,7 +6,6 @@ import { Chain, useAccount } from 'wagmi'
 import { useMedia } from 'react-use'
 
 import { Loader } from '../common/atoms/Loader'
-import { useActions, useAppState } from '../../state'
 import { formatAmount } from '../../util/NumberUtils'
 import {
   ChainId,
@@ -61,12 +60,12 @@ import {
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
-import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import {
   Balances,
   useSelectedTokenBalances
 } from '../../hooks/TransferPanel/useSelectedTokenBalances'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 enum NetworkType {
   l1 = 'l1',
@@ -334,7 +333,6 @@ export function TransferPanelMain({
   amount: string
   errorMessage?: TransferReadinessRichErrorMessage | string
 }) {
-  const actions = useActions()
   const [networks, setNetworks] = useNetworks()
   const {
     childChain,
@@ -349,10 +347,7 @@ export function TransferPanelMain({
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken, setSelectedToken } = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 
@@ -579,8 +574,6 @@ export function TransferPanelMain({
     }
   }, [errorMessage, openTransferDisabledDialog])
 
-  useUpdateUSDCTokenData()
-
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>
     to: Omit<NetworkListboxProps, 'label'>
@@ -636,7 +629,7 @@ export function TransferPanelMain({
             destinationChainId: networks.destinationChain.id
           })
 
-          actions.app.setSelectedToken(null)
+          setSelectedToken(null)
         }
       },
       to: {
@@ -657,7 +650,7 @@ export function TransferPanelMain({
             sourceChainId: networks.sourceChain.id,
             destinationChainId: network.id
           })
-          actions.app.setSelectedToken(null)
+          setSelectedToken(null)
         }
       }
     }

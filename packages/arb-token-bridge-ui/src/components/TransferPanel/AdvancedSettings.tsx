@@ -3,14 +3,12 @@ import { twMerge } from 'tailwind-merge'
 import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
-import { Provider } from '@ethersproject/providers'
 import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
-import { useAppState } from '../../state'
 import { useAccountType } from '../../hooks/useAccountType'
 import {
   addressIsSmartContract,
@@ -19,6 +17,7 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
@@ -113,9 +112,7 @@ async function getDestinationAddressWarning({
 }
 
 export const AdvancedSettings = () => {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,

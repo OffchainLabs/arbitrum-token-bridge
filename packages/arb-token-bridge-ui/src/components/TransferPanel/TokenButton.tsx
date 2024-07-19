@@ -16,15 +16,16 @@ import {
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { Transition } from '../common/Transition'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export function TokenButton(): JSX.Element {
   const {
     app: {
-      selectedToken,
       arbTokenBridge: { bridgeTokens },
       arbTokenBridgeLoaded
     }
   } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 

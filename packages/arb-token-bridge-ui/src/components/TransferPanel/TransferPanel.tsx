@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -75,6 +75,8 @@ import { useBalance } from '../../hooks/useBalance'
 import { getBridgeTransferProperties } from '../../token-bridge-sdk/utils'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { getSmartContractWalletTeleportTransfersNotSupportedErrorMessage } from './useTransferReadinessUtils'
+import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 const networkConnectionWarningToast = () =>
   warningToast(
@@ -98,16 +100,19 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
+  const [importDialogTokenAddress, setImportDialogTokenAddress] = useState<
+    string | undefined
+  >()
 
   const {
     app: {
       connectionState,
-      selectedToken,
       arbTokenBridgeLoaded,
       arbTokenBridge: { eth, token },
       warningTokens
     }
   } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()
@@ -125,6 +130,8 @@ export function TransferPanel() {
     isTeleportMode
   } = useNetworksRelationship(networks)
   const latestNetworks = useLatest(networks)
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUser = useTokensFromUser()
 
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
@@ -210,7 +217,7 @@ export function TransferPanel() {
   )
 
   function closeWithResetTokenImportDialog() {
-    setTokenQueryParam(undefined)
+    setTokenQueryParam(null)
     setImportTokenModalStatus(ImportTokenModalStatus.CLOSED)
     tokenImportDialogProps.onClose(false)
   }
@@ -224,6 +231,31 @@ export function TransferPanel() {
     importTokenModalStatus,
     connectionState
   })
+
+  const isTokenAlreadyImported = useMemo(() => {
+    if (
+      !tokensFromLists ||
+      !tokensFromUser ||
+      Object.keys(tokensFromLists).length === 0
+    ) {
+      return undefined
+    }
+
+    return Object.keys({ ...tokensFromLists, ...tokensFromUser }).some(
+      address => address.toLowerCase() === tokenFromSearchParams?.toLowerCase()
+    )
+  }, [tokenFromSearchParams, tokensFromLists, tokensFromUser])
+
+  useEffect(() => {
+    if (
+      typeof isTokenAlreadyImported === 'undefined' ||
+      isTokenAlreadyImported
+    ) {
+      setImportDialogTokenAddress(undefined)
+    } else {
+      setImportDialogTokenAddress(tokenFromSearchParams)
+    }
+  }, [isTokenAlreadyImported, tokenFromSearchParams])
 
   const isBridgingANewStandardToken = useMemo(() => {
     const isUnbridgedToken =
@@ -1093,11 +1125,11 @@ export function TransferPanel() {
           )}
         </div>
 
-        {typeof tokenFromSearchParams !== 'undefined' && (
+        {typeof importDialogTokenAddress !== 'undefined' && (
           <TokenImportDialog
             {...tokenImportDialogProps}
             onClose={closeWithResetTokenImportDialog}
-            tokenAddress={tokenFromSearchParams}
+            tokenAddress={importDialogTokenAddress}
           />
         )}
 

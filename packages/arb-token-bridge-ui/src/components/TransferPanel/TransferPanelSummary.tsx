@@ -11,11 +11,11 @@ import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
-import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
 import { NoteBox } from '../common/NoteBox'
 import { DISABLED_CHAIN_IDS } from './useTransferReadiness'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export type TransferPanelSummaryToken = {
   symbol: string
@@ -37,9 +37,7 @@ function StyledLoader() {
 }
 
 function TotalGasFees() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
 
   const {
     status: gasSummaryStatus,

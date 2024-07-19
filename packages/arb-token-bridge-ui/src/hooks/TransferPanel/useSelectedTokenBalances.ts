@@ -1,6 +1,5 @@
 import { BigNumber, constants } from 'ethers'
 import { useMemo } from 'react'
-import { useAppState } from '../../state'
 import { useNetworks } from '../useNetworks'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useDestinationAddressStore } from '../../components/TransferPanel/AdvancedSettings'
@@ -12,6 +11,7 @@ import {
 } from '../../util/TokenUtils'
 import { CommonAddress } from '../../util/CommonAddressUtils'
 import { isNetwork } from '../../util/networks'
+import { useSelectedToken } from '../useSelectedToken'
 
 export type Balances = {
   l1: BigNumber | null
@@ -19,8 +19,7 @@ export type Balances = {
 }
 
 export function useSelectedTokenBalances(): Balances {
-  const { app } = useAppState()
-  const { selectedToken } = app
+  const { selectedToken } = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =

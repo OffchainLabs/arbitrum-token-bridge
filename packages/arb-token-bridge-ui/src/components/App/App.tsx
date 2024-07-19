@@ -19,7 +19,7 @@ import { TokenBridgeParams } from '../../hooks/useArbTokenBridge'
 import { WelcomeDialog } from './WelcomeDialog'
 import { BlockedDialog } from './BlockedDialog'
 import { AppContextProvider } from './AppContext'
-import { config, useActions, useAppState } from '../../state'
+import { config, useActions } from '../../state'
 import { MainContent } from '../MainContent/MainContent'
 import { ArbTokenBridgeStoreSync } from '../syncers/ArbTokenBridgeStoreSync'
 import { BalanceUpdater } from '../syncers/BalanceUpdater'
@@ -42,6 +42,7 @@ import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 declare global {
   interface Window {
@@ -60,9 +61,7 @@ const rainbowkitTheme = merge(darkTheme(), {
 
 const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken, setSelectedToken } = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
@@ -90,9 +89,9 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       selectedTokenAddress === nativeCurrency.address ||
       selectedTokenL2Address === nativeCurrency.address
     ) {
-      actions.app.setSelectedToken(null)
+      setSelectedToken(null)
     }
-  }, [selectedToken, nativeCurrency])
+  }, [selectedToken, nativeCurrency, setSelectedToken])
 
   // Listen for account and network changes
   useEffect(() => {
@@ -108,7 +107,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       parentChain.id
     ).isEthereumMainnetOrTestnet
 
-    actions.app.reset(networks.sourceChain.id)
+    actions.app.reset()
     actions.app.setChainIds({
       l1NetworkChainId: parentChain.id,
       l2NetworkChainId: childChain.id

@@ -1,14 +1,10 @@
-import { useMemo } from 'react'
-
-import { useAppState } from '../../state'
 import { useNativeCurrency } from '../useNativeCurrency'
 import { useNetworksRelationship } from '../useNetworksRelationship'
 import { useNetworks } from '../useNetworks'
+import { useSelectedToken } from '../useSelectedToken'
 
 export function useSelectedTokenDecimals() {
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 

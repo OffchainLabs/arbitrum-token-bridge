@@ -8,7 +8,6 @@ import { Checkbox } from '../common/Checkbox'
 import { ExternalLink } from '../common/ExternalLink'
 import { TabButton } from '../common/Tab'
 import { BridgesTable } from '../common/BridgesTable'
-import { useAppState } from '../../state'
 import { trackEvent } from '../../util/AnalyticsUtils'
 import { getNetworkName, isNetwork } from '../../util/networks'
 import { getFastBridges } from '../../util/fastBridges'
@@ -18,6 +17,7 @@ import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { getTxConfirmationDate } from '../common/WithdrawalCountdown'
 import { SecurityGuaranteed, SecurityNotGuaranteed } from './SecurityLabels'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 function getCalendarUrl(
   withdrawalDate: dayjs.Dayjs,
@@ -46,9 +46,7 @@ export function WithdrawalConfirmationDialog(
 
   const destinationNetworkName = getNetworkName(parentChain.id)
 
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
 
   const nativeCurrency = useNativeCurrency({
     provider: childChainProvider

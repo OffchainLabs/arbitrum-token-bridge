@@ -9,10 +9,10 @@ import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { useDestinationAddressStore } from './AdvancedSettings'
 import { useBalance } from '../../hooks/useBalance'
 import { useSelectedTokenBalances } from '../../hooks/TransferPanel/useSelectedTokenBalances'
-import { useAppState } from '../../state'
 import { useSetInputAmount } from '../../hooks/TransferPanel/useSetInputAmount'
 import { countDecimals } from '../../util/NumberUtils'
 import { useSelectedTokenDecimals } from '../../hooks/TransferPanel/useSelectedTokenDecimals'
+import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean
@@ -21,9 +21,7 @@ type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 function MaxButton(props: MaxButtonProps) {
   const { loading, className = '', ...rest } = props
 
-  const {
-    app: { selectedToken }
-  } = useAppState()
+  const { selectedToken } = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
