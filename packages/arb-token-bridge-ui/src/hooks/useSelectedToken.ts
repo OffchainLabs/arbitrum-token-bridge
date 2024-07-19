@@ -112,6 +112,7 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
           decimals: 6,
           listIds: new Set()
         })
+        return
       }
 
       if (!tokensFromLists || !tokensFromUser) {
