@@ -213,8 +213,8 @@ describe('Import token', () => {
           .waitUntil(
             () =>
               cy
-                .findByRole('button', { name: 'Import token' })
-                .should('not.exist'),
+                .queryByRole('button', { name: 'Import token' })
+                .should('be.null'),
             {
               errorMsg: 'Import Token Dialog is not closed yet.',
               timeout: 30_000,
@@ -260,8 +260,8 @@ describe('Import token', () => {
           .waitUntil(
             () =>
               cy
-                .findByRole('button', { name: 'Import token' })
-                .should('not.exist'),
+                .queryByRole('button', { name: 'Import token' })
+                .should('be.null'),
             {
               errorMsg: 'Import Token Dialog is not closed yet.',
               timeout: 30_000,
