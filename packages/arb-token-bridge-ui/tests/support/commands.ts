@@ -58,17 +58,21 @@ export function login({
     startWebApp(url, { query: { ...query, sourceChain }, connectMetamask })
   }
 
-  shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
-    if (changeNetwork && connectMetamask) {
-      cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+  if (connectMetamask) {
+    shouldChangeNetwork(networkNameWithDefault).then(changeNetwork => {
+      if (changeNetwork) {
+        cy.changeMetamaskNetwork(networkNameWithDefault).then(() => {
+          _startWebApp()
+        })
+      } else {
         _startWebApp()
-      })
-    } else {
-      _startWebApp()
-    }
+      }
 
+      cy.task('setCurrentNetworkName', networkNameWithDefault)
+    })
+  } else {
     cy.task('setCurrentNetworkName', networkNameWithDefault)
-  })
+  }
 }
 
 Cypress.Commands.add(
