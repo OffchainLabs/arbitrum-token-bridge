@@ -88,19 +88,34 @@ describe('Withdraw ETH', () => {
                   .should('be.enabled')
                   .click()
                   .then(() => {
-                    cy.confirmMetamaskTransaction().then(() => {
-                      cy.findByText('an hour').should('be.visible')
-                      cy.findByText(
-                        `${formatAmount(ETHToWithdraw, {
-                          symbol: 'ETH'
-                        })}`
-                      ).should('be.visible')
+                    cy.confirmMetamaskTransaction()
+                      .then(() => {
+                        cy.findByText('an hour').should('be.visible')
+                        cy.findByText(
+                          `${formatAmount(ETHToWithdraw, {
+                            symbol: 'ETH'
+                          })}`
+                        ).should('be.visible')
 
-                      cy.findAllByLabelText(/Claim Transaction/i)
-                        .first()
-                        .should('be.visible')
-                        .should('not.be.disabled')
-                    })
+                        cy.findAllByLabelText(/Claim Transaction/i)
+                          .first()
+                          .should('be.visible')
+                          .should('not.be.disabled')
+                      })
+                      .click()
+                      .then(() => {
+                        cy.confirmMetamaskTransaction().then(() => {
+                          cy.findByLabelText('show settled transactions')
+                            .should('be.visible')
+                            .click()
+
+                          cy.findByText(
+                            `${formatAmount(ETHToWithdraw, {
+                              symbol: 'WETH'
+                            })}`
+                          ).should('be.visible')
+                        })
+                      })
                   })
               })
           })
