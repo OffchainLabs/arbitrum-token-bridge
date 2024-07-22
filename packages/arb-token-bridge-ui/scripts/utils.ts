@@ -27,6 +27,12 @@ export const sanitizeRpcUrl = (url: string) => {
   }
 }
 
+const isOrbitChainConfig = (
+  chain: ArbitrumNetwork | OrbitChainConfig
+): chain is OrbitChainConfig => {
+  return (chain as OrbitChainConfig).explorerUrl !== undefined
+}
+
 // make the chain data compatible with that required by the retryable-monitoring script
 // TODO: in a later refactor, we will update the term `orbitRpcUrl` to chain-agnostic, `rpcUrl`
 export const getChainToMonitor = ({
@@ -37,7 +43,11 @@ export const getChainToMonitor = ({
   rpcUrl: string
 }): ChainToMonitor => ({
   ...chain,
-  explorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.chainId)),
+  explorerUrl: sanitizeExplorerUrl(
+    isOrbitChainConfig(chain)
+      ? chain.explorerUrl
+      : getExplorerUrl(chain.chainId)
+  ),
   orbitRpcUrl: sanitizeRpcUrl(rpcUrl),
   parentRpcUrl: sanitizeRpcUrl(rpcURLs[chain.parentChainId]),
   parentExplorerUrl: sanitizeExplorerUrl(getExplorerUrl(chain.parentChainId))
