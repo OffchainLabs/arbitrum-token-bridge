@@ -15,8 +15,8 @@
     "prettier:format": "./node_modules/.bin/prettier --write .",
     "lint": "yarn workspace arb-token-bridge-ui lint",
     "lint:fix": "yarn workspace arb-token-bridge-ui lint:fix",
-    "test:e2e": "env-cmd --silent --file ./packages/arb-token-bridge-ui/.e2e.env yarn synpress run --configFile ./packages/arb-token-bridge-ui/synpress.config.ts --browser chrome",
-    "test:e2e:cctp": "E2E_CCTP=true yarn test:e2e:run"
+    "test:e2e": "yarn workspace arb-token-bridge-ui env-cmd --silent --file .e2e.env yarn synpress run --configFile synpress.config.ts --browser chrome",
+    "test:e2e:cctp": "E2E_CCTP=true yarn test:e2e"
   },
   "resolutions": {
     "**/@walletconnect/ethereum-provider": "2.13.1",
