@@ -167,9 +167,12 @@ jobs:
   setup-node:
     name: "Set up local node"
     runs-on: ubunutu-latest
-    needs: [install, check-files, check-is-hotfix, load-e2e-files]
+    needs: [check-files, check-is-hotfix]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up the local node
         uses: OffchainLabs/actions/run-nitro-test-node@main
         with:
