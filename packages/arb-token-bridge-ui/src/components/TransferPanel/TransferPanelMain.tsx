@@ -60,6 +60,7 @@ import {
 } from './TransferDisabledDialog'
 import { getBridgeUiConfigForChain } from '../../util/bridgeUiConfig'
 import { useGasSummary } from '../../hooks/TransferPanel/useGasSummary'
+import { useUpdateUSDCTokenData } from './TransferPanelMain/hooks'
 import {
   Balances,
   useSelectedTokenBalances
@@ -573,6 +574,8 @@ export function TransferPanelMain({
         )
     }
   }, [errorMessage, openTransferDisabledDialog])
+
+  useUpdateUSDCTokenData()
 
   type NetworkListboxesProps = {
     from: Pick<NetworkListboxProps, 'onChange'>

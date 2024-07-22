@@ -35,14 +35,12 @@ import { TOS_LOCALSTORAGE_KEY } from '../../constants'
 import { getProps } from '../../util/wagmi/setup'
 import { useAccountIsBlocked } from '../../hooks/useAccountIsBlocked'
 import { useCCTPIsBlocked } from '../../hooks/CCTP/useCCTPIsBlocked'
-import { useNativeCurrency } from '../../hooks/useNativeCurrency'
 import { sanitizeQueryParams, useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
 import { HeaderConnectWalletButton } from '../common/HeaderConnectWalletButton'
 import { ProviderName, trackEvent } from '../../util/AnalyticsUtils'
 import { onDisconnectHandler } from '../../util/walletConnectUtils'
 import { addressIsSmartContract } from '../../util/AddressUtils'
-import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 declare global {
   interface Window {
@@ -61,37 +59,15 @@ const rainbowkitTheme = merge(darkTheme(), {
 
 const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
   const actions = useActions()
-  const { selectedToken, setSelectedToken } = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
-  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
 
   // We want to be sure this fetch is completed by the time we open the USDC modals
   useCCTPIsBlocked()
 
   const [tokenBridgeParams, setTokenBridgeParams] =
     useState<TokenBridgeParams | null>(null)
-
-  useEffect(() => {
-    if (!nativeCurrency.isCustom) {
-      return
-    }
-
-    const selectedTokenAddress = selectedToken?.address.toLowerCase()
-    const selectedTokenL2Address = selectedToken?.l2Address?.toLowerCase()
-    // This handles a super weird edge case where, for example:
-    //
-    // Your setup is: from Arbitrum One to Mainnet, and you have $ARB selected as the token you want to bridge over.
-    // You then switch your destination network to a network that has $ARB as its native currency.
-    // For this network, $ARB can only be bridged as the native currency, and not as a standard ERC-20, which is why we have to reset the selected token.
-    if (
-      selectedTokenAddress === nativeCurrency.address ||
-      selectedTokenL2Address === nativeCurrency.address
-    ) {
-      setSelectedToken(null)
-    }
-  }, [selectedToken, nativeCurrency, setSelectedToken])
 
   // Listen for account and network changes
   useEffect(() => {

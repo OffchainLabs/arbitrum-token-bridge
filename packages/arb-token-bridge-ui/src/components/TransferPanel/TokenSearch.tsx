@@ -16,7 +16,8 @@ import {
   fetchErc20Data,
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
-  isTokenArbitrumOneUSDCe
+  isTokenArbitrumOneUSDCe,
+  isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { Button } from '../common/Button'
 import { useTokensFromLists, useTokensFromUser } from './TokenSearchUtils'
@@ -557,6 +558,12 @@ export function TokenSearch({
     }
 
     try {
+      if (isTokenNativeUSDC(_token.address)) {
+        // We don't need to fetch token data because USDC will be hardcoded
+        setSelectedToken(_token.address)
+        return
+      }
+
       // Token not added to the bridge, so we'll handle importing it
       if (typeof bridgeTokens[_token.address] === 'undefined') {
         setTokenQueryParam(_token.address)

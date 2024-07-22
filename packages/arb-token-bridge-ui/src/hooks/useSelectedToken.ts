@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback } from 'react'
+import useSWRImmutable from 'swr/immutable'
 
 import {
   useTokensFromLists,
@@ -9,12 +10,13 @@ import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
 import {
   getL2ERC20Address,
   isTokenArbitrumOneNativeUSDC,
-  isTokenArbitrumSepoliaNativeUSDC
+  isTokenArbitrumSepoliaNativeUSDC,
+  isTokenMainnetUSDC,
+  isTokenSepoliaUSDC
 } from '../util/TokenUtils'
 import { useNetworks } from './useNetworks'
 import { isNetwork } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
-import { useAppState } from '../state'
 import { useNetworksRelationship } from './useNetworksRelationship'
 
 type UseSelectedTokenProps = {
@@ -31,32 +33,24 @@ const commonUSDC = {
 }
 
 export const useSelectedToken = (): UseSelectedTokenProps => {
-  const {
-    app: {
-      arbTokenBridge: { token }
-    }
-  } = useAppState()
   const { tokenFromSearchParams, setTokenQueryParam } =
     useTokenFromSearchParams()
   const tokensFromLists = useTokensFromLists()
   const tokensFromUser = useTokensFromUser()
   const [networks] = useNetworks()
-  const { childChain, childChainProvider, parentChainProvider } =
+  const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
   const {
-    isArbitrumOne: isDestinationChainArbitrumOne,
-    isArbitrumSepolia: isDestinationChainArbitrumSepolia
-  } = isNetwork(networks.destinationChain.id)
+    isEthereumMainnet: isParentChainEthereumMainnet,
+    isSepolia: isParentChainSepolia,
+    isArbitrumOne: isParentChainArbitrumOne,
+    isArbitrumSepolia: isParentChainArbitrumSepolia
+  } = isNetwork(parentChain.id)
 
-  const [_selectedToken, _setSelectedToken] = useState<ERC20BridgeToken | null>(
-    null
-  )
-
-  useEffect(() => {
-    async function getSelectedToken() {
+  const fetcher: () => Promise<ERC20BridgeToken | null> =
+    useCallback(async () => {
       if (!tokenFromSearchParams) {
-        _setSelectedToken(null)
-        return
+        return null
       }
 
       const isArbitrumOneUsdc = isTokenArbitrumOneNativeUSDC(
@@ -66,28 +60,32 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         tokenFromSearchParams
       )
 
-      if (isArbitrumOneUsdc && isDestinationChainArbitrumOne) {
-        token.updateTokenData(CommonAddress.Ethereum.USDC)
-        _setSelectedToken({
+      // Ethereum Mainnet USDC
+      if (
+        isTokenMainnetUSDC(tokenFromSearchParams) &&
+        isParentChainEthereumMainnet
+      ) {
+        return {
           ...commonUSDC,
           address: CommonAddress.Ethereum.USDC,
           l2Address: CommonAddress.ArbitrumOne['USDC.e']
-        })
-        return
+        }
       }
 
-      if (isArbitrumSepoliaUsdc && isDestinationChainArbitrumSepolia) {
-        token.updateTokenData(CommonAddress.Sepolia.USDC)
-        _setSelectedToken({
+      // Ethereum Sepolia USDC
+      if (isTokenSepoliaUSDC(tokenFromSearchParams) && isParentChainSepolia) {
+        return {
           ...commonUSDC,
           address: CommonAddress.Sepolia.USDC,
           l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
-        })
-        return
+        }
       }
 
-      if (isArbitrumOneUsdc || isArbitrumSepoliaUsdc) {
-        // USDC with Orbit chains
+      // USDC when depositing to an Orbit chain
+      if (
+        (isArbitrumOneUsdc && isParentChainArbitrumOne) ||
+        (isArbitrumSepoliaUsdc && isParentChainArbitrumSepolia)
+      ) {
         let childChainUsdcAddress
         try {
           childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
@@ -103,7 +101,7 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
           // could be never bridged before
         }
 
-        _setSelectedToken({
+        return {
           name: 'USD Coin',
           type: TokenType.ERC20,
           symbol: 'USDC',
@@ -111,37 +109,37 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
           l2Address: childChainUsdcAddress,
           decimals: 6,
           listIds: new Set()
-        })
-        return
+        }
       }
 
       if (!tokensFromLists || !tokensFromUser) {
-        _setSelectedToken(null)
-        return
+        return null
       }
 
-      _setSelectedToken(
+      return (
         Object.values({ ...tokensFromLists, ...tokensFromUser }).find(
           tokenFromLists =>
             tokenFromLists?.address.toLowerCase() ===
             tokenFromSearchParams.toLowerCase()
         ) || null
       )
-    }
+    }, [
+      childChain.id,
+      childChainProvider,
+      isParentChainArbitrumOne,
+      isParentChainArbitrumSepolia,
+      isParentChainEthereumMainnet,
+      isParentChainSepolia,
+      parentChainProvider,
+      tokenFromSearchParams,
+      tokensFromLists,
+      tokensFromUser
+    ])
 
-    getSelectedToken()
-  }, [
-    childChain.id,
-    childChainProvider,
-    isDestinationChainArbitrumOne,
-    isDestinationChainArbitrumSepolia,
-    parentChainProvider,
-    _setSelectedToken,
-    token,
-    tokenFromSearchParams,
-    tokensFromLists,
-    tokensFromUser
-  ])
+  const { data } = useSWRImmutable<ERC20BridgeToken | null>(
+    [parentChain.id, childChain.id, tokenFromSearchParams],
+    fetcher
+  )
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) => {
@@ -151,7 +149,7 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
   )
 
   return {
-    selectedToken: _selectedToken,
+    selectedToken: data ?? null,
     setSelectedToken
   }
 }

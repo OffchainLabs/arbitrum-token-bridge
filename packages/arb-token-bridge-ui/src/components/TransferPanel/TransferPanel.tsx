@@ -29,7 +29,8 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenSepoliaUSDC,
   isTokenMainnetUSDC,
-  isGatewayRegistered
+  isGatewayRegistered,
+  isTokenNativeUSDC
 } from '../../util/TokenUtils'
 import { useSwitchNetworkWithConfig } from '../../hooks/useSwitchNetworkWithConfig'
 import { useIsConnectedToArbitrum } from '../../hooks/useIsConnectedToArbitrum'
@@ -233,9 +234,14 @@ export function TransferPanel() {
   })
 
   const isTokenAlreadyImported = useMemo(() => {
+    if (isTokenNativeUSDC(tokenFromSearchParams)) {
+      return true
+    }
+
     if (
       !tokensFromLists ||
       !tokensFromUser ||
+      // Wait if token list hasn't been populated yet
       Object.keys(tokensFromLists).length === 0
     ) {
       return undefined
