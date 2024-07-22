@@ -298,7 +298,8 @@ jobs:
           file_name: medium-res.env
 
       - name: Set up the local node
-        run: ./test-node.bash
+        shell: bash
+        run: ${{ github.action_path }}/test-node.bash
 
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
