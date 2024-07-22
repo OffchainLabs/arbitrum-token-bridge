@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { BigNumber, utils } from 'ethers'
 import { useAccount } from 'wagmi'
-import { Provider } from '@ethersproject/abstract-provider'
 import useSWR, {
   useSWRConfig,
   unstable_serialize,
@@ -10,15 +9,14 @@ import useSWR, {
 } from 'swr'
 import { MultiCaller } from '@arbitrum/sdk'
 import * as Sentry from '@sentry/react'
-
-import { useChainId } from './useChainId'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 type Erc20Balances = {
   [address: string]: BigNumber | undefined
 }
 
 export type UseBalanceProps = {
-  provider: Provider
+  chainId: number
   walletAddress: string | undefined
 }
 
@@ -42,8 +40,7 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
   }
 }
 
-const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
-  const chainId = useChainId({ provider })
+const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
   const { address: connectedWalletAddress } = useAccount()
 
   const walletAddressLowercased = useMemo(() => {
@@ -57,10 +54,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
 
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
-      if (
-        typeof chainId === 'undefined' ||
-        typeof walletAddressLowercased === 'undefined'
-      ) {
+      if (typeof walletAddressLowercased === 'undefined') {
         // Don't fetch
         return null
       }
@@ -70,21 +64,28 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
     [chainId, walletAddressLowercased]
   )
   const fetchErc20 = useCallback(
-    async (_addresses: string[] | undefined) => {
-      if (
-        typeof walletAddressLowercased === 'undefined' ||
-        !_addresses?.length
-      ) {
+    async ({
+      addresses,
+      walletAddress,
+      chainId
+    }: {
+      addresses: string[] | undefined
+      walletAddress: string
+      chainId: number
+    }) => {
+      if (!addresses?.length) {
         return {}
       }
 
+      const provider = getProviderForChainId(chainId)
+
       try {
         const multiCaller = await MultiCaller.fromProvider(provider)
-        const addressesBalances = await multiCaller.getTokenData(_addresses, {
-          balanceOf: { account: walletAddressLowercased }
+        const addressesBalances = await multiCaller.getTokenData(addresses, {
+          balanceOf: { account: walletAddress }
         })
 
-        return _addresses.reduce((acc, address, index) => {
+        return addresses.reduce((acc, address, index) => {
           const balance = addressesBalances[index]
           if (balance) {
             acc[address.toLowerCase()] = balance.balance
@@ -95,18 +96,21 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
       } catch (error) {
         // log some extra info on sentry in case multi-caller fails
         Sentry.configureScope(function (scope) {
-          scope.setExtra('token_addresses', _addresses)
+          scope.setExtra('token_addresses', addresses)
           Sentry.captureException(error)
         })
         return {}
       }
     },
-    [provider, walletAddressLowercased]
+    []
   )
 
   const { data: dataEth = null, mutate: updateEthBalance } = useSWR(
     queryKey('eth'),
-    ([_walletAddress]) => provider.getBalance(_walletAddress),
+    ([_walletAddress, _chainId]) => {
+      const _provider = getProviderForChainId(_chainId)
+      return _provider.getBalance(_walletAddress)
+    },
     {
       refreshInterval: 15_000,
       shouldRetryOnError: true,
@@ -116,7 +120,12 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
   )
   const { data: dataErc20 = null, mutate: mutateErc20 } = useSWR(
     queryKey('erc20'),
-    () => fetchErc20([]),
+    ([_walletAddressLowercased, _chainId]) =>
+      fetchErc20({
+        addresses: [],
+        walletAddress: _walletAddressLowercased,
+        chainId: _chainId
+      }),
     {
       shouldRetryOnError: true,
       errorRetryCount: 2,
@@ -127,7 +136,15 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
 
   const updateErc20 = useCallback(
     async (addresses: string[]) => {
-      const balances = await fetchErc20(addresses)
+      if (!walletAddressLowercased) {
+        return null
+      }
+
+      const balances = await fetchErc20({
+        addresses,
+        chainId,
+        walletAddress: walletAddressLowercased
+      })
 
       return mutateErc20(balances, {
         populateCache(result, currentData) {
@@ -139,7 +156,7 @@ const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
         revalidate: false
       })
     },
-    [fetchErc20, mutateErc20]
+    [chainId, fetchErc20, mutateErc20, walletAddressLowercased]
   )
 
   return {

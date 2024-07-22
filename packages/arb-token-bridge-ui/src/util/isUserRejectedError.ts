@@ -10,7 +10,7 @@ function isUserRejectedError(error: any) {
   return (
     error?.code === 4001 ||
     error?.code === 'ACTION_REJECTED' ||
-    error?.message.match(/User Cancelled/) ||
+    error?.message?.match(/User Cancelled/) ||
     error instanceof UserRejectedRequestError
   )
 }
