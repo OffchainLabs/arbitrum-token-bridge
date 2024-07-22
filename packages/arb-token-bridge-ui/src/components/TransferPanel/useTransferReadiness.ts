@@ -125,7 +125,6 @@ export function useTransferReadiness({
     childChain,
     childChainProvider,
     parentChain,
-    parentChainProvider,
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
@@ -136,11 +135,11 @@ export function useTransferReadiness({
   const {
     eth: [ethL1Balance],
     erc20: [erc20L1Balances]
-  } = useBalance({ provider: parentChainProvider, walletAddress })
+  } = useBalance({ chainId: parentChain.id, walletAddress })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances]
-  } = useBalance({ provider: childChainProvider, walletAddress })
+  } = useBalance({ chainId: childChain.id, walletAddress })
   const { error: destinationAddressError } = useDestinationAddressStore()
 
   const ethL1BalanceFloat = useMemo(

@@ -337,8 +337,8 @@ export function TransferPanelMain({
   const [networks, setNetworks] = useNetworks()
   const {
     childChain,
+    parentChain,
     childChainProvider,
-    parentChainProvider,
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
@@ -368,14 +368,14 @@ export function TransferPanelMain({
     eth: [ethL1Balance],
     erc20: [erc20L1Balances, updateErc20L1Balances]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: l1WalletAddress
   })
   const {
     eth: [ethL2Balance],
     erc20: [erc20L2Balances, updateErc20L2Balances]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: l2WalletAddress
   })
   const { updateUSDCBalances } = useUpdateUSDCBalances({

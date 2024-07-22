@@ -24,7 +24,7 @@ function MaxButton(props: MaxButtonProps) {
   const { selectedToken } = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
-  const { childChainProvider, parentChainProvider, isDepositMode } =
+  const { childChain, parentChain, isDepositMode } =
     useNetworksRelationship(networks)
 
   const { destinationAddress } = useDestinationAddressStore()
@@ -41,13 +41,13 @@ function MaxButton(props: MaxButtonProps) {
   const {
     eth: [ethL1Balance]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress: l1WalletAddress
   })
   const {
     eth: [ethL2Balance]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress: l2WalletAddress
   })
   const selectedTokenBalances = useSelectedTokenBalances()
