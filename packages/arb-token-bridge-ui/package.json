@@ -66,8 +66,7 @@
     "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts",
     "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
     "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
-    "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run",
-    "e2e:install": "cypress install"
+    "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run"
   },
   "browserslist": {
     "production": [
