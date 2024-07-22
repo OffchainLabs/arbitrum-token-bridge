@@ -2,7 +2,6 @@ import { BigNumber } from 'ethers'
 import {
   ArbTokenBridge,
   AssetType,
-  ERC20BridgeToken,
   NodeBlockDeadlineStatus
 } from '../../hooks/arbTokenBridge.types'
 import {
