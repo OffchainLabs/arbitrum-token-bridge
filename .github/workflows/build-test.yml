@@ -251,6 +251,8 @@ jobs:
           wait-on-timeout: 120
           browser: chrome
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
+        env:
+          DISPLAY: :0.0
 
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
