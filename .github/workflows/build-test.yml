@@ -203,10 +203,10 @@ jobs:
         env:
           DISPLAY: :0.0
 
-      - name: Run nitro testnode
-        uses: OffchainLabs/actions/run-nitro-test-node@e3b7f5bdfc62cad21026c1d1f424f3fbadc046e0
-        with:
-          nitro-testnode-ref: old-release-v2.1.1
+      # - name: Run nitro testnode
+      #   uses: OffchainLabs/actions/run-nitro-test-node@e3b7f5bdfc62cad21026c1d1f424f3fbadc046e0
+      #   with:
+      #     nitro-testnode-ref: old-release-v2.1.1
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
