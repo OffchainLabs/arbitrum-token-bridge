@@ -218,7 +218,7 @@ jobs:
           browser: chrome
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
         env:
-          CI: true
+          CI: 'true'
           DISPLAY: :0.0
           TEST_FILE: ${{ matrix.tests.file }}
           SKIP_METAMASK_SETUP: true
