@@ -112,10 +112,6 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         }
       }
 
-      if (!tokensFromLists || !tokensFromUser) {
-        return null
-      }
-
       return (
         Object.values({ ...tokensFromLists, ...tokensFromUser }).find(
           tokenFromLists =>
@@ -137,7 +133,11 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
     ])
 
   const { data } = useSWRImmutable<ERC20BridgeToken | null>(
-    [parentChain.id, childChain.id, tokenFromSearchParams],
+    !tokensFromLists ||
+      !tokensFromUser ||
+      Object.keys(tokensFromLists).length === 0
+      ? null
+      : [parentChain.id, childChain.id, tokenFromSearchParams],
     fetcher
   )
 
