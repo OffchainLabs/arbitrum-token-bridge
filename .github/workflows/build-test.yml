@@ -32,9 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-    
-    steps:        
-      - name: Make IS_HOTFIX env var global 
+
+    steps:
+      - name: Make IS_HOTFIX env var global
         id: check-is-hotfix
         run: |
           echo "is_hotfix=${{ env.IS_HOTFIX }}" >> $GITHUB_OUTPUT
@@ -179,24 +179,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Chown workspace
-        run: chown -R $(whoami) .
+      - name: Restore node_modules
+        uses: OffchainLabs/actions/node-modules/restore@main
 
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # pin@v1
+      - name: Install linux deps
+        run: |
+          sudo apt-get install --no-install-recommends -y \
+          fluxbox \
+          xvfb
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # pin@v1
-
-      - name: Cache Docker layers
-        uses: actions/cache@6998d139ddd3e68c71e9e398d8e40b71a2f39812 # pin@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
+      - name: Run xvfb and fluxbox
+        run: |
+          Xvfb :0 -screen 0 1024x768x24 -listen tcp -ac &
+          fluxbox &
+        env:
+          DISPLAY: :0.0
 
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
@@ -239,59 +239,16 @@ jobs:
         with:
           nitro-testnode-ref: old-release-v2.1.1
 
-      - name: Restore node_modules
-        uses: OffchainLabs/actions/node-modules/restore@main
-
-      - name: Run e2e tests
-        id: e2e-run
-        run: |
-          docker-compose -f docker-compose.ci.yml --env-file medium-res.env up --build synpress
-          exitcode=$(docker wait synpress-test)
-          if [[ $exitcode -eq 0 ]]; then
-            echo "status=success" >> $GITHUB_OUTPUT
-          else
-            echo "status=failed" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMPOSE_DOCKER_CLI_BUILD: 1
-          DOCKER_BUILDKIT: 1
-          DOCKER_DEFAULT_PLATFORM: linux/amd64
-      
-      - name: Create screenshots directory
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
-
-      - name: Copy screenshots from docker container volumes
-        if: steps.e2e-run.outputs.status == 'failed'
-        run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/screenshots packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
-
-      - name: Upload screenshots results
-        if: steps.e2e-run.outputs.status == 'failed'
-        uses: actions/upload-artifact@v4
+      - name: Run e2e tests (cypress-action)
+        uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
-          name: failed-e2e-screenshots-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
+          start: yarn start
+          command: yarn test:ci:e2e
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          browser: chrome
+          spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
 
-      - name: Create videos directory
-        if: matrix.tests.recordVideo == 'true'
-        run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Copy videos from docker container volumes
-        if: matrix.tests.recordVideo == 'true'
-        run: |
-          docker cp synpress-test:/app/packages/arb-token-bridge-ui/cypress/videos packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-
-      - name: Upload videos results
-        if: matrix.tests.recordVideo == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-videos-${{ fromJSON(toJSON(matrix.tests)).name }}
-          path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
-          compression-level: 0
-          retention-days: 3
-            
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
