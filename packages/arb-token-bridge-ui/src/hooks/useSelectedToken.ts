@@ -12,12 +12,15 @@ import {
   isTokenArbitrumOneNativeUSDC,
   isTokenArbitrumSepoliaNativeUSDC,
   isTokenMainnetUSDC,
+  isTokenNativeUSDC,
   isTokenSepoliaUSDC
 } from '../util/TokenUtils'
 import { useNetworks } from './useNetworks'
 import { isNetwork } from '../util/networks'
 import { CommonAddress } from '../util/CommonAddressUtils'
 import { useNetworksRelationship } from './useNetworksRelationship'
+import { Provider } from '@ethersproject/providers'
+import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 
 type UseSelectedTokenProps = {
   selectedToken: ERC20BridgeToken | null
@@ -40,12 +43,6 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
-  const {
-    isEthereumMainnet: isParentChainEthereumMainnet,
-    isSepolia: isParentChainSepolia,
-    isArbitrumOne: isParentChainArbitrumOne,
-    isArbitrumSepolia: isParentChainArbitrumSepolia
-  } = isNetwork(parentChain.id)
 
   const fetcher: () => Promise<ERC20BridgeToken | null> =
     useCallback(async () => {
@@ -53,79 +50,12 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         return null
       }
 
-      const isArbitrumOneUsdc = isTokenArbitrumOneNativeUSDC(
-        tokenFromSearchParams
-      )
-      const isArbitrumSepoliaUsdc = isTokenArbitrumSepoliaNativeUSDC(
-        tokenFromSearchParams
-      )
-
-      // Ethereum Mainnet USDC
-      if (
-        isTokenMainnetUSDC(tokenFromSearchParams) &&
-        isParentChainEthereumMainnet
-      ) {
-        return {
-          ...commonUSDC,
-          address: CommonAddress.Ethereum.USDC,
-          l2Address: CommonAddress.ArbitrumOne['USDC.e']
-        }
-      }
-
-      // Ethereum Sepolia USDC
-      if (isTokenSepoliaUSDC(tokenFromSearchParams) && isParentChainSepolia) {
-        return {
-          ...commonUSDC,
-          address: CommonAddress.Sepolia.USDC,
-          l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
-        }
-      }
-
-      if (isArbitrumOneUsdc && !isParentChainArbitrumOne) {
-        return {
-          ...commonUSDC,
-          address: CommonAddress.ArbitrumOne.USDC,
-          l2Address: CommonAddress.ArbitrumOne.USDC
-        }
-      }
-
-      if (isArbitrumSepoliaUsdc && !isParentChainArbitrumOne) {
-        return {
-          ...commonUSDC,
-          address: CommonAddress.ArbitrumSepolia.USDC,
-          l2Address: CommonAddress.ArbitrumSepolia.USDC
-        }
-      }
-
-      // USDC when depositing to an Orbit chain
-      if (
-        (isArbitrumOneUsdc && isParentChainArbitrumOne) ||
-        (isArbitrumSepoliaUsdc && isParentChainArbitrumSepolia)
-      ) {
-        let childChainUsdcAddress
-        try {
-          childChainUsdcAddress = isNetwork(childChain.id).isOrbitChain
-            ? (
-                await getL2ERC20Address({
-                  erc20L1Address: tokenFromSearchParams,
-                  l1Provider: parentChainProvider,
-                  l2Provider: childChainProvider
-                })
-              ).toLowerCase()
-            : undefined
-        } catch {
-          // could be never bridged before
-        }
-
-        return {
-          name: 'USD Coin',
-          type: TokenType.ERC20,
-          symbol: 'USDC',
-          address: tokenFromSearchParams,
-          l2Address: childChainUsdcAddress,
-          decimals: 6,
-          listIds: new Set()
-        }
+      if (isTokenNativeUSDC(tokenFromSearchParams)) {
+        return getUsdcToken({
+          tokenAddress: tokenFromSearchParams,
+          parentChainProvider,
+          childChainProvider
+        })
       }
 
       if (!tokensFromLists || !tokensFromUser) {
@@ -138,12 +68,7 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         null
       )
     }, [
-      childChain.id,
       childChainProvider,
-      isParentChainArbitrumOne,
-      isParentChainArbitrumSepolia,
-      isParentChainEthereumMainnet,
-      isParentChainSepolia,
       parentChainProvider,
       tokenFromSearchParams,
       tokensFromLists,
@@ -172,4 +97,97 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
     selectedToken: data ?? null,
     setSelectedToken
   }
+}
+
+async function getUsdcToken({
+  tokenAddress,
+  parentChainProvider,
+  childChainProvider
+}: {
+  tokenAddress: string
+  parentChainProvider: Provider
+  childChainProvider: Provider
+}) {
+  const parentChainId = await getChainIdFromProvider(parentChainProvider)
+  const childChainId = await getChainIdFromProvider(childChainProvider)
+
+  const {
+    isEthereumMainnet: isParentChainEthereumMainnet,
+    isSepolia: isParentChainSepolia,
+    isArbitrumOne: isParentChainArbitrumOne,
+    isArbitrumSepolia: isParentChainArbitrumSepolia
+  } = isNetwork(parentChainId)
+
+  // Ethereum Mainnet USDC
+  if (isTokenMainnetUSDC(tokenAddress) && isParentChainEthereumMainnet) {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.Ethereum.USDC,
+      l2Address: CommonAddress.ArbitrumOne['USDC.e']
+    }
+  }
+
+  // Ethereum Sepolia USDC
+  if (isTokenSepoliaUSDC(tokenAddress) && isParentChainSepolia) {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.Sepolia.USDC,
+      l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
+    }
+  }
+
+  // Arbitrum One USDC when Ethereum is the parent chain
+  if (isTokenArbitrumOneNativeUSDC(tokenAddress) && !isParentChainArbitrumOne) {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.ArbitrumOne.USDC,
+      l2Address: CommonAddress.ArbitrumOne.USDC
+    }
+  }
+
+  // Arbitrum Sepolia USDC when Ethereum is the parent chain
+  if (
+    isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
+    !isParentChainArbitrumOne
+  ) {
+    return {
+      ...commonUSDC,
+      address: CommonAddress.ArbitrumSepolia.USDC,
+      l2Address: CommonAddress.ArbitrumSepolia.USDC
+    }
+  }
+
+  // Arbitrum USDC with Orbit chains
+  if (
+    (isTokenArbitrumOneNativeUSDC(tokenAddress) && isParentChainArbitrumOne) ||
+    (isTokenArbitrumSepoliaNativeUSDC(tokenAddress) &&
+      isParentChainArbitrumSepolia)
+  ) {
+    let childChainUsdcAddress
+    try {
+      childChainUsdcAddress = isNetwork(childChainId).isOrbitChain
+        ? (
+            await getL2ERC20Address({
+              erc20L1Address: tokenAddress,
+              l1Provider: parentChainProvider,
+              l2Provider: childChainProvider
+            })
+          ).toLowerCase()
+        : undefined
+    } catch {
+      // could be never bridged before
+    }
+
+    return {
+      name: 'USD Coin',
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      address: tokenAddress,
+      l2Address: childChainUsdcAddress,
+      decimals: 6,
+      listIds: new Set<number>()
+    }
+  }
+
+  return null
 }

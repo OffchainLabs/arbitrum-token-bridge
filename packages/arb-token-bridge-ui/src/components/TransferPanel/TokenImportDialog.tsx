@@ -4,7 +4,7 @@ import { useLatest } from 'react-use'
 import { create } from 'zustand'
 
 import { useERC20L1Address } from '../../hooks/useERC20L1Address'
-import { useActions, useAppState } from '../../state'
+import { useAppState } from '../../state'
 import {
   erc20DataToErc20BridgeToken,
   fetchErc20Data,
@@ -81,7 +81,6 @@ export function TokenImportDialog({
     isDepositMode,
     isTeleportMode
   } = useNetworksRelationship(networks)
-  const actions = useActions()
 
   const tokensFromUser = useTokensFromUser()
   const latestTokensFromUser = useLatest(tokensFromUser)
