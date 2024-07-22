@@ -178,9 +178,6 @@ jobs:
         with:
           l3-node: false
           no-l3-token-bridge: true
-      
-      - name: Exit test node script
-        run: exit 0
 
   test-e2e:
     name: "Test E2E"
