@@ -81,6 +81,22 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         }
       }
 
+      if (isArbitrumOneUsdc && !isParentChainArbitrumOne) {
+        return {
+          ...commonUSDC,
+          address: CommonAddress.ArbitrumOne.USDC,
+          l2Address: CommonAddress.ArbitrumOne.USDC
+        }
+      }
+
+      if (isArbitrumSepoliaUsdc && !isParentChainArbitrumOne) {
+        return {
+          ...commonUSDC,
+          address: CommonAddress.ArbitrumSepolia.USDC,
+          l2Address: CommonAddress.ArbitrumSepolia.USDC
+        }
+      }
+
       // USDC when depositing to an Orbit chain
       if (
         (isArbitrumOneUsdc && isParentChainArbitrumOne) ||
@@ -112,12 +128,14 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
         }
       }
 
+      if (!tokensFromLists || !tokensFromUser) {
+        return null
+      }
+
       return (
-        Object.values({ ...tokensFromLists, ...tokensFromUser }).find(
-          tokenFromLists =>
-            tokenFromLists?.address.toLowerCase() ===
-            tokenFromSearchParams.toLowerCase()
-        ) || null
+        tokensFromLists[tokenFromSearchParams] ||
+        tokensFromUser[tokenFromSearchParams] ||
+        null
       )
     }, [
       childChain.id,
@@ -133,11 +151,13 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
     ])
 
   const { data } = useSWRImmutable<ERC20BridgeToken | null>(
-    !tokensFromLists ||
-      !tokensFromUser ||
-      Object.keys(tokensFromLists).length === 0
-      ? null
-      : [parentChain.id, childChain.id, tokenFromSearchParams],
+    [
+      parentChain.id,
+      childChain.id,
+      tokenFromSearchParams,
+      tokensFromLists,
+      tokensFromUser
+    ],
     fetcher
   )
 
