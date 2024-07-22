@@ -244,7 +244,7 @@ jobs:
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2
         if: always()
         with:
-          name: e2e-artifacts
+          name: e2e-artifacts-pull-request-${{ github.event.pull_request.number }}-commit-${{ github.sha }}
           path: |
             ./packages/arb-token-bridge-ui/cypress/videos
             ./packages/arb-token-bridge-ui/cypress/screenshots
