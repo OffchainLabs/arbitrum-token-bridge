@@ -4,7 +4,12 @@ import useSWRInfinite from 'swr/infinite'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
-import { ChainId, getChains, isNetwork } from '../util/networks'
+import {
+  ChainId,
+  getChains,
+  getChildChainIds,
+  isNetwork
+} from '../util/networks'
 import { fetchWithdrawals } from '../util/withdrawals/fetchWithdrawals'
 import { fetchDeposits } from '../util/deposits/fetchDeposits'
 import {
@@ -34,6 +39,7 @@ import {
   getProvider,
   getUpdatedCctpTransfer,
   getUpdatedEthDeposit,
+  getUpdatedTeleportTransfer,
   getUpdatedTokenDeposit,
   getUpdatedWithdrawal,
   isCctpTransfer,
@@ -46,7 +52,16 @@ import {
   shouldIncludeReceivedTxs,
   shouldIncludeSentTxs
 } from '../util/SubgraphUtils'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 import { Address } from '../util/AddressUtils'
+import {
+  TeleportFromSubgraph,
+  fetchTeleports
+} from '../util/teleports/fetchTeleports'
+import {
+  isTransferTeleportFromSubgraph,
+  transformTeleportFromSubgraph
+} from '../util/teleports/helpers'
 
 export type UseTransactionHistoryResult = {
   transactions: MergedTransaction[]
@@ -57,7 +72,7 @@ export type UseTransactionHistoryResult = {
   pause: () => void
   resume: () => void
   addPendingTransaction: (tx: MergedTransaction) => void
-  updatePendingTransaction: (tx: MergedTransaction) => void
+  updatePendingTransaction: (tx: MergedTransaction) => Promise<void>
 }
 
 export type ChainPair = { parentChainId: ChainId; childChainId: ChainId }
@@ -70,11 +85,18 @@ export type Withdrawal =
   | EthWithdrawal
 
 type DepositOrWithdrawal = Deposit | Withdrawal
-export type Transfer = DepositOrWithdrawal | MergedTransaction
+export type Transfer =
+  | DepositOrWithdrawal
+  | MergedTransaction
+  | TeleportFromSubgraph
 
 function getStandardizedTimestampByTx(tx: Transfer) {
   if (isCctpTransfer(tx)) {
     return (tx.createdAt ?? 0) / 1_000
+  }
+
+  if (isTransferTeleportFromSubgraph(tx)) {
+    return tx.timestamp
   }
 
   if (isDeposit(tx)) {
@@ -98,7 +120,8 @@ function getMultiChainFetchList(): ChainPair[] {
   return getChains().flatMap(chain => {
     // We only grab child chains because we don't want duplicates and we need the parent chain
     // Although the type is correct here we default to an empty array for custom networks backwards compatibility
-    const childChainIds = chain.partnerChainIDs ?? []
+    const childChainIds = getChildChainIds(chain)
+
     const isParentChain = childChainIds.length > 0
 
     if (!isParentChain) {
@@ -108,7 +131,7 @@ function getMultiChainFetchList(): ChainPair[] {
 
     // For each destination chain, map to an array of ChainPair objects
     return childChainIds.map(childChainId => ({
-      parentChainId: chain.chainID,
+      parentChainId: chain.chainId,
       childChainId: childChainId
     }))
   })
@@ -125,6 +148,11 @@ function isDeposit(tx: DepositOrWithdrawal): tx is Deposit {
 }
 
 async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
+  // teleport-from-subgraph doesn't have a child-chain-id, we detect it later, hence, an early return
+  if (isTransferTeleportFromSubgraph(tx)) {
+    return await transformTeleportFromSubgraph(tx)
+  }
+
   const parentChainProvider = getProvider(tx.parentChainId)
   const childChainProvider = getProvider(tx.childChainId)
 
@@ -177,6 +205,10 @@ async function transformTransaction(tx: Transfer): Promise<MergedTransaction> {
 }
 
 function getTxIdFromTransaction(tx: Transfer) {
+  if (isTransferTeleportFromSubgraph(tx)) {
+    return tx.transactionHash
+  }
+
   if (isCctpTransfer(tx)) {
     return tx.txId
   }
@@ -190,6 +222,23 @@ function getTxIdFromTransaction(tx: Transfer) {
     return tx.txHash
   }
   return tx.l2TxHash ?? tx.transactionHash
+}
+
+function getCacheKeyFromTransaction(
+  tx: Transaction | MergedTransaction | TeleportFromSubgraph | Withdrawal
+) {
+  const txId = getTxIdFromTransaction(tx)
+  if (!txId) {
+    return undefined
+  }
+  return `${tx.parentChainId}-${txId.toLowerCase()}`
+}
+
+// remove the duplicates from the transactions passed
+function dedupeTransactions(txs: Transfer[]) {
+  return Array.from(
+    new Map(txs.map(tx => [getCacheKeyFromTransaction(tx), tx])).values()
+  )
 }
 
 /**
@@ -219,11 +268,9 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
         return undefined
       }
       // EOA
-      // fetch all for testnet mode, do not fetch testnets if testnet mode disabled
-      if (isTestnetMode) {
-        return 'all'
-      }
-      return isNetwork(chainPair.parentChainId).isTestnet ? undefined : 'all'
+      return isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+        ? 'all'
+        : undefined
     },
     [isSmartContractWallet, isLoadingAccountType, chain, isTestnetMode]
   )
@@ -304,12 +351,10 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
                 chain.id
               )
             }
-            if (isTestnetMode) {
-              // in testnet mode we fetch all chain pairs
-              return true
-            }
-            // otherwise don't fetch testnet chain pairs
-            return !isNetwork(chainPair.parentChainId).isTestnet
+
+            return (
+              isNetwork(chainPair.parentChainId).isTestnet === isTestnetMode
+            )
           })
           .map(async chainPair => {
             // SCW address is tied to a specific network
@@ -330,6 +375,27 @@ const useTransactionHistoryWithoutStatuses = (address: Address | undefined) => {
               isConnectedToParentChain
             })
             try {
+              // early check for fetching teleport
+              if (
+                isTeleport({
+                  sourceChainId: chainPair.parentChainId,
+                  destinationChainId: chainPair.childChainId
+                })
+              ) {
+                // teleporter does not support withdrawals
+                if (type === 'withdrawals') return []
+
+                return await fetchTeleports({
+                  sender: includeSentTxs ? address : undefined,
+                  receiver: includeReceivedTxs ? address : undefined,
+                  parentChainProvider: getProvider(chainPair.parentChainId),
+                  childChainProvider: getProvider(chainPair.childChainId),
+                  pageNumber: 0,
+                  pageSize: 1000
+                })
+              }
+
+              // else, fetch deposits or withdrawals
               return await fetcherFn({
                 sender: includeSentTxs ? address : undefined,
                 receiver: includeReceivedTxs ? address : undefined,
@@ -454,9 +520,7 @@ export const useTransactionHistory = (
       return []
     }
     return getDepositsWithoutStatusesFromCache(address)
-      .filter(tx =>
-        isTestnetMode ? true : !isNetwork(tx.parentChainId).isTestnet
-      )
+      .filter(tx => isNetwork(tx.parentChainId).isTestnet === isTestnetMode)
       .filter(tx => {
         const chainPairExists = getMultiChainFetchList().some(chainPair => {
           return (
@@ -503,16 +567,9 @@ export const useTransactionHistory = (
 
       // duplicates may occur when txs are taken from the local storage
       // we don't use Set because it wouldn't dedupe objects with different reference (we fetch them from different sources)
-      const dedupedTransactions = Array.from(
-        new Map(
-          dataWithCache.map(tx => [
-            `${tx.parentChainId}-${tx.childChainId}-${getTxIdFromTransaction(
-              tx
-            )?.toLowerCase()}}`,
-            tx
-          ])
-        ).values()
-      ).sort(sortByTimestampDescending)
+      const dedupedTransactions = dedupeTransactions(dataWithCache).sort(
+        sortByTimestampDescending
+      )
 
       const startIndex = _page * MAX_BATCH_SIZE
       const endIndex = startIndex + MAX_BATCH_SIZE
@@ -652,6 +709,12 @@ export const useTransactionHistory = (
       if (!isTxPending(tx)) {
         // if not pending we don't need to check for status, we accept whatever status is passed in
         updateCachedTransaction(tx)
+        return
+      }
+
+      if (isTeleport(tx)) {
+        const updatedTeleportTransfer = await getUpdatedTeleportTransfer(tx)
+        updateCachedTransaction(updatedTeleportTransfer)
         return
       }
 

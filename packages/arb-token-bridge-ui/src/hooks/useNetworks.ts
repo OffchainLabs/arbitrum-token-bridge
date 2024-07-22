@@ -1,19 +1,15 @@
 import { Chain } from 'wagmi'
 import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { useCallback, useMemo } from 'react'
-import { mainnet, arbitrum, goerli, arbitrumGoerli } from '@wagmi/core/chains'
+import { mainnet, arbitrum } from '@wagmi/core/chains'
 
 import { useArbQueryParams } from './useArbQueryParams'
-import {
-  ChainId,
-  getCustomChainsFromLocalStorage,
-  rpcURLs
-} from '../util/networks'
+import { ChainId, getCustomChainsFromLocalStorage } from '../util/networks'
 import {
   sepolia,
+  holesky,
   arbitrumNova,
   arbitrumSepolia,
-  stylusTestnet,
   localL1Network as local,
   localL2Network as arbitrumLocal
 } from '../util/wagmi/wagmiAdditionalNetworks'
@@ -21,29 +17,7 @@ import {
 import { getDestinationChainIds } from '../util/networks'
 import { getWagmiChain } from '../util/wagmi/getWagmiChain'
 import { getOrbitChains } from '../util/orbitChainsList'
-
-const getProviderForChainCache: {
-  [chainId: number]: StaticJsonRpcProvider
-} = {
-  // start with empty cache
-}
-
-function createProviderWithCache(chainId: ChainId) {
-  const rpcUrl = rpcURLs[chainId]
-  const provider = new StaticJsonRpcProvider(rpcUrl, chainId)
-  getProviderForChainCache[chainId] = provider
-  return provider
-}
-
-export function getProviderForChainId(chainId: ChainId): StaticJsonRpcProvider {
-  const cachedProvider = getProviderForChainCache[chainId]
-
-  if (typeof cachedProvider !== 'undefined') {
-    return cachedProvider
-  }
-
-  return createProviderWithCache(chainId)
-}
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 
 export function isSupportedChainId(
   chainId: ChainId | undefined
@@ -53,21 +27,19 @@ export function isSupportedChainId(
   }
 
   const customChainIds = getCustomChainsFromLocalStorage().map(
-    chain => chain.chainID
+    chain => chain.chainId
   )
 
   return [
     mainnet.id,
-    goerli.id,
     sepolia.id,
+    holesky.id,
     arbitrum.id,
     arbitrumNova.id,
-    arbitrumGoerli.id,
     arbitrumSepolia.id,
-    stylusTestnet.id,
     arbitrumLocal.id,
     local.id,
-    ...getOrbitChains().map(chain => chain.chainID),
+    ...getOrbitChains().map(chain => chain.chainId),
     ...customChainIds
   ].includes(chainId)
 }

@@ -1,10 +1,6 @@
-import { useState } from 'react'
-import {
-  L1ToL2MessageWriter as IL1ToL2MessageWriter,
-  L1ToL2MessageStatus
-} from '@arbitrum/sdk'
-import { useAccount, useSigner } from 'wagmi'
-import { TransactionReceipt } from '@ethersproject/providers'
+import { useCallback, useState } from 'react'
+import { ParentToChildMessageStatus } from '@arbitrum/sdk'
+import { useSigner } from 'wagmi'
 import dayjs from 'dayjs'
 
 import { DepositStatus, MergedTransaction } from '../state/app/state'
@@ -13,30 +9,30 @@ import { trackEvent } from '../util/AnalyticsUtils'
 import { getNetworkName } from '../util/networks'
 import { isUserRejectedError } from '../util/isUserRejectedError'
 import { errorToast } from '../components/common/atoms/Toast'
-import { useNetworks } from './useNetworks'
-import { useNetworksRelationship } from './useNetworksRelationship'
+import { getProviderForChainId } from '@/token-bridge-sdk/utils'
 import { useTransactionHistory } from './useTransactionHistory'
+import { Address } from '../util/AddressUtils'
 
 export type UseRedeemRetryableResult = {
-  redeem: (tx: MergedTransaction) => void
+  redeem: () => Promise<void>
   isRedeeming: boolean
 }
 
-export function useRedeemRetryable(): UseRedeemRetryableResult {
-  const [networks] = useNetworks()
-  const { address } = useAccount()
-  const { childChain, parentChainProvider } = useNetworksRelationship(networks)
+export function useRedeemRetryable(
+  tx: MergedTransaction,
+  address: Address | undefined
+): UseRedeemRetryableResult {
+  const { data: signer } = useSigner({ chainId: tx.destinationChainId })
   const { updatePendingTransaction } = useTransactionHistory(address)
-  const { data: signer } = useSigner()
-  const l2NetworkName = getNetworkName(childChain.id)
+
+  const destinationNetworkName = getNetworkName(tx.destinationChainId)
 
   const [isRedeeming, setIsRedeeming] = useState(false)
 
-  async function redeem(tx: MergedTransaction) {
+  const redeem = useCallback(async () => {
     if (isRedeeming) {
       return
     }
-
     try {
       setIsRedeeming(true)
 
@@ -45,27 +41,29 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
       }
 
       const retryableTicket = await getRetryableTicket({
-        l1TxHash: tx.txId,
+        parentChainTxHash: tx.txId,
         retryableCreationId: tx.l1ToL2MsgData?.retryableCreationTxID,
-        l1Provider: parentChainProvider,
-        l2Signer: signer
+        parentChainProvider: getProviderForChainId(tx.parentChainId),
+        childChainSigner: signer
       })
 
-      const reedemTx = await retryableTicket.redeem()
-      await reedemTx.wait()
+      const redeemTx = await retryableTicket.redeem()
+      await redeemTx.wait()
 
       const status = await retryableTicket.status()
-      const isSuccess = status === L1ToL2MessageStatus.REDEEMED
+      const isSuccess = status === ParentToChildMessageStatus.REDEEMED
+      const successfulRedeem = await retryableTicket.getSuccessfulRedeem()
 
-      const redeemReceipt = (await retryableTicket.getSuccessfulRedeem()) as {
-        status: L1ToL2MessageStatus.REDEEMED
-        l2TxReceipt: TransactionReceipt
+      if (successfulRedeem.status !== ParentToChildMessageStatus.REDEEMED) {
+        throw new Error(
+          `Unexpected status for retryable ticket (parent tx hash ${tx.txId}), expected ${ParentToChildMessageStatus.REDEEMED} but got ${successfulRedeem.status}`
+        )
       }
 
-      updatePendingTransaction({
+      await updatePendingTransaction({
         ...tx,
         l1ToL2MsgData: {
-          l2TxID: redeemReceipt.l2TxReceipt.transactionHash,
+          l2TxID: successfulRedeem.childTxReceipt.transactionHash,
           status,
           retryableCreationTxID: retryableTicket.retryableCreationId,
           fetchingUpdate: false
@@ -73,21 +71,26 @@ export function useRedeemRetryable(): UseRedeemRetryableResult {
         resolvedAt: isSuccess ? dayjs().valueOf() : null,
         depositStatus: isSuccess ? DepositStatus.L2_SUCCESS : tx.depositStatus
       })
+
+      // track in analytics
+      trackEvent('Redeem Retryable', { network: destinationNetworkName })
     } catch (error: any) {
       if (isUserRejectedError(error)) {
         return
       }
-
       return errorToast(
         `There was an error, here is more information: ${error.message}`
       )
     } finally {
       setIsRedeeming(false)
-
-      // track in analytics
-      trackEvent('Redeem Retryable', { network: l2NetworkName })
     }
-  }
+  }, [
+    isRedeeming,
+    destinationNetworkName,
+    signer,
+    tx,
+    updatePendingTransaction
+  ])
 
   return { redeem, isRedeeming }
 }

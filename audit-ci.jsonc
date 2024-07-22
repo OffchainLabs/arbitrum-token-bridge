@@ -1,5 +1,10 @@
 {
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // https://github.com/advisories/GHSA-fr5h-rqp8-mj6g
+    // Next.js Server-Side Request Forgery in Server Actions
+    // We don't use Server Actions, but will upgrade soon
+    "GHSA-fr5h-rqp8-mj6g"
+  ]
 }

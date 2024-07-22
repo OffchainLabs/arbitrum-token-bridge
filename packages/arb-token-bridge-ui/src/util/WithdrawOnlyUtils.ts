@@ -1,7 +1,11 @@
 // tokens that can't be bridged to Arbitrum (maybe coz they have their native protocol bridges and custom implementation or they are being discontinued)
 // the UI doesn't let users deposit such tokens. If bridged already, these can only be withdrawn.
 
-import { ChainId } from '../util/networks'
+import { ChainId, isNetwork } from '../util/networks'
+import {
+  isTokenArbitrumOneUSDCe,
+  isTokenArbitrumSepoliaUSDCe
+} from './TokenUtils'
 
 export type WithdrawOnlyToken = {
   symbol: string
@@ -10,16 +14,7 @@ export type WithdrawOnlyToken = {
   l2Address: string
 }
 
-const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
-  [ChainId.ArbitrumGoerli]: [
-    {
-      // this is purely for testing the UI
-      symbol: 'ZRX',
-      l2CustomAddr: '',
-      l1Address: '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165',
-      l2Address: '0xce7d45e033d5727eee28cba5df1f2a7c24750ca6'
-    }
-  ],
+export const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
   [ChainId.ArbitrumOne]: [
     {
       symbol: 'MIM',
@@ -146,6 +141,48 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
       l2CustomAddr: '',
       l1Address: '0x35fA164735182de50811E8e2E824cFb9B6118ac2',
       l2Address: '0x832307742aACFe2b9680309526b4d8a409e274E0'
+    },
+    {
+      symbol: 'rsETH',
+      l2CustomAddr: '',
+      l1Address: '0xA1290d69c65A6Fe4DF752f95823fae25cB99e5A7',
+      l2Address: '0x3d19a8b57e8082c4bbd5e068016295cfdb255e6a'
+    },
+    {
+      symbol: 'ETHx',
+      l2CustomAddr: '',
+      l1Address: '0xA35b1B31Ce002FBF2058D22F30f95D405200A15b',
+      l2Address: '0xaade6e725879375ba2b0ca608cfb26399d50a7ce'
+    },
+    {
+      symbol: 'ezETH',
+      l2CustomAddr: '0x2416092f143378750bb29b79eD961ab195CcEea5',
+      l1Address: '0xbf5495efe5db9ce00f80364c8b423567e58d2110',
+      l2Address: '0x6c2b260b7e4c4853a1227d9320c50e0b09917fa8'
+    },
+    {
+      symbol: 'USDe',
+      l2CustomAddr: '0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34',
+      l1Address: '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+      l2Address: '0x1FefA878e65998482C743eE2deDB907E4D9c8c34'
+    },
+    {
+      symbol: 'sUSDe',
+      l2CustomAddr: '0x211Cc4DD073734dA055fbF44a2b4667d5E5fE5d2',
+      l1Address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
+      l2Address: '0x292CbA96fce24f6802dBdA021ED2B05481a3eEdF'
+    },
+    {
+      symbol: 'GHO',
+      l2CustomAddr: '',
+      l1Address: '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f',
+      l2Address: '0xfeb8670b834d9157864126f5dbd24b25d06882ad'
+    },
+    {
+      symbol: 'ETHFI',
+      l2CustomAddr: '0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27',
+      l1Address: '0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB',
+      l2Address: '0x07D65C18CECbA423298c0aEB5d2BeDED4DFd5736'
     }
   ],
   [ChainId.ArbitrumNova]: []
@@ -154,10 +191,22 @@ const withdrawOnlyTokens: { [chainId: number]: WithdrawOnlyToken[] } = {
 /**
  *
  * @param erc20L1Address
- * @param chainId - Arbitrum chain id
+ * @param childChainId
  */
-export function isWithdrawOnlyToken(erc20L1Address: string, chainId: number) {
-  return (withdrawOnlyTokens[chainId] ?? [])
+export function isWithdrawOnlyToken(
+  parentChainErc20Address: string,
+  childChainId: number
+) {
+  // disable USDC.e deposits for Orbit chains
+  if (
+    (isTokenArbitrumOneUSDCe(parentChainErc20Address) ||
+      isTokenArbitrumSepoliaUSDCe(parentChainErc20Address)) &&
+    isNetwork(childChainId).isOrbitChain
+  ) {
+    return true
+  }
+
+  return (withdrawOnlyTokens[childChainId] ?? [])
     .map(token => token.l1Address.toLowerCase())
-    .includes(erc20L1Address.toLowerCase())
+    .includes(parentChainErc20Address.toLowerCase())
 }

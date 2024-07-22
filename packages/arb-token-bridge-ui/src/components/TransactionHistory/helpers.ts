@@ -3,25 +3,35 @@ import {
   StaticJsonRpcProvider,
   TransactionReceipt
 } from '@ethersproject/providers'
-import { EthDepositStatus, L1ToL2MessageStatus } from '@arbitrum/sdk'
 import {
   EthDepositMessage,
-  L1ToL2MessageReader
-} from '@arbitrum/sdk/dist/lib/message/L1ToL2Message'
+  EthDepositMessageStatus,
+  ParentToChildMessageStatus,
+  ParentToChildMessageReader
+} from '@arbitrum/sdk'
 
 import {
   DepositStatus,
   MergedTransaction,
   WithdrawalStatus
 } from '../../state/app/state'
-import { ChainId, getBlockTime, isNetwork, rpcURLs } from '../../util/networks'
+import {
+  ChainId,
+  getL1BlockTime,
+  isNetwork,
+  rpcURLs
+} from '../../util/networks'
 import { Deposit, Transfer } from '../../hooks/useTransactionHistory'
 import { getWagmiChain } from '../../util/wagmi/getWagmiChain'
-import { getL1ToL2MessageDataFromL1TxHash } from '../../util/deposits/helpers'
+import {
+  getL1ToL2MessageDataFromL1TxHash,
+  fetchTeleporterDepositStatusData
+} from '../../util/deposits/helpers'
 import { AssetType } from '../../hooks/arbTokenBridge.types'
 import { getDepositStatus } from '../../state/app/utils'
 import { getBlockBeforeConfirmation } from '../../state/cctpState'
 import { getAttestationHashAndMessageFromReceipt } from '../../util/cctp/getAttestationHashAndMessageFromReceipt'
+import { isTeleport } from '@/token-bridge-sdk/teleport'
 
 const PARENT_CHAIN_TX_DETAILS_OF_CLAIM_TX =
   'arbitrum:bridge:claim:parent:tx:details'
@@ -35,7 +45,7 @@ export enum StatusLabel {
   FAILURE = 'Failure'
 }
 
-function isDeposit(tx: MergedTransaction) {
+function isDeposit(tx: MergedTransaction): boolean {
   return !tx.isWithdrawal
 }
 
@@ -43,9 +53,9 @@ export function isCctpTransfer(tx: Transfer): tx is MergedTransaction {
   return (tx as MergedTransaction).isCctp === true
 }
 
-export function isTxCompleted(tx: MergedTransaction) {
+export function isTxCompleted(tx: MergedTransaction): boolean {
   if (tx.isCctp) {
-    return tx.cctpData?.receiveMessageTransactionHash
+    return typeof tx.cctpData?.receiveMessageTransactionHash === 'string'
   }
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.L2_SUCCESS
@@ -69,7 +79,7 @@ export function isTxPending(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.UNCONFIRMED
 }
 
-export function isTxClaimable(tx: MergedTransaction) {
+export function isTxClaimable(tx: MergedTransaction): boolean {
   if (isCctpTransfer(tx) && tx.status === 'Confirmed') {
     return true
   }
@@ -79,14 +89,14 @@ export function isTxClaimable(tx: MergedTransaction) {
   return tx.status === WithdrawalStatus.CONFIRMED
 }
 
-export function isTxExpired(tx: MergedTransaction) {
+export function isTxExpired(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     return tx.depositStatus === DepositStatus.EXPIRED
   }
   return tx.status === WithdrawalStatus.EXPIRED
 }
 
-export function isTxFailed(tx: MergedTransaction) {
+export function isTxFailed(tx: MergedTransaction): boolean {
   if (isDeposit(tx)) {
     if (!tx.depositStatus) {
       return false
@@ -281,7 +291,7 @@ export async function getUpdatedEthDeposit(
   }
 
   const status = await l1ToL2Msg?.status()
-  const isDeposited = status === EthDepositStatus.DEPOSITED
+  const isDeposited = status === EthDepositMessageStatus.DEPOSITED
 
   const newDeposit: MergedTransaction = {
     ...tx,
@@ -290,12 +300,12 @@ export async function getUpdatedEthDeposit(
     l1ToL2MsgData: {
       fetchingUpdate: false,
       status: isDeposited
-        ? L1ToL2MessageStatus.FUNDS_DEPOSITED_ON_L2
-        : L1ToL2MessageStatus.NOT_YET_CREATED,
-      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).l2DepositTxHash,
+        ? ParentToChildMessageStatus.FUNDS_DEPOSITED_ON_CHILD
+        : ParentToChildMessageStatus.NOT_YET_CREATED,
+      retryableCreationTxID: (l1ToL2Msg as EthDepositMessage).childTxHash,
       // Only show `l2TxID` after the deposit is confirmed
       l2TxID: isDeposited
-        ? (l1ToL2Msg as EthDepositMessage).l2DepositTxHash
+        ? (l1ToL2Msg as EthDepositMessage).childTxHash
         : undefined
     }
   }
@@ -324,7 +334,7 @@ export async function getUpdatedTokenDeposit(
     l1Provider: getProvider(tx.parentChainId),
     l2Provider: getProvider(tx.childChainId)
   })
-  const _l1ToL2Msg = l1ToL2Msg as L1ToL2MessageReader
+  const _l1ToL2Msg = l1ToL2Msg as ParentToChildMessageReader
 
   if (!l1ToL2Msg) {
     const receipt = await getTxReceipt(tx)
@@ -341,8 +351,8 @@ export async function getUpdatedTokenDeposit(
   const res = await _l1ToL2Msg.getSuccessfulRedeem()
 
   const l2TxID = (() => {
-    if (res.status === L1ToL2MessageStatus.REDEEMED) {
-      return res.l2TxReceipt.transactionHash
+    if (res.status === ParentToChildMessageStatus.REDEEMED) {
+      return res.childTxReceipt.transactionHash
     } else {
       return undefined
     }
@@ -352,7 +362,9 @@ export async function getUpdatedTokenDeposit(
     ...tx,
     status: _l1ToL2Msg.retryableCreationId ? 'success' : tx.status,
     resolvedAt:
-      res.status === L1ToL2MessageStatus.REDEEMED ? dayjs().valueOf() : null,
+      res.status === ParentToChildMessageStatus.REDEEMED
+        ? dayjs().valueOf()
+        : null,
     l1ToL2MsgData: {
       status: res.status,
       l2TxID,
@@ -406,7 +418,7 @@ export async function getUpdatedCctpTransfer(
   const requiredL1BlocksBeforeConfirmation = getBlockBeforeConfirmation(
     tx.parentChainId
   )
-  const blockTime = getBlockTime(tx.parentChainId)
+  const blockTime = getL1BlockTime(tx.parentChainId)
 
   const txWithTxId: MergedTransaction = { ...tx, txId: receipt.transactionHash }
 
@@ -452,6 +464,26 @@ export async function getUpdatedCctpTransfer(
   }
 
   return { ...tx, status: WithdrawalStatus.UNCONFIRMED }
+}
+
+export async function getUpdatedTeleportTransfer(
+  tx: MergedTransaction
+): Promise<MergedTransaction> {
+  const { status, timestampResolved, l1ToL2MsgData, l2ToL3MsgData } =
+    await fetchTeleporterDepositStatusData(tx)
+
+  const updatedTx = {
+    ...tx,
+    status,
+    timestampResolved,
+    l1ToL2MsgData,
+    l2ToL3MsgData
+  }
+
+  return {
+    ...updatedTx,
+    depositStatus: getDepositStatus(updatedTx)
+  }
 }
 
 export function getTxStatusLabel(tx: MergedTransaction): StatusLabel {
@@ -570,5 +602,19 @@ export function getTxHumanReadableRemainingTime(tx: MergedTransaction) {
   if (minutesLeft > 0) {
     return formattedMinutesLeft
   }
-  return 'Almost there...'
+  return 'less than a minute'
+}
+
+export function getDestinationNetworkTxId(tx: MergedTransaction) {
+  if (tx.isCctp) {
+    return tx.cctpData?.receiveMessageTransactionHash
+  }
+
+  if (isTeleport(tx)) {
+    return tx.l2ToL3MsgData?.l3TxID
+  }
+
+  return tx.isWithdrawal
+    ? tx.l2ToL1MsgData?.uniqueId.toString()
+    : tx.l1ToL2MsgData?.l2TxID
 }

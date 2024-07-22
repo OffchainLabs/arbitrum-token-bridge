@@ -4,14 +4,9 @@ import { useAccount } from 'wagmi'
 import { create } from 'zustand'
 import { isAddress } from 'ethers/lib/utils'
 import { Provider } from '@ethersproject/providers'
-import {
-  ArrowDownTrayIcon,
-  ChevronDownIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { LockClosedIcon, LockOpenIcon } from '@heroicons/react/24/solid'
 
-import { Tooltip } from '../common/Tooltip'
 import { getExplorerUrl } from '../../util/networks'
 import { ExternalLink } from '../common/ExternalLink'
 
@@ -23,11 +18,13 @@ import {
 } from '../../util/AddressUtils'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
+import { Transition } from '../common/Transition'
 
 export enum DestinationAddressErrors {
   INVALID_ADDRESS = 'The destination address is not a valid address.',
   REQUIRED_ADDRESS = 'The destination address is required.',
-  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.'
+  DENYLISTED_ADDRESS = 'The address you entered is a known contract address, and sending funds to it would likely result in losing said funds. If you think this is a mistake, please contact our support.',
+  TELEPORT_DISABLED = 'LayerLeap transfers to custom destination addresses are not supported yet.'
 }
 
 enum DestinationAddressWarnings {
@@ -53,10 +50,12 @@ export const useDestinationAddressStore = create<DestinationAddressStore>(
 
 export async function getDestinationAddressError({
   destinationAddress,
-  isSmartContractWallet
+  isSmartContractWallet,
+  isTeleportMode
 }: {
   destinationAddress?: string
   isSmartContractWallet: boolean
+  isTeleportMode: boolean
 }): Promise<DestinationAddressErrors | null> {
   if (!destinationAddress && isSmartContractWallet) {
     // destination address required for contract wallets
@@ -74,6 +73,10 @@ export async function getDestinationAddressError({
     return DestinationAddressErrors.DENYLISTED_ADDRESS
   }
 
+  if (isTeleportMode) {
+    return DestinationAddressErrors.TELEPORT_DISABLED
+  }
+
   // no error
   return null
 }
@@ -81,11 +84,11 @@ export async function getDestinationAddressError({
 async function getDestinationAddressWarning({
   destinationAddress,
   isEOA,
-  destinationProvider
+  destinationChainId
 }: {
   destinationAddress: string | undefined
   isEOA: boolean
-  destinationProvider: Provider
+  destinationChainId: number
 }) {
   if (!destinationAddress) {
     return null
@@ -97,7 +100,7 @@ async function getDestinationAddressWarning({
 
   const destinationIsSmartContract = await addressIsSmartContract(
     destinationAddress,
-    destinationProvider
+    destinationChainId
   )
 
   // checks if trying to send to a contract address, only checks EOA
@@ -119,7 +122,8 @@ export const AdvancedSettings = () => {
     childChainProvider,
     parentChain,
     parentChainProvider,
-    isDepositMode
+    isDepositMode,
+    isTeleportMode
   } = useNetworksRelationship(networks)
   const { address } = useAccount()
   const { isEOA, isSmartContractWallet } = useAccountType()
@@ -143,12 +147,13 @@ export const AdvancedSettings = () => {
       setError(
         await getDestinationAddressError({
           destinationAddress,
-          isSmartContractWallet
+          isSmartContractWallet,
+          isTeleportMode
         })
       )
     }
     updateError()
-  }, [destinationAddress, isSmartContractWallet, setError])
+  }, [destinationAddress, isSmartContractWallet, setError, isTeleportMode])
 
   useEffect(() => {
     // isSubscribed makes sure that only the latest state is written
@@ -158,9 +163,7 @@ export const AdvancedSettings = () => {
       const result = await getDestinationAddressWarning({
         destinationAddress,
         isEOA,
-        destinationProvider: isDepositMode
-          ? childChainProvider
-          : parentChainProvider
+        destinationChainId: networks.destinationChain.id
       })
       if (isSubscribed) {
         setWarning(result)
@@ -176,7 +179,9 @@ export const AdvancedSettings = () => {
     isDepositMode,
     isEOA,
     childChainProvider,
-    parentChainProvider
+    parentChainProvider,
+    childChain.id,
+    parentChain.id
   ])
 
   const collapsible = useMemo(() => {
@@ -208,105 +213,93 @@ export const AdvancedSettings = () => {
       <button
         onClick={handleVisibility}
         className={twMerge(
-          'arb-hover flex flex-row items-center text-sm text-gray-dark',
+          'arb-hover flex flex-row items-center text-sm text-white',
           collapsible ? '' : 'pointer-events-none'
         )}
       >
-        <span>Advanced Settings</span>
+        <span aria-label="advanced settings">Advanced Settings</span>
         {collapsible && (
           <ChevronDownIcon
-            className={twMerge('ml-1 h-4 w-4', collapsed ? '' : 'rotate-180')}
+            className={twMerge(
+              'ml-1 h-4 w-4 transition-transform duration-200',
+              collapsed ? 'rotate-0' : '-rotate-180'
+            )}
           />
         )}
       </button>
-      {!collapsed && (
-        <>
-          <div className="mt-2">
-            <div className="flex items-center space-x-1">
-              <span className="font-medium">Custom Destination Address</span>
-              <Tooltip
-                content={
-                  <span>
-                    This is where your funds will end up at.
-                    {isEOA ? ' Defaults to your wallet address.' : ''}
-                  </span>
-                }
+      <Transition isOpen={!collapsed}>
+        <div className="mt-2 rounded border border-white/30 bg-brick-dark p-2 text-white">
+          <p className="text-sm font-light">
+            {isEOA ? (
+              <>
+                Send your funds to a different address.{' '}
+                <span className="font-semibold">This is not standard.</span> Be
+                sure you mean to send it here, or it may lead to an
+                irrecoverable loss of funds.
+              </>
+            ) : (
+              <>
+                With Smart Contract Wallets, you{' '}
+                <span className="font-semibold">must specify an address</span>{' '}
+                you&apos;d like the funds sent to.
+              </>
+            )}
+          </p>
+          <div
+            className={twMerge(
+              'my-1 flex w-full items-center rounded border px-2 py-1 shadow-input',
+              inputLocked
+                ? 'border-white/20 bg-white/20'
+                : 'border-white bg-black/40',
+              error ? 'border-red-400' : '',
+              warning && !error ? 'border-yellow-500' : ''
+            )}
+          >
+            <input
+              className="w-full bg-transparent text-white placeholder-white/50"
+              placeholder={isEOA ? address : 'Enter Custom Destination Address'}
+              value={destinationAddress}
+              disabled={inputLocked}
+              spellCheck={false}
+              onChange={e =>
+                setDestinationAddress(e.target.value?.toLowerCase().trim())
+              }
+            />
+            {isEOA && (
+              <button
+                onClick={() => setInputLocked(!inputLocked)}
+                aria-label="Custom destination input lock"
               >
-                <InformationCircleIcon strokeWidth={2} height={16} />
-              </Tooltip>
-            </div>
-            <p className="my-2 text-sm font-light text-gray-dark">
-              {isEOA ? (
-                <>
-                  Send your funds to a different address.{' '}
-                  <span className="font-semibold">This is not standard.</span>{' '}
-                  Be sure you mean to send it here, or it may lead to an
-                  irrecoverable loss of funds.
-                </>
-              ) : (
-                <>
-                  With Smart Contract Wallets, you{' '}
-                  <span className="font-semibold">must specify an address</span>{' '}
-                  you&apos;d like the funds sent to.
-                </>
-              )}
-            </p>
-            <div
-              className={twMerge(
-                'my-1 flex w-full items-center rounded-lg border border-gray-dark px-2 py-1 shadow-input',
-                inputLocked ? 'bg-slate-200' : 'bg-white',
-                error ? 'border-red-400' : '',
-                warning && !error ? 'border-yellow-500' : ''
-              )}
-            >
-              <input
-                className="w-full"
-                placeholder={
-                  isEOA ? address : 'Enter Custom Destination Address'
-                }
-                value={destinationAddress}
-                disabled={inputLocked}
-                spellCheck={false}
-                onChange={e =>
-                  setDestinationAddress(e.target.value?.toLowerCase().trim())
-                }
-              />
-              {isEOA && (
-                <button onClick={() => setInputLocked(!inputLocked)}>
-                  {inputLocked ? (
-                    <LockClosedIcon
-                      height={20}
-                      className="mr-2 text-slate-600"
-                    />
-                  ) : (
-                    <LockOpenIcon height={20} className="mr-2 text-slate-600" />
-                  )}
-                </button>
-              )}
-            </div>
+                {inputLocked ? (
+                  <LockClosedIcon height={16} />
+                ) : (
+                  <LockOpenIcon height={16} />
+                )}
+              </button>
+            )}
           </div>
+        </div>
 
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          {!error && warning && (
-            <p className="text-xs text-yellow-500">{warning}</p>
-          )}
-          {destinationAddress && !error && (
-            <ExternalLink
-              className="arb-hover mt-2 flex w-fit items-center text-xs font-bold text-gray-dark"
-              href={`${getExplorerUrl(
-                isDepositMode ? childChain.id : parentChain.id
-              )}/address/${destinationAddress}`}
-            >
-              <ArrowDownTrayIcon
-                height={12}
-                strokeWidth={3}
-                className="mr-1 -rotate-90"
-              />
-              View account in explorer
-            </ExternalLink>
-          )}
-        </>
-      )}
+        {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+        {!error && warning && (
+          <p className="mt-1 text-xs text-yellow-500">{warning}</p>
+        )}
+        {destinationAddress && !error && (
+          <ExternalLink
+            className="arb-hover mt-2 flex w-fit items-center text-xs font-medium text-white/50"
+            href={`${getExplorerUrl(
+              isDepositMode ? childChain.id : parentChain.id
+            )}/address/${destinationAddress}`}
+          >
+            <ArrowDownTrayIcon
+              height={12}
+              strokeWidth={3}
+              className="mr-1 -rotate-90"
+            />
+            View account in explorer
+          </ExternalLink>
+        )}
+      </Transition>
     </div>
   )
 }

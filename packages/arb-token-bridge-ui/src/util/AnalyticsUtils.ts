@@ -1,14 +1,10 @@
 import posthog from 'posthog-js'
 
-import {
-  ExploreArbitrumDeFiProjectName,
-  ExploreArbitrumNFTProjectName
-} from '../components/MainContent/ExploreArbitrumContent'
 import { FastBridgeNames, SpecialTokenSymbol } from './fastBridges'
 
 type AccountType = 'EOA' | 'Smart Contract'
 type AssetType = 'ETH' | 'ERC-20'
-type TransferDirection = 'Deposit' | 'Withdrawal'
+type TransferDirection = 'Deposit' | 'Withdrawal' | 'Teleport'
 type FastBridgeName = `${FastBridgeNames}`
 
 // TODO: maintain these wallet names in a central constants file (like networks.ts/wallet.ts) - can be consistently accessed all throughout the app?
@@ -37,15 +33,26 @@ type AnalyticsEventMap = {
     network: string
     amount: number
   }
+  Teleport: {
+    tokenSymbol?: string
+    assetType: AssetType
+    accountType: AccountType
+    network: string
+    amount: number
+  }
   'Connect Wallet Click': { walletName: ProviderName }
-  'Explore: DeFi Project Click': { project: ExploreArbitrumDeFiProjectName }
-  'Explore: NFT Project Click': { project: ExploreArbitrumNFTProjectName }
   'Fast Bridge Click': {
     bridge: FastBridgeName
     tokenSymbol?: SpecialTokenSymbol.USDC
   }
-  'Use Arbitrum Bridge Click': { tokenSymbol: 'USDC'; type: TransferDirection }
-  'Use CCTP Click': { tokenSymbol: 'USDC'; type: TransferDirection }
+  'Use Arbitrum Bridge Click': {
+    tokenSymbol: SpecialTokenSymbol.USDC
+    type: TransferDirection
+  }
+  'Use CCTP Click': {
+    tokenSymbol: SpecialTokenSymbol.USDC
+    type: TransferDirection
+  }
   'Switch Network and Transfer': {
     type: TransferDirection
     tokenSymbol?: string
@@ -53,8 +60,10 @@ type AnalyticsEventMap = {
     accountType: AccountType
     network: string
     amount: number
+    version: number
   }
   'Redeem Retryable': { network: string }
+  'Redeem Teleport Retryable': { network: string }
   'Open Transaction History Click': { pageElement: 'Tx Info Banner' | 'Header' }
   'Tx Error: Get Help Click': { network: string }
   'Multiple Tx Error: Get Help Click': { network: string }
@@ -68,12 +77,14 @@ type AnalyticsEventMap = {
     network: string
     amount: number
     complete: boolean
+    version: number
   }
   'CCTP Withdrawal': {
     accountType: AccountType
     network: string
     amount: number
     complete: boolean
+    version: number
   }
 }
 
