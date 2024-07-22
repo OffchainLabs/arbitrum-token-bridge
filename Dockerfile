@@ -9,10 +9,12 @@ RUN apt update && apt install -y nginx
 COPY nginx.conf /etc/nginx/sites-available/default
 
 COPY package.json ./
-COPY pnpm-lock.yaml ./
+COPY yarn.lock ./
 
 FROM base as test
+
 RUN npm install
 RUN npm install cypress@12.17.3
-RUN pnpm install --frozen-lockfile --prefer-offline
+RUN yarn cypress install --force
+
 COPY . .
