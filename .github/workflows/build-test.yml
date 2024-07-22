@@ -246,7 +246,7 @@ jobs:
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
           start: yarn start
-          command: yarn test:ci:e2e
+          command: yarn test:ci:e2e:github-action
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           browser: chrome
