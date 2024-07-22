@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@synthetixio/synpress": "3.6.0",
+    "@synthetixio/synpress": "3.7.3",
     "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.1",
     "@types/lodash-es": "^4.17.6",
