@@ -8,7 +8,10 @@ import { isNetwork } from '../util/networks'
 import { Address } from '../util/AddressUtils'
 
 async function isBlocked(address: Address): Promise<boolean> {
-  if (process.env.NODE_ENV !== 'production') {
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_IS_E2E_TEST
+  ) {
     return false
   }
 
