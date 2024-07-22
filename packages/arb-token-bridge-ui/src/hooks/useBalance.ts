@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { BigNumber } from 'ethers'
+import { BigNumber, utils } from 'ethers'
+import { useAccount } from 'wagmi'
 import { Provider } from '@ethersproject/abstract-provider'
 import useSWR, {
   useSWRConfig,
@@ -43,10 +44,16 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
 
 const useBalance = ({ provider, walletAddress }: UseBalanceProps) => {
   const chainId = useChainId({ provider })
-  const walletAddressLowercased = useMemo(
-    () => walletAddress?.toLowerCase(),
-    [walletAddress]
-  )
+  const { address: connectedWalletAddress } = useAccount()
+
+  const walletAddressLowercased = useMemo(() => {
+    // use balances for the passed wallet address only if it's valid
+    if (utils.isAddress(String(walletAddress))) {
+      return walletAddress?.toLowerCase()
+    }
+    // otherwise use the connected wallet address
+    return connectedWalletAddress?.toLowerCase()
+  }, [walletAddress, connectedWalletAddress])
 
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
