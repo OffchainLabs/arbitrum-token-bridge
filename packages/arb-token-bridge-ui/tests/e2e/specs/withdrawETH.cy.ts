@@ -6,7 +6,7 @@ import { zeroToLessThanOneETH } from '../../support/common'
 import { formatAmount } from '../../../src/util/NumberUtils'
 
 describe('Withdraw ETH', () => {
-  const ETHToWithdraw = 0.0001
+  const ETHToWithdraw = Number((Math.random() * 0.001).toFixed(5)) // randomize the amount to be sure that previous transactions are not checked in e2e
 
   const typeAmountIntoInput = () => {
     return cy
@@ -88,34 +88,50 @@ describe('Withdraw ETH', () => {
                   .should('be.enabled')
                   .click()
                   .then(() => {
-                    cy.confirmMetamaskTransaction()
-                      .then(() => {
-                        cy.findByText('an hour').should('be.visible')
-                        cy.findByText(
-                          `${formatAmount(ETHToWithdraw, {
-                            symbol: 'ETH'
-                          })}`
-                        ).should('be.visible')
+                    cy.confirmMetamaskTransaction().then(() => {
+                      cy.findAllByText(/an hour/i)
+                        .first()
+                        .should('be.visible')
+                      cy.findAllByText(
+                        `${formatAmount(ETHToWithdraw, {
+                          symbol: 'ETH'
+                        })}`
+                      )
+                        .first()
+                        .should('be.visible')
 
+                      cy.waitUntil(
+                        () =>
+                          cy
+                            .findAllByLabelText(/Claim Transaction/i)
+                            .first()
+                            .should('be.visible')
+                            .should('not.be.disabled'),
+                        {
+                          errorMsg:
+                            'Claim Transaction button is not visible or enabled',
+                          timeout: 60_000,
+                          interval: 1000
+                        }
+                      ).then(() => {
                         cy.findAllByLabelText(/Claim Transaction/i)
                           .first()
-                          .should('be.visible')
-                          .should('not.be.disabled')
-                      })
-                      .click()
-                      .then(() => {
-                        cy.confirmMetamaskTransaction().then(() => {
-                          cy.findByLabelText('show settled transactions')
-                            .should('be.visible')
-                            .click()
+                          .click()
+                          .then(() => {
+                            cy.confirmMetamaskTransaction().then(() => {
+                              cy.findByLabelText('show settled transactions')
+                                .should('be.visible')
+                                .click()
 
-                          cy.findByText(
-                            `${formatAmount(ETHToWithdraw, {
-                              symbol: 'WETH'
-                            })}`
-                          ).should('be.visible')
-                        })
+                              cy.findByText(
+                                `${formatAmount(ETHToWithdraw, {
+                                  symbol: 'WETH'
+                                })}`
+                              ).should('be.visible')
+                            })
+                          })
                       })
+                    })
                   })
               })
           })
