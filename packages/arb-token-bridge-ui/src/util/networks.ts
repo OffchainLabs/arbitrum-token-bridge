@@ -302,11 +302,11 @@ const defaultL2Network: ArbitrumNetwork = {
 
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
-  fallback: 'http://localhost:8545'
+  fallback: 'http://127.0.0.1:8545'
 })
 export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
-  fallback: 'http://localhost:8547'
+  fallback: 'http://127.0.0.1:8547'
 })
 
 export function registerLocalNetwork() {
