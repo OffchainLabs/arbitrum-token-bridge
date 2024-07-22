@@ -2,22 +2,19 @@ import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { BigNumber, ContractReceipt, ethers } from 'ethers'
 import { TokenList } from '@uniswap/token-lists'
-import { L2ToL1MessageStatus as OutgoingMessageState } from '@arbitrum/sdk'
+import {
+  EventArgs,
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt,
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt,
+  ChildContractTransaction,
+  ChildTransactionReceipt,
+  ChildToParentMessageStatus as OutgoingMessageState,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { StandardArbERC20 } from '@arbitrum/sdk/dist/lib/abi/StandardArbERC20'
 import { WithdrawalInitiatedEvent } from '@arbitrum/sdk/dist/lib/abi/L2ArbitrumGateway'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-
-import {
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt,
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L1Transaction'
-import {
-  L2ContractTransaction,
-  L2TransactionReceipt
-} from '@arbitrum/sdk/dist/lib/message/L2Transaction'
 
 import {
   NewTransaction,
@@ -51,18 +48,18 @@ export type TransactionLifecycle<Tx, TxReceipt> = Partial<{
 }>
 
 export type L1EthDepositTransactionLifecycle = TransactionLifecycle<
-  L1EthDepositTransaction,
-  L1EthDepositTransactionReceipt
+  ParentEthDepositTransaction,
+  ParentEthDepositTransactionReceipt
 >
 
 export type L1ContractCallTransactionLifecycle = TransactionLifecycle<
-  L1ContractCallTransaction,
-  L1ContractCallTransactionReceipt
+  ParentContractCallTransaction,
+  ParentContractCallTransactionReceipt
 >
 
 export type L2ContractCallTransactionLifecycle = TransactionLifecycle<
-  L2ContractTransaction,
-  L2TransactionReceipt
+  ChildContractTransaction,
+  ChildTransactionReceipt
 >
 
 export enum NodeBlockDeadlineStatusTypes {
@@ -75,7 +72,7 @@ export type NodeBlockDeadlineStatus =
   | NodeBlockDeadlineStatusTypes.NODE_NOT_CREATED
   | NodeBlockDeadlineStatusTypes.EXECUTE_CALL_EXCEPTION
 
-export type L2ToL1EventResult = L2ToL1TransactionEvent
+export type L2ToL1EventResult = ChildToParentTransactionEvent
 
 export type L2ToL1EventResultPlus = L2ToL1EventResult & {
   sender?: string

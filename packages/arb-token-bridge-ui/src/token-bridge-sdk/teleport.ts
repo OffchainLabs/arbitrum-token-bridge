@@ -1,7 +1,11 @@
 // utils for teleport type transactions
 
 import { Provider } from '@ethersproject/providers'
-import { Erc20L1L3Bridger, EthL1L3Bridger, getL2Network } from '@arbitrum/sdk'
+import {
+  Erc20L1L3Bridger,
+  EthL1L3Bridger,
+  getArbitrumNetwork
+} from '@arbitrum/sdk'
 import { L1GatewayRouter__factory } from '@arbitrum/sdk/dist/lib/abi/factories/L1GatewayRouter__factory'
 import { IInbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IInbox__factory'
 import { IBridge__factory } from '@arbitrum/sdk/dist/lib/abi/factories/IBridge__factory'
@@ -25,8 +29,8 @@ export const getL2ConfigForTeleport = async ({
 }: {
   destinationChainProvider: Provider
 }) => {
-  const l3Network = await getL2Network(destinationChainProvider)
-  const l2ChainId = l3Network.partnerChainID
+  const l3Network = await getArbitrumNetwork(destinationChainProvider)
+  const l2ChainId = l3Network.parentChainId
   const l2Provider = getProviderForChainId(l2ChainId)
   return { l2ChainId, l2Provider }
 }
@@ -46,7 +50,7 @@ export const fetchTeleportStatusFromTxId = async ({
   const { l2Provider } = await getL2ConfigForTeleport({
     destinationChainProvider
   })
-  const l3Network = await getL2Network(destinationChainProvider)
+  const l3Network = await getArbitrumNetwork(destinationChainProvider)
 
   // just the type of bridger changes in case of Eth vs Erc20 teleport
   const l1l3Bridger = isNativeCurrencyTransfer
@@ -154,7 +158,7 @@ export const fetchTeleportInputParametersFromTxId = async ({
   destinationChainProvider: Provider
   isNativeCurrencyTransfer: boolean
 }) => {
-  const l3Network = await getL2Network(destinationChainProvider)
+  const l3Network = await getArbitrumNetwork(destinationChainProvider)
 
   // get Eth deposit request
   if (isNativeCurrencyTransfer) {

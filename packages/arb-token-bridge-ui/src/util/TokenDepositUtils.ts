@@ -1,4 +1,4 @@
-import { Erc20Bridger, getL2Network } from '@arbitrum/sdk'
+import { Erc20Bridger, getArbitrumNetwork } from '@arbitrum/sdk'
 import { Inbox__factory } from '@arbitrum/sdk/dist/lib/abi/factories/Inbox__factory'
 import { Provider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
@@ -156,7 +156,7 @@ export async function depositTokenEstimateGas(
       )
 
       return fetchTokenFallbackGasEstimates({
-        inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+        inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
         parentChainErc20Address,
         parentChainProvider,
         childChainProvider
@@ -165,9 +165,9 @@ export async function depositTokenEstimateGas(
 
     const { txRequest, retryableData } = await erc20Bridger.getDepositRequest({
       amount,
-      erc20L1Address: parentChainErc20Address,
-      l1Provider: parentChainProvider,
-      l2Provider: childChainProvider,
+      erc20ParentAddress: parentChainErc20Address,
+      parentProvider: parentChainProvider,
+      childProvider: childChainProvider,
       from: address,
       retryableGasOverrides: {
         // the gas limit may vary by about 20k due to SSTORE (zero vs nonzero)
@@ -185,7 +185,7 @@ export async function depositTokenEstimateGas(
     Sentry.captureException(error)
 
     return fetchTokenFallbackGasEstimates({
-      inboxAddress: erc20Bridger.l2Network.ethBridge.inbox,
+      inboxAddress: erc20Bridger.childNetwork.ethBridge.inbox,
       parentChainErc20Address,
       parentChainProvider,
       childChainProvider
@@ -207,9 +207,9 @@ async function addressIsCustomGatewayToken({
     parentChainProvider,
     childChainProvider
   })
-  const childChainNetwork = await getL2Network(childChainProvider)
+  const childChainNetwork = await getArbitrumNetwork(childChainProvider)
   return (
     parentChainGatewayAddress.toLowerCase() ===
-    childChainNetwork.tokenBridge.l1CustomGateway.toLowerCase()
+    childChainNetwork.tokenBridge?.parentCustomGateway.toLowerCase()
   )
 }

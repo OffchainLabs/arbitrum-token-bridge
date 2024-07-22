@@ -1,7 +1,7 @@
 import fs from 'fs'
 import axios from 'axios'
 import { TokenList } from '@uniswap/token-lists'
-import { l2Networks } from '@arbitrum/sdk/dist/lib/dataEntities/networks'
+import { getArbitrumNetworks } from '@arbitrum/sdk'
 
 const tokenListsUrls = [
   'https://tokenlist.arbitrum.io/ArbTokenLists/arbitrum_token_token_list.json',
@@ -123,10 +123,8 @@ async function main() {
     ...allTokenAddresses
   ]
 
-  Object.keys(l2Networks).map(chainId => {
-    const networkObject = l2Networks[chainId]
-
-    const { ethBridge, tokenBridge } = networkObject
+  getArbitrumNetworks().map(arbitrumNetwork => {
+    const { ethBridge, tokenBridge } = arbitrumNetwork
     const { classicOutboxes } = ethBridge
 
     if (classicOutboxes) {
@@ -134,10 +132,11 @@ async function main() {
     }
 
     delete ethBridge.classicOutboxes
-    denylistedAddresses.push(
-      ...Object.values(ethBridge),
-      ...Object.values(tokenBridge)
-    )
+    denylistedAddresses.push(...Object.values(ethBridge))
+
+    if (tokenBridge) {
+      denylistedAddresses.push(...Object.values(tokenBridge))
+    }
   })
 
   const resultJson =

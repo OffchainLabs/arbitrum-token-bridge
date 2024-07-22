@@ -1,12 +1,14 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState } from 'react'
 import { Chain, useAccount } from 'wagmi'
 import { BigNumber } from 'ethers'
 import { Signer } from '@ethersproject/abstract-signer'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { useLocalStorage } from '@rehooks/local-storage'
-import { L2ToL1Message } from '@arbitrum/sdk'
-import { EventArgs } from '@arbitrum/sdk/dist/lib/dataEntities/event'
-import { L2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/message/L2ToL1Message'
+import {
+  EventArgs,
+  ChildToParentMessage,
+  ChildToParentTransactionEvent
+} from '@arbitrum/sdk'
 import { L2ToL1TransactionEvent as ClassicL2ToL1TransactionEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys'
 
 import useTransactions from './useTransactions'
@@ -41,7 +43,7 @@ export const wait = (ms = 0) => {
 }
 
 function isClassicL2ToL1TransactionEvent(
-  event: L2ToL1TransactionEvent
+  event: ChildToParentTransactionEvent
 ): event is EventArgs<ClassicL2ToL1TransactionEvent> {
   return typeof (event as any).batchNumber !== 'undefined'
 }
@@ -98,25 +100,25 @@ export const useArbTokenBridge = (
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L1CustomDestinationBalance]
   } = useBalance({
-    provider: l1.provider,
+    chainId: l1.network.id,
     walletAddress: destinationAddress
   })
   const {
     erc20: [, updateErc20CustomDestinationL2Balance]
   } = useBalance({
-    provider: l2.provider,
+    chainId: l2.network.id,
     walletAddress: destinationAddress
   })
 
@@ -133,8 +135,6 @@ export const useArbTokenBridge = (
       React.Dispatch<ExecutedMessagesCache>,
       React.Dispatch<void>
     ]
-
-  const l1NetworkID = useMemo(() => String(l1.network.id), [l1.network.id])
 
   const [transactions, { addTransaction, updateTransaction }] =
     useTransactions()
@@ -449,7 +449,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider
@@ -505,7 +505,7 @@ export const useArbTokenBridge = (
     const parentChainProvider = getProvider(event.parentChainId)
     const childChainProvider = getProvider(event.childChainId)
 
-    const messageWriter = L2ToL1Message.fromEvent(
+    const messageWriter = ChildToParentMessage.fromEvent(
       l1Signer,
       event,
       parentChainProvider

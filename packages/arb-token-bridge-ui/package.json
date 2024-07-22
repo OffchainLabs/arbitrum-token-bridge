@@ -5,12 +5,12 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.7.11",
-    "@arbitrum/sdk": "3.6.0-teleporter.1",
+    "@arbitrum/sdk": "^4.0.0",
     "@ethersproject/providers": "^5.7.0",
     "@headlessui/react": "^1.7.8",
     "@headlessui/tailwindcss": "^0.1.2",
     "@heroicons/react": "^2.0.18",
-    "@offchainlabs/cobalt": "0.3.2",
+    "@offchainlabs/cobalt": "^0.3.6",
     "@rainbow-me/rainbowkit": "^0.12.16",
     "@rehooks/local-storage": "^2.4.4",
     "@sentry/react": "^7.73.0",
@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.1.5",
-    "@synthetixio/synpress": "3.6.0",
+    "@synthetixio/synpress": "3.7.3",
     "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.1",
     "@types/lodash-es": "^4.17.6",
