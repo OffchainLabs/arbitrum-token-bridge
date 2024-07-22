@@ -169,6 +169,7 @@ jobs:
           content=`cat packages/arb-token-bridge-ui/tests/e2e/specfiles.json | jq --compact-output .`
           echo "e2eFiles=$content" >> $GITHUB_OUTPUT
 
+  # based on https://github.com/Synthetixio/synpress/blob/dev/.github/workflows/e2e_cypress-action.yml
   test-e2e:
     name: "Test E2E"
     runs-on: ubuntu-latest
@@ -193,10 +194,7 @@ jobs:
       - name: Install cypress
         run: yarn cypress install
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
-
-      - name: Install linux deps
+      - name: Install linux dependencies
         run: |
           sudo apt-get install --no-install-recommends -y \
           fluxbox \
@@ -225,12 +223,12 @@ jobs:
           directory: ./packages/arb-token-bridge-ui/
           file_name: .e2e.env
 
-      - name: Set up the local node
+      - name: Run nitro testnode
         uses: OffchainLabs/actions/run-nitro-test-node@e3b7f5bdfc62cad21026c1d1f424f3fbadc046e0
         with:
           nitro-testnode-ref: old-release-v2.1.1
 
-      - name: Run e2e tests (cypress-action)
+      - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
           start: yarn start
@@ -248,8 +246,8 @@ jobs:
         with:
           name: e2e-artifacts
           path: |
-            ./packages/arb-token-bridge-ui/tests/e2e/videos
-            ./packages/arb-token-bridge-ui/tests/e2e/screenshots
+            ./packages/arb-token-bridge-ui/cypress/videos
+            ./packages/arb-token-bridge-ui/cypress/screenshots
         continue-on-error: true
 
       - name: Throw error if tests failed
