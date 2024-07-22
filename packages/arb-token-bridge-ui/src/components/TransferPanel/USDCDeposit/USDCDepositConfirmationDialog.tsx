@@ -43,7 +43,7 @@ enum SelectedTabName {
 const defaultSelectedTabName: SelectedTabName = SelectedTabName.Cctp
 
 export function USDCDepositConfirmationDialog(props: Props) {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChain, parentChain } = useNetworksRelationship(networks)
   const { isArbitrumSepolia } = isNetwork(childChain.id)

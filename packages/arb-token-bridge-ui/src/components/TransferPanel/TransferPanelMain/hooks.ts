@@ -18,7 +18,7 @@ export function useUpdateUSDCTokenData() {
       arbTokenBridge: { token }
     }
   } = useAppState()
-  const { selectedToken, setSelectedToken } = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { isDepositMode } = useNetworksRelationship(networks)
   const {

@@ -4,7 +4,7 @@ import { useNetworks } from '../useNetworks'
 import { useSelectedToken } from '../useSelectedToken'
 
 export function useSelectedTokenDecimals() {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider } = useNetworksRelationship(networks)
 

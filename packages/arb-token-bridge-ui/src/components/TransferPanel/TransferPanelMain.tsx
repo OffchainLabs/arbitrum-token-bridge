@@ -348,7 +348,7 @@ export function TransferPanelMain({
     useAccountType()
   const { isArbitrumOne, isArbitrumSepolia } = isNetwork(childChain.id)
   const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
-  const { selectedToken, setSelectedToken } = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
 
   const { address: walletAddress } = useAccount()
 

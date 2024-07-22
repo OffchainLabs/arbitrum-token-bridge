@@ -21,7 +21,7 @@ type MaxButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 function MaxButton(props: MaxButtonProps) {
   const { loading, className = '', ...rest } = props
 
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChain, parentChain, isDepositMode } =

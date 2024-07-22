@@ -7,7 +7,7 @@ import { formatUSD } from '../../util/NumberUtils'
 import { useSelectedToken } from '../../hooks/useSelectedToken'
 
 export function useIsBridgingEth(childChainNativeCurrency: NativeCurrency) {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const isBridgingEth =
     selectedToken === null && !childChainNativeCurrency.isCustom
   return isBridgingEth

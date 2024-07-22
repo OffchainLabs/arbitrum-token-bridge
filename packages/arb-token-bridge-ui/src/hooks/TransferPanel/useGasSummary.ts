@@ -40,7 +40,7 @@ export type UseGasSummaryResult = {
 }
 
 export function useGasSummary(): UseGasSummaryResult {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const { childChainProvider, parentChainProvider, isDepositMode } =
     useNetworksRelationship(networks)

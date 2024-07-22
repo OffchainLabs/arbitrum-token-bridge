@@ -5,7 +5,7 @@ import { useSelectedToken } from './useSelectedToken'
 
 export const useIsTestnetMode = () => {
   const [networks, setNetworks] = useNetworks()
-  const { setSelectedToken } = useSelectedToken()
+  const [, setSelectedToken] = useSelectedToken()
 
   const isTestnetMode = isNetwork(networks.sourceChain.id).isTestnet
 

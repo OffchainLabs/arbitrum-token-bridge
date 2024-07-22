@@ -27,7 +27,7 @@ export const useTransferDisabledDialogStore =
 export function TransferDisabledDialog() {
   const [networks] = useNetworks()
   const { isTeleportMode } = useNetworksRelationship(networks)
-  const { selectedToken, setSelectedToken } = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const {
     isOpen: isOpenTransferDisabledDialog,
     closeDialog: closeTransferDisabledDialog

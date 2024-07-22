@@ -62,6 +62,10 @@ describe('Withdraw ERC20 Token', () => {
         })
       })
 
+      // give some time for the token to update
+      // eslint-disable-next-line
+      cy.wait(10_000)
+
       context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')
           .typeRecursively(String(ERC20AmountToSend))
@@ -141,6 +145,10 @@ describe('Withdraw ERC20 Token', () => {
           tokenAddress: wethTokenAddressL2
         })
       })
+
+      // give some time for the token to update
+      // eslint-disable-next-line
+      cy.wait(10_000)
 
       context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')

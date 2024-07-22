@@ -16,7 +16,7 @@ export function OneNovaTransferDialog(
     amount: string
   }
 ) {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
 
   const { destinationChainId } = props
 

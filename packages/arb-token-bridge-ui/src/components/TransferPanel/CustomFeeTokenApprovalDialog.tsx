@@ -27,7 +27,7 @@ export function CustomFeeTokenApprovalDialog(
   const { customFeeToken, isOpen } = props
 
   const { ethToUSD } = useETHPrice()
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
 
   const [networks] = useNetworks()
   const { sourceChain, destinationChain } = networks

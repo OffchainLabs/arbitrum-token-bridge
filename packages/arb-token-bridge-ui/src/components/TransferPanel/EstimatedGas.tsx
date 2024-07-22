@@ -53,7 +53,7 @@ export function EstimatedGas({
 }: {
   chainType: 'source' | 'destination'
 }) {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,

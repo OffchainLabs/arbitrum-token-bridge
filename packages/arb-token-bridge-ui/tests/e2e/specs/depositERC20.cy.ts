@@ -52,6 +52,10 @@ describe('Deposit ERC20 Token', () => {
         })
       })
 
+      // give some time for the token to update
+      // eslint-disable-next-line
+      cy.wait(10_000)
+
       context('should show ERC-20 balance correctly', () => {
         cy.findByLabelText('WETH balance amount on l1')
           .should('be.visible')
@@ -112,6 +116,10 @@ describe('Deposit ERC20 Token', () => {
           tokenAddress: wethTokenAddressL1
         })
       })
+
+      // give some time for the token to update
+      // eslint-disable-next-line
+      cy.wait(10_000)
 
       context('should show summary', () => {
         cy.findByPlaceholderText('Enter amount')

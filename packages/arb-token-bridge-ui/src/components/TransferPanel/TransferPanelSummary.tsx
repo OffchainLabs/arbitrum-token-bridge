@@ -37,7 +37,7 @@ function StyledLoader() {
 }
 
 function TotalGasFees() {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
 
   const {
     status: gasSummaryStatus,

@@ -71,7 +71,7 @@ export function TokenImportDialog({
       arbTokenBridge: { bridgeTokens, token }
     }
   } = useAppState()
-  const { selectedToken, setSelectedToken } = useSelectedToken()
+  const [selectedToken, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,

@@ -19,7 +19,7 @@ export type Balances = {
 }
 
 export function useSelectedTokenBalances(): Balances {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChain, parentChain, isDepositMode } =

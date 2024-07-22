@@ -46,7 +46,7 @@ export function WithdrawalConfirmationDialog(
 
   const destinationNetworkName = getNetworkName(parentChain.id)
 
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
 
   const nativeCurrency = useNativeCurrency({
     provider: childChainProvider

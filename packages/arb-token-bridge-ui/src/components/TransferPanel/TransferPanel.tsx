@@ -113,7 +113,7 @@ export function TransferPanel() {
       warningTokens
     }
   } = useAppState()
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const { layout } = useAppContextState()
   const { isTransferring } = layout
   const { address: walletAddress, isConnected } = useAccount()

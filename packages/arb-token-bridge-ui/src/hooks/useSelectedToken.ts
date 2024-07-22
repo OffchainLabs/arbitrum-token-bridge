@@ -22,11 +22,6 @@ import { useNetworksRelationship } from './useNetworksRelationship'
 import { Provider } from '@ethersproject/providers'
 import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
 
-type UseSelectedTokenProps = {
-  selectedToken: ERC20BridgeToken | null
-  setSelectedToken: (erc20ParentAddress: string | null) => void
-}
-
 const commonUSDC = {
   name: 'USD Coin',
   type: TokenType.ERC20,
@@ -35,7 +30,7 @@ const commonUSDC = {
   listIds: new Set<number>()
 }
 
-export const useSelectedToken = (): UseSelectedTokenProps => {
+export const useSelectedToken = () => {
   const { tokenFromSearchParams, setTokenQueryParam } =
     useTokenFromSearchParams()
   const tokensFromLists = useTokensFromLists()
@@ -93,10 +88,7 @@ export const useSelectedToken = (): UseSelectedTokenProps => {
     [setTokenQueryParam]
   )
 
-  return {
-    selectedToken: data ?? null,
-    setSelectedToken
-  }
+  return [data ?? null, setSelectedToken] as const
 }
 
 async function getUsdcToken({
@@ -179,13 +171,9 @@ async function getUsdcToken({
     }
 
     return {
-      name: 'USD Coin',
-      type: TokenType.ERC20,
-      symbol: 'USDC',
+      ...commonUSDC,
       address: tokenAddress,
-      l2Address: childChainUsdcAddress,
-      decimals: 6,
-      listIds: new Set<number>()
+      l2Address: childChainUsdcAddress
     }
   }
 

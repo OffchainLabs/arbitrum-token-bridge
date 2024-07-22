@@ -194,18 +194,12 @@ describe('Import token', () => {
 
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
-        cy.wait(3000)
+        cy.wait(15_000)
 
         // Modal is displayed
-        cy.waitUntil(() => cy.findByText(/import unknown token/i), {
-          errorMsg: '/import unknown token/ header not found',
-          timeout: 50000,
-          interval: 500
-        }).then(() => {
-          cy.get('h2')
-            .contains(/import unknown token/i)
-            .should('be.visible')
-        })
+        cy.get('h2')
+          .contains(/import unknown token/i)
+          .should('be.visible')
 
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
@@ -241,18 +235,12 @@ describe('Import token', () => {
 
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
-        cy.wait(3000)
+        cy.wait(15_000)
 
         // Modal is displayed
-        cy.waitUntil(() => cy.findByText(/import unknown token/i), {
-          errorMsg: '/import unknown token/ header not found',
-          timeout: 50000,
-          interval: 500
-        }).then(() => {
-          cy.get('h2')
-            .contains(/import unknown token/i)
-            .should('be.visible')
-        })
+        cy.get('h2')
+          .contains(/import unknown token/i)
+          .should('be.visible')
 
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
         // Modal should always display L1 address regardless of query parameter
@@ -291,16 +279,12 @@ describe('Import token', () => {
           }
         })
 
+        // make sure the import dialog appears
+        // eslint-disable-next-line
+        cy.wait(15_000)
+
         // Modal is displayed
-        cy.waitUntil(() => cy.findByText(/invalid token address/i), {
-          errorMsg: '/import unknown token/ header not found',
-          timeout: 50000,
-          interval: 500
-        }).then(() => {
-          cy.get('h2')
-            .contains(/invalid token address/i)
-            .should('be.visible')
-        })
+        cy.get('h2').contains(/invalid token address/i)
 
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
 

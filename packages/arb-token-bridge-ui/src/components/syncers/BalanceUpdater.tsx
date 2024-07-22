@@ -11,7 +11,7 @@ const BalanceUpdater = (): JSX.Element => {
   const {
     app: { arbTokenBridge }
   } = useAppState()
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const { address: walletAddress } = useAccount()
   const latestTokenBridge = useLatest(arbTokenBridge)
 

@@ -116,7 +116,7 @@ export function useTransferReadiness({
   amount: string
   gasSummary: UseGasSummaryResult
 }): UseTransferReadinessResult {
-  const { selectedToken } = useSelectedToken()
+  const [selectedToken] = useSelectedToken()
   const {
     layout: { isTransferring }
   } = useAppContextState()

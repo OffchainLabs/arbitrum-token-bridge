@@ -521,7 +521,7 @@ export function TokenSearch({
       arbTokenBridge: { token, bridgeTokens }
     }
   } = useAppState()
-  const { setSelectedToken } = useSelectedToken()
+  const [, setSelectedToken] = useSelectedToken()
   const [networks] = useNetworks()
   const {
     childChain,
