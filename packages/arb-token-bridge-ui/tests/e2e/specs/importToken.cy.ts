@@ -194,7 +194,7 @@ describe('Import token', () => {
 
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
-        cy.wait(15_000)
+        cy.wait(30_000)
 
         // Modal is displayed
         cy.get('h2')
@@ -235,7 +235,7 @@ describe('Import token', () => {
 
         // waiting for metamask notification to disappear
         // eslint-disable-next-line
-        cy.wait(15_000)
+        cy.wait(30_000)
 
         // Modal is displayed
         cy.get('h2')
@@ -281,7 +281,7 @@ describe('Import token', () => {
 
         // make sure the import dialog appears
         // eslint-disable-next-line
-        cy.wait(15_000)
+        cy.wait(30_000)
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)

@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 import useSWRImmutable from 'swr/immutable'
 
-import {
-  useTokensFromLists,
-  useTokensFromUser
-} from '../components/TransferPanel/TokenSearchUtils'
 import { useTokenFromSearchParams } from '../components/TransferPanel/TransferPanelUtils'
 import { ERC20BridgeToken, TokenType } from './arbTokenBridge.types'
 import {
@@ -21,6 +17,7 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { Provider } from '@ethersproject/providers'
 import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
+import { useTokenLists } from './useTokenLists'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -33,11 +30,10 @@ const commonUSDC = {
 export const useSelectedToken = () => {
   const { tokenFromSearchParams, setTokenQueryParam } =
     useTokenFromSearchParams()
-  const tokensFromLists = useTokensFromLists()
-  const tokensFromUser = useTokensFromUser()
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
+  const tokenList = useTokenLists(childChain.id)
 
   const fetcher: () => Promise<ERC20BridgeToken | null> =
     useCallback(async () => {
@@ -53,30 +49,27 @@ export const useSelectedToken = () => {
         })
       }
 
-      if (!tokensFromLists || !tokensFromUser) {
+      const tokens = tokenList.data?.flat()
+
+      if (!tokens) {
         return null
       }
 
-      return (
-        tokensFromLists[tokenFromSearchParams] ||
-        tokensFromUser[tokenFromSearchParams] ||
-        null
-      )
+      return null
     }, [
       childChainProvider,
       parentChainProvider,
       tokenFromSearchParams,
-      tokensFromLists,
-      tokensFromUser
+      tokenList.data
     ])
 
   const { data } = useSWRImmutable<ERC20BridgeToken | null>(
     [
+      'useSelectedToken',
       parentChain.id,
       childChain.id,
       tokenFromSearchParams,
-      tokensFromLists,
-      tokensFromUser
+      tokenList.data
     ],
     fetcher
   )
