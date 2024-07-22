@@ -64,8 +64,9 @@
     "generateDenylist": "ts-node --project ./scripts/tsconfig.json ./scripts/generateDenylist.ts",
     "generateCoreChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateCoreChainsToMonitor.ts",
     "generateOrbitChainsToMonitor": "ts-node --project ./scripts/tsconfig.json ./scripts/generateOrbitChainsToMonitor.ts",
-    "e2e:open": "env-cmd -f .e2e.env yarn synpress open --configFile synpress.config.ts",
-    "e2e:run": "env-cmd -f .e2e.env yarn synpress run --configFile synpress.config.ts",
+    "e2e:env": "if [ \"$CI\" != \"true\" ]; then env-cmd -f .e2e.env; fi",
+    "e2e:open": "yarn e2e:env && yarn synpress open --configFile synpress.config.ts",
+    "e2e:run": "yarn e2e:env && yarn synpress run --configFile synpress.config.ts",
     "e2e:run:cctp": "E2E_CCTP=true yarn e2e:run"
   },
   "browserslist": {
