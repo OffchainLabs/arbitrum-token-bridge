@@ -126,6 +126,38 @@ describe('Withdraw ERC20 Token', () => {
                 })}`
               ).should('be.visible')
               cy.findAllByText('an hour').first().should('be.visible') // not a problem in CI, but in local our wallet might have previous pending withdrawals
+
+              cy.waitUntil(
+                () =>
+                  cy
+                    .findAllByLabelText(/Claim Transaction/i)
+                    .first()
+                    .should('be.visible')
+                    .should('not.be.disabled'),
+                {
+                  errorMsg:
+                    'Claim Transaction button is not visible or enabled',
+                  timeout: 60_000,
+                  interval: 1000
+                }
+              ).then(() => {
+                cy.findAllByLabelText(/Claim Transaction/i)
+                  .first()
+                  .click()
+                  .then(() => {
+                    cy.confirmMetamaskTransaction().then(() => {
+                      cy.findByLabelText('show settled transactions')
+                        .should('be.visible')
+                        .click()
+
+                      cy.findByText(
+                        `${formatAmount(ERC20AmountToSend, {
+                          symbol: 'WETH'
+                        })}`
+                      ).should('be.visible')
+                    })
+                  })
+              })
             })
           })
       })
