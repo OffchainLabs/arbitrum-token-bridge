@@ -32,9 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_hotfix: ${{ steps.check-is-hotfix.outputs.is_hotfix }}
-    
-    steps:        
-      - name: Make IS_HOTFIX env var global 
+
+    steps:
+      - name: Make IS_HOTFIX env var global
         id: check-is-hotfix
         run: |
           echo "is_hotfix=${{ env.IS_HOTFIX }}" >> $GITHUB_OUTPUT
@@ -198,6 +198,9 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-
 
+      - name: install
+        uses: yarn install
+
       - name: Make .e2e.env
         uses: SpicyPizza/create-envfile@v1.3
         with:
@@ -257,7 +260,7 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
           DOCKER_DEFAULT_PLATFORM: linux/amd64
-      
+
       - name: Create screenshots directory
         if: steps.e2e-run.outputs.status == 'failed'
         run: mkdir -p packages/arb-token-bridge-ui/tests/e2e/cypress/screenshots
@@ -291,7 +294,7 @@ jobs:
           path: packages/arb-token-bridge-ui/tests/e2e/cypress/videos
           compression-level: 0
           retention-days: 3
-            
+
       - name: Throw error if tests failed
         if: steps.e2e-run.outputs.status == 'failed'
         run: exit 1
