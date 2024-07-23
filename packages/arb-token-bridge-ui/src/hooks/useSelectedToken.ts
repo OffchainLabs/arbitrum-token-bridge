@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import useSWRImmutable from 'swr/immutable'
 
 import { useTokenFromSearchParams } from '../components/TransferPanel/TransferPanelUtils'
@@ -64,30 +64,28 @@ export const useSelectedToken = () => {
         tokensFromUsers[tokenAddressLowercased] ||
         null
       )
-    }, [
-      childChainProvider,
-      parentChainProvider,
-      tokenFromSearchParams,
-      tokensFromLists,
-      tokensFromUsers
-    ])
+    }, [childChainProvider, parentChainProvider, tokenFromSearchParams])
 
-  const { data } = useSWRImmutable<ERC20BridgeToken | null>(
-    [
-      'useSelectedToken',
-      parentChain.id,
-      childChain.id,
-      tokenFromSearchParams,
-      tokensFromLists,
-      tokensFromUsers
-    ],
-    fetcher
-  )
+  const shouldFetch = useMemo(() => {
+    return Boolean(tokensFromLists && tokensFromUsers)
+  }, [tokensFromLists, tokensFromUsers])
+
+  const swrKey = useMemo(() => {
+    return shouldFetch
+      ? [
+          'useSelectedToken',
+          parentChain.id,
+          childChain.id,
+          tokenFromSearchParams
+        ]
+      : null
+  }, [shouldFetch, parentChain.id, childChain.id, tokenFromSearchParams])
+
+  const { data } = useSWRImmutable<ERC20BridgeToken | null>(swrKey, fetcher)
 
   const setSelectedToken = useCallback(
-    (erc20ParentAddress: string | null) => {
-      setTokenQueryParam(erc20ParentAddress)
-    },
+    (erc20ParentAddress: string | null) =>
+      setTokenQueryParam(erc20ParentAddress),
     [setTokenQueryParam]
   )
 
