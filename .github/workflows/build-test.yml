@@ -201,15 +201,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Check working space directory
-        run: du ${GITHUB_WORKSPACE} -h -d 1
-
-      - name: Get more space
-        run: |
-          df . -h
-          sudo rm -rf ${GITHUB_WORKSPACE}/.git
-          df . -h
-
       - name: Restore node_modules
         uses: OffchainLabs/actions/node-modules/restore@main
 
