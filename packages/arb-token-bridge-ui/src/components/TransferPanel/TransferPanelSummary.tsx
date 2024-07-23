@@ -10,7 +10,11 @@ import { TokenSymbolWithExplorerLink } from '../common/TokenSymbolWithExplorerLi
 import { ERC20BridgeToken } from '../../hooks/arbTokenBridge.types'
 import { useNetworks } from '../../hooks/useNetworks'
 import { useNetworksRelationship } from '../../hooks/useNetworksRelationship'
-import { NativeCurrencyPrice, useIsBridgingEth } from './NativeCurrencyPrice'
+import {
+  NativeCurrencyPrice,
+  useIsBridgingEth,
+  useIsBridgingEthToCustomGasTokenChain
+} from './NativeCurrencyPrice'
 import { useAppState } from '../../state'
 import { Loader } from '../common/atoms/Loader'
 import { isTokenNativeUSDC } from '../../util/TokenUtils'
@@ -147,9 +151,15 @@ function TransferPanelSummaryContainer({
   children: React.ReactNode
   className?: string
 }) {
-  const [networks] = useNetworks()
-  const { childChain } = useNetworksRelationship(networks)
+  const {
+    app: { selectedToken, isSelectedTokenEther }
+  } = useAppState()
 
+  const [networks] = useNetworks()
+  const { childChain, childChainProvider } = useNetworksRelationship(networks)
+  const nativeCurrency = useNativeCurrency({ provider: childChainProvider })
+
+  const childChainNetworkName = getNetworkName(childChain.id)
   const isDisabled = DISABLED_CHAIN_IDS.includes(childChain.id)
 
   return (
@@ -160,10 +170,19 @@ function TransferPanelSummaryContainer({
       </div>
       {isDisabled && (
         <NoteBox variant="error">
-          {getNetworkName(childChain.id)} is currently down. You will be able to
-          bridge again once it is back online.
+          {childChainNetworkName} is currently down. You will be able to bridge
+          again once it is back online.
         </NoteBox>
       )}
+      {nativeCurrency.isCustom &&
+        selectedToken === null &&
+        isSelectedTokenEther && (
+          <NoteBox variant="info">
+            <b>Ether (ETH)</b> is not the native currency on{' '}
+            {childChainNetworkName}. Note that you will receive{' '}
+            <b>Wrapped Ether (WETH)</b> on {childChainNetworkName}.
+          </NoteBox>
+        )}
     </div>
   )
 }
@@ -180,6 +199,8 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
   })
 
   const isBridgingEth = useIsBridgingEth(childChainNativeCurrency)
+  const isBridgingEthToCustomGasTokenChain =
+    useIsBridgingEthToCustomGasTokenChain()
 
   const [{ amount }] = useArbQueryParams()
 
@@ -245,7 +266,7 @@ export function TransferPanelSummary({ token }: TransferPanelSummaryProps) {
               isParentChain={!isDepositMode}
             />
           )}
-          {isBridgingEth && (
+          {isBridgingEth && !isBridgingEthToCustomGasTokenChain && (
             <NativeCurrencyPrice amount={Number(amount)} showBrackets />
           )}
         </span>
