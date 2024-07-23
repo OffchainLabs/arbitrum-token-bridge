@@ -270,7 +270,7 @@ const defaultL1Network: L1Network = {
 
 export const defaultL2Network: ArbitrumNetwork = {
   chainId: 412346,
-  parentChainId: 1337,
+  parentChainId: ChainId.Local,
   confirmPeriodBlocks: 20,
   ethBridge: {
     bridge: '0x5eCF728ffC5C5E802091875f96281B5aeECf6C49',
