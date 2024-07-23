@@ -231,7 +231,13 @@ export function TransferPanel() {
   })
 
   const isTokenAlreadyImported = useMemo(() => {
-    if (isTokenNativeUSDC(tokenFromSearchParams)) {
+    const tokenLowercased = tokenFromSearchParams?.toLowerCase()
+
+    if (!tokenLowercased) {
+      return true
+    }
+
+    if (isTokenNativeUSDC(tokenLowercased)) {
       return true
     }
 
@@ -239,8 +245,8 @@ export function TransferPanel() {
       return undefined
     }
 
-    return Object.keys({ ...tokensFromLists, ...tokensFromUser }).some(
-      address => address.toLowerCase() === tokenFromSearchParams?.toLowerCase()
+    return Boolean(
+      tokensFromLists[tokenLowercased] || tokensFromUser[tokenLowercased]
     )
   }, [tokenFromSearchParams, tokensFromLists, tokensFromUser])
 
