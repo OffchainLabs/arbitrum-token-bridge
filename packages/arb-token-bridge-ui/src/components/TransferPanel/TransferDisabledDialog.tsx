@@ -58,7 +58,7 @@ export function TransferDisabledDialog() {
   }, [isTeleportMode, networks.destinationChainProvider])
 
   const onClose = () => {
-    setSelectedToken(null)
+    setSelectedToken({ token: null })
     closeTransferDisabledDialog()
   }
 

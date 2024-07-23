@@ -90,7 +90,7 @@ const ArbTokenBridgeStoreSyncWrapper = (): JSX.Element | null => {
       selectedTokenAddress === nativeCurrency.address ||
       selectedTokenL2Address === nativeCurrency.address
     ) {
-      actions.app.setSelectedToken(null)
+      actions.app.setSelectedToken({ token: null })
     }
   }, [selectedToken, nativeCurrency])
 

@@ -49,18 +49,22 @@ export function useUpdateUSDCTokenData() {
     if (isArbOneUSDC && isDestinationChainArbitrumOne) {
       token.updateTokenData(CommonAddress.Ethereum.USDC)
       actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Ethereum.USDC,
-        l2Address: CommonAddress.ArbitrumOne['USDC.e']
+        token: {
+          ...commonUSDC,
+          address: CommonAddress.Ethereum.USDC,
+          l2Address: CommonAddress.ArbitrumOne['USDC.e']
+        }
       })
     }
 
     if (isArbSepoliaUSDC && isDestinationChainArbitrumSepolia) {
       token.updateTokenData(CommonAddress.Sepolia.USDC)
       actions.app.setSelectedToken({
-        ...commonUSDC,
-        address: CommonAddress.Sepolia.USDC,
-        l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
+        token: {
+          ...commonUSDC,
+          address: CommonAddress.Sepolia.USDC,
+          l2Address: CommonAddress.ArbitrumSepolia['USDC.e']
+        }
       })
     }
   }, [
