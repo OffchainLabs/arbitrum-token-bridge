@@ -186,10 +186,7 @@ describe('Import token', () => {
       it('should import token through URL using its L1 address', () => {
         cy.login({
           networkType: 'L1',
-          url: '/',
-          query: {
-            token: ERC20TokenAddressL1
-          }
+          url: `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${ERC20TokenAddressL1}`
         })
 
         // waiting for metamask notification to disappear
@@ -226,10 +223,7 @@ describe('Import token', () => {
       it('should import token through URL using its L2 address', () => {
         cy.login({
           networkType: 'L1',
-          url: '/',
-          query: {
-            token: ERC20TokenAddressL2
-          }
+          url: `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${ERC20TokenAddressL2}`
         })
 
         // waiting for metamask notification to disappear
@@ -265,17 +259,12 @@ describe('Import token', () => {
       it('should display an error message after invalid URL', () => {
         cy.login({
           networkType: 'L1',
-          url: '/',
-          query: {
-            token: invalidTokenAddress
-          }
+          url: `/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost&token=${invalidTokenAddress}`
         })
 
-        visitAfterSomeDelay('/', {
-          qs: {
-            token: invalidTokenAddress
-          }
-        })
+        visitAfterSomeDelay(
+          '/?sourceChain=custom-localhost&destinationChain=arbitrum-localhost'
+        )
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
