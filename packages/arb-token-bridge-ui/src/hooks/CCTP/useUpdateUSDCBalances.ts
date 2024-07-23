@@ -12,18 +12,18 @@ export function useUpdateUSDCBalances({
   walletAddress: string | undefined
 }) {
   const [networks] = useNetworks()
-  const { parentChainProvider, parentChain, childChainProvider } =
+  const { parentChainProvider, parentChain, childChain, childChainProvider } =
     useNetworksRelationship(networks)
   const {
     erc20: [, updateErc20L1Balance]
   } = useBalance({
-    provider: parentChainProvider,
+    chainId: parentChain.id,
     walletAddress
   })
   const {
     erc20: [, updateErc20L2Balance]
   } = useBalance({
-    provider: childChainProvider,
+    chainId: childChain.id,
     walletAddress
   })
 

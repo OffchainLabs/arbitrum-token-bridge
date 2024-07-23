@@ -1,5 +1,5 @@
 import { useAccount } from 'wagmi'
-import { constants } from 'ethers'
+import { BigNumber, constants } from 'ethers'
 
 import {
   NativeCurrencyEther,
@@ -16,15 +16,16 @@ import { ERC20BridgeToken } from './arbTokenBridge.types'
  */
 export function useBalanceOnSourceChain(
   token: ERC20BridgeToken | NativeCurrencyEther | null
-) {
+): BigNumber | null {
   const { address: walletAddress } = useAccount()
   const [networks] = useNetworks()
   const { childChainProvider, isDepositMode } =
     useNetworksRelationship(networks)
+
   const {
     eth: [ethSourceChainBalance],
     erc20: [erc20SourceChainBalances]
-  } = useBalance({ provider: networks.sourceChainProvider, walletAddress })
+  } = useBalance({ chainId: networks.sourceChain.id, walletAddress })
 
   const childChainNativeCurrency = useNativeCurrency({
     provider: childChainProvider
