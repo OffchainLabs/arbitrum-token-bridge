@@ -41,23 +41,29 @@ export const useSelectedToken = () => {
 
   const fetcher: () => Promise<ERC20BridgeToken | null> =
     useCallback(async () => {
-      if (!tokenFromSearchParams) {
+      const tokenAddressLowercased = tokenFromSearchParams?.toLowerCase()
+
+      if (!tokenAddressLowercased) {
         return null
       }
 
-      if (isTokenNativeUSDC(tokenFromSearchParams)) {
+      if (isTokenNativeUSDC(tokenAddressLowercased)) {
         return getUsdcToken({
-          tokenAddress: tokenFromSearchParams,
+          tokenAddress: tokenAddressLowercased,
           parentChainProvider,
           childChainProvider
         })
       }
 
-      if (!tokensFromLists || tokensFromUsers) {
+      if (!tokensFromLists || !tokensFromUsers) {
         return null
       }
 
-      return null
+      return (
+        tokensFromLists[tokenAddressLowercased] ||
+        tokensFromUsers[tokenAddressLowercased] ||
+        null
+      )
     }, [
       childChainProvider,
       parentChainProvider,
