@@ -17,12 +17,12 @@
   {
     "name": "Deposit ERC20",
     "file": "tests/e2e/specs/**/depositERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Withdraw ERC20",
     "file": "tests/e2e/specs/**/withdrawERC20.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "TX history",
@@ -32,12 +32,12 @@
   {
     "name": "Approve ERC20",
     "file": "tests/e2e/specs/**/approveToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Import test ERC20",
     "file": "tests/e2e/specs/**/importToken.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Read classic deposits",
@@ -47,7 +47,7 @@
   {
     "name": "Redeem Retryable",
     "file": "tests/e2e/specs/**/redeemRetryable.cy.{js,jsx,ts,tsx}",
-    "recordVideo": "false"
+    "recordVideo": "true"
   },
   {
     "name": "Switch network",

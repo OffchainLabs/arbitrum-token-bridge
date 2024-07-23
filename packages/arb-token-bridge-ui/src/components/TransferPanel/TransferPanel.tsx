@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Tippy from '@tippyjs/react'
 import { constants, utils } from 'ethers'
 import { useLatest } from 'react-use'
@@ -101,9 +101,6 @@ export function TransferPanel() {
     useState<ImportTokenModalStatus>(ImportTokenModalStatus.IDLE)
   const [showSmartContractWalletTooltip, setShowSmartContractWalletTooltip] =
     useState(false)
-  const [importDialogTokenAddress, setImportDialogTokenAddress] = useState<
-    string | undefined
-  >()
 
   const {
     app: {
@@ -252,15 +249,14 @@ export function TransferPanel() {
     )
   }, [tokenFromSearchParams, tokensFromLists, tokensFromUser])
 
-  useEffect(() => {
+  const importDialogTokenAddress = useMemo(() => {
     if (
       typeof isTokenAlreadyImported === 'undefined' ||
       isTokenAlreadyImported
     ) {
-      setImportDialogTokenAddress(undefined)
-    } else {
-      setImportDialogTokenAddress(tokenFromSearchParams)
+      return undefined
     }
+    return tokenFromSearchParams
   }, [isTokenAlreadyImported, tokenFromSearchParams])
 
   const isBridgingANewStandardToken = useMemo(() => {
