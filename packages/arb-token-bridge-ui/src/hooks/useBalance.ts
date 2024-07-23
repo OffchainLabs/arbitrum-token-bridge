@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { BigNumber, constants } from 'ethers'
+import { BigNumber, constants, utils } from 'ethers'
 import useSWR, {
   useSWRConfig,
   unstable_serialize,
@@ -40,10 +40,13 @@ const merge: Middleware = (useSWRNext: SWRHook) => {
 }
 
 const useBalance = ({ chainId, walletAddress }: UseBalanceProps) => {
-  const walletAddressLowercased = useMemo(
-    () => walletAddress?.toLowerCase(),
-    [walletAddress]
-  )
+  const walletAddressLowercased = useMemo(() => {
+    // use balances for the wallet address only if it's valid
+    if (!walletAddress || !utils.isAddress(walletAddress)) {
+      return undefined
+    }
+    return walletAddress.toLowerCase()
+  }, [walletAddress])
 
   const queryKey = useCallback(
     (type: 'eth' | 'erc20') => {
