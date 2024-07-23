@@ -182,6 +182,22 @@ jobs:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
 
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -208,18 +224,19 @@ jobs:
           DISPLAY: :0.0
 
       - name: Run nitro testnode
-        uses: OffchainLabs/actions/run-nitro-test-node@e3b7f5bdfc62cad21026c1d1f424f3fbadc046e0
+        uses: OffchainLabs/actions/run-nitro-test-node@953e8475606f180ce2b0531d411983ce37f34751
         with:
-          nitro-testnode-ref: old-release-v2.1.1
+          nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
+          l3-node: false
+          no-l3-token-bridge: true
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
           start: yarn start
-          command: yarn test:e2e
+          command: yarn test:e2e --browser chromium
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
-          browser: chrome
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
         env:
           DISPLAY: :0.0
