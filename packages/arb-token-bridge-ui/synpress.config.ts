@@ -27,7 +27,7 @@ if (process.env.TEST_FILE) {
   tests = specFiles.map(file => file.file)
 }
 
-const shouldRecordVideo = process.env.CYPRESS_RECORD_VIDEO === 'true'
+const shouldRecordVideo = true
 
 export default defineConfig({
   userAgent: 'synpress',
