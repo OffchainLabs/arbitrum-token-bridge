@@ -200,7 +200,6 @@ describe('Import token', () => {
         cy.get('h2')
           .contains(/import unknown token/i)
           .should('be.visible')
-
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
 
@@ -280,7 +279,6 @@ describe('Import token', () => {
 
         // Modal is displayed
         cy.get('h2').contains(/invalid token address/i)
-
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('not.exist')
 
         cy.findByRole('button', { name: 'Import token' }).should('not.exist')
