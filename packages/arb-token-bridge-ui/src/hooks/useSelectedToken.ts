@@ -64,13 +64,19 @@ export const useSelectedToken = () => {
         tokensFromUsers[tokenAddressLowercased] ||
         null
       )
-    }, [childChainProvider, parentChainProvider, tokenFromSearchParams])
+    }, [
+      childChainProvider,
+      parentChainProvider,
+      tokenFromSearchParams,
+      tokensFromLists,
+      tokensFromUsers
+    ])
 
   const shouldFetch = useMemo(() => {
     return Boolean(tokensFromLists && tokensFromUsers)
   }, [tokensFromLists, tokensFromUsers])
 
-  const swrKey = useMemo(() => {
+  const queryKey = useMemo(() => {
     return shouldFetch
       ? [
           'useSelectedToken',
@@ -81,7 +87,7 @@ export const useSelectedToken = () => {
       : null
   }, [shouldFetch, parentChain.id, childChain.id, tokenFromSearchParams])
 
-  const { data } = useSWRImmutable<ERC20BridgeToken | null>(swrKey, fetcher)
+  const { data, mutate } = useSWRImmutable(queryKey, fetcher)
 
   const setSelectedToken = useCallback(
     (erc20ParentAddress: string | null) =>
@@ -89,7 +95,7 @@ export const useSelectedToken = () => {
     [setTokenQueryParam]
   )
 
-  return [data ?? null, setSelectedToken] as const
+  return [data ?? null, setSelectedToken, mutate] as const
 }
 
 async function getUsdcToken({
