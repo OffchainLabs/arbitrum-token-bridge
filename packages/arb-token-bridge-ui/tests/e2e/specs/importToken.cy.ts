@@ -233,11 +233,14 @@ describe('Import token', () => {
           }
         })
 
+        // waiting for metamask notification to disappear
+        // eslint-disable-next-line
+        cy.wait(3000)
+
         // Modal is displayed
         cy.get('h2')
           .contains(/import unknown token/i)
           .should('be.visible')
-
         cy.findByText(new RegExp(ERC20TokenName, 'i')).should('be.visible')
         // Modal should always display L1 address regardless of query parameter
         cy.findByText(new RegExp(ERC20TokenAddressL1, 'i')).should('be.visible')
