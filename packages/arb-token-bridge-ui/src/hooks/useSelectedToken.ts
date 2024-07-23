@@ -17,7 +17,10 @@ import { CommonAddress } from '../util/CommonAddressUtils'
 import { useNetworksRelationship } from './useNetworksRelationship'
 import { Provider } from '@ethersproject/providers'
 import { getChainIdFromProvider } from '@/token-bridge-sdk/utils'
-import { useTokenLists } from './useTokenLists'
+import {
+  useTokensFromLists,
+  useTokensFromUser
+} from '../components/TransferPanel/TokenSearchUtils'
 
 const commonUSDC = {
   name: 'USD Coin',
@@ -33,7 +36,8 @@ export const useSelectedToken = () => {
   const [networks] = useNetworks()
   const { childChain, childChainProvider, parentChain, parentChainProvider } =
     useNetworksRelationship(networks)
-  const tokenList = useTokenLists(childChain.id)
+  const tokensFromLists = useTokensFromLists()
+  const tokensFromUsers = useTokensFromUser()
 
   const fetcher: () => Promise<ERC20BridgeToken | null> =
     useCallback(async () => {
@@ -49,9 +53,7 @@ export const useSelectedToken = () => {
         })
       }
 
-      const tokens = tokenList.data?.flat()
-
-      if (!tokens) {
+      if (!tokensFromLists || tokensFromUsers) {
         return null
       }
 
@@ -60,7 +62,8 @@ export const useSelectedToken = () => {
       childChainProvider,
       parentChainProvider,
       tokenFromSearchParams,
-      tokenList.data
+      tokensFromLists,
+      tokensFromUsers
     ])
 
   const { data } = useSWRImmutable<ERC20BridgeToken | null>(
@@ -69,7 +72,8 @@ export const useSelectedToken = () => {
       parentChain.id,
       childChain.id,
       tokenFromSearchParams,
-      tokenList.data
+      tokensFromLists,
+      tokensFromUsers
     ],
     fetcher
   )
