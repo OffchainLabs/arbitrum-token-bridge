@@ -119,7 +119,7 @@ describe('Withdraw ERC20 Token', () => {
               .should('be.enabled')
               .click()
 
-            cy.confirmMetamaskTransaction({ gasConfig: 'market' }).then(() => {
+            cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'
@@ -195,7 +195,7 @@ describe('Withdraw ERC20 Token', () => {
               .should('be.enabled')
               .click()
 
-            cy.confirmMetamaskTransaction({ gasConfig: 'market' }).then(() => {
+            cy.confirmMetamaskTransaction().then(() => {
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
                   symbol: 'WETH'

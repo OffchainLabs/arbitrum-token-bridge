@@ -41,7 +41,7 @@ describe('Deposit ETH', () => {
     cy.findByRole('button', {
       name: 'Move funds to Arbitrum Local'
     }).click()
-    cy.confirmMetamaskTransaction({ gasConfig: 'market' }).then(() => {
+    cy.confirmMetamaskTransaction().then(() => {
       cy.findByText('10 minutes').should('be.visible')
       cy.findByText(
         `${formatAmount(ETHAmountToDeposit, {
