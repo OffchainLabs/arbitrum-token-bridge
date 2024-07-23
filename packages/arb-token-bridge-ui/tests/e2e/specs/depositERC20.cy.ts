@@ -90,7 +90,7 @@ describe('Deposit ERC20 Token', () => {
           .should('be.enabled')
           .click()
           .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
+            cy.confirmMetamaskTransaction({ gasConfig: 'market' }).then(() => {
               cy.findByText('10 minutes').should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
@@ -138,7 +138,7 @@ describe('Deposit ERC20 Token', () => {
           .should('be.enabled')
           .click()
           .then(() => {
-            cy.confirmMetamaskTransaction().then(() => {
+            cy.confirmMetamaskTransaction({ gasConfig: 'market' }).then(() => {
               cy.findByText('10 minutes').should('be.visible')
               cy.findByText(
                 `${formatAmount(ERC20AmountToSend, {
