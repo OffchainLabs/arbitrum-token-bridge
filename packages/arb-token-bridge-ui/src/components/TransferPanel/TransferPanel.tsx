@@ -235,12 +235,7 @@ export function TransferPanel() {
       return true
     }
 
-    if (
-      !tokensFromLists ||
-      !tokensFromUser ||
-      // Wait if token list hasn't been populated yet
-      Object.keys(tokensFromLists).length === 0
-    ) {
+    if (!tokensFromLists || !tokensFromUser) {
       return undefined
     }
 
