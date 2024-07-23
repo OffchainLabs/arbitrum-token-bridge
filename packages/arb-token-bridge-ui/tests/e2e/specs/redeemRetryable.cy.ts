@@ -55,9 +55,6 @@ describe('Redeem ERC20 Deposit', () => {
           tokenAddress: wethTokenAddressL2
         })
 
-        console.warn({ l2ERC20bal })
-        cy.log(l2ERC20bal)
-
         // check the balance on the destination chain before redeeming
         context('should show ERC-20 balance correctly', () => {
           cy.findByLabelText('WETH balance amount on l2')

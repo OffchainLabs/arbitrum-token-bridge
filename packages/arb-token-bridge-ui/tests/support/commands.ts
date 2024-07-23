@@ -230,8 +230,6 @@ export const searchAndSelectToken = ({
       cy.findByRole('button', { name: 'Select Token' })
         .should('be.visible')
         .should('have.text', tokenName)
-
-      cy.wait(5_000)
     })
 }
 
