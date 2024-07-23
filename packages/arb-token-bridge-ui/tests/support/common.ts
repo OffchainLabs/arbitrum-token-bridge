@@ -6,7 +6,7 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network } from '../../src/arbLocalNodeConstants'
+import { defaultL2Network } from '../../src/util/networks'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
