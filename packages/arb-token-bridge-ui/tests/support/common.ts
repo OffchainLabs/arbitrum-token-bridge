@@ -6,12 +6,13 @@ import { StaticJsonRpcProvider } from '@ethersproject/providers'
 import { BigNumber } from 'ethers'
 import { MultiCaller } from '@arbitrum/sdk'
 import { MULTICALL_TESTNET_ADDRESS } from '../../src/constants'
-import { defaultL2Network } from '../../src/util/networks'
+import { defaultL2Network, defaultL3Network } from '../../src/util/networks'
 
 export type NetworkType = 'L1' | 'L2'
 export type NetworkName =
   | 'custom-localhost'
   | 'arbitrum-localhost'
+  | 'l3-localhost'
   | 'arbitrum-sepolia'
   | 'mainnet'
   | 'sepolia'
@@ -25,25 +26,35 @@ type NetworkConfig = {
   multiCall: string
 }
 
+const isOrbitTest = process.env.E2E_ORBIT
+
 export const getL1NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'custom-localhost',
+    networkName: isOrbitTest ? 'arbitrum-localhost' : 'custom-localhost',
     rpcUrl: Cypress.env('ETH_RPC_URL'),
-    chainId: '1337',
+    chainId: isOrbitTest ? '412346' : '1337',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: defaultL2Network.tokenBridge.parentMultiCall
+    multiCall: isOrbitTest
+      ? defaultL2Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.parentMultiCall
   }
 }
 
 export const getL2NetworkConfig = (): NetworkConfig => {
+  const isOrbitTest = Cypress.env('ORBIT_TEST') == '1'
+
   return {
-    networkName: 'arbitrum-localhost',
+    networkName: isOrbitTest ? 'l3-localhost' : 'arbitrum-localhost',
     rpcUrl: Cypress.env('ARB_RPC_URL'),
-    chainId: '412346',
+    chainId: isOrbitTest ? '333333' : '412346',
     symbol: 'ETH',
     isTestnet: true,
-    multiCall: defaultL2Network.tokenBridge.childMultiCall
+    multiCall: isOrbitTest
+      ? defaultL3Network.tokenBridge.childMultiCall
+      : defaultL2Network.tokenBridge.childMultiCall
   }
 }
 
@@ -69,9 +80,15 @@ export const getL2TestnetNetworkConfig = (): NetworkConfig => {
   }
 }
 
-export const l1WethGateway = defaultL2Network.tokenBridge.parentWethGateway
-export const wethTokenAddressL1 = defaultL2Network.tokenBridge.parentWeth
-export const wethTokenAddressL2 = defaultL2Network.tokenBridge.childWeth
+export const l1WethGateway = isOrbitTest
+  ? defaultL2Network.tokenBridge.childWethGateway
+  : defaultL2Network.tokenBridge.parentWethGateway
+export const wethTokenAddressL1 = isOrbitTest
+  ? defaultL2Network.tokenBridge.childWeth
+  : defaultL2Network.tokenBridge.parentWeth
+export const wethTokenAddressL2 = isOrbitTest
+  ? defaultL3Network.tokenBridge.childWeth
+  : defaultL2Network.tokenBridge.childWeth
 export const ERC20TokenName = 'IntArbTestToken'
 export const ERC20TokenSymbol = 'IARB'
 export const invalidTokenAddress = '0x0000000000000000000000000000000000000000'
@@ -162,3 +179,12 @@ export const visitAfterSomeDelay = (
   cy.wait(15_000) // let all the race conditions settle, let UI load well first
   cy.visit(url, options)
 }
+
+export const skipIfOrbitTest = (() => {
+  return async (testContext: Mocha.Context) => {
+    if (Cypress.env('ORBIT_TEST') == '1') {
+      console.error("You're writing to the chain on mainnet lol stop")
+      testContext.skip()
+    }
+  }
+})()

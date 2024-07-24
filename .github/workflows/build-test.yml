@@ -171,7 +171,7 @@ jobs:
 
   # based on https://github.com/Synthetixio/synpress/blob/dev/.github/workflows/e2e_cypress-action.yml
   test-e2e:
-    name: "Test E2E"
+    name: "Test E2E${{ matrix.orbit-test == '1' && ' with L3' }}"
     runs-on: ubuntu-latest
     needs: [build, check-files, check-is-hotfix, load-e2e-files]
     if: needs.check-files.outputs.run_tests == 'true' && needs.check-is-hotfix.outputs.is_hotfix == 'false'
@@ -180,6 +180,7 @@ jobs:
       matrix:
         tests:
           ${{ fromJson(needs.load-e2e-files.outputs.matrix) }}
+        orbit-test: ['0', '1']
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -227,14 +228,13 @@ jobs:
         uses: OffchainLabs/actions/run-nitro-test-node@953e8475606f180ce2b0531d411983ce37f34751
         with:
           nitro-testnode-ref: aab133aceadec2e622f15fa438f6327e3165392d
-          l3-node: false
-          no-l3-token-bridge: true
+          l3-node: ${{ matrix.orbit-test == '1' }}
 
       - name: Run e2e tests via cypress-io/github-action
         uses: cypress-io/github-action@248bde77443c376edc45906ede03a1aba9da0462 # pin@v5.8.4
         with:
           start: yarn start
-          command: yarn test:e2e --browser chromium
+          command: 'yarn ${{ matrix.orbit-test == "1" ? "test:e2e:orbit" : "test:e2e" }} --browser chromium'
           wait-on: http://127.0.0.1:3000
           wait-on-timeout: 120
           spec: ./packages/arb-token-bridge-ui/tests/e2e/specs/*
@@ -248,6 +248,7 @@ jobs:
           NEXT_PUBLIC_INFURA_KEY: ${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
           NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL: http://127.0.0.1:8545
           NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL: http://127.0.0.1:8547
+          NEXT_PUBLIC_LOCAL_L3_RPC_URL: http://127.0.0.1:3347
 
       - name: Archive e2e artifacts
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v2

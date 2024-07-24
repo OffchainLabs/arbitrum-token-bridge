@@ -592,6 +592,8 @@ export function TransferPanelMain({
         networks.sourceChain.id
       )
 
+      console.log({ destinationChainIds })
+
       // if source chain is Arbitrum One, add Arbitrum Nova to destination
       if (networks.sourceChain.id === ChainId.ArbitrumOne) {
         destinationChainIds.push(ChainId.ArbitrumNova)

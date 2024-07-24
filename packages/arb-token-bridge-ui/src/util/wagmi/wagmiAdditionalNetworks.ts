@@ -145,3 +145,24 @@ export const localL2Network: Chain = {
     default: { name: 'Blockscout', url: '' }
   }
 }
+
+/**
+ * For e2e testing
+ */
+export const localL3Network: Chain = {
+  id: ChainId.L3Local,
+  name: 'L3 Local',
+  network: 'l3-localhost',
+  nativeCurrency: ether,
+  rpcUrls: {
+    default: {
+      http: [rpcURLs[ChainId.L3Local]!]
+    },
+    public: {
+      http: [rpcURLs[ChainId.L3Local]!]
+    }
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: '' }
+  }
+}

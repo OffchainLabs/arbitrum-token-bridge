@@ -23,7 +23,9 @@ export enum ChainId {
   ArbitrumNova = 42170,
   // L2 Testnets
   ArbitrumSepolia = 421614,
-  ArbitrumLocal = 412346
+  ArbitrumLocal = 412346,
+  // L3 Testnets
+  L3Local = 333333
 }
 
 type L1Network = {
@@ -300,6 +302,38 @@ export const defaultL2Network: ArbitrumNetwork = {
   }
 }
 
+export const defaultL3Network: ArbitrumNetwork = {
+  chainId: 333333,
+  parentChainId: ChainId.ArbitrumLocal,
+  confirmPeriodBlocks: 20,
+  ethBridge: {
+    bridge: '0xA584795e24628D9c067A6480b033C9E96281fcA3',
+    inbox: '0xDcA690902d3154886Ec259308258D10EA5450996',
+    outbox: '0xda243bD61B011024FC923164db75Dde198AC6175',
+    rollup: '0xf9B0F86aCc3e42B7DF373c9a8adb2803BF0a7662',
+    sequencerInbox: '0x16c54EE2015CD824415c2077F4103f444E00A8cb'
+  },
+  isCustom: true,
+  name: 'L3 Local',
+  retryableLifetimeSeconds: 604800,
+  tokenBridge: {
+    parentCustomGateway: '0xA191D519260A06b32f8D04c84b9F457B8Caa0514',
+    parentErc20Gateway: '0x6B0805Fc6e275ef66a0901D0CE68805631E271e5',
+    parentGatewayRouter: '0xfE03DBdf7A126994dBd749631D7fbaB58C618c58',
+    parentMultiCall: '0x20a3627Dcc53756E38aE3F92717DE9B23617b422',
+    parentProxyAdmin: '0x1A61102c26ad3f64bA715B444C93388491fd8E68',
+    parentWeth: '0xA1abD387192e3bb4e84D3109181F9f005aBaF5CA',
+    parentWethGateway: '0x77603b0ea6a797C74Fa9ef11b5BdE04A4E03D550',
+    childCustomGateway: '0xD4816AeF8f85A3C1E01Cd071a81daD4fa941625f',
+    childErc20Gateway: '0xaa7d51aFFEeB32d99b1CB2fd6d81D7adA4a896e8',
+    childGatewayRouter: '0x8B6BC759226f8Fe687c8aD8Cc0DbF85E095e9297',
+    childMultiCall: '0x052B15c8Ff0544287AE689C4F2FC53A3905d7Db3',
+    childProxyAdmin: '0x36C56eC2CF3a3f53db9F01d0A5Ae84b36fb0A1e2',
+    childWeth: '0x582a8dBc77f665dF2c49Ce0a138978e9267dd968',
+    childWethGateway: '0xA6AB233B3c7bfd0399834897b5073974A3D467e2'
+  }
+}
+
 export const localL1NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ETHEREUM_RPC_URL,
   fallback: 'http://127.0.0.1:8545'
@@ -308,13 +342,19 @@ export const localL2NetworkRpcUrl = loadEnvironmentVariableWithFallback({
   env: process.env.NEXT_PUBLIC_LOCAL_ARBITRUM_RPC_URL,
   fallback: 'http://127.0.0.1:8547'
 })
+export const localL3NetworkRpcUrl = loadEnvironmentVariableWithFallback({
+  env: process.env.NEXT_PUBLIC_LOCAL_L3_RPC_URL,
+  fallback: 'http://127.0.0.1:3347'
+})
 
 export function registerLocalNetwork() {
   try {
     rpcURLs[defaultL1Network.chainId] = localL1NetworkRpcUrl
     rpcURLs[defaultL2Network.chainId] = localL2NetworkRpcUrl
+    rpcURLs[defaultL3Network.chainId] = localL3NetworkRpcUrl
 
     registerCustomArbitrumNetwork(defaultL2Network)
+    registerCustomArbitrumNetwork(defaultL3Network)
   } catch (error: any) {
     console.error(`Failed to register local network: ${error.message}`)
   }
@@ -323,7 +363,8 @@ export function registerLocalNetwork() {
 export function isNetwork(chainId: ChainId) {
   const customChains = getCustomChainsFromLocalStorage()
   const isMainnetOrbitChain = chainId in orbitMainnets
-  const isTestnetOrbitChain = chainId in orbitTestnets
+  const isL3Local = chainId === ChainId.L3Local
+  const isTestnetOrbitChain = chainId in orbitTestnets || isL3Local
 
   const isEthereumMainnet = chainId === ChainId.Ethereum
 
