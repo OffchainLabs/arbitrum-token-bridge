@@ -274,6 +274,13 @@ export function findDestinationChainButton(
   )
 }
 
+export function findMoveFundsButton(): Cypress.Chainable<JQuery<HTMLElement>> {
+  return cy
+    .findByRole('button', { name: /move funds/i })
+    .scrollIntoView()
+    .should('be.visible')
+}
+
 Cypress.Commands.addAll({
   connectToApp,
   login,
@@ -286,5 +293,6 @@ Cypress.Commands.addAll({
   fillCustomDestinationAddress,
   typeAmount,
   findSourceChainButton,
-  findDestinationChainButton
+  findDestinationChainButton,
+  findMoveFundsButton
 })
